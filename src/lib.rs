@@ -29,7 +29,7 @@ pub use crate::font::*;
 #[doc(hidden)]
 pub mod implementation {
     // We must export extern symbols so the linker would be able to find them.
-    pub use crate::unicode::rb_is_default_ignorable;
+    pub use crate::unicode::*;
 }
 
 type CodePoint = u32;

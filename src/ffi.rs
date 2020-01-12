@@ -171,8 +171,6 @@ extern "C" {
     pub fn hb_language_from_string(str: *const c_char, len: i32) -> hb_language_t;
     pub fn hb_language_to_string(language: hb_language_t) -> *const c_char;
     pub fn hb_language_get_default() -> hb_language_t;
-    pub fn hb_script_from_iso15924_tag(tag: hb_tag_t) -> hb_script_t;
-    pub fn hb_script_to_iso15924_tag(script: hb_script_t) -> hb_tag_t;
     pub fn hb_feature_from_string(str: *const c_char, len: i32, feature: *mut hb_feature_t) -> hb_bool_t;
     pub fn hb_blob_create(data: *const c_char, length: u32, mode: hb_memory_mode_t, user_data: *mut c_void,
                           destroy: hb_destroy_func_t) -> *mut hb_blob_t;

@@ -21,6 +21,10 @@
 
 #include "hb-ucd-table.hh"
 
+extern "C" {
+    hb_script_t rb_ucd_script (hb_codepoint_t unicode);
+}
+
 hb_unicode_combining_class_t
 hb_ucd_combining_class (hb_codepoint_t unicode)
 {
@@ -42,7 +46,7 @@ hb_ucd_mirroring (hb_codepoint_t unicode)
 hb_script_t
 hb_ucd_script (hb_codepoint_t unicode)
 {
-  return _hb_ucd_sc_map[_hb_ucd_sc (unicode)];
+  return rb_ucd_script (unicode);
 }
 
 

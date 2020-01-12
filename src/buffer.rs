@@ -1,9 +1,8 @@
 use std::io::Read;
-use std::ptr::NonNull;
 
 use bitflags::bitflags;
 
-use crate::{Direction, Language, Tag};
+use crate::{Direction, Language, Script, Tag};
 use crate::ffi;
 
 /// `GlyphPosition` is the structure that holds the positions of the glyph in
@@ -162,19 +161,16 @@ impl<'a> Read for BufferSerializer<'a> {
 /// `.clear()` method which in turn gives you a fresh `Buffer` (also
 /// reusing the original allocation again). This buffer can then be used to
 /// shape more text.
-pub struct Buffer(NonNull<ffi::hb_buffer_t>);
+pub struct Buffer(*mut ffi::hb_buffer_t);
 
 impl Buffer {
     /// Creates a new empty `Buffer`.
     pub fn new() -> Buffer {
-        unsafe {
-            let buffer = ffi::hb_buffer_create();
-            Buffer(NonNull::new_unchecked(buffer as *mut _))
-        }
+        unsafe { Buffer(ffi::hb_buffer_create()) }
     }
 
     pub(crate) fn as_ptr(&self) -> *mut ffi::hb_buffer_t {
-        self.0.as_ptr()
+        self.0
     }
 
     /// Returns the length of the data of the buffer.
@@ -227,19 +223,18 @@ impl Buffer {
         Direction::from_raw(unsafe { ffi::hb_buffer_get_direction(self.as_ptr()) })
     }
 
-    /// Set the script from an ISO15924 tag.
-    pub fn set_script(&mut self, script: Tag) {
+    /// Set script.
+    pub fn set_script(&mut self, script: Script) {
         unsafe {
-            let script = ffi::hb_script_from_iso15924_tag(script.0);
-            ffi::hb_buffer_set_script(self.as_ptr(), script);
+            ffi::hb_buffer_set_script(self.as_ptr(), script.tag().as_u32());
         }
     }
 
-    /// Get the ISO15924 script tag.
-    pub fn get_script(&self) -> Tag {
+    /// Get buffer's script.
+    pub fn get_script(&self) -> Script {
         unsafe {
             let tag = ffi::hb_buffer_get_script(self.as_ptr());
-            Tag(ffi::hb_script_to_iso15924_tag(tag))
+            Script::from_iso15924_tag(Tag::from(tag)).expect("hafbuzz should return a valid script")
         }
     }
 
@@ -315,7 +310,7 @@ impl std::default::Default for Buffer {
 
 impl Drop for Buffer {
     fn drop(&mut self) {
-        unsafe { ffi::hb_buffer_destroy(self.0.as_ptr()); }
+        unsafe { ffi::hb_buffer_destroy(self.0); }
     }
 }
 

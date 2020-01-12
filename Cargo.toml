@@ -13,6 +13,7 @@ repository = "https://github.com/RazrFalcon/rustybuzz"
 
 [dependencies]
 bitflags = "1"
+unicode-script = "0.5.0"
 
 [dev-dependencies]
 pico-args = "0.3.1"

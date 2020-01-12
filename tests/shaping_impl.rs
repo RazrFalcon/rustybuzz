@@ -93,7 +93,7 @@ pub fn shape(font: &str, text: &str, options: &str) -> String {
     }
 
     if let Some(script) = args.script {
-        buffer.set_script(script.to_iso15924_tag());
+        buffer.set_script(script);
     }
 
     buffer.set_cluster_level(args.cluster_level);

@@ -12,7 +12,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Most of the shaping tests. We store only font files.
 - `hb-shape` executable. Most flags are supported.
 - `hb_shape_list_shapers`, which returns a static, fixed list now.
-- `is_default_ignorable`.
+- `is_default_ignorable`
+- `hb_script_from_iso15924_tag`
+- `hb_script_to_iso15924_tag`
+- `hb_script_from_string`
+- `hb_ucd_script`
 
 ### Changed
 - Replace some header guards with `#pragma once`, otherwise Qt Creator unable to parse them.

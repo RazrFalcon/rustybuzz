@@ -207,7 +207,7 @@ fn main() {
     }
 
     if let Some(script) = args.script {
-        buffer.set_script(script.to_iso15924_tag());
+        buffer.set_script(script);
     }
 
     if args.cluster_level < 2 {
