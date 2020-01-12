@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `is_default_ignorable`.
 
 ### Changed
-- HarfBuzz sources reformatted to 4 spaces.
 - Replace some header guards with `#pragma once`, otherwise Qt Creator unable to parse them.
 
 ### Removed
