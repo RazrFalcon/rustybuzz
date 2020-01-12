@@ -80,7 +80,7 @@ decompose_unicode (const hb_ot_shape_normalize_context_t *c,
 		   hb_codepoint_t *a,
 		   hb_codepoint_t *b)
 {
-  return (bool) c->unicode->decompose (ab, a, b);
+  return (bool) hb_ucd_decompose (ab, a, b);
 }
 
 static bool
@@ -89,7 +89,7 @@ compose_unicode (const hb_ot_shape_normalize_context_t *c,
 		 hb_codepoint_t  b,
 		 hb_codepoint_t *ab)
 {
-  return (bool) c->unicode->compose (a, b, ab);
+  return (bool) hb_ucd_compose (a, b, ab);
 }
 
 static inline void
@@ -191,8 +191,8 @@ decompose_current_character (const hb_ot_shape_normalize_context_t *c, bool shor
   if (_hb_glyph_info_is_unicode_space (&buffer->cur()))
   {
     hb_codepoint_t space_glyph;
-    hb_unicode_funcs_t::space_t space_type = buffer->unicode->space_fallback_type (u);
-    if (space_type != hb_unicode_funcs_t::NOT_SPACE && c->font->get_nominal_glyph (0x0020u, &space_glyph))
+    space_t space_type = hb_ucd_space_fallback_type (u);
+    if (space_type != NOT_SPACE && c->font->get_nominal_glyph (0x0020u, &space_glyph))
     {
       _hb_glyph_info_set_unicode_space_fallback_type (&buffer->cur(), space_type);
       next_char (buffer, space_glyph);
@@ -225,7 +225,7 @@ handle_variation_selector_cluster (const hb_ot_shape_normalize_context_t *c,
   hb_buffer_t * const buffer = c->buffer;
   hb_font_t * const font = c->font;
   for (; buffer->idx < end - 1 && buffer->successful;) {
-    if (unlikely (buffer->unicode->is_variation_selector (buffer->cur(+1).codepoint))) {
+    if (unlikely (hb_ucd_is_variation_selector (buffer->cur(+1).codepoint))) {
       if (font->get_variation_glyph (buffer->cur().codepoint, buffer->cur(+1).codepoint, &buffer->cur().glyph_index()))
       {
 	hb_codepoint_t unicode = buffer->cur().codepoint;
@@ -240,7 +240,7 @@ handle_variation_selector_cluster (const hb_ot_shape_normalize_context_t *c,
 	buffer->next_glyph ();
       }
       /* Skip any further variation selectors. */
-      while (buffer->idx < end && unlikely (buffer->unicode->is_variation_selector (buffer->cur().codepoint)))
+      while (buffer->idx < end && unlikely (hb_ucd_is_variation_selector (buffer->cur().codepoint)))
       {
 	set_glyph (buffer->cur(), font);
 	buffer->next_glyph ();
@@ -261,7 +261,7 @@ decompose_multi_char_cluster (const hb_ot_shape_normalize_context_t *c, unsigned
 {
   hb_buffer_t * const buffer = c->buffer;
   for (unsigned int i = buffer->idx; i < end && buffer->successful; i++)
-    if (unlikely (buffer->unicode->is_variation_selector (buffer->info[i].codepoint))) {
+    if (unlikely (hb_ucd_is_variation_selector (buffer->info[i].codepoint))) {
       handle_variation_selector_cluster (c, end, short_circuit);
       return;
     }
@@ -305,7 +305,6 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
     plan,
     buffer,
     font,
-    buffer->unicode,
     plan->shaper->decompose ? plan->shaper->decompose : decompose_unicode,
     plan->shaper->compose   ? plan->shaper->compose   : compose_unicode
   };

@@ -17,37 +17,30 @@
 #include "hb.hh"
 #include "hb-unicode.hh"
 #include "hb-machinery.hh"
+#include "hb-ucd.hh"
 
 #include "hb-ucd-table.hh"
 
-static hb_unicode_combining_class_t
-hb_ucd_combining_class (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-			hb_codepoint_t unicode,
-			void *user_data HB_UNUSED)
+hb_unicode_combining_class_t
+hb_ucd_combining_class (hb_codepoint_t unicode)
 {
   return (hb_unicode_combining_class_t) _hb_ucd_ccc (unicode);
 }
 
-static hb_unicode_general_category_t
-hb_ucd_general_category (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-			 hb_codepoint_t unicode,
-			 void *user_data HB_UNUSED)
+hb_unicode_general_category_t
+hb_ucd_general_category (hb_codepoint_t unicode)
 {
   return (hb_unicode_general_category_t) _hb_ucd_gc (unicode);
 }
 
-static hb_codepoint_t
-hb_ucd_mirroring (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-		  hb_codepoint_t unicode,
-		  void *user_data HB_UNUSED)
+hb_codepoint_t
+hb_ucd_mirroring (hb_codepoint_t unicode)
 {
   return unicode + _hb_ucd_bmg (unicode);
 }
 
-static hb_script_t
-hb_ucd_script (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-	       hb_codepoint_t unicode,
-	       void *user_data HB_UNUSED)
+hb_script_t
+hb_ucd_script (hb_codepoint_t unicode)
 {
   return _hb_ucd_sc_map[_hb_ucd_sc (unicode)];
 }
@@ -124,10 +117,8 @@ _cmp_pair_11_7_14 (const void *_key, const void *_item)
   return a < b ? -1 : a > b ? +1 : 0;
 }
 
-static hb_bool_t
-hb_ucd_compose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-		hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab,
-		void *user_data HB_UNUSED)
+hb_bool_t
+hb_ucd_compose (hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab)
 {
   if (_hb_ucd_compose_hangul (a, b, ab)) return true;
 
@@ -159,10 +150,8 @@ hb_ucd_compose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
   return true;
 }
 
-static hb_bool_t
-hb_ucd_decompose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-		  hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b,
-		  void *user_data HB_UNUSED)
+hb_bool_t
+hb_ucd_decompose (hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b)
 {
   if (_hb_ucd_decompose_hangul (ab, a, b)) return true;
 
@@ -198,46 +187,4 @@ hb_ucd_decompose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
   *a = HB_CODEPOINT_DECODE3_1 (v);
   *b = HB_CODEPOINT_DECODE3_2 (v);
   return true;
-}
-
-
-#if HB_USE_ATEXIT
-static void free_static_ucd_funcs ();
-#endif
-
-static struct hb_ucd_unicode_funcs_lazy_loader_t : hb_unicode_funcs_lazy_loader_t<hb_ucd_unicode_funcs_lazy_loader_t>
-{
-  static hb_unicode_funcs_t *create ()
-  {
-    hb_unicode_funcs_t *funcs = hb_unicode_funcs_create (nullptr);
-
-    hb_unicode_funcs_set_combining_class_func (funcs, hb_ucd_combining_class, nullptr, nullptr);
-    hb_unicode_funcs_set_general_category_func (funcs, hb_ucd_general_category, nullptr, nullptr);
-    hb_unicode_funcs_set_mirroring_func (funcs, hb_ucd_mirroring, nullptr, nullptr);
-    hb_unicode_funcs_set_script_func (funcs, hb_ucd_script, nullptr, nullptr);
-    hb_unicode_funcs_set_compose_func (funcs, hb_ucd_compose, nullptr, nullptr);
-    hb_unicode_funcs_set_decompose_func (funcs, hb_ucd_decompose, nullptr, nullptr);
-
-    hb_unicode_funcs_make_immutable (funcs);
-
-#if HB_USE_ATEXIT
-    atexit (free_static_ucd_funcs);
-#endif
-
-    return funcs;
-  }
-} static_ucd_funcs;
-
-#if HB_USE_ATEXIT
-static
-void free_static_ucd_funcs ()
-{
-  static_ucd_funcs.free_instance ();
-}
-#endif
-
-hb_unicode_funcs_t *
-hb_ucd_get_unicode_funcs ()
-{
-  return static_ucd_funcs.get_unconst ();
 }

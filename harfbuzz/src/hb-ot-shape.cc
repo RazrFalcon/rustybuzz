@@ -599,13 +599,12 @@ hb_ot_mirror_chars (const hb_ot_shape_context_t *c)
     return;
 
   hb_buffer_t *buffer = c->buffer;
-  hb_unicode_funcs_t *unicode = buffer->unicode;
   hb_mask_t rtlm_mask = c->plan->rtlm_mask;
 
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++) {
-    hb_codepoint_t codepoint = unicode->mirroring (info[i].codepoint);
+    hb_codepoint_t codepoint = hb_ucd_mirroring (info[i].codepoint);
     if (likely (codepoint == info[i].codepoint || !c->font->has_glyph (codepoint)))
       info[i].mask |= rtlm_mask;
     else
@@ -1113,7 +1112,6 @@ hb_ot_shape_plan_collect_lookups (hb_shape_plan_t *shape_plan,
 /* TODO Move this to hb-ot-shape-normalize, make it do decompose, and make it public. */
 static void
 add_char (hb_font_t          *font,
-          hb_unicode_funcs_t *unicode,
           hb_bool_t           mirror,
           hb_codepoint_t      u,
           hb_set_t           *glyphs)
@@ -1123,7 +1121,7 @@ add_char (hb_font_t          *font,
     glyphs->add (glyph);
   if (mirror)
   {
-    hb_codepoint_t m = unicode->mirroring (u);
+    hb_codepoint_t m = hb_ucd_mirroring (u);
     if (m != u && font->get_nominal_glyph (m, &glyph))
       glyphs->add (glyph);
   }
@@ -1151,7 +1149,7 @@ hb_ot_shape_glyphs_closure (hb_font_t          *font,
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
-    add_char (font, buffer->unicode, mirror, info[i].codepoint, glyphs);
+    add_char (font, mirror, info[i].codepoint, glyphs);
 
   hb_set_t *lookups = hb_set_create ();
   hb_ot_shape_plan_collect_lookups (shape_plan, HB_OT_TAG_GSUB, lookups);

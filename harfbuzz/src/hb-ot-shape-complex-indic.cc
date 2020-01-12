@@ -1564,7 +1564,7 @@ decompose_indic (const hb_ot_shape_normalize_context_t *c,
     }
   }
 
-  return (bool) c->unicode->decompose (ab, a, b);
+  return (bool) hb_ucd_decompose (ab, a, b);
 }
 
 static bool
@@ -1574,13 +1574,13 @@ compose_indic (const hb_ot_shape_normalize_context_t *c,
 	       hb_codepoint_t *ab)
 {
   /* Avoid recomposing split matras. */
-  if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK (c->unicode->general_category (a)))
+  if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK (hb_ucd_general_category (a)))
     return false;
 
   /* Composition-exclusion exceptions that we want to recompose. */
   if (a == 0x09AFu && b == 0x09BCu) { *ab = 0x09DFu; return true; }
 
-  return (bool) c->unicode->compose (a, b, ab);
+  return (bool) hb_ucd_compose (a, b, ab);
 }
 
 

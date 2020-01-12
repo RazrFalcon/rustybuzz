@@ -32,6 +32,7 @@
 #define HB_UNICODE_HH
 
 #include "hb.hh"
+#include "hb-ucd.hh"
 
 
 extern HB_INTERNAL const uint8_t _hb_modified_combining_class[256];
@@ -40,150 +41,82 @@ extern "C" {
   hb_bool_t rb_is_default_ignorable (hb_codepoint_t ch);
 }
 
-/*
- * hb_unicode_funcs_t
- */
-
-#define HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS \
-  HB_UNICODE_FUNC_IMPLEMENT (combining_class) \
-  HB_UNICODE_FUNC_IMPLEMENT (general_category) \
-  HB_UNICODE_FUNC_IMPLEMENT (mirroring) \
-  HB_UNICODE_FUNC_IMPLEMENT (script) \
-  HB_UNICODE_FUNC_IMPLEMENT (compose) \
-  HB_UNICODE_FUNC_IMPLEMENT (decompose) \
-  /* ^--- Add new callbacks here */
-
-/* Simple callbacks are those taking a hb_codepoint_t and returning a hb_codepoint_t */
-#define HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE \
-  HB_UNICODE_FUNC_IMPLEMENT (hb_unicode_combining_class_t, combining_class) \
-  HB_UNICODE_FUNC_IMPLEMENT (hb_unicode_general_category_t, general_category) \
-  HB_UNICODE_FUNC_IMPLEMENT (hb_codepoint_t, mirroring) \
-  HB_UNICODE_FUNC_IMPLEMENT (hb_script_t, script) \
-  /* ^--- Add new simple callbacks here */
-
-struct hb_unicode_funcs_t
+inline unsigned int
+hb_ucd_modified_combining_class (hb_codepoint_t u)
 {
-  hb_object_header_t header;
+  /* XXX This hack belongs to the USE shaper (for Tai Tham):
+   * Reorder SAKOT to ensure it comes after any tone marks. */
+  if (unlikely (u == 0x1A60u)) return 254;
 
-  hb_unicode_funcs_t *parent;
+  /* XXX This hack belongs to the Tibetan shaper:
+   * Reorder PADMA to ensure it comes after any vowel marks. */
+  if (unlikely (u == 0x0FC6u)) return 254;
+  /* Reorder TSA -PHRU to reorder before U+0F74 */
+  if (unlikely (u == 0x0F39u)) return 127;
 
-#define HB_UNICODE_FUNC_IMPLEMENT(return_type, name) \
-  return_type name (hb_codepoint_t unicode) { return func.name (this, unicode, user_data.name); }
-HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE
-#undef HB_UNICODE_FUNC_IMPLEMENT
+  return _hb_modified_combining_class[hb_ucd_combining_class (u)];
+}
 
-  hb_bool_t compose (hb_codepoint_t a, hb_codepoint_t b,
-		     hb_codepoint_t *ab)
-  {
-    *ab = 0;
-    if (unlikely (!a || !b)) return false;
-    return func.compose (this, a, b, ab, user_data.compose);
-  }
+inline hb_bool_t
+hb_ucd_is_variation_selector (hb_codepoint_t unicode)
+{
+  /* U+180B..180D MONGOLIAN FREE VARIATION SELECTORs are handled in the
+   * Arabic shaper.  No need to match them here. */
+  return unlikely (hb_in_ranges<hb_codepoint_t> (unicode,
+  					   0xFE00u, 0xFE0Fu, /* VARIATION SELECTOR-1..16 */
+  					   0xE0100u, 0xE01EFu));  /* VARIATION SELECTOR-17..256 */
+}
 
-  hb_bool_t decompose (hb_codepoint_t ab,
-		       hb_codepoint_t *a, hb_codepoint_t *b)
-  {
-    *a = ab; *b = 0;
-    return func.decompose (this, ab, a, b, user_data.decompose);
-  }
+inline hb_bool_t
+hb_ucd_is_default_ignorable (hb_codepoint_t ch)
+{
+  return rb_is_default_ignorable (ch);
+}
 
-  unsigned int
-  modified_combining_class (hb_codepoint_t u)
-  {
-    /* XXX This hack belongs to the USE shaper (for Tai Tham):
-     * Reorder SAKOT to ensure it comes after any tone marks. */
-    if (unlikely (u == 0x1A60u)) return 254;
-
-    /* XXX This hack belongs to the Tibetan shaper:
-     * Reorder PADMA to ensure it comes after any vowel marks. */
-    if (unlikely (u == 0x0FC6u)) return 254;
-    /* Reorder TSA -PHRU to reorder before U+0F74 */
-    if (unlikely (u == 0x0F39u)) return 127;
-
-    return _hb_modified_combining_class[combining_class (u)];
-  }
-
-  static hb_bool_t
-  is_variation_selector (hb_codepoint_t unicode)
-  {
-    /* U+180B..180D MONGOLIAN FREE VARIATION SELECTORs are handled in the
-     * Arabic shaper.  No need to match them here. */
-    return unlikely (hb_in_ranges<hb_codepoint_t> (unicode,
-						   0xFE00u, 0xFE0Fu, /* VARIATION SELECTOR-1..16 */
-						   0xE0100u, 0xE01EFu));  /* VARIATION SELECTOR-17..256 */
-  }
-  
-  static hb_bool_t
-  is_default_ignorable (hb_codepoint_t ch)
-  {
-    return rb_is_default_ignorable (ch);
-  }
-
-  /* Space estimates based on:
-   * https://unicode.org/charts/PDF/U2000.pdf
-   * https://docs.microsoft.com/en-us/typography/develop/character-design-standards/whitespace
-   */
-  enum space_t {
-    NOT_SPACE = 0,
-    SPACE_EM   = 1,
-    SPACE_EM_2 = 2,
-    SPACE_EM_3 = 3,
-    SPACE_EM_4 = 4,
-    SPACE_EM_5 = 5,
-    SPACE_EM_6 = 6,
-    SPACE_EM_16 = 16,
-    SPACE_4_EM_18,	/* 4/18th of an EM! */
-    SPACE,
-    SPACE_FIGURE,
-    SPACE_PUNCTUATION,
-    SPACE_NARROW,
-  };
-  static space_t
-  space_fallback_type (hb_codepoint_t u)
-  {
-    switch (u)
-    {
-      /* All GC=Zs chars that can use a fallback. */
-      default:	    return NOT_SPACE;	/* U+1680 OGHAM SPACE MARK */
-      case 0x0020u: return SPACE;	/* U+0020 SPACE */
-      case 0x00A0u: return SPACE;	/* U+00A0 NO-BREAK SPACE */
-      case 0x2000u: return SPACE_EM_2;	/* U+2000 EN QUAD */
-      case 0x2001u: return SPACE_EM;	/* U+2001 EM QUAD */
-      case 0x2002u: return SPACE_EM_2;	/* U+2002 EN SPACE */
-      case 0x2003u: return SPACE_EM;	/* U+2003 EM SPACE */
-      case 0x2004u: return SPACE_EM_3;	/* U+2004 THREE-PER-EM SPACE */
-      case 0x2005u: return SPACE_EM_4;	/* U+2005 FOUR-PER-EM SPACE */
-      case 0x2006u: return SPACE_EM_6;	/* U+2006 SIX-PER-EM SPACE */
-      case 0x2007u: return SPACE_FIGURE;	/* U+2007 FIGURE SPACE */
-      case 0x2008u: return SPACE_PUNCTUATION;	/* U+2008 PUNCTUATION SPACE */
-      case 0x2009u: return SPACE_EM_5;		/* U+2009 THIN SPACE */
-      case 0x200Au: return SPACE_EM_16;		/* U+200A HAIR SPACE */
-      case 0x202Fu: return SPACE_NARROW;	/* U+202F NARROW NO-BREAK SPACE */
-      case 0x205Fu: return SPACE_4_EM_18;	/* U+205F MEDIUM MATHEMATICAL SPACE */
-      case 0x3000u: return SPACE_EM;		/* U+3000 IDEOGRAPHIC SPACE */
-    }
-  }
-
-  struct {
-#define HB_UNICODE_FUNC_IMPLEMENT(name) hb_unicode_##name##_func_t name;
-    HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS
-#undef HB_UNICODE_FUNC_IMPLEMENT
-  } func;
-
-  struct {
-#define HB_UNICODE_FUNC_IMPLEMENT(name) void *name;
-    HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS
-#undef HB_UNICODE_FUNC_IMPLEMENT
-  } user_data;
-
-  struct {
-#define HB_UNICODE_FUNC_IMPLEMENT(name) hb_destroy_func_t name;
-    HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS
-#undef HB_UNICODE_FUNC_IMPLEMENT
-  } destroy;
+/* Space estimates based on:
+ * https://unicode.org/charts/PDF/U2000.pdf
+ * https://docs.microsoft.com/en-us/typography/develop/character-design-standards/whitespace
+ */
+enum space_t {
+  NOT_SPACE = 0,
+  SPACE_EM   = 1,
+  SPACE_EM_2 = 2,
+  SPACE_EM_3 = 3,
+  SPACE_EM_4 = 4,
+  SPACE_EM_5 = 5,
+  SPACE_EM_6 = 6,
+  SPACE_EM_16 = 16,
+  SPACE_4_EM_18,	/* 4/18th of an EM! */
+  SPACE,
+  SPACE_FIGURE,
+  SPACE_PUNCTUATION,
+  SPACE_NARROW,
 };
-DECLARE_NULL_INSTANCE (hb_unicode_funcs_t);
-
+inline space_t
+hb_ucd_space_fallback_type (hb_codepoint_t u)
+{
+  switch (u)
+  {
+    /* All GC=Zs chars that can use a fallback. */
+    default:	    return NOT_SPACE;	/* U+1680 OGHAM SPACE MARK */
+    case 0x0020u: return SPACE;	/* U+0020 SPACE */
+    case 0x00A0u: return SPACE;	/* U+00A0 NO-BREAK SPACE */
+    case 0x2000u: return SPACE_EM_2;	/* U+2000 EN QUAD */
+    case 0x2001u: return SPACE_EM;	/* U+2001 EM QUAD */
+    case 0x2002u: return SPACE_EM_2;	/* U+2002 EN SPACE */
+    case 0x2003u: return SPACE_EM;	/* U+2003 EM SPACE */
+    case 0x2004u: return SPACE_EM_3;	/* U+2004 THREE-PER-EM SPACE */
+    case 0x2005u: return SPACE_EM_4;	/* U+2005 FOUR-PER-EM SPACE */
+    case 0x2006u: return SPACE_EM_6;	/* U+2006 SIX-PER-EM SPACE */
+    case 0x2007u: return SPACE_FIGURE;	/* U+2007 FIGURE SPACE */
+    case 0x2008u: return SPACE_PUNCTUATION;	/* U+2008 PUNCTUATION SPACE */
+    case 0x2009u: return SPACE_EM_5;		/* U+2009 THIN SPACE */
+    case 0x200Au: return SPACE_EM_16;		/* U+200A HAIR SPACE */
+    case 0x202Fu: return SPACE_NARROW;	/* U+202F NARROW NO-BREAK SPACE */
+    case 0x205Fu: return SPACE_4_EM_18;	/* U+205F MEDIUM MATHEMATICAL SPACE */
+    case 0x3000u: return SPACE_EM;		/* U+3000 IDEOGRAPHIC SPACE */
+  }
+}
 
 /*
  * Modified combining marks
@@ -311,9 +244,6 @@ struct hb_unicode_range_t
 
 HB_INTERNAL bool
 _hb_unicode_is_emoji_Extended_Pictographic (hb_codepoint_t cp);
-
-
-extern "C" HB_INTERNAL hb_unicode_funcs_t *hb_ucd_get_unicode_funcs ();
 
 
 #endif /* HB_UNICODE_HH */

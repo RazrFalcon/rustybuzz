@@ -72,7 +72,7 @@ compose_hebrew (const hb_ot_shape_normalize_context_t *c,
     0xFB4Au /* TAV */
   };
 
-  bool found = (bool) c->unicode->compose (a, b, ab);
+  bool found = (bool) hb_ucd_compose (a, b, ab);
 
 #ifdef HB_NO_OT_SHAPE_COMPLEX_HEBREW_FALLBACK
   return found;

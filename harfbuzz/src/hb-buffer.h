@@ -218,14 +218,6 @@ hb_buffer_set_content_type (hb_buffer_t              *buffer,
 HB_EXTERN hb_buffer_content_type_t
 hb_buffer_get_content_type (hb_buffer_t *buffer);
 
-
-HB_EXTERN void
-hb_buffer_set_unicode_funcs (hb_buffer_t        *buffer,
-			     hb_unicode_funcs_t *unicode_funcs);
-
-HB_EXTERN hb_unicode_funcs_t *
-hb_buffer_get_unicode_funcs (hb_buffer_t        *buffer);
-
 HB_EXTERN void
 hb_buffer_set_direction (hb_buffer_t    *buffer,
 			 hb_direction_t  direction);

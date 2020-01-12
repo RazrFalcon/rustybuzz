@@ -220,8 +220,6 @@ hb_buffer_t::reset ()
   if (unlikely (hb_object_is_immutable (this)))
     return;
 
-  hb_unicode_funcs_destroy (unicode);
-  unicode = hb_unicode_funcs_reference (hb_unicode_funcs_get_default ());
   flags = HB_BUFFER_FLAG_DEFAULT;
   replacement = HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT;
   invisible = 0;
@@ -652,7 +650,7 @@ hb_buffer_t::guess_segment_properties ()
   /* If script is set to INVALID, guess from buffer contents */
   if (props.script == HB_SCRIPT_INVALID) {
     for (unsigned int i = 0; i < len; i++) {
-      hb_script_t script = unicode->script (info[i].codepoint);
+      hb_script_t script = hb_ucd_script (info[i].codepoint);
       if (likely (script != HB_SCRIPT_COMMON &&
                   script != HB_SCRIPT_INHERITED &&
                   script != HB_SCRIPT_UNKNOWN)) {
@@ -683,7 +681,6 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
 {
   HB_OBJECT_HEADER_STATIC,
 
-  const_cast<hb_unicode_funcs_t *> (&_hb_Null_hb_unicode_funcs_t),
   HB_BUFFER_FLAG_DEFAULT,
   HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
   HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT,
@@ -780,8 +777,6 @@ hb_buffer_destroy (hb_buffer_t *buffer)
 {
   if (!hb_object_destroy (buffer)) return;
 
-  hb_unicode_funcs_destroy (buffer->unicode);
-
   free (buffer->info);
   free (buffer->pos);
 #ifndef HB_NO_BUFFER_MESSAGE
@@ -867,47 +862,6 @@ hb_buffer_content_type_t
 hb_buffer_get_content_type (hb_buffer_t *buffer)
 {
   return buffer->content_type;
-}
-
-
-/**
- * hb_buffer_set_unicode_funcs:
- * @buffer: an #hb_buffer_t.
- * @unicode_funcs:
- *
- *
- *
- * Since: 0.9.2
- **/
-void
-hb_buffer_set_unicode_funcs (hb_buffer_t        *buffer,
-                             hb_unicode_funcs_t *unicode_funcs)
-{
-  if (unlikely (hb_object_is_immutable (buffer)))
-    return;
-
-  if (!unicode_funcs)
-    unicode_funcs = hb_unicode_funcs_get_default ();
-
-  hb_unicode_funcs_reference (unicode_funcs);
-  hb_unicode_funcs_destroy (buffer->unicode);
-  buffer->unicode = unicode_funcs;
-}
-
-/**
- * hb_buffer_get_unicode_funcs:
- * @buffer: an #hb_buffer_t.
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_unicode_funcs_t *
-hb_buffer_get_unicode_funcs (hb_buffer_t        *buffer)
-{
-  return buffer->unicode;
 }
 
 /**
