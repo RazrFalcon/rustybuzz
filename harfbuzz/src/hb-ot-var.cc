@@ -77,38 +77,6 @@ hb_ot_var_get_axis_count (hb_face_t *face)
   return face->table.fvar->get_axis_count ();
 }
 
-#ifndef HB_DISABLE_DEPRECATED
-/**
- * hb_ot_var_get_axes:
- *
- * Since: 1.4.2
- * Deprecated: 2.2.0
- **/
-unsigned int
-hb_ot_var_get_axes (hb_face_t        *face,
-		    unsigned int      start_offset,
-		    unsigned int     *axes_count /* IN/OUT */,
-		    hb_ot_var_axis_t *axes_array /* OUT */)
-{
-  return face->table.fvar->get_axes_deprecated (start_offset, axes_count, axes_array);
-}
-
-/**
- * hb_ot_var_find_axis:
- *
- * Since: 1.4.2
- * Deprecated: 2.2.0
- **/
-hb_bool_t
-hb_ot_var_find_axis (hb_face_t        *face,
-		     hb_tag_t          axis_tag,
-		     unsigned int     *axis_index,
-		     hb_ot_var_axis_t *axis_info)
-{
-  return face->table.fvar->find_axis_deprecated (axis_tag, axis_index, axis_info);
-}
-#endif
-
 /**
  * hb_ot_var_get_axis_infos:
  *

@@ -459,59 +459,6 @@ _hb_ot_shape_fallback_mark_position (const hb_ot_shape_plan_t *plan,
   position_cluster (plan, font, buffer, start, count, adjust_offsets_when_zeroing);
 }
 
-
-#ifndef HB_DISABLE_DEPRECATED
-struct hb_ot_shape_fallback_kern_driver_t
-{
-  hb_ot_shape_fallback_kern_driver_t (hb_font_t   *font_,
-				      hb_buffer_t *buffer) :
-    font (font_), direction (buffer->props.direction) {}
-
-  hb_position_t get_kerning (hb_codepoint_t first, hb_codepoint_t second) const
-  {
-    hb_position_t kern = 0;
-    font->get_glyph_kerning_for_direction (first, second,
-					   direction,
-					   &kern, &kern);
-    return kern;
-  }
-
-  hb_font_t *font;
-  hb_direction_t direction;
-};
-#endif
-
-/* Performs font-assisted kerning. */
-void
-_hb_ot_shape_fallback_kern (const hb_ot_shape_plan_t *plan,
-			    hb_font_t *font,
-			    hb_buffer_t *buffer)
-{
-#ifdef HB_NO_OT_SHAPE_FALLBACK
-  return;
-#endif
-
-#ifndef HB_DISABLE_DEPRECATED
-  if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction) ?
-      !font->has_glyph_h_kerning_func () :
-      !font->has_glyph_v_kerning_func ())
-    return;
-
-  bool reverse = HB_DIRECTION_IS_BACKWARD (buffer->props.direction);
-
-  if (reverse)
-    buffer->reverse ();
-
-  hb_ot_shape_fallback_kern_driver_t driver (font, buffer);
-  OT::hb_kern_machine_t<hb_ot_shape_fallback_kern_driver_t> machine (driver);
-  machine.kern (font, buffer, plan->kern_mask, false);
-
-  if (reverse)
-    buffer->reverse ();
-#endif
-}
-
-
 /* Adjusts width of various spaces. */
 void
 _hb_ot_shape_fallback_spaces (const hb_ot_shape_plan_t *plan HB_UNUSED,

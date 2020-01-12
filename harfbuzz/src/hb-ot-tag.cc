@@ -115,20 +115,6 @@ hb_ot_new_tag_to_script (hb_tag_t tag)
   return HB_SCRIPT_UNKNOWN;
 }
 
-#ifndef HB_DISABLE_DEPRECATED
-void
-hb_ot_tags_from_script (hb_script_t  script,
-			hb_tag_t    *script_tag_1,
-			hb_tag_t    *script_tag_2)
-{
-  unsigned int count = 2;
-  hb_tag_t tags[2];
-  hb_ot_tags_from_script_and_language (script, HB_LANGUAGE_INVALID, &count, tags, nullptr, nullptr);
-  *script_tag_1 = count > 0 ? tags[0] : HB_OT_TAG_DEFAULT_SCRIPT;
-  *script_tag_2 = count > 1 ? tags[1] : HB_OT_TAG_DEFAULT_SCRIPT;
-}
-#endif
-
 /*
  * Complete list at:
  * https://docs.microsoft.com/en-us/typography/opentype/spec/scripttags
@@ -235,17 +221,6 @@ struct LangTag
 /*{"??",	{HB_TAG('N','G','R',' ')}},*/	/* Nagari */
 /*{"??",	{HB_TAG('Y','I','C',' ')}},*/	/* Yi Classic */
 /*{"zh?",	{HB_TAG('Z','H','P',' ')}},*/	/* Chinese Phonetic */
-
-#ifndef HB_DISABLE_DEPRECATED
-hb_tag_t
-hb_ot_tag_from_language (hb_language_t language)
-{
-  unsigned int count = 1;
-  hb_tag_t tags[1];
-  hb_ot_tags_from_script_and_language (HB_SCRIPT_UNKNOWN, language, nullptr, nullptr, &count, tags);
-  return count > 0 ? tags[0] : HB_OT_TAG_DEFAULT_LANGUAGE;
-}
-#endif
 
 static void
 hb_ot_tags_from_language (const char   *lang_str,

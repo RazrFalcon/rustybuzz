@@ -114,20 +114,6 @@ struct fvar
 
   unsigned int get_axis_count () const { return axisCount; }
 
-#ifndef HB_DISABLE_DEPRECATED
-  void get_axis_deprecated (unsigned int axis_index,
-				   hb_ot_var_axis_t *info) const
-  {
-    const AxisRecord &axis = get_axes ()[axis_index];
-    info->tag = axis.axisTag;
-    info->name_id =  axis.axisNameID;
-    info->default_value = axis.defaultValue / 65536.f;
-    /* Ensure order, to simplify client math. */
-    info->min_value = hb_min (info->default_value, axis.minValue / 65536.f);
-    info->max_value = hb_max (info->default_value, axis.maxValue / 65536.f);
-  }
-#endif
-
   void get_axis_info (unsigned int axis_index,
 		      hb_ot_var_axis_info_t *info) const
   {
@@ -142,30 +128,6 @@ struct fvar
     info->max_value = hb_max (info->default_value, axis.maxValue / 65536.f);
     info->reserved = 0;
   }
-
-#ifndef HB_DISABLE_DEPRECATED
-  unsigned int get_axes_deprecated (unsigned int      start_offset,
-				    unsigned int     *axes_count /* IN/OUT */,
-				    hb_ot_var_axis_t *axes_array /* OUT */) const
-  {
-    if (axes_count)
-    {
-      /* TODO Rewrite as hb_array_t<>::sub-array() */
-      unsigned int count = axisCount;
-      start_offset = hb_min (start_offset, count);
-
-      count -= start_offset;
-      axes_array += start_offset;
-
-      count = hb_min (count, *axes_count);
-      *axes_count = count;
-
-      for (unsigned int i = 0; i < count; i++)
-	get_axis_deprecated (start_offset + i, axes_array + i);
-    }
-    return axisCount;
-  }
-#endif
 
   unsigned int get_axis_infos (unsigned int           start_offset,
 			       unsigned int          *axes_count /* IN/OUT */,
@@ -188,27 +150,6 @@ struct fvar
     }
     return axisCount;
   }
-
-#ifndef HB_DISABLE_DEPRECATED
-  bool find_axis_deprecated (hb_tag_t tag,
-			     unsigned int *axis_index,
-			     hb_ot_var_axis_t *info) const
-  {
-    const AxisRecord *axes = get_axes ();
-    unsigned int count = get_axis_count ();
-    for (unsigned int i = 0; i < count; i++)
-      if (axes[i].axisTag == tag)
-      {
-	if (axis_index)
-	  *axis_index = i;
-	get_axis_deprecated (i, info);
-	return true;
-      }
-    if (axis_index)
-      *axis_index = HB_OT_VAR_NO_AXIS_INDEX;
-    return false;
-  }
-#endif
 
   bool find_axis_info (hb_tag_t tag,
 		       hb_ot_var_axis_info_t *info) const

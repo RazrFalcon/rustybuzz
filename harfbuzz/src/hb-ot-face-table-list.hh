@@ -74,11 +74,9 @@ HB_OT_ACCELERATOR (OT, vmtx)
 HB_OT_ACCELERATOR (OT, glyf)
 
 /* CFF outlines. */
-#ifndef HB_NO_CFF
 HB_OT_ACCELERATOR (OT, cff1)
 HB_OT_ACCELERATOR (OT, cff2)
 HB_OT_TABLE (OT, VORG)
-#endif
 
 /* OpenType variations. */
 #ifndef HB_NO_VAR

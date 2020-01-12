@@ -515,30 +515,6 @@ hb_ot_layout_table_find_script (hb_face_t    *face,
   return false;
 }
 
-#ifndef HB_DISABLE_DEPRECATED
-/**
- * hb_ot_layout_table_choose_script:
- * @face: #hb_face_t to work upon
- * @table_tag: HB_OT_TAG_GSUB or HB_OT_TAG_GPOS
- * @script_tags: Array of #hb_tag_t script tags
- * @script_index: (out): The index of the requested script tag
- * @chosen_script: (out): #hb_tag_t of the script tag requested
- *
- * Deprecated since 2.0.0
- **/
-hb_bool_t
-hb_ot_layout_table_choose_script (hb_face_t      *face,
-				  hb_tag_t        table_tag,
-				  const hb_tag_t *script_tags,
-				  unsigned int   *script_index  /* OUT */,
-				  hb_tag_t       *chosen_script /* OUT */)
-{
-  const hb_tag_t *t;
-  for (t = script_tags; *t; t++);
-  return hb_ot_layout_table_select_script (face, table_tag, t - script_tags, script_tags, script_index, chosen_script);
-}
-#endif
-
 /**
  * hb_ot_layout_table_select_script:
  * @face: #hb_face_t to work upon
@@ -687,40 +663,6 @@ hb_ot_layout_script_get_language_tags (hb_face_t    *face,
 
   return s.get_lang_sys_tags (start_offset, language_count, language_tags);
 }
-
-
-#ifndef HB_DISABLE_DEPRECATED
-/**
- * hb_ot_layout_script_find_language:
- * @face: #hb_face_t to work upon
- * @table_tag: HB_OT_TAG_GSUB or HB_OT_TAG_GPOS
- * @script_index: The index of the requested script tag
- * @language_tag: The #hb_tag_t of the requested language
- * @language_index: The index of the requested language
- *
- * Fetches the index of a given language tag in the specified face's GSUB table
- * or GPOS table, underneath the specified script tag.
- *
- * Return value: true if the language tag is found, false otherwise
- *
- * Since: ??
- * Deprecated: ??
- **/
-hb_bool_t
-hb_ot_layout_script_find_language (hb_face_t    *face,
-				   hb_tag_t      table_tag,
-				   unsigned int  script_index,
-				   hb_tag_t      language_tag,
-				   unsigned int *language_index)
-{
-  return hb_ot_layout_script_select_language (face,
-					      table_tag,
-					      script_index,
-					      1,
-					      &language_tag,
-					      language_index);
-}
-#endif
 
 
 /**

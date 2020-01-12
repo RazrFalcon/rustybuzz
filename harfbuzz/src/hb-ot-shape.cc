@@ -272,8 +272,6 @@ hb_ot_shape_plan_t::position (hb_font_t   *font,
   else if (this->apply_kern)
     hb_ot_layout_kern (this, font, buffer);
 #endif
-  else
-    _hb_ot_shape_fallback_kern (this, font, buffer);
 
 #ifndef HB_NO_AAT_SHAPE
   if (this->apply_trak)

@@ -60,16 +60,6 @@ hb_unicode_combining_class_nil (hb_unicode_funcs_t *ufuncs    HB_UNUSED,
   return HB_UNICODE_COMBINING_CLASS_NOT_REORDERED;
 }
 
-#ifndef HB_DISABLE_DEPRECATED
-static unsigned int
-hb_unicode_eastasian_width_nil (hb_unicode_funcs_t *ufuncs    HB_UNUSED,
-				hb_codepoint_t      unicode   HB_UNUSED,
-				void               *user_data HB_UNUSED)
-{
-  return 1;
-}
-#endif
-
 static hb_unicode_general_category_t
 hb_unicode_general_category_nil (hb_unicode_funcs_t *ufuncs    HB_UNUSED,
 				 hb_codepoint_t      unicode   HB_UNUSED,
@@ -114,17 +104,6 @@ hb_unicode_decompose_nil (hb_unicode_funcs_t *ufuncs    HB_UNUSED,
   return false;
 }
 
-
-#ifndef HB_DISABLE_DEPRECATED
-static unsigned int
-hb_unicode_decompose_compatibility_nil (hb_unicode_funcs_t *ufuncs     HB_UNUSED,
-					hb_codepoint_t      u          HB_UNUSED,
-					hb_codepoint_t     *decomposed HB_UNUSED,
-					void               *user_data  HB_UNUSED)
-{
-  return 0;
-}
-#endif
 
 #if !defined(HB_NO_UNICODE_FUNCS) && defined(HAVE_GLIB)
 #include "hb-glib.h"
@@ -421,29 +400,6 @@ hb_unicode_decompose (hb_unicode_funcs_t *ufuncs,
 {
   return ufuncs->decompose (ab, a, b);
 }
-
-#ifndef HB_DISABLE_DEPRECATED
-/**
- * hb_unicode_decompose_compatibility:
- * @ufuncs: Unicode functions.
- * @u:
- * @decomposed: (out):
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- * Deprecated: 2.0.0
- **/
-unsigned int
-hb_unicode_decompose_compatibility (hb_unicode_funcs_t *ufuncs,
-				    hb_codepoint_t      u,
-				    hb_codepoint_t     *decomposed)
-{
-  return ufuncs->decompose_compatibility (u, decomposed);
-}
-#endif
 
 
 #ifndef HB_NO_OT_SHAPE
