@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use crate::{Script, CodePoint};
 
 // Default_Ignorable codepoints:
@@ -234,6 +236,45 @@ fn script_from_char(c: char) -> Script {
 #[no_mangle]
 #[allow(missing_docs)]
 pub extern "C" fn rb_ucd_script(ch: u32) -> u32 {
-    use std::convert::TryFrom;
     script_from_char(char::try_from(ch).unwrap()).tag().as_u32()
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn rb_ucd_compose(a: u32, b: u32, ab: *mut u32) -> i32 {
+    unsafe {
+        let new = unicode_normalization::char::compose(
+            char::try_from(a).unwrap(),
+            char::try_from(b).unwrap(),
+        );
+
+        if let Some(c) = new {
+            *ab = c as u32;
+            1
+        } else {
+            0
+        }
+    }
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn rb_ucd_decompose(ab: u32, a: *mut u32, b: *mut u32) -> i32 {
+    unsafe {
+        let mut is_a_set = false;
+        unicode_normalization::char::decompose_canonical(
+            char::try_from(ab).unwrap(),
+            |c| {
+                if is_a_set {
+                    *b = c as u32;
+                } else {
+                    is_a_set = true;
+                    *a = c as u32;
+                    *b = 0;
+                }
+            }
+        );
+
+        (*a != ab) as i32
+    }
 }

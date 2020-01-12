@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_script_to_iso15924_tag`
 - `hb_script_from_string`
 - `hb_ucd_script`
+- `hb_ucd_compose`
+- `hb_ucd_decompose`
 
 ### Changed
 - Replace some header guards with `#pragma once`, otherwise Qt Creator unable to parse them.

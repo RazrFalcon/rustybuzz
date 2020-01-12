@@ -15,14 +15,14 @@
  */
 
 #include "hb.hh"
-#include "hb-unicode.hh"
-#include "hb-machinery.hh"
 #include "hb-ucd.hh"
 
 #include "hb-ucd-table.hh"
 
 extern "C" {
-    hb_script_t rb_ucd_script (hb_codepoint_t unicode);
+  hb_script_t rb_ucd_script (hb_codepoint_t unicode);
+  hb_bool_t rb_ucd_decompose (hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b);
+  hb_bool_t rb_ucd_compose (hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab);
 }
 
 hb_unicode_combining_class_t
@@ -49,146 +49,17 @@ hb_ucd_script (hb_codepoint_t unicode)
   return rb_ucd_script (unicode);
 }
 
-
-#define SBASE 0xAC00u
-#define LBASE 0x1100u
-#define VBASE 0x1161u
-#define TBASE 0x11A7u
-#define SCOUNT 11172u
-#define LCOUNT 19u
-#define VCOUNT 21u
-#define TCOUNT 28u
-#define NCOUNT (VCOUNT * TCOUNT)
-
-static inline bool
-_hb_ucd_decompose_hangul (hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b)
-{
-  unsigned si = ab - SBASE;
-
-  if (si >= SCOUNT)
-    return false;
-
-  if (si % TCOUNT)
-  {
-    /* LV,T */
-    *a = SBASE + (si / TCOUNT) * TCOUNT;
-    *b = TBASE + (si % TCOUNT);
-    return true;
-  } else {
-    /* L,V */
-    *a = LBASE + (si / NCOUNT);
-    *b = VBASE + (si % NCOUNT) / TCOUNT;
-    return true;
-  }
-}
-
-static inline bool
-_hb_ucd_compose_hangul (hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab)
-{
-  if (a >= SBASE && a < (SBASE + SCOUNT) && b > TBASE && b < (TBASE + TCOUNT) &&
-    !((a - SBASE) % TCOUNT))
-  {
-    /* LV,T */
-    *ab = a + (b - TBASE);
-    return true;
-  }
-  else if (a >= LBASE && a < (LBASE + LCOUNT) && b >= VBASE && b < (VBASE + VCOUNT))
-  {
-    /* L,V */
-    int li = a - LBASE;
-    int vi = b - VBASE;
-    *ab = SBASE + li * NCOUNT + vi * TCOUNT;
-    return true;
-  }
-  else
-    return false;
-}
-
-static int
-_cmp_pair (const void *_key, const void *_item)
-{
-  uint64_t& a = * (uint64_t*) _key;
-  uint64_t b = (* (uint64_t*) _item) & HB_CODEPOINT_ENCODE3(0x1FFFFFu, 0x1FFFFFu, 0);
-
-  return a < b ? -1 : a > b ? +1 : 0;
-}
-static int
-_cmp_pair_11_7_14 (const void *_key, const void *_item)
-{
-  uint32_t& a = * (uint32_t*) _key;
-  uint32_t b = (* (uint32_t*) _item) & HB_CODEPOINT_ENCODE3_11_7_14(0x1FFFFFu, 0x1FFFFFu, 0);
-
-  return a < b ? -1 : a > b ? +1 : 0;
-}
-
 hb_bool_t
 hb_ucd_compose (hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab)
 {
-  if (_hb_ucd_compose_hangul (a, b, ab)) return true;
-
-  hb_codepoint_t u = 0;
-
-  if ((a & 0xFFFFF800u) == 0x0000u && (b & 0xFFFFFF80) == 0x0300u)
-  {
-    uint32_t k = HB_CODEPOINT_ENCODE3_11_7_14 (a, b, 0);
-    uint32_t *v = (uint32_t*) hb_bsearch (&k, _hb_ucd_dm2_u32_map,
-					  ARRAY_LENGTH (_hb_ucd_dm2_u32_map),
-					  sizeof (*_hb_ucd_dm2_u32_map),
-					  _cmp_pair_11_7_14);
-    if (likely (!v)) return false;
-    u = HB_CODEPOINT_DECODE3_11_7_14_3 (*v);
-  }
-  else
-  {
-    uint64_t k = HB_CODEPOINT_ENCODE3 (a, b, 0);
-    uint64_t *v = (uint64_t*) hb_bsearch (&k, _hb_ucd_dm2_u64_map,
-					  ARRAY_LENGTH (_hb_ucd_dm2_u64_map),
-					  sizeof (*_hb_ucd_dm2_u64_map),
-					  _cmp_pair);
-    if (likely (!v)) return false;
-    u = HB_CODEPOINT_DECODE3_3 (*v);
-  }
-
-  if (unlikely (!u)) return false;
-  *ab = u;
-  return true;
+  *ab = 0;
+  if (unlikely (!a || !b)) return false;
+  return rb_ucd_compose(a, b, ab);
 }
 
 hb_bool_t
 hb_ucd_decompose (hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b)
 {
-  if (_hb_ucd_decompose_hangul (ab, a, b)) return true;
-
-  unsigned i = _hb_ucd_dm (ab);
-
-  if (likely (!i)) return false;
-  i--;
-
-  if (i < ARRAY_LENGTH (_hb_ucd_dm1_p0_map) + ARRAY_LENGTH (_hb_ucd_dm1_p2_map))
-  {
-    if (i < ARRAY_LENGTH (_hb_ucd_dm1_p0_map))
-      *a = _hb_ucd_dm1_p0_map[i];
-    else
-    {
-      i -= ARRAY_LENGTH (_hb_ucd_dm1_p0_map);
-      *a = 0x20000 | _hb_ucd_dm1_p2_map[i];
-    }
-    *b = 0;
-    return true;
-  }
-  i -= ARRAY_LENGTH (_hb_ucd_dm1_p0_map) + ARRAY_LENGTH (_hb_ucd_dm1_p2_map);
-
-  if (i < ARRAY_LENGTH (_hb_ucd_dm2_u32_map))
-  {
-    uint32_t v = _hb_ucd_dm2_u32_map[i];
-    *a = HB_CODEPOINT_DECODE3_11_7_14_1 (v);
-    *b = HB_CODEPOINT_DECODE3_11_7_14_2 (v);
-    return true;
-  }
-  i -= ARRAY_LENGTH (_hb_ucd_dm2_u32_map);
-
-  uint64_t v = _hb_ucd_dm2_u64_map[i];
-  *a = HB_CODEPOINT_DECODE3_1 (v);
-  *b = HB_CODEPOINT_DECODE3_2 (v);
-  return true;
+  *a = ab; *b = 0;
+  return rb_ucd_decompose(ab, a, b);
 }
