@@ -33,7 +33,6 @@
 
 #include "hb.hh"
 #include "hb-atomic.hh"
-#include "hb-mutex.hh"
 #include "hb-vector.hh"
 
 /*
