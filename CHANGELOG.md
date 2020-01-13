@@ -34,4 +34,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_font_funcs_t`, since we are using internal OpenType parser.
 - Most of the `hb_font_t` query API.
 - `hb_buffer_deserialize_glyphs`
-- `name` table support. Unused.
+- `name` table. Unused.
+- `meta` table. Unused.
