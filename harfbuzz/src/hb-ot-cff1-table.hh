@@ -449,24 +449,7 @@ struct Charset
   DEFINE_SIZE_MIN (1);
 };
 
-struct CFF1StringIndex : CFF1Index
-{
-  /* in parallel to above */
-  unsigned int calculate_serialized_size (unsigned int &offSize_ /*OUT*/, const hb_inc_bimap_t &sidmap) const
-  {
-    offSize_ = 0;
-    if ((count == 0) || (sidmap.get_population () == 0))
-      return count.static_size;
-
-    unsigned int dataSize = 0;
-    for (unsigned int i = 0; i < count; i++)
-      if (sidmap[i] != CFF_UNDEF_CODE)
-	dataSize += length_at (i);
-
-    offSize_ = calcOffSize(dataSize);
-    return CFF1Index::calculate_serialized_size (offSize_, sidmap.get_population (), dataSize);
-  }
-};
+struct CFF1StringIndex : CFF1Index {};
 
 struct cff1_top_dict_interp_env_t : num_interp_env_t
 {

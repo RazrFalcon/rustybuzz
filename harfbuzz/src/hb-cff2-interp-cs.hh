@@ -126,21 +126,6 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<blend_arg_t, CFF2Subrs>
     return arg;
   }
 
-  void process_blend ()
-  {
-    if (!seen_blend)
-    {
-      region_count = varStore->varStore.get_region_index_count (get_ivs ());
-      if (do_blend)
-      {
-	scalars.resize (region_count);
-	varStore->varStore.get_scalars (get_ivs (),
-					(int *)coords, num_coords,
-					&scalars[0], region_count);
-      }
-      seen_blend = true;
-    }
-  }
 
   void process_vsindex ()
   {
@@ -196,69 +181,6 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<blend_arg_t, CFF2Subrs>
 template <typename OPSET, typename PARAM, typename PATH=path_procs_null_t<cff2_cs_interp_env_t, PARAM>>
 struct cff2_cs_opset_t : cs_opset_t<blend_arg_t, OPSET, cff2_cs_interp_env_t, PARAM, PATH>
 {
-  static void process_op (op_code_t op, cff2_cs_interp_env_t &env, PARAM& param)
-  {
-    switch (op) {
-      case OpCode_callsubr:
-      case OpCode_callgsubr:
-	/* a subroutine number shoudln't be a blended value */
-	if (unlikely (env.argStack.peek ().blending ()))
-	{
-	  env.set_error ();
-	  break;
-	}
-	SUPER::process_op (op, env, param);
-	break;
-
-      case OpCode_blendcs:
-	OPSET::process_blend (env, param);
-	break;
-
-      case OpCode_vsindexcs:
-	if (unlikely (env.argStack.peek ().blending ()))
-	{
-	  env.set_error ();
-	  break;
-	}
-	OPSET::process_vsindex (env, param);
-	break;
-
-      default:
-	SUPER::process_op (op, env, param);
-    }
-  }
-
-  static void process_blend (cff2_cs_interp_env_t &env, PARAM& param)
-  {
-    unsigned int n, k;
-
-    env.process_blend ();
-    k = env.get_region_count ();
-    n = env.argStack.pop_uint ();
-    /* copy the blend values into blend array of the default values */
-    unsigned int start = env.argStack.get_count () - ((k+1) * n);
-    /* let an obvious error case fail, but note CFF2 spec doesn't forbid n==0 */
-    if (unlikely (start > env.argStack.get_count ()))
-    {
-      env.set_error ();
-      return;
-    }
-    for (unsigned int i = 0; i < n; i++)
-    {
-      const hb_array_t<const blend_arg_t>	blends = env.argStack.get_subarray (start + n + (i * k));
-      env.argStack[start + i].set_blends (n, i, k, blends);
-    }
-
-    /* pop off blend values leaving default values now adorned with blend values */
-    env.argStack.pop (k * n);
-  }
-
-  static void process_vsindex (cff2_cs_interp_env_t &env, PARAM& param)
-  {
-    env.process_vsindex ();
-    env.clear_args ();
-  }
-
   private:
   typedef cs_opset_t<blend_arg_t, OPSET, cff2_cs_interp_env_t, PARAM, PATH>  SUPER;
 };

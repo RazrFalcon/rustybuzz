@@ -27,7 +27,6 @@
 #define HB_OT_CFF_COMMON_HH
 
 #include "hb-open-type.hh"
-#include "hb-bimap.hh"
 #include "hb-ot-layout-common.hh"
 #include "hb-cff-interp-dict-common.hh"
 
@@ -247,25 +246,7 @@ struct table_info_t
 };
 
 template <typename COUNT>
-struct FDArray : CFFIndexOf<COUNT, FontDict>
-{
-  /* in parallel to above */
-  template <typename OP_SERIALIZER, typename DICTVAL>
-  static unsigned int calculate_serialized_size (unsigned int &offSize_ /* OUT */,
-						 const hb_vector_t<DICTVAL> &fontDicts,
-						 unsigned int fdCount,
-						 const hb_inc_bimap_t &fdmap,
-						 OP_SERIALIZER& opszr)
-  {
-    unsigned int dictsSize = 0;
-    for (unsigned int i = 0; i < fontDicts.len; i++)
-      if (fdmap.has (i))
-	dictsSize += FontDict::calculate_serialized_size (fontDicts[i], opszr);
-
-    offSize_ = calcOffSize (dictsSize);
-    return CFFIndex<COUNT>::calculate_serialized_size (offSize_, fdCount, dictsSize);
-  }
-};
+struct FDArray : CFFIndexOf<COUNT, FontDict> {};
 
 /* FDSelect */
 struct FDSelect0 {

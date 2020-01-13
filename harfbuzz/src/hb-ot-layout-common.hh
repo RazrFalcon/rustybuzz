@@ -33,7 +33,6 @@
 #include "hb-ot-layout.hh"
 #include "hb-open-type.hh"
 #include "hb-set.hh"
-#include "hb-bimap.hh"
 
 
 #ifndef HB_MAX_NESTING_LEVEL
@@ -1418,18 +1417,6 @@ struct VarData
    return delta;
   }
 
-  void get_scalars (int *coords, unsigned int coord_count,
-		    const VarRegionList &regions,
-		    float *scalars /*OUT */,
-		    unsigned int num_scalars) const
-  {
-    unsigned count = hb_min (num_scalars, regionIndices.len);
-    for (unsigned int i = 0; i < count; i++)
-      scalars[i] = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count);
-    for (unsigned int i = count; i < num_scalars; i++)
-      scalars[i] = 0.f;
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1439,21 +1426,6 @@ struct VarData
 		  c->check_range (get_delta_bytes (),
 				  itemCount,
 				  get_row_size ()));
-  }
-
-  void collect_region_refs (hb_inc_bimap_t &region_map, const hb_inc_bimap_t &inner_map) const
-  {
-    for (unsigned int r = 0; r < regionIndices.len; r++)
-    {
-      unsigned int region = regionIndices[r];
-      if (region_map.has (region)) continue;
-      for (unsigned int i = 0; i < inner_map.get_next_value (); i++)
-	if (get_item_delta (inner_map.backward (i), r) != 0)
-	{
-	  region_map.add (region);
-	  break;
-	}
-    }
   }
 
   protected:
@@ -1527,24 +1499,6 @@ struct VariationStore
 		  format == 1 &&
 		  regions.sanitize (c, this) &&
 		  dataSets.sanitize (c, this));
-  }
-
-  unsigned int get_region_index_count (unsigned int ivs) const
-  { return (this+dataSets[ivs]).get_region_index_count (); }
-
-  void get_scalars (unsigned int ivs,
-		    int *coords, unsigned int coord_count,
-		    float *scalars /*OUT*/,
-		    unsigned int num_scalars) const
-  {
-#ifdef HB_NO_VAR
-    for (unsigned i = 0; i < num_scalars; i++)
-      scalars[i] = 0.f;
-    return;
-#endif
-
-    (this+dataSets[ivs]).get_scalars (coords, coord_count, this+regions,
-				      &scalars[0], num_scalars);
   }
 
   unsigned int get_sub_table_count () const { return dataSets.len; }
