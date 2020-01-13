@@ -39,3 +39,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `stat` table. Unused.
 - `BASE` table. Unused.
 - `JSTF` table. Unused.
+- `OPBD` table. Unused.
