@@ -25,7 +25,6 @@
 #include "hb.hh"
 
 #include "hb-ot-var-mvar-table.hh"
-#include "hb-ot-gasp-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-ot-os2-table.hh"
 #include "hb-ot-post-table.hh"
 #include "hb-ot-hhea-table.hh"

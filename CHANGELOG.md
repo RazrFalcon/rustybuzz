@@ -41,3 +41,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `JSTF` table. Unused.
 - `OPBD` table. Unused.
 - `math` table. Unused.
+- `gasp` table. Unused.
