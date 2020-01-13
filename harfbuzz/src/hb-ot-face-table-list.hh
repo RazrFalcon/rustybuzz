@@ -56,9 +56,6 @@ HB_OT_TABLE (OT, OS2)
 #if !defined(HB_NO_OT_FONT_GLYPH_NAMES) || !defined(HB_NO_METRICS)
 HB_OT_ACCELERATOR (OT, post)
 #endif
-#ifndef HB_NO_STAT
-HB_OT_TABLE (OT, STAT)
-#endif
 
 /* Vertical layout. */
 HB_OT_TABLE (OT, vhea)

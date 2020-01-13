@@ -36,3 +36,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_buffer_deserialize_glyphs`
 - `name` table. Unused.
 - `meta` table. Unused.
+- `stat` table. Unused.
