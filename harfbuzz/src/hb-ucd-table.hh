@@ -3710,11 +3710,6 @@ _hb_ucd_i16[196] =
 };
 
 static inline uint_fast8_t
-_hb_ucd_gc (unsigned u)
-{
-  return u<1114110u?_hb_ucd_u8[2176+(((_hb_ucd_u16[((_hb_ucd_u8[u>>4>>5])<<5)+((u>>4)&31u)])<<4)+((u)&15u))]:2;
-}
-static inline uint_fast8_t
 _hb_ucd_ccc (unsigned u)
 {
   return u<125259u?_hb_ucd_u8[14026+(((_hb_ucd_u8[13034+(((_hb_ucd_u8[12544+(u>>4>>4)])<<4)+((u>>4)&15u))])<<4)+((u)&15u))]:0;

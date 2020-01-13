@@ -23,6 +23,7 @@ extern "C" {
   hb_script_t rb_ucd_script (hb_codepoint_t unicode);
   hb_bool_t rb_ucd_decompose (hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b);
   hb_bool_t rb_ucd_compose (hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab);
+  hb_unicode_general_category_t rb_ucd_general_category (hb_codepoint_t unicode);
 }
 
 hb_unicode_combining_class_t
@@ -34,7 +35,7 @@ hb_ucd_combining_class (hb_codepoint_t unicode)
 hb_unicode_general_category_t
 hb_ucd_general_category (hb_codepoint_t unicode)
 {
-  return (hb_unicode_general_category_t) _hb_ucd_gc (unicode);
+  return rb_ucd_general_category(unicode);
 }
 
 hb_codepoint_t
