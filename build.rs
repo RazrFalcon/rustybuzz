@@ -20,7 +20,6 @@ fn main() {
     build.file("harfbuzz/src/hb-ot-font.cc");
     build.file("harfbuzz/src/hb-ot-layout.cc");
     build.file("harfbuzz/src/hb-ot-map.cc");
-    build.file("harfbuzz/src/hb-ot-math.cc");
     build.file("harfbuzz/src/hb-ot-metrics.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-arabic.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-default.cc");

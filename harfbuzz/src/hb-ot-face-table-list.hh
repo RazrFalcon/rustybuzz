@@ -110,12 +110,6 @@ HB_OT_ACCELERATOR (OT, sbix)
 HB_OT_ACCELERATOR (OT, SVG)
 #endif
 
-/* OpenType math. */
-#ifndef HB_NO_MATH
-HB_OT_TABLE (OT, MATH)
-#endif
-
-
 #ifdef _HB_OT_ACCELERATOR_UNDEF
 #undef HB_OT_ACCELERATOR
 #endif
