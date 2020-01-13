@@ -29,6 +29,7 @@
 #ifndef HB_NO_BUFFER_SERIALIZE
 
 #include "hb-buffer.hh"
+#include "hb-font.hh"
 
 
 static const char *serialize_formats[] = {
@@ -132,7 +133,7 @@ _hb_buffer_serialize_glyphs_json (hb_buffer_t *buffer,
     if (!(flags & HB_BUFFER_SERIALIZE_FLAG_NO_GLYPH_NAMES))
     {
       char g[128];
-      hb_font_glyph_to_string (font, info[i].codepoint, g, sizeof (g));
+      font->glyph_to_string (info[i].codepoint, g, sizeof (g));
       *p++ = '"';
       for (char *q = g; *q; q++) {
 	if (*q == '"')
@@ -166,7 +167,7 @@ _hb_buffer_serialize_glyphs_json (hb_buffer_t *buffer,
     if (flags & HB_BUFFER_SERIALIZE_FLAG_GLYPH_EXTENTS)
     {
       hb_glyph_extents_t extents;
-      hb_font_get_glyph_extents(font, info[i].codepoint, &extents);
+      font->get_glyph_extents (info[i].codepoint, &extents);
       p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), ",\"xb\":%d,\"yb\":%d",
 		extents.x_bearing, extents.y_bearing));
       p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), ",\"w\":%d,\"h\":%d",
@@ -224,7 +225,7 @@ _hb_buffer_serialize_glyphs_text (hb_buffer_t *buffer,
 
     if (!(flags & HB_BUFFER_SERIALIZE_FLAG_NO_GLYPH_NAMES))
     {
-      hb_font_glyph_to_string (font, info[i].codepoint, p, 128);
+      font->glyph_to_string (info[i].codepoint, p, 128);
       p += strlen (p);
     }
     else
@@ -257,7 +258,7 @@ _hb_buffer_serialize_glyphs_text (hb_buffer_t *buffer,
     if (flags & HB_BUFFER_SERIALIZE_FLAG_GLYPH_EXTENTS)
     {
       hb_glyph_extents_t extents;
-      hb_font_get_glyph_extents(font, info[i].codepoint, &extents);
+      font->get_glyph_extents (info[i].codepoint, &extents);
       p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), "<%d,%d,%d,%d>", extents.x_bearing, extents.y_bearing, extents.width, extents.height));
     }
 

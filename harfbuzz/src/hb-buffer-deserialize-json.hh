@@ -30,6 +30,7 @@
 #define HB_BUFFER_DESERIALIZE_JSON_HH
 
 #include "hb.hh"
+#include "hb-font.hh"
 
 
 #line 36 "hb-buffer-deserialize-json.hh"
@@ -518,9 +519,7 @@ _resume:
 	case 14:
 #line 55 "hb-buffer-deserialize-json.rl"
 	{
-	if (!hb_font_glyph_from_string (font,
-					tok, p - tok,
-					&info.codepoint))
+	if (!font->glyph_from_string (tok, p - tok, &info.codepoint))
 	  return false;
 }
 	break;

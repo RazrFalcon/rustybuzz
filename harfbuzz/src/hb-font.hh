@@ -100,11 +100,6 @@ struct hb_font_t
   hb_position_t parent_scale_y_position (hb_position_t v)
   { return parent_scale_y_distance (v); }
 
-  void parent_scale_distance (hb_position_t *x, hb_position_t *y)
-  {
-    *x = parent_scale_x_distance (*x);
-    *y = parent_scale_y_distance (*y);
-  }
   void parent_scale_position (hb_position_t *x, hb_position_t *y)
   {
     *x = parent_scale_x_position (*x);
@@ -115,7 +110,6 @@ struct hb_font_t
   /* Public getters */
 
   hb_bool_t get_font_h_extents (hb_font_extents_t *extents);
-  hb_bool_t get_font_v_extents (hb_font_extents_t *extents);
 
   bool has_glyph (hb_codepoint_t unicode)
   {
@@ -156,18 +150,6 @@ struct hb_font_t
   hb_bool_t get_glyph_v_origin (hb_codepoint_t glyph,
 				hb_position_t *x, hb_position_t *y);
 
-  hb_position_t get_glyph_h_kerning (hb_codepoint_t left_glyph,
-				     hb_codepoint_t right_glyph)
-  {
-    return 0;
-  }
-
-  hb_position_t get_glyph_v_kerning (hb_codepoint_t top_glyph,
-				     hb_codepoint_t bottom_glyph)
-  {
-    return 0;
-  }
-
   hb_bool_t get_glyph_extents (hb_codepoint_t glyph,
 			       hb_glyph_extents_t *extents);
 
@@ -191,24 +173,6 @@ struct hb_font_t
       extents->descender = extents->ascender - y_scale;
       extents->line_gap = 0;
     }
-  }
-  void get_v_extents_with_fallback (hb_font_extents_t *extents)
-  {
-    if (!get_font_v_extents (extents))
-    {
-      extents->ascender = x_scale / 2;
-      extents->descender = extents->ascender - x_scale;
-      extents->line_gap = 0;
-    }
-  }
-
-  void get_extents_for_direction (hb_direction_t direction,
-				  hb_font_extents_t *extents)
-  {
-    if (likely (HB_DIRECTION_IS_HORIZONTAL (direction)))
-      get_h_extents_with_fallback (extents);
-    else
-      get_v_extents_with_fallback (extents);
   }
 
   void get_glyph_advance_for_direction (hb_codepoint_t glyph,
@@ -278,48 +242,6 @@ struct hb_font_t
       get_glyph_v_origin_with_fallback (glyph, x, y);
   }
 
-  void add_glyph_h_origin (hb_codepoint_t glyph,
-			   hb_position_t *x, hb_position_t *y)
-  {
-    hb_position_t origin_x, origin_y;
-
-    get_glyph_h_origin_with_fallback (glyph, &origin_x, &origin_y);
-
-    *x += origin_x;
-    *y += origin_y;
-  }
-  void add_glyph_v_origin (hb_codepoint_t glyph,
-			   hb_position_t *x, hb_position_t *y)
-  {
-    hb_position_t origin_x, origin_y;
-
-    get_glyph_v_origin_with_fallback (glyph, &origin_x, &origin_y);
-
-    *x += origin_x;
-    *y += origin_y;
-  }
-  void add_glyph_origin_for_direction (hb_codepoint_t glyph,
-				       hb_direction_t direction,
-				       hb_position_t *x, hb_position_t *y)
-  {
-    hb_position_t origin_x, origin_y;
-
-    get_glyph_origin_for_direction (glyph, direction, &origin_x, &origin_y);
-
-    *x += origin_x;
-    *y += origin_y;
-  }
-
-  void subtract_glyph_h_origin (hb_codepoint_t glyph,
-				hb_position_t *x, hb_position_t *y)
-  {
-    hb_position_t origin_x, origin_y;
-
-    get_glyph_h_origin_with_fallback (glyph, &origin_x, &origin_y);
-
-    *x -= origin_x;
-    *y -= origin_y;
-  }
   void subtract_glyph_v_origin (hb_codepoint_t glyph,
 				hb_position_t *x, hb_position_t *y)
   {
@@ -340,31 +262,6 @@ struct hb_font_t
 
     *x -= origin_x;
     *y -= origin_y;
-  }
-
-  void get_glyph_kerning_for_direction (hb_codepoint_t first_glyph, hb_codepoint_t second_glyph,
-					hb_direction_t direction,
-					hb_position_t *x, hb_position_t *y)
-  {
-    if (likely (HB_DIRECTION_IS_HORIZONTAL (direction))) {
-      *y = 0;
-      *x = get_glyph_h_kerning (first_glyph, second_glyph);
-    } else {
-      *x = 0;
-      *y = get_glyph_v_kerning (first_glyph, second_glyph);
-    }
-  }
-
-  hb_bool_t get_glyph_extents_for_origin (hb_codepoint_t glyph,
-					  hb_direction_t direction,
-					  hb_glyph_extents_t *extents)
-  {
-    hb_bool_t ret = get_glyph_extents (glyph, extents);
-
-    if (ret)
-      subtract_glyph_origin_for_direction (glyph, direction, &extents->x_bearing, &extents->y_bearing);
-
-    return ret;
   }
 
   hb_bool_t get_glyph_contour_point_for_origin (hb_codepoint_t glyph, unsigned int point_index,
