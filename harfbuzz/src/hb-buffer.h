@@ -492,15 +492,6 @@ typedef enum {
   HB_BUFFER_SERIALIZE_FORMAT_INVALID	= HB_TAG_NONE
 } hb_buffer_serialize_format_t;
 
-HB_EXTERN hb_buffer_serialize_format_t
-hb_buffer_serialize_format_from_string (const char *str, int len);
-
-HB_EXTERN const char *
-hb_buffer_serialize_format_to_string (hb_buffer_serialize_format_t format);
-
-HB_EXTERN const char **
-hb_buffer_serialize_list_formats (void);
-
 HB_EXTERN unsigned int
 hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
 			    unsigned int start,
@@ -511,14 +502,6 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
 			    hb_font_t *font,
 			    hb_buffer_serialize_format_t format,
 			    hb_buffer_serialize_flags_t flags);
-
-HB_EXTERN hb_bool_t
-hb_buffer_deserialize_glyphs (hb_buffer_t *buffer,
-			      const char *buf,
-			      int buf_len,
-			      const char **end_ptr,
-			      hb_font_t *font,
-			      hb_buffer_serialize_format_t format);
 
 
 /*
