@@ -23,7 +23,6 @@ fn main() {
     build.file("harfbuzz/src/hb-ot-math.cc");
     build.file("harfbuzz/src/hb-ot-meta.cc");
     build.file("harfbuzz/src/hb-ot-metrics.cc");
-    build.file("harfbuzz/src/hb-ot-name.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-arabic.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-default.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-hangul.cc");
