@@ -32,6 +32,7 @@
 #include "hb.hh"
 #include "hb-blob.hh"
 #include "hb-face.hh"
+#include "hb-font.hh"
 #include "hb-machinery.hh"
 
 

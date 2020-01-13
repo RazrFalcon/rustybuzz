@@ -186,6 +186,9 @@ HB_EXTERN void
 hb_font_set_var_named_instance (hb_font_t *font,
 				unsigned instance_index);
 
+HB_EXTERN unsigned int
+hb_font_get_glyph_count (hb_font_t *face);
+
 HB_END_DECLS
 
 #endif /* HB_FONT_H */
