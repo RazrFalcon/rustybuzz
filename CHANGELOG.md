@@ -42,3 +42,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `OPBD` table. Unused.
 - `math` table. Unused.
 - `gasp` table. Unused.
+- `hb_ot_metrics_*`
