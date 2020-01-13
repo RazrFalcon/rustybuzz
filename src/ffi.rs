@@ -210,7 +210,7 @@ extern "C" {
     pub fn hb_face_destroy(face: *mut hb_face_t);
     pub fn hb_face_set_upem(face: *mut hb_face_t, upem: u32);
     pub fn hb_face_get_upem(face: *const hb_face_t) -> u32;
-    pub fn hb_font_create(face: *mut hb_face_t) -> *mut hb_font_t;
+    pub fn hb_font_create(face: *mut hb_face_t, rust_data: *const c_void) -> *mut hb_font_t;
     pub fn hb_font_destroy(font: *mut hb_font_t);
     pub fn hb_font_set_scale(font: *mut hb_font_t, x_scale: i32, y_scale: i32);
     pub fn hb_font_get_scale(font: *mut hb_font_t, x_scale: *mut i32, y_scale: *mut i32);

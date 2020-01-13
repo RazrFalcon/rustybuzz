@@ -32,7 +32,6 @@
 #include "hb-blob.hh"
 #include "hb-open-file.hh"
 #include "hb-ot-face.hh"
-#include "hb-ot-cmap-table.hh"
 
 
 /**
@@ -527,60 +526,6 @@ hb_face_get_table_tags (const hb_face_t *face,
 
   return ot_face.get_table_tags (start_offset, table_count, table_tags);
 }
-
-
-/*
- * Character set.
- */
-
-
-#ifndef HB_NO_FACE_COLLECT_UNICODES
-/**
- * hb_face_collect_unicodes:
- * @face: font face.
- * @out: set to add Unicode characters covered by @face to.
- *
- * Since: 1.9.0
- */
-void
-hb_face_collect_unicodes (hb_face_t *face,
-			  hb_set_t  *out)
-{
-  face->table.cmap->collect_unicodes (out);
-}
-/**
- * hb_face_collect_variation_selectors:
- * @face: font face.
- * @out: set to add Variation Selector characters covered by @face to.
- *
- *
- *
- * Since: 1.9.0
- */
-void
-hb_face_collect_variation_selectors (hb_face_t *face,
-				     hb_set_t  *out)
-{
-  face->table.cmap->collect_variation_selectors (out);
-}
-/**
- * hb_face_collect_variation_unicodes:
- * @face: font face.
- * @out: set to add Unicode characters for @variation_selector covered by @face to.
- *
- *
- *
- * Since: 1.9.0
- */
-void
-hb_face_collect_variation_unicodes (hb_face_t *face,
-				    hb_codepoint_t variation_selector,
-				    hb_set_t  *out)
-{
-  face->table.cmap->collect_variation_unicodes (variation_selector, out);
-}
-#endif
-
 
 /*
  * face-builder: A face that has add_table().

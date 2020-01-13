@@ -167,7 +167,13 @@ fn main() {
     }
 
     let font_data = std::fs::read(font_path).expect("failed to load a file");
-    let face = rustybuzz::Face::new(&font_data, args.face_index);
+    let face = match rustybuzz::Face::new(&font_data, args.face_index) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Error: {}.", e);
+            std::process::exit(1);
+        }
+    };
     let mut font = rustybuzz::Font::new(face);
 
     if let Some(ptem) = args.font_ptem {

@@ -1,15 +1,108 @@
+use std::convert::TryFrom;
+use std::ffi::c_void;
+use std::marker::PhantomData;
 use std::str::FromStr;
 
 use crate::ffi;
-use crate::{Face, Tag};
+use crate::Tag;
 
 
-/// A type representing a single font (i.e. a specific combination of typeface
-/// and typesize).
+/// A wrapper around `hb_face_t`.
+///
+/// Font face is objects represent a single face in a font family. More
+/// exactly, a font face represents a single face in a binary font file. Font
+/// faces are typically built from a binary blob and a face index. Font faces
+/// are used to create fonts.
+#[derive(Debug)]
+pub struct Face<'a> {
+    ptr: *mut ffi::hb_face_t,
+    blob: Blob<'a>,
+    ttf: *const ttf_parser::Font<'a>,
+}
+
+impl<'a> Face<'a> {
+    /// Create a new `Face` from the data.
+    pub fn new(data: &'a [u8], index: u32) -> Result<Face<'a>, ttf_parser::Error> {
+        unsafe {
+            let ttf = Box::new(ttf_parser::Font::from_data(data, index)?);
+            let blob = Blob::with_bytes(data);
+            Ok(Face {
+                ptr: ffi::hb_face_create(blob.as_ptr(), index),
+                blob,
+                ttf: Box::into_raw(ttf),
+            })
+        }
+    }
+
+    pub(crate) fn as_ptr(&self) -> *mut ffi::hb_face_t {
+        self.ptr
+    }
+
+    /// Returns face's UPEM.
+    pub fn upem(&self) -> u32 {
+        unsafe { ffi::hb_face_get_upem(self.ptr) }
+    }
+
+    /// Sets face's UPEM.
+    pub fn set_upem(&mut self, upem: u32) {
+        unsafe { ffi::hb_face_set_upem(self.ptr, upem) };
+    }
+}
+
+impl<'a> Drop for Face<'a> {
+    fn drop(&mut self) {
+        unsafe {
+            Box::from_raw(self.ttf as *mut ttf_parser::Font<'a>);
+            ffi::hb_face_destroy(self.ptr);
+        }
+    }
+}
+
+
+#[derive(Debug)]
+pub(crate) struct Blob<'a> {
+    ptr: *mut ffi::hb_blob_t,
+    marker: PhantomData<&'a [u8]>,
+}
+
+impl<'a> Blob<'a> {
+    /// Create a new `Blob` from the slice `bytes`. The blob will not own the
+    /// slice's data.
+    pub fn with_bytes(bytes: &'a [u8]) -> Blob<'a> {
+        unsafe {
+            let hb_blob = ffi::hb_blob_create(
+                bytes.as_ptr() as *const _,
+                bytes.len() as u32,
+                ffi::HB_MEMORY_MODE_READONLY,
+                std::ptr::null_mut(),
+                None,
+            );
+
+            Blob {
+                ptr: hb_blob,
+                marker: PhantomData,
+            }
+        }
+    }
+
+    pub(crate) fn as_ptr(&self) -> *mut ffi::hb_blob_t {
+        self.ptr
+    }
+}
+
+impl<'a> Drop for Blob<'a> {
+    fn drop(&mut self) {
+        unsafe { ffi::hb_blob_destroy(self.ptr); }
+    }
+}
+
+
+/// A type representing a single font (i.e. a specific combination of typeface and typesize).
 #[derive(Debug)]
 pub struct Font<'a> {
     ptr: *mut ffi::hb_font_t,
     face: Face<'a>,
+
 }
 
 impl<'a> Font<'a> {
@@ -17,7 +110,7 @@ impl<'a> Font<'a> {
     pub fn new(face: Face<'a>) -> Self {
         unsafe {
             Font {
-                ptr: ffi::hb_font_create(face.as_ptr()),
+                ptr: ffi::hb_font_create(face.as_ptr(), face.ttf as *const _),
                 face,
             }
         }
@@ -103,5 +196,25 @@ impl FromStr for Variation {
                 Err("invalid variation")
             }
         }
+    }
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn rb_ot_get_nominal_glyph(font_data: *const c_void, c: u32, glyph: *mut u32) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    match font.glyph_index(char::try_from(c).unwrap()) {
+        Ok(g) => unsafe { *glyph = g.0 as u32; 1 }
+        Err(_) => 0,
+    }
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, variant: u32, glyph: *mut u32) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    match font.glyph_variation_index(char::try_from(c).unwrap(), char::try_from(variant).unwrap()) {
+        Ok(g) => unsafe { *glyph = g.0 as u32; 1 }
+        Err(_) => 0,
     }
 }

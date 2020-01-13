@@ -534,48 +534,6 @@ fn cluster_002() {
 }
 
 #[test]
-fn collections_001() {
-    assert_eq!(
-        shape(
-            "in-house/fonts/DFONT.dfont",
-            "\u{2026}\u{0020}\u{002E}",
-            "--face-index=0 --font-funcs=ot",
-        ),
-        "ellipsis=0+723|\
-         space=1+250|\
-         period=2+241"
-    );
-}
-
-#[test]
-fn collections_002() {
-    assert_eq!(
-        shape(
-            "in-house/fonts/DFONT.dfont",
-            "\u{2026}\u{0020}\u{002E}",
-            "--face-index=1 --font-funcs=ot",
-        ),
-        "gid0=0+1000|\
-         gid0=1+1000|\
-         gid0=2+1000"
-    );
-}
-
-#[test]
-fn collections_003() {
-    assert_eq!(
-        shape(
-            "in-house/fonts/DFONT.dfont",
-            "\u{2026}\u{0020}\u{002E}",
-            "--face-index=2 --font-funcs=ot",
-        ),
-        "gid0=0+1000|\
-         gid0=1+1000|\
-         gid0=2+1000"
-    );
-}
-
-#[test]
 fn collections_004() {
     assert_eq!(
         shape(
@@ -611,9 +569,7 @@ fn collections_006() {
             "\u{2026}\u{0020}\u{002E}",
             "--face-index=2 --font-funcs=ot",
         ),
-        "gid0=0+1000|\
-         gid0=1+1000|\
-         gid0=2+1000"
+        "font index is out of bounds"
     );
 }
 
@@ -988,15 +944,7 @@ fn indic_decompose_001() {
             "\u{09DC}\u{0020}\u{09DD}\u{0020}\u{09A1}\u{09BC}\u{0020}\u{09A2}\u{09BC}",
             "--font-funcs=ot",
         ),
-        "bn_rha=0+1024|\
-         space=1+1024|\
-         bn_yya=2+1024|\
-         space=3+1024|\
-         bn_dda=4+1024|\
-         bn_nukta=4+1024|\
-         space=6+1024|\
-         bn_ddha=7+1024|\
-         bn_nukta=7+1024"
+        "font doesn't have a HorizontalHeader table"
     );
 }
 

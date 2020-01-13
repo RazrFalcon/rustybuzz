@@ -16,20 +16,19 @@ use std::os::raw::c_uint;
 
 mod buffer;
 mod common;
-mod face;
 mod ffi;
 mod font;
 mod unicode;
 
 pub use crate::buffer::*;
 pub use crate::common::*;
-pub use crate::face::*;
-pub use crate::font::*;
+pub use crate::font::{Face, Font, Variation};
 
 #[doc(hidden)]
 pub mod implementation {
     // We must export extern symbols so the linker would be able to find them.
     pub use crate::unicode::*;
+    pub use crate::font::{rb_ot_get_nominal_glyph, rb_ot_get_variation_glyph};
 }
 
 type CodePoint = u32;

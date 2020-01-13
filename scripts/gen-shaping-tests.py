@@ -24,6 +24,10 @@ IGNORE_TEST_CASES = [
     'use_010',
     'vertical_001',
     'vertical_002',
+    # dfont fonts are not supported
+    'collections_001',
+    'collections_002',
+    'collections_003',
 
     # text-rendering-tests tests
     # Incorrect CMAP 14 parsing. Was fixed in master, but broken in 2.6.4
@@ -52,6 +56,40 @@ IGNORE_TEST_CASES = [
     'morx_41_003',
     'morx_41_004',
     'morx_6_001',
+    # `true` fonts are not supported
+    'gvar_4_001',
+    'gvar_4_002',
+    'gvar_4_003',
+    'gvar_4_004',
+    'gvar_4_005',
+    'gvar_4_006',
+    'gvar_4_007',
+    'gvar_4_008',
+    'gvar_4_009',
+    'gvar_4_010',
+    'gvar_4_011',
+    'gvar_5_001',
+    'gvar_5_002',
+    'gvar_5_003',
+    'gvar_5_004',
+    'gvar_5_005',
+    'gvar_5_006',
+    'gvar_5_007',
+    'gvar_5_008',
+    'gvar_5_009',
+    'gvar_5_010',
+    'gvar_5_011',
+    'gvar_6_001',
+    'gvar_6_002',
+    'gvar_6_003',
+    'gvar_6_004',
+    'gvar_6_005',
+    'gvar_6_006',
+    'gvar_6_007',
+    'gvar_6_008',
+    'gvar_6_009',
+    'gvar_6_010',
+    'gvar_6_011',
 ]
 
 TEST_OVERRIDES = {
@@ -76,6 +114,9 @@ TEST_OVERRIDES = {
     'gvar_2_005': 'gid2|gid3@500,0|gid1@1000,0',
     'gsub_1_001': 'gid2|gid3@500,0|gid1@1000,0',
     'gpos_2_003': 'gid1|gid2',
+    # Different error processing
+    'collections_006': "font index is out of bounds",
+    'indic_decompose_001': 'font doesn\'t have a HorizontalHeader table',
 }
 
 

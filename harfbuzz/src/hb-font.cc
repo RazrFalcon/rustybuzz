@@ -47,6 +47,14 @@
  * hb_shape() among other things.
  **/
 
+extern "C" {
+  hb_bool_t rb_ot_get_nominal_glyph (const void *rust_data, hb_codepoint_t unicode, 
+                                     hb_codepoint_t *glyph);
+
+  hb_bool_t rb_ot_get_variation_glyph (const void *rust_data, hb_codepoint_t unicode, 
+                                       hb_codepoint_t variation_selector, hb_codepoint_t *glyph);
+}
+
 static hb_position_t
 hb_font_get_glyph_h_advance_default (hb_font_t *font,
 				     hb_codepoint_t glyph)
@@ -171,9 +179,10 @@ _hb_font_create (hb_face_t *face)
  * Since: 0.9.2
  **/
 hb_font_t *
-hb_font_create (hb_face_t *face)
+hb_font_create (hb_face_t *face, const void *rust_data)
 {
   hb_font_t *font = _hb_font_create (face);
+  font->rust_data = rust_data;
   font->user_data = &font->face->table;
   return font;
 }
@@ -709,21 +718,31 @@ hb_bool_t hb_font_t::get_font_h_extents (hb_font_extents_t *extents)
 hb_bool_t hb_font_t::get_nominal_glyph (hb_codepoint_t unicode, hb_codepoint_t *glyph)
 {
   *glyph = 0;
-  return hb_ot_get_nominal_glyph (user_data, unicode, glyph);
+  return rb_ot_get_nominal_glyph (rust_data, unicode, glyph);
 }
 
 unsigned int hb_font_t::get_nominal_glyphs (unsigned int count, const hb_codepoint_t *first_unicode,
                                             unsigned int unicode_stride, hb_codepoint_t *first_glyph,
                                             unsigned int glyph_stride)
 {
-  return hb_ot_get_nominal_glyphs (user_data, count, first_unicode, unicode_stride, first_glyph, glyph_stride);
+  uint i = 0;
+  for (; i < count; ++i) {
+    if (!rb_ot_get_nominal_glyph (rust_data, *first_unicode, first_glyph)) {
+      break;
+    }
+    
+    first_unicode = &StructAtOffsetUnaligned<hb_codepoint_t> (first_unicode, unicode_stride);
+    first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
+  }
+  
+  return i;
 }
 
 hb_bool_t hb_font_t::get_variation_glyph (hb_codepoint_t unicode, hb_codepoint_t variation_selector,
                                           hb_codepoint_t *glyph)
 {
   *glyph = 0;
-  return hb_ot_get_variation_glyph (user_data, unicode, variation_selector, glyph);
+  return rb_ot_get_variation_glyph (rust_data, unicode, variation_selector, glyph);
 }
 
 hb_position_t hb_font_t::get_glyph_h_advance (hb_codepoint_t glyph)

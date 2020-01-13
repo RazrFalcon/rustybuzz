@@ -83,7 +83,7 @@ hb_font_get_glyph (hb_font_t *font,
 /* Fonts are very light-weight objects */
 
 HB_EXTERN hb_font_t *
-hb_font_create (hb_face_t *face);
+hb_font_create (hb_face_t *face, const void *rust_data);
 
 HB_EXTERN hb_font_t *
 hb_font_create_sub_font (hb_font_t *parent);

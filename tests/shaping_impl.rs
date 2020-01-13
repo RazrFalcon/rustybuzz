@@ -64,7 +64,10 @@ pub fn shape(font: &str, text: &str, options: &str) -> String {
     let args = parse_args(args).unwrap();
 
     let font_data = std::fs::read(&format!("harfbuzz/test/shaping/data/{}", font)).unwrap();
-    let face = rustybuzz::Face::new(&font_data, args.face_index);
+    let face = match rustybuzz::Face::new(&font_data, args.face_index) {
+        Ok(v) => v,
+        Err(e) => return e.to_string(),
+    };
     let mut font = rustybuzz::Font::new(face);
 
     if let Some(ptem) = args.font_ptem {

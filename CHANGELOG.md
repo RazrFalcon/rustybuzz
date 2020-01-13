@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - A minimal Rust API. Roughly based on [harfbuzz_rs](https://github.com/manuel-rhdt/harfbuzz_rs).
 
 ### Ported
+- Malformed font is an error now.
 - Most of the shaping tests. We store only font files.
 - `hb-shape` executable. Most flags are supported.
 - `hb_shape_list_shapers`, which returns a static, fixed list now.
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_ucd_compose`
 - `hb_ucd_decompose`
 - `hb_ucd_general_category`
+- `cmap` table.
 
 ### Changed
 - Replace some header guards with `#pragma once`, otherwise Qt Creator unable to parse them.
@@ -43,3 +45,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `math` table. Unused.
 - `gasp` table. Unused.
 - `hb_ot_metrics_*`
+- `hb_face_collect_*`

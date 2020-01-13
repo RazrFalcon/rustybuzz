@@ -64,6 +64,7 @@ struct hb_font_t
   unsigned int num_coords;
   int *coords;
   
+  const void        *rust_data;
   void              *user_data;
   hb_destroy_func_t  destroy;
 

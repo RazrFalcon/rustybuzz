@@ -26,7 +26,6 @@
 
 #include "hb-ot-face.hh"
 
-#include "hb-ot-cmap-table.hh"
 #include "hb-ot-glyf-table.hh"
 #include "hb-ot-cff1-table.hh"
 #include "hb-ot-cff2-table.hh"

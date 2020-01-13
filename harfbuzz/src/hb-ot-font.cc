@@ -35,7 +35,6 @@
 #include "hb-ot-face.hh"
 #include "hb-ot-font.hh"
 
-#include "hb-ot-cmap-table.hh"
 #include "hb-ot-glyf-table.hh"
 #include "hb-ot-cff1-table.hh"
 #include "hb-ot-cff2-table.hh"
@@ -57,40 +56,6 @@
  * by hb_font_create() default to using these functions, so most clients would
  * never need to call these functions directly.
  **/
-
-
-hb_bool_t
-hb_ot_get_nominal_glyph (void *font_data,
-			 hb_codepoint_t unicode,
-			 hb_codepoint_t *glyph)
-{
-  const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
-  return ot_face->cmap->get_nominal_glyph (unicode, glyph);
-}
-
-unsigned int
-hb_ot_get_nominal_glyphs (void *font_data,
-			  unsigned int count,
-			  const hb_codepoint_t *first_unicode,
-			  unsigned int unicode_stride,
-			  hb_codepoint_t *first_glyph,
-			  unsigned int glyph_stride)
-{
-  const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
-  return ot_face->cmap->get_nominal_glyphs (count,
-					    first_unicode, unicode_stride,
-					    first_glyph, glyph_stride);
-}
-
-hb_bool_t
-hb_ot_get_variation_glyph (void *font_data,
-			   hb_codepoint_t unicode,
-			   hb_codepoint_t variation_selector,
-			   hb_codepoint_t *glyph)
-{
-  const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
-  return ot_face->cmap->get_variation_glyph (unicode, variation_selector, glyph);
-}
 
 void
 hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
