@@ -15,7 +15,6 @@ fn main() {
     build.file("harfbuzz/src/hb-number.cc");
     build.file("harfbuzz/src/hb-ot-cff1-table.cc");
     build.file("harfbuzz/src/hb-ot-cff2-table.cc");
-    build.file("harfbuzz/src/hb-ot-color.cc");
     build.file("harfbuzz/src/hb-ot-face.cc");
     build.file("harfbuzz/src/hb-ot-font.cc");
     build.file("harfbuzz/src/hb-ot-layout.cc");

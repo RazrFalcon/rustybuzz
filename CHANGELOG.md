@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `OPBD` table. Unused.
 - `math` table. Unused.
 - `gasp` table. Unused.
-- `hb_ot_metrics_*`
-- `hb_face_collect_*`
-- OpenType tables serialization.
+- `hb_ot_metrics_*`. Unused.
+- `hb_face_collect_*`. Unused.
+- OpenType tables serialization. Unused.
+- `hb-ot-color`. Unused.

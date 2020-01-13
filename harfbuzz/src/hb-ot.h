@@ -30,7 +30,6 @@
 
 #include "hb.h"
 
-#include "hb-ot-color.h"
 #include "hb-ot-layout.h"
 #include "hb-ot-metrics.h"
 #include "hb-ot-name.h"
