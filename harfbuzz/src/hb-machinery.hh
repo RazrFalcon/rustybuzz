@@ -302,14 +302,6 @@ struct hb_table_lazy_loader_t : hb_lazy_loader_t<T,
   hb_blob_t* get_blob () const { return this->get_stored (); }
 };
 
-template <typename Subclass>
-struct hb_font_funcs_lazy_loader_t : hb_lazy_loader_t<hb_font_funcs_t, Subclass>
-{
-  static void destroy (hb_font_funcs_t *p)
-  { hb_font_funcs_destroy (p); }
-  static const hb_font_funcs_t *get_null ()
-  { return hb_font_funcs_get_empty (); }
-};
 
 
 #endif /* HB_MACHINERY_HH */

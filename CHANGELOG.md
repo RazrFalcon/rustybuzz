@@ -30,3 +30,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_shape_list_shapers`, since we only have `ot` and `fallback`.
 - Deprecated methods.
 - `hb_unicode_funcs_t`, since we are using only internal Unicode tables.
+- `hb_font_funcs_t`, since we are using internal OpenType parser.

@@ -883,12 +883,6 @@ hb_ot_position_default (const hb_ot_shape_context_t *c)
   {
     c->font->get_glyph_h_advances (count, &info[0].codepoint, sizeof(info[0]),
                                    &pos[0].x_advance, sizeof(pos[0]));
-    /* The nil glyph_h_origin() func returns 0, so no need to apply it. */
-    if (c->font->has_glyph_h_origin_func ())
-      for (unsigned int i = 0; i < count; i++)
-        c->font->subtract_glyph_h_origin (info[i].codepoint,
-                                          &pos[i].x_offset,
-                                          &pos[i].y_offset);
   }
   else
   {
@@ -908,10 +902,6 @@ hb_ot_position_default (const hb_ot_shape_context_t *c)
 static inline void
 hb_ot_position_complex (const hb_ot_shape_context_t *c)
 {
-  unsigned int count = c->buffer->len;
-  hb_glyph_info_t *info = c->buffer->info;
-  hb_glyph_position_t *pos = c->buffer->pos;
-
   /* If the font has no GPOS and direction is forward, then when
    * zeroing mark widths, we shift the mark with it, such that the
    * mark is positioned hanging over the previous glyph.  When
@@ -925,13 +915,6 @@ hb_ot_position_complex (const hb_ot_shape_context_t *c)
                                      HB_DIRECTION_IS_FORWARD (c->buffer->props.direction);
 
   /* We change glyph origin to what GPOS expects (horizontal), apply GPOS, change it back. */
-
-  /* The nil glyph_h_origin() func returns 0, so no need to apply it. */
-  if (c->font->has_glyph_h_origin_func ())
-    for (unsigned int i = 0; i < count; i++)
-      c->font->add_glyph_h_origin (info[i].codepoint,
-                                   &pos[i].x_offset,
-                                   &pos[i].y_offset);
 
   hb_ot_layout_position_start (c->font, c->buffer);
 
@@ -971,13 +954,6 @@ hb_ot_position_complex (const hb_ot_shape_context_t *c)
     hb_aat_layout_zero_width_deleted_glyphs (c->buffer);
 #endif
   hb_ot_layout_position_finish_offsets (c->font, c->buffer);
-
-  /* The nil glyph_h_origin() func returns 0, so no need to apply it. */
-  if (c->font->has_glyph_h_origin_func ())
-    for (unsigned int i = 0; i < count; i++)
-      c->font->subtract_glyph_h_origin (info[i].codepoint,
-                                        &pos[i].x_offset,
-                                        &pos[i].y_offset);
 
   if (c->plan->fallback_mark_positioning)
     _hb_ot_shape_fallback_mark_position (c->plan, c->font, c->buffer,
