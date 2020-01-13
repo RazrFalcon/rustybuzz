@@ -33,7 +33,6 @@
 #include "hb-blob.hh"
 #include "hb-face.hh"
 #include "hb-machinery.hh"
-#include "hb-subset.hh"
 
 
 namespace OT {
@@ -303,31 +302,6 @@ struct OffsetTo : Offset<OffsetType, has_null>
   Type& serialize (hb_serialize_context_t *c, const void *base)
   {
     return * (Type *) Offset<OffsetType>::serialize (c, base);
-  }
-
-  template <typename ...Ts>
-  bool serialize_subset (hb_subset_context_t *c,
-			 const OffsetTo& src,
-			 const void *src_base,
-			 const void *dst_base,
-			 Ts&&... ds)
-  {
-    *this = 0;
-    if (src.is_null ())
-      return false;
-
-    auto *s = c->serializer;
-
-    s->push ();
-
-    bool ret = c->dispatch (src_base+src, hb_forward<Ts> (ds)...);
-
-    if (ret || !has_null)
-      s->add_link (*this, s->pop_pack (), dst_base);
-    else
-      s->pop_discard ();
-
-    return ret;
   }
 
   /* TODO: Somehow merge this with previous function into a serialize_dispatch(). */
@@ -700,17 +674,6 @@ struct OffsetListOf : OffsetArrayOf<Type>
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= this->len)) return Crap (Type);
     return this+this->arrayZ[i];
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    struct OffsetListOf<Type> *out = c->serializer->embed (*this);
-    if (unlikely (!out)) return_trace (false);
-    unsigned int count = this->len;
-    for (unsigned int i = 0; i < count; i++)
-      out->arrayZ[i].serialize_subset (c, this->arrayZ[i], this, out);
-    return_trace (true);
   }
 
   template <typename ...Ts>

@@ -94,26 +94,6 @@ struct maxp
     return_trace (likely (version.major == 0 && version.minor == 0x5000u));
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    maxp *maxp_prime = c->serializer->embed (this);
-    if (unlikely (!maxp_prime)) return_trace (false);
-
-    maxp_prime->numGlyphs = c->plan->num_output_glyphs ();
-    if (maxp_prime->version.major == 1)
-    {
-      const maxpV1Tail *src_v1 = &StructAfter<maxpV1Tail> (*this);
-      maxpV1Tail *dest_v1 = c->serializer->embed<maxpV1Tail> (src_v1);
-      if (unlikely (!dest_v1)) return_trace (false);
-
-      if (c->plan->drop_hints)
-	drop_hint_fields (dest_v1);
-    }
-
-    return_trace (true);
-  }
-
   static void drop_hint_fields (maxpV1Tail* dest_v1)
   {
     dest_v1->maxZones = 1;

@@ -46,12 +46,6 @@ fn main() {
     build.file("harfbuzz/src/hb-shape.cc");
     build.file("harfbuzz/src/hb-shaper.cc");
     build.file("harfbuzz/src/hb-static.cc");
-    build.file("harfbuzz/src/hb-subset-cff-common.cc");
-    build.file("harfbuzz/src/hb-subset-cff1.cc");
-    build.file("harfbuzz/src/hb-subset-cff2.cc");
-    build.file("harfbuzz/src/hb-subset-input.cc");
-    build.file("harfbuzz/src/hb-subset-plan.cc");
-    build.file("harfbuzz/src/hb-subset.cc");
     build.file("harfbuzz/src/hb-ucd.cc");
     build.file("harfbuzz/src/hb-unicode.cc");
     build.include("harfbuzz/src");

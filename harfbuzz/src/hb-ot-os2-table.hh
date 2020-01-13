@@ -166,22 +166,6 @@ struct OS2
     }
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    OS2 *os2_prime = c->serializer->embed (this);
-    if (unlikely (!os2_prime)) return_trace (false);
-
-    uint16_t min_cp, max_cp;
-    find_min_and_max_codepoint (c->plan->unicodes, &min_cp, &max_cp);
-    os2_prime->usFirstCharIndex = min_cp;
-    os2_prime->usLastCharIndex = max_cp;
-
-    _update_unicode_ranges (c->plan->unicodes, os2_prime->ulUnicodeRange);
-
-    return_trace (true);
-  }
-
   void _update_unicode_ranges (const hb_set_t *codepoints,
 			       HBUINT32 ulUnicodeRange[4]) const
   {

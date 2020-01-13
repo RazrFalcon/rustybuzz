@@ -33,6 +33,7 @@
 #include "hb-ot-map.hh"
 #include "hb-ot-shape.hh"
 #include "hb-ot-layout.hh"
+#include "hb-set.hh"
 
 
 void hb_ot_map_t::collect_lookups (unsigned int table_index, hb_set_t *lookups_out) const

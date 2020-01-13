@@ -87,32 +87,6 @@ struct VORG
     for (const auto _ : it) c->copy (_);
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    VORG *vorg_prime = c->serializer->start_embed<VORG> ();
-    if (unlikely (!c->serializer->check_success (vorg_prime))) return_trace (false);
-
-    auto it =
-    + vertYOrigins.as_array ()
-    | hb_filter (c->plan->glyphset (), &VertOriginMetric::glyph)
-    | hb_map ([&] (const VertOriginMetric& _)
-	      {
-		hb_codepoint_t new_glyph = HB_SET_VALUE_INVALID;
-		c->plan->new_gid_for_old_gid (_.glyph, &new_glyph);
-
-		VertOriginMetric metric;
-		metric.glyph = new_glyph;
-		metric.vertOriginY = _.vertOriginY;
-		return metric;
-	      })
-    ;
-
-    /* serialize the new table */
-    vorg_prime->serialize (c->serializer, it, defaultVertOriginY);
-    return_trace (true);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);

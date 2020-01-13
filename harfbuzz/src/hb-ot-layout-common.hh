@@ -66,77 +66,6 @@ namespace OT {
 
 #define NOT_COVERED		((unsigned int) -1)
 
-
-template<typename Iterator>
-static inline void Coverage_serialize (hb_serialize_context_t *c,
-				       Iterator it);
-
-template<typename Iterator>
-static inline void ClassDef_serialize (hb_serialize_context_t *c,
-                                       Iterator it);
-
-static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
-                                          const hb_set_t &glyphset,
-                                          const hb_map_t &gid_klass_map,
-                                          hb_sorted_vector_t<HBGlyphID> glyphs,
-                                          hb_sorted_vector_t<unsigned> klasses,
-                                          hb_map_t *klass_map /*INOUT*/);
-
-
-template<typename OutputArray>
-struct subset_offset_array_t
-{
-  subset_offset_array_t
-  (hb_subset_context_t *subset_context,
-   OutputArray& out,
-   const void *src_base,
-   const void *dest_base)
-      : _subset_context(subset_context), _out (out), _src_base (src_base), _dest_base (dest_base) {}
-
-  template <typename T>
-  bool
-  operator ()
-  (T&& offset)
-  {
-    auto *o = _out.serialize_append (_subset_context->serializer);
-    if (unlikely (!o)) return false;
-    auto snap = _subset_context->serializer->snapshot ();
-    bool ret = o->serialize_subset (_subset_context, offset, _src_base, _dest_base);
-    if (!ret)
-    {
-      _out.pop ();
-      _subset_context->serializer->revert (snap);
-    }
-    return ret;
-  }
-
-  private:
-  hb_subset_context_t *_subset_context;
-  OutputArray &_out;
-  const void *_src_base;
-  const void *_dest_base;
-};
-
-/*
- * Helper to subset an array of offsets. Subsets the thing pointed to by each offset
- * and discards the offset in the array if the subset operation results in an empty
- * thing.
- */
-struct
-{
-  template<typename OutputArray>
-  subset_offset_array_t<OutputArray>
-  operator ()
-  (hb_subset_context_t *subset_context,
-   OutputArray& out,
-   const void *src_base,
-   const void *dest_base) const
-  {
-    return subset_offset_array_t<OutputArray> (subset_context, out, src_base, dest_base);
-  }
-}
-HB_FUNCOBJ (subset_offset_array);
-
 /*
  *
  * OpenType Layout Common Table Formats
@@ -151,26 +80,6 @@ HB_FUNCOBJ (subset_offset_array);
 struct Record_sanitize_closure_t {
   hb_tag_t tag;
   const void *list_base;
-};
-
-struct RecordList_subset_context_t {
-
-  RecordList_subset_context_t() : script_count (0), langsys_count (0)
-  {}
-
-  bool visitScript ()
-  {
-    return script_count++ < HB_MAX_SCRIPTS;
-  }
-
-  bool visitLangSys ()
-  {
-    return langsys_count++ < HB_MAX_LANGSYS;
-  }
-
-  private:
-  unsigned int script_count;
-  unsigned int langsys_count;
 };
 
 template <typename Type>
@@ -225,32 +134,6 @@ struct RecordListOf : RecordArrayOf<Type>
 {
   const Type& operator [] (unsigned int i) const
   { return this+this->get_offset (i); }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
-
-    RecordList_subset_context_t record_list_context;
-
-    unsigned int count = this->len;
-    for (unsigned int i = 0; i < count; i++)
-    {
-      auto *record = out->serialize_append (c->serializer);
-      if (unlikely (!record)) return false;
-      auto snap = c->serializer->snapshot ();
-      if (record->offset.serialize_subset (c, this->get_offset (i), this, out, &record_list_context))
-      {
-        record->tag = this->get_tag(i);
-        continue;
-      }
-      out->pop ();
-      c->serializer->revert (snap);
-    }
-
-    return_trace (true);
-  }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -378,36 +261,6 @@ struct Script
 
   bool has_default_lang_sys () const           { return defaultLangSys != 0; }
   const LangSys& get_default_lang_sys () const { return this+defaultLangSys; }
-
-  bool subset (hb_subset_context_t *c, RecordList_subset_context_t *record_list_context) const
-  {
-    TRACE_SUBSET (this);
-    if (!record_list_context->visitScript ()) return_trace (false);
-
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
-
-    out->defaultLangSys.serialize_copy (c->serializer, defaultLangSys, this, out);
-
-    for (const auto &src: langSys)
-    {
-      if (!record_list_context->visitLangSys ()) {
-        continue;
-      }
-
-      auto snap = c->serializer->snapshot ();
-      auto *lang_sys = c->serializer->embed (src);
-
-      if (likely(lang_sys)
-          && lang_sys->offset.serialize_copy (c->serializer, src.offset, this, out))
-      {
-        out->langSys.len++;
-        continue;
-      }
-      c->serializer->revert (snap);
-    }
-    return_trace (true);
-  }
 
   bool sanitize (hb_sanitize_context_t *c,
 		 const Record_sanitize_closure_t * = nullptr) const
@@ -682,15 +535,6 @@ struct Feature
   const FeatureParams &get_feature_params () const
   { return this+featureParams; }
 
-  bool subset (hb_subset_context_t *c, RecordList_subset_context_t *r) const
-  {
-    TRACE_SUBSET (this);
-    auto *out = c->serializer->embed (*this);
-    if (unlikely (!out)) return_trace (false);
-    out->featureParams = 0; /* TODO(subset) FeatureParams. */
-    return_trace (true);
-  }
-
   bool sanitize (hb_sanitize_context_t *c,
 		 const Record_sanitize_closure_t *closure = nullptr) const
   {
@@ -841,25 +685,6 @@ struct Lookup
       HBUINT16 &markFilteringSet = StructAfter<HBUINT16> (subTable);
       markFilteringSet = lookup_props >> 16;
     }
-    return_trace (true);
-  }
-
-  template <typename TSubTable>
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    auto *out = c->serializer->embed (*this);
-    if (unlikely (!out)) return_trace (false);
-
-    /* Subset the actual subtables. */
-    /* TODO Drop empty ones, either by calling intersects() beforehand,
-     * or just dropping null offsets after. */
-    const OffsetArrayOf<TSubTable>& subtables = get_subtables<TSubTable> ();
-    OffsetArrayOf<TSubTable>& out_subtables = out->get_subtables<TSubTable> ();
-    unsigned int count = subTable.len;
-    for (unsigned int i = 0; i < count; i++)
-      out_subtables[i].serialize_subset (c, subtables[i], this, out, get_type ());
-
     return_trace (true);
   }
 
@@ -1194,24 +1019,7 @@ struct Coverage
     default:return_trace (false);
     }
   }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto it =
-    + iter ()
-    | hb_filter (glyphset)
-    | hb_map_retains_sorting (glyph_map)
-    ;
-
-    bool ret = bool (it);
-    Coverage_serialize (c->serializer, it);
-    return_trace (ret);
-  }
-
+  
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1330,47 +1138,6 @@ struct Coverage
   DEFINE_SIZE_UNION (2, format);
 };
 
-template<typename Iterator>
-static inline void
-Coverage_serialize (hb_serialize_context_t *c,
-                    Iterator it)
-{ c->start_embed<Coverage> ()->serialize (c, it); }
-
-static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
-                                          const hb_set_t &glyphset,
-                                          const hb_map_t &gid_klass_map,
-                                          hb_sorted_vector_t<HBGlyphID> glyphs,
-                                          hb_sorted_vector_t<unsigned> klasses,
-                                          hb_map_t *klass_map /*INOUT*/)
-{
-  bool has_no_match = glyphset.get_population () > gid_klass_map.get_population ();
-  
-  hb_map_t m;
-  if (!klass_map) klass_map = &m;
-
-  if (has_no_match) klass_map->set (0, 0);
-  unsigned idx = klass_map->has (0) ? 1 : 0;
-  for (const unsigned k: klasses.iter ())
-  {
-    if (klass_map->has (k)) continue;
-    klass_map->set (k, idx);
-    idx++;
-  }
-  
-  auto it =
-  + glyphs.iter ()
-  | hb_map_retains_sorting ([&] (const HBGlyphID& gid) -> hb_pair_t<hb_codepoint_t, HBUINT16>
-                            {
-                              HBUINT16 new_klass;
-                              new_klass = klass_map->get (gid_klass_map[gid]);
-                              return hb_pair ((hb_codepoint_t)gid, new_klass);
-                            })
-  ;
-  
-  c->propagate_error (glyphs, klasses);
-  ClassDef_serialize (c, it);
-}
-
 /*
  * Class Definition Table
  */
@@ -1404,35 +1171,6 @@ struct ClassDefFormat1
     classValue.serialize (c, + it
                              | hb_map (hb_second));
     return_trace (true);
-  }
-
-  bool subset (hb_subset_context_t *c,
-               hb_map_t *klass_map = nullptr /*OUT*/) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-   
-    hb_sorted_vector_t<HBGlyphID> glyphs;
-    hb_sorted_vector_t<unsigned> orig_klasses;
-    hb_map_t gid_org_klass_map;
-
-    hb_codepoint_t start = startGlyph;
-    hb_codepoint_t end   = start + classValue.len;
-    for (const hb_codepoint_t gid : + hb_range (start, end)
-				    | hb_filter (glyphset))
-    {
-      unsigned klass = classValue[gid - start];
-      if (!klass) continue;
-
-      glyphs.push (glyph_map[gid]);
-      gid_org_klass_map.set (glyph_map[gid], klass);
-      orig_klasses.push (klass);
-    }
-
-    ClassDef_remap_and_serialize (c->serializer, glyphset, gid_org_klass_map,
-                                  glyphs, orig_klasses, klass_map);
-    return_trace ((bool) glyphs);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1574,39 +1312,7 @@ struct ClassDefFormat2
     rangeRecord.len = num_ranges;
     return_trace (true);
   }
-
-  bool subset (hb_subset_context_t *c,
-               hb_map_t *klass_map = nullptr /*OUT*/) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    hb_sorted_vector_t<HBGlyphID> glyphs;
-    hb_sorted_vector_t<unsigned> orig_klasses;
-    hb_map_t gid_org_klass_map;
-
-    unsigned count = rangeRecord.len;
-    for (unsigned i = 0; i < count; i++)
-    {
-      unsigned klass = rangeRecord[i].value;
-      if (!klass) continue;
-      hb_codepoint_t start = rangeRecord[i].start;
-      hb_codepoint_t end   = rangeRecord[i].end + 1;
-      for (hb_codepoint_t g = start; g < end; g++)
-      {
-	if (!glyphset.has (g)) continue;
-	glyphs.push (glyph_map[g]);
-        gid_org_klass_map.set (glyph_map[g], klass);
-        orig_klasses.push (klass);
-      }
-    }
-
-    ClassDef_remap_and_serialize (c->serializer, glyphset, gid_org_klass_map,
-                                  glyphs, orig_klasses, klass_map);
-    return_trace ((bool) glyphs);
-  }
-
+  
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1740,17 +1446,6 @@ struct ClassDef
     {
     case 1: return_trace (u.format1.serialize (c, it));
     case 2: return_trace (u.format2.serialize (c, it));
-    default:return_trace (false);
-    }
-  }
-
-  bool subset (hb_subset_context_t *c,
-               hb_map_t *klass_map = nullptr /*OUT*/) const
-  {
-    TRACE_SUBSET (this);
-    switch (u.format) {
-    case 1: return_trace (u.format1.subset (c, klass_map));
-    case 2: return_trace (u.format2.subset (c, klass_map));
     default:return_trace (false);
     }
   }

@@ -99,30 +99,6 @@ struct SingleSubstFormat1
     return_trace (true);
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    hb_codepoint_t delta = deltaGlyphID;
-
-    auto it =
-    + hb_iter (this+coverage)
-    | hb_filter (glyphset)
-    | hb_map_retains_sorting ([&] (hb_codepoint_t g) {
-				return hb_codepoint_pair_t (g,
-							    (g + delta) & 0xFFFF); })
-    | hb_filter (glyphset, hb_second)
-    | hb_map_retains_sorting ([&] (hb_codepoint_pair_t p) -> hb_codepoint_pair_t
-			      { return hb_pair (glyph_map[p.first], glyph_map[p.second]); })
-    ;
-
-    bool ret = bool (it);
-    SingleSubst_serialize (c->serializer, it);
-    return_trace (ret);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -200,25 +176,6 @@ struct SingleSubstFormat2
     if (unlikely (!substitute.serialize (c, substitutes))) return_trace (false);
     if (unlikely (!coverage.serialize (c, this).serialize (c, glyphs))) return_trace (false);
     return_trace (true);
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto it =
-    + hb_zip (this+coverage, substitute)
-    | hb_filter (glyphset, hb_first)
-    | hb_filter (glyphset, hb_second)
-    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const HBGlyphID &> p) -> hb_codepoint_pair_t
-			      { return hb_pair (glyph_map[p.first], glyph_map[p.second]); })
-    ;
-
-    bool ret = bool (it);
-    SingleSubst_serialize (c->serializer, it);
-    return_trace (ret);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -350,23 +307,6 @@ struct Sequence
     return_trace (substitute.serialize (c, subst));
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    if (!intersects (&glyphset)) return_trace (false);
-
-    auto it =
-      + hb_iter (substitute)
-      | hb_map (glyph_map)
-      ;
-
-    auto *out = c->serializer->start_embed (*this);
-    return_trace (out->serialize (c->serializer, it));
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -437,29 +377,6 @@ struct MultipleSubstFormat1
       substitute_glyphs_list += substitute_len;
     }
     return_trace (coverage.serialize (c, this).serialize (c, glyphs));
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
-    out->format = format;
-
-    hb_sorted_vector_t<hb_codepoint_t> new_coverage;
-    + hb_zip (this+coverage, sequence)
-    | hb_filter (glyphset, hb_first)
-    | hb_filter (subset_offset_array (c, out->sequence, this, out), hb_second)
-    | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
-    ;
-    out->coverage.serialize (c->serializer, out)
-		 .serialize (c->serializer, new_coverage.iter ());
-    return_trace (bool (new_coverage));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -560,23 +477,6 @@ struct AlternateSet
     return_trace (alternates.serialize (c, alts));
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto it =
-      + hb_iter (alternates)
-      | hb_filter (glyphset)
-      | hb_map (glyph_map)
-      ;
-
-    auto *out = c->serializer->start_embed (*this);
-    return_trace (out->serialize (c->serializer, it) &&
-		  out->alternates);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -647,29 +547,6 @@ struct AlternateSubstFormat1
       alternate_glyphs_list += alternate_len;
     }
     return_trace (coverage.serialize (c, this).serialize (c, glyphs));
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
-    out->format = format;
-
-    hb_sorted_vector_t<hb_codepoint_t> new_coverage;
-    + hb_zip (this+coverage, alternateSet)
-    | hb_filter (glyphset, hb_first)
-    | hb_filter (subset_offset_array (c, out->alternateSet, this, out), hb_second)
-    | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
-    ;
-    out->coverage.serialize (c->serializer, out)
-		 .serialize (c->serializer, new_coverage.iter ());
-    return_trace (bool (new_coverage));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -807,25 +684,6 @@ struct Ligature
     return_trace (true);
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    if (!intersects (&glyphset) || !glyphset.has (ligGlyph)) return_trace (false);
-
-    auto it =
-      + hb_iter (component)
-      | hb_map (glyph_map)
-      ;
-
-    auto *out = c->serializer->start_embed (*this);
-    return_trace (out->serialize (c->serializer,
-				   glyph_map[ligGlyph],
-				   it));
-  }
-
   public:
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -913,19 +771,6 @@ struct LigatureSet
       component_list += component_count;
     }
     return_trace (true);
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
-
-    + hb_iter (ligature)
-    | hb_filter (subset_offset_array (c, out->ligature, this, out))
-    | hb_drain
-    ;
-    return_trace (bool (out->ligature));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1021,29 +866,6 @@ struct LigatureSubstFormat1
       component_count_list += ligature_count;
     }
     return_trace (coverage.serialize (c, this).serialize (c, first_glyphs));
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
-    out->format = format;
-
-    hb_sorted_vector_t<hb_codepoint_t> new_coverage;
-    + hb_zip (this+coverage, ligatureSet)
-    | hb_filter (glyphset, hb_first)
-    | hb_filter (subset_offset_array (c, out->ligatureSet, this, out), hb_second)
-    | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
-    ;
-    out->coverage.serialize (c->serializer, out)
-		 .serialize (c->serializer, new_coverage.iter ());
-    return_trace (bool (new_coverage));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1212,13 +1034,6 @@ struct ReverseChainSingleSubstFormat1
       return_trace (true);
     }
 
-    return_trace (false);
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    // TODO(subset)
     return_trace (false);
   }
 
@@ -1482,9 +1297,6 @@ struct SubstLookup : Lookup
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   { return Lookup::dispatch<SubTable> (c, hb_forward<Ts> (ds)...); }
 
-  bool subset (hb_subset_context_t *c) const
-  { return Lookup::subset<SubTable> (c); }
-
   bool sanitize (hb_sanitize_context_t *c) const
   { return Lookup::sanitize<SubTable> (c); }
 };
@@ -1500,9 +1312,6 @@ struct GSUB : GSUBGPOS
 
   const SubstLookup& get_lookup (unsigned int i) const
   { return CastR<SubstLookup> (GSUBGPOS::get_lookup (i)); }
-
-  bool subset (hb_subset_context_t *c) const
-  { return GSUBGPOS::subset<SubstLookup> (c); }
 
   bool sanitize (hb_sanitize_context_t *c) const
   { return GSUBGPOS::sanitize<SubstLookup> (c); }

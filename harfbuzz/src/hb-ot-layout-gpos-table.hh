@@ -555,24 +555,6 @@ struct SinglePosFormat1
     coverage.serialize (c, this).serialize (c, glyphs);
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto it =
-    + hb_iter (this+coverage)
-    | hb_filter (glyphset)
-    | hb_map_retains_sorting (glyph_map)
-    | hb_zip (hb_repeat (values.as_array (valueFormat.get_len ())))
-    ;
-
-    bool ret = bool (it);
-    SinglePos_serialize (c->serializer, it, valueFormat);
-    return_trace (ret);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -642,31 +624,6 @@ struct SinglePosFormat2
     ;
 
     coverage.serialize (c, this).serialize (c, glyphs);
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    unsigned sub_length = valueFormat.get_len ();
-    auto values_array = values.as_array (valueCount * sub_length);
-
-    auto it =
-    + hb_zip (this+coverage, hb_range ((unsigned) valueCount))
-    | hb_filter (glyphset, hb_first)
-    | hb_map_retains_sorting ([&] (const hb_pair_t<hb_codepoint_t, unsigned>& _)
-			      {
-				return hb_pair (glyph_map[_.first],
-						values_array.sub_array (_.second * sub_length,
-									sub_length));
-			      })
-    ;
-
-    bool ret = bool (it);
-    SinglePos_serialize (c->serializer, it, valueFormat);
-    return_trace (ret);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -858,37 +815,6 @@ struct PairSet
     return_trace (false);
   }
 
-  bool subset (hb_subset_context_t *c,
-               const ValueFormat valueFormats[2]) const
-  {
-    TRACE_SUBSET (this);
-    auto snap = c->serializer->snapshot ();
-
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
-    out->len = 0;
-
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    unsigned len1 = valueFormats[0].get_len ();
-    unsigned len2 = valueFormats[1].get_len ();
-    unsigned record_size = HBUINT16::static_size + Value::static_size * (len1 + len2);
-
-    const PairValueRecord *record = &firstPairValueRecord;
-    unsigned count = len, num = 0;
-    for (unsigned i = 0; i < count; i++)
-    {
-      if (!glyphset.has (record->secondGlyph)) continue;
-      if (record->serialize (c->serializer, len1 + len2, glyph_map)) num++;
-      record = &StructAtOffset<const PairValueRecord> (record, record_size);
-    }
-
-    out->len = num;
-    if (!num) c->serializer->revert (snap);
-    return_trace (num);
-  }
-
   struct sanitize_closure_t
   {
     const void *base;
@@ -957,48 +883,6 @@ struct PairPosFormat1
     if (!skippy_iter.next ()) return_trace (false);
 
     return_trace ((this+pairSet[index]).apply (c, valueFormat, skippy_iter.idx));
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
-    out->format = format;
-    out->valueFormat[0] = valueFormat[0];
-    out->valueFormat[1] = valueFormat[1];
-
-    hb_sorted_vector_t<hb_codepoint_t> new_coverage;
-
-    + hb_zip (this+coverage, pairSet)
-    | hb_filter (glyphset, hb_first)
-    | hb_filter ([this, c, out] (const OffsetTo<PairSet>& _)
-		 {
-		   auto *o = out->pairSet.serialize_append (c->serializer);
-		   if (unlikely (!o)) return false;
-		   auto snap = c->serializer->snapshot ();
-		   bool ret = o->serialize_subset (c, _, this, out, valueFormat);
-		   if (!ret)
-		   {
-		     out->pairSet.pop ();
-		     c->serializer->revert (snap);
-		   }
-		   return ret;
-		 },
-		 hb_second)
-    | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
-    ;
-
-    out->coverage.serialize (c->serializer, out)
-		 .serialize (c->serializer, new_coverage.iter ());
-
-    return_trace (bool (new_coverage));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1084,54 +968,6 @@ struct PairPosFormat2
       buffer->idx++;
 
     return_trace (true);
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
-    out->format = format;
-    out->valueFormat1 = valueFormat1;
-    out->valueFormat2 = valueFormat2;
-
-    hb_map_t klass1_map;
-    out->classDef1.serialize_subset (c, classDef1, this, out, &klass1_map);
-    out->class1Count = klass1_map.get_population ();
-
-    hb_map_t klass2_map;
-    out->classDef2.serialize_subset (c, classDef2, this, out, &klass2_map);
-    out->class2Count = klass2_map.get_population ();
-
-    unsigned record_len = valueFormat1.get_len () + valueFormat2.get_len ();
-
-    + hb_range ((unsigned) class1Count)
-    | hb_filter (klass1_map)
-    | hb_apply ([&] (const unsigned class1_idx)
-                {
-                  + hb_range ((unsigned) class2Count)
-                  | hb_filter (klass2_map)
-                  | hb_apply ([&] (const unsigned class2_idx)
-                              {
-                                unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * record_len;
-                                for (unsigned i = 0; i < record_len; i++)
-                                  c->serializer->copy (values[idx+i]);
-                              })
-                  ;
-                })
-    ;
-
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto it =
-    + hb_iter (this+coverage)
-    | hb_filter (glyphset)
-    | hb_map_retains_sorting (glyph_map)
-    ;
-
-    out->coverage.serialize (c->serializer, out).serialize (c->serializer, it);
-    return_trace (out->class1Count && out->class2Count && bool (it));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1379,27 +1215,6 @@ struct CursivePosFormat1
     coverage.serialize (c, this).serialize (c, glyphs);
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out)) return_trace (false);
-
-    auto it =
-    + hb_zip (this+coverage, entryExitRecord)
-    | hb_filter (glyphset, hb_first)
-    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const EntryExitRecord&> p) -> hb_pair_t<hb_codepoint_t, const EntryExitRecord&>
-			      { return hb_pair (glyph_map[p.first], p.second);})
-    ;
-
-    bool ret = bool (it);
-    out->serialize (c->serializer, it, this);
-    return_trace (ret);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1496,13 +1311,6 @@ struct MarkBasePosFormat1
     if (base_index == NOT_COVERED) return_trace (false);
 
     return_trace ((this+markArray).apply (c, mark_index, base_index, this+baseArray, classCount, skippy_iter.idx));
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    // TODO(subset)
-    return_trace (false);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1622,13 +1430,6 @@ struct MarkLigPosFormat1
     return_trace ((this+markArray).apply (c, mark_index, comp_index, lig_attach, classCount, j));
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    // TODO(subset)
-    return_trace (false);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1741,13 +1542,6 @@ struct MarkMarkPosFormat1
     if (mark2_index == NOT_COVERED) return_trace (false);
 
     return_trace ((this+mark1Array).apply (c, mark1_index, mark2_index, this+mark2Array, classCount, j));
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    // TODO(subset)
-    return_trace (false);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1913,9 +1707,6 @@ struct PosLookup : Lookup
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   { return Lookup::dispatch<SubTable> (c, hb_forward<Ts> (ds)...); }
 
-  bool subset (hb_subset_context_t *c) const
-  { return Lookup::subset<SubTable> (c); }
-
   bool sanitize (hb_sanitize_context_t *c) const
   { return Lookup::sanitize<SubTable> (c); }
 };
@@ -1935,9 +1726,6 @@ struct GPOS : GSUBGPOS
   static inline void position_start (hb_font_t *font, hb_buffer_t *buffer);
   static inline void position_finish_advances (hb_font_t *font, hb_buffer_t *buffer);
   static inline void position_finish_offsets (hb_font_t *font, hb_buffer_t *buffer);
-
-  bool subset (hb_subset_context_t *c) const
-  { return GSUBGPOS::subset<PosLookup> (c); }
 
   bool sanitize (hb_sanitize_context_t *c) const
   { return GSUBGPOS::sanitize<PosLookup> (c); }

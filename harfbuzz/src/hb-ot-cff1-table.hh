@@ -29,7 +29,6 @@
 
 #include "hb-ot-head-table.hh"
 #include "hb-ot-cff-common.hh"
-#include "hb-subset-cff1.hh"
 
 namespace CFF {
 
@@ -899,7 +898,6 @@ struct cff1_private_dict_values_base_t : dict_values_t<VAL>
   const CFF1Subrs    *localSubrs;
 };
 
-typedef cff1_private_dict_values_base_t<op_str_t> cff1_private_dict_values_subset_t;
 typedef cff1_private_dict_values_base_t<num_dict_val_t> cff1_private_dict_values_t;
 
 struct cff1_private_dict_opset_t : dict_opset_t
@@ -946,48 +944,6 @@ struct cff1_private_dict_opset_t : dict_opset_t
     if (unlikely (env.in_error ())) return;
 
     dictval.add_op (op, env.str_ref, val);
-  }
-};
-
-struct cff1_private_dict_opset_subset : dict_opset_t
-{
-  static void process_op (op_code_t op, num_interp_env_t& env, cff1_private_dict_values_subset_t& dictval)
-  {
-    switch (op) {
-      case OpCode_BlueValues:
-      case OpCode_OtherBlues:
-      case OpCode_FamilyBlues:
-      case OpCode_FamilyOtherBlues:
-      case OpCode_StemSnapH:
-      case OpCode_StemSnapV:
-      case OpCode_StdHW:
-      case OpCode_StdVW:
-      case OpCode_BlueScale:
-      case OpCode_BlueShift:
-      case OpCode_BlueFuzz:
-      case OpCode_ForceBold:
-      case OpCode_LanguageGroup:
-      case OpCode_ExpansionFactor:
-      case OpCode_initialRandomSeed:
-      case OpCode_defaultWidthX:
-      case OpCode_nominalWidthX:
-	env.clear_args ();
-	break;
-
-      case OpCode_Subrs:
-	dictval.subrsOffset = env.argStack.pop_uint ();
-	env.clear_args ();
-	break;
-
-      default:
-	dict_opset_t::process_op (op, env);
-	if (!env.argStack.is_empty ()) return;
-	break;
-    }
-
-    if (unlikely (env.in_error ())) return;
-
-    dictval.add_op (op, env.str_ref);
   }
 };
 
@@ -1199,110 +1155,8 @@ struct cff1
     HB_INTERNAL bool get_extents (hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents) const;
     HB_INTERNAL bool get_seac_components (hb_codepoint_t glyph, hb_codepoint_t *base, hb_codepoint_t *accent) const;
   };
-
-  struct accelerator_subset_t : accelerator_templ_t<cff1_private_dict_opset_subset, cff1_private_dict_values_subset_t>
-  {
-    void init (hb_face_t *face)
-    {
-      SUPER::init (face);
-      if (blob == nullptr) return;
-
-      const OT::cff1 *cff = this->blob->as<OT::cff1> ();
-      encoding = &Null(Encoding);
-      if (is_CID ())
-      {
-	if (unlikely (charset == &Null(Charset))) { fini (); return; }
-      }
-      else
-      {
-	if (!is_predef_encoding ())
-	{
-	  encoding = &StructAtOffsetOrNull<Encoding> (cff, topDict.EncodingOffset);
-	  if (unlikely ((encoding == &Null (Encoding)) || !encoding->sanitize (&sc))) { fini (); return; }
-	}
-      }
-    }
-
-    bool is_predef_encoding () const { return topDict.EncodingOffset <= ExpertEncoding; }
-
-    hb_codepoint_t glyph_to_code (hb_codepoint_t glyph) const
-    {
-      if (encoding != &Null(Encoding))
-	return encoding->get_code (glyph);
-      else
-      {
-	hb_codepoint_t sid = glyph_to_sid (glyph);
-	if (sid == 0) return 0;
-	hb_codepoint_t code = 0;
-	switch (topDict.EncodingOffset)
-	{
-	case StandardEncoding:
-	  code = lookup_standard_encoding_for_code (sid);
-	  break;
-	case ExpertEncoding:
-	  code = lookup_expert_encoding_for_code (sid);
-	  break;
-	default:
-	  break;
-	}
-	return code;
-      }
-    }
-
-    hb_codepoint_t glyph_to_sid (hb_codepoint_t glyph) const
-    {
-      if (charset != &Null(Charset))
-	return charset->get_sid (glyph);
-      else
-      {
-	hb_codepoint_t sid = 0;
-	switch (topDict.CharsetOffset)
-	{
-	  case  ISOAdobeCharset:
-	    if (glyph <= 228 /*zcaron*/) sid = glyph;
-	    break;
-	  case  ExpertCharset:
-	    sid = lookup_expert_charset_for_sid (glyph);
-	    break;
-	  case  ExpertSubsetCharset:
-	      sid = lookup_expert_subset_charset_for_sid (glyph);
-	    break;
-	  default:
-	    break;
-	}
-	return sid;
-      }
-    }
-
-    const Encoding	  *encoding;
-
-    private:
-    typedef accelerator_templ_t<cff1_private_dict_opset_subset, cff1_private_dict_values_subset_t> SUPER;
-  };
-
-  bool subset (hb_subset_plan_t *plan) const
-  {
-    hb_blob_t *cff_prime = nullptr;
-
-    bool success = true;
-    if (hb_subset_cff1 (plan, &cff_prime)) {
-      success = success && plan->add_table (HB_OT_TAG_cff1, cff_prime);
-      hb_blob_t *head_blob = hb_sanitize_context_t().reference_table<head> (plan->source);
-      success = success && head_blob && plan->add_table (HB_OT_TAG_head, head_blob);
-      hb_blob_destroy (head_blob);
-    } else {
-      success = false;
-    }
-    hb_blob_destroy (cff_prime);
-
-    return success;
-  }
-
+  
   protected:
-  HB_INTERNAL static hb_codepoint_t lookup_standard_encoding_for_code (hb_codepoint_t sid);
-  HB_INTERNAL static hb_codepoint_t lookup_expert_encoding_for_code (hb_codepoint_t sid);
-  HB_INTERNAL static hb_codepoint_t lookup_expert_charset_for_sid (hb_codepoint_t glyph);
-  HB_INTERNAL static hb_codepoint_t lookup_expert_subset_charset_for_sid (hb_codepoint_t glyph);
   HB_INTERNAL static hb_codepoint_t lookup_standard_encoding_for_sid (hb_codepoint_t code);
 
   public:

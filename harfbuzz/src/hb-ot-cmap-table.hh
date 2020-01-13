@@ -1015,22 +1015,6 @@ struct CmapSubtable
     }
   }
 
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  void serialize (hb_serialize_context_t *c,
-		  Iterator it,
-		  unsigned format,
-		  const hb_subset_plan_t *plan,
-		  const void *src_base)
-  {
-    switch (format) {
-    case  4: u.format4.serialize (c, it);  return;
-    case 12: u.format12.serialize (c, it); return;
-    case 14: u.format14.serialize (c, plan->unicodes, plan->_glyphset, plan->glyph_map, src_base); return;
-    default: return;
-    }
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1082,41 +1066,6 @@ struct EncodingRecord
 		  subtable.sanitize (c, base));
   }
 
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  EncodingRecord* copy (hb_serialize_context_t *c,
-			Iterator it,
-			unsigned format,
-			const void *src_base,
-			const void *dst_base,
-			const hb_subset_plan_t *plan,
-			/* INOUT */ unsigned *objidx) const
-  {
-    TRACE_SERIALIZE (this);
-    auto snap = c->snapshot ();
-    auto *out = c->embed (this);
-    if (unlikely (!out)) return_trace (nullptr);
-    out->subtable = 0;
-
-    if (*objidx == 0)
-    {
-      CmapSubtable *cmapsubtable = c->push<CmapSubtable> ();
-      unsigned origin_length = c->length ();
-      cmapsubtable->serialize (c, it, format, plan, &(src_base+subtable));
-      if (c->length () - origin_length > 0) *objidx = c->pop_pack ();
-      else c->pop_discard ();
-    }
-
-    if (*objidx == 0)
-    {
-      c->revert (snap);
-      return_trace (nullptr);
-    }
-
-    c->add_link (out->subtable, *objidx, dst_base);
-    return_trace (out);
-  }
-
   HBUINT16	platformID;	/* Platform ID. */
   HBUINT16	encodingID;	/* Platform-specific encoding ID. */
   LOffsetTo<CmapSubtable>
@@ -1129,31 +1078,6 @@ struct cmap
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_cmap;
 
-  template<typename Iterator, typename EncodingRecIter,
-	   hb_requires (hb_is_iterator (Iterator))>
-  void serialize (hb_serialize_context_t *c,
-		  Iterator it,
-		  EncodingRecIter encodingrec_iter,
-		  const void *src_base,
-		  const hb_subset_plan_t *plan)
-  {
-    if (unlikely (!c->extend_min ((*this))))  return;
-    this->version = 0;
-
-    unsigned format4objidx = 0, format12objidx = 0, format14objidx = 0;
-
-    for (const EncodingRecord& _ : encodingrec_iter)
-    {
-      unsigned format = (src_base+_.subtable).u.format;
-
-      if (format == 4) c->copy (_, it, 4u, src_base, this, plan, &format4objidx);
-      else if (format == 12) c->copy (_, it, 12u, src_base, this, plan, &format12objidx);
-      else if (format == 14) c->copy (_, it, 14u, src_base, this, plan, &format14objidx);
-    }
-
-    c->check_assign(this->encodingRecord.len, (c->length () - cmap::min_size)/EncodingRecord::static_size);
-  }
-
   void closure_glyphs (const hb_set_t      *unicodes,
 		       hb_set_t            *glyphset) const
   {
@@ -1163,65 +1087,6 @@ struct cmap
     | hb_filter ([&] (const CmapSubtable& _) { return _.u.format == 14; })
     | hb_apply ([=] (const CmapSubtable& _) { _.u.format14.closure_glyphs (unicodes, glyphset); })
     ;
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-
-    cmap *cmap_prime = c->serializer->start_embed<cmap> ();
-    if (unlikely (!c->serializer->check_success (cmap_prime))) return_trace (false);
-
-    auto encodingrec_iter =
-    + hb_iter (encodingRecord)
-    | hb_filter ([&] (const EncodingRecord& _)
-		{
-		  if ((_.platformID == 0 && _.encodingID == 3) ||
-		      (_.platformID == 0 && _.encodingID == 4) ||
-		      (_.platformID == 3 && _.encodingID == 1) ||
-		      (_.platformID == 3 && _.encodingID == 10) ||
-		      (this + _.subtable).u.format == 14)
-		    return true;
-
-		  return false;
-		})
-    ;
-
-
-    if (unlikely (!encodingrec_iter.len ())) return_trace (false);
-
-    const EncodingRecord *unicode_bmp= nullptr, *unicode_ucs4 = nullptr, *ms_bmp = nullptr, *ms_ucs4 = nullptr;
-    bool has_format12 = false;
-
-    for (const EncodingRecord& _ : encodingrec_iter)
-    {
-      unsigned format = (this + _.subtable).u.format;
-      if (format == 12) has_format12 = true;
-
-      const EncodingRecord *table = hb_addressof (_);
-      if      (_.platformID == 0 && _.encodingID ==  3) unicode_bmp = table;
-      else if (_.platformID == 0 && _.encodingID ==  4) unicode_ucs4 = table;
-      else if (_.platformID == 3 && _.encodingID ==  1) ms_bmp = table;
-      else if (_.platformID == 3 && _.encodingID == 10) ms_ucs4 = table;
-    }
-
-    if (unlikely (!unicode_bmp && !ms_bmp)) return_trace (false);
-    if (unlikely (has_format12 && (!unicode_ucs4 && !ms_ucs4))) return_trace (false);
-
-    auto it =
-    + hb_iter (c->plan->unicodes)
-    | hb_map ([&] (hb_codepoint_t _)
-	      {
-		hb_codepoint_t new_gid = HB_MAP_VALUE_INVALID;
-		c->plan->new_gid_for_codepoint (_, &new_gid);
-		return hb_pair_t<hb_codepoint_t, hb_codepoint_t> (_, new_gid);
-	      })
-    | hb_filter ([&] (const hb_pair_t<hb_codepoint_t, hb_codepoint_t> _)
-		 { return (_.second != HB_MAP_VALUE_INVALID); })
-    ;
-
-    cmap_prime->serialize (c->serializer, it, encodingrec_iter, this, c->plan);
-    return_trace (true);
   }
 
   const CmapSubtable *find_best_subtable (bool *symbol = nullptr) const

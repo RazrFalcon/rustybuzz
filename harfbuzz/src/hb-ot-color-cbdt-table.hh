@@ -28,6 +28,7 @@
 #define HB_OT_COLOR_CBDT_TABLE_HH
 
 #include "hb-open-type.hh"
+#include "hb-font.hh"
 
 /*
  * CBLC -- Color Bitmap Location

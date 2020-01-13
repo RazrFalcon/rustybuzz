@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - autotools/CMake dependency. HarfBuzz will be built via `cc` crate.
 - All external dependencies. No icu, glib, freetype, etc.
+- Subseting.
 - `hb_shape_list_shapers`, since we only have `ot` and `fallback`.
 - Deprecated methods.
 - `hb_unicode_funcs_t`, since we are using only internal Unicode tables.

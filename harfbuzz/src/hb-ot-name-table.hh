@@ -200,22 +200,6 @@ struct name
     return_trace (true);
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-
-    name *name_prime = c->serializer->start_embed<name> ();
-    if (unlikely (!name_prime)) return_trace (false);
-
-    auto it =
-    + nameRecordZ.as_array (count)
-    | hb_filter (c->plan->name_ids, &NameRecord::nameID)
-    ;
-
-    name_prime->serialize (c->serializer, it, hb_addressof (this + stringOffset));
-    return_trace (name_prime->count);
-  }
-
   bool sanitize_records (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);

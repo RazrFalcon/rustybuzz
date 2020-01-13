@@ -29,7 +29,6 @@
 
 #include "hb-ot-head-table.hh"
 #include "hb-ot-cff-common.hh"
-#include "hb-subset-cff2.hh"
 
 namespace CFF {
 
@@ -277,7 +276,6 @@ struct cff2_private_dict_values_base_t : dict_values_t<VAL>
   unsigned int      ivs;
 };
 
-typedef cff2_private_dict_values_base_t<op_str_t> cff2_private_dict_values_subset_t;
 typedef cff2_private_dict_values_base_t<num_dict_val_t> cff2_private_dict_values_t;
 
 struct cff2_priv_dict_interp_env_t : num_interp_env_t
@@ -354,51 +352,6 @@ struct cff2_private_dict_opset_t : dict_opset_t
 
     dictval.add_op (op, env.str_ref, val);
   }
-};
-
-struct cff2_private_dict_opset_subset_t : dict_opset_t
-{
-  static void process_op (op_code_t op, cff2_priv_dict_interp_env_t& env, cff2_private_dict_values_subset_t& dictval)
-  {
-    switch (op) {
-      case OpCode_BlueValues:
-      case OpCode_OtherBlues:
-      case OpCode_FamilyBlues:
-      case OpCode_FamilyOtherBlues:
-      case OpCode_StdHW:
-      case OpCode_StdVW:
-      case OpCode_BlueScale:
-      case OpCode_BlueShift:
-      case OpCode_BlueFuzz:
-      case OpCode_StemSnapH:
-      case OpCode_StemSnapV:
-      case OpCode_LanguageGroup:
-      case OpCode_ExpansionFactor:
-	env.clear_args ();
-	break;
-
-      case OpCode_blenddict:
-	env.clear_args ();
-	return;
-
-      case OpCode_Subrs:
-	dictval.subrsOffset = env.argStack.pop_uint ();
-	env.clear_args ();
-	break;
-
-      default:
-	SUPER::process_op (op, env);
-	if (!env.argStack.is_empty ()) return;
-	break;
-    }
-
-    if (unlikely (env.in_error ())) return;
-
-    dictval.add_op (op, env.str_ref);
-  }
-
-  private:
-  typedef dict_opset_t SUPER;
 };
 
 typedef dict_interpreter_t<cff2_top_dict_opset_t, cff2_top_dict_values_t> cff2_top_dict_interpreter_t;
@@ -534,26 +487,6 @@ struct cff2
 				  hb_codepoint_t glyph,
 				  hb_glyph_extents_t *extents) const;
   };
-
-  typedef accelerator_templ_t<cff2_private_dict_opset_subset_t, cff2_private_dict_values_subset_t> accelerator_subset_t;
-
-  bool subset (hb_subset_plan_t *plan) const
-  {
-    hb_blob_t *cff2_prime = nullptr;
-
-    bool success = true;
-    if (hb_subset_cff2 (plan, &cff2_prime)) {
-      success = success && plan->add_table (HB_OT_TAG_cff2, cff2_prime);
-      hb_blob_t *head_blob = hb_sanitize_context_t().reference_table<head> (plan->source);
-      success = success && head_blob && plan->add_table (HB_OT_TAG_head, head_blob);
-      hb_blob_destroy (head_blob);
-    } else {
-      success = false;
-    }
-    hb_blob_destroy (cff2_prime);
-
-    return success;
-  }
 
   public:
   FixedVersion<HBUINT8>		version;	/* Version of CFF2 table. set to 0x0200u */

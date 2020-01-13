@@ -82,18 +82,6 @@ struct post
     post_prime->version.major = 3; // Version 3 does not have any glyph names.
   }
 
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    post *post_prime = c->serializer->start_embed<post> ();
-    if (unlikely (!post_prime)) return_trace (false);
-
-    serialize (c->serializer);
-    if (c->serializer->in_error () || c->serializer->ran_out_of_room) return_trace (false);
-
-    return_trace (true);
-  }
-
   struct accelerator_t
   {
     void init (hb_face_t *face)

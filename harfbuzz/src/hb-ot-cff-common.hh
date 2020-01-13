@@ -30,7 +30,6 @@
 #include "hb-bimap.hh"
 #include "hb-ot-layout-common.hh"
 #include "hb-cff-interp-dict-common.hh"
-#include "hb-subset-plan.hh"
 
 namespace CFF {
 

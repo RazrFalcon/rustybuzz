@@ -72,28 +72,6 @@ struct hmtxvmtx
     return_trace (true);
   }
 
-
-  bool subset_update_header (hb_subset_plan_t *plan,
-			     unsigned int num_hmetrics) const
-  {
-    hb_blob_t *src_blob = hb_sanitize_context_t ().reference_table<H> (plan->source, H::tableTag);
-    hb_blob_t *dest_blob = hb_blob_copy_writable_or_fail (src_blob);
-    hb_blob_destroy (src_blob);
-
-    if (unlikely (!dest_blob)) {
-      return false;
-    }
-
-    unsigned int length;
-    H *table = (H *) hb_blob_get_data (dest_blob, &length);
-    table->numberOfLongMetrics = num_hmetrics;
-
-    bool result = plan->add_table (H::tableTag, dest_blob);
-    hb_blob_destroy (dest_blob);
-
-    return result;
-  }
-
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator))>
   void serialize (hb_serialize_context_t *c,
@@ -120,42 +98,6 @@ struct hmtxvmtx
 		  idx++;
 		})
     ;
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-
-    T *table_prime = c->serializer->start_embed <T> ();
-    if (unlikely (!table_prime)) return_trace (false);
-
-    accelerator_t _mtx;
-    _mtx.init (c->plan->source);
-    unsigned num_advances = _mtx.num_advances_for_subset (c->plan);
-
-    auto it =
-    + hb_range (c->plan->num_output_glyphs ())
-    | hb_map ([c, &_mtx] (unsigned _)
-	      {
-		hb_codepoint_t old_gid;
-		if (!c->plan->old_gid_for_new_gid (_, &old_gid))
-		  return hb_pair (0u, 0);
-		return hb_pair (_mtx.get_advance (old_gid), _mtx.get_side_bearing (old_gid));
-	      })
-    ;
-
-    table_prime->serialize (c->serializer, it, num_advances);
-
-    _mtx.fini ();
-
-    if (unlikely (c->serializer->ran_out_of_room || c->serializer->in_error ()))
-      return_trace (false);
-
-    // Amend header num hmetrics
-    if (unlikely (!subset_update_header (c->plan, num_advances)))
-      return_trace (false);
-
-    return_trace (true);
   }
 
   struct accelerator_t
@@ -256,32 +198,6 @@ struct hmtxvmtx
 #else
       return advance;
 #endif
-    }
-
-    unsigned int num_advances_for_subset (const hb_subset_plan_t *plan) const
-    {
-      unsigned int num_advances = plan->num_output_glyphs ();
-      unsigned int last_advance = _advance_for_new_gid (plan,
-							num_advances - 1);
-      while (num_advances > 1 &&
-	     last_advance == _advance_for_new_gid (plan,
-						   num_advances - 2))
-      {
-	num_advances--;
-      }
-
-      return num_advances;
-    }
-
-    private:
-    unsigned int _advance_for_new_gid (const hb_subset_plan_t *plan,
-				       hb_codepoint_t new_gid) const
-    {
-      hb_codepoint_t old_gid;
-      if (!plan->old_gid_for_new_gid (new_gid, &old_gid))
-	return 0;
-
-      return get_advance (old_gid);
     }
 
     protected:
