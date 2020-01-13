@@ -38,7 +38,6 @@
 #include "hb-shape.h"
 #include "hb-shape-plan.h"
 #include "hb-unicode.h"
-#include "hb-version.h"
 
 HB_BEGIN_DECLS
 HB_END_DECLS

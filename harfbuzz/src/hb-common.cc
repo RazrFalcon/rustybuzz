@@ -554,63 +554,6 @@ hb_user_data_array_t::get (hb_user_data_key_t *key)
  **/
 
 
-/**
- * hb_version:
- * @major: (out): Library major version component.
- * @minor: (out): Library minor version component.
- * @micro: (out): Library micro version component.
- *
- * Returns library version as three integer components.
- *
- * Since: 0.9.2
- **/
-void
-hb_version (unsigned int *major,
-            unsigned int *minor,
-            unsigned int *micro)
-{
-  *major = HB_VERSION_MAJOR;
-  *minor = HB_VERSION_MINOR;
-  *micro = HB_VERSION_MICRO;
-}
-
-/**
- * hb_version_string:
- *
- * Returns library version as a string with three components.
- *
- * Return value: library version string.
- *
- * Since: 0.9.2
- **/
-const char *
-hb_version_string ()
-{
-  return HB_VERSION_STRING;
-}
-
-/**
- * hb_version_atleast:
- * @major:
- * @minor:
- * @micro:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.30
- **/
-hb_bool_t
-hb_version_atleast (unsigned int major,
-                    unsigned int minor,
-                    unsigned int micro)
-{
-  return HB_VERSION_ATLEAST (major, minor, micro);
-}
-
-
-
 /* hb_feature_t and hb_variation_t */
 
 static bool
