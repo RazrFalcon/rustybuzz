@@ -90,11 +90,6 @@ HB_OT_ACCELERATOR (OT, GPOS)
 //HB_OT_TABLE (OT, JSTF)
 #endif
 
-/* OpenType baseline. */
-#ifndef HB_NO_BASE
-HB_OT_TABLE (OT, BASE)
-#endif
-
 /* AAT shaping. */
 #ifndef HB_NO_AAT
 HB_OT_TABLE (AAT, morx)

@@ -37,3 +37,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `name` table. Unused.
 - `meta` table. Unused.
 - `stat` table. Unused.
+- `BASE` table. Unused.

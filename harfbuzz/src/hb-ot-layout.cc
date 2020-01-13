@@ -46,7 +46,6 @@
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
-#include "hb-ot-layout-base-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-ot-layout-jstf-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-ot-os2-table.hh"
 
@@ -1886,36 +1885,4 @@ hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
   apply_string<GSUBProxy> (c, lookup, accel);
 }
 
-#ifndef HB_NO_BASE
-/**
- * hb_ot_layout_get_baseline:
- * @font: a font
- * @baseline_tag: a baseline tag
- * @direction: text direction.
- * @script_tag:  script tag.
- * @language_tag: language tag.
- * @coord: (out): baseline value if found.
- *
- * Fetches a baseline value from the face.
- *
- * Return value: if found baseline value in the the font.
- *
- * Since: 2.6.0
- **/
-hb_bool_t
-hb_ot_layout_get_baseline (hb_font_t                   *font,
-			   hb_ot_layout_baseline_tag_t  baseline_tag,
-			   hb_direction_t               direction,
-			   hb_tag_t                     script_tag,
-			   hb_tag_t                     language_tag,
-			   hb_position_t               *coord        /* OUT.  May be NULL. */)
-{
-  bool result = font->face->table.BASE->get_baseline (font, baseline_tag, direction, script_tag, language_tag, coord);
-
-  if (result && coord)
-    *coord = HB_DIRECTION_IS_HORIZONTAL (direction) ? font->em_scale_y (*coord) : font->em_scale_x (*coord);
-
-  return result;
-}
-#endif
 #endif
