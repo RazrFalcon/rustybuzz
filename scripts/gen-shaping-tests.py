@@ -28,6 +28,8 @@ IGNORE_TEST_CASES = [
     'collections_001',
     'collections_002',
     'collections_003',
+    # Arabic fallback shaping requires
+    'arabic_fallback_shaping_001',
 
     # text-rendering-tests tests
     # Incorrect CMAP 14 parsing. Was fixed in master, but broken in 2.6.4

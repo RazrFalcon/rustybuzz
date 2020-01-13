@@ -46,3 +46,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `gasp` table. Unused.
 - `hb_ot_metrics_*`
 - `hb_face_collect_*`
+- OpenType tables serialization.

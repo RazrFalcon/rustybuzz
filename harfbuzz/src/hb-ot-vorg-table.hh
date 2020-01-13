@@ -69,24 +69,6 @@ struct VORG
     return vertYOrigins[i].vertOriginY;
   }
 
-  template <typename Iterator,
-	    hb_requires (hb_is_iterator (Iterator))>
-  void serialize (hb_serialize_context_t *c,
-		  Iterator it,
-		  FWORD defaultVertOriginY)
-  {
-
-    if (unlikely (!c->extend_min ((*this))))  return;
-
-    this->version.major = 1;
-    this->version.minor = 0;
-
-    this->defaultVertOriginY = defaultVertOriginY;
-    this->vertYOrigins.len = it.len ();
-
-    for (const auto _ : it) c->copy (_);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);

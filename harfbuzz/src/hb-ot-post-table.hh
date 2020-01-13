@@ -73,15 +73,6 @@ struct post
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_post;
 
-  void serialize (hb_serialize_context_t *c) const
-  {
-    post *post_prime = c->allocate_min<post> ();
-    if (unlikely (!post_prime))  return;
-
-    memcpy (post_prime, this, post::min_size);
-    post_prime->version.major = 3; // Version 3 does not have any glyph names.
-  }
-
   struct accelerator_t
   {
     void init (hb_face_t *face)

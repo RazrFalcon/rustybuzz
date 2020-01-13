@@ -179,28 +179,6 @@ fn aat_trak_011() {
 }
 
 #[test]
-fn arabic_fallback_shaping_001() {
-    assert_eq!(
-        shape(
-            "in-house/fonts/df768b9c257e0c9c35786c47cae15c46571d56be.ttf",
-            "\u{0633}\u{064F}\u{0644}\u{064E}\u{0651}\u{0627}\u{0651}\u{0650}\u{0645}\u{062A}\
-             \u{06CC}",
-            "",
-        ),
-        "uni06CC.fina=10+1655|\
-         uni062A.medi=9+868|\
-         uni0645.init=8+1098|\
-         uni0650=2@148,0+0|\
-         uni0651=2@187,736+0|\
-         uni064E=2@883,1259+0|\
-         uni0651=2@922,736+0|\
-         uni06440627.fina=2+1470|\
-         uni064F=0@629,-10+0|\
-         uni0633.init=0+1585"
-    );
-}
-
-#[test]
 fn arabic_feature_order_001() {
     assert_eq!(
         shape(

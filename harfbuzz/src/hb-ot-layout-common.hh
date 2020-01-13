@@ -217,12 +217,6 @@ struct LangSys
    return reqFeatureIndex;
   }
 
-  LangSys* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    return_trace (c->embed (*this));
-  }
-
   bool sanitize (hb_sanitize_context_t *c,
 		 const Record_sanitize_closure_t * = nullptr) const
   {
@@ -669,25 +663,6 @@ struct Lookup
     return_trace (c->default_return_value ());
   }
 
-  bool serialize (hb_serialize_context_t *c,
-		  unsigned int lookup_type,
-		  uint32_t lookup_props,
-		  unsigned int num_subtables)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-    lookupType = lookup_type;
-    lookupFlag = lookup_props & 0xFFFFu;
-    if (unlikely (!subTable.serialize (c, num_subtables))) return_trace (false);
-    if (lookupFlag & LookupFlag::UseMarkFilteringSet)
-    {
-      if (unlikely (!c->extend (*this))) return_trace (false);
-      HBUINT16 &markFilteringSet = StructAfter<HBUINT16> (subTable);
-      markFilteringSet = lookup_props >> 16;
-    }
-    return_trace (true);
-  }
-
   template <typename TSubTable>
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -754,14 +729,6 @@ struct CoverageFormat1
     return i;
   }
 
-  template <typename Iterator,
-      hb_requires (hb_is_sorted_source_of (Iterator, hb_codepoint_t))>
-  bool serialize (hb_serialize_context_t *c, Iterator glyphs)
-  {
-    TRACE_SERIALIZE (this);
-    return_trace (glyphArray.serialize (c, glyphs));
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -821,51 +788,6 @@ struct CoverageFormat2
     return likely (range.start <= range.end) ?
 	   (unsigned int) range.value + (glyph_id - range.start) :
 	   NOT_COVERED;
-  }
-
-  template <typename Iterator,
-      hb_requires (hb_is_sorted_source_of (Iterator, hb_codepoint_t))>
-  bool serialize (hb_serialize_context_t *c, Iterator glyphs)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-
-    if (unlikely (!glyphs))
-    {
-      rangeRecord.len = 0;
-      return_trace (true);
-    }
-
-    /* TODO(iter) Write more efficiently? */
-
-    unsigned num_ranges = 0;
-    hb_codepoint_t last = (hb_codepoint_t) -2;
-    for (auto g: glyphs)
-    {
-      if (last + 1 != g)
-	num_ranges++;
-      last = g;
-    }
-
-    if (unlikely (!rangeRecord.serialize (c, num_ranges))) return_trace (false);
-
-    unsigned count = 0;
-    unsigned range = (unsigned) -1;
-    last = (hb_codepoint_t) -2;
-    for (auto g: glyphs)
-    {
-      if (last + 1 != g)
-      {
-	range++;
-	rangeRecord[range].start = g;
-	rangeRecord[range].value = count;
-      }
-      rangeRecord[range].end = g;
-      last = g;
-      count++;
-    }
-
-    return_trace (true);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -993,33 +915,6 @@ struct Coverage
     }
   }
 
-  template <typename Iterator,
-      hb_requires (hb_is_sorted_source_of (Iterator, hb_codepoint_t))>
-  bool serialize (hb_serialize_context_t *c, Iterator glyphs)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-
-    unsigned count = 0;
-    unsigned num_ranges = 0;
-    hb_codepoint_t last = (hb_codepoint_t) -2;
-    for (auto g: glyphs)
-    {
-      if (last + 1 != g)
-	num_ranges++;
-      last = g;
-      count++;
-    }
-    u.format = count <= num_ranges * 3 ? 1 : 2;
-
-    switch (u.format)
-    {
-    case 1: return_trace (u.format1.serialize (c, glyphs));
-    case 2: return_trace (u.format2.serialize (c, glyphs));
-    default:return_trace (false);
-    }
-  }
-  
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1152,27 +1047,6 @@ struct ClassDefFormat1
     return classValue[(unsigned int) (glyph_id - startGlyph)];
   }
 
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  bool serialize (hb_serialize_context_t *c,
-                  Iterator it)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-
-    if (unlikely (!it))
-    {
-      startGlyph = 0;
-      classValue.len = 0;
-      return_trace (true);
-    }
-
-    startGlyph = (*it).first;
-    classValue.serialize (c, + it
-                             | hb_map (hb_second));
-    return_trace (true);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1257,60 +1131,6 @@ struct ClassDefFormat2
   unsigned int get_class (hb_codepoint_t glyph_id) const
   {
     return rangeRecord.bsearch (glyph_id).value;
-  }
-
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  bool serialize (hb_serialize_context_t *c,
-                  Iterator it)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-
-    if (unlikely (!it))
-    {
-      rangeRecord.len = 0;
-      return_trace (true);
-    }
-
-    unsigned num_ranges = 1;
-    hb_codepoint_t prev_gid = (*it).first;
-    unsigned prev_klass = (*it).second;
-
-    RangeRecord range_rec;
-    range_rec.start = prev_gid;
-    range_rec.end = prev_gid;
-    range_rec.value = prev_klass;
-
-    RangeRecord *record = c->copy (range_rec);
-    if (unlikely (!record)) return_trace (false);
-
-    for (const auto gid_klass_pair : + (++it))
-    {
-      hb_codepoint_t cur_gid = gid_klass_pair.first;
-      unsigned cur_klass = gid_klass_pair.second;
-
-      if (cur_gid != prev_gid + 1 ||
-          cur_klass != prev_klass)
-      {
-        if (unlikely (!record)) break;
-        record->end = prev_gid;
-        num_ranges++;
-
-        range_rec.start = cur_gid;
-        range_rec.end = cur_gid;
-        range_rec.value = cur_klass;
-
-        record = c->copy (range_rec);
-      }
-
-      prev_klass = cur_klass;
-      prev_gid = cur_gid;
-    }
-
-    if (likely (record)) record->end = prev_gid;
-    rangeRecord.len = num_ranges;
-    return_trace (true);
   }
   
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1406,50 +1226,6 @@ struct ClassDef
     }
   }
 
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  bool serialize (hb_serialize_context_t *c, Iterator it)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-
-    unsigned format = 2;
-    if (likely (it))
-    {
-      hb_codepoint_t glyph_min = (*it).first;
-      hb_codepoint_t glyph_max = + it
-				 | hb_map (hb_first)
-                                 | hb_reduce (hb_max, 0u);
-
-      unsigned num_ranges = 1;
-      hb_codepoint_t prev_gid = glyph_min;
-      unsigned prev_klass = (*it).second;
-
-      for (const auto gid_klass_pair : it)
-      {
-        hb_codepoint_t cur_gid = gid_klass_pair.first;
-        unsigned cur_klass = gid_klass_pair.second;
-        if (cur_gid != prev_gid + 1 ||
-            cur_klass != prev_klass)
-          num_ranges++;
-
-        prev_gid = cur_gid;
-        prev_klass = cur_klass;
-      }
-
-      if (1 + (glyph_max - glyph_min + 1) < num_ranges * 3)
-	format = 1;
-    }
-    u.format = format;
-
-    switch (u.format)
-    {
-    case 1: return_trace (u.format1.serialize (c, it));
-    case 2: return_trace (u.format2.serialize (c, it));
-    default:return_trace (false);
-    }
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1511,12 +1287,6 @@ struct ClassDef
   public:
   DEFINE_SIZE_UNION (2, format);
 };
-
-template<typename Iterator>
-static inline void ClassDef_serialize (hb_serialize_context_t *c,
-                                       Iterator it)
-{ c->start_embed<ClassDef> ()->serialize (c, it); }
-
 
 /*
  * Item Variation Store
@@ -1591,20 +1361,6 @@ struct VarRegionList
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
 		  axesZ.sanitize (c, (unsigned int) axisCount * (unsigned int) regionCount));
-  }
-
-  bool serialize (hb_serialize_context_t *c, const VarRegionList *src, const hb_bimap_t &region_map)
-  {
-    TRACE_SERIALIZE (this);
-    VarRegionList *out = c->allocate_min<VarRegionList> ();
-    if (unlikely (!out)) return_trace (false);
-    axisCount = src->axisCount;
-    regionCount = region_map.get_population ();
-    if (unlikely (!c->allocate_size<VarRegionList> (get_size () - min_size))) return_trace (false);
-    for (unsigned int r = 0; r < regionCount; r++)
-      memcpy (&axesZ[axisCount * r], &src->axesZ[axisCount * region_map.backward (r)], VarRegionAxis::static_size * axisCount);
-
-    return_trace (true);
   }
 
   unsigned int get_size () const { return min_size + VarRegionAxis::static_size * axisCount * regionCount; }
@@ -1683,71 +1439,6 @@ struct VarData
 		  c->check_range (get_delta_bytes (),
 				  itemCount,
 				  get_row_size ()));
-  }
-
-  bool serialize (hb_serialize_context_t *c,
-		  const VarData *src,
-		  const hb_inc_bimap_t &inner_map,
-		  const hb_bimap_t &region_map)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-    itemCount = inner_map.get_next_value ();
-
-    /* Optimize short count */
-    unsigned short ri_count = src->regionIndices.len;
-    enum delta_size_t { kZero=0, kByte, kShort };
-    hb_vector_t<delta_size_t> delta_sz;
-    hb_vector_t<unsigned int> ri_map;	/* maps old index to new index */
-    delta_sz.resize (ri_count);
-    ri_map.resize (ri_count);
-    unsigned int new_short_count = 0;
-    unsigned int r;
-    for (r = 0; r < ri_count; r++)
-    {
-      delta_sz[r] = kZero;
-      for (unsigned int i = 0; i < inner_map.get_next_value (); i++)
-      {
-	unsigned int old = inner_map.backward (i);
-	int16_t delta = src->get_item_delta (old, r);
-	if (delta < -128 || 127 < delta)
-	{
-	  delta_sz[r] = kShort;
-	  new_short_count++;
-	  break;
-	}
-	else if (delta != 0)
-	  delta_sz[r] = kByte;
-      }
-    }
-    unsigned int short_index = 0;
-    unsigned int byte_index = new_short_count;
-    unsigned int new_ri_count = 0;
-    for (r = 0; r < ri_count; r++)
-      if (delta_sz[r])
-      {
-      	ri_map[r] = (delta_sz[r] == kShort)? short_index++ : byte_index++;
-      	new_ri_count++;
-      }
-
-    shortCount = new_short_count;
-    regionIndices.len = new_ri_count;
-
-    unsigned int size = regionIndices.get_size () - HBUINT16::static_size/*regionIndices.len*/ + (get_row_size () * itemCount);
-    if (unlikely (!c->allocate_size<HBUINT8> (size)))
-      return_trace (false);
-
-    for (r = 0; r < ri_count; r++)
-      if (delta_sz[r]) regionIndices[ri_map[r]] = region_map[src->regionIndices[r]];
-
-    for (unsigned int i = 0; i < itemCount; i++)
-    {
-      unsigned int	old = inner_map.backward (i);
-      for (unsigned int r = 0; r < ri_count; r++)
-	if (delta_sz[r]) set_item_delta (i, ri_map[r], src->get_item_delta (old, r));
-    }
-
-    return_trace (true);
   }
 
   void collect_region_refs (hb_inc_bimap_t &region_map, const hb_inc_bimap_t &inner_map) const
@@ -1836,43 +1527,6 @@ struct VariationStore
 		  format == 1 &&
 		  regions.sanitize (c, this) &&
 		  dataSets.sanitize (c, this));
-  }
-
-  bool serialize (hb_serialize_context_t *c,
-		  const VariationStore *src,
-  		  const hb_array_t <hb_inc_bimap_t> &inner_maps)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned int set_count = 0;
-    for (unsigned int i = 0; i < inner_maps.length; i++)
-      if (inner_maps[i].get_population () > 0) set_count++;
-
-    unsigned int size = min_size + HBUINT32::static_size * set_count;
-    if (unlikely (!c->allocate_size<HBUINT32> (size))) return_trace (false);
-    format = 1;
-
-    hb_inc_bimap_t region_map;
-    for (unsigned int i = 0; i < inner_maps.length; i++)
-      (src+src->dataSets[i]).collect_region_refs (region_map, inner_maps[i]);
-    region_map.sort ();
-
-    if (unlikely (!regions.serialize (c, this)
-		  .serialize (c, &(src+src->regions), region_map))) return_trace (false);
-
-    /* TODO: The following code could be simplified when
-     * OffsetListOf::subset () can take a custom param to be passed to VarData::serialize ()
-     */
-    dataSets.len = set_count;
-    unsigned int set_index = 0;
-    for (unsigned int i = 0; i < inner_maps.length; i++)
-    {
-      if (inner_maps[i].get_population () == 0) continue;
-      if (unlikely (!dataSets[set_index++].serialize (c, this)
-		      .serialize (c, &(src+src->dataSets[i]), inner_maps[i], region_map)))
-	return_trace (false);
-    }
-
-    return_trace (true);
   }
 
   unsigned int get_region_index_count (unsigned int ivs) const
@@ -2080,12 +1734,6 @@ struct FeatureVariations
     return (this+record.substitutions).find_substitute (feature_index);
   }
 
-  FeatureVariations* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    return_trace (c->embed (*this));
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -2132,12 +1780,6 @@ struct HintingDevice
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) && c->check_range (this, this->get_size ()));
-  }
-
-  HintingDevice* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    return_trace (c->embed<HintingDevice> (this));
   }
 
   private:
@@ -2200,12 +1842,6 @@ struct VariationDevice
 
   hb_position_t get_y_delta (hb_font_t *font, const VariationStore &store) const
   { return font->em_scalef_y (get_delta (font, store)); }
-
-  VariationDevice* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    return_trace (c->embed<VariationDevice> (this));
-  }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -2289,25 +1925,6 @@ struct Device
 #endif
     default:
       return_trace (true);
-    }
-  }
-
-  Device* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    switch (u.b.format) {
-#ifndef HB_NO_HINTING
-    case 1:
-    case 2:
-    case 3:
-      return_trace (reinterpret_cast<Device *> (u.hinting.copy (c)));
-#endif
-#ifndef HB_NO_VAR
-    case 0x8000:
-      return_trace (reinterpret_cast<Device *> (u.variation.copy (c)));
-#endif
-    default:
-      return_trace (nullptr);
     }
   }
 

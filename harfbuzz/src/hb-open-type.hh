@@ -186,14 +186,7 @@ struct Offset : Type
   typedef Type type;
 
   bool is_null () const { return has_null && 0 == *this; }
-
-  void *serialize (hb_serialize_context_t *c, const void *base)
-  {
-    void *t = c->start_embed<void> ();
-    c->check_assign (*this, (unsigned) ((char *) t - (char *) base));
-    return t;
-  }
-
+  
   public:
   DEFINE_SIZE_STATIC (sizeof (Type));
 };
@@ -300,32 +293,6 @@ struct OffsetTo : Offset<OffsetType, has_null>
 	    hb_enable_if (hb_is_convertible (Base, void *))>
   friend Type& operator + (OffsetTo &offset, Base &&base) { return offset ((void *) base); }
 
-  Type& serialize (hb_serialize_context_t *c, const void *base)
-  {
-    return * (Type *) Offset<OffsetType>::serialize (c, base);
-  }
-
-  /* TODO: Somehow merge this with previous function into a serialize_dispatch(). */
-  template <typename ...Ts>
-  bool serialize_copy (hb_serialize_context_t *c,
-		       const OffsetTo& src,
-		       const void *src_base,
-		       const void *dst_base,
-		       Ts&&... ds)
-  {
-    *this = 0;
-    if (src.is_null ())
-      return false;
-
-    c->push ();
-
-    bool ret = c->copy (src_base+src, hb_forward<Ts> (ds)...);
-
-    c->add_link (*this, c->pop_pack (), dst_base);
-
-    return ret;
-  }
-
   bool sanitize_shallow (hb_sanitize_context_t *c, const void *base) const
   {
     TRACE_SANITIZE (this);
@@ -410,34 +377,6 @@ struct UnsizedArrayOf
 
   void qsort (unsigned int len, unsigned int start = 0, unsigned int end = (unsigned int) -1)
   { as_array (len).qsort (start, end); }
-
-  bool serialize (hb_serialize_context_t *c, unsigned int items_len)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend (*this, items_len))) return_trace (false);
-    return_trace (true);
-  }
-  template <typename Iterator,
-	    hb_requires (hb_is_source_of (Iterator, Type))>
-  bool serialize (hb_serialize_context_t *c, Iterator items)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned count = items.len ();
-    if (unlikely (!serialize (c, count))) return_trace (false);
-    /* TODO Umm. Just exhaust the iterator instead?  Being extra
-     * cautious right now.. */
-    for (unsigned i = 0; i < count; i++, ++items)
-      arrayZ[i] = *items;
-    return_trace (true);
-  }
-
-  UnsizedArrayOf* copy (hb_serialize_context_t *c, unsigned count) const
-  {
-    TRACE_SERIALIZE (this);
-    auto *out = c->start_embed (this);
-    if (unlikely (!as_array (count).copy (c))) return_trace (nullptr);
-    return_trace (out);
-  }
 
   template <typename ...Ts>
   bool sanitize (hb_sanitize_context_t *c, unsigned int count, Ts&&... ds) const
@@ -569,50 +508,6 @@ struct ArrayOf
   hb_array_t<Type> sub_array (unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */)
   { return as_array ().sub_array (start_offset, count); }
 
-  bool serialize (hb_serialize_context_t *c, unsigned int items_len)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-    c->check_assign (len, items_len);
-    if (unlikely (!c->extend (*this))) return_trace (false);
-    return_trace (true);
-  }
-  template <typename Iterator,
-	    hb_requires (hb_is_source_of (Iterator, Type))>
-  bool serialize (hb_serialize_context_t *c, Iterator items)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned count = items.len ();
-    if (unlikely (!serialize (c, count))) return_trace (false);
-    /* TODO Umm. Just exhaust the iterator instead?  Being extra
-     * cautious right now.. */
-    for (unsigned i = 0; i < count; i++, ++items)
-      arrayZ[i] = *items;
-    return_trace (true);
-  }
-
-  Type* serialize_append (hb_serialize_context_t *c)
-  {
-    TRACE_SERIALIZE (this);
-    len++;
-    if (unlikely (!len || !c->extend (*this)))
-    {
-      len--;
-      return_trace (nullptr);
-    }
-    return_trace (&arrayZ[len - 1]);
-  }
-
-  ArrayOf* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    auto *out = c->start_embed (this);
-    if (unlikely (!c->extend_min (out))) return_trace (nullptr);
-    c->check_assign (out->len, len);
-    if (unlikely (!as_array ().copy (c))) return_trace (nullptr);
-    return_trace (out);
-  }
-
   template <typename ...Ts>
   bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
   {
@@ -721,28 +616,6 @@ struct HeadlessArrayOf
   operator   iter_t () const { return   iter (); }
   operator writer_t ()       { return writer (); }
 
-  bool serialize (hb_serialize_context_t *c, unsigned int items_len)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-    c->check_assign (lenP1, items_len + 1);
-    if (unlikely (!c->extend (*this))) return_trace (false);
-    return_trace (true);
-  }
-  template <typename Iterator,
-	    hb_requires (hb_is_source_of (Iterator, Type))>
-  bool serialize (hb_serialize_context_t *c, Iterator items)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned count = items.len ();
-    if (unlikely (!serialize (c, count))) return_trace (false);
-    /* TODO Umm. Just exhaust the iterator instead?  Being extra
-     * cautious right now.. */
-    for (unsigned i = 0; i < count; i++, ++items)
-      arrayZ[i] = *items;
-    return_trace (true);
-  }
-
   template <typename ...Ts>
   bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
   {
@@ -842,21 +715,6 @@ struct SortedArrayOf : ArrayOf<Type, LenType>
   { return as_array ().sub_array (start_offset, count); }
   hb_sorted_array_t<Type> sub_array (unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */)
   { return as_array ().sub_array (start_offset, count); }
-
-  bool serialize (hb_serialize_context_t *c, unsigned int items_len)
-  {
-    TRACE_SERIALIZE (this);
-    bool ret = ArrayOf<Type, LenType>::serialize (c, items_len);
-    return_trace (ret);
-  }
-  template <typename Iterator,
-	    hb_requires (hb_is_sorted_source_of (Iterator, Type))>
-  bool serialize (hb_serialize_context_t *c, Iterator items)
-  {
-    TRACE_SERIALIZE (this);
-    bool ret = ArrayOf<Type, LenType>::serialize (c, items);
-    return_trace (ret);
-  }
 
   template <typename T>
   Type &bsearch (const T &x, Type &not_found = Crap (Type))

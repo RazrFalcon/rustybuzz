@@ -50,16 +50,6 @@ typedef FDSelect3_4_Range<HBUINT32, HBUINT16> FDSelect4_Range;
 
 struct CFF2FDSelect
 {
-  bool serialize (hb_serialize_context_t *c, const CFF2FDSelect &src, unsigned int num_glyphs)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned int size = src.get_size (num_glyphs);
-    CFF2FDSelect *dest = c->allocate_size<CFF2FDSelect> (size);
-    if (unlikely (dest == nullptr)) return_trace (false);
-    memcpy (dest, &src, size);
-    return_trace (true);
-  }
-
   unsigned int calculate_serialized_size (unsigned int num_glyphs) const
   { return get_size (num_glyphs); }
 
@@ -119,16 +109,6 @@ struct CFF2VariationStore
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this)) && c->check_range (&varStore, size) && varStore.sanitize (c));
-  }
-
-  bool serialize (hb_serialize_context_t *c, const CFF2VariationStore *varStore)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned int size_ = varStore->get_size ();
-    CFF2VariationStore *dest = c->allocate_size<CFF2VariationStore> (size_);
-    if (unlikely (dest == nullptr)) return_trace (false);
-    memcpy (dest, varStore, size_);
-    return_trace (true);
   }
 
   unsigned int get_size () const { return HBUINT16::static_size + size; }

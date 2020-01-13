@@ -1979,50 +1979,6 @@ struct ChainRule
 					      lookup.arrayZ, lookup_context));
   }
 
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  void serialize_array (hb_serialize_context_t *c,
-                        HBUINT16 len,
-                        Iterator it) const
-  {
-    c->copy (len);
-    for (const auto g : it)
-    {
-      HBUINT16 gid;
-      gid = g;
-      c->copy (gid);
-    }
-  }
-
-  ChainRule* copy (hb_serialize_context_t *c,
-		   const hb_map_t *backtrack_map,
-		   const hb_map_t *input_map = nullptr,
-		   const hb_map_t *lookahead_map = nullptr) const
-  {
-    TRACE_SERIALIZE (this);
-    auto *out = c->start_embed (this);
-    if (unlikely (!out)) return_trace (nullptr);
-
-    const hb_map_t *mapping = backtrack_map;
-    serialize_array (c, backtrack.len, + backtrack.iter ()
-				       | hb_map (mapping));
-
-    const HeadlessArrayOf<HBUINT16> &input = StructAfter<HeadlessArrayOf<HBUINT16>> (backtrack);
-    if (input_map) mapping = input_map;
-    serialize_array (c, input.lenP1, + input.iter ()
-				     | hb_map (mapping));
-
-    const ArrayOf<HBUINT16> &lookahead = StructAfter<ArrayOf<HBUINT16>> (input);
-    if (lookahead_map) mapping = lookahead_map;
-    serialize_array (c, lookahead.len, + lookahead.iter ()
-				       | hb_map (mapping));
-
-    const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>> (lookahead);
-    c->copy (lookup);
-
-    return_trace (out);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);

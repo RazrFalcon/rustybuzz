@@ -95,73 +95,6 @@ struct CFFIndex
     return min_size + calculate_offset_array_size (offSize_, count) + dataSize;
   }
 
-  bool serialize (hb_serialize_context_t *c, const CFFIndex &src)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned int size = src.get_size ();
-    CFFIndex *dest = c->allocate_size<CFFIndex> (size);
-    if (unlikely (dest == nullptr)) return_trace (false);
-    memcpy (dest, &src, size);
-    return_trace (true);
-  }
-
-  bool serialize (hb_serialize_context_t *c,
-		  unsigned int offSize_,
-		  const byte_str_array_t &byteArray)
-  {
-    TRACE_SERIALIZE (this);
-    if (byteArray.length == 0)
-    {
-      COUNT *dest = c->allocate_min<COUNT> ();
-      if (unlikely (dest == nullptr)) return_trace (false);
-      *dest = 0;
-    }
-    else
-    {
-      /* serialize CFFIndex header */
-      if (unlikely (!c->extend_min (*this))) return_trace (false);
-      this->count = byteArray.length;
-      this->offSize = offSize_;
-      if (unlikely (!c->allocate_size<HBUINT8> (offSize_ * (byteArray.length + 1))))
-	return_trace (false);
-
-      /* serialize indices */
-      unsigned int  offset = 1;
-      unsigned int  i = 0;
-      for (; i < byteArray.length; i++)
-      {
-	set_offset_at (i, offset);
-	offset += byteArray[i].get_size ();
-      }
-      set_offset_at (i, offset);
-
-      /* serialize data */
-      for (unsigned int i = 0; i < byteArray.length; i++)
-      {
-      	const byte_str_t &bs = byteArray[i];
-	unsigned char  *dest = c->allocate_size<unsigned char> (bs.length);
-	if (unlikely (dest == nullptr))
-	  return_trace (false);
-	memcpy (dest, &bs[0], bs.length);
-      }
-    }
-    return_trace (true);
-  }
-
-  bool serialize (hb_serialize_context_t *c,
-		  unsigned int offSize_,
-		  const str_buff_vec_t &buffArray)
-  {
-    byte_str_array_t  byteArray;
-    byteArray.init ();
-    byteArray.resize (buffArray.length);
-    for (unsigned int i = 0; i < byteArray.length; i++)
-      byteArray[i] = byte_str_t (buffArray[i].arrayZ, buffArray[i].length);
-    bool result = this->serialize (c, offSize_, byteArray);
-    byteArray.fini ();
-    return result;
-  }
-
   void set_offset_at (unsigned int index, unsigned int offset)
   {
     HBUINT8 *p = offsets + offSize * index + offSize;
@@ -252,44 +185,6 @@ struct CFFIndexOf : CFFIndex<COUNT>
     return Null(byte_str_t);
   }
 
-  template <typename DATA, typename PARAM1, typename PARAM2>
-  bool serialize (hb_serialize_context_t *c,
-		  unsigned int offSize_,
-		  const DATA *dataArray,
-		  unsigned int dataArrayLen,
-		  const hb_vector_t<unsigned int> &dataSizeArray,
-		  const PARAM1 &param1,
-		  const PARAM2 &param2)
-  {
-    TRACE_SERIALIZE (this);
-    /* serialize CFFIndex header */
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-    this->count = dataArrayLen;
-    this->offSize = offSize_;
-    if (unlikely (!c->allocate_size<HBUINT8> (offSize_ * (dataArrayLen + 1))))
-      return_trace (false);
-
-    /* serialize indices */
-    unsigned int  offset = 1;
-    unsigned int  i = 0;
-    for (; i < dataArrayLen; i++)
-    {
-      CFFIndex<COUNT>::set_offset_at (i, offset);
-      offset += dataSizeArray[i];
-    }
-    CFFIndex<COUNT>::set_offset_at (i, offset);
-
-    /* serialize data */
-    for (unsigned int i = 0; i < dataArrayLen; i++)
-    {
-      TYPE *dest = c->start_embed<TYPE> ();
-      if (unlikely (dest == nullptr ||
-		    !dest->serialize (c, dataArray[i], param1, param2)))
-	return_trace (false);
-    }
-    return_trace (true);
-  }
-
   /* in parallel to above */
   template <typename DATA, typename PARAM>
   static unsigned int calculate_serialized_size (unsigned int &offSize_ /* OUT */,
@@ -315,20 +210,6 @@ struct CFFIndexOf : CFFIndex<COUNT>
 /* Top Dict, Font Dict, Private Dict */
 struct Dict : UnsizedByteStr
 {
-  template <typename DICTVAL, typename OP_SERIALIZER, typename PARAM>
-  bool serialize (hb_serialize_context_t *c,
-		  const DICTVAL &dictval,
-		  OP_SERIALIZER& opszr,
-		  PARAM& param)
-  {
-    TRACE_SERIALIZE (this);
-    for (unsigned int i = 0; i < dictval.get_count (); i++)
-      if (unlikely (!opszr.serialize (c, dictval[i], param)))
-	return_trace (false);
-
-    return_trace (true);
-  }
-
   /* in parallel to above */
   template <typename DICTVAL, typename OP_SERIALIZER, typename PARAM>
   static unsigned int calculate_serialized_size (const DICTVAL &dictval,
@@ -350,39 +231,6 @@ struct Dict : UnsizedByteStr
       size += opszr.calculate_serialized_size (dictval[i]);
     return size;
   }
-
-  template <typename INTTYPE, int minVal, int maxVal>
-  static bool serialize_int_op (hb_serialize_context_t *c, op_code_t op, int value, op_code_t intOp)
-  {
-    // XXX: not sure why but LLVM fails to compile the following 'unlikely' macro invocation
-    if (/*unlikely*/ (!serialize_int<INTTYPE, minVal, maxVal> (c, intOp, value)))
-      return false;
-
-    TRACE_SERIALIZE (this);
-    /* serialize the opcode */
-    HBUINT8 *p = c->allocate_size<HBUINT8> (OpCode_Size (op));
-    if (unlikely (p == nullptr)) return_trace (false);
-    if (Is_OpCode_ESC (op))
-    {
-      *p = OpCode_escape;
-      op = Unmake_OpCode_ESC (op);
-      p++;
-    }
-    *p = op;
-    return_trace (true);
-  }
-
-  static bool serialize_uint4_op (hb_serialize_context_t *c, op_code_t op, int value)
-  { return serialize_int_op<HBUINT32, 0, 0x7FFFFFFF> (c, op, value, OpCode_longintdict); }
-
-  static bool serialize_uint2_op (hb_serialize_context_t *c, op_code_t op, int value)
-  { return serialize_int_op<HBUINT16, 0, 0x7FFF> (c, op, value, OpCode_shortint); }
-
-  static bool serialize_offset4_op (hb_serialize_context_t *c, op_code_t op, int value)
-  { return serialize_uint4_op (c, op, value); }
-
-  static bool serialize_offset2_op (hb_serialize_context_t *c, op_code_t op, int value)
-  { return serialize_uint2_op (c, op, value); }
 };
 
 struct TopDict : Dict {};
@@ -401,80 +249,6 @@ struct table_info_t
 template <typename COUNT>
 struct FDArray : CFFIndexOf<COUNT, FontDict>
 {
-  /* used by CFF1 */
-  template <typename DICTVAL, typename OP_SERIALIZER>
-  bool serialize (hb_serialize_context_t *c,
-		  unsigned int offSize_,
-		  const hb_vector_t<DICTVAL> &fontDicts,
-		  OP_SERIALIZER& opszr)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-    this->count = fontDicts.length;
-    this->offSize = offSize_;
-    if (unlikely (!c->allocate_size<HBUINT8> (offSize_ * (fontDicts.length + 1))))
-      return_trace (false);
-
-    /* serialize font dict offsets */
-    unsigned int offset = 1;
-    unsigned int fid = 0;
-    for (; fid < fontDicts.length; fid++)
-    {
-      CFFIndexOf<COUNT, FontDict>::set_offset_at (fid, offset);
-      offset += FontDict::calculate_serialized_size (fontDicts[fid], opszr);
-    }
-    CFFIndexOf<COUNT, FontDict>::set_offset_at (fid, offset);
-
-    /* serialize font dicts */
-    for (unsigned int i = 0; i < fontDicts.length; i++)
-    {
-      FontDict *dict = c->start_embed<FontDict> ();
-      if (unlikely (!dict->serialize (c, fontDicts[i], opszr, fontDicts[i])))
-	return_trace (false);
-    }
-    return_trace (true);
-  }
-
-  /* used by CFF2 */
-  template <typename DICTVAL, typename OP_SERIALIZER>
-  bool serialize (hb_serialize_context_t *c,
-		  unsigned int offSize_,
-		  const hb_vector_t<DICTVAL> &fontDicts,
-		  unsigned int fdCount,
-		  const hb_inc_bimap_t &fdmap,
-		  OP_SERIALIZER& opszr,
-		  const hb_vector_t<table_info_t> &privateInfos)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-    this->count = fdCount;
-    this->offSize = offSize_;
-    if (unlikely (!c->allocate_size<HBUINT8> (offSize_ * (fdCount + 1))))
-      return_trace (false);
-
-    /* serialize font dict offsets */
-    unsigned int  offset = 1;
-    unsigned int  fid = 0;
-    for (unsigned i = 0; i < fontDicts.length; i++)
-      if (fdmap.has (i))
-      {
-      	if (unlikely (fid >= fdCount)) return_trace (false);
-	CFFIndexOf<COUNT, FontDict>::set_offset_at (fid++, offset);
-	offset += FontDict::calculate_serialized_size (fontDicts[i], opszr);
-      }
-    CFFIndexOf<COUNT, FontDict>::set_offset_at (fid, offset);
-
-    /* serialize font dicts */
-    for (unsigned int i = 0; i < fontDicts.length; i++)
-      if (fdmap.has (i))
-      {
-	FontDict *dict = c->start_embed<FontDict> ();
-	if (unlikely (!dict->serialize (c, fontDicts[i], opszr, privateInfos[fdmap[i]])))
-	  return_trace (false);
-      }
-    return_trace (true);
-  }
-
   /* in parallel to above */
   template <typename OP_SERIALIZER, typename DICTVAL>
   static unsigned int calculate_serialized_size (unsigned int &offSize_ /* OUT */,
@@ -582,16 +356,6 @@ typedef FDSelect3_4_Range<HBUINT16, HBUINT8> FDSelect3_Range;
 
 struct FDSelect
 {
-  bool serialize (hb_serialize_context_t *c, const FDSelect &src, unsigned int num_glyphs)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned int size = src.get_size (num_glyphs);
-    FDSelect *dest = c->allocate_size<FDSelect> (size);
-    if (unlikely (dest == nullptr)) return_trace (false);
-    memcpy (dest, &src, size);
-    return_trace (true);
-  }
-
   unsigned int calculate_serialized_size (unsigned int num_glyphs) const
   { return get_size (num_glyphs); }
 

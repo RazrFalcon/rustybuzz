@@ -72,34 +72,6 @@ struct hmtxvmtx
     return_trace (true);
   }
 
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  void serialize (hb_serialize_context_t *c,
-		  Iterator it,
-		  unsigned num_advances)
-  {
-    unsigned idx = 0;
-    + it
-    | hb_apply ([c, &idx, num_advances] (const hb_item_type<Iterator>& _)
-		{
-		  if (idx < num_advances)
-		  {
-		    LongMetric lm;
-		    lm.advance = _.first;
-		    lm.sb = _.second;
-		    if (unlikely (!c->embed<LongMetric> (&lm))) return;
-		  }
-		  else
-		  {
-		    FWORD *sb = c->allocate_size<FWORD> (FWORD::static_size);
-		    if (unlikely (!sb)) return;
-		    *sb = _.second;
-		  }
-		  idx++;
-		})
-    ;
-  }
-
   struct accelerator_t
   {
     friend struct hmtxvmtx;

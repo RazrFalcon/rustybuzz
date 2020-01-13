@@ -162,78 +162,6 @@ struct CFF1SuppEncData {
 
 struct Encoding
 {
-  /* serialize a fullset Encoding */
-  bool serialize (hb_serialize_context_t *c, const Encoding &src)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned int size = src.get_size ();
-    Encoding *dest = c->allocate_size<Encoding> (size);
-    if (unlikely (dest == nullptr)) return_trace (false);
-    memcpy (dest, &src, size);
-    return_trace (true);
-  }
-
-  /* serialize a subset Encoding */
-  bool serialize (hb_serialize_context_t *c,
-		  uint8_t format,
-		  unsigned int enc_count,
-		  const hb_vector_t<code_pair_t>& code_ranges,
-		  const hb_vector_t<code_pair_t>& supp_codes)
-  {
-    TRACE_SERIALIZE (this);
-    Encoding *dest = c->extend_min (*this);
-    if (unlikely (dest == nullptr)) return_trace (false);
-    dest->format = format | ((supp_codes.length > 0) ? 0x80 : 0);
-    switch (format) {
-    case 0:
-    {
-      Encoding0 *fmt0 = c->allocate_size<Encoding0> (Encoding0::min_size + HBUINT8::static_size * enc_count);
-      if (unlikely (fmt0 == nullptr)) return_trace (false);
-      fmt0->nCodes () = enc_count;
-      unsigned int glyph = 0;
-      for (unsigned int i = 0; i < code_ranges.length; i++)
-      {
-	hb_codepoint_t code = code_ranges[i].code;
-	for (int left = (int)code_ranges[i].glyph; left >= 0; left--)
-	  fmt0->codes[glyph++] = code++;
-	if (unlikely (!((glyph <= 0x100) && (code <= 0x100))))
-	  return_trace (false);
-      }
-    }
-    break;
-
-    case 1:
-    {
-      Encoding1 *fmt1 = c->allocate_size<Encoding1> (Encoding1::min_size + Encoding1_Range::static_size * code_ranges.length);
-      if (unlikely (fmt1 == nullptr)) return_trace (false);
-      fmt1->nRanges () = code_ranges.length;
-      for (unsigned int i = 0; i < code_ranges.length; i++)
-      {
-	if (unlikely (!((code_ranges[i].code <= 0xFF) && (code_ranges[i].glyph <= 0xFF))))
-	  return_trace (false);
-	fmt1->ranges[i].first = code_ranges[i].code;
-	fmt1->ranges[i].nLeft = code_ranges[i].glyph;
-      }
-    }
-    break;
-
-    }
-
-    if (supp_codes.length)
-    {
-      CFF1SuppEncData *suppData = c->allocate_size<CFF1SuppEncData> (CFF1SuppEncData::min_size + SuppEncoding::static_size * supp_codes.length);
-      if (unlikely (suppData == nullptr)) return_trace (false);
-      suppData->nSups () = supp_codes.length;
-      for (unsigned int i = 0; i < supp_codes.length; i++)
-      {
-	suppData->supps[i].code = supp_codes[i].code;
-	suppData->supps[i].glyph = supp_codes[i].glyph; /* actually SID */
-      }
-    }
-
-    return_trace (true);
-  }
-
   /* parallel to above: calculate the size of a subset Encoding */
   static unsigned int calculate_serialized_size (uint8_t format,
 						 unsigned int enc_count,
@@ -450,75 +378,6 @@ typedef Charset_Range<HBUINT16> Charset2_Range;
 
 struct Charset
 {
-  /* serialize a fullset Charset */
-  bool serialize (hb_serialize_context_t *c, const Charset &src, unsigned int num_glyphs)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned int size = src.get_size (num_glyphs);
-    Charset *dest = c->allocate_size<Charset> (size);
-    if (unlikely (dest == nullptr)) return_trace (false);
-    memcpy (dest, &src, size);
-    return_trace (true);
-  }
-
-  /* serialize a subset Charset */
-  bool serialize (hb_serialize_context_t *c,
-		  uint8_t format,
-		  unsigned int num_glyphs,
-		  const hb_vector_t<code_pair_t>& sid_ranges)
-  {
-    TRACE_SERIALIZE (this);
-    Charset *dest = c->extend_min (*this);
-    if (unlikely (dest == nullptr)) return_trace (false);
-    dest->format = format;
-    switch (format)
-    {
-    case 0:
-    {
-      Charset0 *fmt0 = c->allocate_size<Charset0> (Charset0::min_size + HBUINT16::static_size * (num_glyphs - 1));
-      if (unlikely (fmt0 == nullptr)) return_trace (false);
-      unsigned int glyph = 0;
-      for (unsigned int i = 0; i < sid_ranges.length; i++)
-      {
-	hb_codepoint_t sid = sid_ranges[i].code;
-	for (int left = (int)sid_ranges[i].glyph; left >= 0; left--)
-	  fmt0->sids[glyph++] = sid++;
-      }
-    }
-    break;
-
-    case 1:
-    {
-      Charset1 *fmt1 = c->allocate_size<Charset1> (Charset1::min_size + Charset1_Range::static_size * sid_ranges.length);
-      if (unlikely (fmt1 == nullptr)) return_trace (false);
-      for (unsigned int i = 0; i < sid_ranges.length; i++)
-      {
-      	if (unlikely (!(sid_ranges[i].glyph <= 0xFF)))
-	  return_trace (false);
-	fmt1->ranges[i].first = sid_ranges[i].code;
-	fmt1->ranges[i].nLeft = sid_ranges[i].glyph;
-      }
-    }
-    break;
-
-    case 2:
-    {
-      Charset2 *fmt2 = c->allocate_size<Charset2> (Charset2::min_size + Charset2_Range::static_size * sid_ranges.length);
-      if (unlikely (fmt2 == nullptr)) return_trace (false);
-      for (unsigned int i = 0; i < sid_ranges.length; i++)
-      {
-      	if (unlikely (!(sid_ranges[i].glyph <= 0xFFFF)))
-	  return_trace (false);
-	fmt2->ranges[i].first = sid_ranges[i].code;
-	fmt2->ranges[i].nLeft = sid_ranges[i].glyph;
-      }
-    }
-    break;
-
-    }
-    return_trace (true);
-  }
-
   /* parallel to above: calculate the size of a subset Charset */
   static unsigned int calculate_serialized_size (uint8_t format,
 						 unsigned int count)
@@ -592,34 +451,6 @@ struct Charset
 
 struct CFF1StringIndex : CFF1Index
 {
-  bool serialize (hb_serialize_context_t *c, const CFF1StringIndex &strings,
-		  unsigned int offSize_, const hb_inc_bimap_t &sidmap)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely ((strings.count == 0) || (sidmap.get_population () == 0)))
-    {
-      if (unlikely (!c->extend_min (this->count)))
-	return_trace (false);
-      count = 0;
-      return_trace (true);
-    }
-
-    byte_str_array_t bytesArray;
-    bytesArray.init ();
-    if (!bytesArray.resize (sidmap.get_population ()))
-      return_trace (false);
-    for (unsigned int i = 0; i < strings.count; i++)
-    {
-      hb_codepoint_t  j = sidmap[i];
-      if (j != CFF_UNDEF_CODE)
-	bytesArray[j] = strings[i];
-    }
-
-    bool result = CFF1Index::serialize (c, offSize_, bytesArray);
-    bytesArray.fini ();
-    return_trace (result);
-  }
-
   /* in parallel to above */
   unsigned int calculate_serialized_size (unsigned int &offSize_ /*OUT*/, const hb_inc_bimap_t &sidmap) const
   {

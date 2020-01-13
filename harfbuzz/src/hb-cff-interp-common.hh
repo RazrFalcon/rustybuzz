@@ -251,32 +251,6 @@ struct number_t
 /* byte string */
 struct UnsizedByteStr : UnsizedArrayOf <HBUINT8>
 {
-  // encode 2-byte int (Dict/CharString) or 4-byte int (Dict)
-  template <typename INTTYPE, int minVal, int maxVal>
-  static bool serialize_int (hb_serialize_context_t *c, op_code_t intOp, int value)
-  {
-    TRACE_SERIALIZE (this);
-
-    if (unlikely ((value < minVal || value > maxVal)))
-      return_trace (false);
-
-    HBUINT8 *p = c->allocate_size<HBUINT8> (1);
-    if (unlikely (p == nullptr)) return_trace (false);
-    *p = intOp;
-
-    INTTYPE *ip = c->allocate_size<INTTYPE> (INTTYPE::static_size);
-    if (unlikely (ip == nullptr)) return_trace (false);
-    *ip = (unsigned int) value;
-
-    return_trace (true);
-  }
-
-  static bool serialize_int4 (hb_serialize_context_t *c, int value)
-  { return serialize_int<HBUINT32, 0, 0x7FFFFFFF> (c, OpCode_longintdict, value); }
-
-  static bool serialize_int2 (hb_serialize_context_t *c, int value)
-  { return serialize_int<HBUINT16, 0, 0x7FFF> (c, OpCode_shortint, value); }
-
   /* Defining null_size allows a Null object may be created. Should be safe because:
    * A descendent struct Dict uses a Null pointer to indicate a missing table,
    * checked before access.
@@ -531,21 +505,6 @@ struct op_str_t
 
   op_code_t  op;
   byte_str_t str;
-};
-
-/* base of OP_SERIALIZER */
-struct op_serializer_t
-{
-  protected:
-  bool copy_opstr (hb_serialize_context_t *c, const op_str_t& opstr) const
-  {
-    TRACE_SERIALIZE (this);
-
-    HBUINT8 *d = c->allocate_size<HBUINT8> (opstr.str.length);
-    if (unlikely (d == nullptr)) return_trace (false);
-    memcpy (d, &opstr.str[0], opstr.str.length);
-    return_trace (true);
-  }
 };
 
 template <typename VAL>

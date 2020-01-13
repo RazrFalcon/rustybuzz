@@ -117,76 +117,6 @@ typedef struct OffsetTable
   }
 
   public:
-
-  template <typename item_t>
-  bool serialize (hb_serialize_context_t *c,
-		  hb_tag_t sfnt_tag,
-		  hb_array_t<item_t> items)
-  {
-    TRACE_SERIALIZE (this);
-    /* Alloc 12 for the OTHeader. */
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-    /* Write sfntVersion (bytes 0..3). */
-    sfnt_version = sfnt_tag;
-    /* Take space for numTables, searchRange, entrySelector, RangeShift
-     * and the TableRecords themselves.  */
-    if (unlikely (!tables.serialize (c, items.length))) return_trace (false);
-
-    const char *dir_end = (const char *) c->head;
-    HBUINT32 *checksum_adjustment = nullptr;
-
-    /* Write OffsetTables, alloc for and write actual table blobs. */
-    for (unsigned int i = 0; i < tables.len; i++)
-    {
-      TableRecord &rec = tables.arrayZ[i];
-      hb_blob_t *blob = items[i].blob;
-      rec.tag = items[i].tag;
-      rec.length = blob->length;
-      rec.offset.serialize (c, this);
-
-      /* Allocate room for the table and copy it. */
-      char *start = (char *) c->allocate_size<void> (rec.length);
-      if (unlikely (!start)) return false;
-
-      if (likely (rec.length))
-	memcpy (start, blob->data, rec.length);
-
-      /* 4-byte alignment. */
-      c->align (4);
-      const char *end = (const char *) c->head;
-
-      if (items[i].tag == HB_OT_TAG_head &&
-	  (unsigned) (end - start) >= head::static_size)
-      {
-	head *h = (head *) start;
-	checksum_adjustment = &h->checkSumAdjustment;
-	*checksum_adjustment = 0;
-      }
-
-      rec.checkSum.set_for_data (start, end - start);
-    }
-
-    tables.qsort ();
-
-    if (checksum_adjustment)
-    {
-      CheckSum checksum;
-
-      /* The following line is a slower version of the following block. */
-      //checksum.set_for_data (this, (const char *) c->head - (const char *) this);
-      checksum.set_for_data (this, dir_end - (const char *) this);
-      for (unsigned int i = 0; i < items.length; i++)
-      {
-	TableRecord &rec = tables.arrayZ[i];
-	checksum = checksum + rec.checkSum;
-      }
-
-      *checksum_adjustment = 0xB1B0AFBAu - checksum;
-    }
-
-    return_trace (true);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -480,17 +410,6 @@ struct OpenTypeFontFile
     case DFontTag:	return u.rfHeader.get_face (i, base_offset);
     default:		return Null(OpenTypeFontFace);
     }
-  }
-
-  template <typename item_t>
-  bool serialize_single (hb_serialize_context_t *c,
-			 hb_tag_t sfnt_tag,
-			 hb_array_t<item_t> items)
-  {
-    TRACE_SERIALIZE (this);
-    assert (sfnt_tag != TTCTag);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
-    return_trace (u.fontFace.serialize (c, sfnt_tag, items));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const

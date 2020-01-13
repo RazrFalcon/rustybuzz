@@ -236,10 +236,6 @@ struct ValueFormat : HBUINT16
   }
 };
 
-template<typename Iterator>
-static inline void SinglePos_serialize (hb_serialize_context_t *c,
-					Iterator it,
-					ValueFormat valFormat);
 
 
 struct AnchorFormat1
@@ -256,12 +252,6 @@ struct AnchorFormat1
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this));
-  }
-
-  AnchorFormat1* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    return_trace (c->embed<AnchorFormat1> (this));
   }
 
   protected:
@@ -302,12 +292,6 @@ struct AnchorFormat2
     return_trace (c->check_struct (this));
   }
 
-  AnchorFormat2* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    return_trace (c->embed<AnchorFormat2> (this));
-  }
-
   protected:
   HBUINT16	format;			/* Format identifier--format = 2 */
   FWORD		xCoordinate;		/* Horizontal value--in design units */
@@ -336,17 +320,6 @@ struct AnchorFormat3
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) && xDeviceTable.sanitize (c, this) && yDeviceTable.sanitize (c, this));
-  }
-
-  AnchorFormat3* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    auto *out = c->embed<AnchorFormat3> (this);
-    if (unlikely (!out)) return_trace (nullptr);
-
-    out->xDeviceTable.serialize_copy (c, xDeviceTable, this, out);
-    out->yDeviceTable.serialize_copy (c, yDeviceTable, this, out);
-    return_trace (out);
   }
 
   protected:
@@ -388,17 +361,6 @@ struct Anchor
     case 2: return_trace (u.format2.sanitize (c));
     case 3: return_trace (u.format3.sanitize (c));
     default:return_trace (true);
-    }
-  }
-
-  Anchor* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    switch (u.format) {
-    case 1: return_trace (reinterpret_cast<Anchor *> (u.format1.copy (c)));
-    case 2: return_trace (reinterpret_cast<Anchor *> (u.format2.copy (c)));
-    case 3: return_trace (reinterpret_cast<Anchor *> (u.format3.copy (c)));
-    default:return_trace (nullptr);
     }
   }
 
@@ -535,26 +497,6 @@ struct SinglePosFormat1
     return_trace (true);
   }
 
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  void serialize (hb_serialize_context_t *c,
-		  Iterator it,
-		  ValueFormat valFormat)
-  {
-    if (unlikely (!c->extend_min (*this))) return;
-    if (unlikely (!c->check_assign (valueFormat, valFormat))) return;
-
-    for (const auto &_ : hb_second (*it))
-      c->copy (_);
-
-    auto glyphs =
-    + it
-    | hb_map_retains_sorting (hb_first)
-    ;
-
-    coverage.serialize (c, this).serialize (c, glyphs);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -604,28 +546,6 @@ struct SinglePosFormat2
     return_trace (true);
   }
 
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  void serialize (hb_serialize_context_t *c,
-		  Iterator it,
-		  ValueFormat valFormat)
-  {
-    if (unlikely (!c->extend_min (*this))) return;
-    if (unlikely (!c->check_assign (valueFormat, valFormat))) return;
-    if (unlikely (!c->check_assign (valueCount, it.len ()))) return;
-
-    for (const auto iter : it)
-      for (const auto &_ : iter.second)
-	c->copy (_);
-
-    auto glyphs =
-    + it
-    | hb_map_retains_sorting (hb_first)
-    ;
-
-    coverage.serialize (c, this).serialize (c, glyphs);
-  }
-
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -665,27 +585,6 @@ struct SinglePos
   }
 
 
-  template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
-  void serialize (hb_serialize_context_t *c,
-		  Iterator glyph_val_iter_pairs,
-		  ValueFormat valFormat)
-  {
-    if (unlikely (!c->extend_min (u.format))) return;
-    unsigned format = 2;
-
-    if (glyph_val_iter_pairs) format = get_format (glyph_val_iter_pairs);
-
-    u.format = format;
-    switch (u.format) {
-    case 1: u.format1.serialize (c, glyph_val_iter_pairs, valFormat);
-	    return;
-    case 2: u.format2.serialize (c, glyph_val_iter_pairs, valFormat);
-	    return;
-    default:return;
-    }
-  }
-
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
@@ -706,29 +605,9 @@ struct SinglePos
   } u;
 };
 
-template<typename Iterator>
-static inline void
-SinglePos_serialize (hb_serialize_context_t *c,
-		     Iterator it,
-		     ValueFormat valFormat)
-{ c->start_embed<SinglePos> ()->serialize (c, it, valFormat); }
-
-
 struct PairValueRecord
 {
   friend struct PairSet;
-
-  bool serialize (hb_serialize_context_t *c,
-                  unsigned length,
-                  const hb_map_t &glyph_map) const
-  {
-    TRACE_SERIALIZE (this);
-    auto *out = c->start_embed (*this);
-    if (unlikely (!c->extend_min (out))) return_trace (false);
-    
-    out->secondGlyph = glyph_map[secondGlyph];
-    return_trace (c->copy (values, length));
-  }
 
   protected:
   HBGlyphID	secondGlyph;		/* GlyphID of second glyph in the
@@ -1053,19 +932,6 @@ struct EntryExitRecord
     return_trace (entryAnchor.sanitize (c, base) && exitAnchor.sanitize (c, base));
   }
 
-  EntryExitRecord* copy (hb_serialize_context_t *c,
-			 const void *src_base,
-			 const void *dst_base) const
-  {
-    TRACE_SERIALIZE (this);
-    auto *out = c->embed (this);
-    if (unlikely (!out)) return_trace (nullptr);
-
-    out->entryAnchor.serialize_copy (c, entryAnchor, src_base, dst_base);
-    out->exitAnchor.serialize_copy (c, exitAnchor, src_base, dst_base);
-    return_trace (out);
-  }
-
   protected:
   OffsetTo<Anchor>
 		entryAnchor;		/* Offset to EntryAnchor table--from
@@ -1191,28 +1057,6 @@ struct CursivePosFormat1
 
     buffer->idx++;
     return_trace (true);
-  }
-
-  template <typename Iterator,
-	    hb_requires (hb_is_iterator (Iterator))>
-  void serialize (hb_serialize_context_t *c,
-		  Iterator it,
-		  const void *src_base)
-  {
-    if (unlikely (!c->extend_min ((*this)))) return;
-    this->format = 1;
-    this->entryExitRecord.len = it.len ();
-
-    for (const EntryExitRecord& entry_record : + it
-					       | hb_map (hb_second))
-      c->copy (entry_record, src_base, this);
-
-    auto glyphs =
-    + it
-    | hb_map_retains_sorting (hb_first)
-    ;
-
-    coverage.serialize (c, this).serialize (c, glyphs);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
