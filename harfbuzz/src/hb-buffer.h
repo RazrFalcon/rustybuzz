@@ -178,26 +178,8 @@ typedef struct hb_buffer_t hb_buffer_t;
 HB_EXTERN hb_buffer_t *
 hb_buffer_create (void);
 
-HB_EXTERN hb_buffer_t *
-hb_buffer_get_empty (void);
-
-HB_EXTERN hb_buffer_t *
-hb_buffer_reference (hb_buffer_t *buffer);
-
 HB_EXTERN void
 hb_buffer_destroy (hb_buffer_t *buffer);
-
-HB_EXTERN hb_bool_t
-hb_buffer_set_user_data (hb_buffer_t        *buffer,
-			 hb_user_data_key_t *key,
-			 void *              data,
-			 hb_destroy_func_t   destroy,
-			 hb_bool_t           replace);
-
-HB_EXTERN void *
-hb_buffer_get_user_data (hb_buffer_t        *buffer,
-			 hb_user_data_key_t *key);
-
 
 /**
  * hb_buffer_content_type_t:
@@ -243,10 +225,6 @@ hb_buffer_get_language (hb_buffer_t *buffer);
 HB_EXTERN void
 hb_buffer_set_segment_properties (hb_buffer_t *buffer,
 				  const hb_segment_properties_t *props);
-
-HB_EXTERN void
-hb_buffer_get_segment_properties (hb_buffer_t *buffer,
-				  hb_segment_properties_t *props);
 
 HB_EXTERN void
 hb_buffer_guess_segment_properties (hb_buffer_t *buffer);
@@ -359,10 +337,6 @@ HB_EXTERN hb_bool_t
 hb_buffer_pre_allocate (hb_buffer_t  *buffer,
 		        unsigned int  size);
 
-
-HB_EXTERN hb_bool_t
-hb_buffer_allocation_successful (hb_buffer_t  *buffer);
-
 HB_EXTERN void
 hb_buffer_reverse (hb_buffer_t *buffer);
 
@@ -379,54 +353,11 @@ hb_buffer_reset_clusters (hb_buffer_t *buffer);
 /* Filling the buffer in */
 
 HB_EXTERN void
-hb_buffer_add (hb_buffer_t    *buffer,
-	       hb_codepoint_t  codepoint,
-	       unsigned int    cluster);
-
-HB_EXTERN void
 hb_buffer_add_utf8 (hb_buffer_t  *buffer,
 		    const char   *text,
 		    int           text_length,
 		    unsigned int  item_offset,
 		    int           item_length);
-
-HB_EXTERN void
-hb_buffer_add_utf16 (hb_buffer_t    *buffer,
-		     const uint16_t *text,
-		     int             text_length,
-		     unsigned int    item_offset,
-		     int             item_length);
-
-HB_EXTERN void
-hb_buffer_add_utf32 (hb_buffer_t    *buffer,
-		     const uint32_t *text,
-		     int             text_length,
-		     unsigned int    item_offset,
-		     int             item_length);
-
-HB_EXTERN void
-hb_buffer_add_latin1 (hb_buffer_t   *buffer,
-		      const uint8_t *text,
-		      int            text_length,
-		      unsigned int   item_offset,
-		      int            item_length);
-
-HB_EXTERN void
-hb_buffer_add_codepoints (hb_buffer_t          *buffer,
-			  const hb_codepoint_t *text,
-			  int                   text_length,
-			  unsigned int          item_offset,
-			  int                   item_length);
-
-HB_EXTERN void
-hb_buffer_append (hb_buffer_t *buffer,
-		  hb_buffer_t *source,
-		  unsigned int start,
-		  unsigned int end);
-
-HB_EXTERN hb_bool_t
-hb_buffer_set_length (hb_buffer_t  *buffer,
-		      unsigned int  length);
 
 HB_EXTERN unsigned int
 hb_buffer_get_length (hb_buffer_t *buffer);
@@ -502,61 +433,6 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
 			    hb_font_t *font,
 			    hb_buffer_serialize_format_t format,
 			    hb_buffer_serialize_flags_t flags);
-
-
-/*
- * Compare buffers
- */
-
-typedef enum { /*< flags >*/
-  HB_BUFFER_DIFF_FLAG_EQUAL			= 0x0000,
-
-  /* Buffers with different content_type cannot be meaningfully compared
-   * in any further detail. */
-  HB_BUFFER_DIFF_FLAG_CONTENT_TYPE_MISMATCH	= 0x0001,
-
-  /* For buffers with differing length, the per-glyph comparison is not
-   * attempted, though we do still scan reference for dottedcircle / .notdef
-   * glyphs. */
-  HB_BUFFER_DIFF_FLAG_LENGTH_MISMATCH		= 0x0002,
-
-  /* We want to know if dottedcircle / .notdef glyphs are present in the
-   * reference, as we may not care so much about other differences in this
-   * case. */
-  HB_BUFFER_DIFF_FLAG_NOTDEF_PRESENT		= 0x0004,
-  HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT	= 0x0008,
-
-  /* If the buffers have the same length, we compare them glyph-by-glyph
-   * and report which aspect(s) of the glyph info/position are different. */
-  HB_BUFFER_DIFF_FLAG_CODEPOINT_MISMATCH	= 0x0010,
-  HB_BUFFER_DIFF_FLAG_CLUSTER_MISMATCH		= 0x0020,
-  HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH	= 0x0040,
-  HB_BUFFER_DIFF_FLAG_POSITION_MISMATCH		= 0x0080
-
-} hb_buffer_diff_flags_t;
-
-/* Compare the contents of two buffers, report types of differences. */
-HB_EXTERN hb_buffer_diff_flags_t
-hb_buffer_diff (hb_buffer_t *buffer,
-		hb_buffer_t *reference,
-		hb_codepoint_t dottedcircle_glyph,
-		unsigned int position_fuzz);
-
-
-/*
- * Debugging.
- */
-
-typedef hb_bool_t	(*hb_buffer_message_func_t)	(hb_buffer_t *buffer,
-							 hb_font_t   *font,
-							 const char  *message,
-							 void        *user_data);
-
-HB_EXTERN void
-hb_buffer_set_message_func (hb_buffer_t *buffer,
-			    hb_buffer_message_func_t func,
-			    void *user_data, hb_destroy_func_t destroy);
-
 
 HB_END_DECLS
 

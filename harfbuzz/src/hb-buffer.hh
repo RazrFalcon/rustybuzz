@@ -59,7 +59,6 @@ static_assert ((sizeof (hb_glyph_info_t) == sizeof (hb_glyph_position_t)), "");
 
 HB_MARK_AS_FLAG_T (hb_buffer_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_serialize_flags_t);
-HB_MARK_AS_FLAG_T (hb_buffer_diff_flags_t);
 
 enum hb_buffer_scratch_flags_t {
   HB_BUFFER_SCRATCH_FLAG_DEFAULT			= 0x00000000u,
@@ -121,13 +120,6 @@ struct hb_buffer_t
   static constexpr unsigned CONTEXT_LENGTH = 5u;
   hb_codepoint_t context[2][CONTEXT_LENGTH];
   unsigned int context_len[2];
-
-  /* Debugging API */
-#ifndef HB_NO_BUFFER_MESSAGE
-  hb_buffer_message_func_t message_func;
-  void *message_data;
-  hb_destroy_func_t message_destroy;
-#endif
 
   /* Internal debugging. */
   /* The bits here reflect current allocations of the bytes in glyph_info_t's var1 and var2. */
@@ -348,30 +340,6 @@ struct hb_buffer_t
   void clear_context (unsigned int side) { context_len[side] = 0; }
 
   HB_INTERNAL void sort (unsigned int start, unsigned int end, int(*compar)(const hb_glyph_info_t *, const hb_glyph_info_t *));
-
-  bool messaging ()
-  {
-#ifdef HB_NO_BUFFER_MESSAGE
-    return false;
-#else
-    return unlikely (message_func);
-#endif
-  }
-  bool message (hb_font_t *font, const char *fmt, ...) HB_PRINTF_FUNC(3, 4)
-  {
-#ifdef HB_NO_BUFFER_MESSAGE
-   return true;
-#else
-    if (!messaging ())
-      return true;
-    va_list ap;
-    va_start (ap, fmt);
-    bool ret = message_impl (font, fmt, ap);
-    va_end (ap);
-    return ret;
-#endif
-  }
-  HB_INTERNAL bool message_impl (hb_font_t *font, const char *fmt, va_list ap) HB_PRINTF_FUNC(3, 0);
 
   static void
   set_cluster (hb_glyph_info_t &inf, unsigned int cluster, unsigned int mask = 0)

@@ -891,9 +891,6 @@ struct KerxTable
       reverse = bool (st->u.header.coverage & st->u.header.Backwards) !=
 		HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction);
 
-      if (!c->buffer->message (c->font, "start %c%c%c%c subtable %d", HB_UNTAG (thiz()->tableTag), c->lookup_index))
-	goto skip;
-
       if (!seenCrossStream &&
 	  (st->u.header.coverage & st->u.header.CrossStream))
       {
@@ -922,8 +919,6 @@ struct KerxTable
 
       if (reverse)
 	c->buffer->reverse ();
-
-      (void) c->buffer->message (c->font, "end %c%c%c%c subtable %d", HB_UNTAG (thiz()->tableTag), c->lookup_index);
 
     skip:
       st = &StructAfter<SubTable> (*st);

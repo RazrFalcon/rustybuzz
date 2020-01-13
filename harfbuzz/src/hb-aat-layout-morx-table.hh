@@ -1015,9 +1015,6 @@ struct Chain
 		bool (subtable->get_coverage () & ChainSubtable<Types>::Backwards) !=
 		HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction);
 
-      if (!c->buffer->message (c->font, "start chain subtable %d", c->lookup_index))
-	goto skip;
-
       if (reverse)
 	c->buffer->reverse ();
 
@@ -1025,8 +1022,6 @@ struct Chain
 
       if (reverse)
 	c->buffer->reverse ();
-
-      (void) c->buffer->message (c->font, "end chain subtable %d", c->lookup_index);
 
       if (unlikely (!c->buffer->successful)) return;
 
