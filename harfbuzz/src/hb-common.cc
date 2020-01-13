@@ -506,54 +506,6 @@ hb_script_get_horizontal_direction (hb_script_t script)
   return HB_DIRECTION_LTR;
 }
 
-
-/* hb_user_data_array_t */
-
-bool
-hb_user_data_array_t::set (hb_user_data_key_t *key,
-                           void *              data,
-                           hb_destroy_func_t   destroy,
-                           hb_bool_t           replace)
-{
-  if (!key)
-    return false;
-
-  if (replace) {
-    if (!data && !destroy) {
-      items.remove (key, lock);
-      return true;
-    }
-  }
-  hb_user_data_item_t item = {key, data, destroy};
-  bool ret = !!items.replace_or_insert (item, lock, (bool) replace);
-
-  return ret;
-}
-
-void *
-hb_user_data_array_t::get (hb_user_data_key_t *key)
-{
-  hb_user_data_item_t item = {nullptr, nullptr, nullptr};
-
-  return items.find (key, &item, lock) ? item.data : nullptr;
-}
-
-
-/* hb_version */
-
-
-/**
- * SECTION:hb-version
- * @title: hb-version
- * @short_description: Information about the version of HarfBuzz in use
- * @include: hb.h
- *
- * These functions and macros allow accessing version of the HarfBuzz
- * library used at compile- as well as run-time, and to direct code
- * conditionally based on those versions, again, at compile- or run-time.
- **/
-
-
 /* hb_feature_t and hb_variation_t */
 
 static bool

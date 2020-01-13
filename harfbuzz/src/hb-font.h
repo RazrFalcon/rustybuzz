@@ -97,18 +97,6 @@ hb_font_reference (hb_font_t *font);
 HB_EXTERN void
 hb_font_destroy (hb_font_t *font);
 
-HB_EXTERN hb_bool_t
-hb_font_set_user_data (hb_font_t          *font,
-		       hb_user_data_key_t *key,
-		       void *              data,
-		       hb_destroy_func_t   destroy,
-		       hb_bool_t           replace);
-
-
-HB_EXTERN void *
-hb_font_get_user_data (hb_font_t          *font,
-		       hb_user_data_key_t *key);
-
 HB_EXTERN void
 hb_font_make_immutable (hb_font_t *font);
 

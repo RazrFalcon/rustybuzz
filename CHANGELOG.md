@@ -48,3 +48,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_face_collect_*`. Unused.
 - OpenType tables serialization. Unused.
 - `hb-ot-color`. Unused.
+- User data support.

@@ -97,19 +97,6 @@ hb_blob_reference (hb_blob_t *blob);
 HB_EXTERN void
 hb_blob_destroy (hb_blob_t *blob);
 
-HB_EXTERN hb_bool_t
-hb_blob_set_user_data (hb_blob_t          *blob,
-		       hb_user_data_key_t *key,
-		       void *              data,
-		       hb_destroy_func_t   destroy,
-		       hb_bool_t           replace);
-
-
-HB_EXTERN void *
-hb_blob_get_user_data (hb_blob_t          *blob,
-		       hb_user_data_key_t *key);
-
-
 HB_EXTERN void
 hb_blob_make_immutable (hb_blob_t *blob);
 

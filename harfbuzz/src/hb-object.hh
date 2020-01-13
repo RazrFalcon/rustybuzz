@@ -157,38 +157,6 @@ struct hb_reference_count_t
   bool is_valid () const { return ref_count.get_relaxed () > 0; }
 };
 
-
-/* user_data */
-
-struct hb_user_data_array_t
-{
-  struct hb_user_data_item_t {
-    hb_user_data_key_t *key;
-    void *data;
-    hb_destroy_func_t destroy;
-
-    bool operator == (hb_user_data_key_t *other_key) const { return key == other_key; }
-    bool operator == (hb_user_data_item_t &other) const { return key == other.key; }
-
-    void fini () { if (destroy) destroy (data); }
-  };
-
-  hb_mutex_t lock;
-  hb_lockable_set_t<hb_user_data_item_t, hb_mutex_t> items;
-
-  void init () { lock.init (); items.init (); }
-
-  HB_INTERNAL bool set (hb_user_data_key_t *key,
-			void *              data,
-			hb_destroy_func_t   destroy,
-			hb_bool_t           replace);
-
-  HB_INTERNAL void *get (hb_user_data_key_t *key);
-
-  void fini () { items.fini (lock); lock.fini (); }
-};
-
-
 /*
  * Object header
  */
@@ -197,13 +165,11 @@ struct hb_object_header_t
 {
   hb_reference_count_t ref_count;
   mutable hb_atomic_int_t writable;
-  hb_atomic_ptr_t<hb_user_data_array_t> user_data;
 };
 #define HB_OBJECT_HEADER_STATIC \
 	{ \
 	  HB_REFERENCE_COUNT_INIT, \
-	  HB_ATOMIC_INT_INIT (false), \
-	  HB_ATOMIC_PTR_INIT (nullptr) \
+	  HB_ATOMIC_INT_INIT (false) \
 	}
 
 
@@ -237,7 +203,6 @@ static inline void hb_object_init (Type *obj)
 {
   obj->header.ref_count.init ();
   obj->header.writable.set_relaxed (true);
-  obj->header.user_data.init ();
 }
 template <typename Type>
 static inline bool hb_object_is_inert (const Type *obj)
@@ -286,53 +251,4 @@ template <typename Type>
 static inline void hb_object_fini (Type *obj)
 {
   obj->header.ref_count.fini (); /* Do this before user_data */
-  hb_user_data_array_t *user_data = obj->header.user_data.get ();
-  if (user_data)
-  {
-    user_data->fini ();
-    free (user_data);
-    user_data = nullptr;
-  }
-}
-template <typename Type>
-static inline bool hb_object_set_user_data (Type               *obj,
-					    hb_user_data_key_t *key,
-					    void *              data,
-					    hb_destroy_func_t   destroy,
-					    hb_bool_t           replace)
-{
-  if (unlikely (!obj || hb_object_is_inert (obj)))
-    return false;
-  assert (hb_object_is_valid (obj));
-
-retry:
-  hb_user_data_array_t *user_data = obj->header.user_data.get ();
-  if (unlikely (!user_data))
-  {
-    user_data = (hb_user_data_array_t *) calloc (sizeof (hb_user_data_array_t), 1);
-    if (unlikely (!user_data))
-      return false;
-    user_data->init ();
-    if (unlikely (!obj->header.user_data.cmpexch (nullptr, user_data)))
-    {
-      user_data->fini ();
-      free (user_data);
-      goto retry;
-    }
-  }
-
-  return user_data->set (key, data, destroy, replace);
-}
-
-template <typename Type>
-static inline void *hb_object_get_user_data (Type               *obj,
-					     hb_user_data_key_t *key)
-{
-  if (unlikely (!obj || hb_object_is_inert (obj)))
-    return nullptr;
-  assert (hb_object_is_valid (obj));
-  hb_user_data_array_t *user_data = obj->header.user_data.get ();
-  if (!user_data)
-    return nullptr;
-  return user_data->get (key);
 }

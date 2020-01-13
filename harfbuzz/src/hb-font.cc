@@ -289,48 +289,6 @@ hb_font_destroy (hb_font_t *font)
 }
 
 /**
- * hb_font_set_user_data: (skip)
- * @font: a font.
- * @key:
- * @data:
- * @destroy:
- * @replace:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_bool_t
-hb_font_set_user_data (hb_font_t          *font,
-		       hb_user_data_key_t *key,
-		       void *              data,
-		       hb_destroy_func_t   destroy,
-		       hb_bool_t           replace)
-{
-  return hb_object_set_user_data (font, key, data, destroy, replace);
-}
-
-/**
- * hb_font_get_user_data: (skip)
- * @font: a font.
- * @key:
- *
- *
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.2
- **/
-void *
-hb_font_get_user_data (hb_font_t          *font,
-		       hb_user_data_key_t *key)
-{
-  return hb_object_get_user_data (font, key);
-}
-
-/**
  * hb_font_make_immutable:
  * @font: a font.
  *

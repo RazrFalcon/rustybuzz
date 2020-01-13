@@ -103,45 +103,6 @@ hb_set_destroy (hb_set_t *set)
 }
 
 /**
- * hb_set_set_user_data: (skip)
- * @set: a set.
- * @key:
- * @data:
- * @destroy:
- * @replace:
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_bool_t
-hb_set_set_user_data (hb_set_t           *set,
-		      hb_user_data_key_t *key,
-		      void *              data,
-		      hb_destroy_func_t   destroy,
-		      hb_bool_t           replace)
-{
-  return hb_object_set_user_data (set, key, data, destroy, replace);
-}
-
-/**
- * hb_set_get_user_data: (skip)
- * @set: a set.
- * @key:
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.2
- **/
-void *
-hb_set_get_user_data (hb_set_t           *set,
-		      hb_user_data_key_t *key)
-{
-  return hb_object_get_user_data (set, key);
-}
-
-
-/**
  * hb_set_allocation_successful:
  * @set: a set.
  *

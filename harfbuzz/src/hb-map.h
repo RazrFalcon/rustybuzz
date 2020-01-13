@@ -56,18 +56,6 @@ hb_map_reference (hb_map_t *map);
 HB_EXTERN void
 hb_map_destroy (hb_map_t *map);
 
-HB_EXTERN hb_bool_t
-hb_map_set_user_data (hb_map_t           *map,
-		      hb_user_data_key_t *key,
-		      void *              data,
-		      hb_destroy_func_t   destroy,
-		      hb_bool_t           replace);
-
-HB_EXTERN void *
-hb_map_get_user_data (hb_map_t           *map,
-		      hb_user_data_key_t *key);
-
-
 /* Returns false if allocation has failed before */
 HB_EXTERN hb_bool_t
 hb_map_allocation_successful (const hb_map_t *map);
