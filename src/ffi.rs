@@ -95,7 +95,7 @@ pub struct hb_user_data_key_t {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct hb_feature_t {
     pub tag: hb_tag_t,
     pub value: u32,
@@ -198,11 +198,9 @@ pub struct hb_face_t {
 
 extern "C" {
     pub fn hb_tag_from_string(str: *const c_char, len: i32) -> hb_tag_t;
-    pub fn hb_tag_to_string(tag: hb_tag_t, buf: *mut c_char);
     pub fn hb_language_from_string(str: *const c_char, len: i32) -> hb_language_t;
     pub fn hb_language_to_string(language: hb_language_t) -> *const c_char;
     pub fn hb_language_get_default() -> hb_language_t;
-    pub fn hb_feature_from_string(str: *const c_char, len: i32, feature: *mut hb_feature_t) -> hb_bool_t;
     pub fn hb_blob_create(data: *const c_char, length: u32, mode: hb_memory_mode_t, user_data: *mut c_void,
                           destroy: hb_destroy_func_t) -> *mut hb_blob_t;
     pub fn hb_blob_destroy(blob: *mut hb_blob_t);

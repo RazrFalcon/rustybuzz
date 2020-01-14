@@ -19,12 +19,6 @@ impl Tag {
             ((bytes[2] as u32) << 8) | (bytes[3] as u32))
     }
 
-    fn tag_to_string(self) -> String {
-        let mut buf: [u8; 4] = [0; 4];
-        unsafe { ffi::hb_tag_to_string(self.0, buf.as_mut_ptr() as *mut _) };
-        String::from_utf8_lossy(&buf).into()
-    }
-
     /// Returns tag as 4-element byte array.
     pub const fn to_bytes(self) -> [u8; 4] {
         [
@@ -32,6 +26,16 @@ impl Tag {
             (self.0 >> 16 & 0xff) as u8,
             (self.0 >> 8 & 0xff) as u8,
             (self.0 >> 0 & 0xff) as u8,
+        ]
+    }
+
+    /// Returns tag as 4-element byte array.
+    pub const fn to_chars(self) -> [char; 4] {
+        [
+            (self.0 >> 24 & 0xff) as u8 as char,
+            (self.0 >> 16 & 0xff) as u8 as char,
+            (self.0 >> 8 & 0xff) as u8 as char,
+            (self.0 >> 0 & 0xff) as u8 as char,
         ]
     }
 
@@ -54,22 +58,15 @@ impl From<u32> for Tag {
 
 impl std::fmt::Debug for Tag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let string = self.tag_to_string();
-        let mut chars = string.chars().chain(std::iter::repeat('\u{FFFD}'));
+        let b = self.to_chars();
         write!(
             f,
-            "Tag({:?}, {:?}, {:?}, {:?})",
-            chars.next().unwrap(),
-            chars.next().unwrap(),
-            chars.next().unwrap(),
-            chars.next().unwrap()
+            "Tag({}{}{}{})",
+            b.get(0).unwrap_or(&' '),
+            b.get(1).unwrap_or(&' '),
+            b.get(2).unwrap_or(&' '),
+            b.get(3).unwrap_or(&' ')
         )
-    }
-}
-
-impl std::fmt::Display for Tag {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.tag_to_string())
     }
 }
 

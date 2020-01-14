@@ -14,11 +14,21 @@ Embedded `harfbuzz` version: 2.6.4
 use std::ops::{Bound, RangeBounds};
 use std::os::raw::c_uint;
 
+macro_rules! matches {
+    ($expression:expr, $($pattern:tt)+) => {
+        match $expression {
+            $($pattern)+ => true,
+            _ => false
+        }
+    }
+}
+
 mod buffer;
 mod common;
 mod ffi;
 mod font;
 mod unicode;
+mod text_parser;
 
 pub use crate::buffer::*;
 pub use crate::common::*;
@@ -33,13 +43,15 @@ pub mod implementation {
 
 type CodePoint = u32;
 
+use text_parser::TextParser;
+
 
 /// A feature tag with an accompanying range specifying on which subslice of
 /// `shape`s input it should be applied.
 ///
 /// You can pass a slice of `Feature`s to `shape` that will be activated for the
 /// corresponding slices of input.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq)]
 #[repr(transparent)]
 pub struct Feature(ffi::hb_feature_t);
 
@@ -90,20 +102,162 @@ impl Feature {
     }
 }
 
+impl std::fmt::Debug for Feature {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        fmt.debug_struct("Feature")
+            .field("tag", &Tag(self.0.tag))
+            .field("value", &self.0.value)
+            .field("start", &self.0.start)
+            .field("end", &self.0.end)
+            .finish()
+    }
+}
+
 impl std::str::FromStr for Feature {
     type Err = &'static str;
 
+    /// Parses a `Feature` form a string.
+    ///
+    /// Possible values:
+    ///
+    /// - `kern` -> kern .. 1
+    /// - `+kern` -> kern .. 1
+    /// - `-kern` -> kern .. 0
+    /// - `kern=0` -> kern .. 0
+    /// - `kern=1` -> kern .. 1
+    /// - `aalt=2` -> altr .. 2
+    /// - `kern[]` -> kern .. 1
+    /// - `kern[:]` -> kern .. 1
+    /// - `kern[5:]` -> kern 5.. 1
+    /// - `kern[:5]` -> kern ..=5 1
+    /// - `kern[3:5]` -> kern 3..=5 1
+    /// - `kern[3]` -> kern 3..=4 1
+    /// - `aalt[3:5]=2` -> kern 3..=5 1
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        unsafe {
-            let mut f: ffi::hb_feature_t = std::mem::MaybeUninit::zeroed().assume_init();
-            let ok = ffi::hb_feature_from_string(s.as_ptr() as *const _, s.len() as i32, &mut f as *mut _);
-            if ok == 1 {
-                Ok(Feature(f))
-            } else {
-                Err("invalid feature")
+        use std::convert::TryInto;
+
+        fn parse(s: &str) -> Option<Feature> {
+            if s.is_empty() {
+                return None;
             }
+
+            let mut p = TextParser::new(s);
+
+            // Parse prefix.
+            let mut value = 1;
+            match p.curr_byte()? {
+                b'-' => { value = 0; p.advance(1); }
+                b'+' => { value = 1; p.advance(1); }
+                _ => {}
+            }
+
+            // Parse tag.
+            p.skip_spaces();
+            let quote = p.consume_quote();
+
+            let tag = p.consume_bytes(|c| c.is_ascii_alphanumeric() || c == b'_');
+            if tag.len() != 4 {
+                return None;
+            }
+            let tag = Tag::from_bytes(tag.as_bytes().try_into().unwrap());
+
+            // Force closing quote.
+            if let Some(quote) = quote {
+                p.consume_byte(quote)?;
+            }
+
+            // Parse indices.
+            p.skip_spaces();
+
+            let (start, end) = if p.consume_byte(b'[').is_some() {
+                let start_opt = p.consume_i32();
+                let start = start_opt.unwrap_or(0) as u32; // negative value overflow is ok
+
+                let end = if matches!(p.curr_byte(), Some(b':') | Some(b';')) {
+                    p.advance(1);
+                    p.consume_i32().unwrap_or(-1) as u32 // negative value overflow is ok
+                } else {
+                    if start_opt.is_some() && start != std::u32::MAX {
+                        start + 1
+                    } else {
+                        std::u32::MAX
+                    }
+                };
+
+                p.consume_byte(b']')?;
+
+                (start, end)
+            } else {
+                (0, std::u32::MAX)
+            };
+
+            // Parse postfix.
+            let had_equal = p.consume_byte(b'=').is_some();
+            let value1 = p.consume_i32().or(p.consume_bool().map(|b| b as i32));
+
+            if had_equal && value1.is_none() {
+                return None;
+            };
+
+            if let Some(value1) = value1 {
+                value = value1 as u32; // negative value overflow is ok
+            }
+
+            p.skip_spaces();
+
+            if !p.at_end() {
+                return None;
+            }
+
+            Some(Feature(ffi::hb_feature_t {
+                tag: tag.0,
+                value,
+                start,
+                end,
+            }))
         }
+
+        parse(s).ok_or("invalid feature")
     }
+}
+
+#[cfg(test)]
+mod tests_features {
+    use super::*;
+    use std::str::FromStr;
+
+    macro_rules! test {
+        ($name:ident, $text:expr, $tag:expr, $value:expr, $range:expr) => (
+            #[test]
+            fn $name() {
+                assert_eq!(
+                    Feature::from_str($text).unwrap(),
+                    Feature::new(Tag::from_bytes($tag), $value, $range)
+                );
+            }
+        )
+    }
+
+    test!(parse_01, "kern",         b"kern", 1, ..);
+    test!(parse_02, "+kern",        b"kern", 1, ..);
+    test!(parse_03, "-kern",        b"kern", 0, ..);
+    test!(parse_04, "kern=0",       b"kern", 0, ..);
+    test!(parse_05, "kern=1",       b"kern", 1, ..);
+    test!(parse_06, "kern=2",       b"kern", 2, ..);
+    test!(parse_07, "kern[]",       b"kern", 1, ..);
+    test!(parse_08, "kern[:]",      b"kern", 1, ..);
+    test!(parse_09, "kern[5:]",     b"kern", 1, 5..);
+    test!(parse_10, "kern[:5]",     b"kern", 1, ..=5);
+    test!(parse_11, "kern[3:5]",    b"kern", 1, 3..=5);
+    test!(parse_12, "kern[3]",      b"kern", 1, 3..=4);
+    test!(parse_13, "kern[3:5]=2",  b"kern", 2, 3..=5);
+    test!(parse_14, "kern[3;5]=2",  b"kern", 2, 3..=5);
+    test!(parse_15, "kern[:-1]",    b"kern", 1, ..);
+    test!(parse_16, "kern[-1]",     b"kern", 1, std::u32::MAX as usize..);
+    test!(parse_17, "kern=on",      b"kern", 1, ..);
+    test!(parse_18, "kern=off",     b"kern", 0, ..);
+    test!(parse_19, "kern=oN",      b"kern", 1, ..);
+    test!(parse_20, "kern=oFf",     b"kern", 0, ..);
 }
 
 /// Shape the contents of the buffer using the provided font and activating all
