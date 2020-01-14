@@ -116,10 +116,6 @@ typedef uint32_t hb_tag_t;
 #define HB_TAG_MAX HB_TAG(0xff,0xff,0xff,0xff)
 #define HB_TAG_MAX_SIGNED HB_TAG(0x7f,0xff,0xff,0xff)
 
-/* len=-1 means str is NUL-terminated. */
-HB_EXTERN hb_tag_t
-hb_tag_from_string (const char *str, int len);
-
 /**
  * hb_direction_t:
  * @HB_DIRECTION_INVALID: Initial, unset direction.

@@ -288,37 +288,6 @@ struct hb_font_t
       *s = '\0';
   }
 
-  /* Parses gidDDD and uniUUUU strings automatically. */
-  hb_bool_t
-  glyph_from_string (const char *s, int len, /* -1 means nul-terminated */
-		     hb_codepoint_t *glyph)
-  {
-    if (get_glyph_from_name (s, len, glyph)) return true;
-
-    if (len == -1) len = strlen (s);
-
-    /* Straight glyph index. */
-    if (hb_codepoint_parse (s, len, 10, glyph))
-      return true;
-
-    if (len > 3)
-    {
-      /* gidDDD syntax for glyph indices. */
-      if (0 == strncmp (s, "gid", 3) &&
-	  hb_codepoint_parse (s + 3, len - 3, 10, glyph))
-	return true;
-
-      /* uniUUUU and other Unicode character indices. */
-      hb_codepoint_t unichar;
-      if (0 == strncmp (s, "uni", 3) &&
-	  hb_codepoint_parse (s + 3, len - 3, 16, &unichar) &&
-	  get_nominal_glyph (unichar, glyph))
-	return true;
-    }
-
-    return false;
-  }
-
   void mults_changed ()
   {
     signed upem = face->get_upem ();

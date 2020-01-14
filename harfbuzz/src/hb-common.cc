@@ -82,39 +82,6 @@ _hb_options_init ()
   _hb_options.set_relaxed (u.i);
 }
 
-
-/* hb_tag_t */
-
-/**
- * hb_tag_from_string:
- * @str: (array length=len) (element-type uint8_t):
- * @len:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_tag_t
-hb_tag_from_string (const char *str, int len)
-{
-  char tag[4];
-  unsigned int i;
-
-  if (!str || !len || !*str)
-    return HB_TAG_NONE;
-
-  if (len < 0 || len > 4)
-    len = 4;
-  for (i = 0; i < (unsigned) len && str[i]; i++)
-    tag[i] = str[i];
-  for (; i < 4; i++)
-    tag[i] = ' ';
-
-  return HB_TAG (tag[0], tag[1], tag[2], tag[3]);
-}
-
 /* hb_language_t */
 
 struct hb_language_impl_t {
