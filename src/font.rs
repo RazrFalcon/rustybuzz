@@ -6,6 +6,42 @@ use crate::ffi;
 use crate::Variation;
 
 
+#[derive(Debug)]
+struct Blob<'a> {
+    ptr: *mut ffi::hb_blob_t,
+    marker: PhantomData<&'a [u8]>,
+}
+
+impl<'a> Blob<'a> {
+    fn with_bytes(bytes: &'a [u8]) -> Blob<'a> {
+        unsafe {
+            let hb_blob = ffi::hb_blob_create(
+                bytes.as_ptr() as *const _,
+                bytes.len() as u32,
+                ffi::HB_MEMORY_MODE_READONLY,
+                std::ptr::null_mut(),
+                None,
+            );
+
+            Blob {
+                ptr: hb_blob,
+                marker: PhantomData,
+            }
+        }
+    }
+
+    fn as_ptr(&self) -> *mut ffi::hb_blob_t {
+        self.ptr
+    }
+}
+
+impl<'a> Drop for Blob<'a> {
+    fn drop(&mut self) {
+        unsafe { ffi::hb_blob_destroy(self.ptr); }
+    }
+}
+
+
 /// A wrapper around `hb_face_t`.
 ///
 /// Font face is objects represent a single face in a font family. More
@@ -20,7 +56,7 @@ pub struct Face<'a> {
 }
 
 impl<'a> Face<'a> {
-    /// Create a new `Face` from the data.
+    /// Creates a new `Face` from the data.
     pub fn new(data: &'a [u8], index: u32) -> Result<Face<'a>, ttf_parser::Error> {
         unsafe {
             let ttf = Box::new(ttf_parser::Font::from_data(data, index)?);
@@ -58,44 +94,6 @@ impl<'a> Drop for Face<'a> {
 }
 
 
-#[derive(Debug)]
-pub(crate) struct Blob<'a> {
-    ptr: *mut ffi::hb_blob_t,
-    marker: PhantomData<&'a [u8]>,
-}
-
-impl<'a> Blob<'a> {
-    /// Create a new `Blob` from the slice `bytes`. The blob will not own the
-    /// slice's data.
-    pub fn with_bytes(bytes: &'a [u8]) -> Blob<'a> {
-        unsafe {
-            let hb_blob = ffi::hb_blob_create(
-                bytes.as_ptr() as *const _,
-                bytes.len() as u32,
-                ffi::HB_MEMORY_MODE_READONLY,
-                std::ptr::null_mut(),
-                None,
-            );
-
-            Blob {
-                ptr: hb_blob,
-                marker: PhantomData,
-            }
-        }
-    }
-
-    pub(crate) fn as_ptr(&self) -> *mut ffi::hb_blob_t {
-        self.ptr
-    }
-}
-
-impl<'a> Drop for Blob<'a> {
-    fn drop(&mut self) {
-        unsafe { ffi::hb_blob_destroy(self.ptr); }
-    }
-}
-
-
 /// A type representing a single font (i.e. a specific combination of typeface and typesize).
 #[derive(Debug)]
 pub struct Font<'a> {
@@ -105,7 +103,7 @@ pub struct Font<'a> {
 }
 
 impl<'a> Font<'a> {
-    /// Create a new font from the specified `Face`.
+    /// Creates a new font from the specified `Face`.
     pub fn new(face: Face<'a>) -> Self {
         unsafe {
             Font {
