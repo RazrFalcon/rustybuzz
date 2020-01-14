@@ -28,6 +28,8 @@ mod common;
 mod ffi;
 mod font;
 mod unicode;
+mod tag;
+mod tag_table;
 mod text_parser;
 
 pub use crate::buffer::*;
@@ -39,6 +41,7 @@ pub mod implementation {
     // We must export extern symbols so the linker would be able to find them.
     pub use crate::unicode::*;
     pub use crate::font::{rb_ot_get_nominal_glyph, rb_ot_get_variation_glyph};
+    pub use crate::tag::rb_ot_tags_from_script_and_language;
 }
 
 type CodePoint = u32;

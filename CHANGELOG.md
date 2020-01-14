@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `cmap` table.
 - `hb_direction_from_string`
 - `hb_feature_from_string`
+- `hb_ot_tags_from_script_and_language`
 
 ### Changed
 - Replace some header guards with `#pragma once`, otherwise Qt Creator unable to parse them.

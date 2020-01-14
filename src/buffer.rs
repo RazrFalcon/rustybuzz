@@ -234,7 +234,7 @@ impl Buffer {
     pub fn get_script(&self) -> Script {
         unsafe {
             let tag = ffi::hb_buffer_get_script(self.as_ptr());
-            Script::from_iso15924_tag(Tag::from(tag)).expect("hafbuzz should return a valid script")
+            Script(Tag(tag))
         }
     }
 

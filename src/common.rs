@@ -6,17 +6,31 @@ use crate::ffi;
 pub struct Tag(pub(crate) ffi::hb_tag_t);
 
 impl Tag {
-    /// Creates a `Tag` from its four-char textual representation.
-    ///
-    /// All the arguments must be ASCII values.
-    pub const fn new(a: char, b: char, c: char, d: char) -> Self {
-        Tag(((a as u32) << 24) | ((b as u32) << 16) | ((c as u32) << 8) | (d as u32))
-    }
-
     /// Creates a `Tag` from bytes.
     pub const fn from_bytes(bytes: &[u8; 4]) -> Self {
         Tag(((bytes[0] as u32) << 24) | ((bytes[1] as u32) << 16) |
             ((bytes[2] as u32) << 8) | (bytes[3] as u32))
+    }
+
+    /// Creates a `Tag` from bytes.
+    ///
+    /// In case of empty data will return `Tag` set to 0.
+    ///
+    /// When `bytes` are shorter than 4, will set missing bytes to ` `.
+    ///
+    /// Data after first 4 bytes is ignored.
+    pub fn from_bytes_lossy(bytes: &[u8]) -> Self {
+        if bytes.is_empty() {
+            return Tag::from_bytes(&[0, 0, 0, 0]);
+        }
+
+        let mut iter = bytes.iter().cloned().chain(std::iter::repeat(b' '));
+        Tag::from_bytes(&[
+            iter.next().unwrap(),
+            iter.next().unwrap(),
+            iter.next().unwrap(),
+            iter.next().unwrap(),
+        ])
     }
 
     /// Returns tag as 4-element byte array.
@@ -39,6 +53,16 @@ impl Tag {
         ]
     }
 
+    /// Returns tag for a default script.
+    pub const fn default_script() -> Self {
+        Tag::from_bytes(b"DFLT")
+    }
+
+    /// Returns tag for a default language.
+    pub const fn default_language() -> Self {
+        Tag::from_bytes(b"dflt")
+    }
+
     /// Checks if tag is null / `[0, 0, 0, 0]`.
     pub const fn is_null(&self) -> bool {
         self.0 == 0
@@ -48,11 +72,27 @@ impl Tag {
     pub const fn as_u32(&self) -> u32 {
         self.0
     }
-}
 
-impl From<u32> for Tag {
-    fn from(n: u32) -> Self {
-        Tag(n)
+    /// Converts tag to lowercase.
+    pub fn to_lowercase(&self) -> Self {
+        let b = self.to_bytes();
+        Tag::from_bytes(&[
+            b[0].to_ascii_lowercase(),
+            b[1].to_ascii_lowercase(),
+            b[2].to_ascii_lowercase(),
+            b[3].to_ascii_lowercase(),
+        ])
+    }
+
+    /// Converts tag to uppercase.
+    pub fn to_uppercase(&self) -> Self {
+        let b = self.to_bytes();
+        Tag::from_bytes(&[
+            b[0].to_ascii_uppercase(),
+            b[1].to_ascii_uppercase(),
+            b[2].to_ascii_uppercase(),
+            b[3].to_ascii_uppercase(),
+        ])
     }
 }
 
@@ -67,36 +107,6 @@ impl std::fmt::Debug for Tag {
             b.get(2).unwrap_or(&' '),
             b.get(3).unwrap_or(&' ')
         )
-    }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-/// An Error generated when a `Tag` fails to parse from a `&str` with the
-/// `from_str` function.
-pub enum TagFromStrErr {
-    /// The string contains non-ASCII characters.
-    NonAscii,
-    /// The string has length zero.
-    ZeroLengthString,
-}
-
-impl std::str::FromStr for Tag {
-    type Err = TagFromStrErr;
-    /// Parses a `Tag` from a `&str` that contains four or less ASCII
-    /// characters. When the string's length is smaller than 4 it is extended
-    /// with `' '` (Space) characters. The remaining bytes of strings longer
-    /// than 4 bytes are ignored.
-    fn from_str(s: &str) -> Result<Tag, TagFromStrErr> {
-        if !s.is_ascii() {
-            return Err(TagFromStrErr::NonAscii);
-        }
-
-        if s.is_empty() {
-            return Err(TagFromStrErr::ZeroLengthString);
-        }
-
-        let len = std::cmp::max(s.len(), 4) as i32;
-        unsafe { Ok(Tag(ffi::hb_tag_from_string(s.as_ptr() as *mut _, len))) }
     }
 }
 
@@ -208,7 +218,7 @@ impl std::str::FromStr for Language {
 /// A text script.
 #[allow(missing_docs)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Script(Tag);
+pub struct Script(pub(crate) Tag);
 
 impl Script {
     pub(crate) const fn from_bytes(bytes: &[u8; 4]) -> Self {
@@ -222,7 +232,7 @@ impl Script {
         }
 
         // Be lenient, adjust case (one capital letter followed by three small letters).
-        let tag = Tag::from((tag.as_u32() & 0xDFDFDFDF) | 0x00202020);
+        let tag = Tag((tag.as_u32() & 0xDFDFDFDF) | 0x00202020);
 
         match &tag.to_bytes() {
             // These graduated from the 'Q' private-area codes, but
@@ -256,7 +266,7 @@ impl std::str::FromStr for Script {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let tag = Tag::from_str(s).map_err(|_| "invalid script")?;
+        let tag = Tag::from_bytes_lossy(s.as_bytes());
         Script::from_iso15924_tag(tag).ok_or("invalid script")
     }
 }

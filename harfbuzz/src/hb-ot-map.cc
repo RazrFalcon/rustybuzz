@@ -35,6 +35,18 @@
 #include "hb-ot-layout.hh"
 #include "hb-set.hh"
 
+#define HB_OT_MAX_TAGS_PER_SCRIPT	3u
+#define HB_OT_MAX_TAGS_PER_LANGUAGE	3u
+
+extern "C" {
+  void rb_ot_tags_from_script_and_language (
+    hb_script_t script,
+    const char *language,
+    unsigned int *script_count /* IN/OUT */,
+    hb_tag_t     *script_tags /* OUT */,
+    unsigned int *language_count /* IN/OUT */,
+    hb_tag_t     *language_tags /* OUT */);
+}
 
 void hb_ot_map_t::collect_lookups (unsigned int table_index, hb_set_t *lookups_out) const
 {
@@ -64,7 +76,8 @@ hb_ot_map_builder_t::hb_ot_map_builder_t (hb_face_t *face_,
   hb_tag_t script_tags[HB_OT_MAX_TAGS_PER_SCRIPT];
   hb_tag_t language_tags[HB_OT_MAX_TAGS_PER_LANGUAGE];
 
-  hb_ot_tags_from_script_and_language (props.script, props.language, &script_count, script_tags, &language_count, language_tags);
+  rb_ot_tags_from_script_and_language (props.script, hb_language_to_string(props.language),
+                                       &script_count, script_tags, &language_count, language_tags);
 
   for (unsigned int table_index = 0; table_index < 2; table_index++) {
     hb_tag_t table_tag = table_tags[table_index];
