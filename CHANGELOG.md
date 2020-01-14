@@ -23,7 +23,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_ucd_general_category`
 - `cmap` table.
 - `hb_direction_from_string`
+- `hb_tag_from_string`
 - `hb_feature_from_string`
+- `hb_variation_from_string`
 - `hb_ot_tags_from_script_and_language`
 
 ### Changed

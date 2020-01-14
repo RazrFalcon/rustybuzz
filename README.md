@@ -14,7 +14,7 @@ Embedded `harfbuzz` version: 2.6.4
 
 - Malformed font is an error now.
   `harfbuzz` accepts malformed fonts, but doesn't do shaping in this case.
-- Subsetings is out of scope and removed.
+- Subseting is out of scope and removed.
 - `harfbuzz` configured to not depend on system libraries, like glib, coretext, freetype, icu.
   So it relies only on internal implementation, which should be enough in most cases.
 

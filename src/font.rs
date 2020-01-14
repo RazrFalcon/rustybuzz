@@ -1,10 +1,9 @@
 use std::convert::TryFrom;
 use std::ffi::c_void;
 use std::marker::PhantomData;
-use std::str::FromStr;
 
 use crate::ffi;
-use crate::Tag;
+use crate::Variation;
 
 
 /// A wrapper around `hb_face_t`.
@@ -171,33 +170,6 @@ impl<'a> Drop for Font<'a> {
     }
 }
 
-
-/// Font variation property.
-pub struct Variation {
-    /// Name.
-    pub tag: Tag,
-    /// Value.
-    pub value: f32,
-}
-
-impl FromStr for Variation {
-    type Err = &'static str;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        unsafe {
-            let mut var: ffi::hb_variation_t = std::mem::MaybeUninit::zeroed().assume_init();
-            let ok = ffi::hb_variation_from_string(s.as_ptr() as *const _, s.len() as i32, &mut var as *mut _);
-            if ok == 1 {
-                Ok(Variation {
-                    tag: Tag(var.tag),
-                    value: var.value,
-                })
-            } else {
-                Err("invalid variation")
-            }
-        }
-    }
-}
 
 #[no_mangle]
 #[allow(missing_docs)]

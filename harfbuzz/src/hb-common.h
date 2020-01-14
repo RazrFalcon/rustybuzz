@@ -120,11 +120,6 @@ typedef uint32_t hb_tag_t;
 HB_EXTERN hb_tag_t
 hb_tag_from_string (const char *str, int len);
 
-/* buf should have 4 bytes. */
-HB_EXTERN void
-hb_tag_to_string (hb_tag_t tag, char *buf);
-
-
 /**
  * hb_direction_t:
  * @HB_DIRECTION_INVALID: Initial, unset direction.
@@ -440,41 +435,6 @@ typedef struct hb_variation_t {
   hb_tag_t tag;
   float    value;
 } hb_variation_t;
-
-HB_EXTERN hb_bool_t
-hb_variation_from_string (const char *str, int len,
-			  hb_variation_t *variation);
-
-HB_EXTERN void
-hb_variation_to_string (hb_variation_t *variation,
-			char *buf, unsigned int size);
-
-/**
- * hb_color_t:
- *
- * Data type for holding color values.
- *
- * Since: 2.1.0
- */
-typedef uint32_t hb_color_t;
-
-#define HB_COLOR(b,g,r,a) ((hb_color_t) HB_TAG ((b),(g),(r),(a)))
-
-HB_EXTERN uint8_t
-hb_color_get_alpha (hb_color_t color);
-#define hb_color_get_alpha(color)	((color) & 0xFF)
-
-HB_EXTERN uint8_t
-hb_color_get_red (hb_color_t color);
-#define hb_color_get_red(color)		(((color) >> 8) & 0xFF)
-
-HB_EXTERN uint8_t
-hb_color_get_green (hb_color_t color);
-#define hb_color_get_green(color)	(((color) >> 16) & 0xFF)
-
-HB_EXTERN uint8_t
-hb_color_get_blue (hb_color_t color);
-#define hb_color_get_blue(color)	(((color) >> 24) & 0xFF)
 
 HB_END_DECLS
 

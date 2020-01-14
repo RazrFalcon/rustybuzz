@@ -1,3 +1,5 @@
+use crate::Tag;
+
 pub struct TextParser<'a> {
     pos: usize,
     text: &'a str,
@@ -79,6 +81,15 @@ impl<'a> TextParser<'a> {
         }
     }
 
+    pub fn consume_tag(&mut self) -> Option<Tag> {
+        let tag = self.consume_bytes(|c| c.is_ascii_alphanumeric() || c == b'_');
+        if tag.len() > 4 {
+            return None;
+        }
+
+        Some(Tag::from_bytes_lossy(tag.as_bytes()))
+    }
+
     pub fn consume_i32(&mut self) -> Option<i32> {
         let start = self.pos;
 
@@ -88,6 +99,24 @@ impl<'a> TextParser<'a> {
 
         self.skip_bytes(|c| c.is_ascii_digit());
         self.text[start..self.pos].parse::<i32>().ok()
+    }
+
+    pub fn consume_f32(&mut self) -> Option<f32> {
+        let start = self.pos;
+
+        // TODO: does number like 1-e2 required?
+
+        if matches!(self.curr_byte(), Some(b'-') | Some(b'+')) {
+            self.advance(1);
+        }
+
+        self.skip_bytes(|c| c.is_ascii_digit());
+
+        if self.consume_byte(b'.').is_some() {
+            self.skip_bytes(|c| c.is_ascii_digit());
+        }
+
+        self.text[start..self.pos].parse::<f32>().ok()
     }
 
     pub fn consume_bool(&mut self) -> Option<bool> {
