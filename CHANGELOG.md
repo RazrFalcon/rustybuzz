@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_ucd_decompose`
 - `hb_ucd_general_category`
 - `cmap` table.
+- `hb_direction_from_string`/`hb_direction_to_string`
 
 ### Changed
 - Replace some header guards with `#pragma once`, otherwise Qt Creator unable to parse them.
