@@ -36,8 +36,6 @@
 #include "hb-ot-font.hh"
 
 #include "hb-ot-glyf-table.hh"
-#include "hb-ot-cff1-table.hh"
-#include "hb-ot-cff2-table.hh"
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-os2-table.hh"
 #include "hb-ot-post-table.hh"
@@ -56,6 +54,20 @@
  * by hb_font_create() default to using these functions, so most clients would
  * never need to call these functions directly.
  **/
+
+struct hb_glyph_bbox_t
+{
+  int16_t min_x;
+  int16_t min_y;
+  int16_t max_x;
+  int16_t max_y;
+};
+
+extern "C" {
+  bool rb_ot_get_glyph_bbox (const void *rust_data,
+                                hb_codepoint_t glyph,
+                                hb_glyph_bbox_t *bbox);
+}
 
 void
 hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
@@ -106,14 +118,12 @@ hb_ot_get_glyph_v_origin (hb_font_t *font,
 
   *x = font->get_glyph_h_advance (glyph) / 2;
 
-#ifndef HB_NO_OT_FONT_CFF
   const OT::VORG &VORG = *ot_face->VORG;
   if (VORG.has_data ())
   {
     *y = font->em_scale_y (VORG.get_y_origin (glyph));
     return true;
   }
-#endif
 
   hb_glyph_extents_t extents = {0};
   if (ot_face->glyf->get_extents (font, glyph, &extents))
@@ -140,17 +150,35 @@ hb_ot_get_glyph_extents (hb_font_t *font,
   const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
   bool ret = false;
 
-#if !defined(HB_NO_OT_FONT_BITMAP) && !defined(HB_NO_COLOR)
   if (!ret) ret = ot_face->sbix->get_extents (font, glyph, extents);
-#endif
   if (!ret) ret = ot_face->glyf->get_extents (font, glyph, extents);
-#ifndef HB_NO_OT_FONT_CFF
-  if (!ret) ret = ot_face->cff1->get_extents (font, glyph, extents);
-  if (!ret) ret = ot_face->cff2->get_extents (font, glyph, extents);
-#endif
-#if !defined(HB_NO_OT_FONT_BITMAP) && !defined(HB_NO_COLOR)
+  if (!ret) {
+    hb_glyph_bbox_t param;
+    ret = rb_ot_get_glyph_bbox (font->rust_data, glyph, &param);
+    if (ret) {    
+      if (param.min_x >= param.max_x)
+      {
+        extents->width = 0;
+        extents->x_bearing = 0;
+      }
+      else
+      {
+        extents->x_bearing = font->em_scalef_x (param.min_x);
+        extents->width = font->em_scalef_x (param.max_x - param.min_x);
+      }
+      if (param.min_y >= param.max_y)
+      {
+        extents->height = 0;
+        extents->y_bearing = 0;
+      }
+      else
+      {
+        extents->y_bearing = font->em_scalef_y (param.max_y);
+        extents->height = font->em_scalef_y (param.min_y - param.max_y);
+      }
+    }
+  }
   if (!ret) ret = ot_face->CBDT->get_extents (font, glyph, extents);
-#endif
 
   // TODO Hook up side-bearings variations.
   return ret;

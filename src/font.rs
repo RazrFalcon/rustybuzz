@@ -2,6 +2,8 @@ use std::convert::TryFrom;
 use std::ffi::c_void;
 use std::marker::PhantomData;
 
+use ttf_parser::GlyphId;
+
 use crate::ffi;
 use crate::Variation;
 
@@ -185,6 +187,32 @@ pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, va
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_variation_index(char::try_from(c).unwrap(), char::try_from(variant).unwrap()) {
         Ok(g) => unsafe { *glyph = g.0 as u32; 1 }
+        Err(_) => 0,
+    }
+}
+
+struct DummyOutline;
+
+impl ttf_parser::OutlineBuilder for DummyOutline {
+    fn move_to(&mut self, _: f32, _: f32) {}
+    fn line_to(&mut self, _: f32, _: f32) {}
+    fn quad_to(&mut self, _: f32, _: f32, _: f32, _: f32) {}
+    fn curve_to(&mut self, _: f32, _: f32, _: f32, _: f32, _: f32, _: f32) {}
+    fn close(&mut self) {}
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn rb_ot_get_glyph_bbox(font_data: *const c_void, glyph: u32, extents: *mut ffi::hb_glyph_bbox_t) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    match font.outline_glyph(GlyphId(u16::try_from(glyph).unwrap()), &mut DummyOutline) {
+        Ok(bbox) => unsafe {
+            (*extents).x_min = bbox.x_min;
+            (*extents).y_min = bbox.y_min;
+            (*extents).x_max = bbox.x_max;
+            (*extents).y_max = bbox.y_max;
+            1
+        }
         Err(_) => 0,
     }
 }

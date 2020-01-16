@@ -40,10 +40,6 @@
 #define HB_NO_AAT_SHAPE
 #endif
 
-#ifdef HB_NO_BITMAP
-#define HB_NO_OT_FONT_BITMAP
-#endif
-
 #ifdef HB_NO_GETENV
 #define HB_NO_UNISCRIBE_BUG_COMPATIBLE
 #endif

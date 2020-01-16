@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Malformed font is an error now.
 - Most of the shaping tests. We store only font files.
 - `hb-shape` executable. Most flags are supported.
+- `cmap`, `CFF`, `CFF2` tables.
 - `hb_shape_list_shapers`, which returns a static, fixed list now.
 - `is_default_ignorable`
 - `hb_script_from_iso15924_tag`
@@ -21,7 +22,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_ucd_compose`
 - `hb_ucd_decompose`
 - `hb_ucd_general_category`
-- `cmap` table.
 - `hb_direction_from_string`
 - `hb_tag_from_string`
 - `hb_feature_from_string`
@@ -41,14 +41,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_font_funcs_t`, since we are using internal OpenType parser.
 - Most of the `hb_font_t` query API.
 - `hb_buffer_deserialize_glyphs`
-- `name` table. Unused.
-- `meta` table. Unused.
-- `stat` table. Unused.
-- `BASE` table. Unused.
-- `JSTF` table. Unused.
-- `OPBD` table. Unused.
-- `math` table. Unused.
-- `gasp` table. Unused.
+- `name`, `meta`, `STAT`, `BASE`, `JSTF`, `OPBD`, `math` and `gasp` tables. Unused.
 - `hb_ot_metrics_*`. Unused.
 - `hb_face_collect_*`. Unused.
 - OpenType tables serialization. Unused.

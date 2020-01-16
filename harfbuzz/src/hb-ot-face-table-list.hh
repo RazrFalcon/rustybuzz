@@ -62,8 +62,6 @@ HB_OT_ACCELERATOR (OT, vmtx)
 HB_OT_ACCELERATOR (OT, glyf)
 
 /* CFF outlines. */
-HB_OT_ACCELERATOR (OT, cff1)
-HB_OT_ACCELERATOR (OT, cff2)
 HB_OT_TABLE (OT, VORG)
 
 /* OpenType variations. */
@@ -99,10 +97,8 @@ HB_OT_TABLE (AAT, feat)
 #endif
 
 /* OpenType color fonts. */
-#ifndef HB_NO_COLOR
 HB_OT_ACCELERATOR (OT, CBDT)
 HB_OT_ACCELERATOR (OT, sbix)
-#endif
 
 #ifdef _HB_OT_ACCELERATOR_UNDEF
 #undef HB_OT_ACCELERATOR

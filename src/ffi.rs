@@ -183,11 +183,11 @@ pub struct hb_font_extents_t {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct hb_glyph_extents_t {
-    pub x_bearing: hb_position_t,
-    pub y_bearing: hb_position_t,
-    pub width: hb_position_t,
-    pub height: hb_position_t,
+pub struct hb_glyph_bbox_t {
+    pub x_min: i16,
+    pub y_min: i16,
+    pub x_max: i16,
+    pub y_max: i16,
 }
 
 #[repr(C)]

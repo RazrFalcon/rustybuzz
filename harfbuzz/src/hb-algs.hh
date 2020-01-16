@@ -31,7 +31,6 @@
 #include "hb.hh"
 #include "hb-meta.hh"
 #include "hb-null.hh"
-#include "hb-number.hh"
 
 
 /* Encodes three unsigned integers in one 64-bit number.  If the inputs have more than 21 bits,
