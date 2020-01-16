@@ -37,11 +37,6 @@ hb_ot_get_glyph_name (void *font_data,
 		      char *name, unsigned int size);
 
 hb_bool_t
-hb_ot_get_glyph_from_name (void *font_data,
-			   const char *name, int len,
-			   hb_codepoint_t *glyph);
-
-hb_bool_t
 hb_ot_get_font_h_extents (hb_font_t *font, hb_font_extents_t *metrics);
 
 hb_bool_t

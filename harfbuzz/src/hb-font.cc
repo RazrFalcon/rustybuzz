@@ -760,10 +760,3 @@ hb_bool_t hb_font_t::get_glyph_name (hb_codepoint_t glyph, char *name, unsigned 
   if (size) *name = '\0';
   return hb_ot_get_glyph_name (user_data, glyph, name, size);
 }
-
-hb_bool_t hb_font_t::get_glyph_from_name (const char *name, int len, hb_codepoint_t *glyph)
-{
-   *glyph = 0;
-   if (len == -1) len = strlen (name);
-   return hb_ot_get_glyph_from_name (user_data, name, len, glyph);
-}

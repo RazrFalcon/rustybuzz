@@ -30,13 +30,8 @@
 
 
 static const hb_shaper_entry_t all_shapers[] = {
-#define HB_SHAPER_IMPLEMENT(name) {#name, _hb_##name##_shape},
-#include "hb-shaper-list.hh"
-#undef HB_SHAPER_IMPLEMENT
+  {"ot", _hb_ot_shape},
 };
-#ifndef HB_NO_SHAPER
-static_assert (0 != ARRAY_LENGTH_CONST (all_shapers), "No shaper enabled.");
-#endif
 
 #if HB_USE_ATEXIT
 static void free_static_shapers ();

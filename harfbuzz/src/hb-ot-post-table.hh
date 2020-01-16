@@ -115,79 +115,9 @@ struct post
       return true;
     }
 
-    bool get_glyph_from_name (const char *name, int len,
-			      hb_codepoint_t *glyph) const
-    {
-      unsigned int count = get_glyph_count ();
-      if (unlikely (!count)) return false;
-
-      if (len < 0) len = strlen (name);
-
-      if (unlikely (!len)) return false;
-
-    retry:
-      uint16_t *gids = gids_sorted_by_name.get ();
-
-      if (unlikely (!gids))
-      {
-	gids = (uint16_t *) malloc (count * sizeof (gids[0]));
-	if (unlikely (!gids))
-	  return false; /* Anything better?! */
-
-	for (unsigned int i = 0; i < count; i++)
-	  gids[i] = i;
-	hb_qsort (gids, count, sizeof (gids[0]), cmp_gids, (void *) this);
-
-	if (unlikely (!gids_sorted_by_name.cmpexch (nullptr, gids)))
-	{
-	  free (gids);
-	  goto retry;
-	}
-      }
-
-      hb_bytes_t st (name, len);
-      const uint16_t *gid = (const uint16_t *) hb_bsearch (hb_addressof (st), gids, count,
-							   sizeof (gids[0]), cmp_key, (void *) this);
-      if (gid)
-      {
-	*glyph = *gid;
-	return true;
-      }
-
-      return false;
-    }
-
     hb_blob_ptr_t<post> table;
 
     protected:
-
-    unsigned int get_glyph_count () const
-    {
-      if (version == 0x00010000)
-	return NUM_FORMAT1_NAMES;
-
-      if (version == 0x00020000)
-	return glyphNameIndex->len;
-
-      return 0;
-    }
-
-    static int cmp_gids (const void *pa, const void *pb, void *arg)
-    {
-      const accelerator_t *thiz = (const accelerator_t *) arg;
-      uint16_t a = * (const uint16_t *) pa;
-      uint16_t b = * (const uint16_t *) pb;
-      return thiz->find_glyph_name (b).cmp (thiz->find_glyph_name (a));
-    }
-
-    static int cmp_key (const void *pk, const void *po, void *arg)
-    {
-      const accelerator_t *thiz = (const accelerator_t *) arg;
-      const hb_bytes_t *key = (const hb_bytes_t *) pk;
-      uint16_t o = * (const uint16_t *) po;
-      return thiz->find_glyph_name (o).cmp (*key);
-    }
-
     hb_bytes_t find_glyph_name (hb_codepoint_t glyph) const
     {
       if (version == 0x00010000)

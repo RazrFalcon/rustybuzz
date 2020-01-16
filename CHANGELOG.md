@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Most of the shaping tests. We store only font files.
 - `hb-shape` executable. Most flags are supported.
 - `cmap`, `CFF`, `CFF2` tables.
-- `hb_shape_list_shapers`, which returns a static, fixed list now.
 - `is_default_ignorable`
 - `hb_script_from_iso15924_tag`
 - `hb_script_to_iso15924_tag`
@@ -35,7 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - autotools/CMake dependency. HarfBuzz will be built via `cc` crate.
 - All external dependencies. No icu, glib, freetype, etc.
 - Subseting.
-- `hb_shape_list_shapers`, since we only have `ot` and `fallback`.
+- `hb_shape_list_shapers`, since we only have `ot`.
 - Deprecated methods.
 - `hb_unicode_funcs_t`, since we are using only internal Unicode tables.
 - `hb_font_funcs_t`, since we are using internal OpenType parser.

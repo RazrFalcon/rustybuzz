@@ -9,7 +9,6 @@ fn main() {
     build.file("harfbuzz/src/hb-buffer.cc");
     build.file("harfbuzz/src/hb-common.cc");
     build.file("harfbuzz/src/hb-face.cc");
-    build.file("harfbuzz/src/hb-fallback-shape.cc");
     build.file("harfbuzz/src/hb-font.cc");
     build.file("harfbuzz/src/hb-map.cc");
     build.file("harfbuzz/src/hb-ot-face.cc");

@@ -99,9 +99,6 @@ hb_shape_plan_execute (hb_shape_plan_t    *shape_plan,
 		       const hb_feature_t *features,
 		       unsigned int        num_features);
 
-HB_EXTERN const char *
-hb_shape_plan_get_shaper (hb_shape_plan_t *shape_plan);
-
 
 HB_END_DECLS
 

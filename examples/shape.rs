@@ -11,7 +11,6 @@ use std::str::FromStr;
 // TODO: add --show-text
 // TODO: add --show-unicode
 // TODO: add --show-line-num
-// TODO: add --shaper/--shapers
 // TODO: add --verify
 // TODO: add --trace
 // TODO: add --verbose
@@ -34,7 +33,6 @@ OPTIONS:
                                         Examples: 'U+0056,U+0057'
         --text-before TEXT              Set text context before each line
         --text-after TEXT               Set text context after each line
-        --list-shapers                  List available shapers and quit
         --direction DIRECTION           Set text direction
                                         [possible values: ltr, rtl, ttb, btt]
         --language LANG                 Set text language [default: $LANG]
@@ -69,7 +67,6 @@ struct Args {
     variations: Vec<rustybuzz::Variation>,
     text: Option<String>,
     unicodes: Option<String>,
-    list_shapers: bool,
     direction: Option<rustybuzz::Direction>,
     language: Option<rustybuzz::Language>,
     script: Option<rustybuzz::Script>,
@@ -101,7 +98,6 @@ fn parse_args() -> Result<Args, pico_args::Error> {
         variations: args.opt_value_from_fn("--variations", parse_variations)?.unwrap_or_default(),
         text: args.opt_value_from_str("--text")?,
         unicodes: args.opt_value_from_fn(["-u", "--unicodes"], parse_unicodes)?,
-        list_shapers: args.contains("--list-shapers"),
         direction: args.opt_value_from_str("--direction")?,
         language: args.opt_value_from_str("--language")?,
         script: args.opt_value_from_str("--script")?,
@@ -142,11 +138,6 @@ fn main() {
 
     if args.help {
         print!("{}", HELP);
-        return;
-    }
-
-    if args.list_shapers {
-        println!("{}", rustybuzz::list_shapers().join(","));
         return;
     }
 

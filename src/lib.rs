@@ -64,8 +64,3 @@ pub fn shape(font: &Font<'_>, mut buffer: Buffer, features: &[Feature]) -> Glyph
     };
     GlyphBuffer(buffer)
 }
-
-/// Returns a list of available shapers.
-pub fn list_shapers() -> &'static [&'static str] {
-    &["ot", "fallback"]
-}

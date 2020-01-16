@@ -40,9 +40,7 @@
  * hb_face_t
  */
 
-#define HB_SHAPER_IMPLEMENT(shaper) HB_SHAPER_DATA_INSTANTIATE_SHAPERS(shaper, face);
-#include "hb-shaper-list.hh"
-#undef HB_SHAPER_IMPLEMENT
+HB_SHAPER_DATA_INSTANTIATE_SHAPERS(ot, face);
 
 struct hb_face_t
 {

@@ -39,9 +39,7 @@
  * hb_font_t
  */
 
-#define HB_SHAPER_IMPLEMENT(shaper) HB_SHAPER_DATA_INSTANTIATE_SHAPERS(shaper, font);
-#include "hb-shaper-list.hh"
-#undef HB_SHAPER_IMPLEMENT
+HB_SHAPER_DATA_INSTANTIATE_SHAPERS(ot, font);
 
 struct hb_font_t
 {
@@ -160,9 +158,6 @@ struct hb_font_t
   hb_bool_t get_glyph_name (hb_codepoint_t glyph,
 			    char *name, unsigned int size);
 
-  hb_bool_t get_glyph_from_name (const char *name, int len, /* -1 means nul-terminated */
-				 hb_codepoint_t *glyph);
-
 
   /* A bit higher-level, and with fallback */
 
@@ -174,29 +169,6 @@ struct hb_font_t
       extents->descender = extents->ascender - y_scale;
       extents->line_gap = 0;
     }
-  }
-
-  void get_glyph_advance_for_direction (hb_codepoint_t glyph,
-					hb_direction_t direction,
-					hb_position_t *x, hb_position_t *y)
-  {
-    *x = *y = 0;
-    if (likely (HB_DIRECTION_IS_HORIZONTAL (direction)))
-      *x = get_glyph_h_advance (glyph);
-    else
-      *y = get_glyph_v_advance (glyph);
-  }
-  void get_glyph_advances_for_direction (hb_direction_t direction,
-					 unsigned int count,
-					 const hb_codepoint_t *first_glyph,
-					 unsigned glyph_stride,
-					 hb_position_t *first_advance,
-					 unsigned advance_stride)
-  {
-    if (likely (HB_DIRECTION_IS_HORIZONTAL (direction)))
-      get_glyph_h_advances (count, first_glyph, glyph_stride, first_advance, advance_stride);
-    else
-      get_glyph_v_advances (count, first_glyph, glyph_stride, first_advance, advance_stride);
   }
 
   void guess_v_origin_minus_h_origin (hb_codepoint_t glyph,

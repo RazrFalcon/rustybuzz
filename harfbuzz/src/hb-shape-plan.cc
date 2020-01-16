@@ -78,49 +78,10 @@ hb_shape_plan_key_t::init (bool                           copy,
     }
   }
   this->shaper_func = nullptr;
-  this->shaper_name = nullptr;
-#ifndef HB_NO_OT_SHAPE
   this->ot.init (face, coords, num_coords);
-#endif
 
-  /*
-   * Choose shaper.
-   */
-
-#define HB_SHAPER_PLAN(shaper) \
-	HB_STMT_START { \
-	  if (face->data.shaper) \
-	  { \
-	    this->shaper_func = _hb_##shaper##_shape; \
-	    this->shaper_name = #shaper; \
-	    return true; \
-	  } \
-	} HB_STMT_END
-
-  if (unlikely (shaper_list))
-  {
-    for (; *shaper_list; shaper_list++)
-      if (false)
-	;
-#define HB_SHAPER_IMPLEMENT(shaper) \
-      else if (0 == strcmp (*shaper_list, #shaper)) \
-	HB_SHAPER_PLAN (shaper);
-#include "hb-shaper-list.hh"
-#undef HB_SHAPER_IMPLEMENT
-  }
-  else
-  {
-    const hb_shaper_entry_t *shapers = _hb_shapers_get ();
-    for (unsigned int i = 0; i < HB_SHAPERS_COUNT; i++)
-      if (false)
-	;
-#define HB_SHAPER_IMPLEMENT(shaper) \
-      else if (shapers[i].func == _hb_##shaper##_shape) \
-	HB_SHAPER_PLAN (shaper);
-#include "hb-shaper-list.hh"
-#undef HB_SHAPER_IMPLEMENT
-  }
-#undef HB_SHAPER_PLAN
+  this->shaper_func = _hb_ot_shape;
+  return true;
 
 bail:
   ::free (features);
@@ -297,23 +258,6 @@ hb_shape_plan_destroy (hb_shape_plan_t *shape_plan)
 }
 
 /**
- * hb_shape_plan_get_shaper:
- * @shape_plan: a shape plan.
- *
- *
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.7
- **/
-const char *
-hb_shape_plan_get_shaper (hb_shape_plan_t *shape_plan)
-{
-  return shape_plan->key.shaper_name;
-}
-
-
-/**
  * hb_shape_plan_execute:
  * @shape_plan: a shape plan.
  * @font: a font.
@@ -335,10 +279,9 @@ hb_shape_plan_execute (hb_shape_plan_t    *shape_plan,
 		       unsigned int        num_features)
 {
   DEBUG_MSG_FUNC (SHAPE_PLAN, shape_plan,
-		  "num_features=%d shaper_func=%p, shaper_name=%s",
+		  "num_features=%d shaper_func=%p",
 		  num_features,
-		  shape_plan->key.shaper_func,
-		  shape_plan->key.shaper_name);
+		  shape_plan->key.shaper_func);
 
   if (unlikely (!buffer->len))
     return true;
@@ -352,23 +295,7 @@ hb_shape_plan_execute (hb_shape_plan_t    *shape_plan,
   assert (shape_plan->face_unsafe == font->face);
   assert (hb_segment_properties_equal (&shape_plan->key.props, &buffer->props));
 
-#define HB_SHAPER_EXECUTE(shaper) \
-	HB_STMT_START { \
-	  return font->data.shaper && \
-		 _hb_##shaper##_shape (shape_plan, font, buffer, features, num_features); \
-	} HB_STMT_END
-
-  if (false)
-    ;
-#define HB_SHAPER_IMPLEMENT(shaper) \
-  else if (shape_plan->key.shaper_func == _hb_##shaper##_shape) \
-    HB_SHAPER_EXECUTE (shaper);
-#include "hb-shaper-list.hh"
-#undef HB_SHAPER_IMPLEMENT
-
-#undef HB_SHAPER_EXECUTE
-
-  return false;
+  return _hb_ot_shape (shape_plan, font, buffer, features, num_features); 
 }
 
 
