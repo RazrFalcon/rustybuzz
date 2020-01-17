@@ -50,7 +50,6 @@ HB_OT_TABLE (OT, head)
 HB_OT_TABLE (OT, hhea)
 HB_OT_ACCELERATOR (OT, hmtx)
 HB_OT_TABLE (OT, OS2)
-HB_OT_ACCELERATOR (OT, post)
 
 /* Vertical layout. */
 HB_OT_TABLE (OT, vhea)

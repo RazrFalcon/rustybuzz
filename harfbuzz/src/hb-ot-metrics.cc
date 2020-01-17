@@ -26,7 +26,6 @@
 
 #include "hb-ot-var-mvar-table.hh"
 #include "hb-ot-os2-table.hh"
-#include "hb-ot-post-table.hh"
 #include "hb-ot-hhea-table.hh"
 #include "hb-ot-metrics.hh"
 #include "hb-ot-face.hh"

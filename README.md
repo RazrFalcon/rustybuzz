@@ -2,6 +2,8 @@
 [![Build Status](https://travis-ci.org/RazrFalcon/rustybuzz.svg?branch=master)](https://travis-ci.org/RazrFalcon/rustybuzz)
 
 `rustybuzz` is an attempt to incrementally port [harfbuzz](https://github.com/harfbuzz/harfbuzz) to Rust.
+But while `harfbuzz` does a lot of things (shaping, subseting, font querying, etc.),
+`rustybuzz` is *strictly* an OpenType shaper.
 
 You can use it already, since we simply linking `hardbuzz` statically.
 And we're testing `rustybuzz` against `harfbuzz` test suite.

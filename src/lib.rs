@@ -33,11 +33,15 @@ pub use crate::buffer::*;
 pub use crate::common::*;
 pub use crate::font::{Face, Font};
 
+// TODO: is needed?
 #[doc(hidden)]
 pub mod implementation {
     // We must export extern symbols so the linker would be able to find them.
     pub use crate::unicode::*;
-    pub use crate::font::{rb_ot_get_nominal_glyph, rb_ot_get_variation_glyph};
+    pub use crate::font::{
+        rb_ot_get_nominal_glyph, rb_ot_get_variation_glyph, rb_ot_get_glyph_bbox,
+        rb_ot_get_glyph_name,
+    };
     pub use crate::tag::rb_ot_tags_from_script_and_language;
 }
 

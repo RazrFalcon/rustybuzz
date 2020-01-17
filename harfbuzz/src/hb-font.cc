@@ -53,6 +53,9 @@ extern "C" {
 
   hb_bool_t rb_ot_get_variation_glyph (const void *rust_data, hb_codepoint_t unicode, 
                                        hb_codepoint_t variation_selector, hb_codepoint_t *glyph);
+                                       
+  hb_bool_t rb_ot_get_glyph_name (const void *rust_data, hb_codepoint_t glyph, 
+                                  char *name, unsigned int len);
 }
 
 static hb_position_t
@@ -757,6 +760,7 @@ hb_bool_t hb_font_t::get_glyph_contour_point (hb_codepoint_t glyph, unsigned int
 
 hb_bool_t hb_font_t::get_glyph_name (hb_codepoint_t glyph, char *name, unsigned int size)
 {
+  if (!size) return false;
   if (size) *name = '\0';
-  return hb_ot_get_glyph_name (user_data, glyph, name, size);
+  return rb_ot_get_glyph_name (rust_data, glyph, name, size);
 }

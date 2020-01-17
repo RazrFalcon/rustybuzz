@@ -38,7 +38,6 @@
 #include "hb-ot-glyf-table.hh"
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-os2-table.hh"
-#include "hb-ot-post-table.hh"
 #include "hb-ot-vorg-table.hh"
 #include "hb-ot-color-cbdt-table.hh"
 #include "hb-ot-color-sbix-table.hh"
@@ -182,15 +181,6 @@ hb_ot_get_glyph_extents (hb_font_t *font,
 
   // TODO Hook up side-bearings variations.
   return ret;
-}
-
-hb_bool_t
-hb_ot_get_glyph_name (void *font_data,
-		      hb_codepoint_t glyph,
-		      char *name, unsigned int size)
-{
-  const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
-  return ot_face->post->get_glyph_name (glyph, name, size);
 }
 
 hb_bool_t
