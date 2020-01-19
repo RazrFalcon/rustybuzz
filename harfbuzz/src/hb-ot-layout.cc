@@ -251,7 +251,7 @@ _hb_ot_layout_set_glyph_props (hb_font_t *font,
   unsigned int count = buffer->len;
   for (unsigned int i = 0; i < count; i++)
   {
-    _hb_glyph_info_set_glyph_props (&buffer->info[i], gdef.get_glyph_props (buffer->info[i].codepoint));
+    _hb_glyph_info_set_glyph_props (&buffer->info[i], gdef.get_glyph_props (font, buffer->info[i].codepoint));
     _hb_glyph_info_clear_lig_props (&buffer->info[i]);
     buffer->info[i].syllable() = 0;
   }
@@ -271,117 +271,8 @@ _hb_ot_layout_set_glyph_props (hb_font_t *font,
 hb_bool_t
 hb_ot_layout_has_glyph_classes (hb_face_t *face)
 {
-  return face->table.GDEF->table->has_glyph_classes ();
+  return rb_ot_has_glyph_classes (face->rust_data);
 }
-
-/**
- * hb_ot_layout_get_glyph_class:
- * @face: The #hb_face_t to work on
- * @glyph: The #hb_codepoint_t code point to query
- *
- * Fetches the GDEF class of the requested glyph in the specified face.
- *
- * Return value: The #hb_ot_layout_glyph_class_t glyph class of the given code
- * point in the GDEF table of the face.
- *
- * Since: 0.9.7
- **/
-hb_ot_layout_glyph_class_t
-hb_ot_layout_get_glyph_class (hb_face_t      *face,
-			      hb_codepoint_t  glyph)
-{
-  return (hb_ot_layout_glyph_class_t) face->table.GDEF->table->get_glyph_class (glyph);
-}
-
-/**
- * hb_ot_layout_get_glyphs_in_class:
- * @face: The #hb_face_t to work on
- * @klass: The #hb_ot_layout_glyph_class_t GDEF class to retrieve
- * @glyphs: (out): The #hb_set_t set of all glyphs belonging to the requested
- *          class.
- *
- * Retrieves the set of all glyphs from the face that belong to the requested
- * glyph class in the face's GDEF table.
- *
- * Since: 0.9.7
- **/
-void
-hb_ot_layout_get_glyphs_in_class (hb_face_t                  *face,
-				  hb_ot_layout_glyph_class_t  klass,
-				  hb_set_t                   *glyphs /* OUT */)
-{
-  return face->table.GDEF->table->get_glyphs_in_class (klass, glyphs);
-}
-
-
-#ifndef HB_NO_LAYOUT_UNUSED
-/**
- * hb_ot_layout_get_attach_points:
- * @face: The #hb_face_t to work on
- * @glyph: The #hb_codepoint_t code point to query
- * @start_offset: offset of the first attachment point to retrieve
- * @point_count: (inout) (allow-none): Input = the maximum number of attachment points to return;
- *               Output = the actual number of attachment points returned (may be zero)
- * @point_array: (out) (array length=point_count): The array of attachment points found for the query
- *
- * Fetches a list of all attachment points for the specified glyph in the GDEF
- * table of the face. The list returned will begin at the offset provided.
- *
- * Useful if the client program wishes to cache the list.
- *
- **/
-unsigned int
-hb_ot_layout_get_attach_points (hb_face_t      *face,
-				hb_codepoint_t  glyph,
-				unsigned int    start_offset,
-				unsigned int   *point_count /* IN/OUT */,
-				unsigned int   *point_array /* OUT */)
-{
-  return face->table.GDEF->table->get_attach_points (glyph,
-						     start_offset,
-						     point_count,
-						     point_array);
-}
-/**
- * hb_ot_layout_get_ligature_carets:
- * @font: The #hb_font_t to work on
- * @direction: The #hb_direction_t text direction to use
- * @glyph: The #hb_codepoint_t code point to query
- * @start_offset: offset of the first caret position to retrieve
- * @caret_count: (inout) (allow-none): Input = the maximum number of caret positions to return;
- *               Output = the actual number of caret positions returned (may be zero)
- * @caret_array: (out) (array length=caret_count): The array of caret positions found for the query
- *
- * Fetches a list of the caret positions defined for a ligature glyph in the GDEF
- * table of the font. The list returned will begin at the offset provided.
- *
- **/
-unsigned int
-hb_ot_layout_get_ligature_carets (hb_font_t      *font,
-				  hb_direction_t  direction,
-				  hb_codepoint_t  glyph,
-				  unsigned int    start_offset,
-				  unsigned int   *caret_count /* IN/OUT */,
-				  hb_position_t  *caret_array /* OUT */)
-{
-  unsigned int result_caret_count = 0;
-  unsigned int result = font->face->table.GDEF->table->get_lig_carets (font, direction, glyph, start_offset, &result_caret_count, caret_array);
-  if (result)
-  {
-    if (caret_count) *caret_count = result_caret_count;
-  }
-  else
-  {
-#ifndef HB_NO_AAT
-    result = font->face->table.lcar->get_lig_carets (font, direction, glyph, start_offset, caret_count, caret_array);
-#else
-    if (caret_count) *caret_count = 0;
-#endif
-  }
-  return result;
-}
-#endif
-
 
 /*
  * GSUB/GPOS

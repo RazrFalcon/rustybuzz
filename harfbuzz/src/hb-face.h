@@ -50,6 +50,7 @@ typedef struct hb_face_t hb_face_t;
 
 HB_EXTERN hb_face_t *
 hb_face_create (hb_blob_t    *blob,
+		const void *rust_data,
 		unsigned int  index);
 
 typedef hb_blob_t * (*hb_reference_table_func_t)  (hb_face_t *face, hb_tag_t tag, void *user_data);

@@ -199,7 +199,6 @@ hb_ot_get_font_v_extents (hb_font_t *font, hb_font_extents_t *metrics)
 	 _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
 }
 
-#ifndef HB_NO_VAR
 int
 _glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
 {
@@ -211,7 +210,5 @@ _glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
 {
   return font->face->table.glyf->get_advance_var (font, glyph, is_vertical);
 }
-#endif
-
 
 #endif

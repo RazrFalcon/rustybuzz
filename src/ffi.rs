@@ -203,7 +203,7 @@ extern "C" {
     pub fn hb_blob_create(data: *const c_char, length: u32, mode: hb_memory_mode_t, user_data: *mut c_void,
                           destroy: hb_destroy_func_t) -> *mut hb_blob_t;
     pub fn hb_blob_destroy(blob: *mut hb_blob_t);
-    pub fn hb_face_create(blob: *mut hb_blob_t, index: u32) -> *mut hb_face_t;
+    pub fn hb_face_create(blob: *mut hb_blob_t, rust_data: *const c_void, index: u32) -> *mut hb_face_t;
     pub fn hb_face_destroy(face: *mut hb_face_t);
     pub fn hb_face_set_upem(face: *mut hb_face_t, upem: u32);
     pub fn hb_face_get_upem(face: *const hb_face_t) -> u32;

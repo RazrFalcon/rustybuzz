@@ -26,8 +26,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_VAR
-
 #include "hb-ot-var.h"
 
 #include "hb-ot-var-avar-table.hh"
@@ -183,6 +181,3 @@ hb_ot_var_normalize_coords (hb_face_t    *face,
 
   face->table.avar->map_coords (normalized_coords, coords_length);
 }
-
-
-#endif

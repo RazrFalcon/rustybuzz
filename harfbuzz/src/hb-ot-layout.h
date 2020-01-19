@@ -57,54 +57,6 @@ HB_BEGIN_DECLS
 HB_EXTERN hb_bool_t
 hb_ot_layout_has_glyph_classes (hb_face_t *face);
 
-/**
- * hb_ot_layout_glyph_class_t:
- * @HB_OT_LAYOUT_GLYPH_CLASS_UNCLASSIFIED: Glyphs not matching the other classifications
- * @HB_OT_LAYOUT_GLYPH_CLASS_BASE_GLYPH: Spacing, single characters, capable of accepting marks
- * @HB_OT_LAYOUT_GLYPH_CLASS_LIGATURE: Glyphs that represent ligation of multiple characters
- * @HB_OT_LAYOUT_GLYPH_CLASS_MARK: Non-spacing, combining glyphs that represent marks
- * @HB_OT_LAYOUT_GLYPH_CLASS_COMPONENT: Spacing glyphs that represent part of a single character
- *
- * The GDEF classes defined for glyphs.
- *
- **/
-typedef enum {
-  HB_OT_LAYOUT_GLYPH_CLASS_UNCLASSIFIED	= 0,
-  HB_OT_LAYOUT_GLYPH_CLASS_BASE_GLYPH	= 1,
-  HB_OT_LAYOUT_GLYPH_CLASS_LIGATURE	= 2,
-  HB_OT_LAYOUT_GLYPH_CLASS_MARK		= 3,
-  HB_OT_LAYOUT_GLYPH_CLASS_COMPONENT	= 4
-} hb_ot_layout_glyph_class_t;
-
-HB_EXTERN hb_ot_layout_glyph_class_t
-hb_ot_layout_get_glyph_class (hb_face_t      *face,
-			      hb_codepoint_t  glyph);
-
-HB_EXTERN void
-hb_ot_layout_get_glyphs_in_class (hb_face_t                  *face,
-				  hb_ot_layout_glyph_class_t  klass,
-				  hb_set_t                   *glyphs /* OUT */);
-
-
-/* Not that useful.  Provides list of attach points for a glyph that a
- * client may want to cache */
-HB_EXTERN unsigned int
-hb_ot_layout_get_attach_points (hb_face_t      *face,
-				hb_codepoint_t  glyph,
-				unsigned int    start_offset,
-				unsigned int   *point_count /* IN/OUT */,
-				unsigned int   *point_array /* OUT */);
-
-/* Ligature caret positions */
-HB_EXTERN unsigned int
-hb_ot_layout_get_ligature_carets (hb_font_t      *font,
-				  hb_direction_t  direction,
-				  hb_codepoint_t  glyph,
-				  unsigned int    start_offset,
-				  unsigned int   *caret_count /* IN/OUT */,
-				  hb_position_t  *caret_array /* OUT */);
-
-
 /*
  * GSUB/GPOS feature query and enumeration interface
  */

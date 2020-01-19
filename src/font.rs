@@ -62,11 +62,12 @@ impl<'a> Face<'a> {
     pub fn new(data: &'a [u8], index: u32) -> Result<Face<'a>, ttf_parser::Error> {
         unsafe {
             let ttf = Box::new(ttf_parser::Font::from_data(data, index)?);
+            let ttf = Box::into_raw(ttf);
             let blob = Blob::with_bytes(data);
             Ok(Face {
-                ptr: ffi::hb_face_create(blob.as_ptr(), index),
+                ptr: ffi::hb_face_create(blob.as_ptr(), ttf as *const _, index),
                 blob,
-                ttf: Box::into_raw(ttf),
+                ttf,
             })
         }
     }
@@ -227,5 +228,42 @@ pub extern "C" fn rb_ot_get_glyph_name(font_data: *const c_void, glyph: u32, mut
             1
         }
         None => 0,
+    }
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn rb_ot_has_glyph_classes(font_data: *const c_void) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    font.has_glyph_classes() as i32
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn rb_ot_get_glyph_class(font_data: *const c_void, glyph: u32) -> u32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    match font.glyph_class(GlyphId(u16::try_from(glyph).unwrap())) {
+        Ok(c) => c as u32,
+        Err(_) => 0,
+    }
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn rb_ot_get_mark_attachment_class(font_data: *const c_void, glyph: u32) -> u32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    match font.glyph_mark_attachment_class(GlyphId(u16::try_from(glyph).unwrap())) {
+        Ok(c) => c.0 as u32,
+        Err(_) => 0,
+    }
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn rb_ot_is_mark_glyph(font_data: *const c_void, set_index: u32, glyph: u32) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    match font.is_mark_glyph(GlyphId(u16::try_from(glyph).unwrap()), Some(set_index)) {
+        Ok(c) => c as i32,
+        Err(_) => 0,
     }
 }

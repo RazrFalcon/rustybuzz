@@ -84,6 +84,8 @@ DEFINE_NULL_INSTANCE (hb_face_t) =
   nullptr, /* reference_table_func */
   nullptr, /* user_data */
   nullptr, /* destroy */
+  
+  nullptr, /* rust data */
 
   0,    /* index */
   HB_ATOMIC_INT_INIT (1000), /* upem */
@@ -192,6 +194,7 @@ _hb_face_for_data_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void
  **/
 hb_face_t *
 hb_face_create (hb_blob_t    *blob,
+		const void   *rust_data,
 		unsigned int  index)
 {
   hb_face_t *face;
@@ -209,6 +212,7 @@ hb_face_create (hb_blob_t    *blob,
 				    _hb_face_for_data_closure_destroy);
 
   face->index = index;
+  face->rust_data = rust_data;
 
   return face;
 }

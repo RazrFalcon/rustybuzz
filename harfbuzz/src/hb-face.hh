@@ -49,6 +49,8 @@ struct hb_face_t
   hb_reference_table_func_t  reference_table_func;
   void                      *user_data;
   hb_destroy_func_t          destroy;
+  
+  const void                 *rust_data;
 
   unsigned int index;			/* Face index in a collection, zero-based. */
   mutable hb_atomic_int_t upem;		/* Units-per-EM. */

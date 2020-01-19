@@ -700,7 +700,6 @@ struct glyf
       float min_x, min_y, max_x, max_y;
     };
 
-#ifndef HB_NO_VAR
     /* Note: Recursively calls itself.
      * all_points includes phantom points
      */
@@ -810,10 +809,8 @@ struct glyf
     bool get_extents_var (hb_font_t *font, hb_codepoint_t gid,
 			  hb_glyph_extents_t *extents) const
     { return get_var_extents_and_phantoms (font, gid, extents); }
-#endif
 
     public:
-#ifndef HB_NO_VAR
     unsigned int get_advance_var (hb_font_t *font, hb_codepoint_t gid,
 				  bool is_vertical) const
     {
@@ -844,16 +841,13 @@ struct glyf
 
       return is_vertical ? ceil (phantoms[PHANTOM_TOP].y) - extents.y_bearing : floor (phantoms[PHANTOM_LEFT].x);
     }
-#endif
 
     bool get_extents (hb_font_t *font, hb_codepoint_t gid, hb_glyph_extents_t *extents) const
     {
-#ifndef HB_NO_VAR
       unsigned int coord_count;
       const int *coords = hb_font_get_var_coords_normalized (font, &coord_count);
       if (coords && coord_count > 0 && coord_count == face->table.gvar->get_axis_count ())
 	return get_extents_var (font, gid, extents);
-#endif
 
       if (unlikely (gid >= num_glyphs)) return false;
 

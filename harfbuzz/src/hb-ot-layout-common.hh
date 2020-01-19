@@ -1468,10 +1468,6 @@ struct VariationStore
   float get_delta (unsigned int outer, unsigned int inner,
 		   const int *coords, unsigned int coord_count) const
   {
-#ifdef HB_NO_VAR
-    return 0.f;
-#endif
-
     if (unlikely (outer >= dataSets.len))
       return 0.f;
 
@@ -1490,10 +1486,6 @@ struct VariationStore
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
-#ifdef HB_NO_VAR
-    return true;
-#endif
-
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
 		  format == 1 &&
@@ -1839,10 +1831,8 @@ struct Device
     case 1: case 2: case 3:
       return u.hinting.get_x_delta (font);
 #endif
-#ifndef HB_NO_VAR
     case 0x8000:
       return u.variation.get_x_delta (font, store);
-#endif
     default:
       return 0;
     }
@@ -1855,10 +1845,8 @@ struct Device
 #ifndef HB_NO_HINTING
       return u.hinting.get_y_delta (font);
 #endif
-#ifndef HB_NO_VAR
     case 0x8000:
       return u.variation.get_y_delta (font, store);
-#endif
     default:
       return 0;
     }
@@ -1873,10 +1861,8 @@ struct Device
     case 1: case 2: case 3:
       return_trace (u.hinting.sanitize (c));
 #endif
-#ifndef HB_NO_VAR
     case 0x8000:
       return_trace (u.variation.sanitize (c));
-#endif
     default:
       return_trace (true);
     }
@@ -1886,9 +1872,7 @@ struct Device
   union {
   DeviceHeader		b;
   HintingDevice		hinting;
-#ifndef HB_NO_VAR
   VariationDevice	variation;
-#endif
   } u;
   public:
   DEFINE_SIZE_UNION (6, b);

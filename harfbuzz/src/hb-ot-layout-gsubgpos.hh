@@ -37,6 +37,10 @@
 #include "hb-ot-layout-common.hh"
 #include "hb-ot-layout-gdef-table.hh"
 
+extern "C" {
+  hb_bool_t rb_ot_has_glyph_classes (const void *rust_data);
+  hb_bool_t rb_ot_is_mark_glyph (const void *rust_data, unsigned int set_index, hb_codepoint_t glyph);
+}
 
 namespace OT {
 
@@ -478,18 +482,12 @@ struct hb_ot_apply_context_t :
 
 
   hb_ot_apply_context_t (unsigned int table_index_,
-		      hb_font_t *font_,
-		      hb_buffer_t *buffer_) :
+			hb_font_t *font_,
+			hb_buffer_t *buffer_) :
 			iter_input (), iter_context (),
 			font (font_), face (font->face), buffer (buffer_),
 			recurse_func (nullptr),
-			gdef (
-#ifndef HB_NO_OT_LAYOUT
-			      *face->table.GDEF->table
-#else
-			      Null(GDEF)
-#endif
-			     ),
+			gdef (*face->table.GDEF->table),
 			var_store (gdef.get_var_store ()),
 			direction (buffer_->props.direction),
 			lookup_mask (1),
@@ -498,7 +496,7 @@ struct hb_ot_apply_context_t :
 			lookup_props (0),
 			nesting_level_left (HB_MAX_NESTING_LEVEL),
 			debug_depth (0),
-			has_glyph_classes (gdef.has_glyph_classes ()),
+			has_glyph_classes (rb_ot_has_glyph_classes (font->rust_data)),
 			auto_zwnj (true),
 			auto_zwj (true),
 			random (false),
@@ -532,8 +530,8 @@ struct hb_ot_apply_context_t :
     /* If using mark filtering sets, the high short of
      * match_props has the set index.
      */
-    if (match_props & LookupFlag::UseMarkFilteringSet)
-      return gdef.mark_set_covers (match_props >> 16, glyph);
+    if (match_props & LookupFlag::UseMarkFilteringSet) 
+      return rb_ot_is_mark_glyph (face->rust_data, match_props >> 16, glyph);
 
     /* The second byte of match_props has the meaning
      * "ignore marks of attachment type different than
@@ -585,7 +583,7 @@ struct hb_ot_apply_context_t :
     if (component)
       add_in |= HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
     if (likely (has_glyph_classes))
-      _hb_glyph_info_set_glyph_props (&buffer->cur(), add_in | gdef.get_glyph_props (glyph_index));
+      _hb_glyph_info_set_glyph_props (&buffer->cur(), add_in | gdef.get_glyph_props (font, glyph_index));
     else if (class_guess)
       _hb_glyph_info_set_glyph_props (&buffer->cur(), add_in | class_guess);
   }
@@ -2633,7 +2631,6 @@ struct GSUBGPOS
   const Feature& get_feature_variation (unsigned int feature_index,
 					unsigned int variations_index) const
   {
-#ifndef HB_NO_VAR
     if (FeatureVariations::NOT_FOUND_INDEX != variations_index &&
 	version.to_int () >= 0x00010001u)
     {
@@ -2642,7 +2639,6 @@ struct GSUBGPOS
       if (feature)
 	return *feature;
     }
-#endif
     return get_feature (feature_index);
   }
 
@@ -2664,10 +2660,8 @@ struct GSUBGPOS
 		    CastR<OffsetTo<TLookupList>> (lookupList).sanitize (c, this))))
       return_trace (false);
 
-#ifndef HB_NO_VAR
     if (unlikely (!(version.to_int () < 0x00010001u || featureVars.sanitize (c, this))))
       return_trace (false);
-#endif
 
     return_trace (true);
   }
