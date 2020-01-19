@@ -153,26 +153,12 @@ hb_font_get_ptem (hb_font_t *font);
 
 HB_EXTERN void
 hb_font_set_variations (hb_font_t *font,
-			const hb_variation_t *variations,
-			unsigned int variations_length);
-
-HB_EXTERN void
-hb_font_set_var_coords_design (hb_font_t *font,
-			       const float *coords,
-			       unsigned int coords_length);
-
-HB_EXTERN void
-hb_font_set_var_coords_normalized (hb_font_t *font,
-				   const int *coords, /* 2.14 normalized */
-				   unsigned int coords_length);
+			const int *coords,
+			unsigned int coords_length);
 
 HB_EXTERN const int *
 hb_font_get_var_coords_normalized (hb_font_t *font,
 				   unsigned int *length);
-
-HB_EXTERN void
-hb_font_set_var_named_instance (hb_font_t *font,
-				unsigned instance_index);
 
 HB_EXTERN unsigned int
 hb_font_get_glyph_count (hb_font_t *face);

@@ -5,6 +5,7 @@ use std::marker::PhantomData;
 use ttf_parser::GlyphId;
 
 use crate::ffi;
+use crate::common::f32_bound;
 use crate::Variation;
 
 
@@ -102,7 +103,6 @@ impl<'a> Drop for Face<'a> {
 pub struct Font<'a> {
     ptr: *mut ffi::hb_font_t,
     face: Face<'a>,
-
 }
 
 impl<'a> Font<'a> {
@@ -155,11 +155,33 @@ impl<'a> Font<'a> {
 
     /// Sets a font variations.
     pub fn set_variations(&mut self, variations: &[Variation]) {
+        let ttf = unsafe { &*self.face.ttf };
+        let coords_len = try_opt!(ttf.variation_axes_count()) as usize;
+        let mut coords = vec![0; coords_len];
+
+        for variation in variations {
+            if let Some(axis) = ttf.variation_axis(variation.tag) {
+                let mut v = f32_bound(axis.min_value, variation.value, axis.max_value);
+
+                if v == axis.default_value {
+                    v = 0.0;
+                } else if v < axis.default_value {
+                    v = (v - axis.default_value) / (axis.default_value - axis.min_value);
+                } else {
+                    v = (v - axis.default_value) / (axis.max_value - axis.default_value)
+                }
+
+                coords[axis.index as usize] = (v * 16384.0).round() as i32;
+            }
+        }
+
+        ttf.map_variation_coordinates(&mut coords);
+
         unsafe {
             ffi::hb_font_set_variations(
                 self.ptr,
-                variations.as_ptr() as *mut _,
-                variations.len() as u32,
+                coords.as_ptr() as *mut _,
+                coords.len() as u32,
             )
         }
     }
@@ -266,4 +288,11 @@ pub extern "C" fn rb_ot_is_mark_glyph(font_data: *const c_void, set_index: u32, 
         Ok(c) => c as i32,
         Err(_) => 0,
     }
+}
+
+#[no_mangle]
+#[allow(missing_docs)]
+pub extern "C" fn hb_ot_get_var_axis_count(font_data: *const c_void) -> u16 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    font.variation_axes_count().unwrap_or(0)
 }

@@ -29,13 +29,16 @@
 
 #include "hb-open-type.hh"
 #include "hb-ot-glyf-table.hh"
-#include "hb-ot-var-fvar-table.hh"
 
 /*
  * gvar -- Glyph Variation Table
  * https://docs.microsoft.com/en-us/typography/opentype/spec/gvar
  */
 #define HB_OT_TAG_gvar HB_TAG('g','v','a','r')
+
+extern "C" {
+  uint16_t hb_ot_get_var_axis_count(const void *rust_data);
+}
 
 namespace OT {
 
@@ -438,12 +441,8 @@ struct gvar
     void init (hb_face_t *face)
     {
       gvar_table = hb_sanitize_context_t ().reference_table<gvar> (face);
-      hb_blob_ptr_t<fvar> fvar_table = hb_sanitize_context_t ().reference_table<fvar> (face);
-      unsigned int axis_count = fvar_table->get_axis_count ();
-      fvar_table.destroy ();
-
       if (unlikely ((gvar_table->glyphCount != face->get_num_glyphs ()) ||
-		    (gvar_table->axisCount != axis_count)))
+		    (gvar_table->axisCount != hb_ot_get_var_axis_count(face->rust_data))))
       	fini ();
 
       unsigned int num_shared_coord = gvar_table->sharedTupleCount * gvar_table->axisCount;

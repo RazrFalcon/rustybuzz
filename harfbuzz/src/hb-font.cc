@@ -547,106 +547,17 @@ _hb_font_adopt_var_coords_normalized (hb_font_t *font,
   font->num_coords = coords_length;
 }
 
-/**
- * hb_font_set_variations:
- *
- * Since: 1.4.2
- */
 void
 hb_font_set_variations (hb_font_t *font,
-			const hb_variation_t *variations,
-			unsigned int variations_length)
+			 const int *coords,
+			 unsigned int coords_length)
 {
-  if (hb_object_is_immutable (font))
-    return;
-
-  if (!variations_length)
-  {
-    hb_font_set_var_coords_normalized (font, nullptr, 0);
-    return;
+  int *normalized = coords_length ? (int *) calloc (coords_length, sizeof (int)) : nullptr;
+    for (unsigned int i = 0; i < coords_length; ++i) {
+    normalized[i] = coords[i];
   }
-
-  unsigned int coords_length = hb_ot_var_get_axis_count (font->face);
-
-  int *normalized = coords_length ? (int *) calloc (coords_length, sizeof (int)) : nullptr;
-  if (unlikely (coords_length && !normalized))
-    return;
-
-  hb_ot_var_normalize_variations (font->face,
-				  variations, variations_length,
-				  normalized, coords_length);
-  _hb_font_adopt_var_coords_normalized (font, normalized, coords_length);
-}
-
-/**
- * hb_font_set_var_coords_design:
- *
- * Since: 1.4.2
- */
-void
-hb_font_set_var_coords_design (hb_font_t *font,
-			       const float *coords,
-			       unsigned int coords_length)
-{
-  if (hb_object_is_immutable (font))
-    return;
-
-  int *normalized = coords_length ? (int *) calloc (coords_length, sizeof (int)) : nullptr;
-  if (unlikely (coords_length && !normalized))
-    return;
-
-  hb_ot_var_normalize_coords (font->face, coords_length, coords, normalized);
-  _hb_font_adopt_var_coords_normalized (font, normalized, coords_length);
-}
-
-/**
- * hb_font_set_var_named_instance:
- * @font: a font.
- * @instance_index: named instance index.
- *
- * Sets design coords of a font from a named instance index.
- *
- * Since: 2.6.0
- */
-void
-hb_font_set_var_named_instance (hb_font_t *font,
-				unsigned instance_index)
-{
-  if (hb_object_is_immutable (font))
-    return;
-
-  unsigned int coords_length = hb_ot_var_named_instance_get_design_coords (font->face, instance_index, nullptr, nullptr);
-
-  float *coords = coords_length ? (float *) calloc (coords_length, sizeof (float)) : nullptr;
-  if (unlikely (coords_length && !coords))
-    return;
-
-  hb_ot_var_named_instance_get_design_coords (font->face, instance_index, &coords_length, coords);
-  hb_font_set_var_coords_design (font, coords, coords_length);
-  free (coords);
-}
-
-/**
- * hb_font_set_var_coords_normalized:
- *
- * Since: 1.4.2
- */
-void
-hb_font_set_var_coords_normalized (hb_font_t *font,
-				   const int *coords, /* 2.14 normalized */
-				   unsigned int coords_length)
-{
-  if (hb_object_is_immutable (font))
-    return;
-
-  int *copy = coords_length ? (int *) calloc (coords_length, sizeof (coords[0])) : nullptr;
-  if (unlikely (coords_length && !copy))
-    return;
-
-  if (coords_length)
-    memcpy (copy, coords, coords_length * sizeof (coords[0]));
-
-  _hb_font_adopt_var_coords_normalized (font, copy, coords_length);
+  
+  _hb_font_adopt_var_coords_normalized(font, normalized, coords_length);
 }
 
 /**

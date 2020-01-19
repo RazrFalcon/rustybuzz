@@ -20,6 +20,15 @@ macro_rules! matches {
     }
 }
 
+macro_rules! try_opt {
+    ($task:expr) => {
+        match $task {
+            Some(v) => v,
+            None => return,
+        }
+    };
+}
+
 mod buffer;
 mod common;
 mod ffi;
@@ -28,6 +37,8 @@ mod unicode;
 mod tag;
 mod tag_table;
 mod text_parser;
+
+pub use ttf_parser::Tag;
 
 pub use crate::buffer::*;
 pub use crate::common::*;

@@ -214,7 +214,7 @@ extern "C" {
     pub fn hb_font_set_ppem(font: *mut hb_font_t, x_ppem: u32, y_ppem: u32);
     pub fn hb_font_get_ppem(font: *mut hb_font_t, x_ppem: *mut u32, y_ppem: *mut u32);
     pub fn hb_font_set_ptem(font: *mut hb_font_t, ptem: f32);
-    pub fn hb_font_set_variations(font: *mut hb_font_t, variations: *const hb_variation_t, variations_length: u32);
+    pub fn hb_font_set_variations(font: *mut hb_font_t, coords: *const i32, coords_length: u32);
     pub fn hb_buffer_create() -> *mut hb_buffer_t;
     pub fn hb_buffer_destroy(buffer: *mut hb_buffer_t);
     pub fn hb_buffer_reset_clusters(buffer: *mut hb_buffer_t);

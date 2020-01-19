@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Malformed font is an error now.
 - Most of the shaping tests. We store only font files.
 - `hb-shape` executable. Most flags are supported.
-- `cmap`, `CFF`, `CFF2`, `post`, `GDEF`(mostly) tables.
+- `cmap`, `CFF`, `CFF2`, `post`, `GDEF`(mostly), `avar`, `fvar` tables.
 - `is_default_ignorable`
 - `hb_script_from_iso15924_tag`
 - `hb_script_to_iso15924_tag`
@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_feature_from_string`
 - `hb_variation_from_string`
 - `hb_ot_tags_from_script_and_language`
+- `hb_font_set_variations`
 
 ### Changed
 - Replace some header guards with `#pragma once`, otherwise Qt Creator unable to parse them.

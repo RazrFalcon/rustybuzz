@@ -62,8 +62,6 @@ HB_OT_ACCELERATOR (OT, glyf)
 HB_OT_TABLE (OT, VORG)
 
 /* OpenType variations. */
-HB_OT_TABLE (OT, fvar)
-HB_OT_TABLE (OT, avar)
 HB_OT_ACCELERATOR (OT, gvar)
 HB_OT_TABLE (OT, MVAR)
 

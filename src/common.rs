@@ -1,117 +1,27 @@
 use std::ops::{Bound, RangeBounds};
 
+use crate::Tag;
 use crate::ffi;
 use crate::text_parser::TextParser;
 
-/// A type to represent 4-byte SFNT tags.
-#[derive(Copy, Clone, Hash, PartialEq, Eq)]
-#[repr(transparent)]
-pub struct Tag(pub(crate) u32);
 
-impl Tag {
-    /// Creates a `Tag` from bytes.
-    pub const fn from_bytes(bytes: &[u8; 4]) -> Self {
-        Tag(((bytes[0] as u32) << 24) | ((bytes[1] as u32) << 16) |
-            ((bytes[2] as u32) << 8) | (bytes[3] as u32))
-    }
+// TODO: https://github.com/rust-lang/rust/issues/44095
+/// Bounds `f32` number.
+#[inline]
+pub(crate) fn f32_bound(min: f32, val: f32, max: f32) -> f32 {
+    debug_assert!(min.is_finite());
+    debug_assert!(val.is_finite());
+    debug_assert!(max.is_finite());
 
-    /// Creates a `Tag` from bytes.
-    ///
-    /// In case of empty data will return `Tag` set to 0.
-    ///
-    /// When `bytes` are shorter than 4, will set missing bytes to ` `.
-    ///
-    /// Data after first 4 bytes is ignored.
-    pub fn from_bytes_lossy(bytes: &[u8]) -> Self {
-        if bytes.is_empty() {
-            return Tag::from_bytes(&[0, 0, 0, 0]);
-        }
-
-        let mut iter = bytes.iter().cloned().chain(std::iter::repeat(b' '));
-        Tag::from_bytes(&[
-            iter.next().unwrap(),
-            iter.next().unwrap(),
-            iter.next().unwrap(),
-            iter.next().unwrap(),
-        ])
-    }
-
-    /// Returns tag as 4-element byte array.
-    pub const fn to_bytes(self) -> [u8; 4] {
-        [
-            (self.0 >> 24 & 0xff) as u8,
-            (self.0 >> 16 & 0xff) as u8,
-            (self.0 >> 8 & 0xff) as u8,
-            (self.0 >> 0 & 0xff) as u8,
-        ]
-    }
-
-    /// Returns tag as 4-element byte array.
-    pub const fn to_chars(self) -> [char; 4] {
-        [
-            (self.0 >> 24 & 0xff) as u8 as char,
-            (self.0 >> 16 & 0xff) as u8 as char,
-            (self.0 >> 8 & 0xff) as u8 as char,
-            (self.0 >> 0 & 0xff) as u8 as char,
-        ]
-    }
-
-    /// Returns tag for a default script.
-    pub const fn default_script() -> Self {
-        Tag::from_bytes(b"DFLT")
-    }
-
-    /// Returns tag for a default language.
-    pub const fn default_language() -> Self {
-        Tag::from_bytes(b"dflt")
-    }
-
-    /// Checks if tag is null / `[0, 0, 0, 0]`.
-    pub const fn is_null(&self) -> bool {
-        self.0 == 0
-    }
-
-    /// Returns tag value as `u32` number.
-    pub const fn as_u32(&self) -> u32 {
-        self.0
-    }
-
-    /// Converts tag to lowercase.
-    pub fn to_lowercase(&self) -> Self {
-        let b = self.to_bytes();
-        Tag::from_bytes(&[
-            b[0].to_ascii_lowercase(),
-            b[1].to_ascii_lowercase(),
-            b[2].to_ascii_lowercase(),
-            b[3].to_ascii_lowercase(),
-        ])
-    }
-
-    /// Converts tag to uppercase.
-    pub fn to_uppercase(&self) -> Self {
-        let b = self.to_bytes();
-        Tag::from_bytes(&[
-            b[0].to_ascii_uppercase(),
-            b[1].to_ascii_uppercase(),
-            b[2].to_ascii_uppercase(),
-            b[3].to_ascii_uppercase(),
-        ])
+    if val > max {
+        max
+    } else if val < min {
+        min
+    } else {
+        val
     }
 }
 
-impl std::fmt::Debug for Tag {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let b = self.to_chars();
-        write!(
-            f,
-            "Tag({}{}{}{})",
-            b.get(0).unwrap_or(&' '),
-            b.get(1).unwrap_or(&' '),
-            b.get(2).unwrap_or(&' '),
-            b.get(3).unwrap_or(&' ')
-        )
-    }
-}
 
 /// Defines the direction in which text is to be read.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -220,7 +130,7 @@ impl std::str::FromStr for Language {
 // The only difference is that `Script` cannot be set to `HB_SCRIPT_INVALID`.
 /// A text script.
 #[allow(missing_docs)]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Script(pub(crate) Tag);
 
 impl Script {
