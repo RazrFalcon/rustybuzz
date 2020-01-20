@@ -30,7 +30,6 @@
 #define HB_OT_METRICS_H
 
 #include "hb.h"
-#include "hb-ot-name.h"
 
 HB_BEGIN_DECLS
 

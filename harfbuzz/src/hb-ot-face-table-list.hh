@@ -60,7 +60,6 @@ HB_OT_ACCELERATOR (OT, glyf)
 
 /* OpenType variations. */
 HB_OT_ACCELERATOR (OT, gvar)
-HB_OT_TABLE (OT, MVAR)
 
 /* Legacy kern. */
 #ifndef HB_NO_OT_KERN

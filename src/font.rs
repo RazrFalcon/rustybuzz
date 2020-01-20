@@ -6,7 +6,7 @@ use ttf_parser::GlyphId;
 
 use crate::ffi;
 use crate::common::f32_bound;
-use crate::Variation;
+use crate::{Tag, Variation};
 
 
 #[derive(Debug)]
@@ -298,4 +298,62 @@ pub extern "C" fn rb_ot_has_vorg_data(font_data: *const c_void) -> i32 {
 pub extern "C" fn rb_ot_get_y_origin(font_data: *const c_void, glyph: u32) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     font.glyph_y_origin(GlyphId(u16::try_from(glyph).unwrap())).unwrap_or(0) as i32
+}
+
+mod metrics {
+    use crate::Tag;
+
+    pub const HORIZONTAL_ASCENDER: Tag  = Tag::from_bytes(b"hasc");
+    pub const HORIZONTAL_DESCENDER: Tag = Tag::from_bytes(b"hdsc");
+    pub const HORIZONTAL_LINE_GAP: Tag  = Tag::from_bytes(b"hlgp");
+    pub const VERTICAL_ASCENDER: Tag    = Tag::from_bytes(b"vasc");
+    pub const VERTICAL_DESCENDER: Tag   = Tag::from_bytes(b"vdsc");
+    pub const VERTICAL_LINE_GAP: Tag    = Tag::from_bytes(b"vlgp");
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn rb_ot_metrics_get_position_common(
+    font_data: *const c_void,
+    coords: *const i32,
+    coord_count: u32,
+    scale: i32,
+    tag: u32,
+    position: *mut i32,
+) -> i32 {
+    // TODO: Never executed. Add tests.
+
+    let font =  &*(font_data as *const ttf_parser::Font);
+    let coords = std::slice::from_raw_parts(coords as *const _, coord_count as usize);
+
+    let upem = try_opt_or!(font.units_per_em(), 0) as f32;
+    let offset = font.metrics_variation(Tag(tag), coords).unwrap_or(0.0);
+
+    let rescale = |x: f32| ((x * scale as f32) / upem).round() as i32;
+
+    match Tag(tag) {
+        metrics::HORIZONTAL_ASCENDER => {
+            *position = rescale((font.ascender() as f32 + offset).abs());
+        }
+        metrics::HORIZONTAL_DESCENDER => {
+            *position = rescale(-(font.descender() as f32 + offset).abs());
+        }
+        metrics::HORIZONTAL_LINE_GAP => {
+            *position = rescale(font.line_gap() as f32 + offset);
+        }
+        metrics::VERTICAL_ASCENDER => {
+            let v = try_opt_or!(font.vertical_ascender(), 0);
+            *position = rescale((v as f32 + offset).abs());
+        }
+        metrics::VERTICAL_DESCENDER => {
+            let v = try_opt_or!(font.vertical_descender(), 0);
+            *position = rescale(-(v as f32 + offset).abs());
+        }
+        metrics::VERTICAL_LINE_GAP => {
+            let v = try_opt_or!(font.vertical_line_gap(), 0);
+            *position = rescale(v as f32 + offset);
+        }
+        _ => return 0,
+    }
+
+    1
 }

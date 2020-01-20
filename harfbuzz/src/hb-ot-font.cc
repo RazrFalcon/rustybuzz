@@ -68,8 +68,14 @@ extern "C" {
 
   bool rb_ot_has_vorg_data (const void *rust_data);
 
-  int rb_ot_get_y_origin (const void *rust_data,
-                          hb_codepoint_t glyph);
+  int rb_ot_get_y_origin (const void *rust_data, hb_codepoint_t glyph);
+
+  bool rb_ot_metrics_get_position_common (const void *rust_data,
+                                          const int *coords,
+                                          unsigned int coord_count,
+                                          int32_t scale,
+                                          hb_tag_t metrics_tag,
+                                          int32_t *position);
 }
 
 void
@@ -189,17 +195,17 @@ hb_ot_get_glyph_extents (hb_font_t *font,
 hb_bool_t
 hb_ot_get_font_h_extents (hb_font_t *font, hb_font_extents_t *metrics)
 {
-  return _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER, &metrics->ascender) &&
-	 _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER, &metrics->descender) &&
-	 _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP, &metrics->line_gap);
+  return rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->y_scale, HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER, &metrics->ascender) &&
+	 rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->y_scale, HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER, &metrics->descender) &&
+	 rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->y_scale, HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP, &metrics->line_gap);
 }
 
 hb_bool_t
 hb_ot_get_font_v_extents (hb_font_t *font, hb_font_extents_t *metrics)
 {
-  return _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_VERTICAL_ASCENDER, &metrics->ascender) &&
-	 _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_VERTICAL_DESCENDER, &metrics->descender) &&
-	 _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
+  return rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->x_scale, HB_OT_METRICS_TAG_VERTICAL_ASCENDER, &metrics->ascender) &&
+	 rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->x_scale, HB_OT_METRICS_TAG_VERTICAL_DESCENDER, &metrics->descender) &&
+	 rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->x_scale, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
 }
 
 int

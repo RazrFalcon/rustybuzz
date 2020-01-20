@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Malformed font is an error now.
 - Most of the shaping tests. We store only font files.
 - `hb-shape` executable. Most flags are supported.
-- `cmap`, `CFF`, `CFF2`, `post`, `GDEF`(mostly), `avar`, `fvar`, `VORG` tables.
+- `cmap`, `CFF`, `CFF2`, `post`, `GDEF`(mostly), `avar`, `fvar`, `VORG`, `MVAR` tables.
 - `is_default_ignorable`
 - `hb_script_from_iso15924_tag`
 - `hb_script_to_iso15924_tag`
