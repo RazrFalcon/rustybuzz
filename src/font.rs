@@ -357,3 +357,67 @@ pub unsafe extern "C" fn rb_ot_metrics_get_position_common(
 
     1
 }
+
+#[no_mangle]
+pub extern "C" fn rb_ot_get_hvar_advance_var(
+    font_data: *const c_void,
+    glyph: u32,
+    coords: *const i32,
+    coord_count: u32,
+) -> f32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
+    let glyph = GlyphId(u16::try_from(glyph).unwrap());
+    font.glyph_hor_advance_variation(glyph, coords).unwrap_or(0.0)
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ot_get_hvar_side_bearing_var(
+    font_data: *const c_void,
+    glyph: u32,
+    coords: *const i32,
+    coord_count: u32,
+) -> f32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
+    let glyph = GlyphId(u16::try_from(glyph).unwrap());
+    font.glyph_hor_side_bearing_variation(glyph, coords).unwrap_or(0.0)
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ot_get_vvar_advance_var(
+    font_data: *const c_void,
+    glyph: u32,
+    coords: *const i32,
+    coord_count: u32,
+) -> f32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
+    let glyph = GlyphId(u16::try_from(glyph).unwrap());
+    font.glyph_ver_advance_variation(glyph, coords).unwrap_or(0.0)
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ot_get_vvar_side_bearing_var(
+    font_data: *const c_void,
+    glyph: u32,
+    coords: *const i32,
+    coord_count: u32,
+) -> f32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
+    let glyph = GlyphId(u16::try_from(glyph).unwrap());
+    font.glyph_ver_side_bearing_variation(glyph, coords).unwrap_or(0.0)
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ot_has_hvar(font_data: *const c_void) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    font.has_table(ttf_parser::TableName::HorizontalMetricsVariations) as i32
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ot_has_vvar(font_data: *const c_void) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    font.has_table(ttf_parser::TableName::VerticalMetricsVariations) as i32
+}

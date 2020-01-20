@@ -30,6 +30,7 @@
 #pragma once
 
 #include "hb-open-type.hh"
+#include "hb-ot-layout-common.hh"
 #include "hb-ot-head-table.hh"
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-var-gvar-table.hh"

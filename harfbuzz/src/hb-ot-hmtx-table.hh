@@ -28,7 +28,6 @@
 
 #include "hb-open-type.hh"
 #include "hb-ot-hhea-table.hh"
-#include "hb-ot-var-hvar-table.hh"
 
 /*
  * hmtx -- Horizontal Metrics
@@ -46,6 +45,32 @@ _glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, bool is_verti
 HB_INTERNAL unsigned
 _glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical);
 
+
+extern "C" {
+  hb_bool_t rb_ot_has_hvar (const void *rust_data);
+
+  hb_bool_t rb_ot_has_vvar (const void *rust_data);
+
+  float rb_ot_get_hvar_advance_var (const void *rust_data,
+                                    hb_codepoint_t glyph,
+                                    const int *coords,
+                                    unsigned int coord_count);
+
+  float rb_ot_get_hvar_side_bearing_var (const void *rust_data,
+                                         hb_codepoint_t glyph,
+                                         const int *coords,
+                                         unsigned int coord_count);
+
+  float rb_ot_get_vvar_advance_var (const void *rust_data,
+                                    hb_codepoint_t glyph,
+                                    const int *coords,
+                                    unsigned int coord_count);
+
+  float rb_ot_get_vvar_side_bearing_var (const void *rust_data,
+                                         hb_codepoint_t glyph,
+                                         const int *coords,
+                                         unsigned int coord_count);
+}
 
 namespace OT {
 
@@ -97,14 +122,11 @@ struct hmtxvmtx
 	table.destroy ();
 	table = hb_blob_get_empty ();
       }
-
-      var_table = hb_sanitize_context_t().reference_table<HVARVVAR> (face, T::variationsTag);
     }
 
     void fini ()
     {
       table.destroy ();
-      var_table.destroy ();
     }
 
     int get_side_bearing (hb_codepoint_t glyph) const
@@ -126,8 +148,11 @@ struct hmtxvmtx
       if (unlikely (glyph >= num_metrics) || !font->num_coords)
 	return side_bearing;
 
-      if (var_table.get_length ())
-        return side_bearing + var_table->get_side_bearing_var (glyph, font->coords, font->num_coords); // TODO Optimize?!
+      if (T::tableTag == HB_OT_TAG_hmtx && rb_ot_has_hvar (font->rust_data)) {
+        return side_bearing + roundf (rb_ot_get_hvar_side_bearing_var( font->rust_data, glyph, font->coords, font->num_coords));
+      } else if (T::tableTag == HB_OT_TAG_vmtx && rb_ot_has_vvar (font->rust_data)) {
+        return side_bearing + roundf (rb_ot_get_vvar_side_bearing_var (font->rust_data, glyph, font->coords, font->num_coords));
+      }
 
       return _glyf_get_side_bearing_var (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
     }
@@ -156,8 +181,11 @@ struct hmtxvmtx
       if (unlikely (glyph >= num_metrics) || !font->num_coords)
 	return advance;
 
-      if (var_table.get_length ())
-	return advance + roundf (var_table->get_advance_var (font, glyph)); // TODO Optimize?!
+      if (T::tableTag == HB_OT_TAG_hmtx && rb_ot_has_hvar (font->rust_data)) {
+        return advance + roundf (rb_ot_get_hvar_advance_var (font->rust_data, glyph, font->coords, font->num_coords));
+      } else if (T::tableTag == HB_OT_TAG_vmtx && rb_ot_has_vvar (font->rust_data)) {
+        return advance + roundf (rb_ot_get_vvar_advance_var (font->rust_data, glyph, font->coords, font->num_coords));
+      }
 
       return _glyf_get_advance_var (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
     }
@@ -169,7 +197,6 @@ struct hmtxvmtx
 
     private:
     hb_blob_ptr_t<hmtxvmtx> table;
-    hb_blob_ptr_t<HVARVVAR> var_table;
   };
 
   protected:
@@ -200,12 +227,10 @@ struct hmtxvmtx
 
 struct hmtx : hmtxvmtx<hmtx, hhea> {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_hmtx;
-  static constexpr hb_tag_t variationsTag = HB_OT_TAG_HVAR;
   static constexpr bool is_horizontal = true;
 };
 struct vmtx : hmtxvmtx<vmtx, vhea> {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_vmtx;
-  static constexpr hb_tag_t variationsTag = HB_OT_TAG_VVAR;
   static constexpr bool is_horizontal = false;
 };
 
