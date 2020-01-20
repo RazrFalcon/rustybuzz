@@ -34,11 +34,6 @@
 
 /* Closure of options. */
 
-#ifdef HB_NO_AAT
-#define HB_NO_OT_NAME_LANGUAGE_AAT
-#define HB_NO_AAT_SHAPE
-#endif
-
 #ifdef HB_NO_GETENV
 #define HB_NO_UNISCRIBE_BUG_COMPATIBLE
 #endif
@@ -46,7 +41,6 @@
 #ifdef HB_NO_LEGACY
 #define HB_NO_CMAP_LEGACY_SUBTABLES
 #define HB_NO_FALLBACK_SHAPE
-#define HB_NO_OT_KERN
 #define HB_NO_OT_LAYOUT_BLACKLIST
 #define HB_NO_OT_SHAPE_FALLBACK
 #endif

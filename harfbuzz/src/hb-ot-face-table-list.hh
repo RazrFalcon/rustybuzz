@@ -62,19 +62,14 @@ HB_OT_ACCELERATOR (OT, glyf)
 HB_OT_ACCELERATOR (OT, gvar)
 
 /* Legacy kern. */
-#ifndef HB_NO_OT_KERN
 HB_OT_TABLE (OT, kern)
-#endif
 
 /* OpenType shaping. */
-#ifndef HB_NO_OT_LAYOUT
 HB_OT_ACCELERATOR (OT, GDEF)
 HB_OT_ACCELERATOR (OT, GSUB)
 HB_OT_ACCELERATOR (OT, GPOS)
-#endif
 
 /* AAT shaping. */
-#ifndef HB_NO_AAT
 HB_OT_TABLE (AAT, morx)
 HB_OT_TABLE (AAT, mort)
 HB_OT_TABLE (AAT, kerx)
@@ -83,7 +78,6 @@ HB_OT_TABLE (AAT, trak)
 HB_OT_TABLE (AAT, lcar)
 HB_OT_TABLE (AAT, ltag)
 HB_OT_TABLE (AAT, feat)
-#endif
 
 /* OpenType color fonts. */
 HB_OT_ACCELERATOR (OT, CBDT)

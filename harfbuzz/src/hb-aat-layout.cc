@@ -28,15 +28,10 @@
 #include "hb.hh"
 
 #include "hb-aat-layout.hh"
-#include "hb-aat-fdsc-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-aat-layout-ankr-table.hh"
-#include "hb-aat-layout-bsln-table.hh" // Just so we compile it; unused otherwise.
-#include "hb-aat-layout-feat-table.hh"
-#include "hb-aat-layout-just-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-aat-layout-kerx-table.hh"
 #include "hb-aat-layout-morx-table.hh"
 #include "hb-aat-layout-trak-table.hh"
-#include "hb-aat-ltag-table.hh"
 
 
 /*
@@ -44,7 +39,6 @@
  */
 
 /* Note: This context is used for kerning, even without AAT, hence the condition. */
-#if !defined(HB_NO_AAT) || !defined(HB_NO_OT_KERN)
 
 AAT::hb_aat_apply_context_t::hb_aat_apply_context_t (const hb_ot_shape_plan_t *plan_,
 						     hb_font_t *font_,
@@ -72,7 +66,6 @@ void
 AAT::hb_aat_apply_context_t::set_ankr_table (const AAT::ankr *ankr_table_)
 { ankr_table = ankr_table_; }
 
-#endif
 
 
 /**
@@ -180,8 +173,6 @@ hb_aat_layout_find_feature_mapping (hb_tag_t tag)
 }
 #endif
 
-
-#ifndef HB_NO_AAT
 
 /*
  * mort/morx/kerx/trak
@@ -331,14 +322,14 @@ hb_aat_layout_track (const hb_ot_shape_plan_t *plan,
  *
  * Since: 2.2.0
  */
-unsigned int
-hb_aat_layout_get_feature_types (hb_face_t                    *face,
-				 unsigned int                  start_offset,
-				 unsigned int                 *feature_count, /* IN/OUT.  May be NULL. */
-				 hb_aat_layout_feature_type_t *features       /* OUT.     May be NULL. */)
-{
-  return face->table.feat->get_feature_types (start_offset, feature_count, features);
-}
+//unsigned int
+//hb_aat_layout_get_feature_types (hb_face_t                    *face,
+//				 unsigned int                  start_offset,
+//				 unsigned int                 *feature_count, /* IN/OUT.  May be NULL. */
+//				 hb_aat_layout_feature_type_t *features       /* OUT.     May be NULL. */)
+//{
+//  return face->table.feat->get_feature_types (start_offset, feature_count, features);
+//}
 
 /**
  * hb_aat_layout_feature_type_get_name_id:
@@ -349,12 +340,12 @@ hb_aat_layout_get_feature_types (hb_face_t                    *face,
  *
  * Since: 2.2.0
  */
-hb_ot_name_id_t
-hb_aat_layout_feature_type_get_name_id (hb_face_t                    *face,
-					hb_aat_layout_feature_type_t  feature_type)
-{
-  return face->table.feat->get_feature_name_id (feature_type);
-}
+//hb_ot_name_id_t
+//hb_aat_layout_feature_type_get_name_id (hb_face_t                    *face,
+//					hb_aat_layout_feature_type_t  feature_type)
+//{
+//  return face->table.feat->get_feature_name_id (feature_type);
+//}
 
 /**
  * hb_aat_layout_feature_type_get_selectors:
@@ -373,16 +364,13 @@ hb_aat_layout_feature_type_get_name_id (hb_face_t                    *face,
  *
  * Since: 2.2.0
  */
-unsigned int
-hb_aat_layout_feature_type_get_selector_infos (hb_face_t                             *face,
-					       hb_aat_layout_feature_type_t           feature_type,
-					       unsigned int                           start_offset,
-					       unsigned int                          *selector_count, /* IN/OUT.  May be NULL. */
-					       hb_aat_layout_feature_selector_info_t *selectors,      /* OUT.     May be NULL. */
-					       unsigned int                          *default_index   /* OUT.     May be NULL. */)
-{
-  return face->table.feat->get_selector_infos (feature_type, start_offset, selector_count, selectors, default_index);
-}
-
-
-#endif
+//unsigned int
+//hb_aat_layout_feature_type_get_selector_infos (hb_face_t                             *face,
+//					       hb_aat_layout_feature_type_t           feature_type,
+//					       unsigned int                           start_offset,
+//					       unsigned int                          *selector_count, /* IN/OUT.  May be NULL. */
+//					       hb_aat_layout_feature_selector_info_t *selectors,      /* OUT.     May be NULL. */
+//					       unsigned int                          *default_index   /* OUT.     May be NULL. */)
+//{
+//  return face->table.feat->get_selector_infos (feature_type, start_offset, selector_count, selectors, default_index);
+//}

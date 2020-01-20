@@ -63,7 +63,6 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
                               const hb_feature_t             *user_features,
                               unsigned int                    num_user_features);
 
-#ifndef HB_NO_AAT_SHAPE
 static inline bool
 _hb_apply_morx (hb_face_t *face)
 {
@@ -78,7 +77,6 @@ _hb_apply_morx (hb_face_t *face)
                                                0, nullptr, nullptr)) &&
          hb_aat_layout_has_substitution (face);
 }
-#endif
 
 hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *face,
                                               const hb_segment_properties_t *props) :
@@ -86,9 +84,7 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
                                                 props (*props),
                                                 map (face, props),
                                                 aat_map (face, props)
-#ifndef HB_NO_AAT_SHAPE
                                                 , apply_morx (_hb_apply_morx (face))
-#endif
 {
   shaper = hb_ot_shape_complex_categorize (this);
 
@@ -106,29 +102,21 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
   plan.props = props;
   plan.shaper = shaper;
   map.compile (plan.map, key);
-#ifndef HB_NO_AAT_SHAPE
   if (apply_morx)
     aat_map.compile (plan.aat_map);
-#endif
 
-#ifndef HB_NO_OT_SHAPE_FRACTIONS
   plan.frac_mask = plan.map.get_1_mask (HB_TAG ('f','r','a','c'));
   plan.numr_mask = plan.map.get_1_mask (HB_TAG ('n','u','m','r'));
   plan.dnom_mask = plan.map.get_1_mask (HB_TAG ('d','n','o','m'));
   plan.has_frac = plan.frac_mask || (plan.numr_mask && plan.dnom_mask);
-#endif
 
   plan.rtlm_mask = plan.map.get_1_mask (HB_TAG ('r','t','l','m'));
   hb_tag_t kern_tag = HB_DIRECTION_IS_HORIZONTAL (props.direction) ?
                       HB_TAG ('k','e','r','n') : HB_TAG ('v','k','r','n');
-#ifndef HB_NO_OT_KERN
   plan.kern_mask = plan.map.get_mask (kern_tag);
   plan.requested_kerning = !!plan.kern_mask;
-#endif
-#ifndef HB_NO_AAT_SHAPE
   plan.trak_mask = plan.map.get_mask (HB_TAG ('t','r','a','k'));
   plan.requested_tracking = !!plan.trak_mask;
-#endif
 
   bool has_gpos_kern = plan.map.get_feature_index (1, kern_tag) != HB_OT_LAYOUT_NO_FEATURE_INDEX;
   bool disable_gpos = plan.shaper->gpos_tag &&
@@ -145,9 +133,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
    * Decide who does substitutions. GSUB, morx, or fallback.
    */
 
-#ifndef HB_NO_AAT_SHAPE
   plan.apply_morx = apply_morx;
-#endif
 
   /*
    * Decide who does positioning. GPOS, kerx, kern, or fallback.
@@ -155,55 +141,37 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 
   if (0)
     ;
-#ifndef HB_NO_AAT_SHAPE
   else if (hb_options ().aat && hb_aat_layout_has_positioning (face))
     plan.apply_kerx = true;
-#endif
   else if (!apply_morx && !disable_gpos && hb_ot_layout_has_positioning (face))
     plan.apply_gpos = true;
-#ifndef HB_NO_AAT_SHAPE
   else if (hb_aat_layout_has_positioning (face))
     plan.apply_kerx = true;
-#endif
 
   if (!plan.apply_kerx && !has_gpos_kern)
   {
     /* Apparently Apple applies kerx if GPOS kern was not applied. */
-#ifndef HB_NO_AAT_SHAPE
     if (hb_aat_layout_has_positioning (face))
       plan.apply_kerx = true;
     else
-#endif
-#ifndef HB_NO_OT_KERN
     if (hb_ot_layout_has_kerning (face))
       plan.apply_kern = true;
-#endif
   }
 
   plan.zero_marks = script_zero_marks &&
                     !plan.apply_kerx &&
-                    (!plan.apply_kern
-#ifndef HB_NO_OT_KERN
-                     || !hb_ot_layout_has_machine_kerning (face)
-#endif
-                    );
+                    (!plan.apply_kern || !hb_ot_layout_has_machine_kerning (face));
   plan.has_gpos_mark = !!plan.map.get_1_mask (HB_TAG ('m','a','r','k'));
 
   plan.adjust_mark_positioning_when_zeroing = !plan.apply_gpos &&
                                               !plan.apply_kerx &&
-                                              (!plan.apply_kern
-#ifndef HB_NO_OT_KERN
-                                               || !hb_ot_layout_has_cross_kerning (face)
-#endif
-                                              );
+                                              (!plan.apply_kern || !hb_ot_layout_has_cross_kerning (face));
 
   plan.fallback_mark_positioning = plan.adjust_mark_positioning_when_zeroing &&
                                    script_fallback_mark_positioning;
 
-#ifndef HB_NO_AAT_SHAPE
   /* Currently we always apply trak. */
   plan.apply_trak = plan.requested_tracking && hb_aat_layout_has_tracking (face);
-#endif
 }
 
 bool
@@ -211,9 +179,7 @@ hb_ot_shape_plan_t::init0 (hb_face_t                     *face,
                            const hb_shape_plan_key_t     *key)
 {
   map.init ();
-#ifndef HB_NO_AAT_SHAPE
   aat_map.init ();
-#endif
 
   hb_ot_shape_planner_t planner (face,
                                  &key->props);
@@ -241,20 +207,16 @@ hb_ot_shape_plan_t::fini ()
     shaper->data_destroy (const_cast<void *> (data));
 
   map.fini ();
-#ifndef HB_NO_AAT_SHAPE
   aat_map.fini ();
-#endif
 }
 
 void
 hb_ot_shape_plan_t::substitute (hb_font_t   *font,
                                 hb_buffer_t *buffer) const
 {
-#ifndef HB_NO_AAT_SHAPE
   if (unlikely (apply_morx))
     hb_aat_layout_substitute (this, font, buffer);
   else
-#endif
     map.substitute (this, font, buffer);
 }
 
@@ -264,19 +226,13 @@ hb_ot_shape_plan_t::position (hb_font_t   *font,
 {
   if (this->apply_gpos)
     map.position (this, font, buffer);
-#ifndef HB_NO_AAT_SHAPE
   else if (this->apply_kerx)
     hb_aat_layout_position (this, font, buffer);
-#endif
-#ifndef HB_NO_OT_KERN
   else if (this->apply_kern)
     hb_ot_layout_kern (this, font, buffer);
-#endif
 
-#ifndef HB_NO_AAT_SHAPE
   if (this->apply_trak)
     hb_aat_layout_track (this, font, buffer);
-#endif
 }
 
 
@@ -331,22 +287,18 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
       break;
   }
 
-#ifndef HB_NO_OT_SHAPE_FRACTIONS
   /* Automatic fractions. */
   map->add_feature (HB_TAG ('f','r','a','c'));
   map->add_feature (HB_TAG ('n','u','m','r'));
   map->add_feature (HB_TAG ('d','n','o','m'));
-#endif
 
   /* Random! */
   map->enable_feature (HB_TAG ('r','a','n','d'), F_RANDOM, HB_OT_MAP_MAX_VALUE);
 
-#ifndef HB_NO_AAT_SHAPE
   /* Tracking.  We enable dummy feature here just to allow disabling
    * AAT 'trak' table using features.
    * https://github.com/harfbuzz/harfbuzz/issues/1303 */
   map->enable_feature (HB_TAG ('t','r','a','k'), F_HAS_FALLBACK);
-#endif
 
   map->enable_feature (HB_TAG ('H','A','R','F'));
 
@@ -379,7 +331,6 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
                       feature->value);
   }
 
-#ifndef HB_NO_AAT_SHAPE
   if (planner->apply_morx)
   {
     hb_aat_map_builder_t *aat_map = &planner->aat_map;
@@ -389,7 +340,6 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
       aat_map->add_feature (feature->tag, feature->value);
     }
   }
-#endif
 
   if (planner->shaper->override_features)
     planner->shaper->override_features (planner);
@@ -615,10 +565,6 @@ hb_ot_mirror_chars (const hb_ot_shape_context_t *c)
 static inline void
 hb_ot_shape_setup_masks_fraction (const hb_ot_shape_context_t *c)
 {
-#ifdef HB_NO_OT_SHAPE_FRACTIONS
-  return;
-#endif
-
   if (!(c->buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII) ||
       !c->plan->has_frac)
     return;
@@ -829,10 +775,8 @@ static inline void
 hb_ot_substitute_post (const hb_ot_shape_context_t *c)
 {
   hb_ot_hide_default_ignorables (c->buffer, c->font);
-#ifndef HB_NO_AAT_SHAPE
   if (c->plan->apply_morx)
     hb_aat_layout_remove_deleted_glyphs (c->buffer);
-#endif
 
   if (c->plan->shaper->postprocess_glyphs)
     c->plan->shaper->postprocess_glyphs (c->plan, c->buffer, c->font);
@@ -949,10 +893,8 @@ hb_ot_position_complex (const hb_ot_shape_context_t *c)
   /* Finish off.  Has to follow a certain order. */
   hb_ot_layout_position_finish_advances (c->font, c->buffer);
   hb_ot_zero_width_default_ignorables (c->buffer);
-#ifndef HB_NO_AAT_SHAPE
   if (c->plan->apply_morx)
     hb_aat_layout_zero_width_deleted_glyphs (c->buffer);
-#endif
   hb_ot_layout_position_finish_offsets (c->font, c->buffer);
 
   if (c->plan->fallback_mark_positioning)
