@@ -39,22 +39,4 @@ enum
 
 typedef unsigned int hb_ot_name_id_t;
 
-/**
- * hb_ot_name_entry_t:
- * @name_id: name ID
- * @language: language
- *
- * Structure representing a name ID in a particular language.
- *
- * Since: 2.1.0
- **/
-typedef struct hb_ot_name_entry_t
-{
-  hb_ot_name_id_t name_id;
-  /*< private >*/
-  hb_var_int_t    var;
-  /*< public >*/
-  hb_language_t   language;
-} hb_ot_name_entry_t;
-
 HB_END_DECLS
