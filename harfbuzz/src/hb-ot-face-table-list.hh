@@ -58,9 +58,6 @@ HB_OT_ACCELERATOR (OT, vmtx)
 /* TrueType outlines. */
 HB_OT_ACCELERATOR (OT, glyf)
 
-/* CFF outlines. */
-HB_OT_TABLE (OT, VORG)
-
 /* OpenType variations. */
 HB_OT_ACCELERATOR (OT, gvar)
 HB_OT_TABLE (OT, MVAR)

@@ -195,7 +195,6 @@ impl<'a> Drop for Font<'a> {
 
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ot_get_nominal_glyph(font_data: *const c_void, c: u32, glyph: *mut u32) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_index(char::try_from(c).unwrap()) {
@@ -205,7 +204,6 @@ pub extern "C" fn rb_ot_get_nominal_glyph(font_data: *const c_void, c: u32, glyp
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, variant: u32, glyph: *mut u32) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_variation_index(char::try_from(c).unwrap(), char::try_from(variant).unwrap()) {
@@ -215,7 +213,6 @@ pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, va
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ot_get_glyph_bbox(font_data: *const c_void, glyph: u32, extents: *mut ffi::hb_glyph_bbox_t) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_bounding_box(GlyphId(u16::try_from(glyph).unwrap())) {
@@ -231,7 +228,6 @@ pub extern "C" fn rb_ot_get_glyph_bbox(font_data: *const c_void, glyph: u32, ext
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ot_get_glyph_name(font_data: *const c_void, glyph: u32, mut raw_name: *mut c_char, len: u32) -> i32 {
     assert_ne!(len, 0);
 
@@ -254,14 +250,12 @@ pub extern "C" fn rb_ot_get_glyph_name(font_data: *const c_void, glyph: u32, mut
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ot_has_glyph_classes(font_data: *const c_void) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     font.has_glyph_classes() as i32
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ot_get_glyph_class(font_data: *const c_void, glyph: u32) -> u32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_class(GlyphId(u16::try_from(glyph).unwrap())) {
@@ -271,7 +265,6 @@ pub extern "C" fn rb_ot_get_glyph_class(font_data: *const c_void, glyph: u32) ->
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ot_get_mark_attachment_class(font_data: *const c_void, glyph: u32) -> u32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_mark_attachment_class(GlyphId(u16::try_from(glyph).unwrap())) {
@@ -281,7 +274,6 @@ pub extern "C" fn rb_ot_get_mark_attachment_class(font_data: *const c_void, glyp
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ot_is_mark_glyph(font_data: *const c_void, set_index: u32, glyph: u32) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.is_mark_glyph(GlyphId(u16::try_from(glyph).unwrap()), Some(set_index)) {
@@ -291,8 +283,19 @@ pub extern "C" fn rb_ot_is_mark_glyph(font_data: *const c_void, set_index: u32, 
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn hb_ot_get_var_axis_count(font_data: *const c_void) -> u16 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     font.variation_axes_count().unwrap_or(0)
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ot_has_vorg_data(font_data: *const c_void) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    font.glyph_y_origin(GlyphId(0)).is_some() as i32
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ot_get_y_origin(font_data: *const c_void, glyph: u32) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    font.glyph_y_origin(GlyphId(u16::try_from(glyph).unwrap())).unwrap_or(0) as i32
 }

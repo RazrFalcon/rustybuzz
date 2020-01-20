@@ -38,7 +38,6 @@
 #include "hb-ot-glyf-table.hh"
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-os2-table.hh"
-#include "hb-ot-vorg-table.hh"
 #include "hb-ot-color-cbdt-table.hh"
 #include "hb-ot-color-sbix-table.hh"
 
@@ -64,8 +63,13 @@ struct hb_glyph_bbox_t
 
 extern "C" {
   bool rb_ot_get_glyph_bbox (const void *rust_data,
-                                hb_codepoint_t glyph,
-                                hb_glyph_bbox_t *bbox);
+                             hb_codepoint_t glyph,
+                             hb_glyph_bbox_t *bbox);
+
+  bool rb_ot_has_vorg_data (const void *rust_data);
+
+  int rb_ot_get_y_origin (const void *rust_data,
+                          hb_codepoint_t glyph);
 }
 
 void
@@ -117,10 +121,9 @@ hb_ot_get_glyph_v_origin (hb_font_t *font,
 
   *x = font->get_glyph_h_advance (glyph) / 2;
 
-  const OT::VORG &VORG = *ot_face->VORG;
-  if (VORG.has_data ())
+  if (rb_ot_has_vorg_data (font->rust_data))
   {
-    *y = font->em_scale_y (VORG.get_y_origin (glyph));
+    *y = font->em_scale_y (rb_ot_get_y_origin (font->rust_data, glyph));
     return true;
   }
 
