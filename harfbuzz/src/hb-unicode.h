@@ -32,8 +32,7 @@
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_UNICODE_H
-#define HB_UNICODE_H
+#pragma once
 
 #include "hb-common.h"
 
@@ -172,5 +171,3 @@ typedef enum
 } hb_unicode_combining_class_t;
 
 HB_END_DECLS
-
-#endif /* HB_UNICODE_H */

@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_HHEA_TABLE_HH
-#define HB_OT_HHEA_TABLE_HH
+#pragma once
 
 #include "hb-open-type.hh"
 
@@ -96,6 +95,3 @@ struct vhea : _hea<vhea> {
 
 
 } /* namespace OT */
-
-
-#endif /* HB_OT_HHEA_TABLE_HH */

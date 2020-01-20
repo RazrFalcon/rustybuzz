@@ -28,8 +28,7 @@
 #error "Include <hb-ot.h> instead."
 #endif
 
-#ifndef HB_OT_SHAPE_H
-#define HB_OT_SHAPE_H
+#pragma once
 
 #include "hb.h"
 
@@ -49,5 +48,3 @@ hb_ot_shape_plan_collect_lookups (hb_shape_plan_t *shape_plan,
 				  hb_set_t        *lookup_indexes /* OUT */);
 
 HB_END_DECLS
-
-#endif /* HB_OT_SHAPE_H */

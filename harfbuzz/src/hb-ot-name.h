@@ -26,8 +26,7 @@
 #error "Include <hb-ot.h> instead."
 #endif
 
-#ifndef HB_OT_NAME_H
-#define HB_OT_NAME_H
+#pragma once
 
 #include "hb.h"
 
@@ -59,5 +58,3 @@ typedef struct hb_ot_name_entry_t
 } hb_ot_name_entry_t;
 
 HB_END_DECLS
-
-#endif /* HB_OT_NAME_H */

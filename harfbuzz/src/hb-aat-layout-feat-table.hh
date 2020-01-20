@@ -22,8 +22,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_AAT_LAYOUT_FEAT_TABLE_HH
-#define HB_AAT_LAYOUT_FEAT_TABLE_HH
+#pragma once
 
 #include "hb-aat-layout-common.hh"
 
@@ -210,5 +209,3 @@ struct feat
 };
 
 } /* namespace AAT */
-
-#endif /* HB_AAT_LAYOUT_FEAT_TABLE_HH */

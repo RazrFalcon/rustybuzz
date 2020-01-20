@@ -27,8 +27,7 @@
  * Adobe Author(s): Michiharu Ariza
  */
 
-#ifndef HB_OT_GLYF_TABLE_HH
-#define HB_OT_GLYF_TABLE_HH
+#pragma once
 
 #include "hb-open-type.hh"
 #include "hb-ot-head-table.hh"
@@ -916,5 +915,3 @@ struct glyf_accelerator_t : glyf::accelerator_t {};
 
 } /* namespace OT */
 
-
-#endif /* HB_OT_GLYF_TABLE_HH */

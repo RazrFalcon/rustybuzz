@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_COMPLEX_MYANMAR_MACHINE_HH
-#define HB_OT_SHAPE_COMPLEX_MYANMAR_MACHINE_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -427,4 +426,4 @@ _again:
 
 #undef found_syllable
 
-#endif /* HB_OT_SHAPE_COMPLEX_MYANMAR_MACHINE_HH */
+#pragma once

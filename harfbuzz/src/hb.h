@@ -24,8 +24,7 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H
-#define HB_H
+#pragma once
 #define HB_H_IN
 
 #include "hb-blob.h"
@@ -43,4 +42,3 @@ HB_BEGIN_DECLS
 HB_END_DECLS
 
 #undef HB_H_IN
-#endif /* HB_H */

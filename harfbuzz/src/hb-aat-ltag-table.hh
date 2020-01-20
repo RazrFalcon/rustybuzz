@@ -22,8 +22,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_AAT_LTAG_TABLE_HH
-#define HB_AAT_LTAG_TABLE_HH
+#pragma once
 
 #include "hb-open-type.hh"
 
@@ -87,6 +86,3 @@ struct ltag
 };
 
 } /* namespace AAT */
-
-
-#endif /* HB_AAT_LTAG_TABLE_HH */

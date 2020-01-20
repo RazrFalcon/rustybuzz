@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_LAYOUT_GSUBGPOS_HH
-#define HB_OT_LAYOUT_GSUBGPOS_HH
+#pragma once
 
 #include "hb.hh"
 #include "hb-buffer.hh"
@@ -2721,6 +2720,3 @@ struct GSUBGPOS
 
 
 } /* namespace OT */
-
-
-#endif /* HB_OT_LAYOUT_GSUBGPOS_HH */

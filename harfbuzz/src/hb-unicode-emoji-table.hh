@@ -18,8 +18,7 @@
  * # For documentation and usage, see http://www.unicode.org/reports/tr51
  */
 
-#ifndef HB_UNICODE_EMOJI_TABLE_HH
-#define HB_UNICODE_EMOJI_TABLE_HH
+#pragma once
 
 #include "hb-unicode.hh"
 
@@ -71,8 +70,5 @@ _hb_emoji_is_Extended_Pictographic (unsigned u)
 {
   return u<131069u?_hb_emoji_b1(192+_hb_emoji_u8,((_hb_emoji_u8[64+(((_hb_emoji_b4(_hb_emoji_u8,u>>6>>4))<<4)+((u>>6)&15u))])<<6)+((u)&63u)):0;
 }
-
-
-#endif /* HB_UNICODE_EMOJI_TABLE_HH */
 
 /* == End of generated table == */

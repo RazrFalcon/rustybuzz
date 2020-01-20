@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod, Roderick Sheeter
  */
 
-#ifndef HB_OT_HMTX_TABLE_HH
-#define HB_OT_HMTX_TABLE_HH
+#pragma once
 
 #include "hb-open-type.hh"
 #include "hb-ot-hhea-table.hh"
@@ -215,5 +214,3 @@ struct vmtx_accelerator_t : vmtx::accelerator_t {};
 
 } /* namespace OT */
 
-
-#endif /* HB_OT_HMTX_TABLE_HH */

@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_SANITIZE_HH
-#define HB_SANITIZE_HH
+#pragma once
 
 #include "hb.hh"
 #include "hb-blob.hh"
@@ -396,6 +395,3 @@ struct hb_sanitize_with_object_t
   private:
   hb_sanitize_context_t *c;
 };
-
-
-#endif /* HB_SANITIZE_HH */

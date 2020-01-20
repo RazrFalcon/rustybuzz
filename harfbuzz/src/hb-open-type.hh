@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OPEN_TYPE_HH
-#define HB_OPEN_TYPE_HH
+#pragma once
 
 #include "hb.hh"
 #include "hb-blob.hh"
@@ -882,6 +881,3 @@ struct VarSizedBinSearchArrayOf
 
 
 } /* namespace OT */
-
-
-#endif /* HB_OPEN_TYPE_HH */

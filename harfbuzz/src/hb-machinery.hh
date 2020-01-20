@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_MACHINERY_HH
-#define HB_MACHINERY_HH
+#pragma once
 
 #include "hb.hh"
 #include "hb-blob.hh"
@@ -301,6 +300,3 @@ struct hb_table_lazy_loader_t : hb_lazy_loader_t<T,
   hb_blob_t* get_blob () const { return this->get_stored (); }
 };
 
-
-
-#endif /* HB_MACHINERY_HH */

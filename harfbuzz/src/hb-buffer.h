@@ -31,8 +31,7 @@
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_BUFFER_H
-#define HB_BUFFER_H
+#pragma once
 
 #include "hb-common.h"
 #include "hb-unicode.h"
@@ -435,5 +434,3 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
 			    hb_buffer_serialize_flags_t flags);
 
 HB_END_DECLS
-
-#endif /* HB_BUFFER_H */

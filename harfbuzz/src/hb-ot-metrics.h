@@ -26,8 +26,7 @@
 #error "Include <hb-ot.h> instead."
 #endif
 
-#ifndef HB_OT_METRICS_H
-#define HB_OT_METRICS_H
+#pragma once
 
 #include "hb.h"
 
@@ -45,5 +44,3 @@ typedef enum {
 } hb_ot_metrics_tag_t;
 
 HB_END_DECLS
-
-#endif /* HB_OT_METRICS_H */

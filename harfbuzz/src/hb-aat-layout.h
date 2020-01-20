@@ -26,8 +26,7 @@
 #error "Include <hb-aat.h> instead."
 #endif
 
-#ifndef HB_AAT_LAYOUT_H
-#define HB_AAT_LAYOUT_H
+#pragma once
 
 #include "hb.h"
 
@@ -482,5 +481,3 @@ hb_aat_layout_has_tracking (hb_face_t *face);
 
 
 HB_END_DECLS
-
-#endif /* HB_AAT_LAYOUT_H */

@@ -24,8 +24,7 @@
  * Facebook Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_POOL_HH
-#define HB_POOL_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -97,6 +96,3 @@ struct hb_pool_t
   T* next;
   hb_vector_t<chunk_t *> chunks;
 };
-
-
-#endif /* HB_POOL_HH */

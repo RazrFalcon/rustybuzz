@@ -46,7 +46,6 @@
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
-#include "hb-ot-os2-table.hh"
 
 #include "hb-aat-layout-lcar-table.hh"
 #include "hb-aat-layout-morx-table.hh"
@@ -301,9 +300,9 @@ OT::GSUB::is_blacklisted (hb_blob_t *blob HB_UNUSED,
    * https://github.com/harfbuzz/harfbuzz/issues/1348
    * https://github.com/harfbuzz/harfbuzz/issues/1391
    */
-  if (unlikely (face->table.OS2->achVendID == HB_TAG ('M','U','T','F') &&
-		face->table.morx->has_data ()))
-    return true;
+//  if (unlikely (face->table.OS2->achVendID == HB_TAG ('M','U','T','F') &&
+//		face->table.morx->has_data ()))
+//    return true;
 #endif
 
   return false;

@@ -22,8 +22,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_AAT_LAYOUT_JUST_TABLE_HH
-#define HB_AAT_LAYOUT_JUST_TABLE_HH
+#pragma once
 
 #include "hb-aat-layout-common.hh"
 #include "hb-ot-layout.hh"
@@ -413,5 +412,3 @@ struct just
 
 } /* namespace AAT */
 
-
-#endif /* HB_AAT_LAYOUT_JUST_TABLE_HH */

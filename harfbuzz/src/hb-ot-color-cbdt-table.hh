@@ -24,8 +24,7 @@
  * Google Author(s): Seigo Nonaka
  */
 
-#ifndef HB_OT_COLOR_CBDT_TABLE_HH
-#define HB_OT_COLOR_CBDT_TABLE_HH
+#pragma once
 
 #include "hb-open-type.hh"
 #include "hb-font.hh"
@@ -532,5 +531,3 @@ struct CBDT
 struct CBDT_accelerator_t : CBDT::accelerator_t {};
 
 } /* namespace OT */
-
-#endif /* HB_OT_COLOR_CBDT_TABLE_HH */

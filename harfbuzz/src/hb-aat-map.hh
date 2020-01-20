@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_AAT_MAP_HH
-#define HB_AAT_MAP_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -86,6 +85,3 @@ struct hb_aat_map_builder_t
   public:
   hb_sorted_vector_t<feature_info_t> features;
 };
-
-
-#endif /* HB_AAT_MAP_HH */

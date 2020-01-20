@@ -24,8 +24,7 @@
  * Facebook Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_CONFIG_HH
-#define HB_CONFIG_HH
+#pragma once
 
 #if 0 /* Make test happy. */
 #include "hb.hh"
@@ -64,5 +63,3 @@
 #define HB_NDEBUG
 #endif
 #endif
-
-#endif /* HB_CONFIG_HH */

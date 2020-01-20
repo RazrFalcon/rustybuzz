@@ -28,8 +28,7 @@
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_BLOB_H
-#define HB_BLOB_H
+#pragma once
 
 #include "hb-common.h"
 
@@ -114,5 +113,3 @@ HB_EXTERN char *
 hb_blob_get_data_writable (hb_blob_t *blob, unsigned int *length);
 
 HB_END_DECLS
-
-#endif /* HB_BLOB_H */

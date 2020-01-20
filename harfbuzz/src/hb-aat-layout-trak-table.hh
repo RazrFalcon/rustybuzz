@@ -25,8 +25,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_AAT_LAYOUT_TRAK_TABLE_HH
-#define HB_AAT_LAYOUT_TRAK_TABLE_HH
+#pragma once
 
 #include "hb-aat-layout-common.hh"
 #include "hb-ot-layout.hh"
@@ -225,6 +224,3 @@ struct trak
 };
 
 } /* namespace AAT */
-
-
-#endif /* HB_AAT_LAYOUT_TRAK_TABLE_HH */

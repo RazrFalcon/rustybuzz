@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_COMPLEX_HH
-#define HB_OT_SHAPE_COMPLEX_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -392,6 +391,3 @@ hb_ot_shape_complex_categorize (const hb_ot_shape_planner_t *planner)
 	return &_hb_ot_complex_shaper_use;
   }
 }
-
-
-#endif /* HB_OT_SHAPE_COMPLEX_HH */

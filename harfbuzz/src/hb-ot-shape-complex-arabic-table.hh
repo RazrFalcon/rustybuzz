@@ -13,8 +13,7 @@
  * UnicodeData.txt does not have a header.
  */
 
-#ifndef HB_OT_SHAPE_COMPLEX_ARABIC_TABLE_HH
-#define HB_OT_SHAPE_COMPLEX_ARABIC_TABLE_HH
+#pragma once
 
 
 #define X	JOINING_TYPE_X
@@ -418,8 +417,5 @@ static const struct ligature_set_t {
     { 0xFE84u, 0xFEF8u }, /* ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE FINAL FORM */
   }},
 };
-
-
-#endif /* HB_OT_SHAPE_COMPLEX_ARABIC_TABLE_HH */
 
 /* == End of generated table == */

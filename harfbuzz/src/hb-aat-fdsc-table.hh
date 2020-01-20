@@ -22,8 +22,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_AAT_FDSC_TABLE_HH
-#define HB_AAT_FDSC_TABLE_HH
+#pragma once
 
 #include "hb-aat-layout-common.hh"
 #include "hb-open-type.hh"
@@ -122,5 +121,3 @@ struct fdsc
 
 } /* namespace AAT */
 
-
-#endif /* HB_AAT_FDSC_TABLE_HH */

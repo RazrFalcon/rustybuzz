@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_AAT_LAYOUT_COMMON_HH
-#define HB_AAT_LAYOUT_COMMON_HH
+#pragma once
 
 #include "hb-aat-layout.hh"
 #include "hb-open-type.hh"
@@ -836,6 +835,3 @@ struct hb_aat_apply_context_t :
 
 
 } /* namespace AAT */
-
-
-#endif /* HB_AAT_LAYOUT_COMMON_HH */

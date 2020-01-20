@@ -30,8 +30,7 @@
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_SHAPE_H
-#define HB_SHAPE_H
+#pragma once
 
 #include "hb-common.h"
 #include "hb-buffer.h"
@@ -54,5 +53,3 @@ hb_shape_full (hb_font_t          *font,
 	       const char * const *shaper_list);
 
 HB_END_DECLS
-
-#endif /* HB_SHAPE_H */

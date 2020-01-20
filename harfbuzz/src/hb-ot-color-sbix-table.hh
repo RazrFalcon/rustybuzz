@@ -22,8 +22,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_OT_COLOR_SBIX_TABLE_HH
-#define HB_OT_COLOR_SBIX_TABLE_HH
+#pragma once
 
 #include "hb-open-type.hh"
 
@@ -289,5 +288,3 @@ struct sbix
 struct sbix_accelerator_t : sbix::accelerator_t {};
 
 } /* namespace OT */
-
-#endif /* HB_OT_COLOR_SBIX_TABLE_HH */

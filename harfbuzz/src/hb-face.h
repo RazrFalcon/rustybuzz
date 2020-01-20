@@ -28,8 +28,7 @@
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_FACE_H
-#define HB_FACE_H
+#pragma once
 
 #include "hb-common.h"
 #include "hb-blob.h"
@@ -95,5 +94,3 @@ HB_EXTERN unsigned int
 hb_face_get_glyph_count (const hb_face_t *face);
 
 HB_END_DECLS
-
-#endif /* HB_FACE_H */

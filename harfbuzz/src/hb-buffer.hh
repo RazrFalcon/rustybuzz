@@ -27,8 +27,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_BUFFER_HH
-#define HB_BUFFER_HH
+#pragma once
 
 #include "hb.hh"
 #include "hb-unicode.hh"
@@ -414,6 +413,3 @@ _next_cluster (hb_buffer_t *buffer, unsigned int start)
 #define HB_BUFFER_ALLOCATE_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, allocate_var,   var ())
 #define HB_BUFFER_DEALLOCATE_VAR(b, var)	HB_BUFFER_XALLOCATE_VAR (b, deallocate_var, var ())
 #define HB_BUFFER_ASSERT_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, assert_var,     var ())
-
-
-#endif /* HB_BUFFER_HH */

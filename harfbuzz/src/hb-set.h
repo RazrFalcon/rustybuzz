@@ -28,8 +28,7 @@
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_SET_H
-#define HB_SET_H
+#pragma once
 
 #include "hb-common.h"
 
@@ -151,5 +150,3 @@ hb_set_previous_range (const hb_set_t *set,
 
 
 HB_END_DECLS
-
-#endif /* HB_SET_H */

@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_FACE_HH
-#define HB_FACE_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -105,5 +104,3 @@ struct hb_face_t
 };
 DECLARE_NULL_INSTANCE (hb_face_t);
 
-
-#endif /* HB_FACE_HH */

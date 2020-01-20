@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_AAT_LAYOUT_MORX_TABLE_HH
-#define HB_AAT_LAYOUT_MORX_TABLE_HH
+#pragma once
 
 #include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
@@ -1144,5 +1143,3 @@ struct mort : mortmorx<ObsoleteTypes, HB_AAT_TAG_mort> {};
 
 } /* namespace AAT */
 
-
-#endif /* HB_AAT_LAYOUT_MORX_TABLE_HH */

@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_MAP_HH
-#define HB_MAP_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -324,5 +323,3 @@ struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
 			       HB_MAP_VALUE_INVALID,
 			       HB_MAP_VALUE_INVALID> {};
 
-
-#endif /* HB_MAP_HH */

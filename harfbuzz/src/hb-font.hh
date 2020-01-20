@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_FONT_HH
-#define HB_FONT_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -277,6 +276,3 @@ struct hb_font_t
   { return (float) v * scale / face->get_upem (); }
 };
 DECLARE_NULL_INSTANCE (hb_font_t);
-
-
-#endif /* HB_FONT_HH */

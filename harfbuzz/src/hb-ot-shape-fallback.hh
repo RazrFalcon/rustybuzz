@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_FALLBACK_HH
-#define HB_OT_SHAPE_FALLBACK_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -44,6 +43,3 @@ HB_INTERNAL void _hb_ot_shape_fallback_mark_position_recategorize_marks (const h
 HB_INTERNAL void _hb_ot_shape_fallback_spaces (const hb_ot_shape_plan_t *plan,
 					       hb_font_t *font,
 					       hb_buffer_t  *buffer);
-
-
-#endif /* HB_OT_SHAPE_FALLBACK_HH */

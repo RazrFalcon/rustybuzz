@@ -28,8 +28,7 @@
 #error "Include <hb-ot.h> instead."
 #endif
 
-#ifndef HB_OT_LAYOUT_H
-#define HB_OT_LAYOUT_H
+#pragma once
 
 #include "hb.h"
 
@@ -323,5 +322,3 @@ hb_ot_layout_feature_get_characters (hb_face_t      *face,
  */
 
 HB_END_DECLS
-
-#endif /* HB_OT_LAYOUT_H */

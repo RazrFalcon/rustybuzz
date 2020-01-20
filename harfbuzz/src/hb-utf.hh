@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_UTF_HH
-#define HB_UTF_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -394,5 +393,3 @@ struct hb_latin1_t
     return text;
   }
 };
-
-#endif /* HB_UTF_HH */

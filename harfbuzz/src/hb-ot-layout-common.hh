@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_LAYOUT_COMMON_HH
-#define HB_OT_LAYOUT_COMMON_HH
+#pragma once
 
 #include "hb.hh"
 #include "hb-ot-layout.hh"
@@ -1880,6 +1879,3 @@ struct Device
 
 
 } /* namespace OT */
-
-
-#endif /* HB_OT_LAYOUT_COMMON_HH */

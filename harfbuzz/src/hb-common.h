@@ -30,8 +30,7 @@
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_COMMON_H
-#define HB_COMMON_H
+#pragma once
 
 #ifndef HB_EXTERN
 #define HB_EXTERN extern
@@ -433,5 +432,3 @@ typedef struct hb_variation_t {
 } hb_variation_t;
 
 HB_END_DECLS
-
-#endif /* HB_COMMON_H */

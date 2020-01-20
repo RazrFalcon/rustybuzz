@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_DISPATCH_HH
-#define HB_DISPATCH_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -53,6 +52,3 @@ struct hb_dispatch_context_t
   static return_t no_dispatch_return_value () { return Context::default_return_value (); }
   static bool stop_sublookup_iteration (const return_t r HB_UNUSED) { return false; }
 };
-
-
-#endif /* HB_DISPATCH_HH */

@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_SHAPER_HH
-#define HB_SHAPER_HH
+#pragma once
 
 #include "hb.hh"
 #include "hb-machinery.hh"
@@ -116,5 +115,3 @@ struct hb_shaper_object_dataset_t
   Object *parent_data; /* MUST be JUST before the lazy loaders. */
   hb_shaper_lazy_loader_t<Object, HB_SHAPER_ORDER(ot), typename hb_shaper_object_data_type_t<HB_SHAPER_ORDER(ot), Object>::value> ot;
 };
-
-#endif /* HB_SHAPER_HH */

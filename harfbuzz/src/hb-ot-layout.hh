@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_LAYOUT_HH
-#define HB_OT_LAYOUT_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -623,5 +622,3 @@ _hb_buffer_assert_gsubgpos_vars (hb_buffer_t *buffer)
 #undef unicode_props1
 #undef lig_props
 #undef glyph_props
-
-#endif /* HB_OT_LAYOUT_HH */

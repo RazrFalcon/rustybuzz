@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_SET_DIGEST_HH
-#define HB_SET_DIGEST_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -170,5 +169,3 @@ typedef hb_set_digest_combiner_t
   >
 > hb_set_digest_t;
 
-
-#endif /* HB_SET_DIGEST_HH */

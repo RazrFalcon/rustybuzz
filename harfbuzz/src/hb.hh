@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_HH
-#define HB_HH
+#pragma once
 
 
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC
@@ -597,5 +596,3 @@ struct BEInt<Type, 4>
 #include "hb-array.hh"	// Requires: hb-algs hb-iter hb-null
 #include "hb-vector.hh"	// Requires: hb-array hb-null
 #include "hb-object.hh"	// Requires: hb-atomic hb-mutex hb-vector
-
-#endif /* HB_HH */

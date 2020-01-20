@@ -25,8 +25,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_AAT_LAYOUT_KERX_TABLE_HH
-#define HB_AAT_LAYOUT_KERX_TABLE_HH
+#pragma once
 
 #include "hb-kern.hh"
 #include "hb-aat-layout-ankr-table.hh"
@@ -992,5 +991,3 @@ struct kerx : KerxTable<kerx>
 
 } /* namespace AAT */
 
-
-#endif /* HB_AAT_LAYOUT_KERX_TABLE_HH */

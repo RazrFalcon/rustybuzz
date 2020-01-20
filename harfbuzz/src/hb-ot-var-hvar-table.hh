@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_VAR_HVAR_TABLE_HH
-#define HB_OT_VAR_HVAR_TABLE_HH
+#pragma once
 
 #include "hb-ot-layout-common.hh"
 
@@ -168,6 +167,3 @@ struct VVAR : HVARVVAR {
 };
 
 } /* namespace OT */
-
-
-#endif /* HB_OT_VAR_HVAR_TABLE_HH */

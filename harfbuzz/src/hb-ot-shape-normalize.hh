@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_NORMALIZE_HH
-#define HB_OT_SHAPE_NORMALIZE_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -64,6 +63,3 @@ struct hb_ot_shape_normalize_context_t
 		   hb_codepoint_t  b,
 		   hb_codepoint_t *ab);
 };
-
-
-#endif /* HB_OT_SHAPE_NORMALIZE_HH */

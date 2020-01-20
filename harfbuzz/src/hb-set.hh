@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_SET_HH
-#define HB_SET_HH
+#pragma once
 
 #include "hb.hh"
 #include "hb-machinery.hh"
@@ -760,5 +759,3 @@ struct hb_set_t
   hb_codepoint_t major_start (unsigned int major) const { return major * page_t::PAGE_BITS; }
 };
 
-
-#endif /* HB_SET_HH */

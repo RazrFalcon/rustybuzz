@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_LAYOUT_GDEF_TABLE_HH
-#define HB_OT_LAYOUT_GDEF_TABLE_HH
+#pragma once
 
 #include "hb-ot-layout-common.hh"
 
@@ -448,6 +447,3 @@ struct GDEF
 struct GDEF_accelerator_t : GDEF::accelerator_t {};
 
 } /* namespace OT */
-
-
-#endif /* HB_OT_LAYOUT_GDEF_TABLE_HH */

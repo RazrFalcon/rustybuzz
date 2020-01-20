@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_COMPLEX_INDIC_HH
-#define HB_OT_SHAPE_COMPLEX_INDIC_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -430,6 +429,3 @@ struct hb_indic_would_substitute_feature_t
   unsigned int count;
   bool zero_context;
 };
-
-
-#endif /* HB_OT_SHAPE_COMPLEX_INDIC_HH */

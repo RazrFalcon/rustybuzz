@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_KERN_TABLE_HH
-#define HB_OT_KERN_TABLE_HH
+#pragma once
 
 #include "hb-aat-layout-kerx-table.hh"
 
@@ -349,6 +348,3 @@ struct kern
 };
 
 } /* namespace OT */
-
-
-#endif /* HB_OT_KERN_TABLE_HH */

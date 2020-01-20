@@ -37,7 +37,6 @@
 
 #include "hb-ot-glyf-table.hh"
 #include "hb-ot-hmtx-table.hh"
-#include "hb-ot-os2-table.hh"
 #include "hb-ot-color-cbdt-table.hh"
 #include "hb-ot-color-sbix-table.hh"
 

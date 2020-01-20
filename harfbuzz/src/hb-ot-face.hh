@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_FACE_HH
-#define HB_OT_FACE_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -69,6 +68,3 @@ struct hb_ot_face_t
 #undef HB_OT_ACCELERATOR
 #undef HB_OT_TABLE
 };
-
-
-#endif /* HB_OT_FACE_HH */

@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OPEN_FILE_HH
-#define HB_OPEN_FILE_HH
+#pragma once
 
 #include "hb-open-type.hh"
 #include "hb-ot-head-table.hh"
@@ -441,5 +440,3 @@ struct OpenTypeFontFile
 
 } /* namespace OT */
 
-
-#endif /* HB_OPEN_FILE_HH */

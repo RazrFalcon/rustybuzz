@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_MAP_HH
-#define HB_OT_MAP_HH
+#pragma once
 
 #include "hb-buffer.hh"
 
@@ -278,7 +277,3 @@ struct hb_ot_map_builder_t
   hb_vector_t<feature_info_t> feature_infos;
   hb_vector_t<stage_info_t> stages[2]; /* GSUB/GPOS */
 };
-
-
-
-#endif /* HB_OT_MAP_HH */

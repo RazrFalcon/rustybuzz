@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_BLOB_HH
-#define HB_BLOB_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -92,6 +91,3 @@ struct hb_blob_ptr_t
 
   hb_nonnull_ptr_t<hb_blob_t> b;
 };
-
-
-#endif /* HB_BLOB_HH */

@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_COMPLEX_MYANMAR_HH
-#define HB_OT_SHAPE_COMPLEX_MYANMAR_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -166,6 +165,3 @@ set_myanmar_properties (hb_glyph_info_t &info)
   info.myanmar_category() = cat;
   info.myanmar_position() = pos;
 }
-
-
-#endif /* HB_OT_SHAPE_COMPLEX_MYANMAR_HH */

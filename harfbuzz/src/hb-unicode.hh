@@ -28,8 +28,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_UNICODE_HH
-#define HB_UNICODE_HH
+#pragma once
 
 #include "hb.hh"
 #include "hb-ucd.hh"
@@ -244,6 +243,3 @@ struct hb_unicode_range_t
 
 HB_INTERNAL bool
 _hb_unicode_is_emoji_Extended_Pictographic (hb_codepoint_t cp);
-
-
-#endif /* HB_UNICODE_HH */

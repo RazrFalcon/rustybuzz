@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_LAYOUT_GSUB_TABLE_HH
-#define HB_OT_LAYOUT_GSUB_TABLE_HH
+#pragma once
 
 #include "hb-ot-layout-gsubgpos.hh"
 
@@ -1053,6 +1052,3 @@ template <typename context_t>
 
 
 } /* namespace OT */
-
-
-#endif /* HB_OT_LAYOUT_GSUB_TABLE_HH */

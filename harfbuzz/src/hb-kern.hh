@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_KERN_HH
-#define HB_KERN_HH
+#pragma once
 
 #include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
@@ -134,6 +133,3 @@ struct hb_kern_machine_t
 
 
 } /* namespace OT */
-
-
-#endif /* HB_KERN_HH */

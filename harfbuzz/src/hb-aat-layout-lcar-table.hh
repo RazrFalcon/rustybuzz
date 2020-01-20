@@ -21,8 +21,8 @@
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
-#ifndef HB_AAT_LAYOUT_LCAR_TABLE_HH
-#define HB_AAT_LAYOUT_LCAR_TABLE_HH
+
+#pragma once
 
 #include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
@@ -158,5 +158,3 @@ struct lcar
 };
 
 } /* namespace AAT */
-
-#endif /* HB_AAT_LAYOUT_LCAR_TABLE_HH */

@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_AAT_LAYOUT_HH
-#define HB_AAT_LAYOUT_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -76,6 +75,3 @@ HB_INTERNAL void
 hb_aat_layout_track (const hb_ot_shape_plan_t *plan,
 		     hb_font_t *font,
 		     hb_buffer_t *buffer);
-
-
-#endif /* HB_AAT_LAYOUT_HH */

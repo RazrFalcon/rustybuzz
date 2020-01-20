@@ -24,8 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_HH
-#define HB_OT_SHAPE_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -164,6 +163,3 @@ struct hb_ot_shape_planner_t
   HB_INTERNAL void compile (hb_ot_shape_plan_t           &plan,
 			    const hb_ot_shape_plan_key_t &key);
 };
-
-
-#endif /* HB_OT_SHAPE_HH */

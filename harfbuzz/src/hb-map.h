@@ -28,8 +28,7 @@
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_MAP_H
-#define HB_MAP_H
+#pragma once
 
 #include "hb-common.h"
 
@@ -88,5 +87,3 @@ hb_map_has (const hb_map_t *map,
 
 
 HB_END_DECLS
-
-#endif /* HB_MAP_H */

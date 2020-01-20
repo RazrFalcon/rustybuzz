@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_COMPLEX_USE_HH
-#define HB_OT_SHAPE_COMPLEX_USE_HH
+#pragma once
 
 #include "hb.hh"
 
@@ -102,4 +101,4 @@ enum use_category_t {
 HB_INTERNAL USE_TABLE_ELEMENT_TYPE
 hb_use_get_category (hb_codepoint_t u);
 
-#endif /* HB_OT_SHAPE_COMPLEX_USE_HH */
+#pragma once

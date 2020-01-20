@@ -26,8 +26,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_HEAD_TABLE_HH
-#define HB_OT_HEAD_TABLE_HH
+#pragma once
 
 #include "hb-open-type.hh"
 
@@ -162,6 +161,3 @@ struct head
 
 
 } /* namespace OT */
-
-
-#endif /* HB_OT_HEAD_TABLE_HH */

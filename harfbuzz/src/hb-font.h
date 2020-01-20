@@ -28,8 +28,7 @@
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_FONT_H
-#define HB_FONT_H
+#pragma once
 
 #include "hb-common.h"
 #include "hb-face.h"
@@ -164,5 +163,3 @@ HB_EXTERN unsigned int
 hb_font_get_glyph_count (hb_font_t *face);
 
 HB_END_DECLS
-
-#endif /* HB_FONT_H */
