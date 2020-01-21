@@ -2587,10 +2587,6 @@ struct hb_ot_layout_lookup_accelerator_t
 struct GSUBGPOS
 {
   bool has_data () const { return version.to_int (); }
-  unsigned int get_script_count () const
-  { return (this+scriptList).len; }
-  const Tag& get_script_tag (unsigned int i) const
-  { return (this+scriptList).get_tag (i); }
   unsigned int get_script_tags (unsigned int start_offset,
 				unsigned int *script_count /* IN/OUT */,
 				hb_tag_t     *script_tags /* OUT */) const
@@ -2604,14 +2600,8 @@ struct GSUBGPOS
   { return (this+featureList).len; }
   hb_tag_t get_feature_tag (unsigned int i) const
   { return i == Index::NOT_FOUND_INDEX ? HB_TAG_NONE : (this+featureList).get_tag (i); }
-  unsigned int get_feature_tags (unsigned int start_offset,
-				 unsigned int *feature_count /* IN/OUT */,
-				 hb_tag_t     *feature_tags /* OUT */) const
-  { return (this+featureList).get_tags (start_offset, feature_count, feature_tags); }
   const Feature& get_feature (unsigned int i) const
   { return (this+featureList)[i]; }
-  bool find_feature_index (hb_tag_t tag, unsigned int *index) const
-  { return (this+featureList).find_index (tag, index); }
 
   unsigned int get_lookup_count () const
   { return (this+lookupList).len; }
@@ -2621,9 +2611,6 @@ struct GSUBGPOS
   bool find_variations_index (const int *coords, unsigned int num_coords,
 			      unsigned int *index) const
   {
-#ifdef HB_NOVAR
-    return false;
-#endif
     return (version.to_int () >= 0x00010001u ? this+featureVars : Null(FeatureVariations))
 	    .find_index (coords, num_coords, index);
   }
@@ -2639,12 +2626,6 @@ struct GSUBGPOS
 	return *feature;
     }
     return get_feature (feature_index);
-  }
-
-  unsigned int get_size () const
-  {
-    return min_size +
-	   (version.to_int () >= 0x00010001u ? featureVars.static_size : 0);
   }
 
   template <typename TLookup>

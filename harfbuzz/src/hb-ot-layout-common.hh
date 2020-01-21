@@ -513,19 +513,10 @@ struct FeatureParams
 
 struct Feature
 {
-  unsigned int get_lookup_count () const
-  { return lookupIndex.len; }
-  hb_tag_t get_lookup_index (unsigned int i) const
-  { return lookupIndex[i]; }
   unsigned int get_lookup_indexes (unsigned int start_index,
 				   unsigned int *lookup_count /* IN/OUT */,
 				   unsigned int *lookup_tags /* OUT */) const
   { return lookupIndex.get_indexes (start_index, lookup_count, lookup_tags); }
-  void add_lookup_indexes_to (hb_set_t *lookup_indexes) const
-  { lookupIndex.add_indexes_to (lookup_indexes); }
-
-  const FeatureParams &get_feature_params () const
-  { return this+featureParams; }
 
   bool sanitize (hb_sanitize_context_t *c,
 		 const Record_sanitize_closure_t *closure = nullptr) const
