@@ -16,9 +16,19 @@ Embedded `harfbuzz` version: 2.6.4
 
 - Malformed font is an error now.
   `harfbuzz` accepts malformed fonts, but doesn't do shaping in this case.
-- Subseting is out of scope and removed.
+- Subsetting is out of scope and removed.
 - `harfbuzz` configured to not depend on system libraries, like glib, coretext, freetype, icu.
   So it relies only on internal implementation, which should be enough in most cases.
+
+## Notes about the port
+
+Thanks to Cargo, `rustybuzz` is pretty modular, unlike `harfbuzz`, which is basically a monolith.
+And it can be roughly split into these modules: shaping, subsetting, font parsing, Unicode functions,
+containers and utilities.
+While `rustybuzz` implements only the *shaping*. Font parsing is handled by the
+[ttf-parser](https://github.com/RazrFalcon/ttf-parser), which is not based on `harfbuzz` and
+has its own architecture. Unicode functions also handled by external crates.
+And most of the containers and utilities were already implemented in the Rust std.
 
 ## License
 
