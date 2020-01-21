@@ -38,33 +38,79 @@
  */
 
 /* Declare tables. */
-#define HB_OT_TABLE(Namespace, Type) namespace Namespace { struct Type; }
-#define HB_OT_ACCELERATOR(Namespace, Type) HB_OT_TABLE (Namespace, Type##_accelerator_t)
-#include "hb-ot-face-table-list.hh"
-#undef HB_OT_ACCELERATOR
-#undef HB_OT_TABLE
+namespace OT { struct head; }
+namespace OT { struct hhea; }
+namespace OT { struct OS2; }
+namespace OT { struct vhea; }
+namespace OT { struct glyf_accelerator_t; }
+namespace OT { struct gvar_accelerator_t; }
+namespace OT { struct kern; }
+namespace OT { struct GDEF_accelerator_t; }
+namespace OT { struct GSUB_accelerator_t; }
+namespace OT { struct GPOS_accelerator_t; }
+namespace AAT { struct morx; }
+namespace AAT { struct mort; }
+namespace AAT { struct kerx; }
+namespace AAT { struct ankr; }
+namespace AAT { struct trak; }
+namespace AAT { struct lcar; }
+namespace AAT { struct ltag; }
+namespace AAT { struct feat; }
+namespace OT { struct CBDT_accelerator_t; }
+namespace OT { struct sbix_accelerator_t; }
 
 struct hb_ot_face_t
 {
-  HB_INTERNAL void init0 (hb_face_t *face);
-  HB_INTERNAL void fini ();
+  void init0 (hb_face_t *face);
+  void fini ();
 
-#define HB_OT_TABLE_ORDER(Namespace, Type) \
-    HB_PASTE (ORDER_, HB_PASTE (Namespace, HB_PASTE (_, Type)))
   enum order_t
   {
     ORDER_ZERO,
-#define HB_OT_TABLE(Namespace, Type) HB_OT_TABLE_ORDER (Namespace, Type),
-#include "hb-ot-face-table-list.hh"
-#undef HB_OT_TABLE
+
+    ORDER_OT_head,
+    ORDER_OT_hhea,
+    ORDER_OT_OS2,
+    ORDER_OT_vhea,
+    ORDER_OT_glyf,
+    ORDER_OT_gvar,
+    ORDER_OT_kern,
+    ORDER_OT_GDEF,
+    ORDER_OT_GSUB,
+    ORDER_OT_GPOS,
+    ORDER_AAT_morx,
+    ORDER_AAT_mort,
+    ORDER_AAT_kerx,
+    ORDER_AAT_ankr,
+    ORDER_AAT_trak,
+    ORDER_AAT_lcar,
+    ORDER_AAT_ltag,
+    ORDER_AAT_feat,
+    ORDER_OT_CBDT,
+    ORDER_OT_sbix,
   };
 
-  hb_face_t *face; /* MUST be JUST before the lazy loaders. */
-#define HB_OT_TABLE(Namespace, Type) \
-  hb_table_lazy_loader_t<Namespace::Type, HB_OT_TABLE_ORDER (Namespace, Type)> Type;
-#define HB_OT_ACCELERATOR(Namespace, Type) \
-  hb_face_lazy_loader_t<Namespace::Type##_accelerator_t, HB_OT_TABLE_ORDER (Namespace, Type)> Type;
-#include "hb-ot-face-table-list.hh"
-#undef HB_OT_ACCELERATOR
-#undef HB_OT_TABLE
+  hb_face_t *face;
+
+  hb_table_lazy_loader_t<OT::head, ORDER_OT_head> head;
+  hb_table_lazy_loader_t<OT::hhea, ORDER_OT_hhea> hhea;
+  hb_table_lazy_loader_t<OT::OS2, ORDER_OT_OS2> OS2;
+  hb_table_lazy_loader_t<OT::vhea, ORDER_OT_vhea> vhea;
+  hb_face_lazy_loader_t<OT::glyf_accelerator_t, ORDER_OT_glyf> glyf;
+  hb_face_lazy_loader_t<OT::gvar_accelerator_t, ORDER_OT_gvar> gvar;
+  hb_table_lazy_loader_t<OT::kern, ORDER_OT_kern> kern;
+  hb_face_lazy_loader_t<OT::GDEF_accelerator_t, ORDER_OT_GDEF> GDEF;
+  hb_face_lazy_loader_t<OT::GSUB_accelerator_t, ORDER_OT_GSUB> GSUB;
+  hb_face_lazy_loader_t<OT::GPOS_accelerator_t, ORDER_OT_GPOS> GPOS;
+  hb_table_lazy_loader_t<AAT::morx, ORDER_AAT_morx> morx;
+  hb_table_lazy_loader_t<AAT::mort, ORDER_AAT_mort> mort;
+  hb_table_lazy_loader_t<AAT::kerx, ORDER_AAT_kerx> kerx;
+  hb_table_lazy_loader_t<AAT::ankr, ORDER_AAT_ankr> ankr;
+  hb_table_lazy_loader_t<AAT::trak, ORDER_AAT_trak> trak;
+  hb_table_lazy_loader_t<AAT::lcar, ORDER_AAT_lcar> lcar;
+  hb_table_lazy_loader_t<AAT::ltag, ORDER_AAT_ltag> ltag;
+  hb_table_lazy_loader_t<AAT::feat, ORDER_AAT_feat> feat;
+  hb_face_lazy_loader_t<OT::CBDT_accelerator_t, ORDER_OT_CBDT> CBDT;
+  hb_face_lazy_loader_t<OT::sbix_accelerator_t, ORDER_OT_sbix> sbix;
 };
+

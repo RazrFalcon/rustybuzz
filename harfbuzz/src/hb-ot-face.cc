@@ -38,13 +38,47 @@
 void hb_ot_face_t::init0 (hb_face_t *face)
 {
   this->face = face;
-#define HB_OT_TABLE(Namespace, Type) Type.init0 ();
-#include "hb-ot-face-table-list.hh"
-#undef HB_OT_TABLE
+  head.init0 ();
+  hhea.init0 ();
+  OS2.init0 ();
+  vhea.init0 ();
+  glyf.init0 ();
+  gvar.init0 ();
+  kern.init0 ();
+  GDEF.init0 ();
+  GSUB.init0 ();
+  GPOS.init0 ();
+  morx.init0 ();
+  mort.init0 ();
+  kerx.init0 ();
+  ankr.init0 ();
+  trak.init0 ();
+  lcar.init0 ();
+  ltag.init0 ();
+  feat.init0 ();
+  CBDT.init0 ();
+  sbix.init0 ();
 }
 void hb_ot_face_t::fini ()
 {
-#define HB_OT_TABLE(Namespace, Type) Type.fini ();
-#include "hb-ot-face-table-list.hh"
-#undef HB_OT_TABLE
+  head.fini ();
+  hhea.fini ();
+  OS2.fini ();
+  vhea.fini ();
+  glyf.fini ();
+  gvar.fini ();
+  kern.fini ();
+  GDEF.fini ();
+  GSUB.fini ();
+  GPOS.fini ();
+  morx.fini ();
+  mort.fini ();
+  kerx.fini ();
+  ankr.fini ();
+  trak.fini ();
+  lcar.fini ();
+  ltag.fini ();
+  feat.fini ();
+  CBDT.fini ();
+  sbix.fini ();
 }
