@@ -14,7 +14,7 @@ repository = "https://github.com/RazrFalcon/rustybuzz"
 [dependencies]
 bitflags = "1"
 smallvec = "1.1.0"
-ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "87c0dcb" }
+ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "c6dd8fc" }
 unicode-general-category = "0.2.0"
 unicode-normalization = "0.1.11"
 unicode-script = "0.5.0"

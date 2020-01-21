@@ -261,7 +261,7 @@ struct hb_font_t
 
   void mults_changed ()
   {
-    signed upem = face->get_upem ();
+    signed upem = hb_face_get_upem (face);
     x_mult = ((int64_t) x_scale << 16) / upem;
     y_mult = ((int64_t) y_scale << 16) / upem;
   }
@@ -271,8 +271,8 @@ struct hb_font_t
     return (hb_position_t) ((v * mult) >> 16);
   }
   hb_position_t em_scalef (float v, int scale)
-  { return (hb_position_t) roundf (v * scale / face->get_upem ()); }
+  { return (hb_position_t) roundf (v * scale / hb_face_get_upem (face)); }
   float em_fscale (int16_t v, int scale)
-  { return (float) v * scale / face->get_upem (); }
+  { return (float) v * scale / hb_face_get_upem (face); }
 };
 DECLARE_NULL_INSTANCE (hb_font_t);

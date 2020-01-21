@@ -446,3 +446,15 @@ pub extern "C" fn rb_face_get_glyph_count(font_data: *const c_void) -> u32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     font.number_of_glyphs() as u32
 }
+
+#[no_mangle]
+pub extern "C" fn rb_face_get_upem(font_data: *const c_void) -> u32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    font.units_per_em().unwrap_or(1000) as u32
+}
+
+#[no_mangle]
+pub extern "C" fn rb_face_index_to_loc_format(font_data: *const c_void) -> u32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    font.index_to_location_format().map(|f| f as u32).unwrap_or(0)
+}

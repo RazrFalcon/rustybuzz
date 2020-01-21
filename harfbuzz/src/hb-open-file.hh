@@ -29,7 +29,6 @@
 #pragma once
 
 #include "hb-open-type.hh"
-#include "hb-ot-head-table.hh"
 
 
 namespace OT {

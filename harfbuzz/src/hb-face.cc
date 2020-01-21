@@ -374,7 +374,7 @@ hb_face_set_upem (hb_face_t    *face,
 unsigned int
 hb_face_get_upem (const hb_face_t *face)
 {
-  return face->get_upem ();
+  return rb_face_get_upem (face->rust_data);
 }
 
 /**

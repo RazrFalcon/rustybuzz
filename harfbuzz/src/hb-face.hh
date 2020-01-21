@@ -71,19 +71,6 @@ struct hb_face_t
 
     return blob;
   }
-
-  HB_PURE_FUNC unsigned int get_upem () const
-  {
-    unsigned int ret = upem.get_relaxed ();
-    if (unlikely (!ret))
-    {
-      return load_upem ();
-    }
-    return ret;
-  }
-
-  private:
-  HB_INTERNAL unsigned int load_upem () const;
 };
 DECLARE_NULL_INSTANCE (hb_face_t);
 

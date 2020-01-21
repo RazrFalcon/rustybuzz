@@ -68,7 +68,6 @@ struct hb_ot_face_t
   {
     ORDER_ZERO,
 
-    ORDER_OT_head,
     ORDER_OT_hhea,
     ORDER_OT_OS2,
     ORDER_OT_vhea,
@@ -92,7 +91,6 @@ struct hb_ot_face_t
 
   hb_face_t *face;
 
-  hb_table_lazy_loader_t<OT::head, ORDER_OT_head> head;
   hb_table_lazy_loader_t<OT::hhea, ORDER_OT_hhea> hhea;
   hb_table_lazy_loader_t<OT::OS2, ORDER_OT_OS2> OS2;
   hb_table_lazy_loader_t<OT::vhea, ORDER_OT_vhea> vhea;

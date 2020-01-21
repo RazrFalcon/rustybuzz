@@ -187,4 +187,10 @@ hb_ot_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, hb_bool_
 HB_EXTERN unsigned int
 rb_face_get_glyph_count (const void *rust_data);
 
+HB_EXTERN unsigned int
+rb_face_get_upem (const void *rust_data);
+
+HB_EXTERN unsigned int
+rb_face_index_to_loc_format (const void *rust_data);
+
 HB_END_DECLS

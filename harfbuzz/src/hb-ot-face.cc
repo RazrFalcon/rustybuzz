@@ -38,7 +38,6 @@
 void hb_ot_face_t::init0 (hb_face_t *face)
 {
   this->face = face;
-  head.init0 ();
   hhea.init0 ();
   OS2.init0 ();
   vhea.init0 ();
@@ -61,7 +60,6 @@ void hb_ot_face_t::init0 (hb_face_t *face)
 }
 void hb_ot_face_t::fini ()
 {
-  head.fini ();
   hhea.fini ();
   OS2.fini ();
   vhea.fini ();

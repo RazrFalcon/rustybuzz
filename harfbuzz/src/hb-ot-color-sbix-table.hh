@@ -241,7 +241,7 @@ struct sbix
       /* Convert to font units. */
       if (strike_ppem)
       {
-	float scale = font->face->get_upem () / (float) strike_ppem;
+	float scale = hb_face_get_upem (font->face) / (float) strike_ppem;
 	extents->x_bearing = font->em_scalef_x (extents->x_bearing * scale);
 	extents->y_bearing = font->em_scalef_y (extents->y_bearing * scale);
 	extents->width = font->em_scalef_x (extents->width * scale);

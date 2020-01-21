@@ -31,7 +31,6 @@
 
 #include "hb-open-type.hh"
 #include "hb-ot-layout-common.hh"
-#include "hb-ot-head-table.hh"
 #include "hb-ot-var-gvar-table.hh"
 
 #include <float.h>
@@ -622,11 +621,10 @@ struct glyf
       loca_table = nullptr;
       glyf_table = nullptr;
       face = face_;
-      const OT::head &head = *face->table.head;
-      if (head.indexToLocFormat > 1 || head.glyphDataFormat > 0)
+      if (rb_face_index_to_loc_format (face) > 1)
 	/* Unknown format.  Leave num_glyphs=0, that takes care of disabling us. */
 	return;
-      short_offset = 0 == head.indexToLocFormat;
+      short_offset = 0 == rb_face_index_to_loc_format (face);
 
       loca_table = hb_sanitize_context_t ().reference_table<loca> (face);
       glyf_table = hb_sanitize_context_t ().reference_table<glyf> (face);
