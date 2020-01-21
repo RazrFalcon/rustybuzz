@@ -38,6 +38,10 @@ struct hb_ot_shape_plan_t;
 
 static const hb_tag_t table_tags[2] = {HB_OT_TAG_GSUB, HB_OT_TAG_GPOS};
 
+namespace OT { struct GSUB; }
+namespace OT { struct GPOS; }
+namespace OT { struct hb_ot_layout_lookup_accelerator_t; }
+
 struct hb_ot_map_t
 {
   friend struct hb_ot_map_builder_t;
@@ -150,6 +154,18 @@ struct hb_ot_map_t
     *plookups = end == start ? nullptr : &lookups[table_index][start];
     *lookup_count = end - start;
   }
+
+  inline void apply_gsub (const OT::GSUB &table,
+			  const OT::hb_ot_layout_lookup_accelerator_t *accels,
+			  const hb_ot_shape_plan_t *plan,
+			  hb_font_t *font,
+			  hb_buffer_t *buffer) const;
+
+  inline void apply_gpos (const OT::GPOS &table,
+			  const OT::hb_ot_layout_lookup_accelerator_t *accels,
+			  const hb_ot_shape_plan_t *plan,
+			  hb_font_t *font,
+			  hb_buffer_t *buffer) const;
 
   template <typename Proxy>
   HB_INTERNAL void apply (const Proxy &proxy,

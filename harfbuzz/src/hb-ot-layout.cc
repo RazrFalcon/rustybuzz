@@ -871,36 +871,6 @@ hb_ot_layout_position_finish_offsets (hb_font_t *font, hb_buffer_t *buffer)
  * access to GSUB/GPOS lookups.
  */
 
-
-struct GSUBProxy
-{
-  static constexpr unsigned table_index = 0u;
-  static constexpr bool inplace = false;
-  typedef OT::SubstLookup Lookup;
-
-  GSUBProxy (hb_face_t *face) :
-    table (*face->table.GSUB->table),
-    accels (face->table.GSUB->accels) {}
-
-  const OT::GSUB &table;
-  const OT::hb_ot_layout_lookup_accelerator_t *accels;
-};
-
-struct GPOSProxy
-{
-  static constexpr unsigned table_index = 1u;
-  static constexpr bool inplace = true;
-  typedef OT::PosLookup Lookup;
-
-  GPOSProxy (hb_face_t *face) :
-    table (*face->table.GPOS->table),
-    accels (face->table.GPOS->accels) {}
-
-  const OT::GPOS &table;
-  const OT::hb_ot_layout_lookup_accelerator_t *accels;
-};
-
-
 static inline bool
 apply_forward (OT::hb_ot_apply_context_t *c,
 	       const OT::hb_ot_layout_lookup_accelerator_t &accel)
@@ -927,7 +897,7 @@ apply_forward (OT::hb_ot_apply_context_t *c,
 
 static inline bool
 apply_backward (OT::hb_ot_apply_context_t *c,
-	       const OT::hb_ot_layout_lookup_accelerator_t &accel)
+	        const OT::hb_ot_layout_lookup_accelerator_t &accel)
 {
   bool ret = false;
   hb_buffer_t *buffer = c->buffer;
@@ -946,11 +916,10 @@ apply_backward (OT::hb_ot_apply_context_t *c,
   return ret;
 }
 
-template <typename Proxy>
 static inline void
-apply_string (OT::hb_ot_apply_context_t *c,
-	      const typename Proxy::Lookup &lookup,
-	      const OT::hb_ot_layout_lookup_accelerator_t &accel)
+apply_string_gsub (OT::hb_ot_apply_context_t *c,
+		   const OT::SubstLookup &lookup,
+		   const OT::hb_ot_layout_lookup_accelerator_t &accel)
 {
   hb_buffer_t *buffer = c->buffer;
 
@@ -962,41 +931,36 @@ apply_string (OT::hb_ot_apply_context_t *c,
   if (likely (!lookup.is_reverse ()))
   {
     /* in/out forward substitution/positioning */
-    if (Proxy::table_index == 0u)
-      buffer->clear_output ();
+    buffer->clear_output ();
     buffer->idx = 0;
 
     bool ret;
     ret = apply_forward (c, accel);
     if (ret)
     {
-      if (!Proxy::inplace)
-	buffer->swap_buffers ();
-      else
-	assert (!buffer->has_separate_output ());
+      buffer->swap_buffers ();
     }
   }
   else
   {
     /* in-place backward substitution/positioning */
-    if (Proxy::table_index == 0u)
-      buffer->remove_output ();
+    buffer->remove_output ();
     buffer->idx = buffer->len - 1;
 
     apply_backward (c, accel);
   }
 }
 
-template <typename Proxy>
-inline void hb_ot_map_t::apply (const Proxy &proxy,
-				const hb_ot_shape_plan_t *plan,
-				hb_font_t *font,
-				hb_buffer_t *buffer) const
+inline void hb_ot_map_t::apply_gsub (const OT::GSUB &table,
+				     const OT::hb_ot_layout_lookup_accelerator_t *accels,
+				     const hb_ot_shape_plan_t *plan,
+				     hb_font_t *font,
+				     hb_buffer_t *buffer) const
 {
-  const unsigned int table_index = proxy.table_index;
+  const unsigned int table_index = 0;
   unsigned int i = 0;
   OT::hb_ot_apply_context_t c (table_index, font, buffer);
-  c.set_recurse_func (Proxy::Lookup::apply_recurse_func);
+  c.set_recurse_func (OT::SubstLookup::apply_recurse_func);
 
   for (unsigned int stage_index = 0; stage_index < stages[table_index].length; stage_index++) {
     const stage_map_t *stage = &stages[table_index][stage_index];
@@ -1012,9 +976,78 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
 	c.set_random (true);
 	buffer->unsafe_to_break_all ();
       }
-      apply_string<Proxy> (&c,
-			   proxy.table.get_lookup (lookup_index),
-			   proxy.accels[lookup_index]);
+      apply_string_gsub (&c,
+			 table.get_lookup (lookup_index),
+			 accels[lookup_index]);
+    }
+
+    if (stage->pause_func)
+    {
+      buffer->clear_output ();
+      stage->pause_func (plan, font, buffer);
+    }
+  }
+}
+
+static inline void
+apply_string_gpos (OT::hb_ot_apply_context_t *c,
+		   const OT::PosLookup &lookup,
+		   const OT::hb_ot_layout_lookup_accelerator_t &accel)
+{
+  hb_buffer_t *buffer = c->buffer;
+
+  if (unlikely (!buffer->len || !c->lookup_mask))
+    return;
+
+  c->set_lookup_props (lookup.get_props ());
+
+  if (likely (!lookup.is_reverse ()))
+  {
+    buffer->idx = 0;
+
+    bool ret;
+    ret = apply_forward (c, accel);
+    if (ret)
+    {
+	assert (!buffer->has_separate_output ());
+    }
+  }
+  else
+  {
+    buffer->idx = buffer->len - 1;
+
+    apply_backward (c, accel);
+  }
+}
+
+inline void hb_ot_map_t::apply_gpos (const OT::GPOS &table,
+				     const OT::hb_ot_layout_lookup_accelerator_t *accels,
+				     const hb_ot_shape_plan_t *plan,
+				     hb_font_t *font,
+				     hb_buffer_t *buffer) const
+{
+  const unsigned int table_index = 1;
+  unsigned int i = 0;
+  OT::hb_ot_apply_context_t c (table_index, font, buffer);
+  c.set_recurse_func (OT::PosLookup::apply_recurse_func);
+
+  for (unsigned int stage_index = 0; stage_index < stages[table_index].length; stage_index++) {
+    const stage_map_t *stage = &stages[table_index][stage_index];
+    for (; i < stage->last_lookup; i++)
+    {
+      unsigned int lookup_index = lookups[table_index][i].index;
+      c.set_lookup_index (lookup_index);
+      c.set_lookup_mask (lookups[table_index][i].mask);
+      c.set_auto_zwj (lookups[table_index][i].auto_zwj);
+      c.set_auto_zwnj (lookups[table_index][i].auto_zwnj);
+      if (lookups[table_index][i].random)
+      {
+	c.set_random (true);
+	buffer->unsafe_to_break_all ();
+      }
+      apply_string_gpos (&c,
+			 table.get_lookup (lookup_index),
+			 accels[lookup_index]);
     }
 
     if (stage->pause_func)
@@ -1027,14 +1060,12 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
 
 void hb_ot_map_t::substitute (const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
-  GSUBProxy proxy (font->face);
-  apply (proxy, plan, font, buffer);
+  apply_gsub (*font->face->table.GSUB->table, font->face->table.GSUB->accels, plan, font, buffer);
 }
 
 void hb_ot_map_t::position (const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
-  GPOSProxy proxy (font->face);
-  apply (proxy, plan, font, buffer);
+  apply_gpos (*font->face->table.GPOS->table, font->face->table.GPOS->accels, plan, font, buffer);
 }
 
 void
@@ -1042,7 +1073,7 @@ hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
 				const OT::SubstLookup &lookup,
 				const OT::hb_ot_layout_lookup_accelerator_t &accel)
 {
-  apply_string<GSUBProxy> (c, lookup, accel);
+  apply_string_gsub(c, lookup, accel);
 }
 
 #endif
