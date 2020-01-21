@@ -38,10 +38,6 @@
  */
 
 /* Declare tables. */
-namespace OT { struct head; }
-namespace OT { struct hhea; }
-namespace OT { struct OS2; }
-namespace OT { struct vhea; }
 namespace OT { struct glyf_accelerator_t; }
 namespace OT { struct gvar_accelerator_t; }
 namespace OT { struct kern; }
@@ -68,9 +64,6 @@ struct hb_ot_face_t
   {
     ORDER_ZERO,
 
-    ORDER_OT_hhea,
-    ORDER_OT_OS2,
-    ORDER_OT_vhea,
     ORDER_OT_glyf,
     ORDER_OT_gvar,
     ORDER_OT_kern,
@@ -91,9 +84,6 @@ struct hb_ot_face_t
 
   hb_face_t *face;
 
-  hb_table_lazy_loader_t<OT::hhea, ORDER_OT_hhea> hhea;
-  hb_table_lazy_loader_t<OT::OS2, ORDER_OT_OS2> OS2;
-  hb_table_lazy_loader_t<OT::vhea, ORDER_OT_vhea> vhea;
   hb_face_lazy_loader_t<OT::glyf_accelerator_t, ORDER_OT_glyf> glyf;
   hb_face_lazy_loader_t<OT::gvar_accelerator_t, ORDER_OT_gvar> gvar;
   hb_table_lazy_loader_t<OT::kern, ORDER_OT_kern> kern;
