@@ -359,65 +359,84 @@ pub unsafe extern "C" fn rb_ot_metrics_get_position_common(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_hvar_advance_var(
+pub extern "C" fn rb_font_get_advance(font_data: *const c_void, glyph: u32, is_vertical: bool) -> u32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let glyph = GlyphId(u16::try_from(glyph).unwrap());
+
+    let pem = font.units_per_em().unwrap_or(1000);
+
+    if is_vertical {
+        font.glyph_ver_advance(glyph).unwrap_or(pem) as u32
+    } else {
+        font.glyph_hor_advance(glyph).unwrap_or(pem) as u32
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_font_get_advance_var(
+    hb_font: *mut ffi::hb_font_t,
     font_data: *const c_void,
-    glyph: u32,
+    hb_glyph: u32,
+    is_vertical: bool,
     coords: *const i32,
     coord_count: u32,
-) -> f32 {
+) -> u32 {
+    let advance = rb_font_get_advance(font_data, hb_glyph, is_vertical);
+
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    font.glyph_hor_advance_variation(glyph, coords).unwrap_or(0.0)
+    let glyph = GlyphId(u16::try_from(hb_glyph).unwrap());
+
+    if coords.is_empty() {
+        return advance;
+    }
+
+    // TODO: check advance for negative values
+    if !is_vertical && font.has_table(ttf_parser::TableName::HorizontalMetricsVariations) {
+        return (advance as f32 + font.glyph_hor_advance_variation(glyph, coords).unwrap_or(0.0).round()) as u32;
+    } else if is_vertical && font.has_table(ttf_parser::TableName::VerticalMetricsVariations) {
+        return (advance as f32 + font.glyph_ver_advance_variation(glyph, coords).unwrap_or(0.0).round()) as u32;
+    }
+
+    unsafe { ffi::hb_ot_glyf_get_advance_var(hb_font, hb_glyph, is_vertical) }
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_hvar_side_bearing_var(
+pub extern "C" fn rb_font_get_side_bearing(font_data: *const c_void, glyph: u32, is_vertical: bool) -> i32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let glyph = GlyphId(u16::try_from(glyph).unwrap());
+
+    if is_vertical {
+        font.glyph_ver_side_bearing(glyph).unwrap_or(0) as i32
+    } else {
+        font.glyph_hor_side_bearing(glyph).unwrap_or(0) as i32
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_font_get_side_bearing_var(
+    hb_font: *mut ffi::hb_font_t,
     font_data: *const c_void,
-    glyph: u32,
+    hb_glyph: u32,
+    is_vertical: bool,
     coords: *const i32,
     coord_count: u32,
-) -> f32 {
+) -> i32 {
+    let side_bearing = rb_font_get_side_bearing(font_data, hb_glyph, is_vertical);
+
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    font.glyph_hor_side_bearing_variation(glyph, coords).unwrap_or(0.0)
-}
+    let glyph = GlyphId(u16::try_from(hb_glyph).unwrap());
 
-#[no_mangle]
-pub extern "C" fn rb_ot_get_vvar_advance_var(
-    font_data: *const c_void,
-    glyph: u32,
-    coords: *const i32,
-    coord_count: u32,
-) -> f32 {
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
-    let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    font.glyph_ver_advance_variation(glyph, coords).unwrap_or(0.0)
-}
+    if coords.is_empty() {
+        return side_bearing;
+    }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_get_vvar_side_bearing_var(
-    font_data: *const c_void,
-    glyph: u32,
-    coords: *const i32,
-    coord_count: u32,
-) -> f32 {
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
-    let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    font.glyph_ver_side_bearing_variation(glyph, coords).unwrap_or(0.0)
-}
+    if !is_vertical && font.has_table(ttf_parser::TableName::HorizontalMetricsVariations) {
+        return (side_bearing as f32 + font.glyph_hor_side_bearing_variation(glyph, coords).unwrap_or(0.0).round()) as i32;
+    } else if is_vertical && font.has_table(ttf_parser::TableName::VerticalMetricsVariations) {
+        return (side_bearing as f32 + font.glyph_ver_side_bearing_variation(glyph, coords).unwrap_or(0.0).round()) as i32;
+    }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_has_hvar(font_data: *const c_void) -> i32 {
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
-    font.has_table(ttf_parser::TableName::HorizontalMetricsVariations) as i32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_has_vvar(font_data: *const c_void) -> i32 {
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
-    font.has_table(ttf_parser::TableName::VerticalMetricsVariations) as i32
+    unsafe { ffi::hb_ot_glyf_get_side_bearing_var(hb_font, hb_glyph, is_vertical) }
 }

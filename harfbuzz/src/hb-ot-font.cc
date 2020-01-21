@@ -36,7 +36,6 @@
 #include "hb-ot-font.hh"
 
 #include "hb-ot-glyf-table.hh"
-#include "hb-ot-hmtx-table.hh"
 #include "hb-ot-color-cbdt-table.hh"
 #include "hb-ot-color-sbix-table.hh"
 
@@ -85,12 +84,9 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
 			    hb_position_t *first_advance,
 			    unsigned advance_stride)
 {
-  const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
-  const OT::hmtx_accelerator_t &hmtx = *ot_face->hmtx;
-
   for (unsigned int i = 0; i < count; i++)
   {
-    *first_advance = font->em_scale_x (hmtx.get_advance (*first_glyph, font));
+    *first_advance = font->em_scale_x (rb_font_get_advance_var (font, font->rust_data, *first_glyph, false, font->coords, font->num_coords));
     first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
     first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
   }
@@ -104,12 +100,9 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
 			    hb_position_t *first_advance,
 			    unsigned advance_stride)
 {
-  const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
-  const OT::vmtx_accelerator_t &vmtx = *ot_face->vmtx;
-
   for (unsigned int i = 0; i < count; i++)
   {
-    *first_advance = font->em_scale_y (-(int) vmtx.get_advance (*first_glyph, font));
+    *first_advance = font->em_scale_y (-(int) rb_font_get_advance_var (font, font->rust_data, *first_glyph, true, font->coords, font->num_coords));
     first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
     first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
   }
@@ -135,8 +128,7 @@ hb_ot_get_glyph_v_origin (hb_font_t *font,
   hb_glyph_extents_t extents = {0};
   if (ot_face->glyf->get_extents (font, glyph, &extents))
   {
-    const OT::vmtx_accelerator_t &vmtx = *ot_face->vmtx;
-    hb_position_t tsb = vmtx.get_side_bearing (font, glyph);
+    hb_position_t tsb = rb_font_get_side_bearing_var (font, font->rust_data, glyph, true, font->coords, font->num_coords);
     *y = extents.y_bearing + font->em_scale_y (tsb);
     return true;
   }
@@ -208,13 +200,13 @@ hb_ot_get_font_v_extents (hb_font_t *font, hb_font_extents_t *metrics)
 }
 
 int
-_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
+hb_ot_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical)
 {
   return font->face->table.glyf->get_side_bearing_var (font, glyph, is_vertical);
 }
 
 unsigned
-_glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
+hb_ot_glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical)
 {
   return font->face->table.glyf->get_advance_var (font, glyph, is_vertical);
 }

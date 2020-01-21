@@ -32,7 +32,6 @@
 #include "hb-open-type.hh"
 #include "hb-ot-layout-common.hh"
 #include "hb-ot-head-table.hh"
-#include "hb-ot-hmtx-table.hh"
 #include "hb-ot-var-gvar-table.hh"
 
 #include <float.h>
@@ -262,7 +261,7 @@ struct glyf
       {
 	/* Undocumented rasterizer behavior: shift glyph to the left by (lsb - xMin), i.e., xMin = lsb */
 	/* extents->x_bearing = hb_min (glyph_header.xMin, glyph_header.xMax); */
-	extents->x_bearing = font->em_scale_x (font->face->table.hmtx->get_side_bearing (gid));
+	extents->x_bearing = font->em_scale_x (rb_font_get_side_bearing (font->rust_data, gid, false));
 	extents->y_bearing = font->em_scale_y (hb_max (yMin, yMax));
 	extents->width     = font->em_scale_x (hb_max (xMin, xMax) - hb_min (xMin, xMax));
 	extents->height    = font->em_scale_y (hb_min (yMin, yMax) - hb_max (yMin, yMax));
@@ -655,10 +654,10 @@ struct glyf
     void init_phantom_points (hb_codepoint_t gid, hb_array_t<contour_point_t> &phantoms /* IN/OUT */) const
     {
       const Glyph &glyph = glyph_for_gid (gid);
-      int h_delta = (int) glyph.get_header ().xMin - face->table.hmtx->get_side_bearing (gid);
-      int v_orig  = (int) glyph.get_header ().yMax + face->table.vmtx->get_side_bearing (gid);
-      unsigned int h_adv = face->table.hmtx->get_advance (gid);
-      unsigned int v_adv = face->table.vmtx->get_advance (gid);
+      int h_delta = (int) glyph.get_header ().xMin - rb_font_get_side_bearing (face->rust_data, gid, false);
+      int v_orig  = (int) glyph.get_header ().yMax + rb_font_get_side_bearing (face->rust_data, gid, true);
+      unsigned int h_adv = rb_font_get_advance (face->rust_data, gid, false);
+      unsigned int v_adv = rb_font_get_advance (face->rust_data, gid, true);
 
       phantoms[PHANTOM_LEFT].x = h_delta;
       phantoms[PHANTOM_RIGHT].x = h_adv + h_delta;
@@ -822,7 +821,7 @@ struct glyf
 	success = get_var_metrics (font, gid, phantoms);
 
       if (unlikely (!success))
-	return is_vertical ? face->table.vmtx->get_advance (gid) : face->table.hmtx->get_advance (gid);
+	return rb_font_get_advance (face->rust_data, gid, is_vertical);
 
       if (is_vertical)
 	return roundf (phantoms[PHANTOM_TOP].y - phantoms[PHANTOM_BOTTOM].y);
@@ -837,7 +836,7 @@ struct glyf
       phantoms.resize (PHANTOM_COUNT);
 
       if (unlikely (!get_var_extents_and_phantoms (font, gid, &extents, &phantoms)))
-	return is_vertical ? face->table.vmtx->get_side_bearing (gid) : face->table.hmtx->get_side_bearing (gid);
+	return rb_font_get_side_bearing (face->rust_data, gid, is_vertical);
 
       return is_vertical ? ceil (phantoms[PHANTOM_TOP].y) - extents.y_bearing : floor (phantoms[PHANTOM_LEFT].x);
     }

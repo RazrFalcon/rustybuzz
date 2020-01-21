@@ -162,4 +162,26 @@ hb_font_get_var_coords_normalized (hb_font_t *font,
 HB_EXTERN unsigned int
 hb_font_get_glyph_count (hb_font_t *face);
 
+HB_EXTERN unsigned
+rb_font_get_advance (const void *rust_data, hb_codepoint_t glyph, hb_bool_t is_vertical);
+
+HB_EXTERN unsigned
+rb_font_get_advance_var (hb_font_t *font, const void *rust_data,
+			 hb_codepoint_t glyph, hb_bool_t is_vertical,
+			 const int *coords, unsigned int coord_count);
+
+HB_EXTERN int
+rb_font_get_side_bearing (const void *rust_data, hb_codepoint_t glyph, hb_bool_t is_vertical);
+
+HB_EXTERN int
+rb_font_get_side_bearing_var (hb_font_t *font, const void *rust_data,
+			      hb_codepoint_t glyph, hb_bool_t is_vertical,
+			      const int *coords, unsigned int coord_count);
+
+HB_EXTERN unsigned
+hb_ot_glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical);
+
+HB_EXTERN int
+hb_ot_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical);
+
 HB_END_DECLS
