@@ -983,10 +983,6 @@ hb_ot_shape_internal (hb_ot_shape_context_t *c)
   hb_ot_position (c);
   hb_ot_substitute_post (c);
 
-//  for (uint i = 0; i < c->buffer->len; ++i) {
-//      printf("%i %i\n", c->buffer->info[i].cluster, c->buffer->info[i].codepoint);
-//  }
-
   hb_propagate_flags (c->buffer);
 
   _hb_buffer_deallocate_unicode_vars (c->buffer);
@@ -1011,72 +1007,5 @@ _hb_ot_shape (hb_shape_plan_t    *shape_plan,
 
   return true;
 }
-
-
-/**
- * hb_ot_shape_plan_collect_lookups:
- *
- * Since: 0.9.7
- **/
-void
-hb_ot_shape_plan_collect_lookups (hb_shape_plan_t *shape_plan,
-                                  hb_tag_t         table_tag,
-                                  hb_set_t        *lookup_indexes /* OUT */)
-{
-  shape_plan->ot.collect_lookups (table_tag, lookup_indexes);
-}
-
-
-/* TODO Move this to hb-ot-shape-normalize, make it do decompose, and make it public. */
-static void
-add_char (hb_font_t          *font,
-          hb_bool_t           mirror,
-          hb_codepoint_t      u,
-          hb_set_t           *glyphs)
-{
-  hb_codepoint_t glyph;
-  if (font->get_nominal_glyph (u, &glyph))
-    glyphs->add (glyph);
-  if (mirror)
-  {
-    hb_codepoint_t m = hb_ucd_mirroring (u);
-    if (m != u && font->get_nominal_glyph (m, &glyph))
-      glyphs->add (glyph);
-  }
-}
-
-
-/**
- * hb_ot_shape_glyphs_closure:
- *
- * Since: 0.9.2
- **/
-void
-hb_ot_shape_glyphs_closure (hb_font_t          *font,
-                            hb_buffer_t        *buffer,
-                            const hb_feature_t *features,
-                            unsigned int        num_features,
-                            hb_set_t           *glyphs)
-{
-  const char *shapers[] = {"ot", nullptr};
-  hb_shape_plan_t *shape_plan = hb_shape_plan_create_cached (font->face, &buffer->props,
-                                                             features, num_features, shapers);
-
-  bool mirror = hb_script_get_horizontal_direction (buffer->props.script) == HB_DIRECTION_RTL;
-
-  unsigned int count = buffer->len;
-  hb_glyph_info_t *info = buffer->info;
-  for (unsigned int i = 0; i < count; i++)
-    add_char (font, mirror, info[i].codepoint, glyphs);
-
-  hb_set_t *lookups = hb_set_create ();
-  hb_ot_shape_plan_collect_lookups (shape_plan, HB_OT_TAG_GSUB, lookups);
-  hb_ot_layout_lookups_substitute_closure (font->face, lookups, glyphs);
-
-  hb_set_destroy (lookups);
-
-  hb_shape_plan_destroy (shape_plan);
-}
-
 
 #endif

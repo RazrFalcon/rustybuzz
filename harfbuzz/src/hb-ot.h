@@ -33,7 +33,6 @@
 #include "hb-ot-layout.h"
 #include "hb-ot-metrics.h"
 #include "hb-ot-name.h"
-#include "hb-ot-shape.h"
 
 HB_BEGIN_DECLS
 

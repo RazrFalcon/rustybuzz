@@ -48,7 +48,7 @@ struct hb_face_t
   hb_reference_table_func_t  reference_table_func;
   void                      *user_data;
   hb_destroy_func_t          destroy;
-  
+
   const void                 *rust_data;
 
   unsigned int index;			/* Face index in a collection, zero-based. */
@@ -57,14 +57,6 @@ struct hb_face_t
 
   hb_shaper_object_dataset_t<hb_face_t> data;/* Various shaper data. */
   hb_ot_face_t table;			/* All the face's tables. */
-
-  /* Cache */
-  struct plan_node_t
-  {
-    hb_shape_plan_t *shape_plan;
-    plan_node_t *next;
-  };
-  hb_atomic_ptr_t<plan_node_t> shape_plans;
 
   hb_blob_t *reference_table (hb_tag_t tag) const
   {

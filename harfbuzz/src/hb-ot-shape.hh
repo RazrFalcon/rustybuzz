@@ -84,17 +84,6 @@ struct hb_ot_shape_plan_t
   bool apply_morx : 1;
   bool apply_trak : 1;
 
-  void collect_lookups (hb_tag_t table_tag, hb_set_t *lookups) const
-  {
-    unsigned int table_index;
-    switch (table_tag) {
-      case HB_OT_TAG_GSUB: table_index = 0; break;
-      case HB_OT_TAG_GPOS: table_index = 1; break;
-      default: return;
-    }
-    map.collect_lookups (table_index, lookups);
-  }
-
   HB_INTERNAL bool init0 (hb_face_t                     *face,
 			  const hb_shape_plan_key_t     *key);
   HB_INTERNAL void fini ();

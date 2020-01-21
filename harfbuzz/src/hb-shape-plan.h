@@ -45,13 +45,6 @@ hb_shape_plan_create (hb_face_t                     *face,
 		      const char * const            *shaper_list);
 
 HB_EXTERN hb_shape_plan_t *
-hb_shape_plan_create_cached (hb_face_t                     *face,
-			     const hb_segment_properties_t *props,
-			     const hb_feature_t            *user_features,
-			     unsigned int                   num_user_features,
-			     const char * const            *shaper_list);
-
-HB_EXTERN hb_shape_plan_t *
 hb_shape_plan_create2 (hb_face_t                     *face,
 		       const hb_segment_properties_t *props,
 		       const hb_feature_t            *user_features,
@@ -59,16 +52,6 @@ hb_shape_plan_create2 (hb_face_t                     *face,
 		       const int                     *coords,
 		       unsigned int                   num_coords,
 		       const char * const            *shaper_list);
-
-HB_EXTERN hb_shape_plan_t *
-hb_shape_plan_create_cached2 (hb_face_t                     *face,
-			      const hb_segment_properties_t *props,
-			      const hb_feature_t            *user_features,
-			      unsigned int                   num_user_features,
-			      const int                     *coords,
-			      unsigned int                   num_coords,
-			      const char * const            *shaper_list);
-
 
 HB_EXTERN hb_shape_plan_t *
 hb_shape_plan_get_empty (void);

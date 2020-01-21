@@ -48,13 +48,6 @@ extern "C" {
     hb_tag_t     *language_tags /* OUT */);
 }
 
-void hb_ot_map_t::collect_lookups (unsigned int table_index, hb_set_t *lookups_out) const
-{
-  for (unsigned int i = 0; i < lookups[table_index].length; i++)
-    lookups_out->add (lookups[table_index][i].index);
-}
-
-
 hb_ot_map_builder_t::hb_ot_map_builder_t (hb_face_t *face_,
 					  const hb_segment_properties_t *props_)
 {
