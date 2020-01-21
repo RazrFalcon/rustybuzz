@@ -733,7 +733,7 @@ struct StateTableDriver
 		    hb_face_t *face_) :
 	      machine (machine_),
 	      buffer (buffer_),
-	      num_glyphs (face_->get_num_glyphs ()) {}
+	      num_glyphs (hb_face_get_glyph_count (face_)) {}
 
   template <typename context_t>
   void drive (context_t *c)

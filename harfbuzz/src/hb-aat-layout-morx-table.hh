@@ -599,7 +599,7 @@ struct NoncontextualSubtable
     TRACE_APPLY (this);
 
     bool ret = false;
-    unsigned int num_glyphs = c->face->get_num_glyphs ();
+    unsigned int num_glyphs = hb_face_get_glyph_count (c->face);
 
     hb_glyph_info_t *info = c->buffer->info;
     unsigned int count = c->buffer->len;

@@ -390,7 +390,7 @@ hb_face_get_upem (const hb_face_t *face)
 unsigned int
 hb_face_get_glyph_count (const hb_face_t *face)
 {
-  return face->get_num_glyphs ();
+  return rb_face_get_glyph_count (face->rust_data);
 }
 
 /*

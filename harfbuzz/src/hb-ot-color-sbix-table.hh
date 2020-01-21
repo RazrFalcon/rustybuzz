@@ -140,7 +140,7 @@ struct sbix
     void init (hb_face_t *face)
     {
       table = hb_sanitize_context_t().reference_table<sbix> (face);
-      num_glyphs = face->get_num_glyphs ();
+      num_glyphs = hb_face_get_glyph_count (face);
     }
     void fini () { table.destroy (); }
 

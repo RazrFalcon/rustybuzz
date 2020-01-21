@@ -441,7 +441,7 @@ struct gvar
     void init (hb_face_t *face)
     {
       gvar_table = hb_sanitize_context_t ().reference_table<gvar> (face);
-      if (unlikely ((gvar_table->glyphCount != face->get_num_glyphs ()) ||
+      if (unlikely ((gvar_table->glyphCount != hb_face_get_glyph_count (face)) ||
 		    (gvar_table->axisCount != hb_ot_get_var_axis_count(face->rust_data))))
       	fini ();
 

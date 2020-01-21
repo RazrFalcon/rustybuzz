@@ -82,17 +82,8 @@ struct hb_face_t
     return ret;
   }
 
-  unsigned int get_num_glyphs () const
-  {
-    unsigned int ret = num_glyphs.get_relaxed ();
-    if (unlikely (ret == (unsigned int) -1))
-      return load_num_glyphs ();
-    return ret;
-  }
-
   private:
   HB_INTERNAL unsigned int load_upem () const;
-  HB_INTERNAL unsigned int load_num_glyphs () const;
 };
 DECLARE_NULL_INSTANCE (hb_face_t);
 

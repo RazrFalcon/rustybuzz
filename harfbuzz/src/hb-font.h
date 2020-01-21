@@ -184,4 +184,7 @@ hb_ot_glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_
 HB_EXTERN int
 hb_ot_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical);
 
+HB_EXTERN unsigned int
+rb_face_get_glyph_count (const void *rust_data);
+
 HB_END_DECLS

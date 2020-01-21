@@ -440,3 +440,9 @@ pub extern "C" fn rb_font_get_side_bearing_var(
 
     unsafe { ffi::hb_ot_glyf_get_side_bearing_var(hb_font, hb_glyph, is_vertical) }
 }
+
+#[no_mangle]
+pub extern "C" fn rb_face_get_glyph_count(font_data: *const c_void) -> u32 {
+    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    font.number_of_glyphs() as u32
+}

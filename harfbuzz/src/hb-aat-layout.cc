@@ -54,7 +54,7 @@ AAT::hb_aat_apply_context_t::hb_aat_apply_context_t (const hb_ot_shape_plan_t *p
 						       debug_depth (0)
 {
   sanitizer.init (blob);
-  sanitizer.set_num_glyphs (face->get_num_glyphs ());
+  sanitizer.set_num_glyphs (hb_face_get_glyph_count (face));
   sanitizer.start_processing ();
   sanitizer.set_max_ops (HB_SANITIZE_MAX_OPS_MAX);
 }
