@@ -485,7 +485,7 @@ hb_insert_dotted_circle (hb_buffer_t *buffer, hb_font_t *font)
   info.cluster = buffer->cur().cluster;
   info.mask = buffer->cur().mask;
   buffer->output_info (info);
-  while (buffer->idx < buffer->len && buffer->successful)
+  while (buffer->idx < buffer->len)
     buffer->next_glyph ();
   buffer->swap_buffers ();
 }
@@ -733,8 +733,6 @@ hb_ot_substitute_default (const hb_ot_shape_context_t *c)
 
   hb_ot_mirror_chars (c);
 
-  HB_BUFFER_ALLOCATE_VAR (buffer, glyph_index);
-
   _hb_ot_shape_normalize (c->plan, buffer, c->font);
 
   hb_ot_shape_setup_masks (c);
@@ -744,8 +742,6 @@ hb_ot_substitute_default (const hb_ot_shape_context_t *c)
     _hb_ot_shape_fallback_mark_position_recategorize_marks (c->plan, c->font, buffer);
 
   hb_ot_map_glyphs_fast (buffer);
-
-  HB_BUFFER_DEALLOCATE_VAR (buffer, glyph_index);
 }
 
 static inline void
@@ -765,8 +761,6 @@ static inline void
 hb_ot_substitute_pre (const hb_ot_shape_context_t *c)
 {
   hb_ot_substitute_default (c);
-
-  _hb_buffer_allocate_gsubgpos_vars (c->buffer);
 
   hb_ot_substitute_complex (c);
 }
@@ -913,8 +907,6 @@ hb_ot_position (const hb_ot_shape_context_t *c)
 
   if (HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction))
     hb_buffer_reverse (c->buffer);
-
-  _hb_buffer_deallocate_gsubgpos_vars (c->buffer);
 }
 
 static inline void
@@ -948,7 +940,6 @@ hb_propagate_flags (hb_buffer_t *buffer)
 static void
 hb_ot_shape_internal (hb_ot_shape_context_t *c)
 {
-  c->buffer->deallocate_var_all ();
   c->buffer->scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
   if (likely (!hb_unsigned_mul_overflows (c->buffer->len, HB_BUFFER_MAX_LEN_FACTOR)))
   {
@@ -963,8 +954,6 @@ hb_ot_shape_internal (hb_ot_shape_context_t *c)
 
   /* Save the original direction, we use it later. */
   c->target_direction = c->buffer->props.direction;
-
-  _hb_buffer_allocate_unicode_vars (c->buffer);
 
   c->buffer->clear_output ();
 
@@ -985,13 +974,10 @@ hb_ot_shape_internal (hb_ot_shape_context_t *c)
 
   hb_propagate_flags (c->buffer);
 
-  _hb_buffer_deallocate_unicode_vars (c->buffer);
-
   c->buffer->props.direction = c->target_direction;
 
   c->buffer->max_len = HB_BUFFER_MAX_LEN_DEFAULT;
   c->buffer->max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
-  c->buffer->deallocate_var_all ();
 }
 
 

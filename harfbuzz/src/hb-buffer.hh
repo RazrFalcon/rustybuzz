@@ -98,7 +98,6 @@ struct hb_buffer_t
   hb_buffer_content_type_t content_type;
   hb_segment_properties_t props; /* Script, language, direction */
 
-  bool successful; /* Allocations successful */
   bool have_output; /* Whether we have an output buffer going on */
   bool have_positions; /* Whether we have positions */
 
@@ -120,52 +119,7 @@ struct hb_buffer_t
   hb_codepoint_t context[2][CONTEXT_LENGTH];
   unsigned int context_len[2];
 
-  /* Internal debugging. */
-  /* The bits here reflect current allocations of the bytes in glyph_info_t's var1 and var2. */
-#ifndef HB_NDEBUG
-  uint8_t allocated_var_bits;
-#endif
-
-
   /* Methods */
-
-  bool in_error () const { return !successful; }
-
-  void allocate_var (unsigned int start, unsigned int count)
-  {
-#ifndef HB_NDEBUG
-    unsigned int end = start + count;
-    assert (end <= 8);
-    unsigned int bits = (1u<<end) - (1u<<start);
-    assert (0 == (allocated_var_bits & bits));
-    allocated_var_bits |= bits;
-#endif
-  }
-  void deallocate_var (unsigned int start, unsigned int count)
-  {
-#ifndef HB_NDEBUG
-    unsigned int end = start + count;
-    assert (end <= 8);
-    unsigned int bits = (1u<<end) - (1u<<start);
-    assert (bits == (allocated_var_bits & bits));
-    allocated_var_bits &= ~bits;
-#endif
-  }
-  void assert_var (unsigned int start, unsigned int count)
-  {
-#ifndef HB_NDEBUG
-    unsigned int end = start + count;
-    assert (end <= 8);
-    unsigned int bits = (1u<<end) - (1u<<start);
-    assert (bits == (allocated_var_bits & bits));
-#endif
-  }
-  void deallocate_var_all ()
-  {
-#ifndef HB_NDEBUG
-    allocated_var_bits = 0;
-#endif
-  }
 
   hb_glyph_info_t &cur (unsigned int i = 0) { return info[idx + i]; }
   hb_glyph_info_t cur (unsigned int i = 0) const { return info[idx + i]; }
@@ -322,10 +276,10 @@ struct hb_buffer_t
   /* Internal methods */
   HB_INTERNAL bool move_to (unsigned int i); /* i is output-buffer index. */
 
-  HB_INTERNAL bool enlarge (unsigned int size);
+  HB_INTERNAL void enlarge (unsigned int size);
 
-  bool ensure (unsigned int size)
-  { return likely (!size || size < allocated) ? true : enlarge (size); }
+  void ensure (unsigned int size)
+  { enlarge (size); }
 
   bool ensure_inplace (unsigned int size)
   { return likely (!size || size < allocated); }
@@ -405,11 +359,3 @@ _next_cluster (hb_buffer_t *buffer, unsigned int start)
 
   return start;
 }
-
-
-#define HB_BUFFER_XALLOCATE_VAR(b, func, var) \
-  b->func (offsetof (hb_glyph_info_t, var) - offsetof(hb_glyph_info_t, var1), \
-	   sizeof (b->info[0].var))
-#define HB_BUFFER_ALLOCATE_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, allocate_var,   var ())
-#define HB_BUFFER_DEALLOCATE_VAR(b, var)	HB_BUFFER_XALLOCATE_VAR (b, deallocate_var, var ())
-#define HB_BUFFER_ASSERT_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, assert_var,     var ())

@@ -332,7 +332,7 @@ hb_buffer_reset (hb_buffer_t *buffer);
 HB_EXTERN void
 hb_buffer_clear_contents (hb_buffer_t *buffer);
 
-HB_EXTERN hb_bool_t
+HB_EXTERN void
 hb_buffer_pre_allocate (hb_buffer_t  *buffer,
 		        unsigned int  size);
 

@@ -56,7 +56,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
   switch ((unsigned) buffer->props.script)
   {
     case HB_SCRIPT_DEVANAGARI:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -109,7 +109,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_BENGALI:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -131,7 +131,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_GURMUKHI:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -168,7 +168,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_GUJARATI:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -193,7 +193,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_ORIYA:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -212,7 +212,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_TELUGU:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -236,7 +236,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_KANNADA:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -255,7 +255,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_MALAYALAM:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -282,7 +282,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_SINHALA:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -318,7 +318,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_BRAHMI:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -340,7 +340,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_KHUDAWADI:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -362,7 +362,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_TIRHUTA:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -389,7 +389,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_MODI:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)
@@ -410,7 +410,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
       break;
 
     case HB_SCRIPT_TAKRI:
-      for (buffer->idx = 0; buffer->idx + 1 < count && buffer->successful;)
+      for (buffer->idx = 0; buffer->idx + 1 < count;)
       {
 	bool matched = false;
 	switch (buffer->cur ().codepoint)

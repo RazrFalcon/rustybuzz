@@ -134,8 +134,6 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			hb_buffer_t              *buffer,
 			hb_font_t                *font)
 {
-  HB_BUFFER_ALLOCATE_VAR (buffer, hangul_shaping_feature);
-
   /* Hangul syllables come in two shapes: LV, and LVT.  Of those:
    *
    *   - LV can be precomposed, or decomposed.  Lets call those
@@ -190,7 +188,7 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 				    */
   unsigned int count = buffer->len;
 
-  for (buffer->idx = 0; buffer->idx < count && buffer->successful;)
+  for (buffer->idx = 0; buffer->idx < count;)
   {
     hb_codepoint_t u = buffer->cur().codepoint;
 
@@ -272,8 +270,6 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  if (font->has_glyph (s))
 	  {
 	    buffer->replace_glyphs (t ? 3 : 2, 1, &s);
-	    if (unlikely (!buffer->successful))
-	      return;
 	    end = start + 1;
 	    continue;
 	  }
@@ -322,8 +318,6 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	if (font->has_glyph (new_s))
 	{
 	  buffer->replace_glyphs (2, 1, &new_s);
-	  if (unlikely (!buffer->successful))
-	    return;
 	  end = start + 1;
 	  continue;
 	}
@@ -357,9 +351,6 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    buffer->next_glyph ();
 	    s_len++;
 	  }
-
-	  if (unlikely (!buffer->successful))
-	    return;
 
 	  /* We decomposed S: apply jamo features to the individual glyphs
 	   * that are now in buffer->out_info.
@@ -412,8 +403,6 @@ setup_masks_hangul (const hb_ot_shape_plan_t *plan,
     for (unsigned int i = 0; i < count; i++, info++)
       info->mask |= hangul_plan->mask_array[info->hangul_shaping_feature()];
   }
-
-  HB_BUFFER_DEALLOCATE_VAR (buffer, hangul_shaping_feature);
 }
 
 

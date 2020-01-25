@@ -241,8 +241,6 @@ static void
 _hb_ot_layout_set_glyph_props (hb_font_t *font,
 			       hb_buffer_t *buffer)
 {
-  _hb_buffer_assert_gsubgpos_vars (buffer);
-
   const OT::GDEF &gdef = *font->face->table.GDEF->table;
   unsigned int count = buffer->len;
   for (unsigned int i = 0; i < count; i++)
@@ -877,7 +875,7 @@ apply_forward (OT::hb_ot_apply_context_t *c,
 {
   bool ret = false;
   hb_buffer_t *buffer = c->buffer;
-  while (buffer->idx < buffer->len && buffer->successful)
+  while (buffer->idx < buffer->len)
   {
     bool applied = false;
     if (accel.may_have (buffer->cur().codepoint) &&

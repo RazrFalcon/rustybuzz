@@ -52,8 +52,6 @@
 #define HB_NO_OT_SHAPE_COMPLEX_VOWEL_CONSTRAINTS
 #endif
 
-#ifdef NDEBUG
 #ifndef HB_NDEBUG
 #define HB_NDEBUG
-#endif
 #endif

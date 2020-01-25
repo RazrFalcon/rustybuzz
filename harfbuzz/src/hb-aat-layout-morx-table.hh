@@ -1022,8 +1022,6 @@ struct Chain
       if (reverse)
 	c->buffer->reverse ();
 
-      if (unlikely (!c->buffer->successful)) return;
-
     skip:
       subtable = &StructAfter<ChainSubtable<Types>> (*subtable);
       c->set_lookup_index (c->lookup_index + 1);
@@ -1095,14 +1093,12 @@ struct mortmorx
 
   void apply (hb_aat_apply_context_t *c) const
   {
-    if (unlikely (!c->buffer->successful)) return;
     c->set_lookup_index (0);
     const Chain<Types> *chain = &firstChain;
     unsigned int count = chainCount;
     for (unsigned int i = 0; i < count; i++)
     {
       chain->apply (c, c->plan->aat_map.chain_flags[i]);
-      if (unlikely (!c->buffer->successful)) return;
       chain = &StructAfter<Chain<Types>> (*chain);
     }
   }

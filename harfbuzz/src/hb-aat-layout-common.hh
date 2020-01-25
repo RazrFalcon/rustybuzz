@@ -742,7 +742,7 @@ struct StateTableDriver
       buffer->clear_output ();
 
     int state = StateTable<Types, EntryData>::STATE_START_OF_TEXT;
-    for (buffer->idx = 0; buffer->successful;)
+    for (buffer->idx = 0; ;)
     {
       unsigned int klass = buffer->idx < buffer->len ?
 			   machine.get_class (buffer->info[buffer->idx].codepoint, num_glyphs) :
@@ -786,7 +786,7 @@ struct StateTableDriver
 
     if (!c->in_place)
     {
-      for (; buffer->successful && buffer->idx < buffer->len;)
+      for (; buffer->idx < buffer->len;)
 	buffer->next_glyph ();
       buffer->swap_buffers ();
     }

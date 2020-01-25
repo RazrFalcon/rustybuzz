@@ -1671,8 +1671,6 @@ GPOS::position_finish_advances (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer H
 void
 GPOS::position_finish_offsets (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 {
-  _hb_buffer_assert_gsubgpos_vars (buffer);
-
   unsigned int len;
   hb_glyph_position_t *pos = hb_buffer_get_glyph_positions (buffer, &len);
   hb_direction_t direction = buffer->props.direction;

@@ -204,8 +204,6 @@ setup_masks_khmer (const hb_ot_shape_plan_t *plan HB_UNUSED,
 		   hb_buffer_t              *buffer,
 		   hb_font_t                *font HB_UNUSED)
 {
-  HB_BUFFER_ALLOCATE_VAR (buffer, khmer_category);
-
   /* We cannot setup masks here.  We save information about characters
    * and setup masks later on in a pause-callback. */
 
@@ -361,7 +359,7 @@ insert_dotted_circles_khmer (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
   buffer->idx = 0;
   unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len && buffer->successful)
+  while (buffer->idx < buffer->len)
   {
     unsigned int syllable = buffer->cur().syllable();
     khmer_syllable_type_t syllable_type = (khmer_syllable_type_t) (syllable & 0x0F);
@@ -375,7 +373,7 @@ insert_dotted_circles_khmer (const hb_ot_shape_plan_t *plan HB_UNUSED,
       ginfo.syllable() = buffer->cur().syllable();
 
       /* Insert dottedcircle after possible Repha. */
-      while (buffer->idx < buffer->len && buffer->successful &&
+      while (buffer->idx < buffer->len &&
 	     last_syllable == buffer->cur().syllable() &&
 	     buffer->cur().khmer_category() == OT_Repha)
 	buffer->next_glyph ();
@@ -397,8 +395,6 @@ reorder_khmer (const hb_ot_shape_plan_t *plan,
 
   foreach_syllable (buffer, start, end)
     reorder_syllable_khmer (plan, font->face, buffer, start, end);
-
-  HB_BUFFER_DEALLOCATE_VAR (buffer, khmer_category);
 }
 
 

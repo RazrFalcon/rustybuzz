@@ -966,7 +966,7 @@ static inline bool ligate_input (hb_ot_apply_context_t *c,
 
   for (unsigned int i = 1; i < count; i++)
   {
-    while (buffer->idx < match_positions[i] && buffer->successful)
+    while (buffer->idx < match_positions[i])
     {
       if (is_ligature)
       {
@@ -1101,7 +1101,7 @@ static inline bool apply_lookup (hb_ot_apply_context_t *c,
       match_positions[j] += delta;
   }
 
-  for (unsigned int i = 0; i < lookupCount && buffer->successful; i++)
+  for (unsigned int i = 0; i < lookupCount; i++)
   {
     unsigned int idx = lookupRecord[i].sequenceIndex;
     if (idx >= count)

@@ -347,9 +347,6 @@ setup_masks_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
 		   hb_buffer_t              *buffer,
 		   hb_font_t                *font HB_UNUSED)
 {
-  HB_BUFFER_ALLOCATE_VAR (buffer, indic_category);
-  HB_BUFFER_ALLOCATE_VAR (buffer, indic_position);
-
   /* We cannot setup masks here.  We save information about characters
    * and setup masks later on in a pause-callback. */
 
@@ -966,7 +963,7 @@ insert_dotted_circles_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
   buffer->idx = 0;
   unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len && buffer->successful)
+  while (buffer->idx < buffer->len)
   {
     unsigned int syllable = buffer->cur().syllable();
     indic_syllable_type_t syllable_type = (indic_syllable_type_t) (syllable & 0x0F);
@@ -980,7 +977,7 @@ insert_dotted_circles_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
       ginfo.syllable() = buffer->cur().syllable();
 
       /* Insert dottedcircle after possible Repha. */
-      while (buffer->idx < buffer->len && buffer->successful &&
+      while (buffer->idx < buffer->len &&
 	     last_syllable == buffer->cur().syllable() &&
 	     buffer->cur().indic_category() == OT_Repha)
 	buffer->next_glyph ();
@@ -1478,9 +1475,6 @@ final_reordering_indic (const hb_ot_shape_plan_t *plan,
 
   foreach_syllable (buffer, start, end)
     final_reordering_syllable_indic (plan, buffer, start, end);
-
-  HB_BUFFER_DEALLOCATE_VAR (buffer, indic_category);
-  HB_BUFFER_DEALLOCATE_VAR (buffer, indic_position);
 }
 
 

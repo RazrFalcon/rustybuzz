@@ -224,7 +224,7 @@ handle_variation_selector_cluster (const hb_ot_shape_normalize_context_t *c,
   /* TODO Currently if there's a variation-selector we give-up, it's just too hard. */
   hb_buffer_t * const buffer = c->buffer;
   hb_font_t * const font = c->font;
-  for (; buffer->idx < end - 1 && buffer->successful;) {
+  for (; buffer->idx < end - 1;) {
     if (unlikely (hb_ucd_is_variation_selector (buffer->cur(+1).codepoint))) {
       if (font->get_variation_glyph (buffer->cur().codepoint, buffer->cur(+1).codepoint, &buffer->cur().glyph_index()))
       {
@@ -260,13 +260,13 @@ static inline void
 decompose_multi_char_cluster (const hb_ot_shape_normalize_context_t *c, unsigned int end, bool short_circuit)
 {
   hb_buffer_t * const buffer = c->buffer;
-  for (unsigned int i = buffer->idx; i < end && buffer->successful; i++)
+  for (unsigned int i = buffer->idx; i < end; i++)
     if (unlikely (hb_ucd_is_variation_selector (buffer->info[i].codepoint))) {
       handle_variation_selector_cluster (c, end, short_circuit);
       return;
     }
 
-  while (buffer->idx < end && buffer->successful)
+  while (buffer->idx < end)
     decompose_current_character (c, short_circuit);
 }
 
@@ -287,8 +287,6 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 			hb_font_t *font)
 {
   if (unlikely (!buffer->len)) return;
-
-  _hb_buffer_assert_unicode_vars (buffer);
 
   hb_ot_shape_normalization_mode_t mode = plan->shaper->normalization_preference;
   if (mode == HB_OT_SHAPE_NORMALIZATION_MODE_AUTO)
@@ -349,10 +347,10 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 						      sizeof (buffer->info[0]));
 	buffer->next_glyphs (done);
       }
-      while (buffer->idx < end && buffer->successful)
+      while (buffer->idx < end)
 	decompose_current_character (&c, might_short_circuit);
 
-      if (buffer->idx == count || !buffer->successful)
+      if (buffer->idx == count)
 	break;
 
       all_simple = false;
@@ -365,7 +363,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
       /* idx to end is one non-simple cluster. */
       decompose_multi_char_cluster (&c, end, always_short_circuit);
     }
-    while (buffer->idx < count && buffer->successful);
+    while (buffer->idx < count);
     buffer->swap_buffers ();
   }
 
@@ -427,7 +425,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
     count = buffer->len;
     unsigned int starter = 0;
     buffer->next_glyph ();
-    while (buffer->idx < count && buffer->successful)
+    while (buffer->idx < count)
     {
       hb_codepoint_t composed, glyph;
       if (/* We don't try to compose a non-mark character with it's preceding starter.
@@ -450,8 +448,6 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 	{
 	  /* Composes. */
 	  buffer->next_glyph (); /* Copy to out-buffer. */
-	  if (unlikely (!buffer->successful))
-	    return;
 	  buffer->merge_out_clusters (starter, buffer->out_len);
 	  buffer->out_len--; /* Remove the second composable. */
 	  /* Modify starter and carry on. */

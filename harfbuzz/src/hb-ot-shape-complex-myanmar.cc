@@ -119,9 +119,6 @@ setup_masks_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
 		     hb_buffer_t              *buffer,
 		     hb_font_t                *font HB_UNUSED)
 {
-  HB_BUFFER_ALLOCATE_VAR (buffer, myanmar_category);
-  HB_BUFFER_ALLOCATE_VAR (buffer, myanmar_position);
-
   /* We cannot setup masks here.  We save information about characters
    * and setup masks later on in a pause-callback. */
 
@@ -307,7 +304,7 @@ insert_dotted_circles_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
   buffer->idx = 0;
   unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len && buffer->successful)
+  while (buffer->idx < buffer->len)
   {
     unsigned int syllable = buffer->cur().syllable();
     myanmar_syllable_type_t syllable_type = (myanmar_syllable_type_t) (syllable & 0x0F);
@@ -337,9 +334,6 @@ reorder_myanmar (const hb_ot_shape_plan_t *plan,
 
   foreach_syllable (buffer, start, end)
     reorder_syllable_myanmar (plan, font->face, buffer, start, end);
-
-  HB_BUFFER_DEALLOCATE_VAR (buffer, myanmar_category);
-  HB_BUFFER_DEALLOCATE_VAR (buffer, myanmar_position);
 }
 
 

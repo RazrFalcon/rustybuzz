@@ -109,15 +109,12 @@ hb_segment_properties_hash (const hb_segment_properties_t *p)
 
 /* Internal API */
 
-bool
+void
 hb_buffer_t::enlarge (unsigned int size)
 {
-  if (unlikely (!successful))
-    return false;
   if (unlikely (size > max_len))
   {
-    successful = false;
-    return false;
+    return;
   }
 
   unsigned int new_allocated = allocated;
@@ -139,9 +136,6 @@ hb_buffer_t::enlarge (unsigned int size)
   new_info = (hb_glyph_info_t *) realloc (info, new_allocated * sizeof (info[0]));
 
 done:
-  if (unlikely (!new_pos || !new_info))
-    successful = false;
-
   if (likely (new_pos))
     pos = new_pos;
 
@@ -149,17 +143,14 @@ done:
     info = new_info;
 
   out_info = separate_out ? (hb_glyph_info_t *) pos : info;
-  if (likely (successful))
-    allocated = new_allocated;
-
-  return likely (successful);
+  allocated = new_allocated;
 }
 
 bool
 hb_buffer_t::make_room_for (unsigned int num_in,
                             unsigned int num_out)
 {
-  if (unlikely (!ensure (out_len + num_out))) return false;
+  ensure (out_len + num_out);
 
   if (out_info == info &&
       out_len + num_out > idx + num_in)
@@ -177,7 +168,7 @@ bool
 hb_buffer_t::shift_forward (unsigned int count)
 {
   assert (have_output);
-  if (unlikely (!ensure (len + count))) return false;
+  ensure (len + count);
 
   memmove (info + idx + count, info + idx, (len - idx) * sizeof (info[0]));
   if (idx + count > len)
@@ -238,7 +229,6 @@ hb_buffer_t::clear ()
   scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 
   content_type = HB_BUFFER_CONTENT_TYPE_INVALID;
-  successful = true;
   have_output = false;
   have_positions = false;
 
@@ -251,8 +241,6 @@ hb_buffer_t::clear ()
 
   memset (context, 0, sizeof context);
   memset (context_len, 0, sizeof context_len);
-
-  deallocate_var_all ();
 }
 
 void
@@ -261,7 +249,7 @@ hb_buffer_t::add (hb_codepoint_t  codepoint,
 {
   hb_glyph_info_t *glyph;
 
-  if (unlikely (!ensure (len + 1))) return;
+  ensure (len + 1);
 
   glyph = &info[len];
 
@@ -276,7 +264,7 @@ hb_buffer_t::add (hb_codepoint_t  codepoint,
 void
 hb_buffer_t::add_info (const hb_glyph_info_t &glyph_info)
 {
-  if (unlikely (!ensure (len + 1))) return;
+  ensure (len + 1);
 
   info[len] = glyph_info;
 
@@ -328,8 +316,6 @@ hb_buffer_t::clear_positions ()
 void
 hb_buffer_t::swap_buffers ()
 {
-  if (unlikely (!successful)) return;
-
   assert (have_output);
   have_output = false;
 
@@ -384,8 +370,6 @@ hb_buffer_t::move_to (unsigned int i)
     idx = i;
     return true;
   }
-  if (unlikely (!successful))
-    return false;
 
   assert (i <= out_len + (len - idx));
 
@@ -1129,10 +1113,10 @@ hb_buffer_clear_contents (hb_buffer_t *buffer)
  *
  * Since: 0.9.2
  **/
-hb_bool_t
+void
 hb_buffer_pre_allocate (hb_buffer_t *buffer, unsigned int size)
 {
-  return buffer->ensure (size);
+  buffer->ensure (size);
 }
 
 /**

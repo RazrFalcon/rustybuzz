@@ -247,8 +247,6 @@ setup_masks_use (const hb_ot_shape_plan_t *plan,
     setup_masks_arabic_plan (use_plan->arabic_plan, buffer, plan->props.script);
   }
 
-  HB_BUFFER_ALLOCATE_VAR (buffer, use_category);
-
   /* We cannot setup masks here.  We save information about characters
    * and setup masks later on in a pause-callback. */
 
@@ -517,7 +515,7 @@ insert_dotted_circles_use (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
   buffer->idx = 0;
   unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len && buffer->successful)
+  while (buffer->idx < buffer->len)
   {
     unsigned int syllable = buffer->cur().syllable();
     use_syllable_type_t syllable_type = (use_syllable_type_t) (syllable & 0x0F);
@@ -531,7 +529,7 @@ insert_dotted_circles_use (const hb_ot_shape_plan_t *plan HB_UNUSED,
       ginfo.syllable() = buffer->cur().syllable();
 
       /* Insert dottedcircle after possible Repha. */
-      while (buffer->idx < buffer->len && buffer->successful &&
+      while (buffer->idx < buffer->len &&
 	     last_syllable == buffer->cur().syllable() &&
 	     buffer->cur().use_category() == USE_R)
 	buffer->next_glyph ();
@@ -553,8 +551,6 @@ reorder_use (const hb_ot_shape_plan_t *plan,
 
   foreach_syllable (buffer, start, end)
     reorder_syllable_use (buffer, start, end);
-
-  HB_BUFFER_DEALLOCATE_VAR (buffer, use_category);
 }
 
 
