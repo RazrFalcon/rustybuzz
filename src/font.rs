@@ -160,7 +160,7 @@ impl<'a> Font<'a> {
         let mut coords = vec![0; coords_len];
 
         for variation in variations {
-            if let Some(axis) = ttf.variation_axis(variation.tag) {
+            if let Ok(Some(axis)) = ttf.variation_axis(variation.tag) {
                 let mut v = f32_bound(axis.min_value, variation.value, axis.max_value);
 
                 if v == axis.default_value {
@@ -175,7 +175,7 @@ impl<'a> Font<'a> {
             }
         }
 
-        ttf.map_variation_coordinates(&mut coords);
+        let _ = ttf.map_variation_coordinates(&mut coords);
 
         unsafe {
             ffi::hb_font_set_variations(
@@ -198,8 +198,8 @@ impl<'a> Drop for Font<'a> {
 pub extern "C" fn rb_ot_get_nominal_glyph(font_data: *const c_void, c: u32, glyph: *mut u32) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_index(char::try_from(c).unwrap()) {
-        Ok(g) => unsafe { *glyph = g.0 as u32; 1 }
-        Err(_) => 0,
+        Ok(Some(g)) => unsafe { *glyph = g.0 as u32; 1 }
+        _ => 0,
     }
 }
 
@@ -207,8 +207,8 @@ pub extern "C" fn rb_ot_get_nominal_glyph(font_data: *const c_void, c: u32, glyp
 pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, variant: u32, glyph: *mut u32) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_variation_index(char::try_from(c).unwrap(), char::try_from(variant).unwrap()) {
-        Ok(g) => unsafe { *glyph = g.0 as u32; 1 }
-        Err(_) => 0,
+        Ok(Some(g)) => unsafe { *glyph = g.0 as u32; 1 }
+        _ => 0,
     }
 }
 
@@ -216,14 +216,14 @@ pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, va
 pub extern "C" fn rb_ot_get_glyph_bbox(font_data: *const c_void, glyph: u32, extents: *mut ffi::hb_glyph_bbox_t) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_bounding_box(GlyphId(u16::try_from(glyph).unwrap())) {
-        Ok(bbox) => unsafe {
+        Ok(Some(bbox)) => unsafe {
             (*extents).x_min = bbox.x_min;
             (*extents).y_min = bbox.y_min;
             (*extents).x_max = bbox.x_max;
             (*extents).y_max = bbox.y_max;
             1
         }
-        Err(_) => 0,
+        _ => 0,
     }
 }
 
@@ -233,7 +233,7 @@ pub extern "C" fn rb_ot_get_glyph_name(font_data: *const c_void, glyph: u32, mut
 
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_name(GlyphId(u16::try_from(glyph).unwrap())) {
-        Some(name) => unsafe {
+        Ok(Some(name)) => unsafe {
             let len = std::cmp::min(name.len(), len as usize - 1);
 
             for b in &name.as_bytes()[0..len] {
@@ -245,7 +245,7 @@ pub extern "C" fn rb_ot_get_glyph_name(font_data: *const c_void, glyph: u32, mut
 
             1
         }
-        None => 0,
+        _ => 0,
     }
 }
 
@@ -259,8 +259,8 @@ pub extern "C" fn rb_ot_has_glyph_classes(font_data: *const c_void) -> i32 {
 pub extern "C" fn rb_ot_get_glyph_class(font_data: *const c_void, glyph: u32) -> u32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
     match font.glyph_class(GlyphId(u16::try_from(glyph).unwrap())) {
-        Ok(c) => c as u32,
-        Err(_) => 0,
+        Ok(Some(c)) => c as u32,
+        _ => 0,
     }
 }
 
@@ -291,7 +291,7 @@ pub extern "C" fn hb_ot_get_var_axis_count(font_data: *const c_void) -> u16 {
 #[no_mangle]
 pub extern "C" fn rb_ot_has_vorg_data(font_data: *const c_void) -> i32 {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
-    font.glyph_y_origin(GlyphId(0)).is_some() as i32
+    font.has_table(ttf_parser::TableName::VerticalOrigin) as i32
 }
 
 #[no_mangle]
@@ -326,7 +326,10 @@ pub unsafe extern "C" fn rb_ot_metrics_get_position_common(
     let coords = std::slice::from_raw_parts(coords as *const _, coord_count as usize);
 
     let upem = try_opt_or!(font.units_per_em(), 0) as f32;
-    let offset = font.metrics_variation(Tag(tag), coords).unwrap_or(0.0);
+    let offset = match font.metrics_variation(Tag(tag), coords) {
+        Ok(Some(v)) => v,
+        _ => 0.0,
+    };
 
     let rescale = |x: f32| ((x * scale as f32) / upem).round() as i32;
 
@@ -341,15 +344,15 @@ pub unsafe extern "C" fn rb_ot_metrics_get_position_common(
             *position = rescale(font.line_gap() as f32 + offset);
         }
         metrics::VERTICAL_ASCENDER => {
-            let v = try_opt_or!(font.vertical_ascender(), 0);
+            let v = try_or!(font.vertical_ascender(), 0);
             *position = rescale((v as f32 + offset).abs());
         }
         metrics::VERTICAL_DESCENDER => {
-            let v = try_opt_or!(font.vertical_descender(), 0);
+            let v = try_or!(font.vertical_descender(), 0);
             *position = rescale(-(v as f32 + offset).abs());
         }
         metrics::VERTICAL_LINE_GAP => {
-            let v = try_opt_or!(font.vertical_line_gap(), 0);
+            let v = try_or!(font.vertical_line_gap(), 0);
             *position = rescale(v as f32 + offset);
         }
         _ => return 0,
@@ -366,9 +369,9 @@ pub extern "C" fn rb_font_get_advance(font_data: *const c_void, glyph: u32, is_v
     let pem = font.units_per_em().unwrap_or(1000);
 
     if is_vertical {
-        font.glyph_ver_advance(glyph).unwrap_or(pem) as u32
+        font.glyph_ver_advance(glyph).ok().flatten().unwrap_or(pem) as u32
     } else {
-        font.glyph_hor_advance(glyph).unwrap_or(pem) as u32
+        font.glyph_hor_advance(glyph).ok().flatten().unwrap_or(pem) as u32
     }
 }
 
@@ -393,9 +396,11 @@ pub extern "C" fn rb_font_get_advance_var(
 
     // TODO: check advance for negative values
     if !is_vertical && font.has_table(ttf_parser::TableName::HorizontalMetricsVariations) {
-        return (advance as f32 + font.glyph_hor_advance_variation(glyph, coords).unwrap_or(0.0).round()) as u32;
+        let offset = font.glyph_hor_advance_variation(glyph, coords).ok().flatten().unwrap_or(0.0).round();
+        return (advance as f32 + offset) as u32;
     } else if is_vertical && font.has_table(ttf_parser::TableName::VerticalMetricsVariations) {
-        return (advance as f32 + font.glyph_ver_advance_variation(glyph, coords).unwrap_or(0.0).round()) as u32;
+        let offset = font.glyph_ver_advance_variation(glyph, coords).ok().flatten().unwrap_or(0.0).round();
+        return (advance as f32 + offset) as u32;
     }
 
     unsafe { ffi::hb_ot_glyf_get_advance_var(hb_font, hb_glyph, is_vertical) }
@@ -407,9 +412,9 @@ pub extern "C" fn rb_font_get_side_bearing(font_data: *const c_void, glyph: u32,
     let glyph = GlyphId(u16::try_from(glyph).unwrap());
 
     if is_vertical {
-        font.glyph_ver_side_bearing(glyph).unwrap_or(0) as i32
+        font.glyph_ver_side_bearing(glyph).ok().flatten().unwrap_or(0) as i32
     } else {
-        font.glyph_hor_side_bearing(glyph).unwrap_or(0) as i32
+        font.glyph_hor_side_bearing(glyph).ok().flatten().unwrap_or(0) as i32
     }
 }
 
@@ -433,9 +438,11 @@ pub extern "C" fn rb_font_get_side_bearing_var(
     }
 
     if !is_vertical && font.has_table(ttf_parser::TableName::HorizontalMetricsVariations) {
-        return (side_bearing as f32 + font.glyph_hor_side_bearing_variation(glyph, coords).unwrap_or(0.0).round()) as i32;
+        let offset = font.glyph_hor_side_bearing_variation(glyph, coords).ok().flatten().unwrap_or(0.0).round();
+        return (side_bearing as f32 + offset) as i32;
     } else if is_vertical && font.has_table(ttf_parser::TableName::VerticalMetricsVariations) {
-        return (side_bearing as f32 + font.glyph_ver_side_bearing_variation(glyph, coords).unwrap_or(0.0).round()) as i32;
+        let offset = font.glyph_ver_side_bearing_variation(glyph, coords).ok().flatten().unwrap_or(0.0).round();
+        return (side_bearing as f32 + offset) as i32;
     }
 
     unsafe { ffi::hb_ot_glyf_get_side_bearing_var(hb_font, hb_glyph, is_vertical) }

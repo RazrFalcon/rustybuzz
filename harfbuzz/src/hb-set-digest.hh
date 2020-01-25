@@ -44,11 +44,11 @@
  * an attractive trade-off.
  */
 
-template <typename mask_t, unsigned int shift>
+template <unsigned int shift>
 struct hb_set_digest_lowest_bits_t
 {
-  static constexpr unsigned mask_bytes = sizeof (mask_t);
-  static constexpr unsigned mask_bits = sizeof (mask_t) * 8;
+  static constexpr unsigned mask_bytes = sizeof (unsigned long);
+  static constexpr unsigned mask_bits = sizeof (unsigned long) * 8;
   static constexpr unsigned num_bits = 0
 				     + (mask_bytes >= 1 ? 3 : 0)
 				     + (mask_bytes >= 2 ? 1 : 0)
@@ -67,10 +67,10 @@ struct hb_set_digest_lowest_bits_t
   bool add_range (hb_codepoint_t a, hb_codepoint_t b)
   {
     if ((b >> shift) - (a >> shift) >= mask_bits - 1)
-      mask = (mask_t) -1;
+      mask = (unsigned long) -1;
     else {
-      mask_t ma = mask_for (a);
-      mask_t mb = mask_for (b);
+      unsigned long ma = mask_for (a);
+      unsigned long mb = mask_for (b);
       mask |= mb + (mb - ma) - (mb < ma);
     }
     return true;
@@ -101,9 +101,9 @@ struct hb_set_digest_lowest_bits_t
 
   private:
 
-  static mask_t mask_for (hb_codepoint_t g)
-  { return ((mask_t) 1) << ((g >> shift) & (mask_bits - 1)); }
-  mask_t mask;
+  static unsigned long mask_for (hb_codepoint_t g)
+  { return ((unsigned long) 1) << ((g >> shift) & (mask_bits - 1)); }
+  unsigned long mask;
 };
 
 template <typename head_t, typename tail_t>
@@ -161,11 +161,7 @@ struct hb_set_digest_combiner_t
  */
 typedef hb_set_digest_combiner_t
 <
-  hb_set_digest_lowest_bits_t<unsigned long, 4>,
-  hb_set_digest_combiner_t
-  <
-    hb_set_digest_lowest_bits_t<unsigned long, 0>,
-    hb_set_digest_lowest_bits_t<unsigned long, 9>
-  >
+  hb_set_digest_lowest_bits_t<4>,
+  hb_set_digest_combiner_t<hb_set_digest_lowest_bits_t<0>, hb_set_digest_lowest_bits_t<9>>
 > hb_set_digest_t;
 

@@ -38,6 +38,15 @@ macro_rules! try_opt_or {
     };
 }
 
+macro_rules! try_or {
+    ($task:expr, $ret:expr) => {
+        match $task {
+            Ok(v) => v,
+            Err(_) => $ret,
+        }
+    };
+}
+
 mod buffer;
 mod common;
 mod ffi;
