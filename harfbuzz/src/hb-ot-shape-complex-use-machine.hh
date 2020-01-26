@@ -403,7 +403,7 @@ find_syllables_use (hb_buffer_t *buffer)
 
 
   p = 0;
-  pe = eof = buffer->len;
+  pe = eof = buffer->len();
 
   unsigned int syllable_serial = 1;
   

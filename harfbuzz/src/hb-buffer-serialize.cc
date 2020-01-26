@@ -273,7 +273,7 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
 			    hb_buffer_serialize_format_t format,
 			    hb_buffer_serialize_flags_t flags)
 {
-  assert (start <= end && end <= buffer->len);
+  assert (start <= end && end <= buffer->len());
 
   unsigned int sconsumed;
   if (!buf_consumed)
@@ -282,7 +282,7 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
   if (buf_size)
     *buf = '\0';
 
-  assert ((!buffer->len && buffer->content_type == HB_BUFFER_CONTENT_TYPE_INVALID) ||
+  assert ((!buffer->len() && buffer->content_type == HB_BUFFER_CONTENT_TYPE_INVALID) ||
 	  buffer->content_type == HB_BUFFER_CONTENT_TYPE_GLYPHS);
 
   if (!buffer->have_positions)

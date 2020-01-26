@@ -240,7 +240,7 @@ hb_aat_layout_substitute (const hb_ot_shape_plan_t *plan,
 void
 hb_aat_layout_zero_width_deleted_glyphs (hb_buffer_t *buffer)
 {
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   hb_glyph_position_t *pos = buffer->pos;
   for (unsigned int i = 0; i < count; i++)

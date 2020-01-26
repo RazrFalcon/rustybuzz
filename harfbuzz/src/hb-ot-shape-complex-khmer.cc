@@ -207,7 +207,7 @@ setup_masks_khmer (const hb_ot_shape_plan_t *plan HB_UNUSED,
   /* We cannot setup masks here.  We save information about characters
    * and setup masks later on in a pause-callback. */
 
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
     set_khmer_properties (info[i]);
@@ -334,7 +334,7 @@ insert_dotted_circles_khmer (const hb_ot_shape_plan_t *plan HB_UNUSED,
   /* Note: This loop is extra overhead, but should not be measurable.
    * TODO Use a buffer scratch flag to remove the loop. */
   bool has_broken_syllables = false;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
     if ((info[i].syllable() & 0x0F) == khmer_broken_cluster)
@@ -359,7 +359,7 @@ insert_dotted_circles_khmer (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
   buffer->idx = 0;
   unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len)
+  while (buffer->idx < buffer->len())
   {
     unsigned int syllable = buffer->cur().syllable();
     khmer_syllable_type_t syllable_type = (khmer_syllable_type_t) (syllable & 0x0F);
@@ -373,7 +373,7 @@ insert_dotted_circles_khmer (const hb_ot_shape_plan_t *plan HB_UNUSED,
       ginfo.syllable() = buffer->cur().syllable();
 
       /* Insert dottedcircle after possible Repha. */
-      while (buffer->idx < buffer->len &&
+      while (buffer->idx < buffer->len() &&
 	     last_syllable == buffer->cur().syllable() &&
 	     buffer->cur().khmer_category() == OT_Repha)
 	buffer->next_glyph ();

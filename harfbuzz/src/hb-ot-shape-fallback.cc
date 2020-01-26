@@ -174,7 +174,7 @@ _hb_ot_shape_fallback_mark_position_recategorize_marks (const hb_ot_shape_plan_t
   return;
 #endif
 
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
     if (_hb_glyph_info_get_general_category (&info[i]) == HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) {
@@ -447,7 +447,7 @@ _hb_ot_shape_fallback_mark_position (const hb_ot_shape_plan_t *plan,
 #endif
 
   unsigned int start = 0;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 1; i < count; i++)
     if (likely (!HB_UNICODE_GENERAL_CATEGORY_IS_MARK (_hb_glyph_info_get_general_category (&info[i])))) {
@@ -466,7 +466,7 @@ _hb_ot_shape_fallback_spaces (const hb_ot_shape_plan_t *plan HB_UNUSED,
   hb_glyph_info_t *info = buffer->info;
   hb_glyph_position_t *pos = buffer->pos;
   bool horizontal = HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction);
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   for (unsigned int i = 0; i < count; i++)
     if (_hb_glyph_info_is_unicode_space (&info[i]) && !_hb_glyph_info_ligated (&info[i]))
     {

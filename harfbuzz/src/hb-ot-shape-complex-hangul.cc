@@ -186,7 +186,7 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
   unsigned int start = 0, end = 0; /* Extent of most recently seen syllable;
 				    * valid only if start < end
 				    */
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
 
   for (buffer->idx = 0; buffer->idx < count;)
   {
@@ -207,7 +207,7 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	if (!is_zero_width_char (font, u))
 	{
 	  buffer->merge_out_clusters (start, end + 1);
-	  hb_glyph_info_t *info = buffer->out_info;
+	  hb_glyph_info_t *info = buffer->out_info();
 	  hb_glyph_info_t tone = info[end];
 	  memmove (&info[start + 1], &info[start], (end - start) * sizeof (hb_glyph_info_t));
 	  info[start] = tone;
@@ -355,7 +355,7 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  /* We decomposed S: apply jamo features to the individual glyphs
 	   * that are now in buffer->out_info.
 	   */
-	  hb_glyph_info_t *info = buffer->out_info;
+	  hb_glyph_info_t *info = buffer->out_info();
 	  end = start + s_len;
 
 	  unsigned int i = start;
@@ -398,7 +398,7 @@ setup_masks_hangul (const hb_ot_shape_plan_t *plan,
 
   if (likely (hangul_plan))
   {
-    unsigned int count = buffer->len;
+    unsigned int count = buffer->len();
     hb_glyph_info_t *info = buffer->info;
     for (unsigned int i = 0; i < count; i++, info++)
       info->mask |= hangul_plan->mask_array[info->hangul_shaping_feature()];

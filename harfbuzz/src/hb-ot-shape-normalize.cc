@@ -286,7 +286,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 			hb_buffer_t *buffer,
 			hb_font_t *font)
 {
-  if (unlikely (!buffer->len)) return;
+  if (unlikely (!buffer->len())) return;
 
   hb_ot_shape_normalization_mode_t mode = plan->shaper->normalization_preference;
   if (mode == HB_OT_SHAPE_NORMALIZATION_MODE_AUTO)
@@ -325,7 +325,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
   bool all_simple = true;
   {
     buffer->clear_output ();
-    count = buffer->len;
+    count = buffer->len();
     buffer->idx = 0;
     do
     {
@@ -372,7 +372,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 
   if (!all_simple)
   {
-    count = buffer->len;
+    count = buffer->len();
     for (unsigned int i = 0; i < count; i++)
     {
       if (_hb_glyph_info_get_modified_combining_class (&buffer->info[i]) == 0)
@@ -403,7 +403,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
      * If it did NOT, then make it skippable.
      * https://github.com/harfbuzz/harfbuzz/issues/554
      */
-    for (unsigned int i = 1; i + 1 < buffer->len; i++)
+    for (unsigned int i = 1; i + 1 < buffer->len(); i++)
       if (buffer->info[i].codepoint == 0x034Fu/*CGJ*/ &&
 	  info_cc(buffer->info[i-1]) <= info_cc(buffer->info[i+1]))
       {
@@ -422,7 +422,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
      * ccc=0 chars with their previous Starter. */
 
     buffer->clear_output ();
-    count = buffer->len;
+    count = buffer->len();
     unsigned int starter = 0;
     buffer->next_glyph ();
     while (buffer->idx < count)
@@ -440,7 +440,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 	     info_cc (buffer->prev()) < info_cc (buffer->cur())) &&
 	    /* And compose. */
 	    c.compose (&c,
-		       buffer->out_info[starter].codepoint,
+		       buffer->out_info()[starter].codepoint,
 		       buffer->cur().codepoint,
 		       &composed) &&
 	    /* And the font has glyph for the composite. */
@@ -451,9 +451,9 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 	  buffer->merge_out_clusters (starter, buffer->out_len);
 	  buffer->out_len--; /* Remove the second composable. */
 	  /* Modify starter and carry on. */
-	  buffer->out_info[starter].codepoint = composed;
-	  buffer->out_info[starter].glyph_index() = glyph;
-	  _hb_glyph_info_set_unicode_props (&buffer->out_info[starter], buffer);
+	  buffer->out_info()[starter].codepoint = composed;
+	  buffer->out_info()[starter].glyph_index() = glyph;
+	  _hb_glyph_info_set_unicode_props (&buffer->out_info()[starter], buffer);
 
 	  continue;
 	}

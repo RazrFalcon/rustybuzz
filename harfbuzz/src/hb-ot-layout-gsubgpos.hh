@@ -362,7 +362,7 @@ struct hb_ot_apply_context_t :
     {
       idx = start_index_;
       num_items = num_items_;
-      end = c->buffer->len;
+      end = c->buffer->len();
       matcher.set_syllable (start_index_ == c->buffer->idx ? c->buffer->cur().syllable () : 0);
     }
 
@@ -405,7 +405,7 @@ struct hb_ot_apply_context_t :
       while (idx > num_items - 1)
       {
 	idx--;
-	const hb_glyph_info_t &info = c->buffer->out_info[idx];
+	const hb_glyph_info_t &info = c->buffer->out_info()[idx];
 
 	matcher_t::may_skip_t skip = matcher.may_skip (c, info);
 	if (unlikely (skip == matcher_t::SKIP_YES))
@@ -850,7 +850,7 @@ static inline bool match_input (hb_ot_apply_context_t *c,
 	if (ligbase == LIGBASE_NOT_CHECKED)
 	{
 	  bool found = false;
-	  const auto *out = buffer->out_info;
+	  const auto *out = buffer->out_info();
 	  unsigned int j = buffer->out_len;
 	  while (j && _hb_glyph_info_get_lig_id (&out[j - 1]) == first_lig_id)
 	  {
@@ -990,7 +990,7 @@ static inline bool ligate_input (hb_ot_apply_context_t *c,
 
   if (!is_mark_ligature && last_lig_id) {
     /* Re-adjust components for any marks following. */
-    for (unsigned int i = buffer->idx; i < buffer->len; i++) {
+    for (unsigned int i = buffer->idx; i < buffer->len(); i++) {
       if (last_lig_id == _hb_glyph_info_get_lig_id (&buffer->info[i])) {
 	unsigned int this_comp = _hb_glyph_info_get_lig_comp (&buffer->info[i]);
 	if (!this_comp)

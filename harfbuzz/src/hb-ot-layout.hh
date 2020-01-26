@@ -150,7 +150,7 @@ hb_ot_layout_position_finish_offsets (hb_font_t    *font,
 /* Loop over syllables. Based on foreach_cluster(). */
 #define foreach_syllable(buffer, start, end) \
   for (unsigned int \
-       _count = buffer->len, \
+       _count = buffer->len(), \
        start = 0, end = _count ? _hb_next_syllable (buffer, 0) : 0; \
        start < _count; \
        start = end, end = _hb_next_syllable (buffer, start))
@@ -159,7 +159,7 @@ static inline unsigned int
 _hb_next_syllable (hb_buffer_t *buffer, unsigned int start)
 {
   hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
 
   unsigned int syllable = info[start].syllable();
   while (++start < count && syllable == info[start].syllable())
@@ -174,7 +174,7 @@ _hb_clear_syllables (const hb_ot_shape_plan_t *plan HB_UNUSED,
 		     hb_buffer_t *buffer)
 {
   hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   for (unsigned int i = 0; i < count; i++)
     info[i].syllable() = 0;
 }
@@ -352,7 +352,7 @@ _hb_glyph_info_is_continuation (const hb_glyph_info_t *info)
 /* Loop over grapheme. Based on foreach_cluster(). */
 #define foreach_grapheme(buffer, start, end) \
   for (unsigned int \
-       _count = buffer->len, \
+       _count = buffer->len(), \
        start = 0, end = _count ? _hb_next_grapheme (buffer, 0) : 0; \
        start < _count; \
        start = end, end = _hb_next_grapheme (buffer, start))
@@ -361,7 +361,7 @@ static inline unsigned int
 _hb_next_grapheme (hb_buffer_t *buffer, unsigned int start)
 {
   hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
 
   while (++start < count && _hb_glyph_info_is_continuation (&info[start]))
     ;
@@ -567,7 +567,7 @@ _hb_clear_substitution_flags (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			      hb_buffer_t *buffer)
 {
   hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   for (unsigned int i = 0; i < count; i++)
     _hb_glyph_info_clear_substituted (&info[i]);
 }

@@ -55,7 +55,7 @@ struct hb_kern_machine_t
     skippy_iter.init (&c);
 
     bool horizontal = HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction);
-    unsigned int count = buffer->len;
+    unsigned int count = buffer->len();
     hb_glyph_info_t *info = buffer->info;
     hb_glyph_position_t *pos = buffer->pos;
     for (unsigned int idx = 0; idx < count;)

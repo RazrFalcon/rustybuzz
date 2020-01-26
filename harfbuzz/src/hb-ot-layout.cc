@@ -242,7 +242,7 @@ _hb_ot_layout_set_glyph_props (hb_font_t *font,
 			       hb_buffer_t *buffer)
 {
   const OT::GDEF &gdef = *font->face->table.GDEF->table;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   for (unsigned int i = 0; i < count; i++)
   {
     _hb_glyph_info_set_glyph_props (&buffer->info[i], gdef.get_glyph_props (font, buffer->info[i].codepoint));
@@ -719,7 +719,7 @@ hb_ot_layout_delete_glyphs_inplace (hb_buffer_t *buffer,
   /* Merge clusters and delete filtered glyphs.
    * NOTE! We can't use out-buffer as we have positioning data. */
   unsigned int j = 0;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   hb_glyph_position_t *pos = buffer->pos;
   for (unsigned int i = 0; i < count; i++)
@@ -759,7 +759,7 @@ hb_ot_layout_delete_glyphs_inplace (hb_buffer_t *buffer,
     }
     j++;
   }
-  buffer->len = j;
+  buffer->info_vec.length = j;
 }
 
 /**
@@ -875,7 +875,7 @@ apply_forward (OT::hb_ot_apply_context_t *c,
 {
   bool ret = false;
   hb_buffer_t *buffer = c->buffer;
-  while (buffer->idx < buffer->len)
+  while (buffer->idx < buffer->len())
   {
     bool applied = false;
     if (accel.may_have (buffer->cur().codepoint) &&
@@ -921,7 +921,7 @@ apply_string_gsub (OT::hb_ot_apply_context_t *c,
 {
   hb_buffer_t *buffer = c->buffer;
 
-  if (unlikely (!buffer->len || !c->lookup_mask))
+  if (unlikely (!buffer->len() || !c->lookup_mask))
     return;
 
   c->set_lookup_props (lookup.get_props ());
@@ -943,7 +943,7 @@ apply_string_gsub (OT::hb_ot_apply_context_t *c,
   {
     /* in-place backward substitution/positioning */
     buffer->remove_output ();
-    buffer->idx = buffer->len - 1;
+    buffer->idx = buffer->len() - 1;
 
     apply_backward (c, accel);
   }
@@ -994,7 +994,7 @@ apply_string_gpos (OT::hb_ot_apply_context_t *c,
 {
   hb_buffer_t *buffer = c->buffer;
 
-  if (unlikely (!buffer->len || !c->lookup_mask))
+  if (unlikely (!buffer->len() || !c->lookup_mask))
     return;
 
   c->set_lookup_props (lookup.get_props ());
@@ -1007,12 +1007,12 @@ apply_string_gpos (OT::hb_ot_apply_context_t *c,
     ret = apply_forward (c, accel);
     if (ret)
     {
-	assert (!buffer->has_separate_output ());
+	assert (!buffer->has_separate_output);
     }
   }
   else
   {
-    buffer->idx = buffer->len - 1;
+    buffer->idx = buffer->len() - 1;
 
     apply_backward (c, accel);
   }

@@ -231,7 +231,7 @@ do_thai_pua_shaping (const hb_ot_shape_plan_t *plan HB_UNUSED,
   unsigned int base = 0;
 
   hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   for (unsigned int i = 0; i < count; i++)
   {
     thai_mark_type_t mt = get_mark_type (info[i].codepoint);
@@ -322,7 +322,7 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
 #define IS_TONE_MARK(x) (hb_in_ranges<hb_codepoint_t> ((x) & ~0x0080u, 0x0E34u, 0x0E37u, 0x0E47u, 0x0E4Eu, 0x0E31u, 0x0E31u))
 
   buffer->clear_output ();
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   for (buffer->idx = 0; buffer->idx < count;)
   {
     hb_codepoint_t u = buffer->cur().codepoint;
@@ -338,22 +338,22 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
 
     /* Make Nikhahit be recognized as a ccc=0 mark when zeroing widths. */
     unsigned int end = buffer->out_len;
-    _hb_glyph_info_set_general_category (&buffer->out_info[end - 2], HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK);
+    _hb_glyph_info_set_general_category (&buffer->out_info()[end - 2], HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK);
 
     /* Ok, let's see... */
     unsigned int start = end - 2;
-    while (start > 0 && IS_TONE_MARK (buffer->out_info[start - 1].codepoint))
+    while (start > 0 && IS_TONE_MARK (buffer->out_info()[start - 1].codepoint))
       start--;
 
     if (start + 2 < end)
     {
       /* Move Nikhahit (end-2) to the beginning */
       buffer->merge_out_clusters (start, end);
-      hb_glyph_info_t t = buffer->out_info[end - 2];
-      memmove (buffer->out_info + start + 1,
-	       buffer->out_info + start,
-	       sizeof (buffer->out_info[0]) * (end - start - 2));
-      buffer->out_info[start] = t;
+      hb_glyph_info_t t = buffer->out_info()[end - 2];
+      memmove (buffer->out_info() + start + 1,
+	       buffer->out_info() + start,
+	       sizeof (buffer->out_info()[0]) * (end - start - 2));
+      buffer->out_info()[start] = t;
     }
     else
     {

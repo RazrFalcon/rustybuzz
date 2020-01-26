@@ -52,7 +52,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
    */
   bool processed = false;
   buffer->clear_output ();
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   switch ((unsigned) buffer->props.script)
   {
     case HB_SCRIPT_DEVANAGARI:

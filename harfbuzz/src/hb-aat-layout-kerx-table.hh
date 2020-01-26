@@ -272,7 +272,7 @@ struct KerxSubTableFormat1
 	  unsigned int idx = stack[--depth];
 	  int v = *actions;
 	  actions += tuple_count;
-	  if (idx >= buffer->len) continue;
+	  if (idx >= buffer->len()) continue;
 
 	  /* "The end of the list is marked by an odd value..." */
 	  last = v & 1;
@@ -504,7 +504,7 @@ struct KerxSubTableFormat4
     {
       hb_buffer_t *buffer = driver->buffer;
 
-      if (mark_set && entry.data.ankrActionIndex != 0xFFFF && buffer->idx < buffer->len)
+      if (mark_set && entry.data.ankrActionIndex != 0xFFFF && buffer->idx < buffer->len())
       {
 	hb_glyph_position_t &o = buffer->cur_pos();
 	switch (action_type)
@@ -896,7 +896,7 @@ struct KerxTable
 	/* Attach all glyphs into a chain. */
 	seenCrossStream = true;
 	hb_glyph_position_t *pos = c->buffer->pos;
-	unsigned int count = c->buffer->len;
+	unsigned int count = c->buffer->len();
 	for (unsigned int i = 0; i < count; i++)
 	{
 	  pos[i].attach_type() = ATTACH_TYPE_CURSIVE;

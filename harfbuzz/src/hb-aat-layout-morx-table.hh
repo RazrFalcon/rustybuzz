@@ -87,7 +87,7 @@ struct RearrangementSubtable
 	start = buffer->idx;
 
       if (flags & MarkLast)
-	end = hb_min (buffer->idx + 1, buffer->len);
+	end = hb_min (buffer->idx + 1, buffer->len());
 
       if ((flags & Verb) && start < end)
       {
@@ -123,7 +123,7 @@ struct RearrangementSubtable
 
 	if (end - start >= l + r)
 	{
-	  buffer->merge_clusters (start, hb_min (buffer->idx + 1, buffer->len));
+	  buffer->merge_clusters (start, hb_min (buffer->idx + 1, buffer->len()));
 	  buffer->merge_clusters (start, end);
 
 	  hb_glyph_info_t *info = buffer->info;
@@ -224,7 +224,7 @@ struct ContextualSubtable
     {
       hb_buffer_t *buffer = driver->buffer;
 
-      if (buffer->idx == buffer->len && !mark_set)
+      if (buffer->idx == buffer->len() && !mark_set)
 	return false;
 
       return entry.data.markIndex != 0xFFFF || entry.data.currentIndex != 0xFFFF;
@@ -236,7 +236,7 @@ struct ContextualSubtable
 
       /* Looks like CoreText applies neither mark nor current substitution for
        * end-of-text if mark was not explicitly set. */
-      if (buffer->idx == buffer->len && !mark_set)
+      if (buffer->idx == buffer->len() && !mark_set)
 	return;
 
       const HBGlyphID *replacement;
@@ -260,13 +260,13 @@ struct ContextualSubtable
       }
       if (replacement)
       {
-	buffer->unsafe_to_break (mark, hb_min (buffer->idx + 1, buffer->len));
+	buffer->unsafe_to_break (mark, hb_min (buffer->idx + 1, buffer->len()));
 	buffer->info[mark].codepoint = *replacement;
 	ret = true;
       }
 
       replacement = nullptr;
-      unsigned int idx = hb_min (buffer->idx, buffer->len - 1);
+      unsigned int idx = hb_min (buffer->idx, buffer->len() - 1);
       if (Types::extended)
       {
 	if (entry.data.currentIndex != 0xFFFF)
@@ -476,7 +476,7 @@ struct LigatureSubtable
 	if (unlikely (!match_length))
 	  return;
 
-	if (buffer->idx >= buffer->len)
+	if (buffer->idx >= buffer->len())
 	  return; /* TODO Work on previous instead? */
 
 	unsigned int cursor = match_length;
@@ -602,7 +602,7 @@ struct NoncontextualSubtable
     unsigned int num_glyphs = hb_face_get_glyph_count (c->face);
 
     hb_glyph_info_t *info = c->buffer->info;
-    unsigned int count = c->buffer->len;
+    unsigned int count = c->buffer->len();
     for (unsigned int i = 0; i < count; i++)
     {
       const HBGlyphID *replacement = substitute.get_value (info[i].codepoint, num_glyphs);
@@ -733,17 +733,17 @@ struct InsertionSubtable
 	unsigned int end = buffer->out_len;
 	buffer->move_to (mark);
 
-	if (buffer->idx < buffer->len && !before)
+	if (buffer->idx < buffer->len() && !before)
 	  buffer->copy_glyph ();
 	/* TODO We ignore KashidaLike setting. */
 	for (unsigned int i = 0; i < count; i++)
 	  buffer->output_glyph (glyphs[i]);
-	if (buffer->idx < buffer->len && !before)
+	if (buffer->idx < buffer->len() && !before)
 	  buffer->skip_glyph ();
 
 	buffer->move_to (end + count);
 
-	buffer->unsafe_to_break_from_outbuffer (mark, hb_min (buffer->idx + 1, buffer->len));
+	buffer->unsafe_to_break_from_outbuffer (mark, hb_min (buffer->idx + 1, buffer->len()));
       }
 
       if (flags & SetMark)
@@ -760,12 +760,12 @@ struct InsertionSubtable
 
 	unsigned int end = buffer->out_len;
 
-	if (buffer->idx < buffer->len && !before)
+	if (buffer->idx < buffer->len() && !before)
 	  buffer->copy_glyph ();
 	/* TODO We ignore KashidaLike setting. */
 	for (unsigned int i = 0; i < count; i++)
 	  buffer->output_glyph (glyphs[i]);
-	if (buffer->idx < buffer->len && !before)
+	if (buffer->idx < buffer->len() && !before)
 	  buffer->skip_glyph ();
 
 	/* Humm. Not sure where to move to.  There's this wording under

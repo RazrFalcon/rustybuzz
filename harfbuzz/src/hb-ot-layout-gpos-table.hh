@@ -1657,7 +1657,7 @@ propagate_attachment_offsets (hb_glyph_position_t *pos,
 void
 GPOS::position_start (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 {
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   for (unsigned int i = 0; i < count; i++)
     buffer->pos[i].attach_chain() = buffer->pos[i].attach_type() = 0;
 }

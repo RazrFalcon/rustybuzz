@@ -102,14 +102,13 @@ struct hb_buffer_t
   bool have_positions; /* Whether we have positions */
 
   unsigned int idx; /* Cursor into ->info and ->pos arrays */
-  unsigned int len; /* Length of ->info and ->pos arrays */
   unsigned int out_len; /* Length of ->out array if have_output */
 
   hb_vector_t<hb_glyph_info_t> info_vec;
   hb_vector_t<hb_glyph_position_t> pos_vec;
   hb_glyph_info_t     *info;
-  hb_glyph_info_t     *out_info;
   hb_glyph_position_t *pos;
+  bool has_separate_output;
 
   unsigned int serial;
 
@@ -121,6 +120,26 @@ struct hb_buffer_t
   unsigned int context_len[2];
 
   /* Methods */
+  
+  unsigned int len() const { return info_vec.length; }
+  
+  hb_glyph_info_t *out_info() 
+  {
+    if (has_separate_output) {
+      return (hb_glyph_info_t *) pos;
+    } else {
+      return info;
+    }
+  }
+  
+  hb_glyph_info_t *out_info() const
+  {
+    if (has_separate_output) {
+      return (hb_glyph_info_t *) pos;
+    } else {
+      return info;
+    }
+  }
 
   hb_glyph_info_t &cur (unsigned int i = 0) { return info[idx + i]; }
   hb_glyph_info_t cur (unsigned int i = 0) const { return info[idx + i]; }
@@ -128,22 +147,18 @@ struct hb_buffer_t
   hb_glyph_position_t &cur_pos (unsigned int i = 0) { return pos[idx + i]; }
   hb_glyph_position_t cur_pos (unsigned int i = 0) const { return pos[idx + i]; }
 
-  hb_glyph_info_t &prev ()      { return out_info[out_len ? out_len - 1 : 0]; }
-  hb_glyph_info_t prev () const { return out_info[out_len ? out_len - 1 : 0]; }
-
-  bool has_separate_output () const { return info != out_info; }
-
+  hb_glyph_info_t &prev ()      { return out_info()[out_len ? out_len - 1 : 0]; }
+  hb_glyph_info_t prev () const { return out_info()[out_len ? out_len - 1 : 0]; }
 
   HB_INTERNAL void reset ();
   HB_INTERNAL void clear ();
 
   unsigned int backtrack_len () const { return have_output? out_len : idx; }
-  unsigned int lookahead_len () const { return len - idx; }
+  unsigned int lookahead_len () const { return len() - idx; }
   unsigned int next_serial () { return serial++; }
 
   HB_INTERNAL void add (hb_codepoint_t  codepoint,
 			unsigned int    cluster);
-  HB_INTERNAL void add_info (const hb_glyph_info_t &glyph_info);
 
   HB_INTERNAL void reverse_range (unsigned int start, unsigned int end);
   HB_INTERNAL void reverse ();
@@ -162,11 +177,11 @@ struct hb_buffer_t
 
   void replace_glyph (hb_codepoint_t glyph_index)
   {
-    if (unlikely (out_info != info || out_len != idx)) {
+    if (unlikely (has_separate_output || out_len != idx)) {
       if (unlikely (!make_room_for (1, 1))) return;
-      out_info[out_len] = info[idx];
+      out_info()[out_len] = info[idx];
     }
-    out_info[out_len].codepoint = glyph_index;
+    out_info()[out_len].codepoint = glyph_index;
 
     idx++;
     out_len++;
@@ -176,21 +191,21 @@ struct hb_buffer_t
   {
     if (unlikely (!make_room_for (0, 1))) return Crap(hb_glyph_info_t);
 
-    if (unlikely (idx == len && !out_len))
+    if (unlikely (idx == len() && !out_len))
       return Crap(hb_glyph_info_t);
 
-    out_info[out_len] = idx < len ? info[idx] : out_info[out_len - 1];
-    out_info[out_len].codepoint = glyph_index;
+    out_info()[out_len] = idx < len() ? info[idx] : out_info()[out_len - 1];
+    out_info()[out_len].codepoint = glyph_index;
 
     out_len++;
 
-    return out_info[out_len - 1];
+    return out_info()[out_len - 1];
   }
   void output_info (const hb_glyph_info_t &glyph_info)
   {
     if (unlikely (!make_room_for (0, 1))) return;
 
-    out_info[out_len] = glyph_info;
+    out_info()[out_len] = glyph_info;
 
     out_len++;
   }
@@ -199,7 +214,7 @@ struct hb_buffer_t
   {
     if (unlikely (!make_room_for (0, 1))) return;
 
-    out_info[out_len] = info[idx];
+    out_info()[out_len] = info[idx];
 
     out_len++;
   }
@@ -210,10 +225,10 @@ struct hb_buffer_t
   {
     if (have_output)
     {
-      if (out_info != info || out_len != idx)
+      if (has_separate_output || out_len != idx)
       {
 	if (unlikely (!make_room_for (1, 1))) return;
-	out_info[out_len] = info[idx];
+	out_info()[out_len] = info[idx];
       }
       out_len++;
     }
@@ -227,10 +242,12 @@ struct hb_buffer_t
   {
     if (have_output)
     {
-      if (out_info != info || out_len != idx)
+      if (has_separate_output || out_len != idx)
       {
 	if (unlikely (!make_room_for (n, n))) return;
-	memmove (out_info + out_len, info + idx, n * sizeof (out_info[0]));
+        for (unsigned i = 0; i < n; ++i) {
+          out_info()[out_len + i] = info[idx + i];
+        }
       }
       out_len += n;
     }
@@ -241,12 +258,12 @@ struct hb_buffer_t
   void skip_glyph () { idx++; }
   void reset_masks (hb_mask_t mask)
   {
-    for (unsigned int j = 0; j < len; j++)
+    for (unsigned int j = 0; j < len(); j++)
       info[j].mask = mask;
   }
   void add_masks (hb_mask_t mask)
   {
-    for (unsigned int j = 0; j < len; j++)
+    for (unsigned int j = 0; j < len(); j++)
       info[j].mask |= mask;
   }
   HB_INTERNAL void set_masks (hb_mask_t value, hb_mask_t mask,
@@ -324,10 +341,10 @@ struct hb_buffer_t
       }
   }
 
-  void unsafe_to_break_all () { unsafe_to_break_impl (0, len); }
+  void unsafe_to_break_all () { unsafe_to_break_impl (0, len()); }
   void safe_to_break_all ()
   {
-    for (unsigned int i = 0; i < len; i++)
+    for (unsigned int i = 0; i < len(); i++)
       info[i].mask &= ~HB_GLYPH_FLAG_UNSAFE_TO_BREAK;
   }
 };
@@ -337,7 +354,7 @@ DECLARE_NULL_INSTANCE (hb_buffer_t);
 /* Loop over clusters. Duplicated in foreach_syllable(). */
 #define foreach_cluster(buffer, start, end) \
   for (unsigned int \
-       _count = buffer->len, \
+       _count = buffer->len(), \
        start = 0, end = _count ? _next_cluster (buffer, 0) : 0; \
        start < _count; \
        start = end, end = _next_cluster (buffer, start))
@@ -346,7 +363,7 @@ static inline unsigned int
 _next_cluster (hb_buffer_t *buffer, unsigned int start)
 {
   hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
 
   unsigned int cluster = info[start].cluster;
   while (++start < count && cluster == info[start].cluster)

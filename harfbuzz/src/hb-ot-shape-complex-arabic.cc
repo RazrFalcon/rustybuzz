@@ -290,7 +290,7 @@ data_destroy_arabic (void *data)
 static void
 arabic_joining (hb_buffer_t *buffer)
 {
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   unsigned int prev = (unsigned int) -1, state = 0;
 
@@ -348,7 +348,7 @@ static void
 mongolian_variation_selectors (hb_buffer_t *buffer)
 {
   /* Copy arabic_shaping_action() from base to Mongolian variation selectors. */
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 1; i < count; i++)
     if (unlikely (hb_in_range<hb_codepoint_t> (info[i].codepoint, 0x180Bu, 0x180Du)))
@@ -364,7 +364,7 @@ setup_masks_arabic_plan (const arabic_shape_plan_t *arabic_plan,
   if (script == HB_SCRIPT_MONGOLIAN)
     mongolian_variation_selectors (buffer);
 
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
     info[i].mask |= arabic_plan->mask_array[info[i].arabic_shaping_action()];
@@ -431,7 +431,7 @@ record_stch (const hb_ot_shape_plan_t *plan,
    * are applied before stch, but we assume that they didn't result in
    * anything multiplying into 5 pieces, so it's safe-ish... */
 
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
     if (unlikely (_hb_glyph_info_multiplied (&info[i])))
@@ -465,7 +465,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
   for (unsigned int step = MEASURE; step <= CUT; step = step + 1)
   {
-    unsigned int count = buffer->len;
+    unsigned int count = buffer->len();
     hb_glyph_info_t *info = buffer->info;
     hb_glyph_position_t *pos = buffer->pos;
     unsigned int new_len = count + extra_glyphs_needed; // write head during CUT
@@ -585,7 +585,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
     else
     {
       assert (j == 0);
-      buffer->len = new_len;
+      buffer->info_vec.length = new_len;
     }
   }
 }

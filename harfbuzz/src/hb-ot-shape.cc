@@ -417,7 +417,7 @@ hb_set_unicode_props (hb_buffer_t *buffer)
    *
    * https://www.unicode.org/reports/tr29/#Regex_Definitions
    */
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
   {
@@ -485,7 +485,7 @@ hb_insert_dotted_circle (hb_buffer_t *buffer, hb_font_t *font)
   info.cluster = buffer->cur().cluster;
   info.mask = buffer->cur().mask;
   buffer->output_info (info);
-  while (buffer->idx < buffer->len)
+  while (buffer->idx < buffer->len())
     buffer->next_glyph ();
   buffer->swap_buffers ();
 }
@@ -551,7 +551,7 @@ hb_ot_mirror_chars (const hb_ot_shape_context_t *c)
   hb_buffer_t *buffer = c->buffer;
   hb_mask_t rtlm_mask = c->plan->rtlm_mask;
 
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++) {
     hb_codepoint_t codepoint = hb_ucd_mirroring (info[i].codepoint);
@@ -583,7 +583,7 @@ hb_ot_shape_setup_masks_fraction (const hb_ot_shape_context_t *c)
     post_mask = c->plan->numr_mask | c->plan->frac_mask;
   }
 
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
   {
@@ -652,7 +652,7 @@ hb_ot_zero_width_default_ignorables (const hb_buffer_t *buffer)
       (buffer->flags & HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES))
     return;
 
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   hb_glyph_position_t *pos = buffer->pos;
   unsigned int i = 0;
@@ -669,7 +669,7 @@ hb_ot_hide_default_ignorables (hb_buffer_t *buffer,
       (buffer->flags & HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES))
     return;
 
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
 
   hb_codepoint_t invisible = buffer->invisible;
@@ -692,7 +692,7 @@ static inline void
 hb_ot_map_glyphs_fast (hb_buffer_t  *buffer)
 {
   /* Normalization process sets up glyph_index(), we just copy it. */
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
     info[i].codepoint = info[i].glyph_index();
@@ -703,7 +703,7 @@ hb_ot_map_glyphs_fast (hb_buffer_t  *buffer)
 static inline void
 hb_synthesize_glyph_classes (hb_buffer_t *buffer)
 {
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
   {
@@ -798,7 +798,7 @@ zero_mark_width (hb_glyph_position_t *pos)
 static inline void
 zero_mark_widths_by_gdef (hb_buffer_t *buffer, bool adjust_offsets)
 {
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
     if (_hb_glyph_info_is_mark (&info[i]))
@@ -813,7 +813,7 @@ static inline void
 hb_ot_position_default (const hb_ot_shape_context_t *c)
 {
   hb_direction_t direction = c->buffer->props.direction;
-  unsigned int count = c->buffer->len;
+  unsigned int count = c->buffer->len();
   hb_glyph_info_t *info = c->buffer->info;
   hb_glyph_position_t *pos = c->buffer->pos;
 
@@ -941,14 +941,14 @@ static void
 hb_ot_shape_internal (hb_ot_shape_context_t *c)
 {
   c->buffer->scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
-  if (likely (!hb_unsigned_mul_overflows (c->buffer->len, HB_BUFFER_MAX_LEN_FACTOR)))
+  if (likely (!hb_unsigned_mul_overflows (c->buffer->len(), HB_BUFFER_MAX_LEN_FACTOR)))
   {
-    c->buffer->max_len = hb_max (c->buffer->len * HB_BUFFER_MAX_LEN_FACTOR,
+    c->buffer->max_len = hb_max (c->buffer->len() * HB_BUFFER_MAX_LEN_FACTOR,
                               (unsigned) HB_BUFFER_MAX_LEN_MIN);
   }
-  if (likely (!hb_unsigned_mul_overflows (c->buffer->len, HB_BUFFER_MAX_OPS_FACTOR)))
+  if (likely (!hb_unsigned_mul_overflows (c->buffer->len(), HB_BUFFER_MAX_OPS_FACTOR)))
   {
-    c->buffer->max_ops = hb_max (c->buffer->len * HB_BUFFER_MAX_OPS_FACTOR,
+    c->buffer->max_ops = hb_max (c->buffer->len() * HB_BUFFER_MAX_OPS_FACTOR,
                               (unsigned) HB_BUFFER_MAX_OPS_MIN);
   }
 

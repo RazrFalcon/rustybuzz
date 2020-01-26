@@ -283,7 +283,7 @@ hb_shape_plan_execute (hb_shape_plan_t    *shape_plan,
 		  num_features,
 		  shape_plan->key.shaper_func);
 
-  if (unlikely (!buffer->len))
+  if (unlikely (!buffer->len()))
     return true;
 
   assert (!hb_object_is_immutable (buffer));

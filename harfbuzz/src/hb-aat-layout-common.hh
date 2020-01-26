@@ -744,7 +744,7 @@ struct StateTableDriver
     int state = StateTable<Types, EntryData>::STATE_START_OF_TEXT;
     for (buffer->idx = 0; ;)
     {
-      unsigned int klass = buffer->idx < buffer->len ?
+      unsigned int klass = buffer->idx < buffer->len() ?
 			   machine.get_class (buffer->info[buffer->idx].codepoint, num_glyphs) :
 			   (unsigned) StateTable<Types, EntryData>::CLASS_END_OF_TEXT;
       DEBUG_MSG (APPLY, nullptr, "c%u at %u", klass, buffer->idx);
@@ -754,7 +754,7 @@ struct StateTableDriver
        * go differently if we start from state 0 here.
        *
        * Ugh.  The indexing here is ugly... */
-      if (state && buffer->backtrack_len () && buffer->idx < buffer->len)
+      if (state && buffer->backtrack_len () && buffer->idx < buffer->len())
       {
 	/* If there's no action and we're just epsilon-transitioning to state 0,
 	 * safe to break. */
@@ -765,7 +765,7 @@ struct StateTableDriver
       }
 
       /* Unsafe-to-break if end-of-text would kick in here. */
-      if (buffer->idx + 2 <= buffer->len)
+      if (buffer->idx + 2 <= buffer->len())
       {
 	const Entry<EntryData> &end_entry = machine.get_entry (state, StateTable<Types, EntryData>::CLASS_END_OF_TEXT);
 	if (c->is_actionable (this, end_entry))
@@ -777,7 +777,7 @@ struct StateTableDriver
       state = machine.new_state (entry.newState);
       DEBUG_MSG (APPLY, nullptr, "s%d", state);
 
-      if (buffer->idx == buffer->len)
+      if (buffer->idx == buffer->len())
 	break;
 
       if (!(entry.flags & context_t::DontAdvance) || buffer->max_ops-- <= 0)
@@ -786,7 +786,7 @@ struct StateTableDriver
 
     if (!c->in_place)
     {
-      for (; buffer->idx < buffer->len;)
+      for (; buffer->idx < buffer->len();)
 	buffer->next_glyph ();
       buffer->swap_buffers ();
     }

@@ -119,14 +119,11 @@ hb_buffer_t::enlarge (unsigned int size)
 
   static_assert ((sizeof (info[0]) == sizeof (pos[0])), "");
 
-  bool separate_out = out_info != info;
-
   info_vec.alloc(size);
   pos_vec.alloc(size);
 
   pos = pos_vec.arrayZ;
   info = info_vec.arrayZ;
-  out_info = separate_out ? (hb_glyph_info_t *) pos : info;
 }
 
 bool
@@ -135,13 +132,15 @@ hb_buffer_t::make_room_for (unsigned int num_in,
 {
   ensure (out_len + num_out);
 
-  if (out_info == info &&
+  if (!has_separate_output &&
       out_len + num_out > idx + num_in)
   {
     assert (have_output);
 
-    out_info = (hb_glyph_info_t *) pos;
-    memcpy (out_info, info, out_len * sizeof (out_info[0]));
+    has_separate_output = true;
+    for (unsigned i = 0; i < out_len; ++i) {
+      out_info()[i] = info[i];
+    }
   }
 
   return true;
@@ -151,10 +150,13 @@ bool
 hb_buffer_t::shift_forward (unsigned int count)
 {
   assert (have_output);
-  ensure (len + count);
+  ensure (len() + count);
 
-  memmove (info + idx + count, info + idx, (len - idx) * sizeof (info[0]));
-  if (idx + count > len)
+  for (unsigned i = 0; i < (len() - idx); ++i) {
+    info[idx + count + i] = info[idx + i];
+  }
+
+  if (idx + count > len())
   {
     /* Under memory failure we might expose this area.  At least
      * clean it up.  Oh well...
@@ -162,9 +164,9 @@ hb_buffer_t::shift_forward (unsigned int count)
      * Ideally, we should at least set Default_Ignorable bits on
      * these, as well as consistent cluster values.  But the former
      * is layering violation... */
-    memset (info + len, 0, (idx + count - len) * sizeof (info[0]));
+    memset (info + len(), 0, (idx + count - len()) * sizeof (info[0]));
   }
-  len += count;
+  info_vec.length += count;
   idx += count;
 
   return true;
@@ -200,9 +202,9 @@ hb_buffer_t::clear ()
   have_positions = false;
 
   idx = 0;
-  len = 0;
+  info_vec.length = 0;
   out_len = 0;
-  out_info = info;
+  has_separate_output = false;
 
   serial = 0;
 
@@ -216,28 +218,17 @@ hb_buffer_t::add (hb_codepoint_t  codepoint,
 {
   hb_glyph_info_t *glyph;
 
-  ensure (len + 1);
+  ensure (len() + 1);
 
-  glyph = &info[len];
+  glyph = &info[len()];
 
   memset (glyph, 0, sizeof (*glyph));
   glyph->codepoint = codepoint;
   glyph->mask = 0;
   glyph->cluster = cluster;
 
-  len++;
+  info_vec.length++;
 }
-
-void
-hb_buffer_t::add_info (const hb_glyph_info_t &glyph_info)
-{
-  ensure (len + 1);
-
-  info[len] = glyph_info;
-
-  len++;
-}
-
 
 void
 hb_buffer_t::remove_output ()
@@ -249,7 +240,7 @@ hb_buffer_t::remove_output ()
   have_positions = false;
 
   out_len = 0;
-  out_info = info;
+  has_separate_output = false;
 }
 
 void
@@ -262,7 +253,7 @@ hb_buffer_t::clear_output ()
   have_positions = false;
 
   out_len = 0;
-  out_info = info;
+  has_separate_output = false;
 }
 
 void
@@ -275,9 +266,9 @@ hb_buffer_t::clear_positions ()
   have_positions = true;
 
   out_len = 0;
-  out_info = info;
+  has_separate_output = false;
 
-  hb_memset (pos, 0, sizeof (pos[0]) * len);
+  hb_memset (pos, 0, sizeof (pos[0]) * len());
 }
 
 void
@@ -286,20 +277,19 @@ hb_buffer_t::swap_buffers ()
   assert (have_output);
   have_output = false;
 
-  if (out_info != info)
+  if (has_separate_output)
   {
     hb_glyph_info_t *tmp_string = info_vec.arrayZ;
     info_vec.arrayZ = (hb_glyph_info_t *) pos_vec.arrayZ;
     pos_vec.arrayZ = (hb_glyph_position_t *) tmp_string;
 
-    info = out_info;
-    out_info = tmp_string;
-    pos = (hb_glyph_position_t *) out_info;
+    info = info_vec.arrayZ;
+    pos = pos_vec.arrayZ;
   }
 
   unsigned int tmp;
-  tmp = len;
-  len = out_len;
+  tmp = len();
+  info_vec.length = out_len;
   out_len = tmp;
 
   idx = 0;
@@ -313,12 +303,12 @@ hb_buffer_t::replace_glyphs (unsigned int num_in,
 {
   if (unlikely (!make_room_for (num_in, num_out))) return;
 
-  assert (idx + num_in <= len);
+  assert (idx + num_in <= len());
 
   merge_clusters (idx, idx + num_in);
 
   hb_glyph_info_t orig_info = info[idx];
-  hb_glyph_info_t *pinfo = &out_info[out_len];
+  hb_glyph_info_t *pinfo = &out_info()[out_len];
   for (unsigned int i = 0; i < num_out; i++)
   {
     *pinfo = orig_info;
@@ -335,19 +325,22 @@ hb_buffer_t::move_to (unsigned int i)
 {
   if (!have_output)
   {
-    assert (i <= len);
+    assert (i <= len());
     idx = i;
     return true;
   }
 
-  assert (i <= out_len + (len - idx));
+  assert (i <= out_len + (len() - idx));
 
   if (out_len < i)
   {
     unsigned int count = i - out_len;
     if (unlikely (!make_room_for (count, count))) return false;
 
-    memmove (out_info + out_len, info + idx, count * sizeof (out_info[0]));
+    for (unsigned j = 0; j < count; ++j) {
+      out_info()[out_len + j] = info[idx + j];
+    }
+
     idx += count;
     out_len += count;
   }
@@ -370,7 +363,9 @@ hb_buffer_t::move_to (unsigned int i)
 
     idx -= count;
     out_len -= count;
-    memmove (info + idx, out_info + out_len, count * sizeof (out_info[0]));
+    for (unsigned j = 0; j < count; ++j) {
+      info[idx + j] = out_info()[out_len + j];
+    }
   }
 
   return true;
@@ -390,13 +385,13 @@ hb_buffer_t::set_masks (hb_mask_t    value,
     return;
 
   if (cluster_start == 0 && cluster_end == (unsigned int)-1) {
-    unsigned int count = len;
+    unsigned int count = len();
     for (unsigned int i = 0; i < count; i++)
       info[i].mask = (info[i].mask & not_mask) | value;
     return;
   }
 
-  unsigned int count = len;
+  unsigned int count = len();
   for (unsigned int i = 0; i < count; i++)
     if (cluster_start <= info[i].cluster && info[i].cluster < cluster_end)
       info[i].mask = (info[i].mask & not_mask) | value;
@@ -433,10 +428,10 @@ hb_buffer_t::reverse_range (unsigned int start,
 void
 hb_buffer_t::reverse ()
 {
-  if (unlikely (!len))
+  if (unlikely (!len()))
     return;
 
-  reverse_range (0, len);
+  reverse_range (0, len());
 }
 
 void
@@ -444,12 +439,12 @@ hb_buffer_t::reverse_clusters ()
 {
   unsigned int i, start, count, last_cluster;
 
-  if (unlikely (!len))
+  if (unlikely (!len()))
     return;
 
   reverse ();
 
-  count = len;
+  count = len();
   start = 0;
   last_cluster = info[0].cluster;
   for (i = 1; i < count; i++) {
@@ -465,7 +460,7 @@ hb_buffer_t::reverse_clusters ()
 void
 hb_buffer_t::reset_clusters ()
 {
-  for (uint i = 0; i < len; i++) {
+  for (uint i = 0; i < len(); i++) {
     info[i].cluster = i;
   }
 }
@@ -486,7 +481,7 @@ hb_buffer_t::merge_clusters_impl (unsigned int start,
     cluster = hb_min (cluster, info[i].cluster);
 
   /* Extend end */
-  while (end < len && info[end - 1].cluster == info[end].cluster)
+  while (end < len() && info[end - 1].cluster == info[end].cluster)
     end++;
 
   /* Extend start */
@@ -495,8 +490,8 @@ hb_buffer_t::merge_clusters_impl (unsigned int start,
 
   /* If we hit the start of buffer, continue in out-buffer. */
   if (idx == start)
-    for (unsigned int i = out_len; i && out_info[i - 1].cluster == info[start].cluster; i--)
-      set_cluster (out_info[i - 1], cluster);
+    for (unsigned int i = out_len; i && out_info()[i - 1].cluster == info[start].cluster; i--)
+      set_cluster (out_info()[i - 1], cluster);
 
   for (unsigned int i = start; i < end; i++)
     set_cluster (info[i], cluster);
@@ -511,26 +506,26 @@ hb_buffer_t::merge_out_clusters (unsigned int start,
   if (unlikely (end - start < 2))
     return;
 
-  unsigned int cluster = out_info[start].cluster;
+  unsigned int cluster = out_info()[start].cluster;
 
   for (unsigned int i = start + 1; i < end; i++)
-    cluster = hb_min (cluster, out_info[i].cluster);
+    cluster = hb_min (cluster, out_info()[i].cluster);
 
   /* Extend start */
-  while (start && out_info[start - 1].cluster == out_info[start].cluster)
+  while (start && out_info()[start - 1].cluster == out_info()[start].cluster)
     start--;
 
   /* Extend end */
-  while (end < out_len && out_info[end - 1].cluster == out_info[end].cluster)
+  while (end < out_len && out_info()[end - 1].cluster == out_info()[end].cluster)
     end++;
 
   /* If we hit the end of out-buffer, continue in buffer. */
   if (end == out_len)
-    for (unsigned int i = idx; i < len && info[i].cluster == out_info[end - 1].cluster; i++)
+    for (unsigned int i = idx; i < len() && info[i].cluster == out_info()[end - 1].cluster; i++)
       set_cluster (info[i], cluster);
 
   for (unsigned int i = start; i < end; i++)
-    set_cluster (out_info[i], cluster);
+    set_cluster (out_info()[i], cluster);
 }
 void
 hb_buffer_t::delete_glyph ()
@@ -538,7 +533,7 @@ hb_buffer_t::delete_glyph ()
   /* The logic here is duplicated in hb_ot_hide_default_ignorables(). */
 
   unsigned int cluster = info[idx].cluster;
-  if (idx + 1 < len && cluster == info[idx + 1].cluster)
+  if (idx + 1 < len() && cluster == info[idx + 1].cluster)
   {
     /* Cluster survives; do nothing. */
     goto done;
@@ -547,17 +542,17 @@ hb_buffer_t::delete_glyph ()
   if (out_len)
   {
     /* Merge cluster backward. */
-    if (cluster < out_info[out_len - 1].cluster)
+    if (cluster < out_info()[out_len - 1].cluster)
     {
       unsigned int mask = info[idx].mask;
-      unsigned int old_cluster = out_info[out_len - 1].cluster;
-      for (unsigned i = out_len; i && out_info[i - 1].cluster == old_cluster; i--)
-        set_cluster (out_info[i - 1], cluster, mask);
+      unsigned int old_cluster = out_info()[out_len - 1].cluster;
+      for (unsigned i = out_len; i && out_info()[i - 1].cluster == old_cluster; i--)
+        set_cluster (out_info()[i - 1], cluster, mask);
     }
     goto done;
   }
 
-  if (idx + 1 < len)
+  if (idx + 1 < len())
   {
     /* Merge cluster forward. */
     merge_clusters (idx, idx + 2);
@@ -588,9 +583,9 @@ hb_buffer_t::unsafe_to_break_from_outbuffer (unsigned int start, unsigned int en
   assert (idx <= end);
 
   unsigned int cluster = (unsigned int) -1;
-  cluster = _unsafe_to_break_find_min_cluster (out_info, start, out_len, cluster);
+  cluster = _unsafe_to_break_find_min_cluster (out_info(), start, out_len, cluster);
   cluster = _unsafe_to_break_find_min_cluster (info, idx, end, cluster);
-  _unsafe_to_break_set_mask (out_info, start, out_len, cluster);
+  _unsafe_to_break_set_mask (out_info(), start, out_len, cluster);
   _unsafe_to_break_set_mask (info, idx, end, cluster);
 }
 
@@ -598,11 +593,11 @@ void
 hb_buffer_t::guess_segment_properties ()
 {
   assert (content_type == HB_BUFFER_CONTENT_TYPE_UNICODE ||
-          (!len && content_type == HB_BUFFER_CONTENT_TYPE_INVALID));
+          (!len() && content_type == HB_BUFFER_CONTENT_TYPE_INVALID));
 
   /* If script is set to INVALID, guess from buffer contents */
   if (props.script == HB_SCRIPT_INVALID) {
-    for (unsigned int i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < len(); i++) {
       hb_script_t script = hb_ucd_script (info[i].codepoint);
       if (likely (script != HB_SCRIPT_COMMON &&
                   script != HB_SCRIPT_INHERITED &&
@@ -1103,7 +1098,7 @@ hb_buffer_pre_allocate (hb_buffer_t *buffer, unsigned int size)
 unsigned int
 hb_buffer_get_length (hb_buffer_t *buffer)
 {
-  return buffer->len;
+  return buffer->len();
 }
 
 /**
@@ -1125,7 +1120,7 @@ hb_buffer_get_glyph_infos (hb_buffer_t  *buffer,
                            unsigned int *length)
 {
   if (length)
-    *length = buffer->len;
+    *length = buffer->len();
 
   return (hb_glyph_info_t *) buffer->info;
 }
@@ -1152,7 +1147,7 @@ hb_buffer_get_glyph_positions (hb_buffer_t  *buffer,
     buffer->clear_positions ();
 
   if (length)
-    *length = buffer->len;
+    *length = buffer->len();
 
   return (hb_glyph_position_t *) buffer->pos;
 }
@@ -1273,7 +1268,7 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
   const hb_codepoint_t replacement = buffer->replacement;
 
   assert (buffer->content_type == HB_BUFFER_CONTENT_TYPE_UNICODE ||
-          (!buffer->len && buffer->content_type == HB_BUFFER_CONTENT_TYPE_INVALID));
+          (!buffer->len() && buffer->content_type == HB_BUFFER_CONTENT_TYPE_INVALID));
 
   if (unlikely (hb_object_is_immutable (buffer)))
     return;
@@ -1284,7 +1279,7 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
   if (item_length == -1)
     item_length = text_length - item_offset;
 
-  buffer->ensure (buffer->len + item_length * sizeof (T) / 4);
+  buffer->ensure (buffer->len() + item_length * sizeof (T) / 4);
 
   /* If buffer is empty and pre-context provided, install it.
    * This check is written this way, to make sure people can
@@ -1293,7 +1288,7 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
    *
    * https://bugzilla.mozilla.org/show_bug.cgi?id=801410#c13
    */
-  if (!buffer->len && item_offset > 0)
+  if (!buffer->len() && item_offset > 0)
   {
     /* Add pre-context */
     buffer->clear_context (0);
@@ -1428,11 +1423,11 @@ hb_buffer_normalize_glyphs (hb_buffer_t *buffer)
 {
   assert (buffer->have_positions);
   assert (buffer->content_type == HB_BUFFER_CONTENT_TYPE_GLYPHS ||
-          (!buffer->len && buffer->content_type == HB_BUFFER_CONTENT_TYPE_INVALID));
+          (!buffer->len() && buffer->content_type == HB_BUFFER_CONTENT_TYPE_INVALID));
 
   bool backward = HB_DIRECTION_IS_BACKWARD (buffer->props.direction);
 
-  unsigned int count = buffer->len;
+  unsigned int count = buffer->len();
   if (unlikely (!count)) return;
   hb_glyph_info_t *info = buffer->info;
 
@@ -1461,7 +1456,10 @@ hb_buffer_t::sort (unsigned int start, unsigned int end, int(*compar)(const hb_g
     merge_clusters (j, i + 1);
     {
       hb_glyph_info_t t = info[i];
-      memmove (&info[j + 1], &info[j], (i - j) * sizeof (hb_glyph_info_t));
+      for (int idx = (i - j - 1); idx >= 0; idx--) {
+        info[idx + j + 1] = info[idx + j];
+      }
+
       info[j] = t;
     }
   }
