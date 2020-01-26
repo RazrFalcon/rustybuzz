@@ -290,14 +290,14 @@ data_destroy_arabic (void *data)
 static void
 arabic_joining (hb_buffer_t *buffer)
 {
-  unsigned int count = buffer->len();
-  hb_glyph_info_t *info = buffer->info;
+  unsigned int count = hb_buffer_get_length(buffer);
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   unsigned int prev = (unsigned int) -1, state = 0;
 
   /* Check pre-context */
-  for (unsigned int i = 0; i < buffer->context_len[0]; i++)
+  for (unsigned int i = 0; i < hb_buffer_get_context_len(buffer, 0); i++)
   {
-    unsigned int this_type = get_joining_type (buffer->context[0][i], hb_ucd_general_category (buffer->context[0][i]));
+    unsigned int this_type = get_joining_type (hb_buffer_get_context(buffer, 0, i), hb_ucd_general_category (hb_buffer_get_context(buffer, 0, i)));
 
     if (unlikely (this_type == JOINING_TYPE_T))
       continue;
@@ -321,7 +321,7 @@ arabic_joining (hb_buffer_t *buffer)
     if (entry->prev_action != NONE && prev != (unsigned int) -1)
     {
       info[prev].arabic_shaping_action() = entry->prev_action;
-      buffer->unsafe_to_break (prev, i + 1);
+      hb_buffer_unsafe_to_break (buffer, prev, i + 1);
     }
 
     info[i].arabic_shaping_action() = entry->curr_action;
@@ -330,9 +330,9 @@ arabic_joining (hb_buffer_t *buffer)
     state = entry->next_state;
   }
 
-  for (unsigned int i = 0; i < buffer->context_len[1]; i++)
+  for (unsigned int i = 0; i < hb_buffer_get_context_len(buffer, 1); i++)
   {
-    unsigned int this_type = get_joining_type (buffer->context[1][i], hb_ucd_general_category (buffer->context[1][i]));
+    unsigned int this_type = get_joining_type (hb_buffer_get_context(buffer, 1, i), hb_ucd_general_category (hb_buffer_get_context(buffer, 1, i)));
 
     if (unlikely (this_type == JOINING_TYPE_T))
       continue;
@@ -348,8 +348,8 @@ static void
 mongolian_variation_selectors (hb_buffer_t *buffer)
 {
   /* Copy arabic_shaping_action() from base to Mongolian variation selectors. */
-  unsigned int count = buffer->len();
-  hb_glyph_info_t *info = buffer->info;
+  unsigned int count = hb_buffer_get_length(buffer);
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   for (unsigned int i = 1; i < count; i++)
     if (unlikely (hb_in_range<hb_codepoint_t> (info[i].codepoint, 0x180Bu, 0x180Du)))
       info[i].arabic_shaping_action() = info[i - 1].arabic_shaping_action();
@@ -364,8 +364,8 @@ setup_masks_arabic_plan (const arabic_shape_plan_t *arabic_plan,
   if (script == HB_SCRIPT_MONGOLIAN)
     mongolian_variation_selectors (buffer);
 
-  unsigned int count = buffer->len();
-  hb_glyph_info_t *info = buffer->info;
+  unsigned int count = hb_buffer_get_length(buffer);
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   for (unsigned int i = 0; i < count; i++)
     info[i].mask |= arabic_plan->mask_array[info[i].arabic_shaping_action()];
 }
@@ -431,14 +431,14 @@ record_stch (const hb_ot_shape_plan_t *plan,
    * are applied before stch, but we assume that they didn't result in
    * anything multiplying into 5 pieces, so it's safe-ish... */
 
-  unsigned int count = buffer->len();
-  hb_glyph_info_t *info = buffer->info;
+  unsigned int count = hb_buffer_get_length(buffer);
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   for (unsigned int i = 0; i < count; i++)
     if (unlikely (_hb_glyph_info_multiplied (&info[i])))
     {
       unsigned int comp = _hb_glyph_info_get_lig_comp (&info[i]);
       info[i].arabic_shaping_action() = comp % 2 ? STCH_REPEATING : STCH_FIXED;
-      buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH;
+      *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH;
     }
 }
 
@@ -447,7 +447,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    hb_buffer_t              *buffer,
 	    hb_font_t                *font)
 {
-  if (likely (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH)))
+  if (likely (!(*hb_buffer_get_scratch_flags(buffer) & HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH)))
     return;
 
   /* The Arabic shaper currently always processes in RTL mode, so we should
@@ -465,9 +465,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
   for (unsigned int step = MEASURE; step <= CUT; step = step + 1)
   {
-    unsigned int count = buffer->len();
-    hb_glyph_info_t *info = buffer->info;
-    hb_glyph_position_t *pos = buffer->pos;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    hb_glyph_position_t *pos = hb_buffer_get_pos(buffer);
     unsigned int new_len = count + extra_glyphs_needed; // write head during CUT
     unsigned int j = new_len;
     for (unsigned int i = count; i; i--)
@@ -551,7 +551,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
       }
       else
       {
-	buffer->unsafe_to_break (context, end);
+	hb_buffer_unsafe_to_break (buffer, context, end);
 	hb_position_t x_offset = 0;
 	for (unsigned int k = end; k > start; k--)
 	{
@@ -580,12 +580,12 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
     if (step == MEASURE)
     {
-      buffer->ensure (count + extra_glyphs_needed);
+      hb_buffer_pre_allocate (buffer, count + extra_glyphs_needed);
     }
     else
     {
       assert (j == 0);
-      buffer->info_vec.length = new_len;
+      hb_buffer_set_length(buffer, new_len);
     }
   }
 }
@@ -631,7 +631,7 @@ reorder_marks_arabic (const hb_ot_shape_plan_t *plan HB_UNUSED,
 		      unsigned int              start,
 		      unsigned int              end)
 {
-  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
 
   DEBUG_MSG (ARABIC, buffer, "Reordering marks from %d to %d", start, end);
 
@@ -662,7 +662,7 @@ reorder_marks_arabic (const hb_ot_shape_plan_t *plan HB_UNUSED,
     DEBUG_MSG (ARABIC, buffer, "Shifting %d's: %d %d", cc, i, j);
     hb_glyph_info_t temp[HB_OT_SHAPE_COMPLEX_MAX_COMBINING_MARKS];
     assert (j - i <= ARRAY_LENGTH (temp));
-    buffer->merge_clusters (start, j);
+    hb_buffer_merge_clusters (buffer,start, j);
     memmove (temp, &info[i], (j - i) * sizeof (hb_glyph_info_t));
     memmove (&info[start + j - i], &info[start], (i - start) * sizeof (hb_glyph_info_t));
     memmove (&info[start], temp, (j - i) * sizeof (hb_glyph_info_t));

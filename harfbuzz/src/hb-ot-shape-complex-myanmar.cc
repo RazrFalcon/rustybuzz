@@ -122,8 +122,8 @@ setup_masks_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
   /* We cannot setup masks here.  We save information about characters
    * and setup masks later on in a pause-callback. */
 
-  unsigned int count = buffer->len();
-  hb_glyph_info_t *info = buffer->info;
+  unsigned int count = hb_buffer_get_length(buffer);
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   for (unsigned int i = 0; i < count; i++)
     set_myanmar_properties (info[i]);
 }
@@ -135,7 +135,7 @@ setup_syllables_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
 {
   find_syllables_myanmar (buffer);
   foreach_syllable (buffer, start, end)
-    buffer->unsafe_to_break (start, end);
+    hb_buffer_unsafe_to_break (buffer, start, end);
 }
 
 static int
@@ -155,7 +155,7 @@ static void
 initial_reordering_consonant_syllable (hb_buffer_t *buffer,
 				       unsigned int start, unsigned int end)
 {
-  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
 
   unsigned int base = end;
   bool has_reph = false;
@@ -245,7 +245,7 @@ initial_reordering_consonant_syllable (hb_buffer_t *buffer,
   }
 
   /* Sit tight, rock 'n roll! */
-  buffer->sort (start, end, compare_myanmar_order);
+  hb_buffer_sort (buffer, start, end, compare_myanmar_order);
 }
 
 static void
@@ -254,7 +254,7 @@ reorder_syllable_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			  hb_buffer_t *buffer,
 			  unsigned int start, unsigned int end)
 {
-  myanmar_syllable_type_t syllable_type = (myanmar_syllable_type_t) (buffer->info[start].syllable() & 0x0F);
+  myanmar_syllable_type_t syllable_type = (myanmar_syllable_type_t) (hb_buffer_get_info(buffer)[start].syllable() & 0x0F);
   switch (syllable_type) {
 
     case myanmar_broken_cluster: /* We already inserted dotted-circles, so just call the consonant_syllable. */
@@ -273,14 +273,14 @@ insert_dotted_circles_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			       hb_font_t *font,
 			       hb_buffer_t *buffer)
 {
-  if (unlikely (buffer->flags & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
+  if (unlikely (hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
     return;
 
   /* Note: This loop is extra overhead, but should not be measurable.
    * TODO Use a buffer scratch flag to remove the loop. */
   bool has_broken_syllables = false;
-  unsigned int count = buffer->len();
-  hb_glyph_info_t *info = buffer->info;
+  unsigned int count = hb_buffer_get_length(buffer);
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   for (unsigned int i = 0; i < count; i++)
     if ((info[i].syllable() & 0x0F) == myanmar_broken_cluster)
     {
@@ -300,29 +300,29 @@ insert_dotted_circles_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
   set_myanmar_properties (dottedcircle);
   dottedcircle.codepoint = dottedcircle_glyph;
 
-  buffer->clear_output ();
+  hb_buffer_clear_output(buffer);
 
-  buffer->idx = 0;
+  hb_buffer_set_idx(buffer, 0);
   unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len())
+  while (hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer))
   {
-    unsigned int syllable = buffer->cur().syllable();
+    unsigned int syllable = hb_buffer_get_cur(buffer, 0)->syllable();
     myanmar_syllable_type_t syllable_type = (myanmar_syllable_type_t) (syllable & 0x0F);
     if (unlikely (last_syllable != syllable && syllable_type == myanmar_broken_cluster))
     {
       last_syllable = syllable;
 
       hb_glyph_info_t ginfo = dottedcircle;
-      ginfo.cluster = buffer->cur().cluster;
-      ginfo.mask = buffer->cur().mask;
-      ginfo.syllable() = buffer->cur().syllable();
+      ginfo.cluster = hb_buffer_get_cur(buffer, 0)->cluster;
+      ginfo.mask = hb_buffer_get_cur(buffer, 0)->mask;
+      ginfo.syllable() = hb_buffer_get_cur(buffer, 0)->syllable();
 
-      buffer->output_info (ginfo);
+      hb_buffer_output_info (buffer, ginfo);
     }
     else
-      buffer->next_glyph ();
+      hb_buffer_next_glyph (buffer);
   }
-  buffer->swap_buffers ();
+  hb_buffer_swap_buffers(buffer);
 }
 
 static void

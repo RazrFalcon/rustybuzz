@@ -739,37 +739,37 @@ struct StateTableDriver
   void drive (context_t *c)
   {
     if (!c->in_place)
-      buffer->clear_output ();
+      hb_buffer_clear_output(buffer);
 
     int state = StateTable<Types, EntryData>::STATE_START_OF_TEXT;
-    for (buffer->idx = 0; ;)
+    for (hb_buffer_set_idx(buffer, 0); ;)
     {
-      unsigned int klass = buffer->idx < buffer->len() ?
-			   machine.get_class (buffer->info[buffer->idx].codepoint, num_glyphs) :
+      unsigned int klass = hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer) ?
+			   machine.get_class (hb_buffer_get_info(buffer)[hb_buffer_get_idx(buffer)].codepoint, num_glyphs) :
 			   (unsigned) StateTable<Types, EntryData>::CLASS_END_OF_TEXT;
-      DEBUG_MSG (APPLY, nullptr, "c%u at %u", klass, buffer->idx);
+      DEBUG_MSG (APPLY, nullptr, "c%u at %u", klass, hb_buffer_get_idx(buffer));
       const Entry<EntryData> &entry = machine.get_entry (state, klass);
 
       /* Unsafe-to-break before this if not in state 0, as things might
        * go differently if we start from state 0 here.
        *
        * Ugh.  The indexing here is ugly... */
-      if (state && buffer->backtrack_len () && buffer->idx < buffer->len())
+      if (state && hb_buffer_backtrack_len(buffer) && hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer))
       {
 	/* If there's no action and we're just epsilon-transitioning to state 0,
 	 * safe to break. */
 	if (c->is_actionable (this, entry) ||
 	    !(entry.newState == StateTable<Types, EntryData>::STATE_START_OF_TEXT &&
 	      entry.flags == context_t::DontAdvance))
-	  buffer->unsafe_to_break_from_outbuffer (buffer->backtrack_len () - 1, buffer->idx + 1);
+	  hb_buffer_unsafe_to_break_from_outbuffer (buffer, hb_buffer_backtrack_len(buffer) - 1, hb_buffer_get_idx(buffer) + 1);
       }
 
       /* Unsafe-to-break if end-of-text would kick in here. */
-      if (buffer->idx + 2 <= buffer->len())
+      if (hb_buffer_get_idx(buffer) + 2 <= hb_buffer_get_length(buffer))
       {
 	const Entry<EntryData> &end_entry = machine.get_entry (state, StateTable<Types, EntryData>::CLASS_END_OF_TEXT);
 	if (c->is_actionable (this, end_entry))
-	  buffer->unsafe_to_break (buffer->idx, buffer->idx + 2);
+	  hb_buffer_unsafe_to_break (buffer, hb_buffer_get_idx(buffer), hb_buffer_get_idx(buffer) + 2);
       }
 
       c->transition (this, entry);
@@ -777,18 +777,18 @@ struct StateTableDriver
       state = machine.new_state (entry.newState);
       DEBUG_MSG (APPLY, nullptr, "s%d", state);
 
-      if (buffer->idx == buffer->len())
+      if (hb_buffer_get_idx(buffer) == hb_buffer_get_length(buffer))
 	break;
 
-      if (!(entry.flags & context_t::DontAdvance) || buffer->max_ops-- <= 0)
-	buffer->next_glyph ();
+      if (!(entry.flags & context_t::DontAdvance) || hb_buffer_decrement_max_ops(buffer) <= 0)
+	hb_buffer_next_glyph (buffer);
     }
 
     if (!c->in_place)
     {
-      for (; buffer->idx < buffer->len();)
-	buffer->next_glyph ();
-      buffer->swap_buffers ();
+      for (; hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer);)
+	hb_buffer_next_glyph (buffer);
+      hb_buffer_swap_buffers(buffer);
     }
   }
 

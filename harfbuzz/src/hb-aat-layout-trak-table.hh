@@ -167,7 +167,7 @@ struct trak
       return_trace (false);
 
     hb_buffer_t *buffer = c->buffer;
-    if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
+    if (HB_DIRECTION_IS_HORIZONTAL (hb_buffer_get_direction(c->buffer)))
     {
       const TrackData &trackData = this+horizData;
       int tracking = trackData.get_tracking (this, ptem);
@@ -175,9 +175,9 @@ struct trak
       hb_position_t advance_to_add = c->font->em_scalef_x (tracking);
       foreach_grapheme (buffer, start, end)
       {
-	if (!(buffer->info[start].mask & trak_mask)) continue;
-	buffer->pos[start].x_advance += advance_to_add;
-	buffer->pos[start].x_offset += offset_to_add;
+	if (!(hb_buffer_get_info(buffer)[start].mask & trak_mask)) continue;
+	hb_buffer_get_pos(buffer)[start].x_advance += advance_to_add;
+	hb_buffer_get_pos(buffer)[start].x_offset += offset_to_add;
       }
     }
     else
@@ -188,9 +188,9 @@ struct trak
       hb_position_t advance_to_add = c->font->em_scalef_y (tracking);
       foreach_grapheme (buffer, start, end)
       {
-	if (!(buffer->info[start].mask & trak_mask)) continue;
-	buffer->pos[start].y_advance += advance_to_add;
-	buffer->pos[start].y_offset += offset_to_add;
+	if (!(hb_buffer_get_info(buffer)[start].mask & trak_mask)) continue;
+	hb_buffer_get_pos(buffer)[start].y_advance += advance_to_add;
+	hb_buffer_get_pos(buffer)[start].y_offset += offset_to_add;
       }
     }
 

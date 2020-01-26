@@ -150,7 +150,7 @@ hb_ot_layout_position_finish_offsets (hb_font_t    *font,
 /* Loop over syllables. Based on foreach_cluster(). */
 #define foreach_syllable(buffer, start, end) \
   for (unsigned int \
-       _count = buffer->len(), \
+       _count = hb_buffer_get_length(buffer), \
        start = 0, end = _count ? _hb_next_syllable (buffer, 0) : 0; \
        start < _count; \
        start = end, end = _hb_next_syllable (buffer, start))
@@ -158,8 +158,8 @@ hb_ot_layout_position_finish_offsets (hb_font_t    *font,
 static inline unsigned int
 _hb_next_syllable (hb_buffer_t *buffer, unsigned int start)
 {
-  hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len();
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+  unsigned int count = hb_buffer_get_length(buffer);
 
   unsigned int syllable = info[start].syllable();
   while (++start < count && syllable == info[start].syllable())
@@ -173,8 +173,8 @@ _hb_clear_syllables (const hb_ot_shape_plan_t *plan HB_UNUSED,
 		     hb_font_t *font HB_UNUSED,
 		     hb_buffer_t *buffer)
 {
-  hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len();
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+  unsigned int count = hb_buffer_get_length(buffer);
   for (unsigned int i = 0; i < count; i++)
     info[i].syllable() = 0;
 }
@@ -220,11 +220,11 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
 
   if (u >= 0x80u)
   {
-    buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
+    *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
 
     if (unlikely (hb_ucd_is_default_ignorable (u)))
     {
-      buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
+      *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
       props |=  UPROPS_MASK_IGNORABLE;
       if (u == 0x200Cu) props |= UPROPS_MASK_Cf_ZWNJ;
       else if (u == 0x200Du) props |= UPROPS_MASK_Cf_ZWJ;
@@ -243,7 +243,7 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
        * https://github.com/harfbuzz/harfbuzz/issues/554 */
       else if (unlikely (u == 0x034Fu))
       {
-	buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_CGJ;
+	*hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_CGJ;
 	props |= UPROPS_MASK_HIDDEN;
       }
     }
@@ -352,7 +352,7 @@ _hb_glyph_info_is_continuation (const hb_glyph_info_t *info)
 /* Loop over grapheme. Based on foreach_cluster(). */
 #define foreach_grapheme(buffer, start, end) \
   for (unsigned int \
-       _count = buffer->len(), \
+       _count = hb_buffer_get_length(buffer), \
        start = 0, end = _count ? _hb_next_grapheme (buffer, 0) : 0; \
        start < _count; \
        start = end, end = _hb_next_grapheme (buffer, start))
@@ -360,8 +360,8 @@ _hb_glyph_info_is_continuation (const hb_glyph_info_t *info)
 static inline unsigned int
 _hb_next_grapheme (hb_buffer_t *buffer, unsigned int start)
 {
-  hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len();
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+  unsigned int count = hb_buffer_get_length(buffer);
 
   while (++start < count && _hb_glyph_info_is_continuation (&info[start]))
     ;
@@ -486,7 +486,7 @@ _hb_glyph_info_get_lig_num_comps (const hb_glyph_info_t *info)
 
 static inline uint8_t
 _hb_allocate_lig_id (hb_buffer_t *buffer) {
-  uint8_t lig_id = buffer->next_serial () & 0x07;
+  uint8_t lig_id = hb_buffer_next_serial(buffer) & 0x07;
   if (unlikely (!lig_id))
     lig_id = _hb_allocate_lig_id (buffer); /* in case of overflow */
   return lig_id;
@@ -566,8 +566,8 @@ _hb_clear_substitution_flags (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			      hb_font_t *font HB_UNUSED,
 			      hb_buffer_t *buffer)
 {
-  hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len();
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+  unsigned int count = hb_buffer_get_length(buffer);
   for (unsigned int i = 0; i < count; i++)
     _hb_glyph_info_clear_substituted (&info[i]);
 }

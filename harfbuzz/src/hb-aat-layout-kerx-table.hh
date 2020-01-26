@@ -243,7 +243,7 @@ struct KerxSubTableFormat1
       if (flags & Format1EntryT::Push)
       {
 	if (likely (depth < ARRAY_LENGTH (stack)))
-	  stack[depth++] = buffer->idx;
+	  stack[depth++] = hb_buffer_get_idx(buffer);
 	else
 	  depth = 0; /* Probably not what CoreText does, but better? */
       }
@@ -272,13 +272,13 @@ struct KerxSubTableFormat1
 	  unsigned int idx = stack[--depth];
 	  int v = *actions;
 	  actions += tuple_count;
-	  if (idx >= buffer->len()) continue;
+	  if (idx >= hb_buffer_get_length(buffer)) continue;
 
 	  /* "The end of the list is marked by an odd value..." */
 	  last = v & 1;
 	  v &= ~1;
 
-	  hb_glyph_position_t &o = buffer->pos[idx];
+	  hb_glyph_position_t &o = hb_buffer_get_pos(buffer)[idx];
 
 	  /* Testing shows that CoreText only applies kern (cross-stream or not)
 	   * if none has been applied by previous subtables.  That is, it does
@@ -292,22 +292,22 @@ struct KerxSubTableFormat1
 	    o.attach_chain() = 0;
 	    o.x_offset = o.y_offset = 0;
 	  }
-	  else if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
+	  else if (HB_DIRECTION_IS_HORIZONTAL (hb_buffer_get_direction(buffer)))
 	  {
 	    if (crossStream)
 	    {
-	      if (buffer->pos[idx].attach_type() && !buffer->pos[idx].y_offset)
+	      if (hb_buffer_get_pos(buffer)[idx].attach_type() && !hb_buffer_get_pos(buffer)[idx].y_offset)
 	      {
 		o.y_offset = c->font->em_scale_y (v);
-		buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+		*hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
 	      }
 	    }
-	    else if (buffer->info[idx].mask & kern_mask)
+	    else if (hb_buffer_get_info(buffer)[idx].mask & kern_mask)
 	    {
-	      if (!buffer->pos[idx].x_offset)
+	      if (!hb_buffer_get_pos(buffer)[idx].x_offset)
 	      {
-		buffer->pos[idx].x_advance += c->font->em_scale_x (v);
-		buffer->pos[idx].x_offset += c->font->em_scale_x (v);
+		hb_buffer_get_pos(buffer)[idx].x_advance += c->font->em_scale_x (v);
+		hb_buffer_get_pos(buffer)[idx].x_offset += c->font->em_scale_x (v);
 	      }
 	    }
 	  }
@@ -316,18 +316,18 @@ struct KerxSubTableFormat1
 	    if (crossStream)
 	    {
 	      /* CoreText doesn't do crossStream kerning in vertical.  We do. */
-	      if (buffer->pos[idx].attach_type() && !buffer->pos[idx].x_offset)
+	      if (hb_buffer_get_pos(buffer)[idx].attach_type() && !hb_buffer_get_pos(buffer)[idx].x_offset)
 	      {
 		o.x_offset = c->font->em_scale_x (v);
-		buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+		*hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
 	      }
 	    }
-	    else if (buffer->info[idx].mask & kern_mask)
+	    else if (hb_buffer_get_info(buffer)[idx].mask & kern_mask)
 	    {
-	      if (!buffer->pos[idx].y_offset)
+	      if (!hb_buffer_get_pos(buffer)[idx].y_offset)
 	      {
-		buffer->pos[idx].y_advance += c->font->em_scale_y (v);
-		buffer->pos[idx].y_offset += c->font->em_scale_y (v);
+		hb_buffer_get_pos(buffer)[idx].y_advance += c->font->em_scale_y (v);
+		hb_buffer_get_pos(buffer)[idx].y_offset += c->font->em_scale_y (v);
 	      }
 	    }
 	  }
@@ -504,9 +504,9 @@ struct KerxSubTableFormat4
     {
       hb_buffer_t *buffer = driver->buffer;
 
-      if (mark_set && entry.data.ankrActionIndex != 0xFFFF && buffer->idx < buffer->len())
+      if (mark_set && entry.data.ankrActionIndex != 0xFFFF && hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer))
       {
-	hb_glyph_position_t &o = buffer->cur_pos();
+	hb_glyph_position_t *o = hb_buffer_get_cur_pos(buffer);
 	switch (action_type)
 	{
 	  case 0: /* Control Point Actions.*/
@@ -520,18 +520,18 @@ struct KerxSubTableFormat4
 	    hb_position_t markY = 0;
 	    hb_position_t currX = 0;
 	    hb_position_t currY = 0;
-	    if (!c->font->get_glyph_contour_point_for_origin (c->buffer->info[mark].codepoint,
+	    if (!c->font->get_glyph_contour_point_for_origin (hb_buffer_get_info(c->buffer)[mark].codepoint,
 							      markControlPoint,
 							      HB_DIRECTION_LTR /*XXX*/,
 							      &markX, &markY) ||
-		!c->font->get_glyph_contour_point_for_origin (c->buffer->cur ().codepoint,
+		!c->font->get_glyph_contour_point_for_origin (hb_buffer_get_cur(c->buffer, 0)->codepoint,
 							      currControlPoint,
 							      HB_DIRECTION_LTR /*XXX*/,
 							      &currX, &currY))
 	      return;
 
-	    o.x_offset = markX - currX;
-	    o.y_offset = markY - currY;
+	    o->x_offset = markX - currX;
+	    o->y_offset = markY - currY;
 	  }
 	  break;
 
@@ -542,15 +542,15 @@ struct KerxSubTableFormat4
 	    if (!c->sanitizer.check_array (data, 2)) return;
 	    unsigned int markAnchorPoint = *data++;
 	    unsigned int currAnchorPoint = *data++;
-	    const Anchor &markAnchor = c->ankr_table->get_anchor (c->buffer->info[mark].codepoint,
+	    const Anchor &markAnchor = c->ankr_table->get_anchor (hb_buffer_get_info(c->buffer)[mark].codepoint,
 								  markAnchorPoint,
 								  c->sanitizer.get_num_glyphs ());
-	    const Anchor &currAnchor = c->ankr_table->get_anchor (c->buffer->cur ().codepoint,
+	    const Anchor &currAnchor = c->ankr_table->get_anchor (hb_buffer_get_cur(c->buffer, 0)->codepoint,
 								  currAnchorPoint,
 								  c->sanitizer.get_num_glyphs ());
 
-	    o.x_offset = c->font->em_scale_x (markAnchor.xCoordinate) - c->font->em_scale_x (currAnchor.xCoordinate);
-	    o.y_offset = c->font->em_scale_y (markAnchor.yCoordinate) - c->font->em_scale_y (currAnchor.yCoordinate);
+	    o->x_offset = c->font->em_scale_x (markAnchor.xCoordinate) - c->font->em_scale_x (currAnchor.xCoordinate);
+	    o->y_offset = c->font->em_scale_y (markAnchor.yCoordinate) - c->font->em_scale_y (currAnchor.yCoordinate);
 	  }
 	  break;
 
@@ -563,20 +563,20 @@ struct KerxSubTableFormat4
 	    int currX = *data++;
 	    int currY = *data++;
 
-	    o.x_offset = c->font->em_scale_x (markX) - c->font->em_scale_x (currX);
-	    o.y_offset = c->font->em_scale_y (markY) - c->font->em_scale_y (currY);
+	    o->x_offset = c->font->em_scale_x (markX) - c->font->em_scale_x (currX);
+	    o->y_offset = c->font->em_scale_y (markY) - c->font->em_scale_y (currY);
 	  }
 	  break;
 	}
-	o.attach_type() = ATTACH_TYPE_MARK;
-	o.attach_chain() = (int) mark - (int) buffer->idx;
-	buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+	o->attach_type() = ATTACH_TYPE_MARK;
+	o->attach_chain() = (int) mark - (int) hb_buffer_get_idx(buffer);
+	*hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
       }
 
       if (entry.flags & Mark)
       {
 	mark_set = true;
-	mark = buffer->idx;
+	mark = hb_buffer_get_idx(buffer);
       }
     }
 
@@ -884,23 +884,23 @@ struct KerxTable
       if (!T::Types::extended && (st->u.header.coverage & st->u.header.Variation))
 	goto skip;
 
-      if (HB_DIRECTION_IS_HORIZONTAL (c->buffer->props.direction) != st->u.header.is_horizontal ())
+      if (HB_DIRECTION_IS_HORIZONTAL (hb_buffer_get_direction(c->buffer)) != st->u.header.is_horizontal ())
 	goto skip;
 
       reverse = bool (st->u.header.coverage & st->u.header.Backwards) !=
-		HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction);
+		HB_DIRECTION_IS_BACKWARD (hb_buffer_get_direction(c->buffer));
 
       if (!seenCrossStream &&
 	  (st->u.header.coverage & st->u.header.CrossStream))
       {
 	/* Attach all glyphs into a chain. */
 	seenCrossStream = true;
-	hb_glyph_position_t *pos = c->buffer->pos;
-	unsigned int count = c->buffer->len();
+	hb_glyph_position_t *pos = hb_buffer_get_pos(c->buffer);
+	unsigned int count = hb_buffer_get_length(c->buffer);
 	for (unsigned int i = 0; i < count; i++)
 	{
 	  pos[i].attach_type() = ATTACH_TYPE_CURSIVE;
-	  pos[i].attach_chain() = HB_DIRECTION_IS_FORWARD (c->buffer->props.direction) ? -1 : +1;
+	  pos[i].attach_chain() = HB_DIRECTION_IS_FORWARD (hb_buffer_get_direction(c->buffer)) ? -1 : +1;
 	  /* We intentionally don't set HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT,
 	   * since there needs to be a non-zero attachment for post-positioning to
 	   * be needed. */
@@ -908,7 +908,7 @@ struct KerxTable
       }
 
       if (reverse)
-	c->buffer->reverse ();
+	hb_buffer_reverse(c->buffer);
 
       {
 	/* See comment in sanitize() for conditional here. */
@@ -917,7 +917,7 @@ struct KerxTable
       }
 
       if (reverse)
-	c->buffer->reverse ();
+	hb_buffer_reverse(c->buffer);
 
     skip:
       st = &StructAfter<SubTable> (*st);

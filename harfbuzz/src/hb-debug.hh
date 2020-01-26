@@ -401,7 +401,7 @@ struct hb_no_trace_t {
 	hb_auto_trace_t<HB_DEBUG_APPLY, bool> trace \
 	(&c->debug_depth, c->get_name (), this, HB_FUNC, \
 	 "idx %d gid %u lookup %d", \
-	 c->buffer->idx, c->buffer->cur().codepoint, (int) c->lookup_index)
+	 c->buffer->idx, c->hb_buffer_get_cur(buffer, 0)->codepoint, (int) c->lookup_index)
 #else
 #define TRACE_APPLY(this) hb_no_trace_t<bool> trace
 #endif

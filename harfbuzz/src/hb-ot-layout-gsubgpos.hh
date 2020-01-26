@@ -362,8 +362,8 @@ struct hb_ot_apply_context_t :
     {
       idx = start_index_;
       num_items = num_items_;
-      end = c->buffer->len();
-      matcher.set_syllable (start_index_ == c->buffer->idx ? c->buffer->cur().syllable () : 0);
+      end = hb_buffer_get_length(c->buffer);
+      matcher.set_syllable (start_index_ == hb_buffer_get_idx(c->buffer) ? hb_buffer_get_cur(c->buffer, 0)->syllable () : 0);
     }
 
     void reject () { num_items++; match_glyph_data--; }
@@ -378,7 +378,7 @@ struct hb_ot_apply_context_t :
       while (idx + num_items < end)
       {
 	idx++;
-	const hb_glyph_info_t &info = c->buffer->info[idx];
+	const hb_glyph_info_t &info = hb_buffer_get_info(c->buffer)[idx];
 
 	matcher_t::may_skip_t skip = matcher.may_skip (c, info);
 	if (unlikely (skip == matcher_t::SKIP_YES))
@@ -405,7 +405,7 @@ struct hb_ot_apply_context_t :
       while (idx > num_items - 1)
       {
 	idx--;
-	const hb_glyph_info_t &info = c->buffer->out_info()[idx];
+	const hb_glyph_info_t &info = hb_buffer_get_out_info(c->buffer)[idx];
 
 	matcher_t::may_skip_t skip = matcher.may_skip (c, info);
 	if (unlikely (skip == matcher_t::SKIP_YES))
@@ -446,7 +446,7 @@ struct hb_ot_apply_context_t :
   bool stop_sublookup_iteration (return_t r) const { return r; }
   return_t recurse (unsigned int sub_lookup_index)
   {
-    if (unlikely (nesting_level_left == 0 || !recurse_func || buffer->max_ops-- <= 0))
+    if (unlikely (nesting_level_left == 0 || !recurse_func || hb_buffer_decrement_max_ops(buffer) <= 0))
       return default_return_value ();
 
     nesting_level_left--;
@@ -488,7 +488,7 @@ struct hb_ot_apply_context_t :
 			recurse_func (nullptr),
 			gdef (*face->table.GDEF->table),
 			var_store (gdef.get_var_store ()),
-			direction (buffer_->props.direction),
+			direction (hb_buffer_get_direction(buffer_)),
 			lookup_mask (1),
 			table_index (table_index_),
 			lookup_index ((unsigned int) -1),
@@ -565,7 +565,7 @@ struct hb_ot_apply_context_t :
 			  bool ligature = false,
 			  bool component = false) const
   {
-    unsigned int add_in = _hb_glyph_info_get_glyph_props (&buffer->cur()) &
+    unsigned int add_in = _hb_glyph_info_get_glyph_props (hb_buffer_get_cur(buffer, 0)) &
 			  HB_OT_LAYOUT_GLYPH_PROPS_PRESERVE;
     add_in |= HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED;
     if (ligature)
@@ -582,32 +582,32 @@ struct hb_ot_apply_context_t :
     if (component)
       add_in |= HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
     if (likely (has_glyph_classes))
-      _hb_glyph_info_set_glyph_props (&buffer->cur(), add_in | gdef.get_glyph_props (font, glyph_index));
+      _hb_glyph_info_set_glyph_props (hb_buffer_get_cur(buffer, 0), add_in | gdef.get_glyph_props (font, glyph_index));
     else if (class_guess)
-      _hb_glyph_info_set_glyph_props (&buffer->cur(), add_in | class_guess);
+      _hb_glyph_info_set_glyph_props (hb_buffer_get_cur(buffer, 0), add_in | class_guess);
   }
 
   void replace_glyph (hb_codepoint_t glyph_index) const
   {
     _set_glyph_props (glyph_index);
-    buffer->replace_glyph (glyph_index);
+    hb_buffer_replace_glyph (buffer, glyph_index);
   }
   void replace_glyph_inplace (hb_codepoint_t glyph_index) const
   {
     _set_glyph_props (glyph_index);
-    buffer->cur().codepoint = glyph_index;
+    hb_buffer_get_cur(buffer, 0)->codepoint = glyph_index;
   }
   void replace_glyph_with_ligature (hb_codepoint_t glyph_index,
 					   unsigned int class_guess) const
   {
     _set_glyph_props (glyph_index, class_guess, true);
-    buffer->replace_glyph (glyph_index);
+    hb_buffer_replace_glyph (buffer, glyph_index);
   }
   void output_glyph_for_component (hb_codepoint_t glyph_index,
 					  unsigned int class_guess) const
   {
     _set_glyph_props (glyph_index, class_guess, false, true);
-    buffer->output_glyph (glyph_index);
+    hb_buffer_output_glyph (buffer, glyph_index);
   }
 };
 
@@ -637,7 +637,7 @@ struct hb_get_subtables_context_t :
 
     bool apply (OT::hb_ot_apply_context_t *c) const
     {
-      return digest.may_have (c->buffer->cur().codepoint) && apply_func (obj, c);
+      return digest.may_have (hb_buffer_get_cur(c->buffer, 0)->codepoint) && apply_func (obj, c);
     }
 
     private:
@@ -789,7 +789,7 @@ static inline bool match_input (hb_ot_apply_context_t *c,
   hb_buffer_t *buffer = c->buffer;
 
   hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-  skippy_iter.reset (buffer->idx, count - 1);
+  skippy_iter.reset (hb_buffer_get_idx(buffer), count - 1);
   skippy_iter.set_match_func (match_func, match_data, input);
 
   /*
@@ -817,10 +817,10 @@ static inline bool match_input (hb_ot_apply_context_t *c,
    */
 
   unsigned int total_component_count = 0;
-  total_component_count += _hb_glyph_info_get_lig_num_comps (&buffer->cur());
+  total_component_count += _hb_glyph_info_get_lig_num_comps (hb_buffer_get_cur(buffer, 0));
 
-  unsigned int first_lig_id = _hb_glyph_info_get_lig_id (&buffer->cur());
-  unsigned int first_lig_comp = _hb_glyph_info_get_lig_comp (&buffer->cur());
+  unsigned int first_lig_id = _hb_glyph_info_get_lig_id (hb_buffer_get_cur(buffer, 0));
+  unsigned int first_lig_comp = _hb_glyph_info_get_lig_comp (hb_buffer_get_cur(buffer, 0));
 
   enum {
     LIGBASE_NOT_CHECKED,
@@ -828,15 +828,15 @@ static inline bool match_input (hb_ot_apply_context_t *c,
     LIGBASE_MAY_SKIP
   } ligbase = LIGBASE_NOT_CHECKED;
 
-  match_positions[0] = buffer->idx;
+  match_positions[0] = hb_buffer_get_idx(buffer);
   for (unsigned int i = 1; i < count; i++)
   {
     if (!skippy_iter.next ()) return_trace (false);
 
     match_positions[i] = skippy_iter.idx;
 
-    unsigned int this_lig_id = _hb_glyph_info_get_lig_id (&buffer->info[skippy_iter.idx]);
-    unsigned int this_lig_comp = _hb_glyph_info_get_lig_comp (&buffer->info[skippy_iter.idx]);
+    unsigned int this_lig_id = _hb_glyph_info_get_lig_id (&hb_buffer_get_info(buffer)[skippy_iter.idx]);
+    unsigned int this_lig_comp = _hb_glyph_info_get_lig_comp (&hb_buffer_get_info(buffer)[skippy_iter.idx]);
 
     if (first_lig_id && first_lig_comp)
     {
@@ -850,8 +850,8 @@ static inline bool match_input (hb_ot_apply_context_t *c,
 	if (ligbase == LIGBASE_NOT_CHECKED)
 	{
 	  bool found = false;
-	  const auto *out = buffer->out_info();
-	  unsigned int j = buffer->out_len;
+	  const auto *out = hb_buffer_get_out_info(buffer);
+	  unsigned int j = hb_buffer_get_out_len(buffer);
 	  while (j && _hb_glyph_info_get_lig_id (&out[j - 1]) == first_lig_id)
 	  {
 	    if (_hb_glyph_info_get_lig_comp (&out[j - 1]) == 0)
@@ -882,10 +882,10 @@ static inline bool match_input (hb_ot_apply_context_t *c,
 	return_trace (false);
     }
 
-    total_component_count += _hb_glyph_info_get_lig_num_comps (&buffer->info[skippy_iter.idx]);
+    total_component_count += _hb_glyph_info_get_lig_num_comps (&hb_buffer_get_info(buffer)[skippy_iter.idx]);
   }
 
-  *end_offset = skippy_iter.idx - buffer->idx + 1;
+  *end_offset = skippy_iter.idx - hb_buffer_get_idx(buffer) + 1;
 
   if (p_total_component_count)
     *p_total_component_count = total_component_count;
@@ -903,7 +903,7 @@ static inline bool ligate_input (hb_ot_apply_context_t *c,
 
   hb_buffer_t *buffer = c->buffer;
 
-  buffer->merge_clusters (buffer->idx, buffer->idx + match_length);
+  hb_buffer_merge_clusters (buffer, hb_buffer_get_idx(buffer), hb_buffer_get_idx(buffer) + match_length);
 
   /* - If a base and one or more marks ligate, consider that as a base, NOT
    *   ligature, such that all following marks can still attach to it.
@@ -937,10 +937,10 @@ static inline bool ligate_input (hb_ot_apply_context_t *c,
    *   https://bugzilla.gnome.org/show_bug.cgi?id=437633
    */
 
-  bool is_base_ligature = _hb_glyph_info_is_base_glyph (&buffer->info[match_positions[0]]);
-  bool is_mark_ligature = _hb_glyph_info_is_mark (&buffer->info[match_positions[0]]);
+  bool is_base_ligature = _hb_glyph_info_is_base_glyph (&hb_buffer_get_info(buffer)[match_positions[0]]);
+  bool is_mark_ligature = _hb_glyph_info_is_mark (&hb_buffer_get_info(buffer)[match_positions[0]]);
   for (unsigned int i = 1; i < count; i++)
-    if (!_hb_glyph_info_is_mark (&buffer->info[match_positions[i]]))
+    if (!_hb_glyph_info_is_mark (&hb_buffer_get_info(buffer)[match_positions[i]]))
     {
       is_base_ligature = false;
       is_mark_ligature = false;
@@ -950,54 +950,54 @@ static inline bool ligate_input (hb_ot_apply_context_t *c,
 
   unsigned int klass = is_ligature ? HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE : 0;
   unsigned int lig_id = is_ligature ? _hb_allocate_lig_id (buffer) : 0;
-  unsigned int last_lig_id = _hb_glyph_info_get_lig_id (&buffer->cur());
-  unsigned int last_num_components = _hb_glyph_info_get_lig_num_comps (&buffer->cur());
+  unsigned int last_lig_id = _hb_glyph_info_get_lig_id (hb_buffer_get_cur(buffer, 0));
+  unsigned int last_num_components = _hb_glyph_info_get_lig_num_comps (hb_buffer_get_cur(buffer, 0));
   unsigned int components_so_far = last_num_components;
 
   if (is_ligature)
   {
-    _hb_glyph_info_set_lig_props_for_ligature (&buffer->cur(), lig_id, total_component_count);
-    if (_hb_glyph_info_get_general_category (&buffer->cur()) == HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)
+    _hb_glyph_info_set_lig_props_for_ligature (hb_buffer_get_cur(buffer, 0), lig_id, total_component_count);
+    if (_hb_glyph_info_get_general_category (hb_buffer_get_cur(buffer, 0)) == HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)
     {
-      _hb_glyph_info_set_general_category (&buffer->cur(), HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER);
+      _hb_glyph_info_set_general_category (hb_buffer_get_cur(buffer, 0), HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER);
     }
   }
   c->replace_glyph_with_ligature (lig_glyph, klass);
 
   for (unsigned int i = 1; i < count; i++)
   {
-    while (buffer->idx < match_positions[i])
+    while (hb_buffer_get_idx(buffer) < match_positions[i])
     {
       if (is_ligature)
       {
-	unsigned int this_comp = _hb_glyph_info_get_lig_comp (&buffer->cur());
+	unsigned int this_comp = _hb_glyph_info_get_lig_comp (hb_buffer_get_cur(buffer, 0));
 	if (this_comp == 0)
 	  this_comp = last_num_components;
 	unsigned int new_lig_comp = components_so_far - last_num_components +
 				    hb_min (this_comp, last_num_components);
-	  _hb_glyph_info_set_lig_props_for_mark (&buffer->cur(), lig_id, new_lig_comp);
+	  _hb_glyph_info_set_lig_props_for_mark (hb_buffer_get_cur(buffer, 0), lig_id, new_lig_comp);
       }
-      buffer->next_glyph ();
+      hb_buffer_next_glyph (buffer);
     }
 
-    last_lig_id = _hb_glyph_info_get_lig_id (&buffer->cur());
-    last_num_components = _hb_glyph_info_get_lig_num_comps (&buffer->cur());
+    last_lig_id = _hb_glyph_info_get_lig_id (hb_buffer_get_cur(buffer, 0));
+    last_num_components = _hb_glyph_info_get_lig_num_comps (hb_buffer_get_cur(buffer, 0));
     components_so_far += last_num_components;
 
     /* Skip the base glyph */
-    buffer->idx++;
+    hb_buffer_set_idx(buffer, hb_buffer_get_idx(buffer) + 1);
   }
 
   if (!is_mark_ligature && last_lig_id) {
     /* Re-adjust components for any marks following. */
-    for (unsigned int i = buffer->idx; i < buffer->len(); i++) {
-      if (last_lig_id == _hb_glyph_info_get_lig_id (&buffer->info[i])) {
-	unsigned int this_comp = _hb_glyph_info_get_lig_comp (&buffer->info[i]);
+    for (unsigned int i = hb_buffer_get_idx(buffer); i < hb_buffer_get_length(buffer); i++) {
+      if (last_lig_id == _hb_glyph_info_get_lig_id (&hb_buffer_get_info(buffer)[i])) {
+	unsigned int this_comp = _hb_glyph_info_get_lig_comp (&hb_buffer_get_info(buffer)[i]);
 	if (!this_comp)
 	  break;
 	unsigned int new_lig_comp = components_so_far - last_num_components +
 				    hb_min (this_comp, last_num_components);
-	_hb_glyph_info_set_lig_props_for_mark (&buffer->info[i], lig_id, new_lig_comp);
+	_hb_glyph_info_set_lig_props_for_mark (&hb_buffer_get_info(buffer)[i], lig_id, new_lig_comp);
       } else
 	break;
     }
@@ -1015,7 +1015,7 @@ static inline bool match_backtrack (hb_ot_apply_context_t *c,
   TRACE_APPLY (nullptr);
 
   hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_context;
-  skippy_iter.reset (c->buffer->backtrack_len (), count);
+  skippy_iter.reset (hb_buffer_backtrack_len(c->buffer), count);
   skippy_iter.set_match_func (match_func, match_data, backtrack);
 
   for (unsigned int i = 0; i < count; i++)
@@ -1038,7 +1038,7 @@ static inline bool match_lookahead (hb_ot_apply_context_t *c,
   TRACE_APPLY (nullptr);
 
   hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_context;
-  skippy_iter.reset (c->buffer->idx + offset - 1, count);
+  skippy_iter.reset (hb_buffer_get_idx(c->buffer) + offset - 1, count);
   skippy_iter.set_match_func (match_func, match_data, lookahead);
 
   for (unsigned int i = 0; i < count; i++)
@@ -1092,10 +1092,10 @@ static inline bool apply_lookup (hb_ot_apply_context_t *c,
   /* All positions are distance from beginning of *output* buffer.
    * Adjust. */
   {
-    unsigned int bl = buffer->backtrack_len ();
+    unsigned int bl = hb_buffer_backtrack_len(buffer);
     end = bl + match_length;
 
-    int delta = bl - buffer->idx;
+    int delta = bl - hb_buffer_get_idx(buffer);
     /* Convert positions to new indexing. */
     for (unsigned int j = 0; j < count; j++)
       match_positions[j] += delta;
@@ -1112,17 +1112,17 @@ static inline bool apply_lookup (hb_ot_apply_context_t *c,
     if (idx == 0 && lookupRecord[i].lookupListIndex == c->lookup_index)
       continue;
 
-    if (unlikely (!buffer->move_to (match_positions[idx])))
+    if (unlikely (!hb_buffer_move_to(buffer, match_positions[idx])))
       break;
 
-    if (unlikely (buffer->max_ops <= 0))
+    if (unlikely (hb_buffer_get_max_ops(buffer) <= 0))
       break;
 
-    unsigned int orig_len = buffer->backtrack_len () + buffer->lookahead_len ();
+    unsigned int orig_len = hb_buffer_backtrack_len(buffer) + hb_buffer_lookahead_len(buffer);
     if (!c->recurse (lookupRecord[i].lookupListIndex))
       continue;
 
-    unsigned int new_len = buffer->backtrack_len () + buffer->lookahead_len ();
+    unsigned int new_len = hb_buffer_backtrack_len(buffer) + hb_buffer_lookahead_len(buffer);
     int delta = new_len - orig_len;
 
     if (!delta)
@@ -1193,7 +1193,7 @@ static inline bool apply_lookup (hb_ot_apply_context_t *c,
       match_positions[next] += delta;
   }
 
-  buffer->move_to (end);
+  hb_buffer_move_to(buffer, end);
 
   return_trace (true);
 }
@@ -1282,7 +1282,7 @@ static inline bool context_apply_lookup (hb_ot_apply_context_t *c,
 		      inputCount, input,
 		      lookup_context.funcs.match, lookup_context.match_data,
 		      &match_length, match_positions)
-      && (c->buffer->unsafe_to_break (c->buffer->idx, c->buffer->idx + match_length),
+      && (hb_buffer_unsafe_to_break (c->buffer, hb_buffer_get_idx(c->buffer), hb_buffer_get_idx(c->buffer) + match_length),
 	  apply_lookup (c,
 		       inputCount, match_positions,
 		       lookupCount, lookupRecord,
@@ -1501,7 +1501,7 @@ struct ContextFormat1
   bool apply (hb_ot_apply_context_t *c) const
   {
     TRACE_APPLY (this);
-    unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
+    unsigned int index = (this+coverage).get_coverage (hb_buffer_get_cur(c->buffer, 0)->codepoint);
     if (likely (index == NOT_COVERED))
       return_trace (false);
 
@@ -1611,11 +1611,11 @@ struct ContextFormat2
   bool apply (hb_ot_apply_context_t *c) const
   {
     TRACE_APPLY (this);
-    unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
+    unsigned int index = (this+coverage).get_coverage (hb_buffer_get_cur(c->buffer, 0)->codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
 
     const ClassDef &class_def = this+classDef;
-    index = class_def.get_class (c->buffer->cur().codepoint);
+    index = class_def.get_class (hb_buffer_get_cur(c->buffer, 0)->codepoint);
     const RuleSet &rule_set = this+ruleSet[index];
     struct ContextApplyLookupContext lookup_context = {
       {match_class},
@@ -1712,7 +1712,7 @@ struct ContextFormat3
   bool apply (hb_ot_apply_context_t *c) const
   {
     TRACE_APPLY (this);
-    unsigned int index = (this+coverageZ[0]).get_coverage (c->buffer->cur().codepoint);
+    unsigned int index = (this+coverageZ[0]).get_coverage (hb_buffer_get_cur(c->buffer, 0)->codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
 
     const LookupRecord *lookupRecord = &StructAfter<LookupRecord> (coverageZ.as_array (glyphCount));
@@ -1902,7 +1902,7 @@ static inline bool chain_context_apply_lookup (hb_ot_apply_context_t *c,
 			  lookaheadCount, lookahead,
 			  lookup_context.funcs.match, lookup_context.match_data[2],
 			  match_length, &end_index)
-      && (c->buffer->unsafe_to_break_from_outbuffer (start_index, end_index),
+      && (hb_buffer_unsafe_to_break_from_outbuffer (c->buffer, start_index, end_index),
 	  apply_lookup (c,
 			inputCount, match_positions,
 			lookupCount, lookupRecord,
@@ -2135,7 +2135,7 @@ struct ChainContextFormat1
   bool apply (hb_ot_apply_context_t *c) const
   {
     TRACE_APPLY (this);
-    unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
+    unsigned int index = (this+coverage).get_coverage (hb_buffer_get_cur(c->buffer, 0)->codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
 
     const ChainRuleSet &rule_set = this+ruleSet[index];
@@ -2260,14 +2260,14 @@ struct ChainContextFormat2
   bool apply (hb_ot_apply_context_t *c) const
   {
     TRACE_APPLY (this);
-    unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
+    unsigned int index = (this+coverage).get_coverage (hb_buffer_get_cur(c->buffer, 0)->codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
 
     const ClassDef &backtrack_class_def = this+backtrackClassDef;
     const ClassDef &input_class_def = this+inputClassDef;
     const ClassDef &lookahead_class_def = this+lookaheadClassDef;
 
-    index = input_class_def.get_class (c->buffer->cur().codepoint);
+    index = input_class_def.get_class (hb_buffer_get_cur(c->buffer, 0)->codepoint);
     const ChainRuleSet &rule_set = this+ruleSet[index];
     struct ChainContextApplyLookupContext lookup_context = {
       {match_class},
@@ -2401,7 +2401,7 @@ struct ChainContextFormat3
     TRACE_APPLY (this);
     const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>> (backtrack);
 
-    unsigned int index = (this+input[0]).get_coverage (c->buffer->cur().codepoint);
+    unsigned int index = (this+input[0]).get_coverage (hb_buffer_get_cur(c->buffer, 0)->codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
 
     const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>> (input);

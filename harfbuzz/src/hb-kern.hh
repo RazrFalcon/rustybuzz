@@ -54,10 +54,10 @@ struct hb_kern_machine_t
     OT::hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c.iter_input;
     skippy_iter.init (&c);
 
-    bool horizontal = HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction);
-    unsigned int count = buffer->len();
-    hb_glyph_info_t *info = buffer->info;
-    hb_glyph_position_t *pos = buffer->pos;
+    bool horizontal = HB_DIRECTION_IS_HORIZONTAL (hb_buffer_get_direction(buffer));
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    hb_glyph_position_t *pos = hb_buffer_get_pos(buffer);
     for (unsigned int idx = 0; idx < count;)
     {
       if (!(info[idx].mask & kern_mask))
@@ -90,7 +90,7 @@ struct hb_kern_machine_t
 	if (crossStream)
 	{
 	  pos[j].y_offset = kern;
-	  buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+	  *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
 	}
 	else
 	{
@@ -108,7 +108,7 @@ struct hb_kern_machine_t
 	if (crossStream)
 	{
 	  pos[j].x_offset = kern;
-	  buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+	  *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
 	}
 	else
 	{
@@ -120,7 +120,7 @@ struct hb_kern_machine_t
 	}
       }
 
-      buffer->unsafe_to_break (i, j + 1);
+      hb_buffer_unsafe_to_break (buffer, i, j + 1);
 
     skip:
       idx = skippy_iter.idx;

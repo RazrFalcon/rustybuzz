@@ -81,7 +81,7 @@ hb_shape_full (hb_font_t          *font,
   hb_shape_plan_destroy (shape_plan);
 
   if (res)
-    buffer->content_type = HB_BUFFER_CONTENT_TYPE_GLYPHS;
+    hb_buffer_set_content_type(buffer, HB_BUFFER_CONTENT_TYPE_GLYPHS);
   return res;
 }
 

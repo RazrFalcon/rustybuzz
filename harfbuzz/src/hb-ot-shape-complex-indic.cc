@@ -350,8 +350,8 @@ setup_masks_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
   /* We cannot setup masks here.  We save information about characters
    * and setup masks later on in a pause-callback. */
 
-  unsigned int count = buffer->len();
-  hb_glyph_info_t *info = buffer->info;
+  unsigned int count = hb_buffer_get_length(buffer);
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   for (unsigned int i = 0; i < count; i++)
     set_indic_properties (info[i]);
 }
@@ -363,7 +363,7 @@ setup_syllables_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
 {
   find_syllables_indic (buffer);
   foreach_syllable (buffer, start, end)
-    buffer->unsafe_to_break (start, end);
+    hb_buffer_unsafe_to_break (buffer, start, end);
 }
 
 static int
@@ -391,8 +391,8 @@ update_consonant_positions_indic (const hb_ot_shape_plan_t *plan,
   if (indic_plan->load_virama_glyph (font, &virama))
   {
     hb_face_t *face = font->face;
-    unsigned int count = buffer->len();
-    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
     for (unsigned int i = 0; i < count; i++)
       if (info[i].indic_position() == POS_BASE_C)
       {
@@ -413,19 +413,19 @@ initial_reordering_consonant_syllable (const hb_ot_shape_plan_t *plan,
 				       unsigned int start, unsigned int end)
 {
   const indic_shape_plan_t *indic_plan = (const indic_shape_plan_t *) plan->data;
-  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
 
   /* https://github.com/harfbuzz/harfbuzz/issues/435#issuecomment-335560167
    * // For compatibility with legacy usage in Kannada,
    * // Ra+h+ZWJ must behave like Ra+ZWJ+h...
    */
-  if (buffer->props.script == HB_SCRIPT_KANNADA &&
+  if (hb_buffer_get_script(buffer) == HB_SCRIPT_KANNADA &&
       start + 3 <= end &&
       is_one_of (info[start  ], FLAG (OT_Ra)) &&
       is_one_of (info[start+1], FLAG (OT_H)) &&
       is_one_of (info[start+2], FLAG (OT_ZWJ)))
   {
-    buffer->merge_clusters (start+1, start+3);
+    hb_buffer_merge_clusters (buffer,start+1, start+3);
     hb_glyph_info_t tmp = info[start+1];
     info[start+1] = info[start+2];
     info[start+2] = tmp;
@@ -662,7 +662,7 @@ initial_reordering_consonant_syllable (const hb_ot_shape_plan_t *plan,
    */
   if (indic_plan->is_old_spec)
   {
-    bool disallow_double_halants = buffer->props.script == HB_SCRIPT_KANNADA;
+    bool disallow_double_halants = hb_buffer_get_script(buffer) == HB_SCRIPT_KANNADA;
     for (unsigned int i = base + 1; i < end; i++)
       if (info[i].indic_category() == OT_H)
       {
@@ -756,7 +756,7 @@ initial_reordering_consonant_syllable (const hb_ot_shape_plan_t *plan,
      * would.
      */
     if (indic_plan->is_old_spec || end - start > 127)
-      buffer->merge_clusters (base, end);
+      hb_buffer_merge_clusters (buffer,base, end);
     else
     {
       /* Note!  syllable() is a one-byte field. */
@@ -773,7 +773,7 @@ initial_reordering_consonant_syllable (const hb_ot_shape_plan_t *plan,
 	    j = next;
 	  }
 	  if (i != max)
-	    buffer->merge_clusters (i, max + 1);
+	    hb_buffer_merge_clusters (buffer,i, max + 1);
 	}
     }
 
@@ -811,7 +811,7 @@ initial_reordering_consonant_syllable (const hb_ot_shape_plan_t *plan,
   }
 
   if (indic_plan->is_old_spec &&
-      buffer->props.script == HB_SCRIPT_DEVANAGARI)
+      hb_buffer_get_script(buffer) == HB_SCRIPT_DEVANAGARI)
   {
     /* Old-spec eye-lash Ra needs special handling.  From the
      * spec:
@@ -895,7 +895,7 @@ initial_reordering_standalone_cluster (const hb_ot_shape_plan_t *plan,
     /* For dotted-circle, this is what Uniscribe does:
      * If dotted-circle is the last glyph, it just does nothing.
      * Ie. It doesn't form Reph. */
-    if (buffer->info[end - 1].indic_category() == OT_DOTTEDCIRCLE)
+    if (hb_buffer_get_info(buffer)[end - 1].indic_category() == OT_DOTTEDCIRCLE)
       return;
   }
 
@@ -908,7 +908,7 @@ initial_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 				   hb_buffer_t *buffer,
 				   unsigned int start, unsigned int end)
 {
-  indic_syllable_type_t syllable_type = (indic_syllable_type_t) (buffer->info[start].syllable() & 0x0F);
+  indic_syllable_type_t syllable_type = (indic_syllable_type_t) (hb_buffer_get_info(buffer)[start].syllable() & 0x0F);
   switch (syllable_type)
   {
     case indic_vowel_syllable: /* We made the vowels look like consonants.  So let's call the consonant logic! */
@@ -932,14 +932,14 @@ insert_dotted_circles_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			     hb_font_t *font,
 			     hb_buffer_t *buffer)
 {
-  if (unlikely (buffer->flags & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
+  if (unlikely (hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
     return;
 
   /* Note: This loop is extra overhead, but should not be measurable.
    * TODO Use a buffer scratch flag to remove the loop. */
   bool has_broken_syllables = false;
-  unsigned int count = buffer->len();
-  hb_glyph_info_t *info = buffer->info;
+  unsigned int count = hb_buffer_get_length(buffer);
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   for (unsigned int i = 0; i < count; i++)
     if ((info[i].syllable() & 0x0F) == indic_broken_cluster)
     {
@@ -959,35 +959,35 @@ insert_dotted_circles_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
   set_indic_properties (dottedcircle);
   dottedcircle.codepoint = dottedcircle_glyph;
 
-  buffer->clear_output ();
+  hb_buffer_clear_output(buffer);
 
-  buffer->idx = 0;
+  hb_buffer_set_idx(buffer, 0);
   unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len())
+  while (hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer))
   {
-    unsigned int syllable = buffer->cur().syllable();
+    unsigned int syllable = hb_buffer_get_cur(buffer, 0)->syllable();
     indic_syllable_type_t syllable_type = (indic_syllable_type_t) (syllable & 0x0F);
     if (unlikely (last_syllable != syllable && syllable_type == indic_broken_cluster))
     {
       last_syllable = syllable;
 
       hb_glyph_info_t ginfo = dottedcircle;
-      ginfo.cluster = buffer->cur().cluster;
-      ginfo.mask = buffer->cur().mask;
-      ginfo.syllable() = buffer->cur().syllable();
+      ginfo.cluster = hb_buffer_get_cur(buffer, 0)->cluster;
+      ginfo.mask = hb_buffer_get_cur(buffer, 0)->mask;
+      ginfo.syllable() = hb_buffer_get_cur(buffer, 0)->syllable();
 
       /* Insert dottedcircle after possible Repha. */
-      while (buffer->idx < buffer->len() &&
-	     last_syllable == buffer->cur().syllable() &&
-	     buffer->cur().indic_category() == OT_Repha)
-	buffer->next_glyph ();
+      while (hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer) &&
+	     last_syllable == hb_buffer_get_cur(buffer, 0)->syllable() &&
+	     hb_buffer_get_cur(buffer, 0)->indic_category() == OT_Repha)
+	hb_buffer_next_glyph (buffer);
 
-      buffer->output_info (ginfo);
+      hb_buffer_output_info (buffer, ginfo);
     }
     else
-      buffer->next_glyph ();
+      hb_buffer_next_glyph (buffer);
   }
-  buffer->swap_buffers ();
+  hb_buffer_swap_buffers(buffer);
 }
 
 static void
@@ -1008,7 +1008,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 				 unsigned int start, unsigned int end)
 {
   const indic_shape_plan_t *indic_plan = (const indic_shape_plan_t *) plan->data;
-  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
 
 
   /* This function relies heavily on halant glyphs.  Lots of ligation
@@ -1069,7 +1069,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 	  }
       }
       /* For Malayalam, skip over unformed below- (but NOT post-) forms. */
-      if (buffer->props.script == HB_SCRIPT_MALAYALAM)
+      if (hb_buffer_get_script(buffer) == HB_SCRIPT_MALAYALAM)
       {
 	for (unsigned int i = base + 1; i < end; i++)
 	{
@@ -1138,7 +1138,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
      * The glyphs formed by 'half' are Chillus or ligated explicit viramas.
      * We want to position matra after them.
      */
-    if (buffer->props.script != HB_SCRIPT_MALAYALAM && buffer->props.script != HB_SCRIPT_TAMIL)
+    if (hb_buffer_get_script(buffer) != HB_SCRIPT_MALAYALAM && hb_buffer_get_script(buffer) != HB_SCRIPT_TAMIL)
     {
     search:
       while (new_pos > start &&
@@ -1198,14 +1198,14 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 
 	  /* Note: this merge_clusters() is intentionally *after* the reordering.
 	   * Indic matra reordering is special and tricky... */
-	  buffer->merge_clusters (new_pos, hb_min (end, base + 1));
+	  hb_buffer_merge_clusters (buffer,new_pos, hb_min (end, base + 1));
 
 	  new_pos--;
 	}
     } else {
       for (unsigned int i = start; i < base; i++)
 	if (info[i].indic_position () == POS_PRE_M) {
-	  buffer->merge_clusters (i, hb_min (end, base + 1));
+	  hb_buffer_merge_clusters (buffer,i, hb_min (end, base + 1));
 	  break;
 	}
     }
@@ -1353,7 +1353,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
     reph_move:
     {
       /* Move */
-      buffer->merge_clusters (start, new_reph_pos + 1);
+      hb_buffer_merge_clusters (buffer,start, new_reph_pos + 1);
       hb_glyph_info_t reph = info[start];
       memmove (&info[start], &info[start + 1], (new_reph_pos - start) * sizeof (info[0]));
       info[new_reph_pos] = reph;
@@ -1398,7 +1398,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 	   * The glyphs formed by 'half' are Chillus or ligated explicit viramas.
 	   * We want to position matra after them.
 	   */
-	  if (buffer->props.script != HB_SCRIPT_MALAYALAM && buffer->props.script != HB_SCRIPT_TAMIL)
+	  if (hb_buffer_get_script(buffer) != HB_SCRIPT_MALAYALAM && hb_buffer_get_script(buffer) != HB_SCRIPT_TAMIL)
 	  {
 	    while (new_pos > start &&
 		   !(is_one_of (info[new_pos - 1], FLAG(OT_M) | FLAG (OT_H))))
@@ -1415,7 +1415,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 	  {
 	    unsigned int old_pos = i;
 
-	    buffer->merge_clusters (new_pos, old_pos + 1);
+	    hb_buffer_merge_clusters (buffer,new_pos, old_pos + 1);
 	    hb_glyph_info_t tmp = info[old_pos];
 	    memmove (&info[new_pos + 1], &info[new_pos], (old_pos - new_pos) * sizeof (info[0]));
 	    info[new_pos] = tmp;
@@ -1438,7 +1438,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 	 FLAG_RANGE (HB_UNICODE_GENERAL_CATEGORY_FORMAT, HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)))
       info[start].mask |= indic_plan->mask_array[INDIC_INIT];
     else
-      buffer->unsafe_to_break (start - 1, start + 1);
+      hb_buffer_unsafe_to_break (buffer, start - 1, start + 1);
   }
 
 
@@ -1458,7 +1458,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 	 * This means, half forms are submerged into the main consonant's cluster.
 	 * This is unnecessary, and makes cursor positioning harder, but that's what
 	 * Uniscribe does. */
-	buffer->merge_clusters (start, end);
+	hb_buffer_merge_clusters (buffer,start, end);
 	break;
     }
   }
@@ -1470,7 +1470,7 @@ final_reordering_indic (const hb_ot_shape_plan_t *plan,
 			hb_font_t *font HB_UNUSED,
 			hb_buffer_t *buffer)
 {
-  unsigned int count = buffer->len();
+  unsigned int count = hb_buffer_get_length(buffer);
   if (unlikely (!count)) return;
 
   foreach_syllable (buffer, start, end)

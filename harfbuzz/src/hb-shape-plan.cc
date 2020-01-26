@@ -283,11 +283,11 @@ hb_shape_plan_execute (hb_shape_plan_t    *shape_plan,
 		  num_features,
 		  shape_plan->key.shaper_func);
 
-  if (unlikely (!buffer->len()))
+  if (unlikely (!hb_buffer_get_length(buffer)))
     return true;
 
   assert (!hb_object_is_immutable (buffer));
-  assert (buffer->content_type == HB_BUFFER_CONTENT_TYPE_UNICODE);
+  assert (hb_buffer_get_content_type(buffer) == HB_BUFFER_CONTENT_TYPE_UNICODE);
 
   if (unlikely (hb_object_is_inert (shape_plan)))
     return false;

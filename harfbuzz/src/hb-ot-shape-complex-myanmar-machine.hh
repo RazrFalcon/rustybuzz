@@ -313,7 +313,7 @@ find_syllables_myanmar (hb_buffer_t *buffer)
 {
   unsigned int p, pe, eof, ts, te, act HB_UNUSED;
   int cs;
-  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   
 #line 320 "hb-ot-shape-complex-myanmar-machine.hh"
 	{
@@ -327,7 +327,7 @@ find_syllables_myanmar (hb_buffer_t *buffer)
 
 
   p = 0;
-  pe = eof = buffer->len();
+  pe = eof = hb_buffer_get_length(buffer);
 
   unsigned int syllable_serial = 1;
   

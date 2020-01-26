@@ -389,7 +389,7 @@ find_syllables_use (hb_buffer_t *buffer)
 {
   unsigned int p, pe, eof, ts, te, act;
   int cs;
-  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   
 #line 396 "hb-ot-shape-complex-use-machine.hh"
 	{
@@ -403,7 +403,7 @@ find_syllables_use (hb_buffer_t *buffer)
 
 
   p = 0;
-  pe = eof = buffer->len();
+  pe = eof = hb_buffer_get_length(buffer);
 
   unsigned int syllable_serial = 1;
   
