@@ -105,7 +105,8 @@ struct hb_buffer_t
   unsigned int len; /* Length of ->info and ->pos arrays */
   unsigned int out_len; /* Length of ->out array if have_output */
 
-  unsigned int allocated; /* Length of allocated arrays */
+  hb_vector_t<hb_glyph_info_t> info_vec;
+  hb_vector_t<hb_glyph_position_t> pos_vec;
   hb_glyph_info_t     *info;
   hb_glyph_info_t     *out_info;
   hb_glyph_position_t *pos;
@@ -281,14 +282,8 @@ struct hb_buffer_t
   void ensure (unsigned int size)
   { enlarge (size); }
 
-  bool ensure_inplace (unsigned int size)
-  { return likely (!size || size < allocated); }
-
   HB_INTERNAL bool make_room_for (unsigned int num_in, unsigned int num_out);
   HB_INTERNAL bool shift_forward (unsigned int count);
-
-  typedef long scratch_buffer_t;
-  HB_INTERNAL scratch_buffer_t *get_scratch_buffer (unsigned int *size);
 
   void clear_context (unsigned int side) { context_len[side] = 0; }
 
