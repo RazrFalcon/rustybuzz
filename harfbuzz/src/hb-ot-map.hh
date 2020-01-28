@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "hb-buffer.hh"
+#include "hb-buffer.h"
 
 
 #define HB_OT_MAP_MAX_BITS 8u

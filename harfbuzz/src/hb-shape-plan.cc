@@ -286,14 +286,12 @@ hb_shape_plan_execute (hb_shape_plan_t    *shape_plan,
   if (unlikely (!hb_buffer_get_length(buffer)))
     return true;
 
-  assert (!hb_object_is_immutable (buffer));
-  assert (hb_buffer_get_content_type(buffer) == HB_BUFFER_CONTENT_TYPE_UNICODE);
-
   if (unlikely (hb_object_is_inert (shape_plan)))
     return false;
 
   assert (shape_plan->face_unsafe == font->face);
-  assert (hb_segment_properties_equal (&shape_plan->key.props, &buffer->props));
+  hb_segment_properties_t props = hb_buffer_get_segment_properties(buffer);
+  assert (hb_segment_properties_equal (&shape_plan->key.props, &props));
 
   return _hb_ot_shape (shape_plan, font, buffer, features, num_features); 
 }

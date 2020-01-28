@@ -9,7 +9,7 @@ Embedded `harfbuzz` version: 2.6.4
 
 #![doc(html_root_url = "https://docs.rs/rustybuzz/0.1.0")]
 
-#![warn(missing_docs)]
+//#![warn(missing_docs)]
 
 macro_rules! matches {
     ($expression:expr, $($pattern:tt)+) => {
@@ -47,6 +47,35 @@ macro_rules! try_or {
     };
 }
 
+macro_rules! impl_bit_ops {
+    ($name:ident) => {
+        impl std::ops::BitOr for $name {
+            type Output = $name;
+
+            #[inline]
+            fn bitor(self, other: Self) -> Self {
+                Self(self.0 | other.0)
+            }
+        }
+
+        impl std::ops::BitOrAssign for $name {
+            #[inline]
+            fn bitor_assign(&mut self, other: Self) {
+                self.0 |= other.0;
+            }
+        }
+
+        impl std::ops::BitAnd for $name {
+            type Output = $name;
+
+            #[inline]
+            fn bitand(self, other: $name) -> $name {
+                $name(self.0 & other.0)
+            }
+        }
+    };
+}
+
 mod buffer;
 mod common;
 mod ffi;
@@ -63,6 +92,7 @@ pub use crate::common::*;
 pub use crate::font::{Face, Font};
 
 type CodePoint = u32;
+type Mask = u32;
 
 /// Shape the contents of the buffer using the provided font and activating all
 /// OpenType features given in `features`.
@@ -79,7 +109,7 @@ pub fn shape(font: &Font<'_>, mut buffer: Buffer, features: &[Feature]) -> Glyph
         ffi::hb_shape(
             font.as_ptr(),
             buffer.as_ptr(),
-            features.as_ptr() as *mut _,
+            features.as_ptr() as *const _,
             features.len() as u32,
         )
     };

@@ -696,8 +696,6 @@ hb_ot_map_glyphs_fast (hb_buffer_t  *buffer)
   hb_glyph_info_t *info = hb_buffer_get_info(buffer);
   for (unsigned int i = 0; i < count; i++)
     info[i].codepoint = info[i].glyph_index();
-
-  hb_buffer_set_content_type(buffer, HB_BUFFER_CONTENT_TYPE_GLYPHS);
 }
 
 static inline void
@@ -966,6 +964,7 @@ hb_ot_shape_internal (hb_ot_shape_context_t *c)
   hb_ot_substitute_pre (c);
   hb_ot_position (c);
   hb_ot_substitute_post (c);
+
 
   hb_propagate_flags (c->buffer);
 

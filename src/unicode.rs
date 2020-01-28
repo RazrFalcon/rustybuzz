@@ -72,7 +72,7 @@ pub extern "C" fn rb_is_default_ignorable(ch: u32) -> i32 {
     is_default_ignorable(ch) as i32
 }
 
-fn script_from_char(c: char) -> Script {
+pub fn script_from_char(c: char) -> Script {
     use unicode_script as us;
     use crate::script;
 

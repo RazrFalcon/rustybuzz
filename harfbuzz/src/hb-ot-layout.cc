@@ -972,7 +972,7 @@ inline void hb_ot_map_t::apply_gsub (const OT::GSUB &table,
       if (lookups[table_index][i].random)
       {
 	c.set_random (true);
-	hb_buffer_unsafe_to_break_impl (buffer, 0, hb_buffer_get_length(buffer));
+	hb_buffer_unsafe_to_break (buffer, 0, hb_buffer_get_length(buffer));
       }
       apply_string_gsub (&c,
 			 table.get_lookup (lookup_index),
@@ -1041,7 +1041,7 @@ inline void hb_ot_map_t::apply_gpos (const OT::GPOS &table,
       if (lookups[table_index][i].random)
       {
 	c.set_random (true);
-	hb_buffer_unsafe_to_break_impl (buffer, 0, hb_buffer_get_length(buffer));
+	hb_buffer_unsafe_to_break (buffer, 0, hb_buffer_get_length(buffer));
       }
       apply_string_gpos (&c,
 			 table.get_lookup (lookup_index),

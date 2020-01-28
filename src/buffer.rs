@@ -1,9 +1,31 @@
-use std::io::Read;
+use std::mem;
 
-use bitflags::bitflags;
-
-use crate::{Direction, Language, Script, Tag};
+use crate::{Font, Direction, Language, Script, SegmentProperties, CodePoint, Mask};
 use crate::ffi;
+
+const CONTEXT_LENGTH: usize = 5;
+
+mod glyph_flag {
+    /// Indicates that if input text is broken at the
+    /// beginning of the cluster this glyph is part of,
+    /// then both sides need to be re-shaped, as the
+    /// result might be different.  On the flip side,
+    /// it means that when this flag is not present,
+    /// then it's safe to break the glyph-run at the
+    /// beginning of this cluster, and the two sides
+    /// represent the exact same result one would get
+    /// if breaking input text at the beginning of
+    /// this cluster and shaping the two sides
+    /// separately.  This can be used to optimize
+    /// paragraph layout, by avoiding re-shaping
+    /// of each line after line-breaking, or limiting
+    /// the reshaping to a small piece around the
+    /// breaking point only.
+    pub const UNSAFE_TO_BREAK: u32 = 0x00000001;
+
+    /// All the currently defined flags.
+    pub const DEFINED: u32 = 0x00000001; // OR of all defined flags
+}
 
 /// `GlyphPosition` is the structure that holds the positions of the glyph in
 /// both horizontal and vertical directions. All positions in `GlyphPosition`
@@ -26,6 +48,18 @@ pub struct GlyphPosition {
     var: ffi::hb_var_int_t,
 }
 
+impl Default for GlyphPosition {
+    fn default() -> Self {
+        GlyphPosition {
+            x_advance: 0,
+            y_advance: 0,
+            x_offset: 0,
+            y_offset: 0,
+            var: 0,
+        }
+    }
+}
+
 impl std::fmt::Debug for GlyphPosition {
     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         fmt.debug_struct("GlyphBuffer")
@@ -44,11 +78,47 @@ impl std::fmt::Debug for GlyphPosition {
 pub struct GlyphInfo {
     /// Unicode codepoint.
     pub codepoint: u32,
-    mask: ffi::hb_mask_t,
+    mask: Mask,
     /// Codepoint cluster.
     pub cluster: u32,
     var1: ffi::hb_var_int_t,
     var2: ffi::hb_var_int_t,
+}
+
+impl Default for GlyphInfo {
+    fn default() -> Self {
+        GlyphInfo {
+            codepoint: 0,
+            mask: 0,
+            cluster: 0,
+            var1: 0,
+            var2: 0,
+        }
+    }
+}
+
+impl From<ffi::hb_glyph_info_t> for GlyphInfo {
+    fn from(v: ffi::hb_glyph_info_t) -> Self {
+        GlyphInfo {
+            codepoint: v.codepoint,
+            mask: v.mask,
+            cluster: v.cluster,
+            var1: v.var1,
+            var2: v.var2,
+        }
+    }
+}
+
+impl From<GlyphInfo> for ffi::hb_glyph_info_t {
+    fn from(v: GlyphInfo) -> Self {
+        ffi::hb_glyph_info_t {
+            codepoint: v.codepoint,
+            mask: v.mask,
+            cluster: v.cluster,
+            var1: v.var1,
+            var2: v.var2,
+        }
+    }
 }
 
 impl std::fmt::Debug for GlyphInfo {
@@ -61,92 +131,89 @@ impl std::fmt::Debug for GlyphInfo {
 }
 
 
-/// The serialization format used in `BufferSerializer`.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum SerializeFormat {
-    /// A human-readable, plain text format
-    Text,
-    /// A machine-readable JSON format.
-    Json,
+#[derive(Clone, Copy, Default, Debug)]
+pub struct SerializeFlags(u8);
+
+impl SerializeFlags {
+    pub const NO_CLUSTERS: Self           = Self(1 << 1);
+    pub const NO_POSITIONS: Self                 = Self(1 << 2);
+    pub const NO_GLYPH_NAMES: Self = Self(1 << 3);
+    pub const GLYPH_EXTENTS: Self   = Self(1 << 4);
+    pub const GLYPH_FLAGS: Self = Self(1 << 5);
+    pub const NO_ADVANCES: Self = Self(1 << 6);
+
+    #[inline] pub fn empty() -> Self { Self(0) }
+    #[inline] pub fn all() -> Self { Self(127) }
+    #[inline] pub fn from_bits_truncate(bits: u8) -> Self { Self(bits & Self::all().0) }
+    #[inline] pub fn contains(&self, other: Self) -> bool { (self.0 & other.0) == other.0 }
 }
 
-impl From<SerializeFormat> for ffi::hb_buffer_serialize_format_t {
-    fn from(fmt: SerializeFormat) -> Self {
-        match fmt {
-            SerializeFormat::Text => ffi::HB_BUFFER_SERIALIZE_FORMAT_TEXT,
-            SerializeFormat::Json => ffi::HB_BUFFER_SERIALIZE_FORMAT_JSON,
-        }
+impl_bit_ops!(SerializeFlags);
+
+
+#[derive(Clone, Copy, Default, Debug)]
+pub struct BufferFlags(u8);
+
+impl BufferFlags {
+    pub const BEGINNING_OF_TEXT: Self           = Self(1 << 1);
+    pub const END_OF_TEXT: Self                 = Self(1 << 2);
+    pub const PRESERVE_DEFAULT_IGNORABLES: Self = Self(1 << 3);
+    pub const REMOVE_DEFAULT_IGNORABLES: Self   = Self(1 << 4);
+    pub const DO_NOT_INSERT_DOTTED_CIRCLE: Self = Self(1 << 5);
+
+    #[inline] pub fn empty() -> Self { Self(0) }
+    #[inline] pub fn all() -> Self { Self(63) }
+    #[inline] pub fn from_bits_truncate(bits: u8) -> Self { Self(bits & Self::all().0) }
+    #[inline] pub fn contains(&self, other: Self) -> bool { (self.0 & other.0) == other.0 }
+}
+
+impl_bit_ops!(BufferFlags);
+
+
+#[derive(Clone, Copy, Default, Debug)]
+pub struct BufferScratchFlags(u32);
+
+impl BufferScratchFlags {
+    pub const HAS_NON_ASCII: Self          = Self(0x00000001);
+    pub const HAS_DEFAULT_IGNORABLES: Self = Self(0x00000002);
+    pub const HAS_SPACE_FALLBACK: Self     = Self(0x00000004);
+    pub const HAS_GPOS_ATTACHMENT: Self    = Self(0x00000008);
+    pub const HAS_UNSAFE_TO_BREAK: Self    = Self(0x00000010);
+    pub const HAS_CGJ: Self                = Self(0x00000020);
+
+    // Reserved for complex shapers' internal use.
+    pub const COMPLEX0: Self = Self(0x01000000);
+    pub const COMPLEX1: Self = Self(0x02000000);
+    pub const COMPLEX2: Self = Self(0x04000000);
+    pub const COMPLEX3: Self = Self(0x08000000);
+
+    #[inline] pub fn empty() -> Self { Self(0) }
+    #[inline] pub fn all() -> Self { Self(251658303) }
+    #[inline] pub fn from_bits_truncate(bits: u32) -> Self { Self(bits & Self::all().0) }
+    #[inline] pub fn contains(&self, other: Self) -> bool { (self.0 & other.0) == other.0 }
+}
+
+impl_bit_ops!(BufferScratchFlags);
+
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum BufferClusterLevel {
+    /// Return cluster values grouped by graphemes into monotone order.
+    MonotoneGraphemes,
+
+    /// Return cluster values grouped into monotone order.
+    MonotoneCharacters,
+
+    /// Don't group cluster values.
+    Characters,
+}
+
+impl Default for BufferClusterLevel {
+    fn default() -> Self {
+        BufferClusterLevel::MonotoneGraphemes
     }
 }
 
-bitflags! {
-    /// Flags used for serialization with a `BufferSerializer`.
-    #[derive(Default)]
-    pub struct SerializeFlags: u32 {
-        /// Do not serialize glyph cluster.
-        const NO_CLUSTERS = ffi::HB_BUFFER_SERIALIZE_FLAG_NO_CLUSTERS;
-        /// Do not serialize glyph position information.
-        const NO_POSITIONS = ffi::HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS;
-        /// Do no serialize glyph name.
-        const NO_GLYPH_NAMES = ffi::HB_BUFFER_SERIALIZE_FLAG_NO_GLYPH_NAMES;
-        /// Serialize glyph extents.
-        const GLYPH_EXTENTS = ffi::HB_BUFFER_SERIALIZE_FLAG_GLYPH_EXTENTS;
-        /// Serialize glyph flags.
-        const GLYPH_FLAGS = ffi::HB_BUFFER_SERIALIZE_FLAG_GLYPH_FLAGS;
-        /// Do not serialize glyph advances, glyph offsets will reflect absolute
-        /// glyph positions.
-        const NO_ADVANCES = ffi::HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES;
-    }
-}
-
-/// A type that can be used to serialize a `GlyphBuffer`.
-#[derive(Debug)]
-pub struct BufferSerializer<'a> {
-    font: Option<&'a crate::Font<'a>>,
-    buffer: &'a Buffer,
-    start: usize,
-    end: usize,
-    format: SerializeFormat,
-    flags: SerializeFlags,
-
-    bytes: std::io::Cursor<Vec<u8>>,
-}
-
-impl<'a> Read for BufferSerializer<'a> {
-    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        match self.bytes.read(buf) {
-            // if `bytes` is empty refill it
-            Ok(0) => {
-                if self.start > self.end.saturating_sub(1) {
-                    return Ok(0);
-                }
-                let mut bytes_written = 0;
-                let num_serialized_items = unsafe {
-                    ffi::hb_buffer_serialize_glyphs(
-                        self.buffer.as_ptr(),
-                        self.start as u32,
-                        self.end as u32,
-                        self.bytes.get_mut().as_mut_ptr() as *mut _,
-                        self.bytes.get_ref().capacity() as u32,
-                        &mut bytes_written,
-                        self.font
-                            .map(|f| f.as_ptr())
-                            .unwrap_or(std::ptr::null_mut()),
-                        self.format.into(),
-                        self.flags.bits(),
-                    )
-                };
-                self.start += num_serialized_items as usize;
-                self.bytes.set_position(0);
-                unsafe { self.bytes.get_mut().set_len(bytes_written as usize) };
-
-                self.read(buf)
-            }
-            Ok(size) => Ok(size),
-            Err(err) => Err(err),
-        }
-    }
-}
 
 /// A `Buffer` can be filled with unicode text and corresponding cluster
 /// indices.
@@ -161,16 +228,715 @@ impl<'a> Read for BufferSerializer<'a> {
 /// `.clear()` method which in turn gives you a fresh `Buffer` (also
 /// reusing the original allocation again). This buffer can then be used to
 /// shape more text.
-pub struct Buffer(*mut ffi::hb_buffer_t);
+pub struct Buffer {
+    // Information about how the text in the buffer should be treated.
+    flags: BufferFlags,
+    cluster_level: BufferClusterLevel,
+    invisible: Option<char>,
+    scratch_flags: BufferScratchFlags,
+    /// Maximum allowed operations.
+    max_ops: i32,
+
+    // Buffer contents.
+    props: SegmentProperties,
+
+    /// Whether we have an output buffer going on.
+    have_output: bool,
+    have_separate_output: bool,
+    /// Whether we have positions
+    have_positions: bool,
+
+    idx: usize,
+    len: usize,
+    out_len: usize,
+
+    info: Vec<GlyphInfo>,
+    pos: Vec<GlyphPosition>,
+
+    serial: u32,
+
+    // Text before / after the main buffer contents.
+    // Always in Unicode, and ordered outward.
+    // Index 0 is for "pre-context", 1 for "post-context".
+    context: [[char; CONTEXT_LENGTH]; 2],
+    context_len: [usize; 2],
+}
 
 impl Buffer {
-    /// Creates a new empty `Buffer`.
-    pub fn new() -> Buffer {
-        unsafe { Buffer(ffi::hb_buffer_create()) }
+    /// Creates a new `Buffer`.
+    pub fn new(text: &str) -> Self {
+        let mut buffer = Buffer {
+            flags: BufferFlags::empty(),
+            cluster_level: BufferClusterLevel::default(),
+            invisible: None,
+            scratch_flags: BufferScratchFlags::default(),
+            max_ops: 0,
+            props: SegmentProperties::default(),
+            have_output: false,
+            have_positions: false,
+            idx: 0,
+            len: 0,
+            out_len: 0,
+            info: Vec::new(),
+            pos: Vec::new(),
+            have_separate_output: false,
+            serial: 0,
+            context: [['\0', '\0', '\0', '\0', '\0'], ['\0', '\0', '\0', '\0', '\0']],
+            context_len: [0, 0],
+        };
+
+        buffer.push_str(text);
+        buffer
     }
 
-    pub(crate) fn as_ptr(&self) -> *mut ffi::hb_buffer_t {
-        self.0
+    fn from_ptr(buffer: *const ffi::hb_buffer_t) -> &'static Buffer {
+        unsafe { &*(buffer as *const Buffer) }
+    }
+
+    fn from_ptr_mut(buffer: *mut ffi::hb_buffer_t) -> &'static mut Buffer {
+        unsafe { &mut *(buffer as *mut Buffer) }
+    }
+
+    pub(crate) fn as_ptr(&mut self) -> *mut ffi::hb_buffer_t {
+        self as *mut _ as *mut ffi::hb_buffer_t
+    }
+
+    fn out_info(&self) -> &[GlyphInfo] {
+        if self.have_separate_output {
+            unsafe { mem::transmute(self.pos.as_slice()) }
+        } else {
+            &self.info
+        }
+    }
+
+    fn out_info_mut(&mut self) -> &mut [GlyphInfo] {
+        if self.have_separate_output {
+            unsafe { mem::transmute(self.pos.as_mut_slice()) }
+        } else {
+            &mut self.info
+        }
+    }
+
+    fn set_out_info(&mut self, i: usize, info: GlyphInfo) {
+        self.out_info_mut()[i] = info;
+    }
+
+    fn cur_mut(&mut self, i: usize) -> &mut GlyphInfo {
+        let idx = self.idx + i;
+        &mut self.info[idx]
+    }
+
+    fn cur_pos_mut(&mut self) -> &mut GlyphPosition {
+        let i = self.idx;
+        &mut self.pos[i]
+    }
+
+    fn prev_mut(&mut self) -> &mut GlyphInfo {
+        let idx = if self.out_len != 0 { self.out_len - 1 } else { 0 };
+        &mut self.out_info_mut()[idx]
+    }
+
+    fn clear(&mut self) {
+        self.props = SegmentProperties::default();
+        self.scratch_flags = BufferScratchFlags::default();
+
+        self.have_output = false;
+        self.have_positions = false;
+
+        self.idx = 0;
+        self.info.clear();
+        self.pos.clear();
+        self.len = 0;
+        self.out_len = 0;
+        self.have_separate_output = false;
+
+        self.serial = 0;
+
+        self.context = [['\0', '\0', '\0', '\0', '\0'], ['\0', '\0', '\0', '\0', '\0']];
+        self.context_len = [0, 0];
+    }
+
+    fn backtrack_len(&self) -> usize {
+        if self.have_output { self.out_len } else { self.idx }
+    }
+
+    fn lookahead_len(&self) -> usize {
+        self.len - self.idx
+    }
+
+    fn next_serial(&mut self) -> u32 {
+        let n = self.serial;
+        self.serial += 1;
+        n
+    }
+
+    fn add(&mut self, codepoint: CodePoint, cluster: u32) {
+        self.ensure(self.len + 1);
+
+        let i = self.len;
+        self.info[i] = GlyphInfo {
+            codepoint,
+            mask: 0,
+            cluster,
+            var1: 0,
+            var2: 0,
+        };
+
+        self.len += 1;
+    }
+
+    fn reverse(&mut self) {
+        if self.is_empty() {
+            return;
+        }
+
+        self.reverse_range(0, self.len);
+    }
+
+    fn reverse_range(&mut self, start: usize, end: usize) {
+        if end - start < 2 {
+            return;
+        }
+
+        let mut i = start;
+        let mut j = end - 1;
+        while i < j {
+            self.info.swap(i, j);
+            i += 1;
+            j -= 1;
+        }
+
+        if self.have_positions {
+            i = start;
+            j = end - 1;
+            while i < j {
+                self.pos.swap(i, j);
+                i += 1;
+                j -= 1;
+            }
+        }
+    }
+
+    pub fn reset_clusters(&mut self) {
+        for (i, info) in self.info.iter_mut().enumerate() {
+            info.cluster = i as u32;
+        }
+    }
+
+    pub(crate) fn guess_segment_properties(&mut self) {
+        use std::convert::TryFrom;
+
+        if self.props.script.is_none() {
+            for info in &self.info {
+                let c = char::try_from(info.codepoint).unwrap();
+                match crate::unicode::script_from_char(c) {
+                      crate::script::COMMON
+                    | crate::script::INHERITED
+                    | crate::script::UNKNOWN => {}
+                    s => {
+                        self.props.script = Some(s);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if self.props.direction == Direction::Invalid {
+            if let Some(script) = self.props.script {
+                self.props.direction = Direction::from_script(script).unwrap_or_default();
+            }
+
+            if self.props.direction == Direction::Invalid {
+                self.props.direction = Direction::LeftToRight;
+            }
+        }
+
+        // TODO: language must be set
+    }
+
+    fn swap_buffers(&mut self) {
+        assert!(self.have_output);
+        self.have_output = false;
+
+        if self.have_separate_output {
+            unsafe {
+                mem::swap(&mut self.info, mem::transmute(&mut self.pos));
+            }
+        }
+
+        mem::swap(&mut self.len, &mut self.out_len);
+
+        self.idx = 0;
+    }
+
+    fn remove_output(&mut self) {
+        self.have_output = false;
+        self.have_positions = false;
+
+        self.out_len = 0;
+        self.have_separate_output = false;
+    }
+
+    fn clear_output(&mut self) {
+        self.have_output = true;
+        self.have_positions = false;
+
+        self.out_len = 0;
+        self.have_separate_output = false;
+    }
+
+    fn clear_positions(&mut self) {
+        self.have_output = false;
+        self.have_positions = true;
+
+        self.out_len = 0;
+        self.have_separate_output = false;
+
+        for pos in &mut self.pos {
+            *pos = GlyphPosition::default();
+        }
+    }
+
+    fn replace_glyphs(&mut self, num_in: usize, num_out: usize, glyph_data: &[CodePoint]) {
+        self.make_room_for(num_in, num_out);
+
+        assert!(self.idx + num_in <= self.len);
+
+        self.merge_clusters(self.idx, self.idx + num_in);
+
+        let orig_info = self.info[self.idx];
+        for i in 0..num_out {
+            let ii = self.out_len + i;
+            self.set_out_info(ii, orig_info);
+            self.out_info_mut()[ii].codepoint = glyph_data[i];
+        }
+
+        self.idx += num_in;
+        self.out_len += num_out;
+    }
+
+    fn replace_glyph(&mut self, glyph_index: CodePoint) {
+        if self.have_separate_output || self.out_len != self.idx {
+            self.make_room_for(1, 1);
+            self.set_out_info(self.out_len, self.info[self.idx]);
+        }
+
+        let out_len = self.out_len;
+        self.out_info_mut()[out_len].codepoint = glyph_index;
+
+        self.idx += 1;
+        self.out_len += 1;
+    }
+
+    fn output_glyph(&mut self, glyph_index: CodePoint) -> Option<&mut GlyphInfo> {
+        self.make_room_for(0, 1);
+
+        if self.idx == self.len && self.out_len == 0 {
+            return None;
+        }
+
+        let out_len = self.out_len;
+        if self.idx < self.len {
+            self.set_out_info(out_len, self.info[self.idx]);
+        } else {
+            let info = self.out_info()[out_len - 1];
+            self.set_out_info(out_len, info);
+        }
+
+        self.out_info_mut()[out_len].codepoint = glyph_index;
+
+        self.out_len += 1;
+        self.out_info_mut().get_mut(out_len)
+    }
+
+    fn output_info(&mut self, glyph_info: GlyphInfo) {
+        self.make_room_for(0, 1);
+        self.set_out_info(self.out_len, glyph_info);
+        self.out_len += 1;
+    }
+
+    /// Copies glyph at idx to output but doesn't advance idx.
+    fn copy_glyph(&mut self) {
+        self.make_room_for(0, 1);
+        self.set_out_info(self.out_len, self.info[self.idx]);
+        self.out_len += 1;
+    }
+
+    /// Copies glyph at idx to output and advance idx.
+    ///
+    /// If there's no output, just advance idx.
+    fn next_glyph(&mut self) {
+        if self.have_output {
+            if self.have_separate_output || self.out_len != self.idx {
+                self.make_room_for(1, 1);
+                self.set_out_info(self.out_len, self.info[self.idx]);
+            }
+
+            self.out_len += 1;
+        }
+
+        self.idx += 1;
+    }
+
+    /// Copies n glyphs at idx to output and advance idx.
+    ///
+    /// If there's no output, just advance idx.
+    fn next_glyphs(&mut self, n: usize) {
+        if self.have_output {
+            if self.have_separate_output || self.out_len != self.idx {
+                self.make_room_for(n, n);
+
+                for i in 0..n {
+                    self.set_out_info(self.out_len + i, self.info[self.idx + i]);
+                }
+            }
+
+            self.out_len += n;
+        }
+
+        self.idx += n;
+    }
+
+    /// Advance idx without copying to output.
+    fn skip_glyph(&mut self) {
+        self.idx += 1;
+    }
+
+    fn reset_masks(&mut self, mask: Mask) {
+        for info in &mut self.info[..self.len] {
+            info.mask = mask;
+        }
+    }
+
+    fn set_masks(
+        &mut self,
+        mut value: Mask,
+        mask: Mask,
+        cluster_start: u32,
+        cluster_end: u32,
+    ) {
+        let not_mask = !mask;
+        value &= mask;
+
+        if mask == 0 {
+            return;
+        }
+
+        if cluster_start == 0 && cluster_end == std::u32::MAX {
+            for info in &mut self.info[..self.len] {
+                info.mask = (info.mask & not_mask) | value;
+            }
+
+            return;
+        }
+
+        for info in &mut self.info[..self.len] {
+            if cluster_start <= info.cluster && info.cluster < cluster_end {
+                info.mask = (info.mask & not_mask) | value;
+            }
+        }
+    }
+
+    fn merge_clusters(&mut self, start: usize, end: usize) {
+        if end - start < 2 {
+            return;
+        }
+
+        self.merge_clusters_impl(start, end)
+    }
+
+    fn merge_clusters_impl(&mut self, mut start: usize, mut end: usize) {
+        if self.cluster_level == BufferClusterLevel::Characters {
+            self.unsafe_to_break(start, end);
+            return;
+        }
+
+        let mut cluster = self.info[start].cluster;
+
+        for i in start+1..end {
+            cluster = std::cmp::min(cluster, self.info[i].cluster);
+        }
+
+        // Extend end
+        while end < self.len && self.info[end - 1].cluster == self.info[end].cluster {
+            end += 1;
+        }
+
+        // Extend start
+        while end < start && self.info[start - 1].cluster == self.info[start].cluster {
+            start -= 1;
+        }
+
+        // If we hit the start of buffer, continue in out-buffer.
+        if self.idx == start {
+            let mut i = self.out_len;
+            while i != 0 && self.out_info()[i - 1].cluster == self.info[start].cluster {
+                Self::set_cluster(&mut self.out_info_mut()[i - 1], cluster, 0);
+                i -= 1;
+            }
+        }
+
+        for i in start..end {
+            Self::set_cluster(&mut self.info[i], cluster, 0);
+        }
+    }
+
+    fn merge_out_clusters(&mut self, mut start: usize, mut end: usize) {
+        if self.cluster_level == BufferClusterLevel::Characters {
+            return;
+        }
+
+        if end - start < 2 {
+            return;
+        }
+
+        let mut cluster = self.out_info()[start].cluster;
+
+        for i in start+1..end {
+            cluster = std::cmp::min(cluster, self.out_info()[i].cluster);
+        }
+
+        // Extend start
+        while start != 0 && self.out_info()[start - 1].cluster == self.out_info()[start].cluster {
+            start -= 1;
+        }
+
+        // Extend end
+        while end < self.out_len && self.out_info()[end - 1].cluster == self.out_info()[end].cluster {
+            end += 1;
+        }
+
+        // If we hit the start of buffer, continue in out-buffer.
+        if end == self.out_len {
+            let mut i = self.idx;
+            while i < self.len && self.info[i].cluster == self.out_info()[end - 1].cluster {
+                Self::set_cluster(&mut self.info[i], cluster, 0);
+                i += 1;
+            }
+        }
+
+        for i in start..end {
+            Self::set_cluster(&mut self.out_info_mut()[i], cluster, 0);
+        }
+    }
+
+    /// Merge clusters for deleting current glyph, and skip it.
+    fn delete_glyph(&mut self) {
+        let cluster = self.info[self.idx].cluster;
+
+        if self.idx + 1 < self.len && cluster == self.info[self.idx + 1].cluster {
+            // Cluster survives; do nothing.
+            self.skip_glyph();
+            return;
+        }
+
+        if self.out_len != 0 {
+            // Merge cluster backward.
+            if cluster < self.out_info()[self.out_len - 1].cluster {
+                let mask = self.info[self.idx].mask;
+                let old_cluster = self.out_info()[self.out_len - 1].cluster;
+
+                let mut i = self.out_len;
+                while i != 0 && self.out_info()[i - 1].cluster == old_cluster {
+                    Self::set_cluster(&mut self.out_info_mut()[i - 1], cluster, mask);
+                    i -= 1;
+                }
+            }
+
+            self.skip_glyph();
+            return;
+        }
+
+        if self.idx + 1 < self.len {
+            // Merge cluster forward.
+            self.merge_clusters(self.idx, self.idx + 2);
+        }
+
+        self.skip_glyph();
+    }
+
+    fn unsafe_to_break(&mut self, start: usize, end: usize) {
+        if end - start < 2 {
+            return;
+        }
+
+        self.unsafe_to_break_impl(start, end);
+    }
+
+    fn unsafe_to_break_impl(&mut self, start: usize, end: usize) {
+        let mut cluster = std::u32::MAX;
+        cluster = Self::_unsafe_to_break_find_min_cluster(&self.info, start, end, cluster);
+        let unsafe_to_break = Self::_unsafe_to_break_set_mask(&mut self.info, start, end, cluster);
+        if unsafe_to_break {
+            self.scratch_flags |= BufferScratchFlags::HAS_UNSAFE_TO_BREAK;
+        }
+    }
+
+    fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize) {
+        if !self.have_output {
+            self.unsafe_to_break_impl(start, end);
+            return;
+        }
+
+        assert!(start <= self.out_len);
+        assert!(self.idx <= end);
+
+        let mut cluster = std::u32::MAX;
+        cluster = Self::_unsafe_to_break_find_min_cluster(self.out_info(), start, self.out_len, cluster);
+        cluster = Self::_unsafe_to_break_find_min_cluster(&self.info, self.idx, end, cluster);
+        let idx = self.idx;
+        let out_len = self.out_len;
+        let unsafe_to_break1 = Self::_unsafe_to_break_set_mask(self.out_info_mut(), start, out_len, cluster);
+        let unsafe_to_break2 = Self::_unsafe_to_break_set_mask(&mut self.info, idx, end, cluster);
+
+        if unsafe_to_break1 || unsafe_to_break2 {
+            self.scratch_flags |= BufferScratchFlags::HAS_UNSAFE_TO_BREAK;
+        }
+    }
+
+    fn move_to(&mut self, i: usize) {
+        if !self.have_output {
+            assert!(i <= self.len);
+            self.idx = i;
+            return;
+        }
+
+        assert!(i <= self.out_len + (self.len - self.idx));
+
+        if self.out_len < i {
+            let count = i - self.out_len;
+            self.make_room_for(count, count);
+
+            for j in 0..count {
+                self.set_out_info(self.out_len + j, self.info[self.idx + j]);
+            }
+
+            self.idx += count;
+            self.out_len += count;
+        } else if self.out_len > i {
+            // Tricky part: rewinding...
+            let count = self.out_len - i;
+
+            // This will blow in our face if memory allocation fails later
+            // in this same lookup...
+            //
+            // We used to shift with extra 32 items, instead of the 0 below.
+            // But that would leave empty slots in the buffer in case of allocation
+            // failures.  Setting to zero for now to avoid other problems (see
+            // comments in shift_forward().  This can cause O(N^2) behavior more
+            // severely than adding 32 empty slots can...
+            if self.idx < count {
+                self.shift_forward(count);
+            }
+
+            assert!(self.idx >= count);
+
+            self.idx -= count;
+            self.out_len -= count;
+
+            for j in 0..count {
+                self.info[self.idx + j] = self.out_info()[self.out_len + j];
+            }
+        }
+    }
+
+    fn ensure(&mut self, size: usize) {
+        if size < self.len {
+            return;
+        }
+
+        self.info.resize(size, GlyphInfo::default());
+        self.pos.resize(size, GlyphPosition::default());
+    }
+
+    fn make_room_for(&mut self, num_in: usize, num_out: usize) {
+        self.ensure(self.out_len + num_out);
+
+        if !self.have_separate_output && self.out_len + num_out > self.idx + num_in {
+            assert!(self.have_output);
+
+            self.have_separate_output = true;
+            for i in 0..self.out_len {
+                self.set_out_info(i, self.info[i]);
+            }
+        }
+    }
+
+    fn shift_forward(&mut self, count: usize) {
+        assert!(self.have_output);
+        self.ensure(self.len + count);
+
+        for i in 0..(self.len - self.idx) {
+            self.info[self.idx + count + i] = self.info[self.idx + i];
+        }
+
+        if self.idx + count > self.len {
+            for info in &mut self.info[self.len..self.idx+count] {
+                *info = GlyphInfo::default();
+            }
+        }
+
+        self.len += count;
+        self.idx += count;
+    }
+
+//    fn sort(&mut self, start: usize, end: usize, cmp: fn(&GlyphInfo, &GlyphInfo) -> bool) {
+//        assert!(!self.have_positions);
+//
+//        for i in start+1..end {
+//            let mut j = i;
+//            while j > start && cmp(&self.info[j - 1], &self.info[i]) {
+//                j -= 1;
+//            }
+//
+//            if i == j {
+//                continue;
+//            }
+//
+//            // Move item i to occupy place for item j, shift what's in between.
+//            self.merge_clusters(j, i + 1);
+//
+//            {
+//                let t = self.info[i];
+//                for idx in (0..i-j).rev() {
+//                    self.info[idx + j + 1] = self.info[idx + j];
+//                }
+//
+//                self.info[j] = t;
+//            }
+//        }
+//    }
+
+    fn set_cluster(info: &mut GlyphInfo, cluster: u32, mask: Mask) {
+        if info.cluster != cluster {
+            if mask & glyph_flag::UNSAFE_TO_BREAK != 0 {
+                info.mask |= glyph_flag::UNSAFE_TO_BREAK;
+            } else {
+                info.mask &= !glyph_flag::UNSAFE_TO_BREAK;
+            }
+        }
+
+        info.cluster = cluster;
+    }
+
+    fn _unsafe_to_break_find_min_cluster(info: &[GlyphInfo], start: usize, end: usize, mut cluster: u32) -> u32 {
+        for i in start..end {
+            cluster = std::cmp::min(cluster, info[i].cluster);
+        }
+
+        cluster
+    }
+
+    fn _unsafe_to_break_set_mask(info: &mut [GlyphInfo], start: usize, end: usize, cluster: u32) -> bool {
+        let mut unsafe_to_break = false;
+        for i in start..end {
+            if info[i].cluster != cluster {
+                unsafe_to_break = true;
+                info[i].mask |= glyph_flag::UNSAFE_TO_BREAK;
+            }
+        }
+
+        unsafe_to_break
     }
 
     /// Returns the length of the data of the buffer.
@@ -178,97 +944,35 @@ impl Buffer {
     /// This corresponds to the number of unicode codepoints contained in the
     /// buffer.
     pub fn len(&self) -> usize {
-        unsafe { ffi::hb_buffer_get_length(self.as_ptr()) as usize }
+        self.len
     }
 
     /// Checks that buffer contains no elements.
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.len == 0
     }
 
-    /// Add a string to the `Buffer`.
-    pub fn add_str(&mut self, string: &str) {
-        let utf8_ptr = string.as_ptr() as *const _;
-        unsafe {
-            ffi::hb_buffer_add_utf8(
-                self.as_ptr(),
-                utf8_ptr,
-                string.len() as i32,
-                0,
-                string.len() as i32,
-            );
-        }
-    }
+    fn push_str(&mut self, text: &str) {
+        self.ensure(self.len + text.chars().count());
 
-    /// Returns an Iterator over the stored unicode codepoints.
-    pub fn codepoints(&self) -> Codepoints<'_> {
-        let infos = unsafe {
-            let mut length: u32 = 0;
-            let glyph_infos = ffi::hb_buffer_get_glyph_infos(self.as_ptr(), &mut length as *mut u32);
-            std::slice::from_raw_parts(glyph_infos as *const _, length as usize)
-        };
-
-        Codepoints {
-            slice_iter: infos.iter(),
+        for (i, c) in text.char_indices() {
+            self.add(c as u32, i as u32);
         }
     }
 
     /// Set the text direction of the `Buffer`'s contents.
     pub fn set_direction(&mut self, direction: Direction) {
-        unsafe { ffi::hb_buffer_set_direction(self.as_ptr(), direction.to_raw()); }
-    }
-
-    /// Returns the `Buffer`'s text direction.
-    pub fn get_direction(&self) -> Direction {
-        Direction::from_raw(unsafe { ffi::hb_buffer_get_direction(self.as_ptr()) })
+        self.props.direction = direction;
     }
 
     /// Set script.
     pub fn set_script(&mut self, script: Script) {
-        unsafe {
-            ffi::hb_buffer_set_script(self.as_ptr(), script.tag().as_u32());
-        }
-    }
-
-    /// Get buffer's script.
-    pub fn get_script(&self) -> Script {
-        unsafe {
-            let tag = ffi::hb_buffer_get_script(self.as_ptr());
-            Script(Tag(tag))
-        }
+        self.props.script = Some(script);
     }
 
     /// Set the buffer language.
     pub fn set_language(&mut self, lang: Language) {
-        unsafe { ffi::hb_buffer_set_language(self.as_ptr(), lang.0) }
-    }
-
-    /// Get the buffer language.
-    pub fn get_language(&self) -> Option<Language> {
-        let raw_lang = unsafe { ffi::hb_buffer_get_language(self.as_ptr()) };
-        if raw_lang.is_null() {
-            None
-        } else {
-            Some(Language(raw_lang))
-        }
-    }
-
-    /// Guess the segment properties (direction, language, script) for the
-    /// current buffer.
-    pub fn guess_segment_properties(&mut self) {
-        unsafe { ffi::hb_buffer_guess_segment_properties(self.as_ptr()); }
-    }
-
-    /// Pre-allocate the buffer to hold a string at least `size` codepoints.
-    pub fn pre_allocate(&mut self, size: usize) {
-        let size = size.min(std::os::raw::c_uint::max_value() as usize);
-        unsafe { ffi::hb_buffer_pre_allocate(self.as_ptr(), size as _); }
-    }
-
-    /// Clear the contents of the buffer (i.e. the stored string of unicode
-    /// characters).
-    pub fn clear_contents(&mut self) {
-        unsafe { ffi::hb_buffer_clear_contents(self.as_ptr()); }
+        self.props.language = Some(lang);
     }
 
     /// Sets the codepoint that replaces invisible characters in
@@ -276,62 +980,41 @@ impl Buffer {
     ///
     /// If set to zero (default), the glyph for the U+0020 SPACE character is used.
     /// Otherwise, this value is used verbatim.
-    pub fn set_invisible_glyph(&mut self, glyph: u32) {
-        unsafe { ffi::hb_buffer_set_invisible_glyph(self.as_ptr(), glyph) }
+    pub fn set_invisible_glyph(&mut self, c: Option<char>) {
+        self.invisible = c;
     }
 
     /// Sets a cluster level.
-    pub fn set_cluster_level(&mut self, level: u32) {
-        assert!(level <= ffi::HB_BUFFER_CLUSTER_LEVEL_CHARACTERS);
-        unsafe { ffi::hb_buffer_set_cluster_level(self.as_ptr(), level) }
+    pub fn set_cluster_level(&mut self, level: BufferClusterLevel) {
+        self.cluster_level = level;
     }
 
-    /// Resets clusters.
-    pub fn reset_clusters(&mut self) {
-        unsafe { ffi::hb_buffer_reset_clusters(self.as_ptr()); }
-    }
-}
+    fn next_cluster(&self, mut start: usize) -> usize {
+        if start >= self.len {
+            return start;
+        }
 
-impl std::fmt::Debug for Buffer {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        fmt.debug_struct("Buffer")
-            .field("direction", &self.get_direction())
-            .field("language", &self.get_language())
-            .field("script", &self.get_script())
-            .finish()
-    }
-}
+        // TODO: to iter
+        let cluster = self.info[start].cluster;
+        start += 1;
+        while start < self.len && cluster == self.info[start].cluster {
+            start += 1;
+        }
 
-impl std::default::Default for Buffer {
-    fn default() -> Buffer {
-        Buffer::new()
+        start
     }
 }
 
-impl Drop for Buffer {
-    fn drop(&mut self) {
-        unsafe { ffi::hb_buffer_destroy(self.0); }
-    }
-}
+//impl std::fmt::Debug for Buffer {
+//    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//        fmt.debug_struct("Buffer")
+//            .field("direction", &self.get_direction())
+//            .field("language", &self.get_language())
+//            .field("script", &self.get_script())
+//            .finish()
+//    }
+//}
 
-
-/// An iterator over the codepoints stored in a `Buffer`.
-///
-/// You get an iterator of this type from the `.codepoints()` method on
-/// `Buffer`. It yields `u32`s that should be interpreted as unicode
-/// codepoints stored in the underlying buffer.
-#[derive(Debug, Clone)]
-pub struct Codepoints<'a> {
-    slice_iter: std::slice::Iter<'a, GlyphInfo>,
-}
-
-impl<'a> Iterator for Codepoints<'a> {
-    type Item = u32;
-
-    fn next(&mut self) -> Option<u32> {
-        self.slice_iter.next().map(|info| info.codepoint)
-    }
-}
 
 /// A `GlyphBuffer` contains the resulting output information of the shaping
 /// process.
@@ -356,55 +1039,87 @@ impl GlyphBuffer {
 
     /// Get the glyph positions.
     pub fn get_glyph_positions(&self) -> &[GlyphPosition] {
-        unsafe {
-            let mut length: u32 = 0;
-            let glyph_pos = ffi::hb_buffer_get_glyph_positions(self.0.as_ptr(), &mut length as *mut u32);
-            std::slice::from_raw_parts(glyph_pos as *const _, length as usize)
-        }
+        &self.0.pos
     }
 
     /// Get the glyph infos.
     pub fn get_glyph_infos(&self) -> &[GlyphInfo] {
-        unsafe {
-            let mut length: u32 = 0;
-            let glyph_infos = ffi::hb_buffer_get_glyph_infos(self.0.as_ptr(), &mut length as *mut u32);
-            std::slice::from_raw_parts(glyph_infos as *const _, length as usize)
-        }
+        &self.0.info
     }
 
     /// Clears the contents of the glyph buffer and returns an empty
     /// `Buffer` reusing the existing allocation.
-    pub fn clear(self) -> Buffer {
-        unsafe { ffi::hb_buffer_clear_contents(self.0.as_ptr()); }
+    pub fn reset(mut self, text: &str) -> Buffer {
+        self.0.clear();
+        self.0.push_str(text);
         self.0
     }
 
-    /// Returns a serializer that allows the contents of the buffer to be
-    /// converted into a human or machine readable representation.
-    pub fn serializer<'a>(
-        &'a self,
-        font: Option<&'a crate::Font<'a>>,
-        format: SerializeFormat,
-        flags: SerializeFlags,
-    ) -> BufferSerializer<'a> {
-        BufferSerializer {
-            font,
-            buffer: &self.0,
-            start: 0,
-            end: self.len(),
-            format,
-            flags,
-            bytes: std::io::Cursor::new(Vec::with_capacity(128)),
-        }
-    }
+    pub fn serialize(&mut self, font: &Font, flags: SerializeFlags) -> String {
+        use std::fmt::Write;
 
-    /// Reorders a glyph buffer to have canonical in-cluster glyph order/position.
-    ///
-    /// The resulting clusters should behave identical to pre-reordering clusters.
-    ///
-    /// Note: This has nothing to do with Unicode normalization.
-    pub fn normalize_glyphs(&mut self) {
-        unsafe { ffi::hb_buffer_normalize_glyphs(self.0.as_ptr()) }
+        let mut s = String::with_capacity(64);
+
+        let info = &self.0.info[..self.0.len];
+        let pos = &self.0.pos[..self.0.len];
+        let mut x = 0;
+        let mut y = 0;
+        for (info, pos) in info.iter().zip(pos) {
+            if !flags.contains(SerializeFlags::NO_GLYPH_NAMES) {
+                assert!(info.codepoint < std::u16::MAX as u32);
+                let g = ttf_parser::GlyphId(info.codepoint as u16);
+                if let Ok(Some(name)) = unsafe { (*font.font_ptr()).glyph_name(g) } {
+                    s.push_str(name);
+                } else {
+                    write!(&mut s, "gid{}", info.codepoint).unwrap();
+                }
+            } else {
+                write!(&mut s, "{}", info.codepoint).unwrap();
+            }
+
+            if !flags.contains(SerializeFlags::NO_CLUSTERS) {
+                write!(&mut s, "={}", info.cluster).unwrap();
+            }
+
+            if !flags.contains(SerializeFlags::NO_POSITIONS) {
+                if x + pos.x_offset != 0 || y + pos.y_offset != 0 {
+                    write!(&mut s, "@{},{}", x + pos.x_offset, y + pos.y_offset).unwrap();
+                }
+
+                if !flags.contains(SerializeFlags::NO_ADVANCES) {
+                    write!(&mut s, "+{}", pos.x_advance).unwrap();
+                    if pos.y_advance != 0 {
+                        write!(&mut s, ",{}", pos.y_advance).unwrap();
+                    }
+                }
+            }
+
+            if flags.contains(SerializeFlags::GLYPH_FLAGS) {
+                if info.mask & glyph_flag::DEFINED != 0 {
+                    write!(&mut s, "#{:X}", info.mask & glyph_flag::DEFINED).unwrap();
+                }
+            }
+
+            if flags.contains(SerializeFlags::GLYPH_EXTENTS) {
+                let mut extents = ffi::hb_glyph_extents_t::default();
+                unsafe { ffi::hb_font_get_glyph_extents(font.as_ptr(), info.codepoint, &mut extents as *mut _); }
+                write!(&mut s, "<{},{},{},{}>", extents.x_bearing, extents.y_bearing, extents.width, extents.height).unwrap();
+            }
+
+            if flags.contains(SerializeFlags::NO_ADVANCES) {
+                x += pos.x_advance;
+                y += pos.y_advance;
+            }
+
+            s.push('|');
+        }
+
+        // Remove last `|`.
+        if !s.is_empty() {
+            s.pop();
+        }
+
+        s
     }
 }
 
@@ -417,12 +1132,369 @@ impl std::fmt::Debug for GlyphBuffer {
     }
 }
 
-impl std::fmt::Display for GlyphBuffer {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut serializer = self.serializer(None, SerializeFormat::Text, SerializeFlags::default());
-        let mut string = String::new();
-        serializer.read_to_string(&mut string).unwrap();
-        write!(fmt, "{}", string)?;
-        Ok(())
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_cluster_level(buffer: *const ffi::hb_buffer_t) -> u32 {
+    Buffer::from_ptr(buffer).cluster_level as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_direction(buffer: *const ffi::hb_buffer_t) -> ffi::hb_direction_t {
+    Buffer::from_ptr(buffer).props.direction.to_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_invisible_glyph(buffer: *const ffi::hb_buffer_t) -> ffi::hb_codepoint_t {
+    Buffer::from_ptr(buffer).invisible.unwrap_or('\0') as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_pre_allocate(buffer: *mut ffi::hb_buffer_t, size: u32) {
+    Buffer::from_ptr_mut(buffer).ensure(size as usize);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_reverse(buffer: *mut ffi::hb_buffer_t) {
+    Buffer::from_ptr_mut(buffer).reverse();
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_reverse_range(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+    Buffer::from_ptr_mut(buffer).reverse_range(start as usize, end as usize);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_length(buffer: *const ffi::hb_buffer_t) -> u32 {
+    Buffer::from_ptr(buffer).len() as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_set_length(buffer: *mut ffi::hb_buffer_t, len: u32) {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    buffer.ensure(len as usize);
+    buffer.len = len as usize;
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_cur(buffer: *mut ffi::hb_buffer_t, i: u32) -> *mut ffi::hb_glyph_info_t {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    buffer.cur_mut(i as usize) as *mut _ as *mut ffi::hb_glyph_info_t
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_cur_pos(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_position_t {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    buffer.cur_pos_mut() as *mut _ as *mut ffi::hb_glyph_position_t
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_prev(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_info_t {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    buffer.prev_mut() as *mut _ as *mut ffi::hb_glyph_info_t
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_out_info(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_info_t {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    buffer.out_info_mut().as_mut_ptr() as *mut _
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_backtrack_len(buffer: *const ffi::hb_buffer_t) -> u32 {
+    Buffer::from_ptr(buffer).backtrack_len() as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_lookahead_len(buffer: *const ffi::hb_buffer_t) -> u32 {
+    Buffer::from_ptr(buffer).lookahead_len() as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_next_serial(buffer: *mut ffi::hb_buffer_t) -> u32 {
+    Buffer::from_ptr_mut(buffer).next_serial() as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_set_cluster(info: *mut ffi::hb_glyph_info_t, cluster: u32, mask: u32) {
+    let info = unsafe { &mut *(info as *mut GlyphInfo) };
+    Buffer::set_cluster(info, cluster, mask)
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_move_to(buffer: *mut ffi::hb_buffer_t, i: u32) {
+    Buffer::from_ptr_mut(buffer).move_to(i as usize)
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_swap_buffers(buffer: *mut ffi::hb_buffer_t) {
+    Buffer::from_ptr_mut(buffer).swap_buffers()
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_remove_output(buffer: *mut ffi::hb_buffer_t) {
+    Buffer::from_ptr_mut(buffer).remove_output()
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_clear_output(buffer: *mut ffi::hb_buffer_t) {
+    Buffer::from_ptr_mut(buffer).clear_output()
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_clear_positions(buffer: *mut ffi::hb_buffer_t) {
+    Buffer::from_ptr_mut(buffer).clear_positions()
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_next_cluster(buffer: *const ffi::hb_buffer_t, start: u32) -> u32 {
+    Buffer::from_ptr(buffer).next_cluster(start as usize) as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_replace_glyphs(buffer: *mut ffi::hb_buffer_t, num_in: u32, num_out: u32, glyph_data: *const u32) {
+    let glyph_data = unsafe { std::slice::from_raw_parts(glyph_data as *const _, num_out as usize) };
+    Buffer::from_ptr_mut(buffer).replace_glyphs(num_in as usize, num_out as usize, glyph_data);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_merge_clusters(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+    Buffer::from_ptr_mut(buffer).merge_clusters(start as usize, end as usize);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_merge_out_clusters(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+    Buffer::from_ptr_mut(buffer).merge_out_clusters(start as usize, end as usize);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_unsafe_to_break(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+    Buffer::from_ptr_mut(buffer).unsafe_to_break(start as usize, end as usize);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_unsafe_to_break_from_outbuffer(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+    Buffer::from_ptr_mut(buffer).unsafe_to_break_from_outbuffer(start as usize, end as usize);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_replace_glyph(buffer: *mut ffi::hb_buffer_t, glyph_index: ffi::hb_codepoint_t) {
+    Buffer::from_ptr_mut(buffer).replace_glyph(glyph_index);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_output_glyph(buffer: *mut ffi::hb_buffer_t, glyph_index: ffi::hb_codepoint_t) -> *mut ffi::hb_glyph_info_t {
+    Buffer::from_ptr_mut(buffer).output_glyph(glyph_index).unwrap() as *mut _ as *mut ffi::hb_glyph_info_t
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_output_info(buffer: *mut ffi::hb_buffer_t, glyph_info: ffi::hb_glyph_info_t) {
+    Buffer::from_ptr_mut(buffer).output_info(glyph_info.into());
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_copy_glyph(buffer: *mut ffi::hb_buffer_t) {
+    Buffer::from_ptr_mut(buffer).copy_glyph();
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_next_glyph(buffer: *mut ffi::hb_buffer_t) {
+    Buffer::from_ptr_mut(buffer).next_glyph();
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_next_glyphs(buffer: *mut ffi::hb_buffer_t, n: u32) {
+    Buffer::from_ptr_mut(buffer).next_glyphs(n as usize);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_skip_glyph(buffer: *mut ffi::hb_buffer_t) {
+    Buffer::from_ptr_mut(buffer).skip_glyph();
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_reset_masks(buffer: *mut ffi::hb_buffer_t, mask: Mask) {
+    Buffer::from_ptr_mut(buffer).reset_masks(mask);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_set_masks(buffer: *mut ffi::hb_buffer_t, value: Mask, mask: Mask, start: u32, end: u32) {
+    Buffer::from_ptr_mut(buffer).set_masks(value, mask, start, end);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_delete_glyph(buffer: *mut ffi::hb_buffer_t) {
+    Buffer::from_ptr_mut(buffer).delete_glyph();
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_info(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_info_t {
+    Buffer::from_ptr_mut(buffer).info.as_mut_ptr() as *mut _
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_pos(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_position_t{
+    Buffer::from_ptr_mut(buffer).pos.as_mut_ptr() as *mut _
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_max_ops(buffer: *const ffi::hb_buffer_t) -> i32 {
+    Buffer::from_ptr(buffer).max_ops
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_set_max_ops(buffer: *mut ffi::hb_buffer_t, ops: i32) {
+    Buffer::from_ptr_mut(buffer).max_ops = ops;
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_decrement_max_ops(buffer: *mut ffi::hb_buffer_t) -> i32 {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    buffer.max_ops -= 1;
+    buffer.max_ops
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_idx(buffer: *const ffi::hb_buffer_t) -> u32 {
+    Buffer::from_ptr(buffer).idx as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_set_idx(buffer: *mut ffi::hb_buffer_t, idx: u32) {
+    Buffer::from_ptr_mut(buffer).idx = idx as usize;
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_out_len(buffer: *const ffi::hb_buffer_t) -> u32 {
+    Buffer::from_ptr(buffer).out_len as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_set_out_len(buffer: *mut ffi::hb_buffer_t, idx: u32) {
+    Buffer::from_ptr_mut(buffer).out_len = idx as usize;
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_have_separate_output(buffer: *const ffi::hb_buffer_t) -> bool {
+    Buffer::from_ptr(buffer).have_separate_output
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_context(buffer: *const ffi::hb_buffer_t, idx1: u32, idx2: u32) -> ffi::hb_codepoint_t {
+    Buffer::from_ptr(buffer).context[idx1 as usize][idx2 as usize] as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_context_len(buffer: *const ffi::hb_buffer_t, idx: u32) -> u32 {
+    Buffer::from_ptr(buffer).context_len[idx as usize] as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_glyph_positions(buffer: *mut ffi::hb_buffer_t, length: *mut u32) -> *mut ffi::hb_glyph_position_t {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    if !buffer.have_positions {
+        buffer.clear_positions();
+    }
+
+    if length != std::ptr::null_mut() {
+        unsafe { *length = buffer.len() as u32; }
+    }
+
+    buffer.pos.as_mut_ptr() as *mut _
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_script(buffer: *const ffi::hb_buffer_t) -> ffi::hb_script_t {
+    Buffer::from_ptr(buffer).props.script.map(|s| s.to_raw()).unwrap_or(0)
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_flags(buffer: *const ffi::hb_buffer_t) -> ffi::hb_buffer_flags_t {
+    Buffer::from_ptr(buffer).flags.0 as ffi::hb_buffer_flags_t
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_set_direction(buffer: *mut ffi::hb_buffer_t, direction: ffi::hb_direction_t) {
+    Buffer::from_ptr_mut(buffer).props.direction = Direction::from_raw(direction);
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_segment_properties(buffer: *const ffi::hb_buffer_t) -> ffi::hb_segment_properties_t {
+    let props = &Buffer::from_ptr(buffer).props;
+    ffi::hb_segment_properties_t {
+        direction: props.direction.to_raw(),
+        script: props.script.map(|s| s.to_raw()).unwrap_or(0),
+        language: props.language.as_ref().map(|s| s.0.as_ptr()).unwrap_or(std::ptr::null()),
+    }
+}
+
+// TODO: remove
+#[no_mangle]
+pub extern "C" fn hb_segment_properties_equal(
+    a: *const ffi::hb_segment_properties_t,
+    b: *const ffi::hb_segment_properties_t,
+) -> bool {
+    use std::os::raw::c_char;
+    use std::ffi::CStr;
+
+    fn cmp_lang(a: *const c_char, b: *const c_char) -> bool {
+        if a == std::ptr::null() && b == std::ptr::null() {
+            return true;
+        }
+
+        if a == std::ptr::null() || b == std::ptr::null() {
+            return false;
+        }
+
+        let (a, b) = unsafe {(
+            CStr::from_ptr(a).to_str().unwrap(),
+            CStr::from_ptr(b).to_str().unwrap()
+        )};
+
+        a == b
+    }
+
+    unsafe {
+        (*a).direction == (*b).direction &&
+        (*a).script == (*b).script &&
+        cmp_lang((*a).language, (*b).language)
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_get_scratch_flags(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_buffer_scratch_flags_t {
+    &mut Buffer::from_ptr_mut(buffer).scratch_flags.0 as *mut _ as *mut ffi::hb_buffer_scratch_flags_t
+}
+
+#[no_mangle]
+pub extern "C" fn hb_buffer_sort(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32,
+    cmp: fn(*const ffi::hb_glyph_info_t, *const ffi::hb_glyph_info_t) -> i32
+) {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    let start = start as usize;
+    let end = end as usize;
+
+    assert!(!buffer.have_positions);
+
+    for i in start+1..end {
+        let mut j = i;
+        while j > start && cmp(&ffi::hb_glyph_info_t::from(buffer.info[j - 1]) as *const _,
+                               &ffi::hb_glyph_info_t::from(buffer.info[i]) as *const _) > 0 {
+            j -= 1;
+        }
+
+        if i == j {
+            continue;
+        }
+
+        // Move item i to occupy place for item j, shift what's in between.
+        buffer.merge_clusters(j, i + 1);
+
+        {
+            let t = buffer.info[i];
+            for idx in (0..i-j).rev() {
+                buffer.info[idx + j + 1] = buffer.info[idx + j];
+            }
+
+            buffer.info[j] = t;
+        }
     }
 }

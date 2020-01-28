@@ -12,7 +12,7 @@ struct Args {
     language: Option<rustybuzz::Language>,
     script: Option<rustybuzz::Script>,
     #[allow(dead_code)] remove_default_ignorables: bool, // we don't use it, but have to parse it anyway
-    cluster_level: u32,
+    cluster_level: rustybuzz::BufferClusterLevel,
     features: Vec<String>,
     no_glyph_names: bool,
     no_positions: bool,
@@ -37,7 +37,7 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
         language: parser.opt_value_from_str("--language")?,
         script: parser.opt_value_from_str("--script")?,
         remove_default_ignorables: parser.contains("--remove-default-ignorables"),
-        cluster_level: parser.opt_value_from_str("--cluster-level")?.unwrap_or(0),
+        cluster_level: parser.opt_value_from_fn("--cluster-level", parse_cluster)?.unwrap_or_default(),
         features: parser.opt_value_from_fn("--features", parse_string_list)?.unwrap_or_default(),
         no_glyph_names: parser.contains("--no-glyph-names"),
         no_positions: parser.contains("--no-positions"),
@@ -57,9 +57,16 @@ fn parse_string_list(s: &str) -> Result<Vec<String>, String> {
     Ok(s.split(',').map(|s| s.to_string()).collect())
 }
 
-pub fn shape(font: &str, text: &str, options: &str) -> String {
-    use std::io::Read;
+fn parse_cluster(s: &str) -> Result<rustybuzz::BufferClusterLevel, String> {
+    match s {
+        "0" => Ok(rustybuzz::BufferClusterLevel::MonotoneGraphemes),
+        "1" => Ok(rustybuzz::BufferClusterLevel::MonotoneCharacters),
+        "2" => Ok(rustybuzz::BufferClusterLevel::Characters),
+        _ => Err(format!("invalid cluster level"))
+    }
+}
 
+pub fn shape(font: &str, text: &str, options: &str) -> String {
     let args = options.split(' ').filter(|s| !s.is_empty()).map(|s| std::ffi::OsString::from(s)).collect();
     let args = parse_args(args).unwrap();
 
@@ -84,8 +91,7 @@ pub fn shape(font: &str, text: &str, options: &str) -> String {
         font.set_variations(&variations);
     }
 
-    let mut buffer = rustybuzz::Buffer::new();
-    buffer.add_str(&text);
+    let mut buffer = rustybuzz::Buffer::new(&text);
 
     if let Some(d) = args.direction {
         buffer.set_direction(d);
@@ -108,7 +114,7 @@ pub fn shape(font: &str, text: &str, options: &str) -> String {
         features.push(feature);
     }
 
-    let output = rustybuzz::shape(&font, buffer, &features);
+    let mut output = rustybuzz::shape(&font, buffer, &features);
 
     let mut format_flags = rustybuzz::SerializeFlags::default();
     if args.no_glyph_names {
@@ -135,11 +141,5 @@ pub fn shape(font: &str, text: &str, options: &str) -> String {
         format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
     }
 
-    let mut res = String::new();
-    output.serializer(
-        Some(&font),
-        rustybuzz::SerializeFormat::Text,
-        format_flags,
-    ).read_to_string(&mut res).unwrap();
-    res
+    output.serialize(&font, format_flags)
 }

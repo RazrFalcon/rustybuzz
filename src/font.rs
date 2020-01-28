@@ -116,6 +116,10 @@ impl<'a> Font<'a> {
         }
     }
 
+    pub(crate) fn font_ptr(&self) -> *const ttf_parser::Font {
+        self.face.ttf
+    }
+
     pub(crate) fn as_ptr(&self) -> *mut ffi::hb_font_t {
         self.ptr
     }

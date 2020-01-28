@@ -57,48 +57,4 @@ static_assert ((sizeof (hb_glyph_info_t) == 20), "");
 static_assert ((sizeof (hb_glyph_info_t) == sizeof (hb_glyph_position_t)), "");
 
 HB_MARK_AS_FLAG_T (hb_buffer_flags_t);
-HB_MARK_AS_FLAG_T (hb_buffer_serialize_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_scratch_flags_t);
-
-/*
- * hb_buffer_t
- */
-
-struct hb_buffer_t
-{
-  hb_object_header_t header;
-
-  /* Information about how the text in the buffer should be treated */
-  hb_buffer_flags_t flags; /* BOT / EOT / etc. */
-  hb_buffer_cluster_level_t cluster_level;
-  hb_codepoint_t replacement; /* U+FFFD or something else. */
-  hb_codepoint_t invisible; /* 0 or something else. */
-  hb_buffer_scratch_flags_t scratch_flags; /* Have space-fallback, etc. */
-  int max_ops; /* Maximum allowed operations. */
-
-  /* Buffer contents */
-  hb_buffer_content_type_t content_type;
-  hb_segment_properties_t props; /* Script, language, direction */
-
-  bool have_output; /* Whether we have an output buffer going on */
-  bool have_positions; /* Whether we have positions */
-
-  unsigned int idx; /* Cursor into ->info and ->pos arrays */
-  unsigned int out_len; /* Length of ->out array if have_output */
-
-  hb_vector_t<hb_glyph_info_t> info_vec;
-  hb_vector_t<hb_glyph_position_t> pos_vec;
-  hb_glyph_info_t     *info;
-  hb_glyph_position_t *pos;
-  bool have_separate_output;
-  
-  unsigned int serial;
-
-  /* Text before / after the main buffer contents.
-   * Always in Unicode, and ordered outward.
-   * Index 0 is for "pre-context", 1 for "post-context". */
-  static constexpr unsigned CONTEXT_LENGTH = 5u;
-  hb_codepoint_t context[2][CONTEXT_LENGTH];
-  unsigned int context_len[2];
-};
-DECLARE_NULL_INSTANCE (hb_buffer_t);

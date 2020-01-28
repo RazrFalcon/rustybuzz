@@ -158,9 +158,9 @@ hb_font_set_variations (hb_font_t *font,
 HB_EXTERN const int *
 hb_font_get_var_coords_normalized (hb_font_t *font,
 				   unsigned int *length);
-
-HB_EXTERN unsigned int
-hb_font_get_glyph_count (hb_font_t *face);
+				   
+HB_EXTERN bool
+hb_font_get_glyph_extents (hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents);
 
 HB_EXTERN unsigned
 rb_font_get_advance (const void *rust_data, hb_codepoint_t glyph, hb_bool_t is_vertical);

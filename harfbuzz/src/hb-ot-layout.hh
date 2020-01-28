@@ -31,11 +31,11 @@
 #include "hb.hh"
 
 #include "hb-font.hh"
-#include "hb-buffer.hh"
 #include "hb-open-type.hh"
 #include "hb-ot-shape.hh"
 #include "hb-set-digest.hh"
 #include "hb-unicode.hh"
+#include "hb-buffer.hh"
 
 
 struct hb_ot_shape_plan_t;

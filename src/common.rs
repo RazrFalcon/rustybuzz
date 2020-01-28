@@ -27,7 +27,7 @@ pub(crate) fn f32_bound(min: f32, val: f32, max: f32) -> f32 {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Direction {
     /// Initial, unset direction.
-    Invalid,
+    Invalid, // TODO: remove
     /// Text is set horizontally from left to right.
     LeftToRight,
     /// Text is set horizontally from right to left.
@@ -58,6 +58,85 @@ impl Direction {
             _ => Direction::Invalid,
         }
     }
+
+    pub(crate) fn from_script(script: Script) -> Option<Self> {
+        // https://docs.google.com/spreadsheets/d/1Y90M0Ie3MUJ6UVCRDOypOtijlMDLNNyyLk36T6iMu0o
+
+        match script {
+            // Unicode-1.1 additions
+            script::ARABIC |
+            script::HEBREW |
+
+            // Unicode-3.0 additions
+            script::SYRIAC |
+            script::THAANA |
+
+            // Unicode-4.0 additions
+            script::CYPRIOT |
+
+            // Unicode-4.1 additions
+            script::KHAROSHTHI |
+
+            // Unicode-5.0 additions
+            script::PHOENICIAN |
+            script::NKO |
+
+            // Unicode-5.1 additions
+            script::LYDIAN |
+
+            // Unicode-5.2 additions
+            script::AVESTAN |
+            script::IMPERIAL_ARAMAIC |
+            script::INSCRIPTIONAL_PAHLAVI |
+            script::INSCRIPTIONAL_PARTHIAN |
+            script::OLD_SOUTH_ARABIAN |
+            script::OLD_TURKIC |
+            script::SAMARITAN |
+
+            // Unicode-6.0 additions
+            script::MANDAIC |
+
+            // Unicode-6.1 additions
+            script::MEROITIC_CURSIVE |
+            script::MEROITIC_HIEROGLYPHS |
+
+            // Unicode-7.0 additions
+            script::MANICHAEAN |
+            script::MENDE_KIKAKUI |
+            script::NABATAEAN |
+            script::OLD_NORTH_ARABIAN |
+            script::PALMYRENE |
+            script::PSALTER_PAHLAVI |
+
+            // Unicode-8.0 additions
+            script::HATRAN |
+
+            // Unicode-9.0 additions
+            script::ADLAM |
+
+            // Unicode-11.0 additions
+            script::HANIFI_ROHINGYA |
+            script::OLD_SOGDIAN |
+            script::SOGDIAN => {
+                Some(Direction::RightToLeft)
+            }
+
+            // https://github.com/harfbuzz/harfbuzz/issues/1000
+            script::OLD_HUNGARIAN |
+            script::OLD_ITALIC |
+            script::RUNIC => {
+                None
+            }
+
+            _ => Some(Direction::LeftToRight),
+        }
+    }
+}
+
+impl Default for Direction {
+    fn default() -> Self {
+        Direction::Invalid
+    }
 }
 
 impl std::str::FromStr for Direction {
@@ -81,33 +160,13 @@ impl std::str::FromStr for Direction {
 
 
 /// A text language.
-#[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Language(pub ffi::hb_language_t);
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub struct Language(pub(crate) std::ffi::CString);
 
-impl Default for Language {
-    fn default() -> Language {
-        Language(unsafe { ffi::hb_language_get_default() })
-    }
-}
-
-impl std::fmt::Debug for Language {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Language(\"{}\")", self)
-    }
-}
-
-impl std::fmt::Display for Language {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let string = unsafe {
-            let char_ptr = ffi::hb_language_to_string(self.0);
-            if char_ptr.is_null() {
-                return Err(std::fmt::Error);
-            }
-            std::ffi::CStr::from_ptr(char_ptr)
-                .to_str()
-                .expect("String representation of language is not valid utf8.")
-        };
-        write!(f, "{}", string)
+impl Language {
+    pub fn new(name: &str) -> Self {
+        let name = name.to_ascii_lowercase();
+        Language(std::ffi::CString::new(name.into_bytes()).unwrap())
     }
 }
 
@@ -115,15 +174,14 @@ impl std::str::FromStr for Language {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let len = std::cmp::min(s.len(), std::i32::MAX as _) as i32;
-        let lang = unsafe { ffi::hb_language_from_string(s.as_ptr() as *mut _, len) };
-        if lang.is_null() {
-            Err("invalid language")
+        if !s.is_empty() {
+            Ok(Language::new(s))
         } else {
-            Ok(Language(lang))
+            Err("invalid language")
         }
     }
 }
+
 
 // In harfbuzz, despite having `hb_script_t`, script can actually have any tag.
 // So we're doing the same.
@@ -136,6 +194,10 @@ pub struct Script(pub(crate) Tag);
 impl Script {
     pub(crate) const fn from_bytes(bytes: &[u8; 4]) -> Self {
         Script(Tag::from_bytes(bytes))
+    }
+
+    pub(crate) fn to_raw(&self) -> ffi::hb_script_t {
+        (self.0).0
     }
 
     /// Converts an ISO 15924 script tag to a corresponding `Script`.
@@ -620,4 +682,12 @@ impl std::str::FromStr for Variation {
 
         parse(s).ok_or("invalid variation")
     }
+}
+
+
+#[derive(Clone, Default, Debug)]
+pub struct SegmentProperties {
+    pub direction: Direction,
+    pub script: Option<Script>,
+    pub language: Option<Language>,
 }

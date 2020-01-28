@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_variation_from_string`
 - `hb_ot_tags_from_script_and_language`
 - `hb_font_set_variations`
+- `hb_buffer_t`
 
 ### Changed
 - Replace some header guards with `#pragma once`, otherwise Qt Creator unable to parse them.
@@ -48,3 +49,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - OpenType tables serialization. Unused.
 - `hb-ot-color`. Unused.
 - User data support.
+- Serialization to JSON.

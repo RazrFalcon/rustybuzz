@@ -29,7 +29,7 @@
 #pragma once
 
 #include "hb.hh"
-#include "hb-buffer.hh"
+#include "hb-buffer.h"
 #include "hb-map.hh"
 #include "hb-set.hh"
 #include "hb-ot-map.hh"
@@ -1112,8 +1112,7 @@ static inline bool apply_lookup (hb_ot_apply_context_t *c,
     if (idx == 0 && lookupRecord[i].lookupListIndex == c->lookup_index)
       continue;
 
-    if (unlikely (!hb_buffer_move_to(buffer, match_positions[idx])))
-      break;
+    hb_buffer_move_to(buffer, match_positions[idx]);
 
     if (unlikely (hb_buffer_get_max_ops(buffer) <= 0))
       break;

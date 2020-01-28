@@ -33,7 +33,7 @@
 
 struct hb_shape_plan_key_t
 {
-  hb_segment_properties_t  props;
+  hb_segment_properties_t props;
 
   const hb_feature_t      *user_features;
   unsigned int             num_user_features;

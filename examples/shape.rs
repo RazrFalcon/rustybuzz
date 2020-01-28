@@ -15,6 +15,7 @@ use std::str::FromStr;
 // TODO: add --trace
 // TODO: add --verbose
 // TODO: add --num-iterations
+// TODO: add --normalize-glyphs
 
 const HELP: &str = "\
 USAGE:
@@ -35,7 +36,7 @@ OPTIONS:
         --text-after TEXT               Set text context after each line
         --direction DIRECTION           Set text direction
                                         [possible values: ltr, rtl, ttb, btt]
-        --language LANG                 Set text language [default: $LANG]
+        --language LANG                 Set text language [default: LC_CTYPE]
         --script TAG                    Set text script as ISO-15924 tag
         --invisible-glyph CHAR          Glyph value to replace Default-Ignorables with
         --utf8-clusters                 Use UTF-8 byte indices, not char indices
@@ -43,7 +44,6 @@ OPTIONS:
                                         [possible values: 0, 1, 2]
         --normalize-glyphs              Rearrange glyph clusters in nominal order
         --features LIST                 Set comma-separated list of font features
-        --output-format FORMAT          Set output format [default: text] [possible values: text, json]
         --no-glyph-names                Output glyph indices instead of names
         --no-positions                  Do not output glyph positions
         --no-advances                   Do not output glyph advances
@@ -68,14 +68,12 @@ struct Args {
     text: Option<String>,
     unicodes: Option<String>,
     direction: Option<rustybuzz::Direction>,
-    language: Option<rustybuzz::Language>,
+    language: rustybuzz::Language,
     script: Option<rustybuzz::Script>,
-    invisible_glyph: Option<u32>,
+    invisible_glyph: Option<char>,
     utf8_clusters: bool,
-    cluster_level: u32,
-    normalize_glyphs: bool,
+    cluster_level: rustybuzz::BufferClusterLevel,
     features: Vec<rustybuzz::Feature>,
-    format: String, // TODO: to enum
     no_glyph_names: bool,
     no_positions: bool,
     no_advances: bool,
@@ -99,14 +97,12 @@ fn parse_args() -> Result<Args, pico_args::Error> {
         text: args.opt_value_from_str("--text")?,
         unicodes: args.opt_value_from_fn(["-u", "--unicodes"], parse_unicodes)?,
         direction: args.opt_value_from_str("--direction")?,
-        language: args.opt_value_from_str("--language")?,
+        language: args.opt_value_from_str("--language")?.unwrap_or(system_language()),
         script: args.opt_value_from_str("--script")?,
         invisible_glyph: args.opt_value_from_str("--invisible-glyph")?,
         utf8_clusters: args.contains("--utf8-clusters"),
-        cluster_level: args.opt_value_from_str("--cluster-level")?.unwrap_or(0),
-        normalize_glyphs: args.contains("--normalize-glyphs"),
+        cluster_level: args.opt_value_from_fn("--cluster-level", parse_cluster)?.unwrap_or_default(),
         features: args.opt_value_from_fn("--features", parse_features)?.unwrap_or_default(),
-        format: args.opt_value_from_str("--output-format")?.unwrap_or("text".to_string()),
         no_glyph_names: args.contains("--no-glyph-names"),
         no_positions: args.contains("--no-positions"),
         no_advances: args.contains("--no-advances"),
@@ -121,8 +117,6 @@ fn parse_args() -> Result<Args, pico_args::Error> {
 }
 
 fn main() {
-    use std::io::Read;
-
     let args = match parse_args() {
         Ok(v) => v,
         Err(e) => {
@@ -192,44 +186,27 @@ fn main() {
         std::process::exit(1);
     };
 
-    let mut buffer = rustybuzz::Buffer::new();
-    buffer.add_str(text);
+    let mut buffer = rustybuzz::Buffer::new(text);
 
     if let Some(d) = args.direction {
         buffer.set_direction(d);
     }
 
-    if let Some(lang) = args.language {
-        buffer.set_language(lang);
-    }
+    buffer.set_language(args.language);
 
     if let Some(script) = args.script {
         buffer.set_script(script);
     }
 
-    if args.cluster_level < 2 {
-        buffer.set_cluster_level(args.cluster_level);
-    }
+    buffer.set_cluster_level(args.cluster_level);
 
-    if let Some(g) = args.invisible_glyph {
-        buffer.set_invisible_glyph(g);
-    }
+    buffer.set_invisible_glyph(args.invisible_glyph);
 
     if !args.utf8_clusters {
         buffer.reset_clusters();
     }
 
     let mut output = rustybuzz::shape(&font, buffer, &args.features);
-
-    if args.normalize_glyphs {
-        output.normalize_glyphs();
-    }
-
-    let format = if args.format == "json" {
-        rustybuzz::SerializeFormat::Json
-    } else {
-        rustybuzz::SerializeFormat::Text
-    };
 
     let mut format_flags = rustybuzz::SerializeFlags::default();
     if args.no_glyph_names {
@@ -256,9 +233,7 @@ fn main() {
         format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
     }
 
-    let mut res = String::new();
-    output.serializer(Some(&font), format, format_flags).read_to_string(&mut res).unwrap();
-    println!("{}", res);
+    println!("{}", output.serialize(&font, format_flags));
 }
 
 fn parse_unicodes(s: &str) -> Result<String, String> {
@@ -293,4 +268,23 @@ fn parse_variations(s: &str) -> Result<Vec<rustybuzz::Variation>, String> {
     }
 
     Ok(variations)
+}
+
+fn parse_cluster(s: &str) -> Result<rustybuzz::BufferClusterLevel, String> {
+    match s {
+        "0" => Ok(rustybuzz::BufferClusterLevel::MonotoneGraphemes),
+        "1" => Ok(rustybuzz::BufferClusterLevel::MonotoneCharacters),
+        "2" => Ok(rustybuzz::BufferClusterLevel::Characters),
+        _ => Err(format!("invalid cluster level"))
+    }
+}
+
+fn system_language() -> rustybuzz::Language {
+    unsafe {
+        libc::setlocale(libc::LC_ALL, b"\0" as *const _ as *const i8);
+        let s = libc::setlocale(libc::LC_CTYPE, std::ptr::null());
+        let s = std::ffi::CStr::from_ptr(s);
+        let s = s.to_str().expect("locale must be ASCII");
+        rustybuzz::Language::new(s)
+    }
 }

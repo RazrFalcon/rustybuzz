@@ -139,23 +139,6 @@ typedef enum {
 #define HB_DIRECTION_IS_BACKWARD(dir)	((((unsigned int) (dir)) & ~2U) == 5)
 #define HB_DIRECTION_REVERSE(dir)	((hb_direction_t) (((unsigned int) (dir)) ^ 1))
 
-
-/* hb_language_t */
-
-typedef const struct hb_language_impl_t *hb_language_t;
-
-HB_EXTERN hb_language_t
-hb_language_from_string (const char *str, int len);
-
-HB_EXTERN const char *
-hb_language_to_string (hb_language_t language);
-
-#define HB_LANGUAGE_INVALID ((hb_language_t) 0)
-
-HB_EXTERN hb_language_t
-hb_language_get_default (void);
-
-
 /* hb_script_t */
 
 /* https://unicode.org/iso15924/ */
@@ -420,15 +403,5 @@ typedef struct hb_feature_t {
   unsigned int  start;
   unsigned int  end;
 } hb_feature_t;
-
-/**
- * hb_variation_t:
- *
- * Since: 1.4.2
- */
-typedef struct hb_variation_t {
-  hb_tag_t tag;
-  float    value;
-} hb_variation_t;
 
 HB_END_DECLS

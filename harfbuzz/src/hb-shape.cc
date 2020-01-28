@@ -73,15 +73,14 @@ hb_shape_full (hb_font_t          *font,
 	       unsigned int        num_features,
 	       const char * const *shaper_list)
 {
-  hb_shape_plan_t *shape_plan = hb_shape_plan_create2 (font->face, &buffer->props,
+  hb_segment_properties_t props = hb_buffer_get_segment_properties(buffer);
+  hb_shape_plan_t *shape_plan = hb_shape_plan_create2 (font->face, &props,
 						       features, num_features,
 						       font->coords, font->num_coords,
 						       shaper_list);
   hb_bool_t res = hb_shape_plan_execute (shape_plan, font, buffer, features, num_features);
   hb_shape_plan_destroy (shape_plan);
 
-  if (res)
-    hb_buffer_set_content_type(buffer, HB_BUFFER_CONTENT_TYPE_GLYPHS);
   return res;
 }
 

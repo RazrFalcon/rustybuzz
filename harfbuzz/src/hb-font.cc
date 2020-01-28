@@ -673,3 +673,8 @@ hb_bool_t hb_font_t::get_glyph_name (hb_codepoint_t glyph, char *name, unsigned 
   if (size) *name = '\0';
   return rb_ot_get_glyph_name (rust_data, glyph, name, size);
 }
+
+bool hb_font_get_glyph_extents(hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents)
+{
+  return font->get_glyph_extents(glyph, extents);
+}

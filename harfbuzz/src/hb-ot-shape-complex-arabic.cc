@@ -366,8 +366,9 @@ setup_masks_arabic_plan (const arabic_shape_plan_t *arabic_plan,
 
   unsigned int count = hb_buffer_get_length(buffer);
   hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-  for (unsigned int i = 0; i < count; i++)
+  for (unsigned int i = 0; i < count; i++) {
     info[i].mask |= arabic_plan->mask_array[info[i].arabic_shaping_action()];
+  }
 }
 
 static void
