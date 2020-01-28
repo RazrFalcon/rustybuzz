@@ -164,7 +164,6 @@ _hb_font_create (hb_face_t *face)
   hb_face_make_immutable (face);
   font->parent = hb_font_get_empty ();
   font->face = hb_face_reference (face);
-  font->data.init0 (font);
   font->x_scale = font->y_scale = hb_face_get_upem (face);
   font->x_mult = font->y_mult = 1 << 16;
 
@@ -277,8 +276,6 @@ void
 hb_font_destroy (hb_font_t *font)
 {
   if (!hb_object_destroy (font)) return;
-
-  font->data.fini ();
 
   if (font->destroy)
     font->destroy (font->user_data);

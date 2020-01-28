@@ -39,8 +39,6 @@
  * hb_face_t
  */
 
-HB_SHAPER_DATA_INSTANTIATE_SHAPERS(ot, face);
-
 struct hb_face_t
 {
   hb_object_header_t header;
@@ -55,7 +53,6 @@ struct hb_face_t
   mutable hb_atomic_int_t upem;		/* Units-per-EM. */
   mutable hb_atomic_int_t num_glyphs;	/* Number of glyphs. */
 
-  hb_shaper_object_dataset_t<hb_face_t> data;/* Various shaper data. */
   hb_ot_face_t table;			/* All the face's tables. */
 
   hb_blob_t *reference_table (hb_tag_t tag) const

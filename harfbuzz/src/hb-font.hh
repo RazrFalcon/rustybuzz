@@ -38,8 +38,6 @@
  * hb_font_t
  */
 
-HB_SHAPER_DATA_INSTANTIATE_SHAPERS(ot, font);
-
 struct hb_font_t
 {
   hb_object_header_t header;
@@ -64,8 +62,6 @@ struct hb_font_t
   const void        *rust_data;
   void              *user_data;
   hb_destroy_func_t  destroy;
-
-  hb_shaper_object_dataset_t<hb_font_t> data; /* Various shaper data. */
 
 
   /* Convert from font-space to user-space */
