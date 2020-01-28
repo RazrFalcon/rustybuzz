@@ -43,81 +43,6 @@
  * Most client would not need to deal with shape plans directly.
  **/
 
-
-/*
- * hb_shape_plan_key_t
- */
-
-bool
-hb_shape_plan_key_t::init (bool                           copy,
-			   hb_face_t                     *face,
-			   const hb_segment_properties_t *props,
-			   const hb_feature_t            *user_features,
-			   unsigned int                   num_user_features,
-			   const int                     *coords,
-			   unsigned int                   num_coords,
-			   const char * const            *shaper_list)
-{
-  hb_feature_t *features = nullptr;
-  if (copy && num_user_features && !(features = (hb_feature_t *) calloc (num_user_features, sizeof (hb_feature_t))))
-    goto bail;
-
-  this->props = *props;
-  this->num_user_features = num_user_features;
-  this->user_features = copy ? features : user_features;
-  if (copy && num_user_features)
-  {
-    memcpy (features, user_features, num_user_features * sizeof (hb_feature_t));
-    /* Make start/end uniform to easier catch bugs. */
-    for (unsigned int i = 0; i < num_user_features; i++)
-    {
-      if (features[0].start != HB_FEATURE_GLOBAL_START)
-	features[0].start = 1;
-      if (features[0].end   != HB_FEATURE_GLOBAL_END)
-	features[0].end   = 2;
-    }
-  }
-  this->shaper_func = nullptr;
-  this->ot.init (face, coords, num_coords);
-
-  this->shaper_func = _hb_ot_shape;
-  return true;
-
-bail:
-  ::free (features);
-  return false;
-}
-
-bool
-hb_shape_plan_key_t::user_features_match (const hb_shape_plan_key_t *other)
-{
-  if (this->num_user_features != other->num_user_features)
-    return false;
-  for (unsigned int i = 0; i < num_user_features; i++)
-  {
-    if (this->user_features[i].tag   != other->user_features[i].tag   ||
-	this->user_features[i].value != other->user_features[i].value ||
-	(this->user_features[i].start == HB_FEATURE_GLOBAL_START &&
-	 this->user_features[i].end   == HB_FEATURE_GLOBAL_END) !=
-	(other->user_features[i].start == HB_FEATURE_GLOBAL_START &&
-	 other->user_features[i].end   == HB_FEATURE_GLOBAL_END))
-      return false;
-  }
-  return true;
-}
-
-bool
-hb_shape_plan_key_t::equal (const hb_shape_plan_key_t *other)
-{
-  return hb_segment_properties_equal (&this->props, &other->props) &&
-	 this->user_features_match (other) &&
-#ifndef HB_NO_OT_SHAPE
-	 this->ot.equal (&other->ot) &&
-#endif
-	 this->shaper_func == other->shaper_func;
-}
-
-
 /*
  * hb_shape_plan_t
  */
@@ -141,13 +66,11 @@ hb_shape_plan_t *
 hb_shape_plan_create (hb_face_t                     *face,
 		      const hb_segment_properties_t *props,
 		      const hb_feature_t            *user_features,
-		      unsigned int                   num_user_features,
-		      const char * const            *shaper_list)
+		      unsigned int                   num_user_features)
 {
   return hb_shape_plan_create2 (face, props,
 				user_features, num_user_features,
-				nullptr, 0,
-				shaper_list);
+				nullptr, 0);
 }
 
 hb_shape_plan_t *
@@ -156,54 +79,28 @@ hb_shape_plan_create2 (hb_face_t                     *face,
 		       const hb_feature_t            *user_features,
 		       unsigned int                   num_user_features,
 		       const int                     *coords,
-		       unsigned int                   num_coords,
-		       const char * const            *shaper_list)
+		       unsigned int                   num_coords)
 {
-  DEBUG_MSG_FUNC (SHAPE_PLAN, nullptr,
-		  "face=%p num_features=%d num_coords=%d shaper_list=%p",
-		  face,
-		  num_user_features,
-		  num_coords,
-		  shaper_list);
-
   assert (props->direction != HB_DIRECTION_INVALID);
 
   hb_shape_plan_t *shape_plan;
 
   if (unlikely (!props))
-    goto bail;
+    return hb_shape_plan_get_empty ();
   if (!(shape_plan = hb_object_create<hb_shape_plan_t> ()))
-    goto bail;
+    return hb_shape_plan_get_empty ();
 
   if (unlikely (!face))
     face = hb_face_get_empty ();
   hb_face_make_immutable (face);
-  shape_plan->face_unsafe = face;
 
-  if (unlikely (!shape_plan->key.init (true,
-				       face,
-				       props,
-				       user_features,
-				       num_user_features,
-				       coords,
-				       num_coords,
-				       shaper_list)))
-    goto bail2;
-#ifndef HB_NO_OT_SHAPE
-  if (unlikely (!shape_plan->ot.init0 (face, &shape_plan->key)))
-    goto bail3;
-#endif
+  hb_ot_shape_plan_key_t ot;
+  ot.init (face, coords, num_coords);
+
+  if (unlikely (!shape_plan->ot.init0 (face, ot, props, user_features, num_user_features, coords, num_coords)))
+    return hb_shape_plan_get_empty ();
 
   return shape_plan;
-
-#ifndef HB_NO_OT_SHAPE
-bail3:
-#endif
-  shape_plan->key.free ();
-bail2:
-  free (shape_plan);
-bail:
-  return hb_shape_plan_get_empty ();
 }
 
 /**
@@ -250,10 +147,7 @@ hb_shape_plan_destroy (hb_shape_plan_t *shape_plan)
 {
   if (!hb_object_destroy (shape_plan)) return;
 
-#ifndef HB_NO_OT_SHAPE
   shape_plan->ot.fini ();
-#endif
-  shape_plan->key.free ();
   free (shape_plan);
 }
 
@@ -278,20 +172,11 @@ hb_shape_plan_execute (hb_shape_plan_t    *shape_plan,
 		       const hb_feature_t *features,
 		       unsigned int        num_features)
 {
-  DEBUG_MSG_FUNC (SHAPE_PLAN, shape_plan,
-		  "num_features=%d shaper_func=%p",
-		  num_features,
-		  shape_plan->key.shaper_func);
-
   if (unlikely (!hb_buffer_get_length(buffer)))
     return true;
 
   if (unlikely (hb_object_is_inert (shape_plan)))
     return false;
-
-  assert (shape_plan->face_unsafe == font->face);
-  hb_segment_properties_t props = hb_buffer_get_segment_properties(buffer);
-  assert (hb_segment_properties_equal (&shape_plan->key.props, &props));
 
   return _hb_ot_shape (shape_plan, font, buffer, features, num_features); 
 }

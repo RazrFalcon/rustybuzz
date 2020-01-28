@@ -70,14 +70,12 @@ hb_bool_t
 hb_shape_full (hb_font_t          *font,
 	       hb_buffer_t        *buffer,
 	       const hb_feature_t *features,
-	       unsigned int        num_features,
-	       const char * const *shaper_list)
+	       unsigned int        num_features)
 {
   hb_segment_properties_t props = hb_buffer_get_segment_properties(buffer);
   hb_shape_plan_t *shape_plan = hb_shape_plan_create2 (font->face, &props,
 						       features, num_features,
-						       font->coords, font->num_coords,
-						       shaper_list);
+						       font->coords, font->num_coords);
   hb_bool_t res = hb_shape_plan_execute (shape_plan, font, buffer, features, num_features);
   hb_shape_plan_destroy (shape_plan);
 
@@ -106,5 +104,5 @@ hb_shape (hb_font_t           *font,
 	  const hb_feature_t  *features,
 	  unsigned int         num_features)
 {
-  hb_shape_full (font, buffer, features, num_features, nullptr);
+  hb_shape_full (font, buffer, features, num_features);
 }

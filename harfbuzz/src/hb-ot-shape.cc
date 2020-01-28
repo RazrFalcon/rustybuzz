@@ -176,19 +176,21 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 
 bool
 hb_ot_shape_plan_t::init0 (hb_face_t                     *face,
-                           const hb_shape_plan_key_t     *key)
+			   const hb_ot_shape_plan_key_t  &ot,
+			   const hb_segment_properties_t *props,
+			   const hb_feature_t            *user_features,
+			   unsigned int                   num_user_features,
+			   const int                     *coords,
+			   unsigned int                   num_coords)
 {
   map.init ();
   aat_map.init ();
 
-  hb_ot_shape_planner_t planner (face,
-                                 &key->props);
+  hb_ot_shape_planner_t planner (face, props);
 
-  hb_ot_shape_collect_features (&planner,
-                                key->user_features,
-                                key->num_user_features);
+  hb_ot_shape_collect_features (&planner, user_features, num_user_features);
 
-  planner.compile (*this, key->ot);
+  planner.compile (*this, ot);
 
   if (shaper->data_create)
   {

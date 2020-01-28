@@ -41,8 +41,7 @@ HB_EXTERN hb_shape_plan_t *
 hb_shape_plan_create (hb_face_t                     *face,
 		      const hb_segment_properties_t *props,
 		      const hb_feature_t            *user_features,
-		      unsigned int                   num_user_features,
-		      const char * const            *shaper_list);
+		      unsigned int                   num_user_features);
 
 HB_EXTERN hb_shape_plan_t *
 hb_shape_plan_create2 (hb_face_t                     *face,
@@ -50,8 +49,7 @@ hb_shape_plan_create2 (hb_face_t                     *face,
 		       const hb_feature_t            *user_features,
 		       unsigned int                   num_user_features,
 		       const int                     *coords,
-		       unsigned int                   num_coords,
-		       const char * const            *shaper_list);
+		       unsigned int                   num_coords);
 
 HB_EXTERN hb_shape_plan_t *
 hb_shape_plan_get_empty (void);
@@ -61,17 +59,6 @@ hb_shape_plan_reference (hb_shape_plan_t *shape_plan);
 
 HB_EXTERN void
 hb_shape_plan_destroy (hb_shape_plan_t *shape_plan);
-
-HB_EXTERN hb_bool_t
-hb_shape_plan_set_user_data (hb_shape_plan_t    *shape_plan,
-			     hb_user_data_key_t *key,
-			     void *              data,
-			     hb_destroy_func_t   destroy,
-			     hb_bool_t           replace);
-
-HB_EXTERN void *
-hb_shape_plan_get_user_data (hb_shape_plan_t    *shape_plan,
-			     hb_user_data_key_t *key);
 
 
 HB_EXTERN hb_bool_t

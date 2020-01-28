@@ -85,7 +85,12 @@ struct hb_ot_shape_plan_t
   bool apply_trak : 1;
 
   HB_INTERNAL bool init0 (hb_face_t                     *face,
-			  const hb_shape_plan_key_t     *key);
+			  const hb_ot_shape_plan_key_t  &ot,
+			  const hb_segment_properties_t *props,
+			  const hb_feature_t            *user_features,
+			  unsigned int                   num_user_features,
+			  const int                     *coords,
+			  unsigned int                   num_coords);
   HB_INTERNAL void fini ();
 
   HB_INTERNAL void substitute (hb_font_t *font, hb_buffer_t *buffer) const;
