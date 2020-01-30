@@ -96,12 +96,12 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
 }
 
 void
-hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
-                                const hb_ot_shape_plan_key_t &key)
+hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t &plan,
+                                unsigned int       *variations_index)
 {
   plan.props = props;
   plan.shaper = shaper;
-  map.compile (plan.map, key);
+  map.compile (plan.map, variations_index);
   if (apply_morx)
     aat_map.compile (plan.aat_map);
 
@@ -176,7 +176,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 
 bool
 hb_ot_shape_plan_t::init0 (hb_face_t                     *face,
-			   const hb_ot_shape_plan_key_t  &ot,
+			   unsigned int                  *variations_index,
 			   const hb_segment_properties_t *props,
 			   const hb_feature_t            *user_features,
 			   unsigned int                   num_user_features,
@@ -190,7 +190,7 @@ hb_ot_shape_plan_t::init0 (hb_face_t                     *face,
 
   hb_ot_shape_collect_features (&planner, user_features, num_user_features);
 
-  planner.compile (*this, ot);
+  planner.compile (*this, variations_index);
 
   if (shaper->data_create)
   {

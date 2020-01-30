@@ -94,10 +94,15 @@ hb_shape_plan_create2 (hb_face_t                     *face,
     face = hb_face_get_empty ();
   hb_face_make_immutable (face);
 
-  hb_ot_shape_plan_key_t ot;
-  ot.init (face, coords, num_coords);
+  unsigned int variations_index[2];
+  for (unsigned int table_index = 0; table_index < 2; table_index++)
+    hb_ot_layout_table_find_feature_variations (face,
+                                                table_tags[table_index],
+                                                coords,
+                                                num_coords,
+                                                &variations_index[table_index]);
 
-  if (unlikely (!shape_plan->ot.init0 (face, ot, props, user_features, num_user_features, coords, num_coords)))
+  if (unlikely (!shape_plan->ot.init0 (face, variations_index, props, user_features, num_user_features, coords, num_coords)))
     return hb_shape_plan_get_empty ();
 
   return shape_plan;
