@@ -37,7 +37,6 @@
 #include "hb-ot-layout-gdef-table.hh"
 
 extern "C" {
-  hb_bool_t rb_ot_has_glyph_classes (const void *rust_data);
   hb_bool_t rb_ot_is_mark_glyph (const void *rust_data, unsigned int set_index, hb_codepoint_t glyph);
 }
 
@@ -495,7 +494,7 @@ struct hb_ot_apply_context_t :
 			lookup_props (0),
 			nesting_level_left (HB_MAX_NESTING_LEVEL),
 			debug_depth (0),
-			has_glyph_classes (rb_ot_has_glyph_classes (font->rust_data)),
+			has_glyph_classes (rb_ot_layout_has_glyph_classes (font->rust_data)),
 			auto_zwnj (true),
 			auto_zwj (true),
 			random (false),

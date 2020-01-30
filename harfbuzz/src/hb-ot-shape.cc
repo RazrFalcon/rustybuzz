@@ -71,10 +71,8 @@ _hb_apply_morx (hb_face_t *face)
     return true;
 
   /* Ignore empty GSUB tables. */
-  return (!hb_ot_layout_has_substitution (face) ||
-          !hb_ot_layout_table_get_script_tags (face,
-                                               HB_OT_TAG_GSUB,
-                                               0, nullptr, nullptr)) &&
+  return (!rb_ot_layout_has_substitution (face->rust_data) ||
+          !rb_ot_layout_table_get_script_count (face->rust_data, HB_OT_TAG_GSUB)) &&
          hb_aat_layout_has_substitution (face);
 }
 
@@ -126,7 +124,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t &plan,
    * Decide who provides glyph classes. GDEF or Unicode.
    */
 
-  if (!hb_ot_layout_has_glyph_classes (face))
+  if (!rb_ot_layout_has_glyph_classes (face->rust_data))
     plan.fallback_glyph_classes = true;
 
   /*
@@ -143,7 +141,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t &plan,
     ;
   else if (hb_options ().aat && hb_aat_layout_has_positioning (face))
     plan.apply_kerx = true;
-  else if (!apply_morx && !disable_gpos && hb_ot_layout_has_positioning (face))
+  else if (!apply_morx && !disable_gpos && rb_ot_layout_has_positioning (face->rust_data))
     plan.apply_gpos = true;
   else if (hb_aat_layout_has_positioning (face))
     plan.apply_kerx = true;

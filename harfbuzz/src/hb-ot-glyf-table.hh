@@ -621,10 +621,10 @@ struct glyf
       loca_table = nullptr;
       glyf_table = nullptr;
       face = face_;
-      if (rb_face_index_to_loc_format (face) > 1)
+      if (rb_face_index_to_loc_format (face->rust_data) > 1)
 	/* Unknown format.  Leave num_glyphs=0, that takes care of disabling us. */
 	return;
-      short_offset = 0 == rb_face_index_to_loc_format (face);
+      short_offset = 0 == rb_face_index_to_loc_format (face->rust_data);
 
       loca_table = hb_sanitize_context_t ().reference_table<loca> (face);
       glyf_table = hb_sanitize_context_t ().reference_table<glyf> (face);

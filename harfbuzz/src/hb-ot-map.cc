@@ -74,8 +74,8 @@ hb_ot_map_builder_t::hb_ot_map_builder_t (hb_face_t *face_,
 
   for (unsigned int table_index = 0; table_index < 2; table_index++) {
     hb_tag_t table_tag = table_tags[table_index];
-    found_script[table_index] = (bool) hb_ot_layout_table_select_script (face, table_tag, script_count, script_tags, &script_index[table_index], &chosen_script[table_index]);
-    hb_ot_layout_script_select_language (face, table_tag, script_index[table_index], language_count, language_tags, &language_index[table_index]);
+    found_script[table_index] = (bool) rb_ot_layout_table_select_script (face->rust_data, table_tag, script_count, script_tags, &script_index[table_index], &chosen_script[table_index]);
+    rb_ot_layout_script_select_language (face->rust_data, table_tag, script_index[table_index], language_count, language_tags, &language_index[table_index]);
   }
 }
 
@@ -115,12 +115,12 @@ hb_ot_map_builder_t::add_lookups (hb_ot_map_t  &m,
   unsigned int offset, len;
   unsigned int table_lookup_count;
 
-  table_lookup_count = hb_ot_layout_table_get_lookup_count (face, table_tags[table_index]);
+  table_lookup_count = rb_ot_layout_table_get_lookup_count (face->rust_data, table_tags[table_index]);
 
   offset = 0;
   do {
     len = ARRAY_LENGTH (lookup_indices);
-    hb_ot_layout_feature_with_variations_get_lookups (face,
+    rb_ot_layout_feature_with_variations_get_lookups (face->rust_data,
 						      table_tags[table_index],
 						      feature_index,
 						      variations_index,
@@ -176,7 +176,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t  &m,
     m.chosen_script[table_index] = chosen_script[table_index];
     m.found_script[table_index] = found_script[table_index];
 
-    hb_ot_layout_language_get_required_feature (face,
+    rb_ot_layout_language_get_required_feature (face->rust_data,
 						table_tags[table_index],
 						script_index[table_index],
 						language_index[table_index],
@@ -238,7 +238,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t  &m,
       if (required_feature_tag[table_index] == info->tag)
 	required_feature_stage[table_index] = info->stage[table_index];
 
-      found |= (bool) hb_ot_layout_language_find_feature (face,
+      found |= (bool) rb_ot_layout_language_find_feature (face->rust_data,
 							  table_tags[table_index],
 							  script_index[table_index],
 							  language_index[table_index],
@@ -249,7 +249,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t  &m,
     {
       for (unsigned int table_index = 0; table_index < 2; table_index++)
       {
-	found |= (bool) hb_ot_layout_table_find_feature (face,
+	found |= (bool) rb_ot_layout_table_find_feature (face->rust_data,
 							 table_tags[table_index],
 							 info->tag,
 							 &feature_index[table_index]);

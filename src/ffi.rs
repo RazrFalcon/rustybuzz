@@ -3,6 +3,7 @@
 
 use std::os::raw::{c_void, c_char};
 
+pub type hb_bool_t = i32;
 pub type hb_codepoint_t = u32;
 pub type hb_position_t = i32;
 pub type hb_mask_t = u32;

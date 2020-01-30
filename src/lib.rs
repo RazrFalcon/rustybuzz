@@ -30,19 +30,28 @@ macro_rules! try_opt {
 }
 
 macro_rules! try_opt_or {
-    ($task:expr, $ret:expr) => {
+    ($task:expr, $res:expr) => {
         match $task {
             Some(v) => v,
-            None => $ret,
+            None => return $res,
         }
     };
 }
 
-macro_rules! try_or {
-    ($task:expr, $ret:expr) => {
+macro_rules! try_res_opt_or {
+    ($task:expr, $res:expr) => {
+        match $task {
+            Ok(Some(v)) => v,
+            _ => return $res,
+        }
+    };
+}
+
+macro_rules! try_ok_or {
+    ($task:expr, $res:expr) => {
         match $task {
             Ok(v) => v,
-            Err(_) => $ret,
+            Err(_) => return $res,
         }
     };
 }

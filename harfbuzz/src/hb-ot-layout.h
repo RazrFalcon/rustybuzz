@@ -54,7 +54,7 @@ HB_BEGIN_DECLS
  */
 
 HB_EXTERN hb_bool_t
-hb_ot_layout_has_glyph_classes (hb_face_t *face);
+rb_ot_layout_has_glyph_classes (const void *rust_data);
 
 /*
  * GSUB/GPOS feature query and enumeration interface
@@ -66,14 +66,11 @@ hb_ot_layout_has_glyph_classes (hb_face_t *face);
 #define HB_OT_LAYOUT_NO_VARIATIONS_INDEX	0xFFFFFFFFu
 
 HB_EXTERN unsigned int
-hb_ot_layout_table_get_script_tags (hb_face_t    *face,
-				    hb_tag_t      table_tag,
-				    unsigned int  start_offset,
-				    unsigned int *script_count /* IN/OUT */,
-				    hb_tag_t     *script_tags /* OUT */);
+rb_ot_layout_table_get_script_count (const void *rust_data,
+				     hb_tag_t    table_tag);
 
 HB_EXTERN hb_bool_t
-hb_ot_layout_table_select_script (hb_face_t      *face,
+rb_ot_layout_table_select_script (const void     *rust_data,
 				  hb_tag_t        table_tag,
 				  unsigned int    script_count,
 				  const hb_tag_t *script_tags,
@@ -81,7 +78,7 @@ hb_ot_layout_table_select_script (hb_face_t      *face,
 				  hb_tag_t       *chosen_script /* OUT */);
 
 HB_EXTERN hb_bool_t
-hb_ot_layout_script_select_language (hb_face_t      *face,
+rb_ot_layout_script_select_language (const void     *rust_data,
 				     hb_tag_t        table_tag,
 				     unsigned int    script_index,
 				     unsigned int    language_count,
@@ -89,7 +86,7 @@ hb_ot_layout_script_select_language (hb_face_t      *face,
 				     unsigned int   *language_index /* OUT */);
 
 HB_EXTERN hb_bool_t
-hb_ot_layout_language_get_required_feature (hb_face_t    *face,
+rb_ot_layout_language_get_required_feature (const void   *rust_data,
 					    hb_tag_t      table_tag,
 					    unsigned int  script_index,
 					    unsigned int  language_index,
@@ -97,7 +94,7 @@ hb_ot_layout_language_get_required_feature (hb_face_t    *face,
 					    hb_tag_t     *feature_tag);
 
 HB_EXTERN hb_bool_t
-hb_ot_layout_language_find_feature (hb_face_t    *face,
+rb_ot_layout_language_find_feature (const void   *rust_data,
 				    hb_tag_t      table_tag,
 				    unsigned int  script_index,
 				    unsigned int  language_index,
@@ -105,20 +102,20 @@ hb_ot_layout_language_find_feature (hb_face_t    *face,
 				    unsigned int *feature_index);
 
 HB_EXTERN unsigned int
-hb_ot_layout_table_get_lookup_count (hb_face_t    *face,
+rb_ot_layout_table_get_lookup_count (const void   *rust_data,
 				     hb_tag_t      table_tag);
 
 /* Variations support */
 
 HB_EXTERN hb_bool_t
-hb_ot_layout_table_find_feature_variations (hb_face_t    *face,
+rb_ot_layout_table_find_feature_variations (const void   *rust_data,
 					    hb_tag_t      table_tag,
 					    const int    *coords,
 					    unsigned int  num_coords,
 					    unsigned int *variations_index /* out */);
 
 HB_EXTERN unsigned int
-hb_ot_layout_feature_with_variations_get_lookups (hb_face_t    *face,
+rb_ot_layout_feature_with_variations_get_lookups (const void   *rust_data,
 						  hb_tag_t      table_tag,
 						  unsigned int  feature_index,
 						  unsigned int  variations_index,
@@ -132,7 +129,7 @@ hb_ot_layout_feature_with_variations_get_lookups (hb_face_t    *face,
  */
 
 HB_EXTERN hb_bool_t
-hb_ot_layout_has_substitution (hb_face_t *face);
+rb_ot_layout_has_substitution (const void *rust_data);
 
 HB_EXTERN hb_bool_t
 hb_ot_layout_lookup_would_substitute (hb_face_t            *face,
@@ -141,16 +138,18 @@ hb_ot_layout_lookup_would_substitute (hb_face_t            *face,
 				      unsigned int          glyphs_length,
 				      hb_bool_t             zero_context);
 
-HB_EXTERN void
-hb_ot_layout_lookups_substitute_closure (hb_face_t      *face,
-					 const hb_set_t *lookups,
-					 hb_set_t       *glyphs);
-
 /*
  * GPOS
  */
 
 HB_EXTERN hb_bool_t
-hb_ot_layout_has_positioning (hb_face_t *face);
+rb_ot_layout_has_positioning (const void *rust_data);
+
+
+HB_EXTERN hb_bool_t
+rb_ot_layout_table_find_feature (const void   *rust_data,
+				 hb_tag_t      table_tag,
+				 hb_tag_t      feature_tag,
+				 unsigned int *feature_index);
 
 HB_END_DECLS

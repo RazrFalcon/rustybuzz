@@ -96,7 +96,7 @@ hb_shape_plan_create2 (hb_face_t                     *face,
 
   unsigned int variations_index[2];
   for (unsigned int table_index = 0; table_index < 2; table_index++)
-    hb_ot_layout_table_find_feature_variations (face,
+    rb_ot_layout_table_find_feature_variations (face->rust_data,
                                                 table_tags[table_index],
                                                 coords,
                                                 num_coords,

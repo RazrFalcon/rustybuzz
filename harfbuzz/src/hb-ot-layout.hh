@@ -59,16 +59,6 @@ hb_ot_layout_kern (const hb_ot_shape_plan_t *plan,
 		   hb_font_t *font,
 		   hb_buffer_t  *buffer);
 
-
-/* Private API corresponding to hb-ot-layout.h: */
-
-HB_INTERNAL bool
-hb_ot_layout_table_find_feature (hb_face_t    *face,
-				 hb_tag_t      table_tag,
-				 hb_tag_t      feature_tag,
-				 unsigned int *feature_index);
-
-
 /*
  * GDEF
  */
