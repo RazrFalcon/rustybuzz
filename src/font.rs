@@ -469,6 +469,11 @@ pub extern "C" fn rb_ot_layout_language_get_required_feature(
 ) -> ffi::hb_bool_t {
     let font = font_from_raw(font_data);
 
+    unsafe {
+        *feature_index = 0xFFFF;
+        *feature_tag = Tag(0);
+    }
+
     if !has_table(font, table_tag) {
         return 0;
     }
