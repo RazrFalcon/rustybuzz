@@ -186,7 +186,7 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * This is because we do fallback shaping for Arabic script (and not others).
          * But note that Arabic shaping is applicable only to horizontal layout; for
          * vertical text, just use the generic shaper instead. */
-        if ((planner->map.chosen_script[0] != HB_OT_TAG_DEFAULT_SCRIPT || planner->props.script == HB_SCRIPT_ARABIC) &&
+        if ((hb_ot_map_builder_chosen_script(planner->map, 0) != HB_OT_TAG_DEFAULT_SCRIPT || planner->props.script == HB_SCRIPT_ARABIC) &&
             HB_DIRECTION_IS_HORIZONTAL(planner->props.direction))
             return &_hb_ot_complex_shaper_arabic;
         else
@@ -227,10 +227,10 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * Otherwise, use the specific shaper.
          *
          * If it's indy3 tag, send to USE. */
-        if (planner->map.chosen_script[0] == HB_TAG('D', 'F', 'L', 'T') ||
-            planner->map.chosen_script[0] == HB_TAG('l', 'a', 't', 'n'))
+        if (hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
+            hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n'))
             return &_hb_ot_complex_shaper_default;
-        else if ((planner->map.chosen_script[0] & 0x000000FF) == '3')
+        else if ((hb_ot_map_builder_chosen_script(planner->map, 0) & 0x000000FF) == '3')
             return &_hb_ot_complex_shaper_use;
         else
             return &_hb_ot_complex_shaper_indic;
@@ -246,9 +246,9 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * If designer designed for 'mymr' tag, also send to default
          * shaper.  That's tag used from before Myanmar shaping spec
          * was developed.  The shaping spec uses 'mym2' tag. */
-        if (planner->map.chosen_script[0] == HB_TAG('D', 'F', 'L', 'T') ||
-            planner->map.chosen_script[0] == HB_TAG('l', 'a', 't', 'n') ||
-            planner->map.chosen_script[0] == HB_TAG('m', 'y', 'm', 'r'))
+        if (hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
+            hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n') ||
+            hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('m', 'y', 'm', 'r'))
             return &_hb_ot_complex_shaper_default;
         else
             return &_hb_ot_complex_shaper_myanmar;
@@ -354,8 +354,8 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * Otherwise, use the specific shaper.
          * Note that for some simple scripts, there may not be *any*
          * GSUB/GPOS needed, so there may be no scripts found! */
-        if (planner->map.chosen_script[0] == HB_TAG('D', 'F', 'L', 'T') ||
-            planner->map.chosen_script[0] == HB_TAG('l', 'a', 't', 'n'))
+        if (hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
+            hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n'))
             return &_hb_ot_complex_shaper_default;
         else
             return &_hb_ot_complex_shaper_use;

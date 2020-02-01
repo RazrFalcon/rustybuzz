@@ -238,42 +238,42 @@ is_halant (const hb_glyph_info_t &info)
 
 #define MATRA_POS_LEFT(u)	POS_PRE_M
 #define MATRA_POS_RIGHT(u)	( \
-				  IS_DEVA(u) ? POS_AFTER_SUB  : \
-				  IS_BENG(u) ? POS_AFTER_POST : \
-				  IS_GURU(u) ? POS_AFTER_POST : \
-				  IS_GUJR(u) ? POS_AFTER_POST : \
-				  IS_ORYA(u) ? POS_AFTER_POST : \
-				  IS_TAML(u) ? POS_AFTER_POST : \
-				  IS_TELU(u) ? (u <= 0x0C42u ? POS_BEFORE_SUB : POS_AFTER_SUB) : \
-				  IS_KNDA(u) ? (u < 0x0CC3u || u > 0xCD6u ? POS_BEFORE_SUB : POS_AFTER_SUB) : \
-				  IS_MLYM(u) ? POS_AFTER_POST : \
-				  IS_SINH(u) ? POS_AFTER_SUB  : \
-				  /*default*/  POS_AFTER_SUB    \
-				)
+                  IS_DEVA(u) ? POS_AFTER_SUB  : \
+                  IS_BENG(u) ? POS_AFTER_POST : \
+                  IS_GURU(u) ? POS_AFTER_POST : \
+                  IS_GUJR(u) ? POS_AFTER_POST : \
+                  IS_ORYA(u) ? POS_AFTER_POST : \
+                  IS_TAML(u) ? POS_AFTER_POST : \
+                  IS_TELU(u) ? (u <= 0x0C42u ? POS_BEFORE_SUB : POS_AFTER_SUB) : \
+                  IS_KNDA(u) ? (u < 0x0CC3u || u > 0xCD6u ? POS_BEFORE_SUB : POS_AFTER_SUB) : \
+                  IS_MLYM(u) ? POS_AFTER_POST : \
+                  IS_SINH(u) ? POS_AFTER_SUB  : \
+                  /*default*/  POS_AFTER_SUB    \
+                )
 #define MATRA_POS_TOP(u)	( /* BENG and MLYM don't have top matras. */ \
-				  IS_DEVA(u) ? POS_AFTER_SUB  : \
-				  IS_GURU(u) ? POS_AFTER_POST : /* Deviate from spec */ \
-				  IS_GUJR(u) ? POS_AFTER_SUB  : \
-				  IS_ORYA(u) ? POS_AFTER_MAIN : \
-				  IS_TAML(u) ? POS_AFTER_SUB  : \
-				  IS_TELU(u) ? POS_BEFORE_SUB : \
-				  IS_KNDA(u) ? POS_BEFORE_SUB : \
-				  IS_SINH(u) ? POS_AFTER_SUB  : \
-				  /*default*/  POS_AFTER_SUB    \
-				)
+                  IS_DEVA(u) ? POS_AFTER_SUB  : \
+                  IS_GURU(u) ? POS_AFTER_POST : /* Deviate from spec */ \
+                  IS_GUJR(u) ? POS_AFTER_SUB  : \
+                  IS_ORYA(u) ? POS_AFTER_MAIN : \
+                  IS_TAML(u) ? POS_AFTER_SUB  : \
+                  IS_TELU(u) ? POS_BEFORE_SUB : \
+                  IS_KNDA(u) ? POS_BEFORE_SUB : \
+                  IS_SINH(u) ? POS_AFTER_SUB  : \
+                  /*default*/  POS_AFTER_SUB    \
+                )
 #define MATRA_POS_BOTTOM(u)	( \
-				  IS_DEVA(u) ? POS_AFTER_SUB  : \
-				  IS_BENG(u) ? POS_AFTER_SUB  : \
-				  IS_GURU(u) ? POS_AFTER_POST : \
-				  IS_GUJR(u) ? POS_AFTER_POST : \
-				  IS_ORYA(u) ? POS_AFTER_SUB  : \
-				  IS_TAML(u) ? POS_AFTER_POST : \
-				  IS_TELU(u) ? POS_BEFORE_SUB : \
-				  IS_KNDA(u) ? POS_BEFORE_SUB : \
-				  IS_MLYM(u) ? POS_AFTER_POST : \
-				  IS_SINH(u) ? POS_AFTER_SUB  : \
-				  /*default*/  POS_AFTER_SUB    \
-				)
+                  IS_DEVA(u) ? POS_AFTER_SUB  : \
+                  IS_BENG(u) ? POS_AFTER_SUB  : \
+                  IS_GURU(u) ? POS_AFTER_POST : \
+                  IS_GUJR(u) ? POS_AFTER_POST : \
+                  IS_ORYA(u) ? POS_AFTER_SUB  : \
+                  IS_TAML(u) ? POS_AFTER_POST : \
+                  IS_TELU(u) ? POS_BEFORE_SUB : \
+                  IS_KNDA(u) ? POS_BEFORE_SUB : \
+                  IS_MLYM(u) ? POS_AFTER_POST : \
+                  IS_SINH(u) ? POS_AFTER_SUB  : \
+                  /*default*/  POS_AFTER_SUB    \
+                )
 
 static inline indic_position_t
 matra_position_indic (hb_codepoint_t u, indic_position_t side)
@@ -336,7 +336,7 @@ set_indic_properties (hb_glyph_info_t &info)
     cat = OT_SM;
   /* The following act like consonants. */
   else if (unlikely (hb_in_ranges<hb_codepoint_t> (u, 0x0A72u, 0x0A73u,
-				      0x1CF5u, 0x1CF6u)))
+                      0x1CF5u, 0x1CF6u)))
     cat = OT_C;
   /* TODO: The following should only be allowed after a Visarga.
    * For now, just treat them like regular tone marks. */
@@ -349,8 +349,8 @@ set_indic_properties (hb_glyph_info_t &info)
     cat = OT_A;
   /* The following take marks in standalone clusters, similar to Avagraha. */
   else if (unlikely (hb_in_ranges<hb_codepoint_t> (u, 0xA8F2u, 0xA8F7u,
-				      0x1CE9u, 0x1CECu,
-				      0x1CEEu, 0x1CF1u)))
+                      0x1CE9u, 0x1CECu,
+                      0x1CEEu, 0x1CF1u)))
   {
     cat = OT_Symbol;
     static_assert (((int) INDIC_SYLLABIC_CATEGORY_AVAGRAHA == OT_Symbol), "");
@@ -373,7 +373,7 @@ set_indic_properties (hb_glyph_info_t &info)
   else if (unlikely (u == 0x09FCu)) cat = OT_PLACEHOLDER; /* https://github.com/harfbuzz/harfbuzz/pull/1613 */
   else if (unlikely (u == 0x0C80u)) cat = OT_PLACEHOLDER; /* https://github.com/harfbuzz/harfbuzz/pull/623 */
   else if (unlikely (hb_in_range<hb_codepoint_t> (u, 0x2010u, 0x2011u)))
-				    cat = OT_PLACEHOLDER;
+                    cat = OT_PLACEHOLDER;
   else if (unlikely (u == 0x25CCu)) cat = OT_DOTTEDCIRCLE;
 
 
@@ -409,23 +409,23 @@ struct hb_indic_would_substitute_feature_t
   void init (const hb_ot_map_t *map, hb_tag_t feature_tag, bool zero_context_)
   {
     zero_context = zero_context_;
-    map->get_stage_lookups (0/*GSUB*/,
-			    map->get_feature_stage (0/*GSUB*/, feature_tag),
-			    &lookups, &count);
+    hb_ot_map_get_stage_lookups(map, 0/*GSUB*/,
+                hb_ot_map_get_feature_stage(map, 0/*GSUB*/, feature_tag),
+                &lookups, &count);
   }
 
   bool would_substitute (const hb_codepoint_t *glyphs,
-			 unsigned int          glyphs_count,
-			 hb_face_t            *face) const
+             unsigned int          glyphs_count,
+             hb_face_t            *face) const
   {
     for (unsigned int i = 0; i < count; i++)
       if (hb_ot_layout_lookup_would_substitute (face, lookups[i].index, glyphs, glyphs_count, zero_context))
-	return true;
+    return true;
     return false;
   }
 
   private:
-  const hb_ot_map_t::lookup_map_t *lookups;
+  const lookup_map_t *lookups;
   unsigned int count;
   bool zero_context;
 };

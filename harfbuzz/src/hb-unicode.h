@@ -28,10 +28,6 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
-#error "Include <hb.h> instead."
-#endif
-
 #pragma once
 
 #include "hb-common.h"

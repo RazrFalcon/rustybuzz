@@ -97,40 +97,40 @@ static void reorder_use(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buff
 
 static void collect_features_use(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = &plan->map;
+    hb_ot_map_builder_t *map = plan->map;
 
     /* Do this before any lookups have been applied. */
-    map->add_gsub_pause(setup_syllables_use);
+    hb_ot_map_builder_add_gsub_pause(map, setup_syllables_use);
 
     /* "Default glyph pre-processing group" */
-    map->enable_feature(HB_TAG('l', 'o', 'c', 'l'));
-    map->enable_feature(HB_TAG('c', 'c', 'm', 'p'));
-    map->enable_feature(HB_TAG('n', 'u', 'k', 't'));
-    map->enable_feature(HB_TAG('a', 'k', 'h', 'n'), F_MANUAL_ZWJ);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('n', 'u', 'k', 't'), F_NONE, 1);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('a', 'k', 'h', 'n'), F_MANUAL_ZWJ, 1);
 
     /* "Reordering group" */
-    map->add_gsub_pause(_hb_clear_substitution_flags);
-    map->add_feature(HB_TAG('r', 'p', 'h', 'f'), F_MANUAL_ZWJ);
-    map->add_gsub_pause(record_rphf_use);
-    map->add_gsub_pause(_hb_clear_substitution_flags);
-    map->enable_feature(HB_TAG('p', 'r', 'e', 'f'), F_MANUAL_ZWJ);
-    map->add_gsub_pause(record_pref_use);
+    hb_ot_map_builder_add_gsub_pause(map, _hb_clear_substitution_flags);
+    hb_ot_map_builder_add_feature_full(map, HB_TAG('r', 'p', 'h', 'f'), F_MANUAL_ZWJ, 1);
+    hb_ot_map_builder_add_gsub_pause(map, record_rphf_use);
+    hb_ot_map_builder_add_gsub_pause(map, _hb_clear_substitution_flags);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('p', 'r', 'e', 'f'), F_MANUAL_ZWJ, 1);
+    hb_ot_map_builder_add_gsub_pause(map, record_pref_use);
 
     /* "Orthographic unit shaping group" */
     for (unsigned int i = 0; i < ARRAY_LENGTH(use_basic_features); i++)
-        map->enable_feature(use_basic_features[i], F_MANUAL_ZWJ);
+        hb_ot_map_builder_enable_feature(map, use_basic_features[i], F_MANUAL_ZWJ, 1);
 
-    map->add_gsub_pause(reorder_use);
-    map->add_gsub_pause(_hb_clear_syllables);
+    hb_ot_map_builder_add_gsub_pause(map, reorder_use);
+    hb_ot_map_builder_add_gsub_pause(map, _hb_clear_syllables);
 
     /* "Topographical features" */
     for (unsigned int i = 0; i < ARRAY_LENGTH(use_topographical_features); i++)
-        map->add_feature(use_topographical_features[i]);
-    map->add_gsub_pause(nullptr);
+        hb_ot_map_builder_add_feature_full(map, use_topographical_features[i], F_NONE, 1);
+    hb_ot_map_builder_add_gsub_pause(map, nullptr);
 
     /* "Standard typographic presentation" */
     for (unsigned int i = 0; i < ARRAY_LENGTH(use_other_features); i++)
-        map->enable_feature(use_other_features[i], F_MANUAL_ZWJ);
+        hb_ot_map_builder_enable_feature(map, use_other_features[i], F_MANUAL_ZWJ, 1);
 }
 
 struct use_shape_plan_t
@@ -178,7 +178,7 @@ static void *data_create_use(const hb_ot_shape_plan_t *plan)
     if (unlikely(!use_plan))
         return nullptr;
 
-    use_plan->rphf_mask = plan->map.get_1_mask(HB_TAG('r', 'p', 'h', 'f'));
+    use_plan->rphf_mask = hb_ot_map_get_1_mask(plan->map, HB_TAG('r', 'p', 'h', 'f'));
 
     if (has_arabic_joining(plan->props.script)) {
         use_plan->arabic_plan = (arabic_shape_plan_t *)data_create_arabic(plan);
@@ -260,8 +260,8 @@ static void setup_topographical_masks(const hb_ot_shape_plan_t *plan, hb_buffer_
     static_assert((USE_INIT < 4 && USE_ISOL < 4 && USE_MEDI < 4 && USE_FINA < 4), "");
     hb_mask_t masks[4], all_masks = 0;
     for (unsigned int i = 0; i < 4; i++) {
-        masks[i] = plan->map.get_1_mask(use_topographical_features[i]);
-        if (masks[i] == plan->map.get_global_mask())
+        masks[i] = hb_ot_map_get_1_mask(plan->map, use_topographical_features[i]);
+        if (masks[i] == hb_ot_map_get_global_mask(plan->map))
             masks[i] = 0;
         all_masks |= masks[i];
     }

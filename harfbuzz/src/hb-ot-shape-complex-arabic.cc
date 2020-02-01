@@ -157,7 +157,7 @@ static void record_stch(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buff
 
 static void collect_features_arabic(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = &plan->map;
+    hb_ot_map_builder_t *map = plan->map;
 
     /* We apply features according to the Arabic spec, with pauses
      * in between most.
@@ -181,33 +181,33 @@ static void collect_features_arabic(hb_ot_shape_planner_t *plan)
      * work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
      */
 
-    map->enable_feature(HB_TAG('s', 't', 'c', 'h'));
-    map->add_gsub_pause(record_stch);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('s', 't', 'c', 'h'), F_NONE, 1);
+    hb_ot_map_builder_add_gsub_pause(map, record_stch);
 
-    map->enable_feature(HB_TAG('c', 'c', 'm', 'p'));
-    map->enable_feature(HB_TAG('l', 'o', 'c', 'l'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
 
-    map->add_gsub_pause(nullptr);
+    hb_ot_map_builder_add_gsub_pause(map, nullptr);
 
     for (unsigned int i = 0; i < ARABIC_NUM_FEATURES; i++) {
         bool has_fallback = plan->props.script == HB_SCRIPT_ARABIC && !FEATURE_IS_SYRIAC(arabic_features[i]);
-        map->add_feature(arabic_features[i], has_fallback ? F_HAS_FALLBACK : F_NONE);
-        map->add_gsub_pause(nullptr);
+        hb_ot_map_builder_add_feature_full(map, arabic_features[i], has_fallback ? F_HAS_FALLBACK : F_NONE, 1);
+        hb_ot_map_builder_add_gsub_pause(map, nullptr);
     }
 
     /* Normally, Unicode says a ZWNJ means "don't ligate".  In Arabic script
      * however, it says a ZWJ should also mean "don't ligate".  So we run
      * the main ligating features as MANUAL_ZWJ. */
 
-    map->enable_feature(HB_TAG('r', 'l', 'i', 'g'), F_MANUAL_ZWJ | F_HAS_FALLBACK);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('r', 'l', 'i', 'g'), F_MANUAL_ZWJ | F_HAS_FALLBACK, 1);
 
     if (plan->props.script == HB_SCRIPT_ARABIC)
-        map->add_gsub_pause(arabic_fallback_shape);
+        hb_ot_map_builder_add_gsub_pause(map, arabic_fallback_shape);
 
     /* No pause after rclt.  See 98460779bae19e4d64d29461ff154b3527bf8420. */
-    map->enable_feature(HB_TAG('r', 'c', 'l', 't'), F_MANUAL_ZWJ);
-    map->enable_feature(HB_TAG('c', 'a', 'l', 't'), F_MANUAL_ZWJ);
-    map->add_gsub_pause(nullptr);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('r', 'c', 'l', 't'), F_MANUAL_ZWJ, 1);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'a', 'l', 't'), F_MANUAL_ZWJ, 1);
+    hb_ot_map_builder_add_gsub_pause(map, nullptr);
 
     /* And undo here. */
 
@@ -220,7 +220,7 @@ static void collect_features_arabic(hb_ot_shape_planner_t *plan)
      * to fixup broken glyph sequences.  Oh well...
      * Test case: U+0643,U+0640,U+0631. */
     // map->enable_feature (HB_TAG('c','s','w','h'));
-    map->enable_feature(HB_TAG('m', 's', 'e', 't'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('m', 's', 'e', 't'), F_NONE, 1);
 }
 
 #include "hb-ot-shape-complex-arabic-fallback.hh"
@@ -246,11 +246,11 @@ void *data_create_arabic(const hb_ot_shape_plan_t *plan)
         return nullptr;
 
     arabic_plan->do_fallback = plan->props.script == HB_SCRIPT_ARABIC;
-    arabic_plan->has_stch = !!plan->map.get_1_mask(HB_TAG('s', 't', 'c', 'h'));
+    arabic_plan->has_stch = !!hb_ot_map_get_1_mask(plan->map, HB_TAG('s', 't', 'c', 'h'));
     for (unsigned int i = 0; i < ARABIC_NUM_FEATURES; i++) {
-        arabic_plan->mask_array[i] = plan->map.get_1_mask(arabic_features[i]);
+        arabic_plan->mask_array[i] = hb_ot_map_get_1_mask(plan->map, arabic_features[i]);
         arabic_plan->do_fallback = arabic_plan->do_fallback && (FEATURE_IS_SYRIAC(arabic_features[i]) ||
-                                                                plan->map.needs_fallback(arabic_features[i]));
+                                                                hb_ot_map_needs_fallback(plan->map, arabic_features[i]));
     }
 
     return arabic_plan;

@@ -333,7 +333,7 @@ static void preprocess_text_thai(const hb_ot_shape_plan_t *plan, hb_buffer_t *bu
     hb_buffer_swap_buffers(buffer);
 
     /* If font has Thai GSUB, we are done. */
-    if (plan->props.script == HB_SCRIPT_THAI && !plan->map.found_script[0])
+    if (plan->props.script == HB_SCRIPT_THAI && !hb_ot_map_has_found_script(plan->map, 0))
         do_thai_pua_shaping(plan, buffer, font);
 }
 

@@ -163,38 +163,38 @@ static void final_reordering_indic(const hb_ot_shape_plan_t *plan, hb_font_t *fo
 
 static void collect_features_indic(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = &plan->map;
+    hb_ot_map_builder_t *map = plan->map;
 
     /* Do this before any lookups have been applied. */
-    map->add_gsub_pause(setup_syllables_indic);
+    hb_ot_map_builder_add_gsub_pause(map, setup_syllables_indic);
 
-    map->enable_feature(HB_TAG('l', 'o', 'c', 'l'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
     /* The Indic specs do not require ccmp, but we apply it here since if
      * there is a use of it, it's typically at the beginning. */
-    map->enable_feature(HB_TAG('c', 'c', 'm', 'p'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
 
     unsigned int i = 0;
-    map->add_gsub_pause(initial_reordering_indic);
+    hb_ot_map_builder_add_gsub_pause(map, initial_reordering_indic);
 
     for (; i < INDIC_BASIC_FEATURES; i++) {
-        map->add_feature(indic_features[i]);
-        map->add_gsub_pause(nullptr);
+        hb_ot_map_builder_add_feature(map, &indic_features[i]);
+        hb_ot_map_builder_add_gsub_pause(map, nullptr);
     }
 
-    map->add_gsub_pause(final_reordering_indic);
+    hb_ot_map_builder_add_gsub_pause(map, final_reordering_indic);
 
     for (; i < INDIC_NUM_FEATURES; i++)
-        map->add_feature(indic_features[i]);
+        hb_ot_map_builder_add_feature(map, &indic_features[i]);
 
-    map->enable_feature(HB_TAG('c', 'a', 'l', 't'));
-    map->enable_feature(HB_TAG('c', 'l', 'i', 'g'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'a', 'l', 't'), F_NONE, 1);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'l', 'i', 'g'), F_NONE, 1);
 
-    map->add_gsub_pause(_hb_clear_syllables);
+    hb_ot_map_builder_add_gsub_pause(map, _hb_clear_syllables);
 }
 
 static void override_features_indic(hb_ot_shape_planner_t *plan)
 {
-    plan->map.disable_feature(HB_TAG('l', 'i', 'g', 'a'));
+    hb_ot_map_builder_disable_feature(plan->map, HB_TAG('l', 'i', 'g', 'a'));
 }
 
 struct indic_shape_plan_t
@@ -248,7 +248,7 @@ static void *data_create_indic(const hb_ot_shape_plan_t *plan)
             break;
         }
 
-    indic_plan->is_old_spec = indic_plan->config->has_old_spec && ((plan->map.chosen_script[0] & 0x000000FFu) != '2');
+    indic_plan->is_old_spec = indic_plan->config->has_old_spec && ((hb_ot_map_get_chosen_script(plan->map, 0) & 0x000000FFu) != '2');
 #ifndef HB_NO_UNISCRIBE_BUG_COMPATIBLE
     indic_plan->uniscribe_bug_compatible = hb_options().uniscribe_bug_compatible;
 #endif
@@ -264,14 +264,14 @@ static void *data_create_indic(const hb_ot_shape_plan_t *plan)
      * as we discover more cases of what Windows does.  DON'T TOUCH OTHERWISE.
      */
     bool zero_context = !indic_plan->is_old_spec && plan->props.script != HB_SCRIPT_MALAYALAM;
-    indic_plan->rphf.init(&plan->map, HB_TAG('r', 'p', 'h', 'f'), zero_context);
-    indic_plan->pref.init(&plan->map, HB_TAG('p', 'r', 'e', 'f'), zero_context);
-    indic_plan->blwf.init(&plan->map, HB_TAG('b', 'l', 'w', 'f'), zero_context);
-    indic_plan->pstf.init(&plan->map, HB_TAG('p', 's', 't', 'f'), zero_context);
+    indic_plan->rphf.init(plan->map, HB_TAG('r', 'p', 'h', 'f'), zero_context);
+    indic_plan->pref.init(plan->map, HB_TAG('p', 'r', 'e', 'f'), zero_context);
+    indic_plan->blwf.init(plan->map, HB_TAG('b', 'l', 'w', 'f'), zero_context);
+    indic_plan->pstf.init(plan->map, HB_TAG('p', 's', 't', 'f'), zero_context);
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(indic_plan->mask_array); i++)
         indic_plan->mask_array[i] =
-            (indic_features[i].flags & F_GLOBAL) ? 0 : plan->map.get_1_mask(indic_features[i].tag);
+            (indic_features[i].flags & F_GLOBAL) ? 0 : hb_ot_map_get_1_mask(plan->map, indic_features[i].tag);
 
     return indic_plan;
 }

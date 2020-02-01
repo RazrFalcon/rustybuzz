@@ -47,6 +47,8 @@
 
 #include "hb-aat-layout.hh"
 
+#include "hb-ot-map.h"
+
 /**
  * SECTION:hb-ot-shape
  * @title: hb-ot-shape
@@ -74,7 +76,7 @@ static inline bool _hb_apply_morx(hb_face_t *face)
 hb_ot_shape_planner_t::hb_ot_shape_planner_t(hb_face_t *face, const hb_segment_properties_t *props)
     : face(face)
     , props(*props)
-    , map(face, props)
+    , map(hb_ot_map_builder_init(face, props))
     , aat_map(face, props)
     , apply_morx(_hb_apply_morx(face))
 {
@@ -87,29 +89,34 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t(hb_face_t *face, const hb_segment_p
         shaper = &_hb_ot_complex_shaper_default;
 }
 
+hb_ot_shape_planner_t::~hb_ot_shape_planner_t()
+{
+    free(map);
+}
+
 void hb_ot_shape_planner_t::compile(hb_ot_shape_plan_t &plan, unsigned int *variations_index)
 {
     plan.props = props;
     plan.shaper = shaper;
-    map.compile(plan.map, variations_index);
+    hb_ot_map_builder_compile(map, plan.map, variations_index);
     if (apply_morx)
         aat_map.compile(plan.aat_map);
 
-    plan.frac_mask = plan.map.get_1_mask(HB_TAG('f', 'r', 'a', 'c'));
-    plan.numr_mask = plan.map.get_1_mask(HB_TAG('n', 'u', 'm', 'r'));
-    plan.dnom_mask = plan.map.get_1_mask(HB_TAG('d', 'n', 'o', 'm'));
+    plan.frac_mask = hb_ot_map_get_1_mask(plan.map, HB_TAG('f', 'r', 'a', 'c'));
+    plan.numr_mask = hb_ot_map_get_1_mask(plan.map, HB_TAG('n', 'u', 'm', 'r'));
+    plan.dnom_mask = hb_ot_map_get_1_mask(plan.map, HB_TAG('d', 'n', 'o', 'm'));
     plan.has_frac = plan.frac_mask || (plan.numr_mask && plan.dnom_mask);
 
-    plan.rtlm_mask = plan.map.get_1_mask(HB_TAG('r', 't', 'l', 'm'));
+    plan.rtlm_mask = hb_ot_map_get_1_mask(plan.map, HB_TAG('r', 't', 'l', 'm'));
     hb_tag_t kern_tag =
         HB_DIRECTION_IS_HORIZONTAL(props.direction) ? HB_TAG('k', 'e', 'r', 'n') : HB_TAG('v', 'k', 'r', 'n');
-    plan.kern_mask = plan.map.get_mask(kern_tag);
+    plan.kern_mask = hb_ot_map_get_mask(plan.map, kern_tag, nullptr);
     plan.requested_kerning = !!plan.kern_mask;
-    plan.trak_mask = plan.map.get_mask(HB_TAG('t', 'r', 'a', 'k'));
+    plan.trak_mask = hb_ot_map_get_mask(plan.map, HB_TAG('t', 'r', 'a', 'k'), nullptr);
     plan.requested_tracking = !!plan.trak_mask;
 
-    bool has_gpos_kern = plan.map.get_feature_index(1, kern_tag) != HB_OT_LAYOUT_NO_FEATURE_INDEX;
-    bool disable_gpos = plan.shaper->gpos_tag && plan.shaper->gpos_tag != plan.map.chosen_script[1];
+    bool has_gpos_kern = hb_ot_map_get_feature_index(plan.map, 1, kern_tag) != HB_OT_LAYOUT_NO_FEATURE_INDEX;
+    bool disable_gpos = plan.shaper->gpos_tag && plan.shaper->gpos_tag != hb_ot_map_get_chosen_script(plan.map, 1);
 
     /*
      * Decide who provides glyph classes. GDEF or Unicode.
@@ -147,7 +154,7 @@ void hb_ot_shape_planner_t::compile(hb_ot_shape_plan_t &plan, unsigned int *vari
 
     plan.zero_marks =
         script_zero_marks && !plan.apply_kerx && (!plan.apply_kern || !hb_ot_layout_has_machine_kerning(face));
-    plan.has_gpos_mark = !!plan.map.get_1_mask(HB_TAG('m', 'a', 'r', 'k'));
+    plan.has_gpos_mark = !!hb_ot_map_get_1_mask(plan.map, HB_TAG('m', 'a', 'r', 'k'));
 
     plan.adjust_mark_positioning_when_zeroing =
         !plan.apply_gpos && !plan.apply_kerx && (!plan.apply_kern || !hb_ot_layout_has_cross_kerning(face));
@@ -166,7 +173,7 @@ bool hb_ot_shape_plan_t::init0(hb_face_t *face,
                                const int *coords,
                                unsigned int num_coords)
 {
-    map.init();
+    map = hb_ot_map_init();
     aat_map.init();
 
     hb_ot_shape_planner_t planner(face, props);
@@ -189,7 +196,7 @@ void hb_ot_shape_plan_t::fini()
     if (shaper->data_destroy)
         shaper->data_destroy(const_cast<void *>(data));
 
-    map.fini();
+    hb_ot_map_fini(map);
     aat_map.fini();
 }
 
@@ -198,13 +205,13 @@ void hb_ot_shape_plan_t::substitute(hb_font_t *font, hb_buffer_t *buffer) const
     if (unlikely(apply_morx))
         hb_aat_layout_substitute(this, font, buffer);
     else
-        map.substitute(this, font, buffer);
+        hb_ot_map_substitute(map, this, font, buffer);
 }
 
 void hb_ot_shape_plan_t::position(hb_font_t *font, hb_buffer_t *buffer) const
 {
     if (this->apply_gpos)
-        map.position(this, font, buffer);
+        hb_ot_map_position(map, this, font, buffer);
     else if (this->apply_kerx)
         hb_aat_layout_position(this, font, buffer);
     else if (this->apply_kern)
@@ -238,19 +245,19 @@ static void hb_ot_shape_collect_features(hb_ot_shape_planner_t *planner,
                                          const hb_feature_t *user_features,
                                          unsigned int num_user_features)
 {
-    hb_ot_map_builder_t *map = &planner->map;
+    hb_ot_map_builder_t *map = planner->map;
 
-    map->enable_feature(HB_TAG('r', 'v', 'r', 'n'));
-    map->add_gsub_pause(nullptr);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('r', 'v', 'r', 'n'), F_NONE, 1);
+    hb_ot_map_builder_add_gsub_pause(map, nullptr);
 
     switch (planner->props.direction) {
     case HB_DIRECTION_LTR:
-        map->enable_feature(HB_TAG('l', 't', 'r', 'a'));
-        map->enable_feature(HB_TAG('l', 't', 'r', 'm'));
+        hb_ot_map_builder_enable_feature(map, HB_TAG('l', 't', 'r', 'a'), F_NONE, 1);
+        hb_ot_map_builder_enable_feature(map, HB_TAG('l', 't', 'r', 'm'), F_NONE, 1);
         break;
     case HB_DIRECTION_RTL:
-        map->enable_feature(HB_TAG('r', 't', 'l', 'a'));
-        map->add_feature(HB_TAG('r', 't', 'l', 'm'));
+        hb_ot_map_builder_enable_feature(map, HB_TAG('r', 't', 'l', 'a'), F_NONE, 1);
+        hb_ot_map_builder_add_feature_full(map, HB_TAG('r', 't', 'l', 'm'), F_NONE, 1);
         break;
     case HB_DIRECTION_TTB:
     case HB_DIRECTION_BTT:
@@ -260,45 +267,46 @@ static void hb_ot_shape_collect_features(hb_ot_shape_planner_t *planner,
     }
 
     /* Automatic fractions. */
-    map->add_feature(HB_TAG('f', 'r', 'a', 'c'));
-    map->add_feature(HB_TAG('n', 'u', 'm', 'r'));
-    map->add_feature(HB_TAG('d', 'n', 'o', 'm'));
+    hb_ot_map_builder_add_feature_full(map, HB_TAG('f', 'r', 'a', 'c'), F_NONE, 1);
+    hb_ot_map_builder_add_feature_full(map, HB_TAG('n', 'u', 'm', 'r'), F_NONE, 1);
+    hb_ot_map_builder_add_feature_full(map, HB_TAG('d', 'n', 'o', 'm'), F_NONE, 1);
 
     /* Random! */
-    map->enable_feature(HB_TAG('r', 'a', 'n', 'd'), F_RANDOM, HB_OT_MAP_MAX_VALUE);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('r', 'a', 'n', 'd'), F_RANDOM, HB_OT_MAP_MAX_VALUE);
 
     /* Tracking.  We enable dummy feature here just to allow disabling
      * AAT 'trak' table using features.
      * https://github.com/harfbuzz/harfbuzz/issues/1303 */
-    map->enable_feature(HB_TAG('t', 'r', 'a', 'k'), F_HAS_FALLBACK);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('t', 'r', 'a', 'k'), F_HAS_FALLBACK, 1);
 
-    map->enable_feature(HB_TAG('H', 'A', 'R', 'F'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('H', 'A', 'R', 'F'), F_NONE, 1);
 
     if (planner->shaper->collect_features)
         planner->shaper->collect_features(planner);
 
-    map->enable_feature(HB_TAG('B', 'U', 'Z', 'Z'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('B', 'U', 'Z', 'Z'), F_NONE, 1);
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(common_features); i++)
-        map->add_feature(common_features[i]);
+        hb_ot_map_builder_add_feature(map, &common_features[i]);
 
     if (HB_DIRECTION_IS_HORIZONTAL(planner->props.direction))
         for (unsigned int i = 0; i < ARRAY_LENGTH(horizontal_features); i++)
-            map->add_feature(horizontal_features[i]);
+            hb_ot_map_builder_add_feature(map, &horizontal_features[i]);
     else {
         /* We really want to find a 'vert' feature if there's any in the font, no
          * matter which script/langsys it is listed (or not) under.
          * See various bugs referenced from:
          * https://github.com/harfbuzz/harfbuzz/issues/63 */
-        map->enable_feature(HB_TAG('v', 'e', 'r', 't'), F_GLOBAL_SEARCH);
+        hb_ot_map_builder_enable_feature(map, HB_TAG('v', 'e', 'r', 't'), F_GLOBAL_SEARCH, 1);
     }
 
     for (unsigned int i = 0; i < num_user_features; i++) {
         const hb_feature_t *feature = &user_features[i];
-        map->add_feature(feature->tag,
-                         (feature->start == HB_FEATURE_GLOBAL_START && feature->end == HB_FEATURE_GLOBAL_END) ? F_GLOBAL
-                                                                                                              : F_NONE,
-                         feature->value);
+        hb_ot_map_builder_add_feature_full(
+            map,
+            feature->tag,
+            (feature->start == HB_FEATURE_GLOBAL_START && feature->end == HB_FEATURE_GLOBAL_END) ? F_GLOBAL : F_NONE,
+            feature->value);
     }
 
     if (planner->apply_morx) {
@@ -517,16 +525,16 @@ static inline void hb_ot_shape_setup_masks_fraction(const hb_ot_shape_context_t 
 
 static inline void hb_ot_shape_initialize_masks(const hb_ot_shape_context_t *c)
 {
-    hb_ot_map_t *map = &c->plan->map;
+    hb_ot_map_t *map = c->plan->map;
     hb_buffer_t *buffer = c->buffer;
 
-    hb_mask_t global_mask = map->get_global_mask();
+    hb_mask_t global_mask = hb_ot_map_get_global_mask(map);
     hb_buffer_reset_masks(buffer, global_mask);
 }
 
 static inline void hb_ot_shape_setup_masks(const hb_ot_shape_context_t *c)
 {
-    hb_ot_map_t *map = &c->plan->map;
+    hb_ot_map_t *map = c->plan->map;
     hb_buffer_t *buffer = c->buffer;
 
     hb_ot_shape_setup_masks_fraction(c);
@@ -538,7 +546,7 @@ static inline void hb_ot_shape_setup_masks(const hb_ot_shape_context_t *c)
         const hb_feature_t *feature = &c->user_features[i];
         if (!(feature->start == 0 && feature->end == (unsigned int)-1)) {
             unsigned int shift;
-            hb_mask_t mask = map->get_mask(feature->tag, &shift);
+            hb_mask_t mask = hb_ot_map_get_mask(map, feature->tag, &shift);
             hb_buffer_set_masks(buffer, feature->value << shift, mask, feature->start, feature->end);
         }
     }

@@ -37,7 +37,7 @@ struct hb_ot_shape_plan_t
 {
     hb_segment_properties_t props;
     const struct hb_ot_complex_shaper_t *shaper;
-    hb_ot_map_t map;
+    hb_ot_map_t *map;
     hb_aat_map_t aat_map;
     const void *data;
     hb_mask_t frac_mask, numr_mask, dnom_mask;
@@ -80,7 +80,7 @@ struct hb_ot_shape_planner_t
     /* In the order that they are filled in. */
     hb_face_t *face;
     hb_segment_properties_t props;
-    hb_ot_map_builder_t map;
+    hb_ot_map_builder_t *map;
     hb_aat_map_builder_t aat_map;
     bool apply_morx : 1;
     bool script_zero_marks : 1;
@@ -88,6 +88,7 @@ struct hb_ot_shape_planner_t
     const struct hb_ot_complex_shaper_t *shaper;
 
     HB_INTERNAL hb_ot_shape_planner_t(hb_face_t *face, const hb_segment_properties_t *props);
+    HB_INTERNAL ~hb_ot_shape_planner_t();
 
     HB_INTERNAL void compile(hb_ot_shape_plan_t &plan, unsigned int *variations_index);
 };

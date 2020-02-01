@@ -56,10 +56,10 @@ static const hb_tag_t hangul_features[HANGUL_FEATURE_COUNT] =
 
 static void collect_features_hangul(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = &plan->map;
+    hb_ot_map_builder_t *map = plan->map;
 
     for (unsigned int i = FIRST_HANGUL_FEATURE; i < HANGUL_FEATURE_COUNT; i++)
-        map->add_feature(hangul_features[i]);
+        hb_ot_map_builder_add_feature_full(map, hangul_features[i], F_NONE, 1);
 }
 
 static void override_features_hangul(hb_ot_shape_planner_t *plan)
@@ -67,7 +67,7 @@ static void override_features_hangul(hb_ot_shape_planner_t *plan)
     /* Uniscribe does not apply 'calt' for Hangul, and certain fonts
      * (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
      * in calt, which is not desirable. */
-    plan->map.disable_feature(HB_TAG('c', 'a', 'l', 't'));
+    hb_ot_map_builder_disable_feature(plan->map, HB_TAG('c', 'a', 'l', 't'));
 }
 
 struct hangul_shape_plan_t
@@ -82,7 +82,7 @@ static void *data_create_hangul(const hb_ot_shape_plan_t *plan)
         return nullptr;
 
     for (unsigned int i = 0; i < HANGUL_FEATURE_COUNT; i++)
-        hangul_plan->mask_array[i] = plan->map.get_1_mask(hangul_features[i]);
+        hangul_plan->mask_array[i] = hb_ot_map_get_1_mask(plan->map, hangul_features[i]);
 
     return hangul_plan;
 }

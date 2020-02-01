@@ -66,32 +66,32 @@ static void reorder_myanmar(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_
 
 static void collect_features_myanmar(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = &plan->map;
+    hb_ot_map_builder_t *map = plan->map;
 
     /* Do this before any lookups have been applied. */
-    map->add_gsub_pause(setup_syllables_myanmar);
+    hb_ot_map_builder_add_gsub_pause(map, setup_syllables_myanmar);
 
-    map->enable_feature(HB_TAG('l', 'o', 'c', 'l'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
     /* The Indic specs do not require ccmp, but we apply it here since if
      * there is a use of it, it's typically at the beginning. */
-    map->enable_feature(HB_TAG('c', 'c', 'm', 'p'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
 
-    map->add_gsub_pause(reorder_myanmar);
+    hb_ot_map_builder_add_gsub_pause(map, reorder_myanmar);
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(myanmar_basic_features); i++) {
-        map->enable_feature(myanmar_basic_features[i], F_MANUAL_ZWJ);
-        map->add_gsub_pause(nullptr);
+        hb_ot_map_builder_enable_feature(map, myanmar_basic_features[i], F_MANUAL_ZWJ, 1);
+        hb_ot_map_builder_add_gsub_pause(map, nullptr);
     }
 
-    map->add_gsub_pause(_hb_clear_syllables);
+    hb_ot_map_builder_add_gsub_pause(map, _hb_clear_syllables);
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(myanmar_other_features); i++)
-        map->enable_feature(myanmar_other_features[i], F_MANUAL_ZWJ);
+        hb_ot_map_builder_enable_feature(map, myanmar_other_features[i], F_MANUAL_ZWJ, 1);
 }
 
 static void override_features_myanmar(hb_ot_shape_planner_t *plan)
 {
-    plan->map.disable_feature(HB_TAG('l', 'i', 'g', 'a'));
+    hb_ot_map_builder_disable_feature(plan->map, HB_TAG('l', 'i', 'g', 'a'));
 }
 
 enum myanmar_syllable_type_t {

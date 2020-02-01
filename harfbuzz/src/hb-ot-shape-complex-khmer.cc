@@ -83,11 +83,11 @@ static void reorder_khmer(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_bu
 
 static void collect_features_khmer(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = &plan->map;
+    hb_ot_map_builder_t *map = plan->map;
 
     /* Do this before any lookups have been applied. */
-    map->add_gsub_pause(setup_syllables_khmer);
-    map->add_gsub_pause(reorder_khmer);
+    hb_ot_map_builder_add_gsub_pause(map, setup_syllables_khmer);
+    hb_ot_map_builder_add_gsub_pause(map, reorder_khmer);
 
     /* Testing suggests that Uniscribe does NOT pause between basic
      * features.  Test with KhmerUI.ttf and the following three
@@ -99,34 +99,34 @@ static void collect_features_khmer(hb_ot_shape_planner_t *plan)
      *
      * https://github.com/harfbuzz/harfbuzz/issues/974
      */
-    map->enable_feature(HB_TAG('l', 'o', 'c', 'l'));
-    map->enable_feature(HB_TAG('c', 'c', 'm', 'p'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
+    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
 
     unsigned int i = 0;
     for (; i < KHMER_BASIC_FEATURES; i++)
-        map->add_feature(khmer_features[i]);
+        hb_ot_map_builder_add_feature(map, &khmer_features[i]);
 
-    map->add_gsub_pause(_hb_clear_syllables);
+    hb_ot_map_builder_add_gsub_pause(map, _hb_clear_syllables);
 
     for (; i < KHMER_NUM_FEATURES; i++)
-        map->add_feature(khmer_features[i]);
+        hb_ot_map_builder_add_feature(map, &khmer_features[i]);
 }
 
 static void override_features_khmer(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = &plan->map;
+    hb_ot_map_builder_t *map = plan->map;
 
     /* Khmer spec has 'clig' as part of required shaping features:
      * "Apply feature 'clig' to form ligatures that are desired for
      * typographical correctness.", hence in overrides... */
-    map->enable_feature(HB_TAG('c', 'l', 'i', 'g'));
+    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'l', 'i', 'g'), F_NONE, 1);
 
     /* Uniscribe does not apply 'kern' in Khmer. */
     if (hb_options().uniscribe_bug_compatible) {
-        map->disable_feature(HB_TAG('k', 'e', 'r', 'n'));
+        hb_ot_map_builder_disable_feature(map, HB_TAG('k', 'e', 'r', 'n'));
     }
 
-    map->disable_feature(HB_TAG('l', 'i', 'g', 'a'));
+    hb_ot_map_builder_disable_feature(map, HB_TAG('l', 'i', 'g', 'a'));
 }
 
 struct khmer_shape_plan_t
@@ -164,11 +164,11 @@ static void *data_create_khmer(const hb_ot_shape_plan_t *plan)
 
     khmer_plan->virama_glyph = (hb_codepoint_t)-1;
 
-    khmer_plan->pref.init(&plan->map, HB_TAG('p', 'r', 'e', 'f'), true);
+    khmer_plan->pref.init(plan->map, HB_TAG('p', 'r', 'e', 'f'), true);
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(khmer_plan->mask_array); i++)
         khmer_plan->mask_array[i] =
-            (khmer_features[i].flags & F_GLOBAL) ? 0 : plan->map.get_1_mask(khmer_features[i].tag);
+            (khmer_features[i].flags & F_GLOBAL) ? 0 : hb_ot_map_get_1_mask(plan->map, khmer_features[i].tag);
 
     return khmer_plan;
 }
