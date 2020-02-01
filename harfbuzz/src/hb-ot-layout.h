@@ -36,120 +36,101 @@
 
 HB_BEGIN_DECLS
 
-
-#define HB_OT_TAG_GDEF HB_TAG('G','D','E','F')
-#define HB_OT_TAG_GSUB HB_TAG('G','S','U','B')
-#define HB_OT_TAG_GPOS HB_TAG('G','P','O','S')
-
+#define HB_OT_TAG_GDEF HB_TAG('G', 'D', 'E', 'F')
+#define HB_OT_TAG_GSUB HB_TAG('G', 'S', 'U', 'B')
+#define HB_OT_TAG_GPOS HB_TAG('G', 'P', 'O', 'S')
 
 /*
  * Script & Language tags.
  */
 
-#define HB_OT_TAG_DEFAULT_SCRIPT	HB_TAG ('D', 'F', 'L', 'T')
-#define HB_OT_TAG_DEFAULT_LANGUAGE	HB_TAG ('d', 'f', 'l', 't')
+#define HB_OT_TAG_DEFAULT_SCRIPT HB_TAG('D', 'F', 'L', 'T')
+#define HB_OT_TAG_DEFAULT_LANGUAGE HB_TAG('d', 'f', 'l', 't')
 
 /*
  * GDEF
  */
 
-HB_EXTERN hb_bool_t
-rb_ot_layout_has_glyph_classes (const void *rust_data);
+HB_EXTERN hb_bool_t rb_ot_layout_has_glyph_classes(const void *rust_data);
 
 /*
  * GSUB/GPOS feature query and enumeration interface
  */
 
-#define HB_OT_LAYOUT_NO_SCRIPT_INDEX		0xFFFFu
-#define HB_OT_LAYOUT_NO_FEATURE_INDEX		0xFFFFu
-#define HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX	0xFFFFu
-#define HB_OT_LAYOUT_NO_VARIATIONS_INDEX	0xFFFFFFFFu
+#define HB_OT_LAYOUT_NO_SCRIPT_INDEX 0xFFFFu
+#define HB_OT_LAYOUT_NO_FEATURE_INDEX 0xFFFFu
+#define HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX 0xFFFFu
+#define HB_OT_LAYOUT_NO_VARIATIONS_INDEX 0xFFFFFFFFu
 
-HB_EXTERN unsigned int
-rb_ot_layout_table_get_script_count (const void *rust_data,
-				     hb_tag_t    table_tag);
+HB_EXTERN unsigned int rb_ot_layout_table_get_script_count(const void *rust_data, hb_tag_t table_tag);
 
-HB_EXTERN hb_bool_t
-rb_ot_layout_table_select_script (const void     *rust_data,
-				  hb_tag_t        table_tag,
-				  unsigned int    script_count,
-				  const hb_tag_t *script_tags,
-				  unsigned int   *script_index /* OUT */,
-				  hb_tag_t       *chosen_script /* OUT */);
+HB_EXTERN hb_bool_t rb_ot_layout_table_select_script(const void *rust_data,
+                                                     hb_tag_t table_tag,
+                                                     unsigned int script_count,
+                                                     const hb_tag_t *script_tags,
+                                                     unsigned int *script_index /* OUT */,
+                                                     hb_tag_t *chosen_script /* OUT */);
 
-HB_EXTERN hb_bool_t
-rb_ot_layout_script_select_language (const void     *rust_data,
-				     hb_tag_t        table_tag,
-				     unsigned int    script_index,
-				     unsigned int    language_count,
-				     const hb_tag_t *language_tags,
-				     unsigned int   *language_index /* OUT */);
+HB_EXTERN hb_bool_t rb_ot_layout_script_select_language(const void *rust_data,
+                                                        hb_tag_t table_tag,
+                                                        unsigned int script_index,
+                                                        unsigned int language_count,
+                                                        const hb_tag_t *language_tags,
+                                                        unsigned int *language_index /* OUT */);
 
-HB_EXTERN hb_bool_t
-rb_ot_layout_language_get_required_feature (const void   *rust_data,
-					    hb_tag_t      table_tag,
-					    unsigned int  script_index,
-					    unsigned int  language_index,
-					    unsigned int *feature_index,
-					    hb_tag_t     *feature_tag);
+HB_EXTERN hb_bool_t rb_ot_layout_language_get_required_feature(const void *rust_data,
+                                                               hb_tag_t table_tag,
+                                                               unsigned int script_index,
+                                                               unsigned int language_index,
+                                                               unsigned int *feature_index,
+                                                               hb_tag_t *feature_tag);
 
-HB_EXTERN hb_bool_t
-rb_ot_layout_language_find_feature (const void   *rust_data,
-				    hb_tag_t      table_tag,
-				    unsigned int  script_index,
-				    unsigned int  language_index,
-				    hb_tag_t      feature_tag,
-				    unsigned int *feature_index);
+HB_EXTERN hb_bool_t rb_ot_layout_language_find_feature(const void *rust_data,
+                                                       hb_tag_t table_tag,
+                                                       unsigned int script_index,
+                                                       unsigned int language_index,
+                                                       hb_tag_t feature_tag,
+                                                       unsigned int *feature_index);
 
-HB_EXTERN unsigned int
-rb_ot_layout_table_get_lookup_count (const void   *rust_data,
-				     hb_tag_t      table_tag);
+HB_EXTERN unsigned int rb_ot_layout_table_get_lookup_count(const void *rust_data, hb_tag_t table_tag);
 
 /* Variations support */
 
-HB_EXTERN hb_bool_t
-rb_ot_layout_table_find_feature_variations (const void   *rust_data,
-					    hb_tag_t      table_tag,
-					    const int    *coords,
-					    unsigned int  num_coords,
-					    unsigned int *variations_index /* out */);
+HB_EXTERN hb_bool_t rb_ot_layout_table_find_feature_variations(const void *rust_data,
+                                                               hb_tag_t table_tag,
+                                                               const int *coords,
+                                                               unsigned int num_coords,
+                                                               unsigned int *variations_index /* out */);
 
-HB_EXTERN unsigned int
-rb_ot_layout_feature_with_variations_get_lookups (const void   *rust_data,
-						  hb_tag_t      table_tag,
-						  unsigned int  feature_index,
-						  unsigned int  variations_index,
-						  unsigned int  start_offset,
-						  unsigned int *lookup_count /* IN/OUT */,
-						  unsigned int *lookup_indexes /* OUT */);
-
+HB_EXTERN unsigned int rb_ot_layout_feature_with_variations_get_lookups(const void *rust_data,
+                                                                        hb_tag_t table_tag,
+                                                                        unsigned int feature_index,
+                                                                        unsigned int variations_index,
+                                                                        unsigned int start_offset,
+                                                                        unsigned int *lookup_count /* IN/OUT */,
+                                                                        unsigned int *lookup_indexes /* OUT */);
 
 /*
  * GSUB
  */
 
-HB_EXTERN hb_bool_t
-rb_ot_layout_has_substitution (const void *rust_data);
+HB_EXTERN hb_bool_t rb_ot_layout_has_substitution(const void *rust_data);
 
-HB_EXTERN hb_bool_t
-hb_ot_layout_lookup_would_substitute (hb_face_t            *face,
-				      unsigned int          lookup_index,
-				      const hb_codepoint_t *glyphs,
-				      unsigned int          glyphs_length,
-				      hb_bool_t             zero_context);
+HB_EXTERN hb_bool_t hb_ot_layout_lookup_would_substitute(hb_face_t *face,
+                                                         unsigned int lookup_index,
+                                                         const hb_codepoint_t *glyphs,
+                                                         unsigned int glyphs_length,
+                                                         hb_bool_t zero_context);
 
 /*
  * GPOS
  */
 
-HB_EXTERN hb_bool_t
-rb_ot_layout_has_positioning (const void *rust_data);
+HB_EXTERN hb_bool_t rb_ot_layout_has_positioning(const void *rust_data);
 
-
-HB_EXTERN hb_bool_t
-rb_ot_layout_table_find_feature (const void   *rust_data,
-				 hb_tag_t      table_tag,
-				 hb_tag_t      feature_tag,
-				 unsigned int *feature_index);
+HB_EXTERN hb_bool_t rb_ot_layout_table_find_feature(const void *rust_data,
+                                                    hb_tag_t table_tag,
+                                                    hb_tag_t feature_tag,
+                                                    unsigned int *feature_index);
 
 HB_END_DECLS

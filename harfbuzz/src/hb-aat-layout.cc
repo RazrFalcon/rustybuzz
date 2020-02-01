@@ -27,12 +27,11 @@
 
 #include "hb.hh"
 
-#include "hb-aat-layout.hh"
 #include "hb-aat-layout-ankr-table.hh"
 #include "hb-aat-layout-kerx-table.hh"
 #include "hb-aat-layout-morx-table.hh"
 #include "hb-aat-layout-trak-table.hh"
-
+#include "hb-aat-layout.hh"
 
 /*
  * hb_aat_apply_context_t
@@ -40,33 +39,34 @@
 
 /* Note: This context is used for kerning, even without AAT, hence the condition. */
 
-AAT::hb_aat_apply_context_t::hb_aat_apply_context_t (const hb_ot_shape_plan_t *plan_,
-						     hb_font_t *font_,
-						     hb_buffer_t *buffer_,
-						     hb_blob_t *blob) :
-						       plan (plan_),
-						       font (font_),
-						       face (font->face),
-						       buffer (buffer_),
-						       sanitizer (),
-						       ankr_table (&Null(AAT::ankr)),
-						       lookup_index (0),
-						       debug_depth (0)
+AAT::hb_aat_apply_context_t::hb_aat_apply_context_t(const hb_ot_shape_plan_t *plan_,
+                                                    hb_font_t *font_,
+                                                    hb_buffer_t *buffer_,
+                                                    hb_blob_t *blob)
+    : plan(plan_)
+    , font(font_)
+    , face(font->face)
+    , buffer(buffer_)
+    , sanitizer()
+    , ankr_table(&Null(AAT::ankr))
+    , lookup_index(0)
+    , debug_depth(0)
 {
-  sanitizer.init (blob);
-  sanitizer.set_num_glyphs (hb_face_get_glyph_count (face));
-  sanitizer.start_processing ();
-  sanitizer.set_max_ops (HB_SANITIZE_MAX_OPS_MAX);
+    sanitizer.init(blob);
+    sanitizer.set_num_glyphs(hb_face_get_glyph_count(face));
+    sanitizer.start_processing();
+    sanitizer.set_max_ops(HB_SANITIZE_MAX_OPS_MAX);
 }
 
-AAT::hb_aat_apply_context_t::~hb_aat_apply_context_t ()
-{ sanitizer.end_processing (); }
+AAT::hb_aat_apply_context_t::~hb_aat_apply_context_t()
+{
+    sanitizer.end_processing();
+}
 
-void
-AAT::hb_aat_apply_context_t::set_ankr_table (const AAT::ankr *ankr_table_)
-{ ankr_table = ankr_table_; }
-
-
+void AAT::hb_aat_apply_context_t::set_ankr_table(const AAT::ankr *ankr_table_)
+{
+    ankr_table = ankr_table_;
+}
 
 /**
  * SECTION:hb-aat-layout
@@ -77,11 +77,11 @@ AAT::hb_aat_apply_context_t::set_ankr_table (const AAT::ankr *ankr_table_)
  * Functions for querying OpenType Layout features in the font face.
  **/
 
-
 #if !defined(HB_NO_AAT) || defined(HAVE_CORETEXT)
 
 /* Table data courtesy of Apple.  Converted from mnemonics to integers
  * when moving to this file. */
+// clang-format off
 static const hb_aat_feature_mapping_t feature_mappings[] =
 {
   {HB_TAG ('a','f','r','c'), HB_AAT_LAYOUT_FEATURE_TYPE_FRACTIONS,               HB_AAT_LAYOUT_FEATURE_SELECTOR_VERTICAL_FRACTIONS,             HB_AAT_LAYOUT_FEATURE_SELECTOR_NO_FRACTIONS},
@@ -161,43 +161,36 @@ static const hb_aat_feature_mapping_t feature_mappings[] =
   {HB_TAG ('v','r','t','2'), HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION,   HB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_ON,   HB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_OFF},
   {HB_TAG ('z','e','r','o'), HB_AAT_LAYOUT_FEATURE_TYPE_TYPOGRAPHIC_EXTRAS,      HB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_ON,                HB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_OFF},
 };
+// clang-format on
 
-const hb_aat_feature_mapping_t *
-hb_aat_layout_find_feature_mapping (hb_tag_t tag)
+const hb_aat_feature_mapping_t *hb_aat_layout_find_feature_mapping(hb_tag_t tag)
 {
-  return (const hb_aat_feature_mapping_t *) hb_bsearch (&tag,
-							feature_mappings,
-							ARRAY_LENGTH (feature_mappings),
-							sizeof (feature_mappings[0]),
-							hb_aat_feature_mapping_t::cmp);
+    return (const hb_aat_feature_mapping_t *)hb_bsearch(&tag,
+                                                        feature_mappings,
+                                                        ARRAY_LENGTH(feature_mappings),
+                                                        sizeof(feature_mappings[0]),
+                                                        hb_aat_feature_mapping_t::cmp);
 }
 #endif
-
 
 /*
  * mort/morx/kerx/trak
  */
 
-
-void
-hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
-			   hb_aat_map_t *map)
+void hb_aat_layout_compile_map(const hb_aat_map_builder_t *mapper, hb_aat_map_t *map)
 {
-  const AAT::morx& morx = *mapper->face->table.morx;
-  if (morx.has_data ())
-  {
-    morx.compile_flags (mapper, map);
-    return;
-  }
+    const AAT::morx &morx = *mapper->face->table.morx;
+    if (morx.has_data()) {
+        morx.compile_flags(mapper, map);
+        return;
+    }
 
-  const AAT::mort& mort = *mapper->face->table.mort;
-  if (mort.has_data ())
-  {
-    mort.compile_flags (mapper, map);
-    return;
-  }
+    const AAT::mort &mort = *mapper->face->table.mort;
+    if (mort.has_data()) {
+        mort.compile_flags(mapper, map);
+        return;
+    }
 }
-
 
 /*
  * hb_aat_layout_has_substitution:
@@ -206,58 +199,48 @@ hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
  * Returns:
  * Since: 2.3.0
  */
-hb_bool_t
-hb_aat_layout_has_substitution (hb_face_t *face)
+hb_bool_t hb_aat_layout_has_substitution(hb_face_t *face)
 {
-  return face->table.morx->has_data () ||
-	 face->table.mort->has_data ();
+    return face->table.morx->has_data() || face->table.mort->has_data();
 }
 
-void
-hb_aat_layout_substitute (const hb_ot_shape_plan_t *plan,
-			  hb_font_t *font,
-			  hb_buffer_t *buffer)
+void hb_aat_layout_substitute(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
-  hb_blob_t *morx_blob = font->face->table.morx.get_blob ();
-  const AAT::morx& morx = *morx_blob->as<AAT::morx> ();
-  if (morx.has_data ())
-  {
-    AAT::hb_aat_apply_context_t c (plan, font, buffer, morx_blob);
-    morx.apply (&c);
-    return;
-  }
+    hb_blob_t *morx_blob = font->face->table.morx.get_blob();
+    const AAT::morx &morx = *morx_blob->as<AAT::morx>();
+    if (morx.has_data()) {
+        AAT::hb_aat_apply_context_t c(plan, font, buffer, morx_blob);
+        morx.apply(&c);
+        return;
+    }
 
-  hb_blob_t *mort_blob = font->face->table.mort.get_blob ();
-  const AAT::mort& mort = *mort_blob->as<AAT::mort> ();
-  if (mort.has_data ())
-  {
-    AAT::hb_aat_apply_context_t c (plan, font, buffer, mort_blob);
-    mort.apply (&c);
-    return;
-  }
+    hb_blob_t *mort_blob = font->face->table.mort.get_blob();
+    const AAT::mort &mort = *mort_blob->as<AAT::mort>();
+    if (mort.has_data()) {
+        AAT::hb_aat_apply_context_t c(plan, font, buffer, mort_blob);
+        mort.apply(&c);
+        return;
+    }
 }
 
-void
-hb_aat_layout_zero_width_deleted_glyphs (hb_buffer_t *buffer)
+void hb_aat_layout_zero_width_deleted_glyphs(hb_buffer_t *buffer)
 {
-  unsigned int count = hb_buffer_get_length(buffer);
-  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-  hb_glyph_position_t *pos = hb_buffer_get_pos(buffer);
-  for (unsigned int i = 0; i < count; i++)
-    if (unlikely (info[i].codepoint == AAT::DELETED_GLYPH))
-      pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    hb_glyph_position_t *pos = hb_buffer_get_pos(buffer);
+    for (unsigned int i = 0; i < count; i++)
+        if (unlikely(info[i].codepoint == AAT::DELETED_GLYPH))
+            pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
 }
 
-static bool
-is_deleted_glyph (const hb_glyph_info_t *info)
+static bool is_deleted_glyph(const hb_glyph_info_t *info)
 {
-  return info->codepoint == AAT::DELETED_GLYPH;
+    return info->codepoint == AAT::DELETED_GLYPH;
 }
 
-void
-hb_aat_layout_remove_deleted_glyphs (hb_buffer_t *buffer)
+void hb_aat_layout_remove_deleted_glyphs(hb_buffer_t *buffer)
 {
-  hb_ot_layout_delete_glyphs_inplace (buffer, is_deleted_glyph);
+    hb_ot_layout_delete_glyphs_inplace(buffer, is_deleted_glyph);
 }
 
 /*
@@ -267,25 +250,20 @@ hb_aat_layout_remove_deleted_glyphs (hb_buffer_t *buffer)
  * Returns:
  * Since: 2.3.0
  */
-hb_bool_t
-hb_aat_layout_has_positioning (hb_face_t *face)
+hb_bool_t hb_aat_layout_has_positioning(hb_face_t *face)
 {
-  return face->table.kerx->has_data ();
+    return face->table.kerx->has_data();
 }
 
-void
-hb_aat_layout_position (const hb_ot_shape_plan_t *plan,
-			hb_font_t *font,
-			hb_buffer_t *buffer)
+void hb_aat_layout_position(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
-  hb_blob_t *kerx_blob = font->face->table.kerx.get_blob ();
-  const AAT::kerx& kerx = *kerx_blob->as<AAT::kerx> ();
+    hb_blob_t *kerx_blob = font->face->table.kerx.get_blob();
+    const AAT::kerx &kerx = *kerx_blob->as<AAT::kerx>();
 
-  AAT::hb_aat_apply_context_t c (plan, font, buffer, kerx_blob);
-  c.set_ankr_table (font->face->table.ankr.get ());
-  kerx.apply (&c);
+    AAT::hb_aat_apply_context_t c(plan, font, buffer, kerx_blob);
+    c.set_ankr_table(font->face->table.ankr.get());
+    kerx.apply(&c);
 }
-
 
 /*
  * hb_aat_layout_has_tracking:
@@ -294,83 +272,15 @@ hb_aat_layout_position (const hb_ot_shape_plan_t *plan,
  * Returns:
  * Since: 2.3.0
  */
-hb_bool_t
-hb_aat_layout_has_tracking (hb_face_t *face)
+hb_bool_t hb_aat_layout_has_tracking(hb_face_t *face)
 {
-  return face->table.trak->has_data ();
+    return face->table.trak->has_data();
 }
 
-void
-hb_aat_layout_track (const hb_ot_shape_plan_t *plan,
-		     hb_font_t *font,
-		     hb_buffer_t *buffer)
+void hb_aat_layout_track(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
-  const AAT::trak& trak = *font->face->table.trak;
+    const AAT::trak &trak = *font->face->table.trak;
 
-  AAT::hb_aat_apply_context_t c (plan, font, buffer);
-  trak.apply (&c);
+    AAT::hb_aat_apply_context_t c(plan, font, buffer);
+    trak.apply(&c);
 }
-
-/**
- * hb_aat_layout_get_feature_types:
- * @face: a face object
- * @start_offset: iteration's start offset
- * @feature_count:(inout) (allow-none): buffer size as input, filled size as output
- * @features: (out caller-allocates) (array length=feature_count): features buffer
- *
- * Return value: Number of all available feature types.
- *
- * Since: 2.2.0
- */
-//unsigned int
-//hb_aat_layout_get_feature_types (hb_face_t                    *face,
-//				 unsigned int                  start_offset,
-//				 unsigned int                 *feature_count, /* IN/OUT.  May be NULL. */
-//				 hb_aat_layout_feature_type_t *features       /* OUT.     May be NULL. */)
-//{
-//  return face->table.feat->get_feature_types (start_offset, feature_count, features);
-//}
-
-/**
- * hb_aat_layout_feature_type_get_name_id:
- * @face: a face object
- * @feature_type: feature id
- *
- * Return value: Name ID index
- *
- * Since: 2.2.0
- */
-//hb_ot_name_id_t
-//hb_aat_layout_feature_type_get_name_id (hb_face_t                    *face,
-//					hb_aat_layout_feature_type_t  feature_type)
-//{
-//  return face->table.feat->get_feature_name_id (feature_type);
-//}
-
-/**
- * hb_aat_layout_feature_type_get_selectors:
- * @face:    a face object
- * @feature_type: feature id
- * @start_offset:    iteration's start offset
- * @selector_count: (inout) (allow-none): buffer size as input, filled size as output
- * @selectors: (out caller-allocates) (array length=selector_count): settings buffer
- * @default_index: (out) (allow-none): index of default selector if any
- *
- * If upon return, @default_index is set to #HB_AAT_LAYOUT_NO_SELECTOR_INDEX, then
- * the feature type is non-exclusive.  Otherwise, @default_index is the index of
- * the selector that is selected by default.
- *
- * Return value: Number of all available feature selectors.
- *
- * Since: 2.2.0
- */
-//unsigned int
-//hb_aat_layout_feature_type_get_selector_infos (hb_face_t                             *face,
-//					       hb_aat_layout_feature_type_t           feature_type,
-//					       unsigned int                           start_offset,
-//					       unsigned int                          *selector_count, /* IN/OUT.  May be NULL. */
-//					       hb_aat_layout_feature_selector_info_t *selectors,      /* OUT.     May be NULL. */
-//					       unsigned int                          *default_index   /* OUT.     May be NULL. */)
-//{
-//  return face->table.feat->get_selector_infos (feature_type, start_offset, selector_count, selectors, default_index);
-//}

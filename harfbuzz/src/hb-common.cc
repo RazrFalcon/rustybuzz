@@ -26,8 +26,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb.hh"
 #include "hb-machinery.hh"
+#include "hb.hh"
 
 #include <locale.h>
 
@@ -44,42 +44,40 @@
  * Common data types used across HarfBuzz are defined here.
  **/
 
-
 /* hb_options_t */
 
 hb_atomic_int_t _hb_options;
 
-void
-_hb_options_init ()
+void _hb_options_init()
 {
-  hb_options_union_t u;
-  u.i = 0;
-  u.opts.initialized = true;
+    hb_options_union_t u;
+    u.i = 0;
+    u.opts.initialized = true;
 
-  const char *c = getenv ("HB_OPTIONS");
-  if (c)
-  {
-    while (*c)
-    {
-      const char *p = strchr (c, ':');
-      if (!p)
-        p = c + strlen (c);
+    const char *c = getenv("HB_OPTIONS");
+    if (c) {
+        while (*c) {
+            const char *p = strchr(c, ':');
+            if (!p)
+                p = c + strlen(c);
 
-#define OPTION(name, symbol) \
-        if (0 == strncmp (c, name, p - c) && strlen (name) == static_cast<size_t>(p - c)) do { u.opts.symbol = true; } while (0)
+#define OPTION(name, symbol)                                                                                           \
+    if (0 == strncmp(c, name, p - c) && strlen(name) == static_cast<size_t>(p - c))                                    \
+        do {                                                                                                           \
+            u.opts.symbol = true;                                                                                      \
+    } while (0)
 
-      OPTION ("uniscribe-bug-compatible", uniscribe_bug_compatible);
-      OPTION ("aat", aat);
+            OPTION("uniscribe-bug-compatible", uniscribe_bug_compatible);
+            OPTION("aat", aat);
 
 #undef OPTION
 
-      c = *p ? p + 1 : p;
+            c = *p ? p + 1 : p;
+        }
     }
 
-  }
-
-  /* This is idempotent and threadsafe. */
-  _hb_options.set_relaxed (u.i);
+    /* This is idempotent and threadsafe. */
+    _hb_options.set_relaxed(u.i);
 }
 
 /* hb_script_t */
@@ -94,12 +92,10 @@ _hb_options_init ()
  *
  * Since: 0.9.2
  **/
-hb_direction_t
-hb_script_get_horizontal_direction (hb_script_t script)
+hb_direction_t hb_script_get_horizontal_direction(hb_script_t script)
 {
-  /* https://docs.google.com/spreadsheets/d/1Y90M0Ie3MUJ6UVCRDOypOtijlMDLNNyyLk36T6iMu0o */
-  switch ((hb_tag_t) script)
-  {
+    /* https://docs.google.com/spreadsheets/d/1Y90M0Ie3MUJ6UVCRDOypOtijlMDLNNyyLk36T6iMu0o */
+    switch ((hb_tag_t)script) {
     /* Unicode-1.1 additions */
     case HB_SCRIPT_ARABIC:
     case HB_SCRIPT_HEBREW:
@@ -156,16 +152,15 @@ hb_script_get_horizontal_direction (hb_script_t script)
     case HB_SCRIPT_OLD_SOGDIAN:
     case HB_SCRIPT_SOGDIAN:
 
-      return HB_DIRECTION_RTL;
-
+        return HB_DIRECTION_RTL;
 
     /* https://github.com/harfbuzz/harfbuzz/issues/1000 */
     case HB_SCRIPT_OLD_HUNGARIAN:
     case HB_SCRIPT_OLD_ITALIC:
     case HB_SCRIPT_RUNIC:
 
-      return HB_DIRECTION_INVALID;
-  }
+        return HB_DIRECTION_INVALID;
+    }
 
-  return HB_DIRECTION_LTR;
+    return HB_DIRECTION_LTR;
 }

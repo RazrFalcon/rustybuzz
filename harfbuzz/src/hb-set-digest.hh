@@ -44,113 +44,109 @@
  * an attractive trade-off.
  */
 
-template <unsigned int shift>
-struct hb_set_digest_lowest_bits_t
+template <unsigned int shift> struct hb_set_digest_lowest_bits_t
 {
-  static constexpr unsigned mask_bytes = sizeof (unsigned long);
-  static constexpr unsigned mask_bits = sizeof (unsigned long) * 8;
-  static constexpr unsigned num_bits = 0
-				     + (mask_bytes >= 1 ? 3 : 0)
-				     + (mask_bytes >= 2 ? 1 : 0)
-				     + (mask_bytes >= 4 ? 1 : 0)
-				     + (mask_bytes >= 8 ? 1 : 0)
-				     + (mask_bytes >= 16? 1 : 0)
-				     + 0;
+    static constexpr unsigned mask_bytes = sizeof(unsigned long);
+    static constexpr unsigned mask_bits = sizeof(unsigned long) * 8;
+    static constexpr unsigned num_bits = 0 + (mask_bytes >= 1 ? 3 : 0) + (mask_bytes >= 2 ? 1 : 0) +
+                                         (mask_bytes >= 4 ? 1 : 0) + (mask_bytes >= 8 ? 1 : 0) +
+                                         (mask_bytes >= 16 ? 1 : 0) + 0;
 
-  static_assert ((shift < sizeof (hb_codepoint_t) * 8), "");
-  static_assert ((shift + num_bits <= sizeof (hb_codepoint_t) * 8), "");
+    static_assert((shift < sizeof(hb_codepoint_t) * 8), "");
+    static_assert((shift + num_bits <= sizeof(hb_codepoint_t) * 8), "");
 
-  void init () { mask = 0; }
-
-  void add (hb_codepoint_t g) { mask |= mask_for (g); }
-
-  bool add_range (hb_codepoint_t a, hb_codepoint_t b)
-  {
-    if ((b >> shift) - (a >> shift) >= mask_bits - 1)
-      mask = (unsigned long) -1;
-    else {
-      unsigned long ma = mask_for (a);
-      unsigned long mb = mask_for (b);
-      mask |= mb + (mb - ma) - (mb < ma);
-    }
-    return true;
-  }
-
-  template <typename T>
-  void add_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
-  {
-    for (unsigned int i = 0; i < count; i++)
+    void init()
     {
-      add (*array);
-      array = (const T *) (stride + (const char *) array);
+        mask = 0;
     }
-  }
-  template <typename T>
-  bool add_sorted_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
-  {
-    for (unsigned int i = 0; i < count; i++)
+
+    void add(hb_codepoint_t g)
     {
-      add (*array);
-      array = (const T *) (stride + (const char *) array);
+        mask |= mask_for(g);
     }
-    return true;
-  }
 
-  bool may_have (hb_codepoint_t g) const
-  { return !!(mask & mask_for (g)); }
+    bool add_range(hb_codepoint_t a, hb_codepoint_t b)
+    {
+        if ((b >> shift) - (a >> shift) >= mask_bits - 1)
+            mask = (unsigned long)-1;
+        else {
+            unsigned long ma = mask_for(a);
+            unsigned long mb = mask_for(b);
+            mask |= mb + (mb - ma) - (mb < ma);
+        }
+        return true;
+    }
 
-  private:
+    template <typename T> void add_array(const T *array, unsigned int count, unsigned int stride = sizeof(T))
+    {
+        for (unsigned int i = 0; i < count; i++) {
+            add(*array);
+            array = (const T *)(stride + (const char *)array);
+        }
+    }
+    template <typename T> bool add_sorted_array(const T *array, unsigned int count, unsigned int stride = sizeof(T))
+    {
+        for (unsigned int i = 0; i < count; i++) {
+            add(*array);
+            array = (const T *)(stride + (const char *)array);
+        }
+        return true;
+    }
 
-  static unsigned long mask_for (hb_codepoint_t g)
-  { return ((unsigned long) 1) << ((g >> shift) & (mask_bits - 1)); }
-  unsigned long mask;
+    bool may_have(hb_codepoint_t g) const
+    {
+        return !!(mask & mask_for(g));
+    }
+
+private:
+    static unsigned long mask_for(hb_codepoint_t g)
+    {
+        return ((unsigned long)1) << ((g >> shift) & (mask_bits - 1));
+    }
+    unsigned long mask;
 };
 
-template <typename head_t, typename tail_t>
-struct hb_set_digest_combiner_t
+template <typename head_t, typename tail_t> struct hb_set_digest_combiner_t
 {
-  void init ()
-  {
-    head.init ();
-    tail.init ();
-  }
+    void init()
+    {
+        head.init();
+        tail.init();
+    }
 
-  void add (hb_codepoint_t g)
-  {
-    head.add (g);
-    tail.add (g);
-  }
+    void add(hb_codepoint_t g)
+    {
+        head.add(g);
+        tail.add(g);
+    }
 
-  bool add_range (hb_codepoint_t a, hb_codepoint_t b)
-  {
-    head.add_range (a, b);
-    tail.add_range (a, b);
-    return true;
-  }
-  template <typename T>
-  void add_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
-  {
-    head.add_array (array, count, stride);
-    tail.add_array (array, count, stride);
-  }
-  template <typename T>
-  bool add_sorted_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
-  {
-    head.add_sorted_array (array, count, stride);
-    tail.add_sorted_array (array, count, stride);
-    return true;
-  }
+    bool add_range(hb_codepoint_t a, hb_codepoint_t b)
+    {
+        head.add_range(a, b);
+        tail.add_range(a, b);
+        return true;
+    }
+    template <typename T> void add_array(const T *array, unsigned int count, unsigned int stride = sizeof(T))
+    {
+        head.add_array(array, count, stride);
+        tail.add_array(array, count, stride);
+    }
+    template <typename T> bool add_sorted_array(const T *array, unsigned int count, unsigned int stride = sizeof(T))
+    {
+        head.add_sorted_array(array, count, stride);
+        tail.add_sorted_array(array, count, stride);
+        return true;
+    }
 
-  bool may_have (hb_codepoint_t g) const
-  {
-    return head.may_have (g) && tail.may_have (g);
-  }
+    bool may_have(hb_codepoint_t g) const
+    {
+        return head.may_have(g) && tail.may_have(g);
+    }
 
-  private:
-  head_t head;
-  tail_t tail;
+private:
+    head_t head;
+    tail_t tail;
 };
-
 
 /*
  * hb_set_digest_t
@@ -159,9 +155,7 @@ struct hb_set_digest_combiner_t
  * There is not much science to this: it's a result of intuition
  * and testing.
  */
-typedef hb_set_digest_combiner_t
-<
-  hb_set_digest_lowest_bits_t<4>,
-  hb_set_digest_combiner_t<hb_set_digest_lowest_bits_t<0>, hb_set_digest_lowest_bits_t<9>>
-> hb_set_digest_t;
-
+typedef hb_set_digest_combiner_t<
+    hb_set_digest_lowest_bits_t<4>,
+    hb_set_digest_combiner_t<hb_set_digest_lowest_bits_t<0>, hb_set_digest_lowest_bits_t<9>>>
+    hb_set_digest_t;

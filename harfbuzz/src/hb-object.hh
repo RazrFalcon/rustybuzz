@@ -31,9 +31,9 @@
 
 #pragma once
 
-#include "hb.hh"
 #include "hb-atomic.hh"
 #include "hb-vector.hh"
+#include "hb.hh"
 
 /*
  * Reference-count.
@@ -41,20 +41,44 @@
 
 #define HB_REFERENCE_COUNT_INERT_VALUE 0
 #define HB_REFERENCE_COUNT_POISON_VALUE -0x0000DEAD
-#define HB_REFERENCE_COUNT_INIT {HB_ATOMIC_INT_INIT (HB_REFERENCE_COUNT_INERT_VALUE)}
+#define HB_REFERENCE_COUNT_INIT                                                                                        \
+    {                                                                                                                  \
+        HB_ATOMIC_INT_INIT(HB_REFERENCE_COUNT_INERT_VALUE)                                                             \
+    }
 
 struct hb_reference_count_t
 {
-  mutable hb_atomic_int_t ref_count;
+    mutable hb_atomic_int_t ref_count;
 
-  void init (int v = 1) { ref_count.set_relaxed (v); }
-  int get_relaxed () const { return ref_count.get_relaxed (); }
-  int inc () const { return ref_count.inc (); }
-  int dec () const { return ref_count.dec (); }
-  void fini () { ref_count.set_relaxed (HB_REFERENCE_COUNT_POISON_VALUE); }
+    void init(int v = 1)
+    {
+        ref_count.set_relaxed(v);
+    }
+    int get_relaxed() const
+    {
+        return ref_count.get_relaxed();
+    }
+    int inc() const
+    {
+        return ref_count.inc();
+    }
+    int dec() const
+    {
+        return ref_count.dec();
+    }
+    void fini()
+    {
+        ref_count.set_relaxed(HB_REFERENCE_COUNT_POISON_VALUE);
+    }
 
-  bool is_inert () const { return ref_count.get_relaxed () == HB_REFERENCE_COUNT_INERT_VALUE; }
-  bool is_valid () const { return ref_count.get_relaxed () > 0; }
+    bool is_inert() const
+    {
+        return ref_count.get_relaxed() == HB_REFERENCE_COUNT_INERT_VALUE;
+    }
+    bool is_valid() const
+    {
+        return ref_count.get_relaxed() > 0;
+    }
 };
 
 /*
@@ -63,92 +87,77 @@ struct hb_reference_count_t
 
 struct hb_object_header_t
 {
-  hb_reference_count_t ref_count;
-  mutable hb_atomic_int_t writable;
+    hb_reference_count_t ref_count;
+    mutable hb_atomic_int_t writable;
 };
-#define HB_OBJECT_HEADER_STATIC \
-	{ \
-	  HB_REFERENCE_COUNT_INIT, \
-	  HB_ATOMIC_INT_INIT (false) \
-	}
-
+#define HB_OBJECT_HEADER_STATIC                                                                                        \
+    {                                                                                                                  \
+        HB_REFERENCE_COUNT_INIT, HB_ATOMIC_INT_INIT(false)                                                             \
+    }
 
 /*
  * Object
  */
 
-template <typename Type>
-static inline void hb_object_trace (const Type *obj, const char *function)
+template <typename Type> static inline void hb_object_trace(const Type *obj, const char *function)
 {
-  DEBUG_MSG (OBJECT, (void *) obj,
-	     "%s refcount=%d",
-	     function,
-	     obj ? obj->header.ref_count.get_relaxed () : 0);
+    DEBUG_MSG(OBJECT, (void *)obj, "%s refcount=%d", function, obj ? obj->header.ref_count.get_relaxed() : 0);
 }
 
-template <typename Type>
-static inline Type *hb_object_create ()
+template <typename Type> static inline Type *hb_object_create()
 {
-  Type *obj = (Type *) calloc (1, sizeof (Type));
+    Type *obj = (Type *)calloc(1, sizeof(Type));
 
-  if (unlikely (!obj))
+    if (unlikely(!obj))
+        return obj;
+
+    hb_object_init(obj);
+    hb_object_trace(obj, HB_FUNC);
     return obj;
-
-  hb_object_init (obj);
-  hb_object_trace (obj, HB_FUNC);
-  return obj;
 }
-template <typename Type>
-static inline void hb_object_init (Type *obj)
+template <typename Type> static inline void hb_object_init(Type *obj)
 {
-  obj->header.ref_count.init ();
-  obj->header.writable.set_relaxed (true);
+    obj->header.ref_count.init();
+    obj->header.writable.set_relaxed(true);
 }
-template <typename Type>
-static inline bool hb_object_is_inert (const Type *obj)
+template <typename Type> static inline bool hb_object_is_inert(const Type *obj)
 {
-  return unlikely (obj->header.ref_count.is_inert ());
+    return unlikely(obj->header.ref_count.is_inert());
 }
-template <typename Type>
-static inline bool hb_object_is_valid (const Type *obj)
+template <typename Type> static inline bool hb_object_is_valid(const Type *obj)
 {
-  return likely (obj->header.ref_count.is_valid ());
+    return likely(obj->header.ref_count.is_valid());
 }
-template <typename Type>
-static inline bool hb_object_is_immutable (const Type *obj)
+template <typename Type> static inline bool hb_object_is_immutable(const Type *obj)
 {
-  return !obj->header.writable.get_relaxed ();
+    return !obj->header.writable.get_relaxed();
 }
-template <typename Type>
-static inline void hb_object_make_immutable (const Type *obj)
+template <typename Type> static inline void hb_object_make_immutable(const Type *obj)
 {
-  obj->header.writable.set_relaxed (false);
+    obj->header.writable.set_relaxed(false);
 }
-template <typename Type>
-static inline Type *hb_object_reference (Type *obj)
+template <typename Type> static inline Type *hb_object_reference(Type *obj)
 {
-  hb_object_trace (obj, HB_FUNC);
-  if (unlikely (!obj || hb_object_is_inert (obj)))
+    hb_object_trace(obj, HB_FUNC);
+    if (unlikely(!obj || hb_object_is_inert(obj)))
+        return obj;
+    assert(hb_object_is_valid(obj));
+    obj->header.ref_count.inc();
     return obj;
-  assert (hb_object_is_valid (obj));
-  obj->header.ref_count.inc ();
-  return obj;
 }
-template <typename Type>
-static inline bool hb_object_destroy (Type *obj)
+template <typename Type> static inline bool hb_object_destroy(Type *obj)
 {
-  hb_object_trace (obj, HB_FUNC);
-  if (unlikely (!obj || hb_object_is_inert (obj)))
-    return false;
-  assert (hb_object_is_valid (obj));
-  if (obj->header.ref_count.dec () != 1)
-    return false;
+    hb_object_trace(obj, HB_FUNC);
+    if (unlikely(!obj || hb_object_is_inert(obj)))
+        return false;
+    assert(hb_object_is_valid(obj));
+    if (obj->header.ref_count.dec() != 1)
+        return false;
 
-  hb_object_fini (obj);
-  return true;
+    hb_object_fini(obj);
+    return true;
 }
-template <typename Type>
-static inline void hb_object_fini (Type *obj)
+template <typename Type> static inline void hb_object_fini(Type *obj)
 {
-  obj->header.ref_count.fini (); /* Do this before user_data */
+    obj->header.ref_count.fini(); /* Do this before user_data */
 }

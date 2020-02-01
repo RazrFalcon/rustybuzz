@@ -94,31 +94,31 @@ struct NullHelper
 
 /* Specializations for arbitrary-content Null objects expressed in bytes. */
 #define DECLARE_NULL_NAMESPACE_BYTES(Namespace, Type) \
-	} /* Close namespace. */ \
-	extern HB_INTERNAL const unsigned char _hb_Null_##Namespace##_##Type[Namespace::Type::null_size]; \
-	template <> \
-	struct Null<Namespace::Type> { \
-	  static Namespace::Type const & get_null () { \
-	    return *reinterpret_cast<const Namespace::Type *> (_hb_Null_##Namespace##_##Type); \
-	  } \
-	}; \
-	namespace Namespace { \
-	static_assert (true, "Just so we take semicolon after.")
+    } /* Close namespace. */ \
+    extern HB_INTERNAL const unsigned char _hb_Null_##Namespace##_##Type[Namespace::Type::null_size]; \
+    template <> \
+    struct Null<Namespace::Type> { \
+      static Namespace::Type const & get_null () { \
+        return *reinterpret_cast<const Namespace::Type *> (_hb_Null_##Namespace##_##Type); \
+      } \
+    }; \
+    namespace Namespace { \
+    static_assert (true, "Just so we take semicolon after.")
 #define DEFINE_NULL_NAMESPACE_BYTES(Namespace, Type) \
-	const unsigned char _hb_Null_##Namespace##_##Type[Namespace::Type::null_size]
+    const unsigned char _hb_Null_##Namespace##_##Type[Namespace::Type::null_size]
 
 /* Specializations for arbitrary-content Null objects expressed as struct initializer. */
 #define DECLARE_NULL_INSTANCE(Type) \
-	extern HB_INTERNAL const Type _hb_Null_##Type; \
-	template <> \
-	struct Null<Type> { \
-	  static Type const & get_null () { \
-	    return _hb_Null_##Type; \
-	  } \
-	}; \
-	static_assert (true, "Just so we take semicolon after.")
+    extern HB_INTERNAL const Type _hb_Null_##Type; \
+    template <> \
+    struct Null<Type> { \
+      static Type const & get_null () { \
+        return _hb_Null_##Type; \
+      } \
+    }; \
+    static_assert (true, "Just so we take semicolon after.")
 #define DEFINE_NULL_INSTANCE(Type) \
-	const Type _hb_Null_##Type
+    const Type _hb_Null_##Type
 
 /* Global writable pool.  Enlarge as necessary. */
 

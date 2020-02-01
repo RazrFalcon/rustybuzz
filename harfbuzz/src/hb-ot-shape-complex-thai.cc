@@ -30,70 +30,48 @@
 
 #include "hb-ot-shape-complex.hh"
 
-
 /* Thai / Lao shaper */
-
 
 /* PUA shaping */
 
+enum thai_consonant_type_t { NC, AC, RC, DC, NOT_CONSONANT, NUM_CONSONANT_TYPES = NOT_CONSONANT };
 
-enum thai_consonant_type_t
+static thai_consonant_type_t get_consonant_type(hb_codepoint_t u)
 {
-  NC,
-  AC,
-  RC,
-  DC,
-  NOT_CONSONANT,
-  NUM_CONSONANT_TYPES = NOT_CONSONANT
-};
-
-static thai_consonant_type_t
-get_consonant_type (hb_codepoint_t u)
-{
-  if (u == 0x0E1Bu || u == 0x0E1Du || u == 0x0E1Fu/* || u == 0x0E2Cu*/)
-    return AC;
-  if (u == 0x0E0Du || u == 0x0E10u)
-    return RC;
-  if (u == 0x0E0Eu || u == 0x0E0Fu)
-    return DC;
-  if (hb_in_range<hb_codepoint_t> (u, 0x0E01u, 0x0E2Eu))
-    return NC;
-  return NOT_CONSONANT;
+    if (u == 0x0E1Bu || u == 0x0E1Du || u == 0x0E1Fu /* || u == 0x0E2Cu*/)
+        return AC;
+    if (u == 0x0E0Du || u == 0x0E10u)
+        return RC;
+    if (u == 0x0E0Eu || u == 0x0E0Fu)
+        return DC;
+    if (hb_in_range<hb_codepoint_t>(u, 0x0E01u, 0x0E2Eu))
+        return NC;
+    return NOT_CONSONANT;
 }
 
+enum thai_mark_type_t { AV, BV, T, NOT_MARK, NUM_MARK_TYPES = NOT_MARK };
 
-enum thai_mark_type_t
+static thai_mark_type_t get_mark_type(hb_codepoint_t u)
 {
-  AV,
-  BV,
-  T,
-  NOT_MARK,
-  NUM_MARK_TYPES = NOT_MARK
-};
-
-static thai_mark_type_t
-get_mark_type (hb_codepoint_t u)
-{
-  if (u == 0x0E31u || hb_in_range<hb_codepoint_t> (u, 0x0E34u, 0x0E37u) ||
-      u == 0x0E47u || hb_in_range<hb_codepoint_t> (u, 0x0E4Du, 0x0E4Eu))
-    return AV;
-  if (hb_in_range<hb_codepoint_t> (u, 0x0E38u, 0x0E3Au))
-    return BV;
-  if (hb_in_range<hb_codepoint_t> (u, 0x0E48u, 0x0E4Cu))
-    return T;
-  return NOT_MARK;
+    if (u == 0x0E31u || hb_in_range<hb_codepoint_t>(u, 0x0E34u, 0x0E37u) || u == 0x0E47u ||
+        hb_in_range<hb_codepoint_t>(u, 0x0E4Du, 0x0E4Eu))
+        return AV;
+    if (hb_in_range<hb_codepoint_t>(u, 0x0E38u, 0x0E3Au))
+        return BV;
+    if (hb_in_range<hb_codepoint_t>(u, 0x0E48u, 0x0E4Cu))
+        return T;
+    return NOT_MARK;
 }
 
-
-enum thai_action_t
-{
-  NOP,
-  SD,  /* Shift combining-mark down */
-  SL,  /* Shift combining-mark left */
-  SDL, /* Shift combining-mark down-left */
-  RD   /* Remove descender from base */
+enum thai_action_t {
+    NOP,
+    SD,  /* Shift combining-mark down */
+    SL,  /* Shift combining-mark left */
+    SDL, /* Shift combining-mark down-left */
+    RD   /* Remove descender from base */
 };
 
+// clang-format off
 static hb_codepoint_t
 thai_pua_shape (hb_codepoint_t u, thai_action_t action, hb_font_t *font)
 {
@@ -154,9 +132,9 @@ thai_pua_shape (hb_codepoint_t u, thai_action_t action, hb_font_t *font)
     {
       hb_codepoint_t glyph;
       if (hb_font_get_glyph (font, pua_mappings->win_pua, 0, &glyph))
-	return pua_mappings->win_pua;
+    return pua_mappings->win_pua;
       if (hb_font_get_glyph (font, pua_mappings->mac_pua, 0, &glyph))
-	return pua_mappings->mac_pua;
+    return pua_mappings->mac_pua;
       break;
     }
   return u;
@@ -215,178 +193,165 @@ static const struct thai_below_state_machine_edge_t {
 /*B1*/ {{NOP,B1}, {RD, B2}, {NOP, B1}},
 /*B2*/ {{NOP,B2}, {SD, B2}, {NOP, B2}},
 };
+// clang-format on
 
-
-static void
-do_thai_pua_shaping (const hb_ot_shape_plan_t *plan HB_UNUSED,
-		     hb_buffer_t              *buffer,
-		     hb_font_t                *font)
+static void do_thai_pua_shaping(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
 {
 #ifdef HB_NO_OT_SHAPE_COMPLEX_THAI_FALLBACK
-  return;
+    return;
 #endif
 
-  thai_above_state_t above_state = thai_above_start_state[NOT_CONSONANT];
-  thai_below_state_t below_state = thai_below_start_state[NOT_CONSONANT];
-  unsigned int base = 0;
+    thai_above_state_t above_state = thai_above_start_state[NOT_CONSONANT];
+    thai_below_state_t below_state = thai_below_start_state[NOT_CONSONANT];
+    unsigned int base = 0;
 
-  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-  unsigned int count = hb_buffer_get_length(buffer);
-  for (unsigned int i = 0; i < count; i++)
-  {
-    thai_mark_type_t mt = get_mark_type (info[i].codepoint);
+    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    unsigned int count = hb_buffer_get_length(buffer);
+    for (unsigned int i = 0; i < count; i++) {
+        thai_mark_type_t mt = get_mark_type(info[i].codepoint);
 
-    if (mt == NOT_MARK) {
-      thai_consonant_type_t ct = get_consonant_type (info[i].codepoint);
-      above_state = thai_above_start_state[ct];
-      below_state = thai_below_start_state[ct];
-      base = i;
-      continue;
+        if (mt == NOT_MARK) {
+            thai_consonant_type_t ct = get_consonant_type(info[i].codepoint);
+            above_state = thai_above_start_state[ct];
+            below_state = thai_below_start_state[ct];
+            base = i;
+            continue;
+        }
+
+        const thai_above_state_machine_edge_t &above_edge = thai_above_state_machine[above_state][mt];
+        const thai_below_state_machine_edge_t &below_edge = thai_below_state_machine[below_state][mt];
+        above_state = above_edge.next_state;
+        below_state = below_edge.next_state;
+
+        /* At least one of the above/below actions is NOP. */
+        thai_action_t action = above_edge.action != NOP ? above_edge.action : below_edge.action;
+
+        hb_buffer_unsafe_to_break(buffer, base, i);
+        if (action == RD)
+            info[base].codepoint = thai_pua_shape(info[base].codepoint, action, font);
+        else
+            info[i].codepoint = thai_pua_shape(info[i].codepoint, action, font);
     }
-
-    const thai_above_state_machine_edge_t &above_edge = thai_above_state_machine[above_state][mt];
-    const thai_below_state_machine_edge_t &below_edge = thai_below_state_machine[below_state][mt];
-    above_state = above_edge.next_state;
-    below_state = below_edge.next_state;
-
-    /* At least one of the above/below actions is NOP. */
-    thai_action_t action = above_edge.action != NOP ? above_edge.action : below_edge.action;
-
-    hb_buffer_unsafe_to_break (buffer, base, i);
-    if (action == RD)
-      info[base].codepoint = thai_pua_shape (info[base].codepoint, action, font);
-    else
-      info[i].codepoint = thai_pua_shape (info[i].codepoint, action, font);
-  }
 }
 
-
-static void
-preprocess_text_thai (const hb_ot_shape_plan_t *plan,
-		      hb_buffer_t              *buffer,
-		      hb_font_t                *font)
+static void preprocess_text_thai(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
 {
-  /* This function implements the shaping logic documented here:
-   *
-   *   https://linux.thai.net/~thep/th-otf/shaping.html
-   *
-   * The first shaping rule listed there is needed even if the font has Thai
-   * OpenType tables.  The rest do fallback positioning based on PUA codepoints.
-   * We implement that only if there exist no Thai GSUB in the font.
-   */
+    /* This function implements the shaping logic documented here:
+     *
+     *   https://linux.thai.net/~thep/th-otf/shaping.html
+     *
+     * The first shaping rule listed there is needed even if the font has Thai
+     * OpenType tables.  The rest do fallback positioning based on PUA codepoints.
+     * We implement that only if there exist no Thai GSUB in the font.
+     */
 
-  /* The following is NOT specified in the MS OT Thai spec, however, it seems
-   * to be what Uniscribe and other engines implement.  According to Eric Muller:
-   *
-   * When you have a SARA AM, decompose it in NIKHAHIT + SARA AA, *and* move the
-   * NIKHAHIT backwards over any tone mark (0E48-0E4B).
-   *
-   * <0E14, 0E4B, 0E33> -> <0E14, 0E4D, 0E4B, 0E32>
-   *
-   * This reordering is legit only when the NIKHAHIT comes from a SARA AM, not
-   * when it's there to start with. The string <0E14, 0E4B, 0E4D> is probably
-   * not what a user wanted, but the rendering is nevertheless nikhahit above
-   * chattawa.
-   *
-   * Same for Lao.
-   *
-   * Note:
-   *
-   * Uniscribe also does some below-marks reordering.  Namely, it positions U+0E3A
-   * after U+0E38 and U+0E39.  We do that by modifying the ccc for U+0E3A.
-   * See unicode->modified_combining_class ().  Lao does NOT have a U+0E3A
-   * equivalent.
-   */
+    /* The following is NOT specified in the MS OT Thai spec, however, it seems
+     * to be what Uniscribe and other engines implement.  According to Eric Muller:
+     *
+     * When you have a SARA AM, decompose it in NIKHAHIT + SARA AA, *and* move the
+     * NIKHAHIT backwards over any tone mark (0E48-0E4B).
+     *
+     * <0E14, 0E4B, 0E33> -> <0E14, 0E4D, 0E4B, 0E32>
+     *
+     * This reordering is legit only when the NIKHAHIT comes from a SARA AM, not
+     * when it's there to start with. The string <0E14, 0E4B, 0E4D> is probably
+     * not what a user wanted, but the rendering is nevertheless nikhahit above
+     * chattawa.
+     *
+     * Same for Lao.
+     *
+     * Note:
+     *
+     * Uniscribe also does some below-marks reordering.  Namely, it positions U+0E3A
+     * after U+0E38 and U+0E39.  We do that by modifying the ccc for U+0E3A.
+     * See unicode->modified_combining_class ().  Lao does NOT have a U+0E3A
+     * equivalent.
+     */
 
+    /*
+     * Here are the characters of significance:
+     *
+     *			Thai	Lao
+     * SARA AM:		U+0E33	U+0EB3
+     * SARA AA:		U+0E32	U+0EB2
+     * Nikhahit:		U+0E4D	U+0ECD
+     *
+     * Testing shows that Uniscribe reorder the following marks:
+     * Thai:	<0E31,0E34..0E37,0E47..0E4E>
+     * Lao:	<0EB1,0EB4..0EB7,0EC7..0ECE>
+     *
+     * Note how the Lao versions are the same as Thai + 0x80.
+     */
 
-  /*
-   * Here are the characters of significance:
-   *
-   *			Thai	Lao
-   * SARA AM:		U+0E33	U+0EB3
-   * SARA AA:		U+0E32	U+0EB2
-   * Nikhahit:		U+0E4D	U+0ECD
-   *
-   * Testing shows that Uniscribe reorder the following marks:
-   * Thai:	<0E31,0E34..0E37,0E47..0E4E>
-   * Lao:	<0EB1,0EB4..0EB7,0EC7..0ECE>
-   *
-   * Note how the Lao versions are the same as Thai + 0x80.
-   */
-
-  /* We only get one script at a time, so a script-agnostic implementation
-   * is adequate here. */
+    /* We only get one script at a time, so a script-agnostic implementation
+     * is adequate here. */
 #define IS_SARA_AM(x) (((x) & ~0x0080u) == 0x0E33u)
-#define NIKHAHIT_FROM_SARA_AM(x) ((x) - 0x0E33u + 0x0E4Du)
-#define SARA_AA_FROM_SARA_AM(x) ((x) - 1)
-#define IS_TONE_MARK(x) (hb_in_ranges<hb_codepoint_t> ((x) & ~0x0080u, 0x0E34u, 0x0E37u, 0x0E47u, 0x0E4Eu, 0x0E31u, 0x0E31u))
+#define NIKHAHIT_FROM_SARA_AM(x) ((x)-0x0E33u + 0x0E4Du)
+#define SARA_AA_FROM_SARA_AM(x) ((x)-1)
+#define IS_TONE_MARK(x)                                                                                                \
+    (hb_in_ranges<hb_codepoint_t>((x) & ~0x0080u, 0x0E34u, 0x0E37u, 0x0E47u, 0x0E4Eu, 0x0E31u, 0x0E31u))
 
-  hb_buffer_clear_output(buffer);
-  unsigned int count = hb_buffer_get_length(buffer);
-  for (hb_buffer_set_idx(buffer, 0); hb_buffer_get_idx(buffer) < count;)
-  {
-    hb_codepoint_t u = hb_buffer_get_cur(buffer, 0)->codepoint;
-    if (likely (!IS_SARA_AM (u))) {
-      hb_buffer_next_glyph (buffer);
-      continue;
+    hb_buffer_clear_output(buffer);
+    unsigned int count = hb_buffer_get_length(buffer);
+    for (hb_buffer_set_idx(buffer, 0); hb_buffer_get_idx(buffer) < count;) {
+        hb_codepoint_t u = hb_buffer_get_cur(buffer, 0)->codepoint;
+        if (likely(!IS_SARA_AM(u))) {
+            hb_buffer_next_glyph(buffer);
+            continue;
+        }
+
+        /* Is SARA AM. Decompose and reorder. */
+        hb_glyph_info_t *nikhahit = hb_buffer_output_glyph(buffer, NIKHAHIT_FROM_SARA_AM(u));
+        _hb_glyph_info_set_continuation(nikhahit);
+        hb_buffer_replace_glyph(buffer, SARA_AA_FROM_SARA_AM(u));
+
+        /* Make Nikhahit be recognized as a ccc=0 mark when zeroing widths. */
+        unsigned int end = hb_buffer_get_out_len(buffer);
+        _hb_glyph_info_set_general_category(&hb_buffer_get_out_info(buffer)[end - 2],
+                                            HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK);
+
+        /* Ok, let's see... */
+        unsigned int start = end - 2;
+        while (start > 0 && IS_TONE_MARK(hb_buffer_get_out_info(buffer)[start - 1].codepoint))
+            start--;
+
+        if (start + 2 < end) {
+            /* Move Nikhahit (end-2) to the beginning */
+            hb_buffer_merge_out_clusters(buffer, start, end);
+            hb_glyph_info_t t = hb_buffer_get_out_info(buffer)[end - 2];
+            memmove(hb_buffer_get_out_info(buffer) + start + 1,
+                    hb_buffer_get_out_info(buffer) + start,
+                    sizeof(hb_buffer_get_out_info(buffer)[0]) * (end - start - 2));
+            hb_buffer_get_out_info(buffer)[start] = t;
+        } else {
+            /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
+             * previous cluster. */
+            if (start && hb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
+                hb_buffer_merge_out_clusters(buffer, start - 1, end);
+        }
     }
+    hb_buffer_swap_buffers(buffer);
 
-    /* Is SARA AM. Decompose and reorder. */
-    hb_glyph_info_t *nikhahit = hb_buffer_output_glyph (buffer, NIKHAHIT_FROM_SARA_AM (u));
-    _hb_glyph_info_set_continuation (nikhahit);
-    hb_buffer_replace_glyph (buffer, SARA_AA_FROM_SARA_AM (u));
-
-    /* Make Nikhahit be recognized as a ccc=0 mark when zeroing widths. */
-    unsigned int end = hb_buffer_get_out_len(buffer);
-    _hb_glyph_info_set_general_category (&hb_buffer_get_out_info(buffer)[end - 2], HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK);
-
-    /* Ok, let's see... */
-    unsigned int start = end - 2;
-    while (start > 0 && IS_TONE_MARK (hb_buffer_get_out_info(buffer)[start - 1].codepoint))
-      start--;
-
-    if (start + 2 < end)
-    {
-      /* Move Nikhahit (end-2) to the beginning */
-      hb_buffer_merge_out_clusters (buffer, start, end);
-      hb_glyph_info_t t = hb_buffer_get_out_info(buffer)[end - 2];
-      memmove (hb_buffer_get_out_info(buffer) + start + 1,
-	       hb_buffer_get_out_info(buffer) + start,
-	       sizeof (hb_buffer_get_out_info(buffer)[0]) * (end - start - 2));
-      hb_buffer_get_out_info(buffer)[start] = t;
-    }
-    else
-    {
-      /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
-       * previous cluster. */
-      if (start && hb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
-	hb_buffer_merge_out_clusters (buffer, start - 1, end);
-    }
-  }
-  hb_buffer_swap_buffers(buffer);
-
-  /* If font has Thai GSUB, we are done. */
-  if (plan->props.script == HB_SCRIPT_THAI && !plan->map.found_script[0])
-    do_thai_pua_shaping (plan, buffer, font);
+    /* If font has Thai GSUB, we are done. */
+    if (plan->props.script == HB_SCRIPT_THAI && !plan->map.found_script[0])
+        do_thai_pua_shaping(plan, buffer, font);
 }
 
-const hb_ot_complex_shaper_t _hb_ot_complex_shaper_thai =
-{
-  nullptr, /* collect_features */
-  nullptr, /* override_features */
-  nullptr, /* data_create */
-  nullptr, /* data_destroy */
-  preprocess_text_thai,
-  nullptr, /* postprocess_glyphs */
-  HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
-  nullptr, /* decompose */
-  nullptr, /* compose */
-  nullptr, /* setup_masks */
-  HB_TAG_NONE, /* gpos_tag */
-  nullptr, /* reorder_marks */
-  HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
-  false,/* fallback_position */
+const hb_ot_complex_shaper_t _hb_ot_complex_shaper_thai = {
+    nullptr, /* collect_features */
+    nullptr, /* override_features */
+    nullptr, /* data_create */
+    nullptr, /* data_destroy */
+    preprocess_text_thai,
+    nullptr, /* postprocess_glyphs */
+    HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
+    nullptr,     /* decompose */
+    nullptr,     /* compose */
+    nullptr,     /* setup_masks */
+    HB_TAG_NONE, /* gpos_tag */
+    nullptr,     /* reorder_marks */
+    HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
+    false, /* fallback_position */
 };
-
 
 #endif

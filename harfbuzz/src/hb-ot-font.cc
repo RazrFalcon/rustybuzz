@@ -35,10 +35,9 @@
 #include "hb-ot-face.hh"
 #include "hb-ot-font.hh"
 
-#include "hb-ot-glyf-table.hh"
 #include "hb-ot-color-cbdt-table.hh"
 #include "hb-ot-color-sbix-table.hh"
-
+#include "hb-ot-glyf-table.hh"
 
 /**
  * SECTION:hb-ot-font
@@ -53,162 +52,174 @@
 
 struct hb_glyph_bbox_t
 {
-  int16_t min_x;
-  int16_t min_y;
-  int16_t max_x;
-  int16_t max_y;
+    int16_t min_x;
+    int16_t min_y;
+    int16_t max_x;
+    int16_t max_y;
 };
 
 extern "C" {
-  bool rb_ot_get_glyph_bbox (const void *rust_data,
-                             hb_codepoint_t glyph,
-                             hb_glyph_bbox_t *bbox);
+bool rb_ot_get_glyph_bbox(const void *rust_data, hb_codepoint_t glyph, hb_glyph_bbox_t *bbox);
 
-  bool rb_ot_has_vorg_data (const void *rust_data);
+bool rb_ot_has_vorg_data(const void *rust_data);
 
-  int rb_ot_get_y_origin (const void *rust_data, hb_codepoint_t glyph);
+int rb_ot_get_y_origin(const void *rust_data, hb_codepoint_t glyph);
 
-  bool rb_ot_metrics_get_position_common (const void *rust_data,
-                                          const int *coords,
-                                          unsigned int coord_count,
-                                          int32_t scale,
-                                          hb_tag_t metrics_tag,
-                                          int32_t *position);
+bool rb_ot_metrics_get_position_common(const void *rust_data,
+                                       const int *coords,
+                                       unsigned int coord_count,
+                                       int32_t scale,
+                                       hb_tag_t metrics_tag,
+                                       int32_t *position);
 }
 
-void
-hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
-			    unsigned count,
-			    const hb_codepoint_t *first_glyph,
-			    unsigned glyph_stride,
-			    hb_position_t *first_advance,
-			    unsigned advance_stride)
+void hb_ot_get_glyph_h_advances(hb_font_t *font,
+                                void *font_data,
+                                unsigned count,
+                                const hb_codepoint_t *first_glyph,
+                                unsigned glyph_stride,
+                                hb_position_t *first_advance,
+                                unsigned advance_stride)
 {
-  for (unsigned int i = 0; i < count; i++)
-  {
-    *first_advance = font->em_scale_x (rb_font_get_advance_var (font, font->rust_data, *first_glyph, false, font->coords, font->num_coords));
-    first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
-    first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
-  }
-}
-
-void
-hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
-			    unsigned count,
-			    const hb_codepoint_t *first_glyph,
-			    unsigned glyph_stride,
-			    hb_position_t *first_advance,
-			    unsigned advance_stride)
-{
-  for (unsigned int i = 0; i < count; i++)
-  {
-    *first_advance = font->em_scale_y (-(int) rb_font_get_advance_var (font, font->rust_data, *first_glyph, true, font->coords, font->num_coords));
-    first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
-    first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
-  }
-}
-
-hb_bool_t
-hb_ot_get_glyph_v_origin (hb_font_t *font,
-			  void *font_data,
-			  hb_codepoint_t glyph,
-			  hb_position_t *x,
-			  hb_position_t *y)
-{
-  const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
-
-  *x = font->get_glyph_h_advance (glyph) / 2;
-
-  if (rb_ot_has_vorg_data (font->rust_data))
-  {
-    *y = font->em_scale_y (rb_ot_get_y_origin (font->rust_data, glyph));
-    return true;
-  }
-
-  hb_glyph_extents_t extents = {0};
-  if (ot_face->glyf->get_extents (font, glyph, &extents))
-  {
-    hb_position_t tsb = rb_font_get_side_bearing_var (font, font->rust_data, glyph, true, font->coords, font->num_coords);
-    *y = extents.y_bearing + font->em_scale_y (tsb);
-    return true;
-  }
-
-  hb_font_extents_t font_extents;
-  font->get_h_extents_with_fallback (&font_extents);
-  *y = font_extents.ascender;
-
-  return true;
-}
-
-hb_bool_t
-hb_ot_get_glyph_extents (hb_font_t *font,
-			 void *font_data,
-			 hb_codepoint_t glyph,
-			 hb_glyph_extents_t *extents)
-{
-  const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
-  bool ret = false;
-
-  if (!ret) ret = ot_face->sbix->get_extents (font, glyph, extents);
-  if (!ret) ret = ot_face->glyf->get_extents (font, glyph, extents);
-  if (!ret) {
-    hb_glyph_bbox_t param;
-    ret = rb_ot_get_glyph_bbox (font->rust_data, glyph, &param);
-    if (ret) {    
-      if (param.min_x >= param.max_x)
-      {
-        extents->width = 0;
-        extents->x_bearing = 0;
-      }
-      else
-      {
-        extents->x_bearing = font->em_scalef_x (param.min_x);
-        extents->width = font->em_scalef_x (param.max_x - param.min_x);
-      }
-      if (param.min_y >= param.max_y)
-      {
-        extents->height = 0;
-        extents->y_bearing = 0;
-      }
-      else
-      {
-        extents->y_bearing = font->em_scalef_y (param.max_y);
-        extents->height = font->em_scalef_y (param.min_y - param.max_y);
-      }
+    for (unsigned int i = 0; i < count; i++) {
+        *first_advance = font->em_scale_x(
+            rb_font_get_advance_var(font, font->rust_data, *first_glyph, false, font->coords, font->num_coords));
+        first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
+        first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
     }
-  }
-  if (!ret) ret = ot_face->CBDT->get_extents (font, glyph, extents);
+}
 
-  // TODO Hook up side-bearings variations.
-  return ret;
+void hb_ot_get_glyph_v_advances(hb_font_t *font,
+                                void *font_data,
+                                unsigned count,
+                                const hb_codepoint_t *first_glyph,
+                                unsigned glyph_stride,
+                                hb_position_t *first_advance,
+                                unsigned advance_stride)
+{
+    for (unsigned int i = 0; i < count; i++) {
+        *first_advance = font->em_scale_y(
+            -(int)rb_font_get_advance_var(font, font->rust_data, *first_glyph, true, font->coords, font->num_coords));
+        first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
+        first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
+    }
 }
 
 hb_bool_t
-hb_ot_get_font_h_extents (hb_font_t *font, hb_font_extents_t *metrics)
+hb_ot_get_glyph_v_origin(hb_font_t *font, void *font_data, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y)
 {
-  return rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->y_scale, HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER, &metrics->ascender) &&
-	 rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->y_scale, HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER, &metrics->descender) &&
-	 rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->y_scale, HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP, &metrics->line_gap);
+    const hb_ot_face_t *ot_face = (const hb_ot_face_t *)font_data;
+
+    *x = font->get_glyph_h_advance(glyph) / 2;
+
+    if (rb_ot_has_vorg_data(font->rust_data)) {
+        *y = font->em_scale_y(rb_ot_get_y_origin(font->rust_data, glyph));
+        return true;
+    }
+
+    hb_glyph_extents_t extents = {0};
+    if (ot_face->glyf->get_extents(font, glyph, &extents)) {
+        hb_position_t tsb =
+            rb_font_get_side_bearing_var(font, font->rust_data, glyph, true, font->coords, font->num_coords);
+        *y = extents.y_bearing + font->em_scale_y(tsb);
+        return true;
+    }
+
+    hb_font_extents_t font_extents;
+    font->get_h_extents_with_fallback(&font_extents);
+    *y = font_extents.ascender;
+
+    return true;
 }
 
-hb_bool_t
-hb_ot_get_font_v_extents (hb_font_t *font, hb_font_extents_t *metrics)
+hb_bool_t hb_ot_get_glyph_extents(hb_font_t *font, void *font_data, hb_codepoint_t glyph, hb_glyph_extents_t *extents)
 {
-  return rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->x_scale, HB_OT_METRICS_TAG_VERTICAL_ASCENDER, &metrics->ascender) &&
-	 rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->x_scale, HB_OT_METRICS_TAG_VERTICAL_DESCENDER, &metrics->descender) &&
-	 rb_ot_metrics_get_position_common (font->rust_data, font->coords, font->num_coords, font->x_scale, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
+    const hb_ot_face_t *ot_face = (const hb_ot_face_t *)font_data;
+    bool ret = false;
+
+    if (!ret)
+        ret = ot_face->sbix->get_extents(font, glyph, extents);
+    if (!ret)
+        ret = ot_face->glyf->get_extents(font, glyph, extents);
+    if (!ret) {
+        hb_glyph_bbox_t param;
+        ret = rb_ot_get_glyph_bbox(font->rust_data, glyph, &param);
+        if (ret) {
+            if (param.min_x >= param.max_x) {
+                extents->width = 0;
+                extents->x_bearing = 0;
+            } else {
+                extents->x_bearing = font->em_scalef_x(param.min_x);
+                extents->width = font->em_scalef_x(param.max_x - param.min_x);
+            }
+            if (param.min_y >= param.max_y) {
+                extents->height = 0;
+                extents->y_bearing = 0;
+            } else {
+                extents->y_bearing = font->em_scalef_y(param.max_y);
+                extents->height = font->em_scalef_y(param.min_y - param.max_y);
+            }
+        }
+    }
+    if (!ret)
+        ret = ot_face->CBDT->get_extents(font, glyph, extents);
+
+    // TODO Hook up side-bearings variations.
+    return ret;
 }
 
-int
-hb_ot_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical)
+hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t *metrics)
 {
-  return font->face->table.glyf->get_side_bearing_var (font, glyph, is_vertical);
+    return rb_ot_metrics_get_position_common(font->rust_data,
+                                             font->coords,
+                                             font->num_coords,
+                                             font->y_scale,
+                                             HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER,
+                                             &metrics->ascender) &&
+           rb_ot_metrics_get_position_common(font->rust_data,
+                                             font->coords,
+                                             font->num_coords,
+                                             font->y_scale,
+                                             HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER,
+                                             &metrics->descender) &&
+           rb_ot_metrics_get_position_common(font->rust_data,
+                                             font->coords,
+                                             font->num_coords,
+                                             font->y_scale,
+                                             HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP,
+                                             &metrics->line_gap);
 }
 
-unsigned
-hb_ot_glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical)
+hb_bool_t hb_ot_get_font_v_extents(hb_font_t *font, hb_font_extents_t *metrics)
 {
-  return font->face->table.glyf->get_advance_var (font, glyph, is_vertical);
+    return rb_ot_metrics_get_position_common(font->rust_data,
+                                             font->coords,
+                                             font->num_coords,
+                                             font->x_scale,
+                                             HB_OT_METRICS_TAG_VERTICAL_ASCENDER,
+                                             &metrics->ascender) &&
+           rb_ot_metrics_get_position_common(font->rust_data,
+                                             font->coords,
+                                             font->num_coords,
+                                             font->x_scale,
+                                             HB_OT_METRICS_TAG_VERTICAL_DESCENDER,
+                                             &metrics->descender) &&
+           rb_ot_metrics_get_position_common(font->rust_data,
+                                             font->coords,
+                                             font->num_coords,
+                                             font->x_scale,
+                                             HB_OT_METRICS_TAG_VERTICAL_LINE_GAP,
+                                             &metrics->line_gap);
+}
+
+int hb_ot_glyf_get_side_bearing_var(hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical)
+{
+    return font->face->table.glyf->get_side_bearing_var(font, glyph, is_vertical);
+}
+
+unsigned hb_ot_glyf_get_advance_var(hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical)
+{
+    return font->face->table.glyf->get_advance_var(font, glyph, is_vertical);
 }
 
 #endif

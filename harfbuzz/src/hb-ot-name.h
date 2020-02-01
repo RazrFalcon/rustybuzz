@@ -32,10 +32,7 @@
 
 HB_BEGIN_DECLS
 
-enum
-{
-  HB_OT_NAME_ID_INVALID			= 0xFFFF
-};
+enum { HB_OT_NAME_ID_INVALID = 0xFFFF };
 
 typedef unsigned int hb_ot_name_id_t;
 

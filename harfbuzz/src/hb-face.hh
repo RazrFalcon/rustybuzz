@@ -30,10 +30,9 @@
 
 #include "hb.hh"
 
-#include "hb-shaper.hh"
-#include "hb-shape-plan.hh"
 #include "hb-ot-face.hh"
-
+#include "hb-shape-plan.hh"
+#include "hb-shaper.hh"
 
 /*
  * hb_face_t
@@ -41,33 +40,32 @@
 
 struct hb_face_t
 {
-  hb_object_header_t header;
+    hb_object_header_t header;
 
-  hb_reference_table_func_t  reference_table_func;
-  void                      *user_data;
-  hb_destroy_func_t          destroy;
+    hb_reference_table_func_t reference_table_func;
+    void *user_data;
+    hb_destroy_func_t destroy;
 
-  const void                 *rust_data;
+    const void *rust_data;
 
-  unsigned int index;			/* Face index in a collection, zero-based. */
-  mutable hb_atomic_int_t upem;		/* Units-per-EM. */
-  mutable hb_atomic_int_t num_glyphs;	/* Number of glyphs. */
+    unsigned int index;                 /* Face index in a collection, zero-based. */
+    mutable hb_atomic_int_t upem;       /* Units-per-EM. */
+    mutable hb_atomic_int_t num_glyphs; /* Number of glyphs. */
 
-  hb_ot_face_t table;			/* All the face's tables. */
+    hb_ot_face_t table; /* All the face's tables. */
 
-  hb_blob_t *reference_table (hb_tag_t tag) const
-  {
-    hb_blob_t *blob;
+    hb_blob_t *reference_table(hb_tag_t tag) const
+    {
+        hb_blob_t *blob;
 
-    if (unlikely (!reference_table_func))
-      return hb_blob_get_empty ();
+        if (unlikely(!reference_table_func))
+            return hb_blob_get_empty();
 
-    blob = reference_table_func (/*XXX*/const_cast<hb_face_t *> (this), tag, user_data);
-    if (unlikely (!blob))
-      return hb_blob_get_empty ();
+        blob = reference_table_func(/*XXX*/ const_cast<hb_face_t *>(this), tag, user_data);
+        if (unlikely(!blob))
+            return hb_blob_get_empty();
 
-    return blob;
-  }
+        return blob;
+    }
 };
-DECLARE_NULL_INSTANCE (hb_face_t);
-
+DECLARE_NULL_INSTANCE(hb_face_t);

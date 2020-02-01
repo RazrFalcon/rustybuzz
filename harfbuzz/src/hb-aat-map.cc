@@ -32,40 +32,35 @@
 
 #include "hb-aat-layout.hh"
 
-
-void hb_aat_map_builder_t::add_feature (hb_tag_t tag,
-					unsigned int value)
+void hb_aat_map_builder_t::add_feature(hb_tag_t tag, unsigned int value)
 {
-  if (tag == HB_TAG ('a','a','l','t'))
-  {
+    if (tag == HB_TAG('a', 'a', 'l', 't')) {
+        feature_info_t *info = features.push();
+        info->type = HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES;
+        info->setting = (hb_aat_layout_feature_selector_t)value;
+        return;
+    }
+
+    const hb_aat_feature_mapping_t *mapping = hb_aat_layout_find_feature_mapping(tag);
+    if (!mapping)
+        return;
+
     feature_info_t *info = features.push();
-    info->type = HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES;
-    info->setting = (hb_aat_layout_feature_selector_t) value;
-    return;
-  }
-
-  const hb_aat_feature_mapping_t *mapping = hb_aat_layout_find_feature_mapping (tag);
-  if (!mapping) return;
-
-  feature_info_t *info = features.push();
-  info->type = mapping->aatFeatureType;
-  info->setting = value ? mapping->selectorToEnable : mapping->selectorToDisable;
+    info->type = mapping->aatFeatureType;
+    info->setting = value ? mapping->selectorToEnable : mapping->selectorToDisable;
 }
 
-void
-hb_aat_map_builder_t::compile (hb_aat_map_t  &m)
+void hb_aat_map_builder_t::compile(hb_aat_map_t &m)
 {
-  /* Sort features and merge duplicates */
-  if (features.length)
-  {
-    features.qsort ();
-    unsigned int j = 0;
-    for (unsigned int i = 1; i < features.length; i++)
-      if (features[i].type != features[j].type)
-	features[++j] = features[i];
-    features.shrink (j + 1);
-  }
+    /* Sort features and merge duplicates */
+    if (features.length) {
+        features.qsort();
+        unsigned int j = 0;
+        for (unsigned int i = 1; i < features.length; i++)
+            if (features[i].type != features[j].type)
+                features[++j] = features[i];
+        features.shrink(j + 1);
+    }
 
-  hb_aat_layout_compile_map (this, &m);
+    hb_aat_layout_compile_map(this, &m);
 }
-

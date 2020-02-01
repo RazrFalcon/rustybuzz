@@ -28,10 +28,9 @@
 
 #pragma once
 
-#include "hb.hh"
 #include "hb-blob.hh"
 #include "hb-dispatch.hh"
-
+#include "hb.hh"
 
 /*
  * Sanitize
@@ -113,285 +112,297 @@
 #define HB_SANITIZE_MAX_OPS_MAX 0x3FFFFFFF
 #endif
 
-struct hb_sanitize_context_t :
-       hb_dispatch_context_t<hb_sanitize_context_t, bool, HB_DEBUG_SANITIZE>
+struct hb_sanitize_context_t : hb_dispatch_context_t<hb_sanitize_context_t, bool, HB_DEBUG_SANITIZE>
 {
-  hb_sanitize_context_t () :
-	debug_depth (0),
-	start (nullptr), end (nullptr),
-	max_ops (0),
-	writable (false), edit_count (0),
-	blob (nullptr),
-	num_glyphs (65536),
-	num_glyphs_set (false) {}
-
-  const char *get_name () { return "SANITIZE"; }
-  template <typename T, typename F>
-  bool may_dispatch (const T *obj HB_UNUSED, const F *format)
-  { return format->sanitize (this); }
-  static return_t default_return_value () { return true; }
-  static return_t no_dispatch_return_value () { return false; }
-  bool stop_sublookup_iteration (const return_t r) const { return !r; }
-
-  private:
-  template <typename T, typename ...Ts> auto
-  _dispatch (const T &obj, hb_priority<1>, Ts&&... ds) HB_AUTO_RETURN
-  ( obj.sanitize (this, hb_forward<Ts> (ds)...) )
-  template <typename T, typename ...Ts> auto
-  _dispatch (const T &obj, hb_priority<0>, Ts&&... ds) HB_AUTO_RETURN
-  ( obj.dispatch (this, hb_forward<Ts> (ds)...) )
-  public:
-  template <typename T, typename ...Ts> auto
-  dispatch (const T &obj, Ts&&... ds) HB_AUTO_RETURN
-  ( _dispatch (obj, hb_prioritize, hb_forward<Ts> (ds)...) )
-
-
-  void init (hb_blob_t *b)
-  {
-    this->blob = hb_blob_reference (b);
-    this->writable = false;
-  }
-
-  void set_num_glyphs (unsigned int num_glyphs_)
-  {
-    num_glyphs = num_glyphs_;
-    num_glyphs_set = true;
-  }
-  unsigned int get_num_glyphs () { return num_glyphs; }
-
-  void set_max_ops (int max_ops_) { max_ops = max_ops_; }
-
-  template <typename T>
-  void set_object (const T *obj)
-  {
-    reset_object ();
-
-    if (!obj) return;
-
-    const char *obj_start = (const char *) obj;
-    if (unlikely (obj_start < this->start || this->end <= obj_start))
-      this->start = this->end = nullptr;
-    else
+    hb_sanitize_context_t()
+        : debug_depth(0)
+        , start(nullptr)
+        , end(nullptr)
+        , max_ops(0)
+        , writable(false)
+        , edit_count(0)
+        , blob(nullptr)
+        , num_glyphs(65536)
+        , num_glyphs_set(false)
     {
-      this->start = obj_start;
-      this->end   = obj_start + hb_min (size_t (this->end - obj_start), obj->get_size ());
-    }
-  }
-
-  void reset_object ()
-  {
-    this->start = this->blob->data;
-    this->end = this->start + this->blob->length;
-    assert (this->start <= this->end); /* Must not overflow. */
-  }
-
-  void start_processing ()
-  {
-    reset_object ();
-    this->max_ops = hb_max ((unsigned int) (this->end - this->start) * HB_SANITIZE_MAX_OPS_FACTOR,
-			 (unsigned) HB_SANITIZE_MAX_OPS_MIN);
-    this->edit_count = 0;
-    this->debug_depth = 0;
-
-    DEBUG_MSG_LEVEL (SANITIZE, start, 0, +1,
-		     "start [%p..%p] (%lu bytes)",
-		     this->start, this->end,
-		     (unsigned long) (this->end - this->start));
-  }
-
-  void end_processing ()
-  {
-    DEBUG_MSG_LEVEL (SANITIZE, this->start, 0, -1,
-		     "end [%p..%p] %u edit requests",
-		     this->start, this->end, this->edit_count);
-
-    hb_blob_destroy (this->blob);
-    this->blob = nullptr;
-    this->start = this->end = nullptr;
-  }
-
-  unsigned get_edit_count () { return edit_count; }
-
-  bool check_range (const void *base,
-		    unsigned int len) const
-  {
-    const char *p = (const char *) base;
-    bool ok = !len ||
-	      (this->start <= p &&
-	       p <= this->end &&
-	       (unsigned int) (this->end - p) >= len &&
-	       this->max_ops-- > 0);
-
-    DEBUG_MSG_LEVEL (SANITIZE, p, this->debug_depth+1, 0,
-		     "check_range [%p..%p]"
-		     " (%d bytes) in [%p..%p] -> %s",
-		     p, p + len, len,
-		     this->start, this->end,
-		     ok ? "OK" : "OUT-OF-RANGE");
-
-    return likely (ok);
-  }
-
-  template <typename T>
-  bool check_range (const T *base,
-		    unsigned int a,
-		    unsigned int b) const
-  {
-    return !hb_unsigned_mul_overflows (a, b) &&
-	   this->check_range (base, a * b);
-  }
-
-  template <typename T>
-  bool check_range (const T *base,
-		    unsigned int a,
-		    unsigned int b,
-		    unsigned int c) const
-  {
-    return !hb_unsigned_mul_overflows (a, b) &&
-	   this->check_range (base, a * b, c);
-  }
-
-  template <typename T>
-  bool check_array (const T *base, unsigned int len) const
-  {
-    return this->check_range (base, len, hb_static_size (T));
-  }
-
-  template <typename T>
-  bool check_array (const T *base,
-		    unsigned int a,
-		    unsigned int b) const
-  {
-    return this->check_range (base, a, b, hb_static_size (T));
-  }
-
-  template <typename Type>
-  bool check_struct (const Type *obj) const
-  { return likely (this->check_range (obj, obj->min_size)); }
-
-  bool may_edit (const void *base, unsigned int len)
-  {
-    if (this->edit_count >= HB_SANITIZE_MAX_EDITS)
-      return false;
-
-    const char *p = (const char *) base;
-    this->edit_count++;
-
-    DEBUG_MSG_LEVEL (SANITIZE, p, this->debug_depth+1, 0,
-       "may_edit(%u) [%p..%p] (%d bytes) in [%p..%p] -> %s",
-       this->edit_count,
-       p, p + len, len,
-       this->start, this->end,
-       this->writable ? "GRANTED" : "DENIED");
-
-    return this->writable;
-  }
-
-  template <typename Type, typename ValueType>
-  bool try_set (const Type *obj, const ValueType &v)
-  {
-    if (this->may_edit (obj, hb_static_size (Type)))
-    {
-      * const_cast<Type *> (obj) = v;
-      return true;
-    }
-    return false;
-  }
-
-  template <typename Type>
-  hb_blob_t *sanitize_blob (hb_blob_t *blob)
-  {
-    bool sane;
-
-    init (blob);
-
-  retry:
-    DEBUG_MSG_FUNC (SANITIZE, start, "start");
-
-    start_processing ();
-
-    if (unlikely (!start))
-    {
-      end_processing ();
-      return blob;
     }
 
-    Type *t = reinterpret_cast<Type *> (const_cast<char *> (start));
-
-    sane = t->sanitize (this);
-    if (sane)
+    const char *get_name()
     {
-      if (edit_count)
-      {
-	DEBUG_MSG_FUNC (SANITIZE, start, "passed first round with %d edits; going for second round", edit_count);
-
-	/* sanitize again to ensure no toe-stepping */
-	edit_count = 0;
-	sane = t->sanitize (this);
-	if (edit_count) {
-	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %d edits in second round; FAILLING", edit_count);
-	  sane = false;
-	}
-      }
+        return "SANITIZE";
     }
-    else
+    template <typename T, typename F> bool may_dispatch(const T *obj HB_UNUSED, const F *format)
     {
-      if (edit_count && !writable) {
-	start = hb_blob_get_data_writable (blob, nullptr);
-	end = start + blob->length;
-
-	if (start)
-	{
-	  writable = true;
-	  /* ok, we made it writable by relocating.  try again */
-	  DEBUG_MSG_FUNC (SANITIZE, start, "retry");
-	  goto retry;
-	}
-      }
+        return format->sanitize(this);
+    }
+    static return_t default_return_value()
+    {
+        return true;
+    }
+    static return_t no_dispatch_return_value()
+    {
+        return false;
+    }
+    bool stop_sublookup_iteration(const return_t r) const
+    {
+        return !r;
     }
 
-    end_processing ();
+private:
+    template <typename T, typename... Ts>
+    auto _dispatch(const T &obj, hb_priority<1>, Ts &&... ds)
+        HB_AUTO_RETURN(obj.sanitize(this, hb_forward<Ts>(ds)...)) template <typename T, typename... Ts>
+        auto _dispatch(const T &obj, hb_priority<0>, Ts &&... ds)
+            HB_AUTO_RETURN(obj.dispatch(this, hb_forward<Ts>(ds)...)) public
+        : template <typename T, typename... Ts>
+          auto dispatch(const T &obj, Ts &&... ds) HB_AUTO_RETURN(_dispatch(obj, hb_prioritize, hb_forward<Ts>(ds)...))
 
-    DEBUG_MSG_FUNC (SANITIZE, start, sane ? "PASSED" : "FAILED");
-    if (sane)
+              void init(hb_blob_t *b)
     {
-      hb_blob_make_immutable (blob);
-      return blob;
+        this->blob = hb_blob_reference(b);
+        this->writable = false;
     }
-    else
+
+    void set_num_glyphs(unsigned int num_glyphs_)
     {
-      hb_blob_destroy (blob);
-      return hb_blob_get_empty ();
+        num_glyphs = num_glyphs_;
+        num_glyphs_set = true;
     }
-  }
+    unsigned int get_num_glyphs()
+    {
+        return num_glyphs;
+    }
 
-  template <typename Type>
-  hb_blob_t *reference_table (const hb_face_t *face, hb_tag_t tableTag = Type::tableTag)
-  {
-    if (!num_glyphs_set)
-      set_num_glyphs (hb_face_get_glyph_count (face));
-    return sanitize_blob<Type> (hb_face_reference_table (face, tableTag));
-  }
+    void set_max_ops(int max_ops_)
+    {
+        max_ops = max_ops_;
+    }
 
-  mutable unsigned int debug_depth;
-  const char *start, *end;
-  mutable int max_ops;
-  private:
-  bool writable;
-  unsigned int edit_count;
-  hb_blob_t *blob;
-  unsigned int num_glyphs;
-  bool  num_glyphs_set;
+    template <typename T> void set_object(const T *obj)
+    {
+        reset_object();
+
+        if (!obj)
+            return;
+
+        const char *obj_start = (const char *)obj;
+        if (unlikely(obj_start < this->start || this->end <= obj_start))
+            this->start = this->end = nullptr;
+        else {
+            this->start = obj_start;
+            this->end = obj_start + hb_min(size_t(this->end - obj_start), obj->get_size());
+        }
+    }
+
+    void reset_object()
+    {
+        this->start = this->blob->data;
+        this->end = this->start + this->blob->length;
+        assert(this->start <= this->end); /* Must not overflow. */
+    }
+
+    void start_processing()
+    {
+        reset_object();
+        this->max_ops = hb_max((unsigned int)(this->end - this->start) * HB_SANITIZE_MAX_OPS_FACTOR,
+                               (unsigned)HB_SANITIZE_MAX_OPS_MIN);
+        this->edit_count = 0;
+        this->debug_depth = 0;
+
+        DEBUG_MSG_LEVEL(SANITIZE,
+                        start,
+                        0,
+                        +1,
+                        "start [%p..%p] (%lu bytes)",
+                        this->start,
+                        this->end,
+                        (unsigned long)(this->end - this->start));
+    }
+
+    void end_processing()
+    {
+        DEBUG_MSG_LEVEL(
+            SANITIZE, this->start, 0, -1, "end [%p..%p] %u edit requests", this->start, this->end, this->edit_count);
+
+        hb_blob_destroy(this->blob);
+        this->blob = nullptr;
+        this->start = this->end = nullptr;
+    }
+
+    unsigned get_edit_count()
+    {
+        return edit_count;
+    }
+
+    bool check_range(const void *base, unsigned int len) const
+    {
+        const char *p = (const char *)base;
+        bool ok =
+            !len || (this->start <= p && p <= this->end && (unsigned int)(this->end - p) >= len && this->max_ops-- > 0);
+
+        DEBUG_MSG_LEVEL(SANITIZE,
+                        p,
+                        this->debug_depth + 1,
+                        0,
+                        "check_range [%p..%p]"
+                        " (%d bytes) in [%p..%p] -> %s",
+                        p,
+                        p + len,
+                        len,
+                        this->start,
+                        this->end,
+                        ok ? "OK" : "OUT-OF-RANGE");
+
+        return likely(ok);
+    }
+
+    template <typename T> bool check_range(const T *base, unsigned int a, unsigned int b) const
+    {
+        return !hb_unsigned_mul_overflows(a, b) && this->check_range(base, a * b);
+    }
+
+    template <typename T> bool check_range(const T *base, unsigned int a, unsigned int b, unsigned int c) const
+    {
+        return !hb_unsigned_mul_overflows(a, b) && this->check_range(base, a * b, c);
+    }
+
+    template <typename T> bool check_array(const T *base, unsigned int len) const
+    {
+        return this->check_range(base, len, hb_static_size(T));
+    }
+
+    template <typename T> bool check_array(const T *base, unsigned int a, unsigned int b) const
+    {
+        return this->check_range(base, a, b, hb_static_size(T));
+    }
+
+    template <typename Type> bool check_struct(const Type *obj) const
+    {
+        return likely(this->check_range(obj, obj->min_size));
+    }
+
+    bool may_edit(const void *base, unsigned int len)
+    {
+        if (this->edit_count >= HB_SANITIZE_MAX_EDITS)
+            return false;
+
+        const char *p = (const char *)base;
+        this->edit_count++;
+
+        DEBUG_MSG_LEVEL(SANITIZE,
+                        p,
+                        this->debug_depth + 1,
+                        0,
+                        "may_edit(%u) [%p..%p] (%d bytes) in [%p..%p] -> %s",
+                        this->edit_count,
+                        p,
+                        p + len,
+                        len,
+                        this->start,
+                        this->end,
+                        this->writable ? "GRANTED" : "DENIED");
+
+        return this->writable;
+    }
+
+    template <typename Type, typename ValueType> bool try_set(const Type *obj, const ValueType &v)
+    {
+        if (this->may_edit(obj, hb_static_size(Type))) {
+            *const_cast<Type *>(obj) = v;
+            return true;
+        }
+        return false;
+    }
+
+    template <typename Type> hb_blob_t *sanitize_blob(hb_blob_t *blob)
+    {
+        bool sane;
+
+        init(blob);
+
+    retry:
+        DEBUG_MSG_FUNC(SANITIZE, start, "start");
+
+        start_processing();
+
+        if (unlikely(!start)) {
+            end_processing();
+            return blob;
+        }
+
+        Type *t = reinterpret_cast<Type *>(const_cast<char *>(start));
+
+        sane = t->sanitize(this);
+        if (sane) {
+            if (edit_count) {
+                DEBUG_MSG_FUNC(SANITIZE, start, "passed first round with %d edits; going for second round", edit_count);
+
+                /* sanitize again to ensure no toe-stepping */
+                edit_count = 0;
+                sane = t->sanitize(this);
+                if (edit_count) {
+                    DEBUG_MSG_FUNC(SANITIZE, start, "requested %d edits in second round; FAILLING", edit_count);
+                    sane = false;
+                }
+            }
+        } else {
+            if (edit_count && !writable) {
+                start = hb_blob_get_data_writable(blob, nullptr);
+                end = start + blob->length;
+
+                if (start) {
+                    writable = true;
+                    /* ok, we made it writable by relocating.  try again */
+                    DEBUG_MSG_FUNC(SANITIZE, start, "retry");
+                    goto retry;
+                }
+            }
+        }
+
+        end_processing();
+
+        DEBUG_MSG_FUNC(SANITIZE, start, sane ? "PASSED" : "FAILED");
+        if (sane) {
+            hb_blob_make_immutable(blob);
+            return blob;
+        } else {
+            hb_blob_destroy(blob);
+            return hb_blob_get_empty();
+        }
+    }
+
+    template <typename Type> hb_blob_t *reference_table(const hb_face_t *face, hb_tag_t tableTag = Type::tableTag)
+    {
+        if (!num_glyphs_set)
+            set_num_glyphs(hb_face_get_glyph_count(face));
+        return sanitize_blob<Type>(hb_face_reference_table(face, tableTag));
+    }
+
+    mutable unsigned int debug_depth;
+    const char *start, *end;
+    mutable int max_ops;
+
+private:
+    bool writable;
+    unsigned int edit_count;
+    hb_blob_t *blob;
+    unsigned int num_glyphs;
+    bool num_glyphs_set;
 };
 
 struct hb_sanitize_with_object_t
 {
-  template <typename T>
-  hb_sanitize_with_object_t (hb_sanitize_context_t *c, const T& obj) : c (c)
-  { c->set_object (obj); }
-  ~hb_sanitize_with_object_t ()
-  { c->reset_object (); }
+    template <typename T>
+    hb_sanitize_with_object_t(hb_sanitize_context_t *c, const T &obj)
+        : c(c)
+    {
+        c->set_object(obj);
+    }
+    ~hb_sanitize_with_object_t()
+    {
+        c->reset_object();
+    }
 
-  private:
-  hb_sanitize_context_t *c;
+private:
+    hb_sanitize_context_t *c;
 };
