@@ -94,10 +94,13 @@ mod tag;
 mod tag_table;
 mod text_parser;
 mod opentype;
+mod complex;
 
 pub use ttf_parser::Tag;
 
-pub use crate::buffer::*;
+pub use crate::buffer::{
+    Buffer, GlyphBuffer, GlyphInfo, GlyphPosition, SerializeFlags, BufferClusterLevel,
+};
 pub use crate::common::*;
 pub use crate::font::{Face, Font};
 

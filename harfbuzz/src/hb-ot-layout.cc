@@ -580,12 +580,12 @@ static void apply_gpos(const rb_ot_map_t *map,
     }
 }
 
-void hb_ot_map_substitute(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
+void hb_ot_layout_substitute(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
     apply_gsub(map, *font->face->table.GSUB->table, font->face->table.GSUB->accels, plan, font, buffer);
 }
 
-void hb_ot_map_position(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
+void hb_ot_layout_position(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
     apply_gpos(map, *font->face->table.GPOS->table, font->face->table.GPOS->accels, plan, font, buffer);
 }

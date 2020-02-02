@@ -1,5 +1,7 @@
 use std::convert::TryFrom;
 
+pub use unicode_general_category::GeneralCategory;
+
 use crate::{Script, CodePoint};
 
 // Default_Ignorable codepoints:
@@ -282,40 +284,186 @@ pub extern "C" fn rb_ucd_decompose(ab: u32, a: *mut u32, b: *mut u32) -> i32 {
 #[no_mangle]
 #[allow(missing_docs)]
 pub extern "C" fn rb_ucd_general_category(c: u32) -> u32 {
-    use crate::ffi;
-    use unicode_general_category as ugc;
+    let cat = unicode_general_category::get_general_category(char::try_from(c).unwrap());
+    cat.to_hb()
+}
 
-    let cat = ugc::get_general_category(char::try_from(c).unwrap());
-    match cat {
-        ugc::GeneralCategory::ClosePunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_CLOSE_PUNCTUATION,
-        ugc::GeneralCategory::ConnectorPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_CONNECT_PUNCTUATION,
-        ugc::GeneralCategory::Control => ffi::HB_UNICODE_GENERAL_CATEGORY_CONTROL,
-        ugc::GeneralCategory::CurrencySymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL,
-        ugc::GeneralCategory::DashPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_DASH_PUNCTUATION,
-        ugc::GeneralCategory::DecimalNumber => ffi::HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER,
-        ugc::GeneralCategory::EnclosingMark => ffi::HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK,
-        ugc::GeneralCategory::FinalPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_FINAL_PUNCTUATION,
-        ugc::GeneralCategory::Format => ffi::HB_UNICODE_GENERAL_CATEGORY_FORMAT,
-        ugc::GeneralCategory::InitialPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_INITIAL_PUNCTUATION,
-        ugc::GeneralCategory::LetterNumber => ffi::HB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER,
-        ugc::GeneralCategory::LineSeparator => ffi::HB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR,
-        ugc::GeneralCategory::LowercaseLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER,
-        ugc::GeneralCategory::MathSymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL,
-        ugc::GeneralCategory::ModifierLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER,
-        ugc::GeneralCategory::ModifierSymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL,
-        ugc::GeneralCategory::NonspacingMark => ffi::HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK,
-        ugc::GeneralCategory::OpenPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_OPEN_PUNCTUATION,
-        ugc::GeneralCategory::OtherLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER,
-        ugc::GeneralCategory::OtherNumber => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER,
-        ugc::GeneralCategory::OtherPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_PUNCTUATION,
-        ugc::GeneralCategory::OtherSymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL,
-        ugc::GeneralCategory::ParagraphSeparator => ffi::HB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR,
-        ugc::GeneralCategory::PrivateUse => ffi::HB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE,
-        ugc::GeneralCategory::SpaceSeparator => ffi::HB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR,
-        ugc::GeneralCategory::SpacingMark => ffi::HB_UNICODE_GENERAL_CATEGORY_SPACING_MARK,
-        ugc::GeneralCategory::Surrogate => ffi::HB_UNICODE_GENERAL_CATEGORY_SURROGATE,
-        ugc::GeneralCategory::TitlecaseLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER,
-        ugc::GeneralCategory::Unassigned => ffi::HB_UNICODE_GENERAL_CATEGORY_UNASSIGNED,
-        ugc::GeneralCategory::UppercaseLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
+pub trait GeneralCategoryExt {
+    fn to_hb(&self) -> u32;
+    fn from_hb(gc: u32) -> Self;
+    fn is_unicode_mark(&self) -> bool;
+}
+
+impl GeneralCategoryExt for GeneralCategory {
+    fn to_hb(&self) -> u32 {
+        use crate::ffi;
+        match *self {
+            GeneralCategory::ClosePunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_CLOSE_PUNCTUATION,
+            GeneralCategory::ConnectorPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_CONNECT_PUNCTUATION,
+            GeneralCategory::Control => ffi::HB_UNICODE_GENERAL_CATEGORY_CONTROL,
+            GeneralCategory::CurrencySymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL,
+            GeneralCategory::DashPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_DASH_PUNCTUATION,
+            GeneralCategory::DecimalNumber => ffi::HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER,
+            GeneralCategory::EnclosingMark => ffi::HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK,
+            GeneralCategory::FinalPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_FINAL_PUNCTUATION,
+            GeneralCategory::Format => ffi::HB_UNICODE_GENERAL_CATEGORY_FORMAT,
+            GeneralCategory::InitialPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_INITIAL_PUNCTUATION,
+            GeneralCategory::LetterNumber => ffi::HB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER,
+            GeneralCategory::LineSeparator => ffi::HB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR,
+            GeneralCategory::LowercaseLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER,
+            GeneralCategory::MathSymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL,
+            GeneralCategory::ModifierLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER,
+            GeneralCategory::ModifierSymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL,
+            GeneralCategory::NonspacingMark => ffi::HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK,
+            GeneralCategory::OpenPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_OPEN_PUNCTUATION,
+            GeneralCategory::OtherLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER,
+            GeneralCategory::OtherNumber => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER,
+            GeneralCategory::OtherPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_PUNCTUATION,
+            GeneralCategory::OtherSymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL,
+            GeneralCategory::ParagraphSeparator => ffi::HB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR,
+            GeneralCategory::PrivateUse => ffi::HB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE,
+            GeneralCategory::SpaceSeparator => ffi::HB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR,
+            GeneralCategory::SpacingMark => ffi::HB_UNICODE_GENERAL_CATEGORY_SPACING_MARK,
+            GeneralCategory::Surrogate => ffi::HB_UNICODE_GENERAL_CATEGORY_SURROGATE,
+            GeneralCategory::TitlecaseLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER,
+            GeneralCategory::Unassigned => ffi::HB_UNICODE_GENERAL_CATEGORY_UNASSIGNED,
+            GeneralCategory::UppercaseLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
+        }
     }
+
+    fn from_hb(gc: u32) -> Self {
+        use crate::ffi;
+        match gc {
+            ffi::HB_UNICODE_GENERAL_CATEGORY_CLOSE_PUNCTUATION => GeneralCategory::ClosePunctuation,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_CONNECT_PUNCTUATION => GeneralCategory::ConnectorPunctuation,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_CONTROL => GeneralCategory::Control,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL => GeneralCategory::CurrencySymbol,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_DASH_PUNCTUATION => GeneralCategory::DashPunctuation,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER => GeneralCategory::DecimalNumber,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK => GeneralCategory::EnclosingMark,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_FINAL_PUNCTUATION => GeneralCategory::FinalPunctuation,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_FORMAT => GeneralCategory::Format,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_INITIAL_PUNCTUATION => GeneralCategory::InitialPunctuation,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER => GeneralCategory::LetterNumber,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR => GeneralCategory::LineSeparator,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER => GeneralCategory::LowercaseLetter,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL => GeneralCategory::MathSymbol,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER => GeneralCategory::ModifierLetter,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL => GeneralCategory::ModifierSymbol,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK => GeneralCategory::NonspacingMark,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_OPEN_PUNCTUATION => GeneralCategory::OpenPunctuation,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER => GeneralCategory::OtherLetter,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER => GeneralCategory::OtherNumber,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_PUNCTUATION => GeneralCategory::OtherPunctuation,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL => GeneralCategory::OtherSymbol,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR => GeneralCategory::ParagraphSeparator,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE => GeneralCategory::PrivateUse,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR => GeneralCategory::SpaceSeparator,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_SPACING_MARK => GeneralCategory::SpacingMark,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_SURROGATE => GeneralCategory::Surrogate,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER => GeneralCategory::TitlecaseLetter,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_UNASSIGNED => GeneralCategory::Unassigned,
+            ffi::HB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER => GeneralCategory::UppercaseLetter,
+            _ => unreachable!(),
+        }
+    }
+
+    fn is_unicode_mark(&self) -> bool {
+        match *self {
+            GeneralCategory::SpacingMark |
+            GeneralCategory::EnclosingMark |
+            GeneralCategory::NonspacingMark => true,
+            _ => false,
+        }
+    }
+}
+
+pub trait CharExt {
+    fn general_category(&self) -> GeneralCategory;
+}
+
+impl CharExt for char {
+    fn general_category(&self) -> GeneralCategory {
+        unicode_general_category::get_general_category(*self)
+    }
+}
+
+#[allow(dead_code)]
+pub mod modified_combining_class {
+    // Hebrew
+    //
+    // We permute the "fixed-position" classes 10-26 into the order
+    // described in the SBL Hebrew manual:
+    //
+    // https://www.sbl-site.org/Fonts/SBLHebrewUserManual1.5x.pdf
+    //
+    // (as recommended by:
+    //  https://forum.fontlab.com/archive-old-microsoft-volt-group/vista-and-diacritic-ordering/msg22823/)
+    //
+    // More details here:
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=662055
+    pub const CCC10: u8 = 22; // sheva
+    pub const CCC11: u8 = 15; // hataf segol
+    pub const CCC12: u8 = 16; // hataf patah
+    pub const CCC13: u8 = 17; // hataf qamats
+    pub const CCC14: u8 = 23; // hiriq
+    pub const CCC15: u8 = 18; // tsere
+    pub const CCC16: u8 = 19; // segol
+    pub const CCC17: u8 = 20; // patah
+    pub const CCC18: u8 = 21; // qamats
+    pub const CCC19: u8 = 14; // holam
+    pub const CCC20: u8 = 24; // qubuts
+    pub const CCC21: u8 = 12; // dagesh
+    pub const CCC22: u8 = 25; // meteg
+    pub const CCC23: u8 = 13; // rafe
+    pub const CCC24: u8 = 10; // shin dot
+    pub const CCC25: u8 = 11; // sin dot
+    pub const CCC26: u8 = 26; // point varika
+
+    // Arabic
+    //
+    // Modify to move Shadda (ccc=33) before other marks.  See:
+    // https://unicode.org/faq/normalization.html#8
+    // https://unicode.org/faq/normalization.html#9
+    pub const CCC27: u8 = 28; // fathatan
+    pub const CCC28: u8 = 29; // dammatan
+    pub const CCC29: u8 = 30; // kasratan
+    pub const CCC30: u8 = 31; // fatha
+    pub const CCC31: u8 = 32; // damma
+    pub const CCC32: u8 = 33; // kasra
+    pub const CCC33: u8 = 27; // shadda
+    pub const CCC34: u8 = 34; // sukun
+    pub const CCC35: u8 = 35; // superscript alef
+
+    // Syriac
+    pub const CCC36: u8 = 36; // superscript alaph
+
+    // Telugu
+    //
+    // Modify Telugu length marks (ccc=84, ccc=91).
+    // These are the only matras in the main Indic scripts range that have
+    // a non-zero ccc.  That makes them reorder with the Halant that is
+    // ccc=9.  Just zero them, we don't need them in our Indic shaper.
+    pub const CCC84: u8 = 0; // length mark
+    pub const CCC91: u8 = 0; // ai length mark
+
+    // Thai
+    //
+    // Modify U+0E38 and U+0E39 (ccc=103) to be reordered before U+0E3A (ccc=9).
+    // Assign 3, which is unassigned otherwise.
+    // Uniscribe does this reordering too.
+    pub const CCC103: u8 = 3;   // sara u / sara uu
+    pub const CCC107: u8 = 107; // mai *
+
+    // Lao
+    pub const CCC118: u8 = 118; // sign u / sign uu
+    pub const CCC122: u8 = 122; // mai *
+
+    // Tibetan
+    //
+    // In case of multiple vowel-signs, use u first (but after achung)
+    // this allows Dzongkha multi-vowel shortcuts to render correctly
+    pub const CCC129: u8 = 129; // sign aa
+    pub const CCC130: u8 = 132; // sign i
+    pub const CCC132: u8 = 131; // sign u
 }

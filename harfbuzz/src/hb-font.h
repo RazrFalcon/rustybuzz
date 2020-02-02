@@ -156,4 +156,6 @@ HB_EXTERN unsigned int rb_face_get_upem(const void *rust_data);
 
 HB_EXTERN unsigned int rb_face_index_to_loc_format(const void *rust_data);
 
+HB_EXTERN hb_position_t hb_font_get_glyph_h_advance_default(hb_font_t *font, hb_codepoint_t glyph);
+
 HB_END_DECLS

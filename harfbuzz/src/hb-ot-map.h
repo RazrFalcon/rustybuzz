@@ -81,9 +81,9 @@ HB_EXTERN void rb_ot_map_get_stage_lookups(const rb_ot_map_t *map,
                                            const struct lookup_map_t **plookups,
                                            unsigned int *lookup_count);
 
-void hb_ot_map_substitute(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
+void hb_ot_layout_substitute(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
-void hb_ot_map_position(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
+void hb_ot_layout_position(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
 // Builder
 

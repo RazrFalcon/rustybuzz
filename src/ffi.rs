@@ -8,7 +8,6 @@ pub type hb_codepoint_t = u32;
 pub type hb_position_t = i32;
 pub type hb_mask_t = u32;
 pub type hb_direction_t = u32;
-pub type hb_var_int_t = u32;
 pub type hb_tag_t = u32;
 pub type hb_script_t = u32;
 pub type hb_memory_mode_t = u32;
@@ -92,7 +91,7 @@ pub struct hb_glyph_position_t {
     pub y_advance: hb_position_t,
     pub x_offset: hb_position_t,
     pub y_offset: hb_position_t,
-    pub var: hb_var_int_t,
+    pub var: u32,
 }
 
 #[repr(C)]
@@ -101,8 +100,8 @@ pub struct hb_glyph_info_t {
     pub codepoint: hb_codepoint_t,
     pub mask: hb_mask_t,
     pub cluster: u32,
-    pub var1: hb_var_int_t,
-    pub var2: hb_var_int_t,
+    pub var1: u32,
+    pub var2: u32,
 }
 
 #[repr(C)]
@@ -149,17 +148,30 @@ pub struct rb_ot_map_builder_t {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct hb_ot_shape_plan_t {
+pub struct hb_shape_plan_t {
     _unused: [u8; 0],
 }
 
 pub type pause_func_t = Option<
     unsafe extern "C" fn(
-        plan: *const hb_ot_shape_plan_t,
+        plan: *const hb_shape_plan_t,
         font: *mut hb_font_t,
         buffer: *mut rb_buffer_t,
     ),
 >;
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union hb_var_int_t {
+    pub var_u32: u32,
+    pub var_i32: i32,
+    pub var_u16: [u16; 2usize],
+    pub var_i16: [i16; 2usize],
+    pub var_u8: [u8; 4usize],
+    pub var_i8: [i8; 4usize],
+    _bindgen_union_align: u32,
+}
+
 
 extern "C" {
     pub fn hb_blob_create(data: *const c_char, length: u32, mode: hb_memory_mode_t, user_data: *mut c_void,
@@ -178,6 +190,7 @@ extern "C" {
     pub fn hb_font_set_ptem(font: *mut hb_font_t, ptem: f32);
     pub fn hb_font_set_variations(font: *mut hb_font_t, coords: *const i32, coords_length: u32);
     pub fn hb_font_get_glyph_extents(font: *mut hb_font_t, glyph: hb_codepoint_t, extents: *mut hb_glyph_extents_t) -> bool;
+    pub fn hb_font_get_glyph_h_advance_default(font: *mut hb_font_t, glyph: hb_codepoint_t) -> hb_position_t;
     pub fn hb_ot_glyf_get_side_bearing_var(font: *mut hb_font_t, glyph: u32, is_vertical: bool) -> i32;
     pub fn hb_ot_glyf_get_advance_var(font: *mut hb_font_t, glyph: u32, is_vertical: bool) -> u32;
     pub fn hb_shape(font: *mut hb_font_t, buffer: *mut rb_buffer_t, features: *const hb_feature_t, num_features: u32);

@@ -1,6 +1,8 @@
 use std::mem;
+use std::convert::TryFrom;
 
 use crate::{Font, Direction, Language, Script, SegmentProperties, CodePoint, Mask};
+use crate::unicode::{GeneralCategory, GeneralCategoryExt};
 use crate::ffi;
 
 const CONTEXT_LENGTH: usize = 5;
@@ -45,7 +47,7 @@ pub struct GlyphPosition {
     /// How much the glyph moves on the Y-axis before drawing it, this should
     /// not affect how much the line advances.
     pub y_offset: i32,
-    var: ffi::hb_var_int_t,
+    var: u32,
 }
 
 impl Default for GlyphPosition {
@@ -72,6 +74,52 @@ impl std::fmt::Debug for GlyphPosition {
 }
 
 
+#[derive(Clone, Copy, Default, Debug)]
+pub struct UnicodeProps(u16);
+
+#[allow(dead_code)]
+impl UnicodeProps {
+    pub const GENERAL_CATEGORY: Self    = Self(0x001F);
+    pub const IGNORABLE: Self           = Self(0x0020);
+    // MONGOLIAN FREE VARIATION SELECTOR 1..3, or TAG characters
+    pub const HIDDEN: Self              = Self(0x0040);
+    pub const CONTINUATION: Self        = Self(0x0080);
+
+    // If GEN_CAT=FORMAT, top byte masks:
+    pub const CF_ZWJ: Self              = Self(0x0100);
+    pub const CF_ZWNJ: Self             = Self(0x0200);
+
+    #[inline] pub fn contains(&self, other: Self) -> bool { (self.0 & other.0) == other.0 }
+    #[inline] pub fn remove(&mut self, other: Self) { self.0 &= !other.0; }
+}
+
+impl_bit_ops!(UnicodeProps);
+
+
+#[derive(Clone, Copy, Default, Debug)]
+pub struct GlyphPropsFlags(pub u16);
+
+#[allow(dead_code)]
+impl GlyphPropsFlags {
+    // The following three match LookupFlags::Ignore* numbers.
+    pub const BASE_GLYPH: Self      = Self(0x02);
+    pub const LIGATURE: Self        = Self(0x04);
+    pub const MARK: Self            = Self(0x08);
+
+    // The following are used internally; not derived from GDEF.
+    pub const SUBSTITUTED: Self     = Self(0x10);
+    pub const LIGATED: Self         = Self(0x20);
+    pub const MULTIPLIED: Self      = Self(0x40);
+
+    pub const PRESERVE: Self
+        = Self(Self::SUBSTITUTED.0 | Self::LIGATED.0 | Self::MULTIPLIED.0);
+
+    #[inline] pub fn contains(&self, other: Self) -> bool { (self.0 & other.0) == other.0 }
+}
+
+impl_bit_ops!(GlyphPropsFlags);
+
+
 /// A glyph info.
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -81,8 +129,70 @@ pub struct GlyphInfo {
     mask: Mask,
     /// Codepoint cluster.
     pub cluster: u32,
-    var1: ffi::hb_var_int_t,
-    var2: ffi::hb_var_int_t,
+    pub(crate) var1: u32,
+    pub(crate) var2: u32,
+}
+
+impl GlyphInfo {
+    pub fn as_char(&self) -> char {
+        char::try_from(self.codepoint).unwrap()
+    }
+
+    fn glyph_props(&self) -> u16 {
+        unsafe {
+            let v: ffi::hb_var_int_t = std::mem::transmute(self.var1);
+            v.var_u16[0]
+        }
+    }
+
+    fn unicode_props(&self) -> u16 {
+        unsafe {
+            let v: ffi::hb_var_int_t = std::mem::transmute(self.var2);
+            v.var_u16[0]
+        }
+    }
+
+    fn set_unicode_props(&mut self, n: u16) {
+        unsafe {
+            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
+            v.var_u16[0] = n;
+        }
+    }
+
+    pub(crate) fn general_category(&self) -> GeneralCategory {
+        let n = self.unicode_props() & UnicodeProps::GENERAL_CATEGORY.0;
+        GeneralCategory::from_hb(n as u32)
+    }
+
+    pub(crate) fn is_default_ignorable(&self) -> bool {
+        let n = self.unicode_props() & UnicodeProps::IGNORABLE.0;
+        n != 0 && !self.is_ligated()
+    }
+
+    pub(crate) fn is_ligated(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::LIGATED.0 != 0
+    }
+
+    pub(crate) fn is_unicode_mark(&self) -> bool {
+        self.general_category().is_unicode_mark()
+    }
+
+    pub(crate) fn modified_combining_class(&self) -> u8 {
+        if self.is_unicode_mark() {
+            (self.unicode_props() >> 8) as u8
+        } else {
+            0
+        }
+    }
+
+    pub(crate) fn set_modified_combining_class(&mut self, mcc: u8) {
+        if !self.is_unicode_mark() {
+            return;
+        }
+
+        let n = ((mcc as u16) << 8) | (self.unicode_props() & 0xFF);
+        self.set_unicode_props(n);
+    }
 }
 
 impl Default for GlyphInfo {
@@ -154,6 +264,7 @@ impl_bit_ops!(SerializeFlags);
 #[derive(Clone, Copy, Default, Debug)]
 pub struct BufferFlags(u8);
 
+#[allow(dead_code)]
 impl BufferFlags {
     pub const BEGINNING_OF_TEXT: Self           = Self(1 << 1);
     pub const END_OF_TEXT: Self                 = Self(1 << 2);
@@ -173,6 +284,7 @@ impl_bit_ops!(BufferFlags);
 #[derive(Clone, Copy, Default, Debug)]
 pub struct BufferScratchFlags(u32);
 
+#[allow(dead_code)]
 impl BufferScratchFlags {
     pub const HAS_NON_ASCII: Self          = Self(0x00000001);
     pub const HAS_DEFAULT_IGNORABLES: Self = Self(0x00000002);
@@ -187,9 +299,6 @@ impl BufferScratchFlags {
     pub const COMPLEX2: Self = Self(0x04000000);
     pub const COMPLEX3: Self = Self(0x08000000);
 
-    #[inline] pub fn empty() -> Self { Self(0) }
-    #[inline] pub fn all() -> Self { Self(251658303) }
-    #[inline] pub fn from_bits_truncate(bits: u32) -> Self { Self(bits & Self::all().0) }
     #[inline] pub fn contains(&self, other: Self) -> bool { (self.0 & other.0) == other.0 }
 }
 
@@ -233,7 +342,7 @@ pub struct Buffer {
     flags: BufferFlags,
     cluster_level: BufferClusterLevel,
     invisible: Option<char>,
-    scratch_flags: BufferScratchFlags,
+    pub(crate) scratch_flags: BufferScratchFlags,
     /// Maximum allowed operations.
     max_ops: i32,
 
@@ -250,16 +359,16 @@ pub struct Buffer {
     len: usize,
     out_len: usize,
 
-    info: Vec<GlyphInfo>,
-    pos: Vec<GlyphPosition>,
+    pub(crate) info: Vec<GlyphInfo>,
+    pub(crate) pos: Vec<GlyphPosition>,
 
     serial: u32,
 
     // Text before / after the main buffer contents.
     // Always in Unicode, and ordered outward.
     // Index 0 is for "pre-context", 1 for "post-context".
-    context: [[char; CONTEXT_LENGTH]; 2],
-    context_len: [usize; 2],
+    pub(crate) context: [[char; CONTEXT_LENGTH]; 2],
+    pub(crate) context_len: [usize; 2],
 }
 
 impl Buffer {
@@ -289,16 +398,24 @@ impl Buffer {
         buffer
     }
 
-    fn from_ptr(buffer: *const ffi::rb_buffer_t) -> &'static Buffer {
+    pub(crate) fn from_ptr(buffer: *const ffi::rb_buffer_t) -> &'static Buffer {
         unsafe { &*(buffer as *const Buffer) }
     }
 
-    fn from_ptr_mut(buffer: *mut ffi::rb_buffer_t) -> &'static mut Buffer {
+    pub(crate) fn from_ptr_mut(buffer: *mut ffi::rb_buffer_t) -> &'static mut Buffer {
         unsafe { &mut *(buffer as *mut Buffer) }
     }
 
     pub(crate) fn as_ptr(&mut self) -> *mut ffi::rb_buffer_t {
         self as *mut _ as *mut ffi::rb_buffer_t
+    }
+
+    pub fn info_slice(&self) -> &[GlyphInfo] {
+        &self.info[..self.len]
+    }
+
+    pub fn info_slice_mut(&mut self) -> &mut [GlyphInfo] {
+        &mut self.info[..self.len]
     }
 
     fn out_info(&self) -> &[GlyphInfo] {
@@ -424,8 +541,6 @@ impl Buffer {
     }
 
     pub(crate) fn guess_segment_properties(&mut self) {
-        use std::convert::TryFrom;
-
         if self.props.script.is_none() {
             for info in &self.info {
                 let c = char::try_from(info.codepoint).unwrap();
@@ -637,7 +752,7 @@ impl Buffer {
         }
     }
 
-    fn merge_clusters(&mut self, start: usize, end: usize) {
+    pub(crate) fn merge_clusters(&mut self, start: usize, end: usize) {
         if end - start < 2 {
             return;
         }
@@ -755,7 +870,7 @@ impl Buffer {
         self.skip_glyph();
     }
 
-    fn unsafe_to_break(&mut self, start: usize, end: usize) {
+    pub(crate) fn unsafe_to_break(&mut self, start: usize, end: usize) {
         if end - start < 2 {
             return;
         }
@@ -840,13 +955,18 @@ impl Buffer {
         }
     }
 
-    fn ensure(&mut self, size: usize) {
+    pub(crate) fn ensure(&mut self, size: usize) {
         if size < self.len {
             return;
         }
 
         self.info.resize(size, GlyphInfo::default());
         self.pos.resize(size, GlyphPosition::default());
+    }
+
+    pub(crate) fn set_len(&mut self, len: usize) {
+        self.ensure(len);
+        self.len = len;
     }
 
     fn make_room_for(&mut self, num_in: usize, num_out: usize) {
@@ -1169,9 +1289,7 @@ pub extern "C" fn rb_buffer_get_length(buffer: *const ffi::rb_buffer_t) -> u32 {
 
 #[no_mangle]
 pub extern "C" fn rb_buffer_set_length(buffer: *mut ffi::rb_buffer_t, len: u32) {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    buffer.ensure(len as usize);
-    buffer.len = len as usize;
+    Buffer::from_ptr_mut(buffer).set_len(len as usize);
 }
 
 #[no_mangle]

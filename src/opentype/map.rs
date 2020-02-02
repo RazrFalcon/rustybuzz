@@ -99,7 +99,7 @@ impl std::fmt::Debug for StageMap {
 }
 
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Default, Debug)]
 pub struct FeatureFlags(u8);
 
 impl FeatureFlags {
@@ -175,7 +175,7 @@ impl MapBuilder {
         builder
     }
 
-    fn add_feature(&mut self, tag: Tag, flags: FeatureFlags, value: u32) {
+    pub fn add_feature(&mut self, tag: Tag, flags: FeatureFlags, value: u32) {
         if tag.is_null() {
             return;
         }
@@ -188,6 +188,14 @@ impl MapBuilder {
             stage: self.current_stage,
         })
     }
+
+    pub fn enable_feature(&mut self, tag: Tag, flags: FeatureFlags, value: u32) {
+        self.add_feature(tag, flags | FeatureFlags::GLOBAL, value);
+    }
+
+//    pub fn disable_feature(&mut self, tag: Tag) {
+//        self.add_feature(tag, FeatureFlags::GLOBAL, 0);
+//    }
 
     fn add_lookups(
         &mut self,
@@ -248,7 +256,7 @@ impl MapBuilder {
         self.current_stage[table_index] += 1;
     }
 
-    fn add_gsub_pause(&mut self, pause: ffi::pause_func_t) {
+    pub fn add_gsub_pause(&mut self, pause: ffi::pause_func_t) {
         self.add_pause(0, pause);
     }
 

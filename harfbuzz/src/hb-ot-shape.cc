@@ -206,13 +206,13 @@ void hb_shape_plan_t::substitute(hb_font_t *font, rb_buffer_t *buffer) const
     if (unlikely(apply_morx))
         hb_aat_layout_substitute(this, font, buffer);
     else
-        hb_ot_map_substitute(map, this, font, buffer);
+        hb_ot_layout_substitute(map, this, font, buffer);
 }
 
 void hb_shape_plan_t::position(hb_font_t *font, rb_buffer_t *buffer) const
 {
     if (this->apply_gpos)
-        hb_ot_map_position(map, this, font, buffer);
+        hb_ot_layout_position(map, this, font, buffer);
     else if (this->apply_kerx)
         hb_aat_layout_position(this, font, buffer);
     else if (this->apply_kern)
