@@ -443,14 +443,14 @@ pub extern "C" fn rb_ot_layout_script_select_language(
 
         for lang in languages {
             if let Some((idx, _)) = script.language_by_tag(*lang) {
-                unsafe { *language_index = idx as u32; }
+                unsafe { *language_index = idx.0 as u32; }
                 return 1;
             }
         }
 
         // try finding 'dflt'
         if let Some((idx, _)) = script.language_by_tag(Tag::default_language()) {
-            unsafe { *language_index = idx as u32; }
+            unsafe { *language_index = idx.0 as u32; }
             return 0;
         }
 

@@ -37,7 +37,7 @@
 #include "hb-set-digest.hh"
 #include "hb-unicode.hh"
 
-struct hb_ot_shape_plan_t;
+struct hb_shape_plan_t;
 
 /*
  * kern
@@ -49,7 +49,7 @@ HB_INTERNAL bool hb_ot_layout_has_machine_kerning(hb_face_t *face);
 
 HB_INTERNAL bool hb_ot_layout_has_cross_kerning(hb_face_t *face);
 
-HB_INTERNAL void hb_ot_layout_kern(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+HB_INTERNAL void hb_ot_layout_kern(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
 
 /*
  * GDEF
@@ -132,7 +132,7 @@ static inline unsigned int _hb_next_syllable(hb_buffer_t *buffer, unsigned int s
 }
 
 static inline void
-_hb_clear_syllables(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+_hb_clear_syllables(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 {
     hb_glyph_info_t *info = hb_buffer_get_info(buffer);
     unsigned int count = hb_buffer_get_length(buffer);
@@ -471,7 +471,7 @@ static inline void _hb_glyph_info_clear_substituted(hb_glyph_info_t *info)
 }
 
 static inline void
-_hb_clear_substitution_flags(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+_hb_clear_substitution_flags(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 {
     hb_glyph_info_t *info = hb_buffer_get_info(buffer);
     unsigned int count = hb_buffer_get_length(buffer);

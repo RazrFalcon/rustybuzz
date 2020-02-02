@@ -111,7 +111,7 @@ bool hb_ot_layout_has_cross_kerning(hb_face_t *face)
     return face->table.kern->has_cross_stream();
 }
 
-void hb_ot_layout_kern(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+void hb_ot_layout_kern(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
     hb_blob_t *blob = font->face->table.kern.get_blob();
     const AAT::kern &kern = *blob->as<AAT::kern>();
@@ -489,7 +489,7 @@ static inline void apply_string_gsub(OT::hb_ot_apply_context_t *c,
 static void apply_gsub(const hb_ot_map_t *map,
                        const OT::GSUB &table,
                        const OT::hb_ot_layout_lookup_accelerator_t *accels,
-                       const hb_ot_shape_plan_t *plan,
+                       const hb_shape_plan_t *plan,
                        hb_font_t *font,
                        hb_buffer_t *buffer)
 {
@@ -498,15 +498,15 @@ static void apply_gsub(const hb_ot_map_t *map,
     OT::hb_ot_apply_context_t c(table_index, font, buffer);
     c.set_recurse_func(OT::SubstLookup::apply_recurse_func);
 
-    for (unsigned int stage_index = 0; stage_index < hb_ot_map_get_stages_length(map, table_index); stage_index++) {
-        const auto *stage = hb_ot_map_get_stage(map, table_index, stage_index);
+    for (unsigned int stage_index = 0; stage_index < rb_ot_map_get_stages_length(map, table_index); stage_index++) {
+        const auto *stage = rb_ot_map_get_stage(map, table_index, stage_index);
         for (; i < stage->last_lookup; i++) {
-            unsigned int lookup_index = hb_ot_map_get_lookup(map, table_index, i)->index;
+            unsigned int lookup_index = rb_ot_map_get_lookup(map, table_index, i)->index;
             c.set_lookup_index(lookup_index);
-            c.set_lookup_mask(hb_ot_map_get_lookup(map, table_index, i)->mask);
-            c.set_auto_zwj(hb_ot_map_get_lookup(map, table_index, i)->auto_zwj);
-            c.set_auto_zwnj(hb_ot_map_get_lookup(map, table_index, i)->auto_zwnj);
-            if (hb_ot_map_get_lookup(map, table_index, i)->random) {
+            c.set_lookup_mask(rb_ot_map_get_lookup(map, table_index, i)->mask);
+            c.set_auto_zwj(rb_ot_map_get_lookup(map, table_index, i)->auto_zwj);
+            c.set_auto_zwnj(rb_ot_map_get_lookup(map, table_index, i)->auto_zwnj);
+            if (rb_ot_map_get_lookup(map, table_index, i)->random) {
                 c.set_random(true);
                 hb_buffer_unsafe_to_break(buffer, 0, hb_buffer_get_length(buffer));
             }
@@ -549,7 +549,7 @@ static inline void apply_string_gpos(OT::hb_ot_apply_context_t *c,
 static void apply_gpos(const hb_ot_map_t *map,
                        const OT::GPOS &table,
                        const OT::hb_ot_layout_lookup_accelerator_t *accels,
-                       const hb_ot_shape_plan_t *plan,
+                       const hb_shape_plan_t *plan,
                        hb_font_t *font,
                        hb_buffer_t *buffer)
 {
@@ -558,15 +558,15 @@ static void apply_gpos(const hb_ot_map_t *map,
     OT::hb_ot_apply_context_t c(table_index, font, buffer);
     c.set_recurse_func(OT::PosLookup::apply_recurse_func);
 
-    for (unsigned int stage_index = 0; stage_index < hb_ot_map_get_stages_length(map, table_index); stage_index++) {
-        const auto *stage = hb_ot_map_get_stage(map, table_index, stage_index);
+    for (unsigned int stage_index = 0; stage_index < rb_ot_map_get_stages_length(map, table_index); stage_index++) {
+        const auto *stage = rb_ot_map_get_stage(map, table_index, stage_index);
         for (; i < stage->last_lookup; i++) {
-            unsigned int lookup_index = hb_ot_map_get_lookup(map, table_index, i)->index;
+            unsigned int lookup_index = rb_ot_map_get_lookup(map, table_index, i)->index;
             c.set_lookup_index(lookup_index);
-            c.set_lookup_mask(hb_ot_map_get_lookup(map, table_index, i)->mask);
-            c.set_auto_zwj(hb_ot_map_get_lookup(map, table_index, i)->auto_zwj);
-            c.set_auto_zwnj(hb_ot_map_get_lookup(map, table_index, i)->auto_zwnj);
-            if (hb_ot_map_get_lookup(map, table_index, i)->random) {
+            c.set_lookup_mask(rb_ot_map_get_lookup(map, table_index, i)->mask);
+            c.set_auto_zwj(rb_ot_map_get_lookup(map, table_index, i)->auto_zwj);
+            c.set_auto_zwnj(rb_ot_map_get_lookup(map, table_index, i)->auto_zwnj);
+            if (rb_ot_map_get_lookup(map, table_index, i)->random) {
                 c.set_random(true);
                 hb_buffer_unsafe_to_break(buffer, 0, hb_buffer_get_length(buffer));
             }
@@ -580,12 +580,12 @@ static void apply_gpos(const hb_ot_map_t *map,
     }
 }
 
-void hb_ot_map_substitute(const hb_ot_map_t *map, const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+void hb_ot_map_substitute(const hb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
     apply_gsub(map, *font->face->table.GSUB->table, font->face->table.GSUB->accels, plan, font, buffer);
 }
 
-void hb_ot_map_position(const hb_ot_map_t *map, const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+void hb_ot_map_position(const hb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
     apply_gpos(map, *font->face->table.GPOS->table, font->face->table.GPOS->accels, plan, font, buffer);
 }

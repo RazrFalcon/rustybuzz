@@ -24,10 +24,10 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb-shape-plan.hh"
 #include "hb-buffer.hh"
 #include "hb-font.hh"
 #include "hb-shaper.hh"
+#include "hb-ot-shape.hh"
 #include "hb.hh"
 
 /**
@@ -46,28 +46,6 @@
  * hb_shape_plan_t
  */
 
-/**
- * hb_shape_plan_create: (Xconstructor)
- * @face:
- * @props:
- * @user_features: (array length=num_user_features):
- * @num_user_features:
- * @shaper_list: (array zero-terminated=1):
- *
- *
- *
- * Return value: (transfer full):
- *
- * Since: 0.9.7
- **/
-hb_shape_plan_t *hb_shape_plan_create(hb_face_t *face,
-                                      const hb_segment_properties_t *props,
-                                      const hb_feature_t *user_features,
-                                      unsigned int num_user_features)
-{
-    return hb_shape_plan_create2(face, props, user_features, num_user_features, nullptr, 0);
-}
-
 hb_shape_plan_t *hb_shape_plan_create2(hb_face_t *face,
                                        const hb_segment_properties_t *props,
                                        const hb_feature_t *user_features,
@@ -77,56 +55,29 @@ hb_shape_plan_t *hb_shape_plan_create2(hb_face_t *face,
 {
     assert(props->direction != HB_DIRECTION_INVALID);
 
-    hb_shape_plan_t *shape_plan;
-
     if (unlikely(!props))
-        return hb_shape_plan_get_empty();
-    if (!(shape_plan = hb_object_create<hb_shape_plan_t>()))
-        return hb_shape_plan_get_empty();
+        return nullptr;
 
     if (unlikely(!face))
         face = hb_face_get_empty();
     hb_face_make_immutable(face);
+
+    hb_shape_plan_t *shape_plan = (hb_shape_plan_t *)calloc(1, sizeof(hb_shape_plan_t));
+    if (!shape_plan)
+        return nullptr;
 
     unsigned int variations_index[2];
     for (unsigned int table_index = 0; table_index < 2; table_index++)
         rb_ot_layout_table_find_feature_variations(
             face->rust_data, table_tags[table_index], coords, num_coords, &variations_index[table_index]);
 
-    if (unlikely(
-            !shape_plan->ot.init0(face, variations_index, props, user_features, num_user_features, coords, num_coords)))
-        return hb_shape_plan_get_empty();
+    auto res = shape_plan->init0(face, variations_index, props, user_features, num_user_features, coords, num_coords);
+    if (unlikely(!res)) {
+        hb_shape_plan_destroy(shape_plan);
+        return nullptr;
+    }
 
     return shape_plan;
-}
-
-/**
- * hb_shape_plan_get_empty:
- *
- *
- *
- * Return value: (transfer full):
- *
- * Since: 0.9.7
- **/
-hb_shape_plan_t *hb_shape_plan_get_empty()
-{
-    return const_cast<hb_shape_plan_t *>(&Null(hb_shape_plan_t));
-}
-
-/**
- * hb_shape_plan_reference: (skip)
- * @shape_plan: a shape plan.
- *
- *
- *
- * Return value: (transfer full):
- *
- * Since: 0.9.7
- **/
-hb_shape_plan_t *hb_shape_plan_reference(hb_shape_plan_t *shape_plan)
-{
-    return hb_object_reference(shape_plan);
 }
 
 /**
@@ -139,10 +90,7 @@ hb_shape_plan_t *hb_shape_plan_reference(hb_shape_plan_t *shape_plan)
  **/
 void hb_shape_plan_destroy(hb_shape_plan_t *shape_plan)
 {
-    if (!hb_object_destroy(shape_plan))
-        return;
-
-    shape_plan->ot.fini();
+    shape_plan->fini();
     free(shape_plan);
 }
 
@@ -168,9 +116,6 @@ hb_bool_t hb_shape_plan_execute(hb_shape_plan_t *shape_plan,
 {
     if (unlikely(!hb_buffer_get_length(buffer)))
         return true;
-
-    if (unlikely(hb_object_is_inert(shape_plan)))
-        return false;
 
     return _hb_ot_shape(shape_plan, font, buffer, features, num_features);
 }

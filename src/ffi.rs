@@ -135,6 +135,32 @@ pub struct hb_face_t {
     _unused: [u8; 0],
 }
 
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct hb_ot_map_t {
+    _unused: [u8; 0],
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct hb_ot_map_builder_t {
+    _unused: [u8; 0],
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct hb_ot_shape_plan_t {
+    _unused: [u8; 0],
+}
+
+pub type pause_func_t = Option<
+    unsafe extern "C" fn(
+        plan: *const hb_ot_shape_plan_t,
+        font: *mut hb_font_t,
+        buffer: *mut hb_buffer_t,
+    ),
+>;
+
 extern "C" {
     pub fn hb_blob_create(data: *const c_char, length: u32, mode: hb_memory_mode_t, user_data: *mut c_void,
                           destroy: hb_destroy_func_t) -> *mut hb_blob_t;

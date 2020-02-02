@@ -195,7 +195,7 @@ static const struct thai_below_state_machine_edge_t {
 };
 // clang-format on
 
-static void do_thai_pua_shaping(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
+static void do_thai_pua_shaping(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
 {
 #ifdef HB_NO_OT_SHAPE_COMPLEX_THAI_FALLBACK
     return;
@@ -234,7 +234,7 @@ static void do_thai_pua_shaping(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buf
     }
 }
 
-static void preprocess_text_thai(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
+static void preprocess_text_thai(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
 {
     /* This function implements the shaping logic documented here:
      *
@@ -333,7 +333,7 @@ static void preprocess_text_thai(const hb_ot_shape_plan_t *plan, hb_buffer_t *bu
     hb_buffer_swap_buffers(buffer);
 
     /* If font has Thai GSUB, we are done. */
-    if (plan->props.script == HB_SCRIPT_THAI && !hb_ot_map_has_found_script(plan->map, 0))
+    if (plan->props.script == HB_SCRIPT_THAI && !rb_ot_map_has_found_script(plan->map, 0))
         do_thai_pua_shaping(plan, buffer, font);
 }
 

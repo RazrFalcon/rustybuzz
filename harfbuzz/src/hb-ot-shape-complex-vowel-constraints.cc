@@ -31,7 +31,7 @@ static void _output_with_dotted_circle(hb_buffer_t *buffer)
     hb_buffer_next_glyph(buffer);
 }
 
-void _hb_preprocess_text_vowel_constraints(const hb_ot_shape_plan_t *plan HB_UNUSED,
+void _hb_preprocess_text_vowel_constraints(const hb_shape_plan_t *plan HB_UNUSED,
                                            hb_buffer_t *buffer,
                                            hb_font_t *font HB_UNUSED)
 {

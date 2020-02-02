@@ -33,7 +33,7 @@
 
 struct hb_shape_plan_key_t;
 
-struct hb_ot_shape_plan_t
+struct hb_shape_plan_t
 {
     hb_segment_properties_t props;
     const struct hb_ot_complex_shaper_t *shaper;
@@ -90,5 +90,5 @@ struct hb_ot_shape_planner_t
     HB_INTERNAL hb_ot_shape_planner_t(hb_face_t *face, const hb_segment_properties_t *props);
     HB_INTERNAL ~hb_ot_shape_planner_t();
 
-    HB_INTERNAL void compile(hb_ot_shape_plan_t &plan, unsigned int *variations_index);
+    HB_INTERNAL void compile(hb_shape_plan_t &plan, unsigned int *variations_index);
 };

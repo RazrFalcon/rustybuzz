@@ -61,37 +61,37 @@ myanmar_other_features[] =
 };
 // clang-format on
 
-static void setup_syllables_myanmar(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
-static void reorder_myanmar(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+static void setup_syllables_myanmar(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+static void reorder_myanmar(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
 
 static void collect_features_myanmar(hb_ot_shape_planner_t *plan)
 {
     hb_ot_map_builder_t *map = plan->map;
 
     /* Do this before any lookups have been applied. */
-    hb_ot_map_builder_add_gsub_pause(map, setup_syllables_myanmar);
+    rb_ot_map_builder_add_gsub_pause(map, setup_syllables_myanmar);
 
-    hb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
     /* The Indic specs do not require ccmp, but we apply it here since if
      * there is a use of it, it's typically at the beginning. */
-    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
 
-    hb_ot_map_builder_add_gsub_pause(map, reorder_myanmar);
+    rb_ot_map_builder_add_gsub_pause(map, reorder_myanmar);
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(myanmar_basic_features); i++) {
-        hb_ot_map_builder_enable_feature(map, myanmar_basic_features[i], F_MANUAL_ZWJ, 1);
-        hb_ot_map_builder_add_gsub_pause(map, nullptr);
+        rb_ot_map_builder_enable_feature(map, myanmar_basic_features[i], F_MANUAL_ZWJ, 1);
+        rb_ot_map_builder_add_gsub_pause(map, nullptr);
     }
 
-    hb_ot_map_builder_add_gsub_pause(map, _hb_clear_syllables);
+    rb_ot_map_builder_add_gsub_pause(map, _hb_clear_syllables);
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(myanmar_other_features); i++)
-        hb_ot_map_builder_enable_feature(map, myanmar_other_features[i], F_MANUAL_ZWJ, 1);
+        rb_ot_map_builder_enable_feature(map, myanmar_other_features[i], F_MANUAL_ZWJ, 1);
 }
 
 static void override_features_myanmar(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_disable_feature(plan->map, HB_TAG('l', 'i', 'g', 'a'));
+    rb_ot_map_builder_disable_feature(plan->map, HB_TAG('l', 'i', 'g', 'a'));
 }
 
 enum myanmar_syllable_type_t {
@@ -104,7 +104,7 @@ enum myanmar_syllable_type_t {
 #include "hb-ot-shape-complex-myanmar-machine.hh"
 
 static void
-setup_masks_myanmar(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
+setup_masks_myanmar(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
     /* We cannot setup masks here.  We save information about characters
      * and setup masks later on in a pause-callback. */
@@ -116,7 +116,7 @@ setup_masks_myanmar(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffe
 }
 
 static void
-setup_syllables_myanmar(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+setup_syllables_myanmar(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 {
     find_syllables_myanmar(buffer);
     foreach_syllable(buffer, start, end) hb_buffer_unsafe_to_break(buffer, start, end);
@@ -217,7 +217,7 @@ static void initial_reordering_consonant_syllable(hb_buffer_t *buffer, unsigned 
     hb_buffer_sort(buffer, start, end, compare_myanmar_order);
 }
 
-static void reorder_syllable_myanmar(const hb_ot_shape_plan_t *plan HB_UNUSED,
+static void reorder_syllable_myanmar(const hb_shape_plan_t *plan HB_UNUSED,
                                      hb_face_t *face HB_UNUSED,
                                      hb_buffer_t *buffer,
                                      unsigned int start,
@@ -239,7 +239,7 @@ static void reorder_syllable_myanmar(const hb_ot_shape_plan_t *plan HB_UNUSED,
 }
 
 static inline void
-insert_dotted_circles_myanmar(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font, hb_buffer_t *buffer)
+insert_dotted_circles_myanmar(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font, hb_buffer_t *buffer)
 {
     if (unlikely(hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
         return;
@@ -288,7 +288,7 @@ insert_dotted_circles_myanmar(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_
     hb_buffer_swap_buffers(buffer);
 }
 
-static void reorder_myanmar(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+static void reorder_myanmar(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
     insert_dotted_circles_myanmar(plan, font, buffer);
 

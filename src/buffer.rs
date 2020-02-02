@@ -5,7 +5,7 @@ use crate::ffi;
 
 const CONTEXT_LENGTH: usize = 5;
 
-mod glyph_flag {
+pub(crate) mod glyph_flag {
     /// Indicates that if input text is broken at the
     /// beginning of the cluster this glyph is part of,
     /// then both sides need to be re-shaped, as the

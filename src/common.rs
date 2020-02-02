@@ -164,9 +164,8 @@ impl std::str::FromStr for Direction {
 pub struct Language(pub(crate) std::ffi::CString);
 
 impl Language {
-    pub fn new(name: &str) -> Self {
-        let name = name.to_ascii_lowercase();
-        Language(std::ffi::CString::new(name.into_bytes()).unwrap())
+    pub fn as_str(&self) -> &str {
+        self.0.to_str().unwrap()
     }
 }
 
@@ -175,7 +174,8 @@ impl std::str::FromStr for Language {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if !s.is_empty() {
-            Ok(Language::new(s))
+            let s = s.to_ascii_lowercase();
+            Ok(Language(std::ffi::CString::new(s.into_bytes()).unwrap()))
         } else {
             Err("invalid language")
         }

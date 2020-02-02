@@ -793,7 +793,7 @@ struct hb_aat_apply_context_t : hb_dispatch_context_t<hb_aat_apply_context_t, bo
         return r;
     }
 
-    const hb_ot_shape_plan_t *plan;
+    const hb_shape_plan_t *plan;
     hb_font_t *font;
     hb_face_t *face;
     hb_buffer_t *buffer;
@@ -804,7 +804,7 @@ struct hb_aat_apply_context_t : hb_dispatch_context_t<hb_aat_apply_context_t, bo
     unsigned int lookup_index;
     unsigned int debug_depth;
 
-    HB_INTERNAL hb_aat_apply_context_t(const hb_ot_shape_plan_t *plan_,
+    HB_INTERNAL hb_aat_apply_context_t(const hb_shape_plan_t *plan_,
                                        hb_font_t *font_,
                                        hb_buffer_t *buffer_,
                                        hb_blob_t *blob = const_cast<hb_blob_t *>(&Null(hb_blob_t)));

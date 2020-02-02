@@ -31,5 +31,4 @@
 #include "hb-shaper.hh"
 #include "hb-face.hh"
 #include "hb-font.hh"
-#include "hb-shape-plan.hh"
 #include "hb-buffer.hh"

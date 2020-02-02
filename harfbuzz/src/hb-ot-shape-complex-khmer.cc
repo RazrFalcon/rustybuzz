@@ -78,16 +78,16 @@ enum {
     KHMER_BASIC_FEATURES = _KHMER_PRES, /* Don't forget to update this! */
 };
 
-static void setup_syllables_khmer(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
-static void reorder_khmer(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+static void setup_syllables_khmer(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+static void reorder_khmer(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
 
 static void collect_features_khmer(hb_ot_shape_planner_t *plan)
 {
     hb_ot_map_builder_t *map = plan->map;
 
     /* Do this before any lookups have been applied. */
-    hb_ot_map_builder_add_gsub_pause(map, setup_syllables_khmer);
-    hb_ot_map_builder_add_gsub_pause(map, reorder_khmer);
+    rb_ot_map_builder_add_gsub_pause(map, setup_syllables_khmer);
+    rb_ot_map_builder_add_gsub_pause(map, reorder_khmer);
 
     /* Testing suggests that Uniscribe does NOT pause between basic
      * features.  Test with KhmerUI.ttf and the following three
@@ -99,17 +99,17 @@ static void collect_features_khmer(hb_ot_shape_planner_t *plan)
      *
      * https://github.com/harfbuzz/harfbuzz/issues/974
      */
-    hb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
-    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
 
     unsigned int i = 0;
     for (; i < KHMER_BASIC_FEATURES; i++)
-        hb_ot_map_builder_add_feature(map, &khmer_features[i]);
+        rb_ot_map_builder_add_feature(map, khmer_features[i].tag, khmer_features[i].flags, 1);
 
-    hb_ot_map_builder_add_gsub_pause(map, _hb_clear_syllables);
+    rb_ot_map_builder_add_gsub_pause(map, _hb_clear_syllables);
 
     for (; i < KHMER_NUM_FEATURES; i++)
-        hb_ot_map_builder_add_feature(map, &khmer_features[i]);
+        rb_ot_map_builder_add_feature(map, khmer_features[i].tag, khmer_features[i].flags, 1);
 }
 
 static void override_features_khmer(hb_ot_shape_planner_t *plan)
@@ -119,14 +119,14 @@ static void override_features_khmer(hb_ot_shape_planner_t *plan)
     /* Khmer spec has 'clig' as part of required shaping features:
      * "Apply feature 'clig' to form ligatures that are desired for
      * typographical correctness.", hence in overrides... */
-    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'l', 'i', 'g'), F_NONE, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('c', 'l', 'i', 'g'), F_NONE, 1);
 
     /* Uniscribe does not apply 'kern' in Khmer. */
     if (hb_options().uniscribe_bug_compatible) {
-        hb_ot_map_builder_disable_feature(map, HB_TAG('k', 'e', 'r', 'n'));
+        rb_ot_map_builder_disable_feature(map, HB_TAG('k', 'e', 'r', 'n'));
     }
 
-    hb_ot_map_builder_disable_feature(map, HB_TAG('l', 'i', 'g', 'a'));
+    rb_ot_map_builder_disable_feature(map, HB_TAG('l', 'i', 'g', 'a'));
 }
 
 struct khmer_shape_plan_t
@@ -156,7 +156,7 @@ struct khmer_shape_plan_t
     hb_mask_t mask_array[KHMER_NUM_FEATURES];
 };
 
-static void *data_create_khmer(const hb_ot_shape_plan_t *plan)
+static void *data_create_khmer(const hb_shape_plan_t *plan)
 {
     khmer_shape_plan_t *khmer_plan = (khmer_shape_plan_t *)calloc(1, sizeof(khmer_shape_plan_t));
     if (unlikely(!khmer_plan))
@@ -168,7 +168,7 @@ static void *data_create_khmer(const hb_ot_shape_plan_t *plan)
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(khmer_plan->mask_array); i++)
         khmer_plan->mask_array[i] =
-            (khmer_features[i].flags & F_GLOBAL) ? 0 : hb_ot_map_get_1_mask(plan->map, khmer_features[i].tag);
+            (khmer_features[i].flags & F_GLOBAL) ? 0 : rb_ot_map_get_1_mask(plan->map, khmer_features[i].tag);
 
     return khmer_plan;
 }
@@ -186,7 +186,7 @@ enum khmer_syllable_type_t {
 
 #include "hb-ot-shape-complex-khmer-machine.hh"
 
-static void setup_masks_khmer(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
+static void setup_masks_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
     /* We cannot setup masks here.  We save information about characters
      * and setup masks later on in a pause-callback. */
@@ -198,7 +198,7 @@ static void setup_masks_khmer(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffe
 }
 
 static void
-setup_syllables_khmer(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+setup_syllables_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 {
     find_syllables_khmer(buffer);
     foreach_syllable(buffer, start, end) hb_buffer_unsafe_to_break(buffer, start, end);
@@ -207,7 +207,7 @@ setup_syllables_khmer(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font 
 /* Rules from:
  * https://docs.microsoft.com/en-us/typography/script-development/devanagari */
 
-static void reorder_consonant_syllable(const hb_ot_shape_plan_t *plan,
+static void reorder_consonant_syllable(const hb_shape_plan_t *plan,
                                        hb_face_t *face HB_UNUSED,
                                        hb_buffer_t *buffer,
                                        unsigned int start,
@@ -280,7 +280,7 @@ static void reorder_consonant_syllable(const hb_ot_shape_plan_t *plan,
 }
 
 static void reorder_syllable_khmer(
-    const hb_ot_shape_plan_t *plan, hb_face_t *face, hb_buffer_t *buffer, unsigned int start, unsigned int end)
+    const hb_shape_plan_t *plan, hb_face_t *face, hb_buffer_t *buffer, unsigned int start, unsigned int end)
 {
     khmer_syllable_type_t syllable_type = (khmer_syllable_type_t)(hb_buffer_get_info(buffer)[start].syllable() & 0x0F);
     switch (syllable_type) {
@@ -295,7 +295,7 @@ static void reorder_syllable_khmer(
 }
 
 static inline void
-insert_dotted_circles_khmer(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font, hb_buffer_t *buffer)
+insert_dotted_circles_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font, hb_buffer_t *buffer)
 {
     if (unlikely(hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
         return;
@@ -350,7 +350,7 @@ insert_dotted_circles_khmer(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t 
     hb_buffer_swap_buffers(buffer);
 }
 
-static void reorder_khmer(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+static void reorder_khmer(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
     insert_dotted_circles_khmer(plan, font, buffer);
 

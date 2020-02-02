@@ -93,6 +93,7 @@ mod unicode;
 mod tag;
 mod tag_table;
 mod text_parser;
+mod opentype;
 
 pub use ttf_parser::Tag;
 

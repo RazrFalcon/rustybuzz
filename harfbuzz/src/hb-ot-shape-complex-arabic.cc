@@ -151,9 +151,9 @@ static const struct arabic_state_table_entry {
 };
 // clang-format on
 
-static void arabic_fallback_shape(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+static void arabic_fallback_shape(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
 
-static void record_stch(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+static void record_stch(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
 
 static void collect_features_arabic(hb_ot_shape_planner_t *plan)
 {
@@ -181,33 +181,33 @@ static void collect_features_arabic(hb_ot_shape_planner_t *plan)
      * work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
      */
 
-    hb_ot_map_builder_enable_feature(map, HB_TAG('s', 't', 'c', 'h'), F_NONE, 1);
-    hb_ot_map_builder_add_gsub_pause(map, record_stch);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('s', 't', 'c', 'h'), F_NONE, 1);
+    rb_ot_map_builder_add_gsub_pause(map, record_stch);
 
-    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
-    hb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('c', 'c', 'm', 'p'), F_NONE, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('l', 'o', 'c', 'l'), F_NONE, 1);
 
-    hb_ot_map_builder_add_gsub_pause(map, nullptr);
+    rb_ot_map_builder_add_gsub_pause(map, nullptr);
 
     for (unsigned int i = 0; i < ARABIC_NUM_FEATURES; i++) {
         bool has_fallback = plan->props.script == HB_SCRIPT_ARABIC && !FEATURE_IS_SYRIAC(arabic_features[i]);
-        hb_ot_map_builder_add_feature_full(map, arabic_features[i], has_fallback ? F_HAS_FALLBACK : F_NONE, 1);
-        hb_ot_map_builder_add_gsub_pause(map, nullptr);
+        rb_ot_map_builder_add_feature(map, arabic_features[i], has_fallback ? F_HAS_FALLBACK : F_NONE, 1);
+        rb_ot_map_builder_add_gsub_pause(map, nullptr);
     }
 
     /* Normally, Unicode says a ZWNJ means "don't ligate".  In Arabic script
      * however, it says a ZWJ should also mean "don't ligate".  So we run
      * the main ligating features as MANUAL_ZWJ. */
 
-    hb_ot_map_builder_enable_feature(map, HB_TAG('r', 'l', 'i', 'g'), F_MANUAL_ZWJ | F_HAS_FALLBACK, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('r', 'l', 'i', 'g'), F_MANUAL_ZWJ | F_HAS_FALLBACK, 1);
 
     if (plan->props.script == HB_SCRIPT_ARABIC)
-        hb_ot_map_builder_add_gsub_pause(map, arabic_fallback_shape);
+        rb_ot_map_builder_add_gsub_pause(map, arabic_fallback_shape);
 
     /* No pause after rclt.  See 98460779bae19e4d64d29461ff154b3527bf8420. */
-    hb_ot_map_builder_enable_feature(map, HB_TAG('r', 'c', 'l', 't'), F_MANUAL_ZWJ, 1);
-    hb_ot_map_builder_enable_feature(map, HB_TAG('c', 'a', 'l', 't'), F_MANUAL_ZWJ, 1);
-    hb_ot_map_builder_add_gsub_pause(map, nullptr);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('r', 'c', 'l', 't'), F_MANUAL_ZWJ, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('c', 'a', 'l', 't'), F_MANUAL_ZWJ, 1);
+    rb_ot_map_builder_add_gsub_pause(map, nullptr);
 
     /* And undo here. */
 
@@ -220,7 +220,7 @@ static void collect_features_arabic(hb_ot_shape_planner_t *plan)
      * to fixup broken glyph sequences.  Oh well...
      * Test case: U+0643,U+0640,U+0631. */
     // map->enable_feature (HB_TAG('c','s','w','h'));
-    hb_ot_map_builder_enable_feature(map, HB_TAG('m', 's', 'e', 't'), F_NONE, 1);
+    rb_ot_map_builder_enable_feature(map, HB_TAG('m', 's', 'e', 't'), F_NONE, 1);
 }
 
 #include "hb-ot-shape-complex-arabic-fallback.hh"
@@ -239,18 +239,18 @@ struct arabic_shape_plan_t
     unsigned int has_stch : 1;
 };
 
-void *data_create_arabic(const hb_ot_shape_plan_t *plan)
+void *data_create_arabic(const hb_shape_plan_t *plan)
 {
     arabic_shape_plan_t *arabic_plan = (arabic_shape_plan_t *)calloc(1, sizeof(arabic_shape_plan_t));
     if (unlikely(!arabic_plan))
         return nullptr;
 
     arabic_plan->do_fallback = plan->props.script == HB_SCRIPT_ARABIC;
-    arabic_plan->has_stch = !!hb_ot_map_get_1_mask(plan->map, HB_TAG('s', 't', 'c', 'h'));
+    arabic_plan->has_stch = !!rb_ot_map_get_1_mask(plan->map, HB_TAG('s', 't', 'c', 'h'));
     for (unsigned int i = 0; i < ARABIC_NUM_FEATURES; i++) {
-        arabic_plan->mask_array[i] = hb_ot_map_get_1_mask(plan->map, arabic_features[i]);
+        arabic_plan->mask_array[i] = rb_ot_map_get_1_mask(plan->map, arabic_features[i]);
         arabic_plan->do_fallback = arabic_plan->do_fallback && (FEATURE_IS_SYRIAC(arabic_features[i]) ||
-                                                                hb_ot_map_needs_fallback(plan->map, arabic_features[i]));
+                                                                rb_ot_map_needs_fallback(plan->map, arabic_features[i]));
     }
 
     return arabic_plan;
@@ -342,13 +342,13 @@ void setup_masks_arabic_plan(const arabic_shape_plan_t *arabic_plan, hb_buffer_t
     }
 }
 
-static void setup_masks_arabic(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
+static void setup_masks_arabic(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
     const arabic_shape_plan_t *arabic_plan = (const arabic_shape_plan_t *)plan->data;
     setup_masks_arabic_plan(arabic_plan, buffer, plan->props.script);
 }
 
-static void arabic_fallback_shape(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+static void arabic_fallback_shape(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
 #ifdef HB_NO_OT_SHAPE_COMPLEX_ARABIC_FALLBACK
     return;
@@ -381,7 +381,7 @@ retry:
  * marks can use it as well.
  */
 
-static void record_stch(const hb_ot_shape_plan_t *plan, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+static void record_stch(const hb_shape_plan_t *plan, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 {
     const arabic_shape_plan_t *arabic_plan = (const arabic_shape_plan_t *)plan->data;
     if (!arabic_plan->has_stch)
@@ -402,7 +402,7 @@ static void record_stch(const hb_ot_shape_plan_t *plan, hb_font_t *font HB_UNUSE
         }
 }
 
-static void apply_stch(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
+static void apply_stch(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
 {
     if (likely(!(*hb_buffer_get_scratch_flags(buffer) & HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH)))
         return;
@@ -533,7 +533,7 @@ static void apply_stch(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *bu
     }
 }
 
-static void postprocess_glyphs_arabic(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
+static void postprocess_glyphs_arabic(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
 {
     apply_stch(plan, buffer, font);
 }
@@ -561,7 +561,7 @@ static inline bool info_is_mcm(const hb_glyph_info_t &info)
     return false;
 }
 
-static void reorder_marks_arabic(const hb_ot_shape_plan_t *plan HB_UNUSED,
+static void reorder_marks_arabic(const hb_shape_plan_t *plan HB_UNUSED,
                                  hb_buffer_t *buffer,
                                  unsigned int start,
                                  unsigned int end)

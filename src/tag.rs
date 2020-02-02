@@ -1,8 +1,6 @@
-use std::borrow::Cow;
-
 use smallvec::SmallVec;
 
-use crate::{Tag, Script, script, tag_table, ffi};
+use crate::{Tag, Script, Language, script, tag_table};
 
 type ThreeTags = SmallVec<[Tag; 3]>;
 
@@ -21,73 +19,13 @@ impl<A: smallvec::Array> SmallVecExt for SmallVec<A> {
     }
 }
 
-
-/// A BCP 47 language tag.
-#[derive(Clone)]
-struct Language<'a>(Cow<'a, str>);
-
-impl<'a> Language<'a> {
-    fn from_str(language: &'a str) -> Option<Self> {
-        if !language.trim().is_empty() {
-            Some(Language(Cow::Borrowed(language)))
-        } else {
-            None
-        }
-    }
-
-    fn as_str(&self) -> &str {
-        self.0.as_ref()
-    }
-}
-
-// HarfBuzz implements a case-insensitive comparison operator for Language.
-impl PartialEq for Language<'_> {
-    fn eq(&self, other: &Self) -> bool {
-        self.as_str().eq_ignore_ascii_case(other.as_str())
-    }
-}
-
-#[no_mangle]
-#[allow(missing_docs)]
-pub extern "C" fn rb_ot_tags_from_script_and_language(
-    script: ffi::hb_script_t,
-    language: *const std::os::raw::c_char,
-    script_count: *mut u32,
-    mut script_tags: *mut ffi::hb_tag_t,
-    language_count: *mut u32,
-    mut language_tags: *mut ffi::hb_tag_t,
-) {
-    let script = if script == 0 { None } else { Some(Script(Tag(script))) };
-    let language = if language.is_null() {
-        None
-    } else {
-        let s = unsafe { std::ffi::CStr::from_ptr(language).to_str().unwrap() };
-        Language::from_str(s)
-    };
-
-    let (scripts, languages) = tags_from_script_and_language(script, language.as_ref());
-
-    unsafe {
-        *script_count = scripts.len() as u32;
-        *language_count = languages.len() as u32;
-
-        for script in scripts {
-            *script_tags = script.as_u32();
-            script_tags = script_tags.offset(1);
-        }
-
-        for language in languages {
-            *language_tags = language.as_u32();
-            language_tags = language_tags.offset(1);
-        }
-    }
-}
-
 /// Converts an `Script` and an `Language` to script and language tags.
-fn tags_from_script_and_language(
+pub(crate) fn tags_from_script_and_language(
     script: Option<Script>,
     language: Option<&Language>,
 ) -> (ThreeTags, ThreeTags) {
+    use std::str::FromStr;
+
     let mut needs_script = true;
     let mut scripts = SmallVec::new();
     let mut languages = SmallVec::new();
@@ -132,8 +70,8 @@ fn tags_from_script_and_language(
         );
 
         if needs_language {
-            if let Some(ref prefix) = Language::from_str(prefix) {
-                tags_from_language(prefix, &mut languages);
+            if let Ok(prefix) = Language::from_str(prefix) {
+                tags_from_language(&prefix, &mut languages);
             }
         }
     }
@@ -312,6 +250,7 @@ mod tests {
     #![allow(non_snake_case)]
 
     use super::*;
+    use std::str::FromStr;
 
     fn new_tag_to_script(tag: Tag) -> Option<Script> {
         match &tag.to_bytes() {
@@ -442,7 +381,7 @@ mod tests {
             fn $name() {
                 let tag = Tag::from_bytes_lossy($tag.as_bytes());
                 let (scripts, _) = tags_from_script_and_language(
-                    $script, Language::from_str($lang).as_ref(),
+                    $script, Language::from_str($lang).ok().as_ref(),
                 );
                 if !scripts.is_empty() {
                     assert_eq!(scripts.as_slice(), &[tag]);
@@ -501,7 +440,7 @@ mod tests {
             fn $name() {
                 let tag = Tag::from_bytes_lossy($tag.as_bytes());
                 let (_, languages) = tags_from_script_and_language(
-                    None, Language::from_str(&$lang.to_lowercase()).as_ref(),
+                    None, Language::from_str(&$lang.to_lowercase()).ok().as_ref(),
                 );
                 if !languages.is_empty() {
                     assert_eq!(languages[0], tag);
@@ -671,7 +610,7 @@ mod tests {
             #[test]
             fn $name() {
                 let (scripts, languages) = tags_from_script_and_language(
-                    $script, Language::from_str($lang).as_ref(),
+                    $script, Language::from_str($lang).ok().as_ref(),
                 );
 
                 let exp_scripts: Vec<Tag> = $scripts.iter().map(|v| Tag::from_bytes_lossy(*v)).collect();

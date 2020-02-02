@@ -59,7 +59,7 @@ static void collect_features_hangul(hb_ot_shape_planner_t *plan)
     hb_ot_map_builder_t *map = plan->map;
 
     for (unsigned int i = FIRST_HANGUL_FEATURE; i < HANGUL_FEATURE_COUNT; i++)
-        hb_ot_map_builder_add_feature_full(map, hangul_features[i], F_NONE, 1);
+        rb_ot_map_builder_add_feature(map, hangul_features[i], F_NONE, 1);
 }
 
 static void override_features_hangul(hb_ot_shape_planner_t *plan)
@@ -67,7 +67,7 @@ static void override_features_hangul(hb_ot_shape_planner_t *plan)
     /* Uniscribe does not apply 'calt' for Hangul, and certain fonts
      * (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
      * in calt, which is not desirable. */
-    hb_ot_map_builder_disable_feature(plan->map, HB_TAG('c', 'a', 'l', 't'));
+    rb_ot_map_builder_disable_feature(plan->map, HB_TAG('c', 'a', 'l', 't'));
 }
 
 struct hangul_shape_plan_t
@@ -75,14 +75,14 @@ struct hangul_shape_plan_t
     hb_mask_t mask_array[HANGUL_FEATURE_COUNT];
 };
 
-static void *data_create_hangul(const hb_ot_shape_plan_t *plan)
+static void *data_create_hangul(const hb_shape_plan_t *plan)
 {
     hangul_shape_plan_t *hangul_plan = (hangul_shape_plan_t *)calloc(1, sizeof(hangul_shape_plan_t));
     if (unlikely(!hangul_plan))
         return nullptr;
 
     for (unsigned int i = 0; i < HANGUL_FEATURE_COUNT; i++)
-        hangul_plan->mask_array[i] = hb_ot_map_get_1_mask(plan->map, hangul_features[i]);
+        hangul_plan->mask_array[i] = rb_ot_map_get_1_mask(plan->map, hangul_features[i]);
 
     return hangul_plan;
 }
@@ -123,7 +123,7 @@ static bool is_zero_width_char(hb_font_t *font, hb_codepoint_t unicode)
     return hb_font_get_glyph(font, unicode, 0, &glyph) && font->get_glyph_h_advance(glyph) == 0;
 }
 
-static void preprocess_text_hangul(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
+static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
 {
     /* Hangul syllables come in two shapes: LV, and LVT.  Of those:
      *
@@ -354,7 +354,7 @@ static void preprocess_text_hangul(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_
     hb_buffer_swap_buffers(buffer);
 }
 
-static void setup_masks_hangul(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
+static void setup_masks_hangul(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
     const hangul_shape_plan_t *hangul_plan = (const hangul_shape_plan_t *)plan->data;
 

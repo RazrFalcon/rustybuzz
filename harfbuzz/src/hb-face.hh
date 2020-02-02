@@ -31,7 +31,6 @@
 #include "hb.hh"
 
 #include "hb-ot-face.hh"
-#include "hb-shape-plan.hh"
 #include "hb-shaper.hh"
 
 /*

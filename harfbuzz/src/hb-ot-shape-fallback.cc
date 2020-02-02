@@ -154,7 +154,7 @@ static unsigned int recategorize_combining_class(hb_codepoint_t u, unsigned int 
     return klass;
 }
 
-void _hb_ot_shape_fallback_mark_position_recategorize_marks(const hb_ot_shape_plan_t *plan HB_UNUSED,
+void _hb_ot_shape_fallback_mark_position_recategorize_marks(const hb_shape_plan_t *plan HB_UNUSED,
                                                             hb_font_t *font HB_UNUSED,
                                                             hb_buffer_t *buffer)
 {
@@ -187,7 +187,7 @@ zero_mark_advances(hb_buffer_t *buffer, unsigned int start, unsigned int end, bo
         }
 }
 
-static inline void position_mark(const hb_ot_shape_plan_t *plan HB_UNUSED,
+static inline void position_mark(const hb_shape_plan_t *plan HB_UNUSED,
                                  hb_font_t *font,
                                  hb_buffer_t *buffer,
                                  hb_glyph_extents_t &base_extents,
@@ -289,7 +289,7 @@ static inline void position_mark(const hb_ot_shape_plan_t *plan HB_UNUSED,
     }
 }
 
-static inline void position_around_base(const hb_ot_shape_plan_t *plan,
+static inline void position_around_base(const hb_shape_plan_t *plan,
                                         hb_font_t *font,
                                         hb_buffer_t *buffer,
                                         unsigned int base,
@@ -382,7 +382,7 @@ static inline void position_around_base(const hb_ot_shape_plan_t *plan,
         }
 }
 
-static inline void position_cluster(const hb_ot_shape_plan_t *plan,
+static inline void position_cluster(const hb_shape_plan_t *plan,
                                     hb_font_t *font,
                                     hb_buffer_t *buffer,
                                     unsigned int start,
@@ -408,7 +408,7 @@ static inline void position_cluster(const hb_ot_shape_plan_t *plan,
         }
 }
 
-void _hb_ot_shape_fallback_mark_position(const hb_ot_shape_plan_t *plan,
+void _hb_ot_shape_fallback_mark_position(const hb_shape_plan_t *plan,
                                          hb_font_t *font,
                                          hb_buffer_t *buffer,
                                          bool adjust_offsets_when_zeroing)
@@ -429,7 +429,7 @@ void _hb_ot_shape_fallback_mark_position(const hb_ot_shape_plan_t *plan,
 }
 
 /* Adjusts width of various spaces. */
-void _hb_ot_shape_fallback_spaces(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font, hb_buffer_t *buffer)
+void _hb_ot_shape_fallback_spaces(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font, hb_buffer_t *buffer)
 {
     hb_glyph_info_t *info = hb_buffer_get_info(buffer);
     hb_glyph_position_t *pos = hb_buffer_get_pos(buffer);

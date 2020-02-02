@@ -255,7 +255,7 @@ static int compare_combining_class(const hb_glyph_info_t *pa, const hb_glyph_inf
     return a < b ? -1 : a == b ? 0 : +1;
 }
 
-void _hb_ot_shape_normalize(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
+void _hb_ot_shape_normalize(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
 {
     if (unlikely(!hb_buffer_get_length(buffer)))
         return;

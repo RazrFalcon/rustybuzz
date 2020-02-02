@@ -37,21 +37,12 @@ HB_BEGIN_DECLS
 
 typedef struct hb_shape_plan_t hb_shape_plan_t;
 
-HB_EXTERN hb_shape_plan_t *hb_shape_plan_create(hb_face_t *face,
-                                                const hb_segment_properties_t *props,
-                                                const hb_feature_t *user_features,
-                                                unsigned int num_user_features);
-
 HB_EXTERN hb_shape_plan_t *hb_shape_plan_create2(hb_face_t *face,
                                                  const hb_segment_properties_t *props,
                                                  const hb_feature_t *user_features,
                                                  unsigned int num_user_features,
                                                  const int *coords,
                                                  unsigned int num_coords);
-
-HB_EXTERN hb_shape_plan_t *hb_shape_plan_get_empty(void);
-
-HB_EXTERN hb_shape_plan_t *hb_shape_plan_reference(hb_shape_plan_t *shape_plan);
 
 HB_EXTERN void hb_shape_plan_destroy(hb_shape_plan_t *shape_plan);
 

@@ -80,7 +80,7 @@ struct hb_ot_complex_shaper_t
      * Whatever shapers return will be accessible through plan->data later.
      * If nullptr is returned, means a plan failure.
      */
-    void *(*data_create)(const hb_ot_shape_plan_t *plan);
+    void *(*data_create)(const hb_shape_plan_t *plan);
 
     /* data_destroy()
      * Called when the shape_plan is being destroyed.
@@ -95,14 +95,14 @@ struct hb_ot_complex_shaper_t
      * Shapers can use to modify text before shaping starts.
      * May be NULL.
      */
-    void (*preprocess_text)(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+    void (*preprocess_text)(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
 
     /* postprocess_glyphs()
      * Called during shape().
      * Shapers can use to modify glyphs after shaping ends.
      * May be NULL.
      */
-    void (*postprocess_glyphs)(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+    void (*postprocess_glyphs)(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
 
     hb_ot_shape_normalization_mode_t normalization_preference;
 
@@ -127,7 +127,7 @@ struct hb_ot_complex_shaper_t
      * Shapers may NOT modify characters.
      * May be NULL.
      */
-    void (*setup_masks)(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+    void (*setup_masks)(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
 
     /* gpos_tag()
      * If not HB_TAG_NONE, then must match found GPOS script tag for
@@ -140,7 +140,7 @@ struct hb_ot_complex_shaper_t
      * Shapers can use to modify ordering of combining marks.
      * May be NULL.
      */
-    void (*reorder_marks)(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, unsigned int start, unsigned int end);
+    void (*reorder_marks)(const hb_shape_plan_t *plan, hb_buffer_t *buffer, unsigned int start, unsigned int end);
 
     hb_ot_shape_zero_width_marks_type_t zero_width_marks;
 
@@ -186,7 +186,7 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * This is because we do fallback shaping for Arabic script (and not others).
          * But note that Arabic shaping is applicable only to horizontal layout; for
          * vertical text, just use the generic shaper instead. */
-        if ((hb_ot_map_builder_chosen_script(planner->map, 0) != HB_OT_TAG_DEFAULT_SCRIPT || planner->props.script == HB_SCRIPT_ARABIC) &&
+        if ((rb_ot_map_builder_chosen_script(planner->map, 0) != HB_OT_TAG_DEFAULT_SCRIPT || planner->props.script == HB_SCRIPT_ARABIC) &&
             HB_DIRECTION_IS_HORIZONTAL(planner->props.direction))
             return &_hb_ot_complex_shaper_arabic;
         else
@@ -227,10 +227,10 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * Otherwise, use the specific shaper.
          *
          * If it's indy3 tag, send to USE. */
-        if (hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
-            hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n'))
+        if (rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
+            rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n'))
             return &_hb_ot_complex_shaper_default;
-        else if ((hb_ot_map_builder_chosen_script(planner->map, 0) & 0x000000FF) == '3')
+        else if ((rb_ot_map_builder_chosen_script(planner->map, 0) & 0x000000FF) == '3')
             return &_hb_ot_complex_shaper_use;
         else
             return &_hb_ot_complex_shaper_indic;
@@ -246,9 +246,9 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * If designer designed for 'mymr' tag, also send to default
          * shaper.  That's tag used from before Myanmar shaping spec
          * was developed.  The shaping spec uses 'mym2' tag. */
-        if (hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
-            hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n') ||
-            hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('m', 'y', 'm', 'r'))
+        if (rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
+            rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n') ||
+            rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('m', 'y', 'm', 'r'))
             return &_hb_ot_complex_shaper_default;
         else
             return &_hb_ot_complex_shaper_myanmar;
@@ -354,8 +354,8 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * Otherwise, use the specific shaper.
          * Note that for some simple scripts, there may not be *any*
          * GSUB/GPOS needed, so there may be no scripts found! */
-        if (hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
-            hb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n'))
+        if (rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
+            rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n'))
             return &_hb_ot_complex_shaper_default;
         else
             return &_hb_ot_complex_shaper_use;

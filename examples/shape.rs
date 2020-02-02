@@ -285,6 +285,6 @@ fn system_language() -> rustybuzz::Language {
         let s = libc::setlocale(libc::LC_CTYPE, std::ptr::null());
         let s = std::ffi::CStr::from_ptr(s);
         let s = s.to_str().expect("locale must be ASCII");
-        rustybuzz::Language::new(s)
+        rustybuzz::Language::from_str(s).unwrap()
     }
 }

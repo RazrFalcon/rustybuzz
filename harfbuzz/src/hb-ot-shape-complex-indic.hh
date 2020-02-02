@@ -409,8 +409,8 @@ struct hb_indic_would_substitute_feature_t
   void init (const hb_ot_map_t *map, hb_tag_t feature_tag, bool zero_context_)
   {
     zero_context = zero_context_;
-    hb_ot_map_get_stage_lookups(map, 0/*GSUB*/,
-                hb_ot_map_get_feature_stage(map, 0/*GSUB*/, feature_tag),
+    rb_ot_map_get_stage_lookups(map, 0/*GSUB*/,
+                rb_ot_map_get_feature_stage(map, 0/*GSUB*/, feature_tag),
                 &lookups, &count);
   }
 

@@ -73,7 +73,7 @@ public:
 typedef OT::ArrayOf<ManifestLookup> Manifest;
 
 static bool arabic_fallback_plan_init_win1256(arabic_fallback_plan_t *fallback_plan HB_UNUSED,
-                                              const hb_ot_shape_plan_t *plan HB_UNUSED,
+                                              const hb_shape_plan_t *plan HB_UNUSED,
                                               hb_font_t *font HB_UNUSED)
 {
 #ifdef HB_WITH_WIN1256
@@ -112,7 +112,7 @@ static bool arabic_fallback_plan_init_win1256(arabic_fallback_plan_t *fallback_p
 #endif
 }
 
-static arabic_fallback_plan_t *arabic_fallback_plan_create(const hb_ot_shape_plan_t *plan, hb_font_t *font)
+static arabic_fallback_plan_t *arabic_fallback_plan_create(const hb_shape_plan_t *plan, hb_font_t *font)
 {
     arabic_fallback_plan_t *fallback_plan = (arabic_fallback_plan_t *)calloc(1, sizeof(arabic_fallback_plan_t));
     if (unlikely(!fallback_plan))
