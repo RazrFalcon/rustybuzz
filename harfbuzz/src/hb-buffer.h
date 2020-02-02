@@ -41,11 +41,11 @@ HB_BEGIN_DECLS
 
 /* Loop over clusters. Duplicated in foreach_syllable(). */
 #define foreach_cluster(buffer, start, end)                                                                            \
-    for (unsigned int _count = hb_buffer_get_length(buffer),                                                           \
+    for (unsigned int _count = rb_buffer_get_length(buffer),                                                           \
                       start = 0,                                                                                       \
-                      end = _count ? hb_buffer_next_cluster(buffer, 0) : 0;                                            \
+                      end = _count ? rb_buffer_next_cluster(buffer, 0) : 0;                                            \
          start < _count;                                                                                               \
-         start = end, end = hb_buffer_next_cluster(buffer, start))
+         start = end, end = rb_buffer_next_cluster(buffer, start))
 
 /**
  * hb_glyph_info_t:
@@ -109,7 +109,7 @@ typedef struct hb_segment_properties_t
 
 HB_EXTERN bool hb_segment_properties_equal(const hb_segment_properties_t *a, const hb_segment_properties_t *b);
 
-typedef struct hb_buffer_t hb_buffer_t;
+typedef struct rb_buffer_t rb_buffer_t;
 
 typedef enum {
     HB_BUFFER_CONTENT_TYPE_INVALID = 0,
@@ -133,92 +133,92 @@ typedef enum {
     HB_BUFFER_CLUSTER_LEVEL_DEFAULT = HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES
 } hb_buffer_cluster_level_t;
 
-HB_EXTERN hb_buffer_cluster_level_t hb_buffer_get_cluster_level(hb_buffer_t *buffer);
+HB_EXTERN hb_buffer_cluster_level_t rb_buffer_get_cluster_level(rb_buffer_t *buffer);
 
-HB_EXTERN hb_direction_t hb_buffer_get_direction(hb_buffer_t *buffer);
+HB_EXTERN hb_direction_t rb_buffer_get_direction(rb_buffer_t *buffer);
 
-HB_EXTERN hb_codepoint_t hb_buffer_get_invisible_glyph(hb_buffer_t *buffer);
+HB_EXTERN hb_codepoint_t rb_buffer_get_invisible_glyph(rb_buffer_t *buffer);
 
-HB_EXTERN void hb_buffer_pre_allocate(hb_buffer_t *buffer, unsigned int size);
+HB_EXTERN void rb_buffer_pre_allocate(rb_buffer_t *buffer, unsigned int size);
 
-HB_EXTERN void hb_buffer_reverse(hb_buffer_t *buffer);
+HB_EXTERN void rb_buffer_reverse(rb_buffer_t *buffer);
 
-HB_EXTERN void hb_buffer_reverse_range(hb_buffer_t *buffer, unsigned int start, unsigned int end);
+HB_EXTERN void rb_buffer_reverse_range(rb_buffer_t *buffer, unsigned int start, unsigned int end);
 
-HB_EXTERN unsigned int hb_buffer_get_length(const hb_buffer_t *buffer);
+HB_EXTERN unsigned int rb_buffer_get_length(const rb_buffer_t *buffer);
 
-void hb_buffer_set_length(hb_buffer_t *buffer, unsigned int len);
+void rb_buffer_set_length(rb_buffer_t *buffer, unsigned int len);
 
-hb_glyph_info_t *hb_buffer_get_cur(hb_buffer_t *buffer, unsigned int i);
+hb_glyph_info_t *rb_buffer_get_cur(rb_buffer_t *buffer, unsigned int i);
 
-hb_glyph_position_t *hb_buffer_get_cur_pos(hb_buffer_t *buffer);
+hb_glyph_position_t *rb_buffer_get_cur_pos(rb_buffer_t *buffer);
 
-hb_glyph_info_t *hb_buffer_get_prev(hb_buffer_t *buffer);
+hb_glyph_info_t *rb_buffer_get_prev(rb_buffer_t *buffer);
 
-hb_glyph_info_t *hb_buffer_get_out_info(hb_buffer_t *buffer);
+hb_glyph_info_t *rb_buffer_get_out_info(rb_buffer_t *buffer);
 
-unsigned int hb_buffer_backtrack_len(hb_buffer_t *buffer);
+unsigned int rb_buffer_backtrack_len(rb_buffer_t *buffer);
 
-unsigned int hb_buffer_lookahead_len(hb_buffer_t *buffer);
+unsigned int rb_buffer_lookahead_len(rb_buffer_t *buffer);
 
-unsigned int hb_buffer_next_serial(hb_buffer_t *buffer);
+unsigned int rb_buffer_next_serial(rb_buffer_t *buffer);
 
-void hb_buffer_set_cluster(hb_glyph_info_t *info, unsigned int cluster, unsigned int mask);
+void rb_buffer_set_cluster(hb_glyph_info_t *info, unsigned int cluster, unsigned int mask);
 
-void hb_buffer_move_to(hb_buffer_t *buffer, unsigned int i);
+void rb_buffer_move_to(rb_buffer_t *buffer, unsigned int i);
 
-void hb_buffer_swap_buffers(hb_buffer_t *buffer);
+void rb_buffer_swap_buffers(rb_buffer_t *buffer);
 
-void hb_buffer_remove_output(hb_buffer_t *buffer);
+void rb_buffer_remove_output(rb_buffer_t *buffer);
 
-void hb_buffer_clear_output(hb_buffer_t *buffer);
+void rb_buffer_clear_output(rb_buffer_t *buffer);
 
-void hb_buffer_clear_positions(hb_buffer_t *buffer);
+void rb_buffer_clear_positions(rb_buffer_t *buffer);
 
-unsigned int hb_buffer_next_cluster(hb_buffer_t *buffer, unsigned int start);
+unsigned int rb_buffer_next_cluster(rb_buffer_t *buffer, unsigned int start);
 
-void hb_buffer_replace_glyphs(hb_buffer_t *buffer,
+void rb_buffer_replace_glyphs(rb_buffer_t *buffer,
                               unsigned int num_in,
                               unsigned int num_out,
                               const hb_codepoint_t *glyph_data);
 
-void hb_buffer_merge_clusters(hb_buffer_t *buffer, unsigned int start, unsigned int end);
+void rb_buffer_merge_clusters(rb_buffer_t *buffer, unsigned int start, unsigned int end);
 
-void hb_buffer_merge_out_clusters(hb_buffer_t *buffer, unsigned int start, unsigned int end);
+void rb_buffer_merge_out_clusters(rb_buffer_t *buffer, unsigned int start, unsigned int end);
 
-void hb_buffer_unsafe_to_break(hb_buffer_t *buffer, unsigned int start, unsigned int end);
+void rb_buffer_unsafe_to_break(rb_buffer_t *buffer, unsigned int start, unsigned int end);
 
-void hb_buffer_unsafe_to_break_from_outbuffer(hb_buffer_t *buffer, unsigned int start, unsigned int end);
+void rb_buffer_unsafe_to_break_from_outbuffer(rb_buffer_t *buffer, unsigned int start, unsigned int end);
 
-void hb_buffer_sort(hb_buffer_t *buffer,
+void rb_buffer_sort(rb_buffer_t *buffer,
                     unsigned int start,
                     unsigned int end,
                     int (*compar)(const hb_glyph_info_t *, const hb_glyph_info_t *));
 
-void hb_buffer_replace_glyph(hb_buffer_t *buffer, hb_codepoint_t glyph_index);
+void rb_buffer_replace_glyph(rb_buffer_t *buffer, hb_codepoint_t glyph_index);
 
-hb_glyph_info_t *hb_buffer_output_glyph(hb_buffer_t *buffer, hb_codepoint_t glyph_index);
+hb_glyph_info_t *rb_buffer_output_glyph(rb_buffer_t *buffer, hb_codepoint_t glyph_index);
 
-void hb_buffer_output_info(hb_buffer_t *buffer, hb_glyph_info_t glyph_info);
+void rb_buffer_output_info(rb_buffer_t *buffer, hb_glyph_info_t glyph_info);
 
-void hb_buffer_copy_glyph(hb_buffer_t *buffer);
+void rb_buffer_copy_glyph(rb_buffer_t *buffer);
 
-void hb_buffer_next_glyph(hb_buffer_t *buffer);
+void rb_buffer_next_glyph(rb_buffer_t *buffer);
 
-void hb_buffer_next_glyphs(hb_buffer_t *buffer, unsigned int n);
+void rb_buffer_next_glyphs(rb_buffer_t *buffer, unsigned int n);
 
-void hb_buffer_skip_glyph(hb_buffer_t *buffer);
+void rb_buffer_skip_glyph(rb_buffer_t *buffer);
 
-void hb_buffer_reset_masks(hb_buffer_t *buffer, hb_mask_t mask);
+void rb_buffer_reset_masks(rb_buffer_t *buffer, hb_mask_t mask);
 
-void hb_buffer_set_masks(
-    hb_buffer_t *buffer, hb_mask_t value, hb_mask_t mask, unsigned int cluster_start, unsigned int cluster_end);
+void rb_buffer_set_masks(
+    rb_buffer_t *buffer, hb_mask_t value, hb_mask_t mask, unsigned int cluster_start, unsigned int cluster_end);
 
-void hb_buffer_delete_glyph(hb_buffer_t *buffer);
+void rb_buffer_delete_glyph(rb_buffer_t *buffer);
 
-hb_glyph_info_t *hb_buffer_get_info(hb_buffer_t *buffer);
+hb_glyph_info_t *rb_buffer_get_info(rb_buffer_t *buffer);
 
-hb_glyph_position_t *hb_buffer_get_pos(hb_buffer_t *buffer);
+hb_glyph_position_t *rb_buffer_get_pos(rb_buffer_t *buffer);
 
 enum hb_buffer_scratch_flags_t {
     HB_BUFFER_SCRATCH_FLAG_DEFAULT = 0x00000000u,
@@ -236,36 +236,36 @@ enum hb_buffer_scratch_flags_t {
     HB_BUFFER_SCRATCH_FLAG_COMPLEX3 = 0x08000000u,
 };
 
-hb_buffer_scratch_flags_t *hb_buffer_get_scratch_flags(hb_buffer_t *buffer);
+hb_buffer_scratch_flags_t *rb_buffer_get_scratch_flags(rb_buffer_t *buffer);
 
-int hb_buffer_get_max_ops(hb_buffer_t *buffer);
+int rb_buffer_get_max_ops(rb_buffer_t *buffer);
 
-void hb_buffer_set_max_ops(hb_buffer_t *buffer, int ops);
+void rb_buffer_set_max_ops(rb_buffer_t *buffer, int ops);
 
-int hb_buffer_decrement_max_ops(hb_buffer_t *buffer);
+int rb_buffer_decrement_max_ops(rb_buffer_t *buffer);
 
-unsigned int hb_buffer_get_idx(hb_buffer_t *buffer);
+unsigned int rb_buffer_get_idx(rb_buffer_t *buffer);
 
-void hb_buffer_set_idx(hb_buffer_t *buffer, unsigned int idx);
+void rb_buffer_set_idx(rb_buffer_t *buffer, unsigned int idx);
 
-unsigned int hb_buffer_get_out_len(hb_buffer_t *buffer);
+unsigned int rb_buffer_get_out_len(rb_buffer_t *buffer);
 
-void hb_buffer_set_out_len(hb_buffer_t *buffer, unsigned int idx);
+void rb_buffer_set_out_len(rb_buffer_t *buffer, unsigned int idx);
 
-bool hb_buffer_have_separate_output(hb_buffer_t *buffer);
+bool rb_buffer_have_separate_output(rb_buffer_t *buffer);
 
-hb_codepoint_t hb_buffer_get_context(hb_buffer_t *buffer, unsigned int idx1, unsigned int idx2);
+hb_codepoint_t rb_buffer_get_context(rb_buffer_t *buffer, unsigned int idx1, unsigned int idx2);
 
-unsigned int hb_buffer_get_context_len(hb_buffer_t *buffer, unsigned int idx);
+unsigned int rb_buffer_get_context_len(rb_buffer_t *buffer, unsigned int idx);
 
-HB_EXTERN hb_glyph_position_t *hb_buffer_get_glyph_positions(hb_buffer_t *buffer, unsigned int *length);
+HB_EXTERN hb_glyph_position_t *rb_buffer_get_glyph_positions(rb_buffer_t *buffer, unsigned int *length);
 
-HB_EXTERN hb_script_t hb_buffer_get_script(hb_buffer_t *buffer);
+HB_EXTERN hb_script_t rb_buffer_get_script(rb_buffer_t *buffer);
 
-HB_EXTERN hb_buffer_flags_t hb_buffer_get_flags(hb_buffer_t *buffer);
+HB_EXTERN hb_buffer_flags_t rb_buffer_get_flags(rb_buffer_t *buffer);
 
-HB_EXTERN void hb_buffer_set_direction(hb_buffer_t *buffer, hb_direction_t direction);
+HB_EXTERN void rb_buffer_set_direction(rb_buffer_t *buffer, hb_direction_t direction);
 
-HB_EXTERN hb_segment_properties_t hb_buffer_get_segment_properties(hb_buffer_t *buffer);
+HB_EXTERN hb_segment_properties_t rb_buffer_get_segment_properties(rb_buffer_t *buffer);
 
 HB_END_DECLS

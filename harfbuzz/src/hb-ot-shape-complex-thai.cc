@@ -195,7 +195,7 @@ static const struct thai_below_state_machine_edge_t {
 };
 // clang-format on
 
-static void do_thai_pua_shaping(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
+static void do_thai_pua_shaping(const hb_shape_plan_t *plan HB_UNUSED, rb_buffer_t *buffer, hb_font_t *font)
 {
 #ifdef HB_NO_OT_SHAPE_COMPLEX_THAI_FALLBACK
     return;
@@ -205,8 +205,8 @@ static void do_thai_pua_shaping(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer
     thai_below_state_t below_state = thai_below_start_state[NOT_CONSONANT];
     unsigned int base = 0;
 
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
     for (unsigned int i = 0; i < count; i++) {
         thai_mark_type_t mt = get_mark_type(info[i].codepoint);
 
@@ -226,7 +226,7 @@ static void do_thai_pua_shaping(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer
         /* At least one of the above/below actions is NOP. */
         thai_action_t action = above_edge.action != NOP ? above_edge.action : below_edge.action;
 
-        hb_buffer_unsafe_to_break(buffer, base, i);
+        rb_buffer_unsafe_to_break(buffer, base, i);
         if (action == RD)
             info[base].codepoint = thai_pua_shape(info[base].codepoint, action, font);
         else
@@ -234,7 +234,7 @@ static void do_thai_pua_shaping(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer
     }
 }
 
-static void preprocess_text_thai(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
+static void preprocess_text_thai(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font)
 {
     /* This function implements the shaping logic documented here:
      *
@@ -291,46 +291,46 @@ static void preprocess_text_thai(const hb_shape_plan_t *plan, hb_buffer_t *buffe
 #define IS_TONE_MARK(x)                                                                                                \
     (hb_in_ranges<hb_codepoint_t>((x) & ~0x0080u, 0x0E34u, 0x0E37u, 0x0E47u, 0x0E4Eu, 0x0E31u, 0x0E31u))
 
-    hb_buffer_clear_output(buffer);
-    unsigned int count = hb_buffer_get_length(buffer);
-    for (hb_buffer_set_idx(buffer, 0); hb_buffer_get_idx(buffer) < count;) {
-        hb_codepoint_t u = hb_buffer_get_cur(buffer, 0)->codepoint;
+    rb_buffer_clear_output(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
+    for (rb_buffer_set_idx(buffer, 0); rb_buffer_get_idx(buffer) < count;) {
+        hb_codepoint_t u = rb_buffer_get_cur(buffer, 0)->codepoint;
         if (likely(!IS_SARA_AM(u))) {
-            hb_buffer_next_glyph(buffer);
+            rb_buffer_next_glyph(buffer);
             continue;
         }
 
         /* Is SARA AM. Decompose and reorder. */
-        hb_glyph_info_t *nikhahit = hb_buffer_output_glyph(buffer, NIKHAHIT_FROM_SARA_AM(u));
+        hb_glyph_info_t *nikhahit = rb_buffer_output_glyph(buffer, NIKHAHIT_FROM_SARA_AM(u));
         _hb_glyph_info_set_continuation(nikhahit);
-        hb_buffer_replace_glyph(buffer, SARA_AA_FROM_SARA_AM(u));
+        rb_buffer_replace_glyph(buffer, SARA_AA_FROM_SARA_AM(u));
 
         /* Make Nikhahit be recognized as a ccc=0 mark when zeroing widths. */
-        unsigned int end = hb_buffer_get_out_len(buffer);
-        _hb_glyph_info_set_general_category(&hb_buffer_get_out_info(buffer)[end - 2],
+        unsigned int end = rb_buffer_get_out_len(buffer);
+        _hb_glyph_info_set_general_category(&rb_buffer_get_out_info(buffer)[end - 2],
                                             HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK);
 
         /* Ok, let's see... */
         unsigned int start = end - 2;
-        while (start > 0 && IS_TONE_MARK(hb_buffer_get_out_info(buffer)[start - 1].codepoint))
+        while (start > 0 && IS_TONE_MARK(rb_buffer_get_out_info(buffer)[start - 1].codepoint))
             start--;
 
         if (start + 2 < end) {
             /* Move Nikhahit (end-2) to the beginning */
-            hb_buffer_merge_out_clusters(buffer, start, end);
-            hb_glyph_info_t t = hb_buffer_get_out_info(buffer)[end - 2];
-            memmove(hb_buffer_get_out_info(buffer) + start + 1,
-                    hb_buffer_get_out_info(buffer) + start,
-                    sizeof(hb_buffer_get_out_info(buffer)[0]) * (end - start - 2));
-            hb_buffer_get_out_info(buffer)[start] = t;
+            rb_buffer_merge_out_clusters(buffer, start, end);
+            hb_glyph_info_t t = rb_buffer_get_out_info(buffer)[end - 2];
+            memmove(rb_buffer_get_out_info(buffer) + start + 1,
+                    rb_buffer_get_out_info(buffer) + start,
+                    sizeof(rb_buffer_get_out_info(buffer)[0]) * (end - start - 2));
+            rb_buffer_get_out_info(buffer)[start] = t;
         } else {
             /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
              * previous cluster. */
-            if (start && hb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
-                hb_buffer_merge_out_clusters(buffer, start - 1, end);
+            if (start && rb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
+                rb_buffer_merge_out_clusters(buffer, start - 1, end);
         }
     }
-    hb_buffer_swap_buffers(buffer);
+    rb_buffer_swap_buffers(buffer);
 
     /* If font has Thai GSUB, we are done. */
     if (plan->props.script == HB_SCRIPT_THAI && !rb_ot_map_has_found_script(plan->map, 0))

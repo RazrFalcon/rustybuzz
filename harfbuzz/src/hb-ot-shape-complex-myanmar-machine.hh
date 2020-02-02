@@ -309,11 +309,11 @@ static const int myanmar_syllable_machine_en_main = 0;
   } HB_STMT_END
 
 static void
-find_syllables_myanmar (hb_buffer_t *buffer)
+find_syllables_myanmar (rb_buffer_t *buffer)
 {
   unsigned int p, pe, eof, ts, te, act HB_UNUSED;
   int cs;
-  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+  hb_glyph_info_t *info = rb_buffer_get_info(buffer);
   
 #line 320 "hb-ot-shape-complex-myanmar-machine.hh"
 	{
@@ -327,7 +327,7 @@ find_syllables_myanmar (hb_buffer_t *buffer)
 
 
   p = 0;
-  pe = eof = hb_buffer_get_length(buffer);
+  pe = eof = rb_buffer_get_length(buffer);
 
   unsigned int syllable_serial = 1;
   

@@ -95,14 +95,14 @@ struct hb_ot_complex_shaper_t
      * Shapers can use to modify text before shaping starts.
      * May be NULL.
      */
-    void (*preprocess_text)(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+    void (*preprocess_text)(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font);
 
     /* postprocess_glyphs()
      * Called during shape().
      * Shapers can use to modify glyphs after shaping ends.
      * May be NULL.
      */
-    void (*postprocess_glyphs)(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+    void (*postprocess_glyphs)(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font);
 
     hb_ot_shape_normalization_mode_t normalization_preference;
 
@@ -127,7 +127,7 @@ struct hb_ot_complex_shaper_t
      * Shapers may NOT modify characters.
      * May be NULL.
      */
-    void (*setup_masks)(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+    void (*setup_masks)(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font);
 
     /* gpos_tag()
      * If not HB_TAG_NONE, then must match found GPOS script tag for
@@ -140,7 +140,7 @@ struct hb_ot_complex_shaper_t
      * Shapers can use to modify ordering of combining marks.
      * May be NULL.
      */
-    void (*reorder_marks)(const hb_shape_plan_t *plan, hb_buffer_t *buffer, unsigned int start, unsigned int end);
+    void (*reorder_marks)(const hb_shape_plan_t *plan, rb_buffer_t *buffer, unsigned int start, unsigned int end);
 
     hb_ot_shape_zero_width_marks_type_t zero_width_marks;
 

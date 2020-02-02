@@ -385,11 +385,11 @@ static const int use_syllable_machine_en_main = 5;
   } HB_STMT_END
 
 static void
-find_syllables_use (hb_buffer_t *buffer)
+find_syllables_use (rb_buffer_t *buffer)
 {
   unsigned int p, pe, eof, ts, te, act;
   int cs;
-  hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+  hb_glyph_info_t *info = rb_buffer_get_info(buffer);
   
 #line 396 "hb-ot-shape-complex-use-machine.hh"
 	{
@@ -403,7 +403,7 @@ find_syllables_use (hb_buffer_t *buffer)
 
 
   p = 0;
-  pe = eof = hb_buffer_get_length(buffer);
+  pe = eof = rb_buffer_get_length(buffer);
 
   unsigned int syllable_serial = 1;
   

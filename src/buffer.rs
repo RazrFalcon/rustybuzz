@@ -289,16 +289,16 @@ impl Buffer {
         buffer
     }
 
-    fn from_ptr(buffer: *const ffi::hb_buffer_t) -> &'static Buffer {
+    fn from_ptr(buffer: *const ffi::rb_buffer_t) -> &'static Buffer {
         unsafe { &*(buffer as *const Buffer) }
     }
 
-    fn from_ptr_mut(buffer: *mut ffi::hb_buffer_t) -> &'static mut Buffer {
+    fn from_ptr_mut(buffer: *mut ffi::rb_buffer_t) -> &'static mut Buffer {
         unsafe { &mut *(buffer as *mut Buffer) }
     }
 
-    pub(crate) fn as_ptr(&mut self) -> *mut ffi::hb_buffer_t {
-        self as *mut _ as *mut ffi::hb_buffer_t
+    pub(crate) fn as_ptr(&mut self) -> *mut ffi::rb_buffer_t {
+        self as *mut _ as *mut ffi::rb_buffer_t
     }
 
     fn out_info(&self) -> &[GlyphInfo] {
@@ -1133,262 +1133,262 @@ impl std::fmt::Debug for GlyphBuffer {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_cluster_level(buffer: *const ffi::hb_buffer_t) -> u32 {
+pub extern "C" fn rb_buffer_get_cluster_level(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).cluster_level as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_direction(buffer: *const ffi::hb_buffer_t) -> ffi::hb_direction_t {
+pub extern "C" fn rb_buffer_get_direction(buffer: *const ffi::rb_buffer_t) -> ffi::hb_direction_t {
     Buffer::from_ptr(buffer).props.direction.to_raw()
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_invisible_glyph(buffer: *const ffi::hb_buffer_t) -> ffi::hb_codepoint_t {
+pub extern "C" fn rb_buffer_get_invisible_glyph(buffer: *const ffi::rb_buffer_t) -> ffi::hb_codepoint_t {
     Buffer::from_ptr(buffer).invisible.unwrap_or('\0') as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_pre_allocate(buffer: *mut ffi::hb_buffer_t, size: u32) {
+pub extern "C" fn rb_buffer_pre_allocate(buffer: *mut ffi::rb_buffer_t, size: u32) {
     Buffer::from_ptr_mut(buffer).ensure(size as usize);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_reverse(buffer: *mut ffi::hb_buffer_t) {
+pub extern "C" fn rb_buffer_reverse(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).reverse();
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_reverse_range(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+pub extern "C" fn rb_buffer_reverse_range(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
     Buffer::from_ptr_mut(buffer).reverse_range(start as usize, end as usize);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_length(buffer: *const ffi::hb_buffer_t) -> u32 {
+pub extern "C" fn rb_buffer_get_length(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).len() as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_set_length(buffer: *mut ffi::hb_buffer_t, len: u32) {
+pub extern "C" fn rb_buffer_set_length(buffer: *mut ffi::rb_buffer_t, len: u32) {
     let buffer = Buffer::from_ptr_mut(buffer);
     buffer.ensure(len as usize);
     buffer.len = len as usize;
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_cur(buffer: *mut ffi::hb_buffer_t, i: u32) -> *mut ffi::hb_glyph_info_t {
+pub extern "C" fn rb_buffer_get_cur(buffer: *mut ffi::rb_buffer_t, i: u32) -> *mut ffi::hb_glyph_info_t {
     let buffer = Buffer::from_ptr_mut(buffer);
     buffer.cur_mut(i as usize) as *mut _ as *mut ffi::hb_glyph_info_t
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_cur_pos(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_position_t {
+pub extern "C" fn rb_buffer_get_cur_pos(buffer: *mut ffi::rb_buffer_t) -> *mut ffi::hb_glyph_position_t {
     let buffer = Buffer::from_ptr_mut(buffer);
     buffer.cur_pos_mut() as *mut _ as *mut ffi::hb_glyph_position_t
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_prev(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_info_t {
+pub extern "C" fn rb_buffer_get_prev(buffer: *mut ffi::rb_buffer_t) -> *mut ffi::hb_glyph_info_t {
     let buffer = Buffer::from_ptr_mut(buffer);
     buffer.prev_mut() as *mut _ as *mut ffi::hb_glyph_info_t
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_out_info(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_info_t {
+pub extern "C" fn rb_buffer_get_out_info(buffer: *mut ffi::rb_buffer_t) -> *mut ffi::hb_glyph_info_t {
     let buffer = Buffer::from_ptr_mut(buffer);
     buffer.out_info_mut().as_mut_ptr() as *mut _
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_backtrack_len(buffer: *const ffi::hb_buffer_t) -> u32 {
+pub extern "C" fn rb_buffer_backtrack_len(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).backtrack_len() as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_lookahead_len(buffer: *const ffi::hb_buffer_t) -> u32 {
+pub extern "C" fn rb_buffer_lookahead_len(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).lookahead_len() as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_next_serial(buffer: *mut ffi::hb_buffer_t) -> u32 {
+pub extern "C" fn rb_buffer_next_serial(buffer: *mut ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr_mut(buffer).next_serial() as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_set_cluster(info: *mut ffi::hb_glyph_info_t, cluster: u32, mask: u32) {
+pub extern "C" fn rb_buffer_set_cluster(info: *mut ffi::hb_glyph_info_t, cluster: u32, mask: u32) {
     let info = unsafe { &mut *(info as *mut GlyphInfo) };
     Buffer::set_cluster(info, cluster, mask)
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_move_to(buffer: *mut ffi::hb_buffer_t, i: u32) {
+pub extern "C" fn rb_buffer_move_to(buffer: *mut ffi::rb_buffer_t, i: u32) {
     Buffer::from_ptr_mut(buffer).move_to(i as usize)
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_swap_buffers(buffer: *mut ffi::hb_buffer_t) {
+pub extern "C" fn rb_buffer_swap_buffers(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).swap_buffers()
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_remove_output(buffer: *mut ffi::hb_buffer_t) {
+pub extern "C" fn rb_buffer_remove_output(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).remove_output()
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_clear_output(buffer: *mut ffi::hb_buffer_t) {
+pub extern "C" fn rb_buffer_clear_output(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).clear_output()
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_clear_positions(buffer: *mut ffi::hb_buffer_t) {
+pub extern "C" fn rb_buffer_clear_positions(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).clear_positions()
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_next_cluster(buffer: *const ffi::hb_buffer_t, start: u32) -> u32 {
+pub extern "C" fn rb_buffer_next_cluster(buffer: *const ffi::rb_buffer_t, start: u32) -> u32 {
     Buffer::from_ptr(buffer).next_cluster(start as usize) as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_replace_glyphs(buffer: *mut ffi::hb_buffer_t, num_in: u32, num_out: u32, glyph_data: *const u32) {
+pub extern "C" fn rb_buffer_replace_glyphs(buffer: *mut ffi::rb_buffer_t, num_in: u32, num_out: u32, glyph_data: *const u32) {
     let glyph_data = unsafe { std::slice::from_raw_parts(glyph_data as *const _, num_out as usize) };
     Buffer::from_ptr_mut(buffer).replace_glyphs(num_in as usize, num_out as usize, glyph_data);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_merge_clusters(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+pub extern "C" fn rb_buffer_merge_clusters(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
     Buffer::from_ptr_mut(buffer).merge_clusters(start as usize, end as usize);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_merge_out_clusters(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+pub extern "C" fn rb_buffer_merge_out_clusters(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
     Buffer::from_ptr_mut(buffer).merge_out_clusters(start as usize, end as usize);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_unsafe_to_break(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+pub extern "C" fn rb_buffer_unsafe_to_break(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
     Buffer::from_ptr_mut(buffer).unsafe_to_break(start as usize, end as usize);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_unsafe_to_break_from_outbuffer(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32) {
+pub extern "C" fn rb_buffer_unsafe_to_break_from_outbuffer(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
     Buffer::from_ptr_mut(buffer).unsafe_to_break_from_outbuffer(start as usize, end as usize);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_replace_glyph(buffer: *mut ffi::hb_buffer_t, glyph_index: ffi::hb_codepoint_t) {
+pub extern "C" fn rb_buffer_replace_glyph(buffer: *mut ffi::rb_buffer_t, glyph_index: ffi::hb_codepoint_t) {
     Buffer::from_ptr_mut(buffer).replace_glyph(glyph_index);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_output_glyph(buffer: *mut ffi::hb_buffer_t, glyph_index: ffi::hb_codepoint_t) -> *mut ffi::hb_glyph_info_t {
+pub extern "C" fn rb_buffer_output_glyph(buffer: *mut ffi::rb_buffer_t, glyph_index: ffi::hb_codepoint_t) -> *mut ffi::hb_glyph_info_t {
     Buffer::from_ptr_mut(buffer).output_glyph(glyph_index).unwrap() as *mut _ as *mut ffi::hb_glyph_info_t
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_output_info(buffer: *mut ffi::hb_buffer_t, glyph_info: ffi::hb_glyph_info_t) {
+pub extern "C" fn rb_buffer_output_info(buffer: *mut ffi::rb_buffer_t, glyph_info: ffi::hb_glyph_info_t) {
     Buffer::from_ptr_mut(buffer).output_info(glyph_info.into());
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_copy_glyph(buffer: *mut ffi::hb_buffer_t) {
+pub extern "C" fn rb_buffer_copy_glyph(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).copy_glyph();
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_next_glyph(buffer: *mut ffi::hb_buffer_t) {
+pub extern "C" fn rb_buffer_next_glyph(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).next_glyph();
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_next_glyphs(buffer: *mut ffi::hb_buffer_t, n: u32) {
+pub extern "C" fn rb_buffer_next_glyphs(buffer: *mut ffi::rb_buffer_t, n: u32) {
     Buffer::from_ptr_mut(buffer).next_glyphs(n as usize);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_skip_glyph(buffer: *mut ffi::hb_buffer_t) {
+pub extern "C" fn rb_buffer_skip_glyph(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).skip_glyph();
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_reset_masks(buffer: *mut ffi::hb_buffer_t, mask: Mask) {
+pub extern "C" fn rb_buffer_reset_masks(buffer: *mut ffi::rb_buffer_t, mask: Mask) {
     Buffer::from_ptr_mut(buffer).reset_masks(mask);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_set_masks(buffer: *mut ffi::hb_buffer_t, value: Mask, mask: Mask, start: u32, end: u32) {
+pub extern "C" fn rb_buffer_set_masks(buffer: *mut ffi::rb_buffer_t, value: Mask, mask: Mask, start: u32, end: u32) {
     Buffer::from_ptr_mut(buffer).set_masks(value, mask, start, end);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_delete_glyph(buffer: *mut ffi::hb_buffer_t) {
+pub extern "C" fn rb_buffer_delete_glyph(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).delete_glyph();
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_info(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_info_t {
+pub extern "C" fn rb_buffer_get_info(buffer: *mut ffi::rb_buffer_t) -> *mut ffi::hb_glyph_info_t {
     Buffer::from_ptr_mut(buffer).info.as_mut_ptr() as *mut _
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_pos(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_glyph_position_t{
+pub extern "C" fn rb_buffer_get_pos(buffer: *mut ffi::rb_buffer_t) -> *mut ffi::hb_glyph_position_t{
     Buffer::from_ptr_mut(buffer).pos.as_mut_ptr() as *mut _
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_max_ops(buffer: *const ffi::hb_buffer_t) -> i32 {
+pub extern "C" fn rb_buffer_get_max_ops(buffer: *const ffi::rb_buffer_t) -> i32 {
     Buffer::from_ptr(buffer).max_ops
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_set_max_ops(buffer: *mut ffi::hb_buffer_t, ops: i32) {
+pub extern "C" fn rb_buffer_set_max_ops(buffer: *mut ffi::rb_buffer_t, ops: i32) {
     Buffer::from_ptr_mut(buffer).max_ops = ops;
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_decrement_max_ops(buffer: *mut ffi::hb_buffer_t) -> i32 {
+pub extern "C" fn rb_buffer_decrement_max_ops(buffer: *mut ffi::rb_buffer_t) -> i32 {
     let buffer = Buffer::from_ptr_mut(buffer);
     buffer.max_ops -= 1;
     buffer.max_ops
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_idx(buffer: *const ffi::hb_buffer_t) -> u32 {
+pub extern "C" fn rb_buffer_get_idx(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).idx as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_set_idx(buffer: *mut ffi::hb_buffer_t, idx: u32) {
+pub extern "C" fn rb_buffer_set_idx(buffer: *mut ffi::rb_buffer_t, idx: u32) {
     Buffer::from_ptr_mut(buffer).idx = idx as usize;
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_out_len(buffer: *const ffi::hb_buffer_t) -> u32 {
+pub extern "C" fn rb_buffer_get_out_len(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).out_len as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_set_out_len(buffer: *mut ffi::hb_buffer_t, idx: u32) {
+pub extern "C" fn rb_buffer_set_out_len(buffer: *mut ffi::rb_buffer_t, idx: u32) {
     Buffer::from_ptr_mut(buffer).out_len = idx as usize;
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_have_separate_output(buffer: *const ffi::hb_buffer_t) -> bool {
+pub extern "C" fn rb_buffer_have_separate_output(buffer: *const ffi::rb_buffer_t) -> bool {
     Buffer::from_ptr(buffer).have_separate_output
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_context(buffer: *const ffi::hb_buffer_t, idx1: u32, idx2: u32) -> ffi::hb_codepoint_t {
+pub extern "C" fn rb_buffer_get_context(buffer: *const ffi::rb_buffer_t, idx1: u32, idx2: u32) -> ffi::hb_codepoint_t {
     Buffer::from_ptr(buffer).context[idx1 as usize][idx2 as usize] as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_context_len(buffer: *const ffi::hb_buffer_t, idx: u32) -> u32 {
+pub extern "C" fn rb_buffer_get_context_len(buffer: *const ffi::rb_buffer_t, idx: u32) -> u32 {
     Buffer::from_ptr(buffer).context_len[idx as usize] as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_glyph_positions(buffer: *mut ffi::hb_buffer_t, length: *mut u32) -> *mut ffi::hb_glyph_position_t {
+pub extern "C" fn rb_buffer_get_glyph_positions(buffer: *mut ffi::rb_buffer_t, length: *mut u32) -> *mut ffi::hb_glyph_position_t {
     let buffer = Buffer::from_ptr_mut(buffer);
     if !buffer.have_positions {
         buffer.clear_positions();
@@ -1402,22 +1402,22 @@ pub extern "C" fn hb_buffer_get_glyph_positions(buffer: *mut ffi::hb_buffer_t, l
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_script(buffer: *const ffi::hb_buffer_t) -> ffi::hb_script_t {
+pub extern "C" fn rb_buffer_get_script(buffer: *const ffi::rb_buffer_t) -> ffi::hb_script_t {
     Buffer::from_ptr(buffer).props.script.map(|s| s.to_raw()).unwrap_or(0)
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_flags(buffer: *const ffi::hb_buffer_t) -> ffi::hb_buffer_flags_t {
+pub extern "C" fn rb_buffer_get_flags(buffer: *const ffi::rb_buffer_t) -> ffi::hb_buffer_flags_t {
     Buffer::from_ptr(buffer).flags.0 as ffi::hb_buffer_flags_t
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_set_direction(buffer: *mut ffi::hb_buffer_t, direction: ffi::hb_direction_t) {
+pub extern "C" fn rb_buffer_set_direction(buffer: *mut ffi::rb_buffer_t, direction: ffi::hb_direction_t) {
     Buffer::from_ptr_mut(buffer).props.direction = Direction::from_raw(direction);
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_segment_properties(buffer: *const ffi::hb_buffer_t) -> ffi::hb_segment_properties_t {
+pub extern "C" fn rb_buffer_get_segment_properties(buffer: *const ffi::rb_buffer_t) -> ffi::hb_segment_properties_t {
     let props = &Buffer::from_ptr(buffer).props;
     ffi::hb_segment_properties_t {
         direction: props.direction.to_raw(),
@@ -1428,7 +1428,7 @@ pub extern "C" fn hb_buffer_get_segment_properties(buffer: *const ffi::hb_buffer
 
 // TODO: remove
 #[no_mangle]
-pub extern "C" fn hb_segment_properties_equal(
+pub extern "C" fn rb_segment_properties_equal(
     a: *const ffi::hb_segment_properties_t,
     b: *const ffi::hb_segment_properties_t,
 ) -> bool {
@@ -1460,13 +1460,13 @@ pub extern "C" fn hb_segment_properties_equal(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_get_scratch_flags(buffer: *mut ffi::hb_buffer_t) -> *mut ffi::hb_buffer_scratch_flags_t {
+pub extern "C" fn rb_buffer_get_scratch_flags(buffer: *mut ffi::rb_buffer_t) -> *mut ffi::hb_buffer_scratch_flags_t {
     &mut Buffer::from_ptr_mut(buffer).scratch_flags.0 as *mut _ as *mut ffi::hb_buffer_scratch_flags_t
 }
 
 #[no_mangle]
-pub extern "C" fn hb_buffer_sort(buffer: *mut ffi::hb_buffer_t, start: u32, end: u32,
-    cmp: fn(*const ffi::hb_glyph_info_t, *const ffi::hb_glyph_info_t) -> i32
+pub extern "C" fn rb_buffer_sort(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32,
+                                 cmp: fn(*const ffi::hb_glyph_info_t, *const ffi::hb_glyph_info_t) -> i32
 ) {
     let buffer = Buffer::from_ptr_mut(buffer);
     let start = start as usize;

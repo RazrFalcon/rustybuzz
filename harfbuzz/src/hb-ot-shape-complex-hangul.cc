@@ -56,7 +56,7 @@ static const hb_tag_t hangul_features[HANGUL_FEATURE_COUNT] =
 
 static void collect_features_hangul(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = plan->map;
+    rb_ot_map_builder_t *map = plan->map;
 
     for (unsigned int i = FIRST_HANGUL_FEATURE; i < HANGUL_FEATURE_COUNT; i++)
         rb_ot_map_builder_add_feature(map, hangul_features[i], F_NONE, 1);
@@ -123,7 +123,7 @@ static bool is_zero_width_char(hb_font_t *font, hb_codepoint_t unicode)
     return hb_font_get_glyph(font, unicode, 0, &glyph) && font->get_glyph_h_advance(glyph) == 0;
 }
 
-static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
+static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, rb_buffer_t *buffer, hb_font_t *font)
 {
     /* Hangul syllables come in two shapes: LV, and LVT.  Of those:
      *
@@ -173,14 +173,14 @@ static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, hb_buf
      *   decompose.
      */
 
-    hb_buffer_clear_output(buffer);
+    rb_buffer_clear_output(buffer);
     unsigned int start = 0, end = 0; /* Extent of most recently seen syllable;
                                       * valid only if start < end
                                       */
-    unsigned int count = hb_buffer_get_length(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
 
-    for (hb_buffer_set_idx(buffer, 0); hb_buffer_get_idx(buffer) < count;) {
-        hb_codepoint_t u = hb_buffer_get_cur(buffer, 0)->codepoint;
+    for (rb_buffer_set_idx(buffer, 0); rb_buffer_get_idx(buffer) < count;) {
+        hb_codepoint_t u = rb_buffer_get_cur(buffer, 0)->codepoint;
 
         if (isHangulTone(u)) {
             /*
@@ -188,20 +188,20 @@ static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, hb_buf
              * but the use of the Hangul tone mark characters seems to be rare enough that
              * I didn't bother for now.
              */
-            if (start < end && end == hb_buffer_get_out_len(buffer)) {
+            if (start < end && end == rb_buffer_get_out_len(buffer)) {
                 /* Tone mark follows a valid syllable; move it in front, unless it's zero width. */
-                hb_buffer_unsafe_to_break_from_outbuffer(buffer, start, hb_buffer_get_idx(buffer));
-                hb_buffer_next_glyph(buffer);
+                rb_buffer_unsafe_to_break_from_outbuffer(buffer, start, rb_buffer_get_idx(buffer));
+                rb_buffer_next_glyph(buffer);
                 if (!is_zero_width_char(font, u)) {
-                    hb_buffer_merge_out_clusters(buffer, start, end + 1);
-                    hb_glyph_info_t *info = hb_buffer_get_out_info(buffer);
+                    rb_buffer_merge_out_clusters(buffer, start, end + 1);
+                    hb_glyph_info_t *info = rb_buffer_get_out_info(buffer);
                     hb_glyph_info_t tone = info[end];
                     memmove(&info[start + 1], &info[start], (end - start) * sizeof(hb_glyph_info_t));
                     info[start] = tone;
                 }
             } else {
                 /* No valid syllable as base for tone mark; try to insert dotted circle. */
-                if (!(hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE) &&
+                if (!(rb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE) &&
                     font->has_glyph(0x25CCu)) {
                     hb_codepoint_t chars[2];
                     if (!is_zero_width_char(font, u)) {
@@ -211,42 +211,42 @@ static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, hb_buf
                         chars[0] = 0x25CCu;
                         chars[1] = u;
                     }
-                    hb_buffer_replace_glyphs(buffer, 1, 2, chars);
+                    rb_buffer_replace_glyphs(buffer, 1, 2, chars);
                 } else {
                     /* No dotted circle available in the font; just leave tone mark untouched. */
-                    hb_buffer_next_glyph(buffer);
+                    rb_buffer_next_glyph(buffer);
                 }
             }
-            start = end = hb_buffer_get_out_len(buffer);
+            start = end = rb_buffer_get_out_len(buffer);
             continue;
         }
 
-        start = hb_buffer_get_out_len(buffer); /* Remember current position as a potential syllable start;
+        start = rb_buffer_get_out_len(buffer); /* Remember current position as a potential syllable start;
                                                 * will only be used if we set end to a later position.
                                                 */
 
-        if (isL(u) && hb_buffer_get_idx(buffer) + 1 < count) {
+        if (isL(u) && rb_buffer_get_idx(buffer) + 1 < count) {
             hb_codepoint_t l = u;
-            hb_codepoint_t v = hb_buffer_get_cur(buffer, 1)->codepoint;
+            hb_codepoint_t v = rb_buffer_get_cur(buffer, 1)->codepoint;
             if (isV(v)) {
                 /* Have <L,V> or <L,V,T>. */
                 hb_codepoint_t t = 0;
                 unsigned int tindex = 0;
-                if (hb_buffer_get_idx(buffer) + 2 < count) {
-                    t = hb_buffer_get_cur(buffer, 2)->codepoint;
+                if (rb_buffer_get_idx(buffer) + 2 < count) {
+                    t = rb_buffer_get_cur(buffer, 2)->codepoint;
                     if (isT(t))
                         tindex = t - TBase; /* Only used if isCombiningT (t); otherwise invalid. */
                     else
                         t = 0; /* The next character was not a trailing jamo. */
                 }
-                hb_buffer_unsafe_to_break(buffer, hb_buffer_get_idx(buffer), hb_buffer_get_idx(buffer) + (t ? 3 : 2));
+                rb_buffer_unsafe_to_break(buffer, rb_buffer_get_idx(buffer), rb_buffer_get_idx(buffer) + (t ? 3 : 2));
 
                 /* We've got a syllable <L,V,T?>; see if it can potentially be composed. */
                 if (isCombiningL(l) && isCombiningV(v) && (t == 0 || isCombiningT(t))) {
                     /* Try to compose; if this succeeds, end is set to start+1. */
                     hb_codepoint_t s = SBase + (l - LBase) * NCount + (v - VBase) * TCount + tindex;
                     if (font->has_glyph(s)) {
-                        hb_buffer_replace_glyphs(buffer, t ? 3 : 2, 1, &s);
+                        rb_buffer_replace_glyphs(buffer, t ? 3 : 2, 1, &s);
                         end = start + 1;
                         continue;
                     }
@@ -257,18 +257,18 @@ static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, hb_buf
                  * necessary precomposed glyph.
                  * Set jamo features on the individual glyphs, and advance past them.
                  */
-                hb_buffer_get_cur(buffer, 0)->hangul_shaping_feature() = LJMO;
-                hb_buffer_next_glyph(buffer);
-                hb_buffer_get_cur(buffer, 0)->hangul_shaping_feature() = VJMO;
-                hb_buffer_next_glyph(buffer);
+                rb_buffer_get_cur(buffer, 0)->hangul_shaping_feature() = LJMO;
+                rb_buffer_next_glyph(buffer);
+                rb_buffer_get_cur(buffer, 0)->hangul_shaping_feature() = VJMO;
+                rb_buffer_next_glyph(buffer);
                 if (t) {
-                    hb_buffer_get_cur(buffer, 0)->hangul_shaping_feature() = TJMO;
-                    hb_buffer_next_glyph(buffer);
+                    rb_buffer_get_cur(buffer, 0)->hangul_shaping_feature() = TJMO;
+                    rb_buffer_next_glyph(buffer);
                     end = start + 3;
                 } else
                     end = start + 2;
-                if (hb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
-                    hb_buffer_merge_out_clusters(buffer, start, end);
+                if (rb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
+                    rb_buffer_merge_out_clusters(buffer, start, end);
                 continue;
             }
         }
@@ -282,44 +282,44 @@ static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, hb_buf
             unsigned int vindex = nindex / TCount;
             unsigned int tindex = nindex % TCount;
 
-            if (!tindex && hb_buffer_get_idx(buffer) + 1 < count &&
-                isCombiningT(hb_buffer_get_cur(buffer, 1)->codepoint)) {
+            if (!tindex && rb_buffer_get_idx(buffer) + 1 < count &&
+                isCombiningT(rb_buffer_get_cur(buffer, 1)->codepoint)) {
                 /* <LV,T>, try to combine. */
-                unsigned int new_tindex = hb_buffer_get_cur(buffer, 1)->codepoint - TBase;
+                unsigned int new_tindex = rb_buffer_get_cur(buffer, 1)->codepoint - TBase;
                 hb_codepoint_t new_s = s + new_tindex;
                 if (font->has_glyph(new_s)) {
-                    hb_buffer_replace_glyphs(buffer, 2, 1, &new_s);
+                    rb_buffer_replace_glyphs(buffer, 2, 1, &new_s);
                     end = start + 1;
                     continue;
                 } else
-                    hb_buffer_unsafe_to_break(buffer,
-                                              hb_buffer_get_idx(buffer),
-                                              hb_buffer_get_idx(buffer) + 2); /* Mark unsafe between LV and T. */
+                    rb_buffer_unsafe_to_break(buffer,
+                                              rb_buffer_get_idx(buffer),
+                                              rb_buffer_get_idx(buffer) + 2); /* Mark unsafe between LV and T. */
             }
 
             /* Otherwise, decompose if font doesn't support <LV> or <LVT>,
              * or if having non-combining <LV,T>.  Note that we already handled
              * combining <LV,T> above. */
             if (!has_glyph ||
-                (!tindex && hb_buffer_get_idx(buffer) + 1 < count && isT(hb_buffer_get_cur(buffer, 1)->codepoint))) {
+                (!tindex && rb_buffer_get_idx(buffer) + 1 < count && isT(rb_buffer_get_cur(buffer, 1)->codepoint))) {
                 hb_codepoint_t decomposed[3] = {LBase + lindex, VBase + vindex, TBase + tindex};
                 if (font->has_glyph(decomposed[0]) && font->has_glyph(decomposed[1]) &&
                     (!tindex || font->has_glyph(decomposed[2]))) {
                     unsigned int s_len = tindex ? 3 : 2;
-                    hb_buffer_replace_glyphs(buffer, 1, s_len, decomposed);
+                    rb_buffer_replace_glyphs(buffer, 1, s_len, decomposed);
 
                     /* If we decomposed an LV because of a non-combining T following,
                      * we want to include this T in the syllable.
                      */
                     if (has_glyph && !tindex) {
-                        hb_buffer_next_glyph(buffer);
+                        rb_buffer_next_glyph(buffer);
                         s_len++;
                     }
 
                     /* We decomposed S: apply jamo features to the individual glyphs
                      * that are now in buffer->out_info.
                      */
-                    hb_glyph_info_t *info = hb_buffer_get_out_info(buffer);
+                    hb_glyph_info_t *info = rb_buffer_get_out_info(buffer);
                     end = start + s_len;
 
                     unsigned int i = start;
@@ -328,20 +328,20 @@ static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, hb_buf
                     if (i < end)
                         info[i++].hangul_shaping_feature() = TJMO;
 
-                    if (hb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
-                        hb_buffer_merge_out_clusters(buffer, start, end);
+                    if (rb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
+                        rb_buffer_merge_out_clusters(buffer, start, end);
                     continue;
-                } else if ((!tindex && hb_buffer_get_idx(buffer) + 1 < count &&
-                            isT(hb_buffer_get_cur(buffer, 1)->codepoint)))
-                    hb_buffer_unsafe_to_break(buffer,
-                                              hb_buffer_get_idx(buffer),
-                                              hb_buffer_get_idx(buffer) + 2); /* Mark unsafe between LV and T. */
+                } else if ((!tindex && rb_buffer_get_idx(buffer) + 1 < count &&
+                            isT(rb_buffer_get_cur(buffer, 1)->codepoint)))
+                    rb_buffer_unsafe_to_break(buffer,
+                                              rb_buffer_get_idx(buffer),
+                                              rb_buffer_get_idx(buffer) + 2); /* Mark unsafe between LV and T. */
             }
 
             if (has_glyph) {
                 /* We didn't decompose the S, so just advance past it. */
                 end = start + 1;
-                hb_buffer_next_glyph(buffer);
+                rb_buffer_next_glyph(buffer);
                 continue;
             }
         }
@@ -349,18 +349,18 @@ static void preprocess_text_hangul(const hb_shape_plan_t *plan HB_UNUSED, hb_buf
         /* Didn't find a recognizable syllable, so we leave end <= start;
          * this will prevent tone-mark reordering happening.
          */
-        hb_buffer_next_glyph(buffer);
+        rb_buffer_next_glyph(buffer);
     }
-    hb_buffer_swap_buffers(buffer);
+    rb_buffer_swap_buffers(buffer);
 }
 
-static void setup_masks_hangul(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
+static void setup_masks_hangul(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
     const hangul_shape_plan_t *hangul_plan = (const hangul_shape_plan_t *)plan->data;
 
     if (likely(hangul_plan)) {
-        unsigned int count = hb_buffer_get_length(buffer);
-        hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+        unsigned int count = rb_buffer_get_length(buffer);
+        hb_glyph_info_t *info = rb_buffer_get_info(buffer);
         for (unsigned int i = 0; i < count; i++, info++)
             info->mask |= hangul_plan->mask_array[info->hangul_shaping_feature()];
     }

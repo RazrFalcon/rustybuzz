@@ -78,14 +78,14 @@ template <typename Types> struct RearrangementSubtable
         }
         void transition(StateTableDriver<Types, EntryData> *driver, const Entry<EntryData> &entry)
         {
-            hb_buffer_t *buffer = driver->buffer;
+            rb_buffer_t *buffer = driver->buffer;
             unsigned int flags = entry.flags;
 
             if (flags & MarkFirst)
-                start = hb_buffer_get_idx(buffer);
+                start = rb_buffer_get_idx(buffer);
 
             if (flags & MarkLast)
-                end = hb_min(hb_buffer_get_idx(buffer) + 1, hb_buffer_get_length(buffer));
+                end = hb_min(rb_buffer_get_idx(buffer) + 1, rb_buffer_get_length(buffer));
 
             if ((flags & Verb) && start < end) {
                 /* The following map has two nibbles, for start-side
@@ -118,11 +118,11 @@ template <typename Types> struct RearrangementSubtable
                 bool reverse_r = 3 == (m & 0x0F);
 
                 if (end - start >= l + r) {
-                    hb_buffer_merge_clusters(
-                        buffer, start, hb_min(hb_buffer_get_idx(buffer) + 1, hb_buffer_get_length(buffer)));
-                    hb_buffer_merge_clusters(buffer, start, end);
+                    rb_buffer_merge_clusters(
+                        buffer, start, hb_min(rb_buffer_get_idx(buffer) + 1, rb_buffer_get_length(buffer)));
+                    rb_buffer_merge_clusters(buffer, start, end);
 
-                    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+                    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
                     hb_glyph_info_t buf[4];
 
                     memcpy(buf, info + start, l * sizeof(buf[0]));
@@ -216,20 +216,20 @@ template <typename Types> struct ContextualSubtable
 
         bool is_actionable(StateTableDriver<Types, EntryData> *driver, const Entry<EntryData> &entry)
         {
-            hb_buffer_t *buffer = driver->buffer;
+            rb_buffer_t *buffer = driver->buffer;
 
-            if (hb_buffer_get_idx(buffer) == hb_buffer_get_length(buffer) && !mark_set)
+            if (rb_buffer_get_idx(buffer) == rb_buffer_get_length(buffer) && !mark_set)
                 return false;
 
             return entry.data.markIndex != 0xFFFF || entry.data.currentIndex != 0xFFFF;
         }
         void transition(StateTableDriver<Types, EntryData> *driver, const Entry<EntryData> &entry)
         {
-            hb_buffer_t *buffer = driver->buffer;
+            rb_buffer_t *buffer = driver->buffer;
 
             /* Looks like CoreText applies neither mark nor current substitution for
              * end-of-text if mark was not explicitly set. */
-            if (hb_buffer_get_idx(buffer) == hb_buffer_get_length(buffer) && !mark_set)
+            if (rb_buffer_get_idx(buffer) == rb_buffer_get_length(buffer) && !mark_set)
                 return;
 
             const HBGlyphID *replacement;
@@ -238,44 +238,44 @@ template <typename Types> struct ContextualSubtable
             if (Types::extended) {
                 if (entry.data.markIndex != 0xFFFF) {
                     const Lookup<HBGlyphID> &lookup = subs[entry.data.markIndex];
-                    replacement = lookup.get_value(hb_buffer_get_info(buffer)[mark].codepoint, driver->num_glyphs);
+                    replacement = lookup.get_value(rb_buffer_get_info(buffer)[mark].codepoint, driver->num_glyphs);
                 }
             } else {
-                unsigned int offset = entry.data.markIndex + hb_buffer_get_info(buffer)[mark].codepoint;
+                unsigned int offset = entry.data.markIndex + rb_buffer_get_info(buffer)[mark].codepoint;
                 const UnsizedArrayOf<HBGlyphID> &subs_old = (const UnsizedArrayOf<HBGlyphID> &)subs;
                 replacement = &subs_old[Types::wordOffsetToIndex(offset, table, subs_old.arrayZ)];
                 if (!replacement->sanitize(&c->sanitizer) || !*replacement)
                     replacement = nullptr;
             }
             if (replacement) {
-                hb_buffer_unsafe_to_break(
-                    buffer, mark, hb_min(hb_buffer_get_idx(buffer) + 1, hb_buffer_get_length(buffer)));
-                hb_buffer_get_info(buffer)[mark].codepoint = *replacement;
+                rb_buffer_unsafe_to_break(
+                    buffer, mark, hb_min(rb_buffer_get_idx(buffer) + 1, rb_buffer_get_length(buffer)));
+                rb_buffer_get_info(buffer)[mark].codepoint = *replacement;
                 ret = true;
             }
 
             replacement = nullptr;
-            unsigned int idx = hb_min(hb_buffer_get_idx(buffer), hb_buffer_get_length(buffer) - 1);
+            unsigned int idx = hb_min(rb_buffer_get_idx(buffer), rb_buffer_get_length(buffer) - 1);
             if (Types::extended) {
                 if (entry.data.currentIndex != 0xFFFF) {
                     const Lookup<HBGlyphID> &lookup = subs[entry.data.currentIndex];
-                    replacement = lookup.get_value(hb_buffer_get_info(buffer)[idx].codepoint, driver->num_glyphs);
+                    replacement = lookup.get_value(rb_buffer_get_info(buffer)[idx].codepoint, driver->num_glyphs);
                 }
             } else {
-                unsigned int offset = entry.data.currentIndex + hb_buffer_get_info(buffer)[idx].codepoint;
+                unsigned int offset = entry.data.currentIndex + rb_buffer_get_info(buffer)[idx].codepoint;
                 const UnsizedArrayOf<HBGlyphID> &subs_old = (const UnsizedArrayOf<HBGlyphID> &)subs;
                 replacement = &subs_old[Types::wordOffsetToIndex(offset, table, subs_old.arrayZ)];
                 if (!replacement->sanitize(&c->sanitizer) || !*replacement)
                     replacement = nullptr;
             }
             if (replacement) {
-                hb_buffer_get_info(buffer)[idx].codepoint = *replacement;
+                rb_buffer_get_info(buffer)[idx].codepoint = *replacement;
                 ret = true;
             }
 
             if (entry.flags & SetMark) {
                 mark_set = true;
-                mark = hb_buffer_get_idx(buffer);
+                mark = rb_buffer_get_idx(buffer);
             }
         }
 
@@ -435,27 +435,27 @@ template <typename Types> struct LigatureSubtable
         }
         void transition(StateTableDriver<Types, EntryData> *driver, const Entry<EntryData> &entry)
         {
-            hb_buffer_t *buffer = driver->buffer;
+            rb_buffer_t *buffer = driver->buffer;
 
-            DEBUG_MSG(APPLY, nullptr, "Ligature transition at %u", hb_buffer_get_idx(buffer));
+            DEBUG_MSG(APPLY, nullptr, "Ligature transition at %u", rb_buffer_get_idx(buffer));
             if (entry.flags & LigatureEntryT::SetComponent) {
                 /* Never mark same index twice, in case DontAdvance was used... */
                 if (match_length && match_positions[(match_length - 1u) % ARRAY_LENGTH(match_positions)] ==
-                                        hb_buffer_get_out_len(buffer))
+                                        rb_buffer_get_out_len(buffer))
                     match_length--;
 
-                match_positions[match_length++ % ARRAY_LENGTH(match_positions)] = hb_buffer_get_out_len(buffer);
-                DEBUG_MSG(APPLY, nullptr, "Set component at %u", hb_buffer_get_out_len(buffer));
+                match_positions[match_length++ % ARRAY_LENGTH(match_positions)] = rb_buffer_get_out_len(buffer);
+                DEBUG_MSG(APPLY, nullptr, "Set component at %u", rb_buffer_get_out_len(buffer));
             }
 
             if (LigatureEntryT::performAction(entry)) {
                 DEBUG_MSG(APPLY, nullptr, "Perform action with %u", match_length);
-                unsigned int end = hb_buffer_get_out_len(buffer);
+                unsigned int end = rb_buffer_get_out_len(buffer);
 
                 if (unlikely(!match_length))
                     return;
 
-                if (hb_buffer_get_idx(buffer) >= hb_buffer_get_length(buffer))
+                if (rb_buffer_get_idx(buffer) >= rb_buffer_get_length(buffer))
                     return; /* TODO Work on previous instead? */
 
                 unsigned int cursor = match_length;
@@ -475,7 +475,7 @@ template <typename Types> struct LigatureSubtable
                     }
 
                     DEBUG_MSG(APPLY, nullptr, "Moving to stack position %u", cursor - 1);
-                    hb_buffer_move_to(buffer, match_positions[--cursor % ARRAY_LENGTH(match_positions)]);
+                    rb_buffer_move_to(buffer, match_positions[--cursor % ARRAY_LENGTH(match_positions)]);
 
                     if (unlikely(!actionData->sanitize(&c->sanitizer)))
                         break;
@@ -485,7 +485,7 @@ template <typename Types> struct LigatureSubtable
                     if (uoffset & 0x20000000)
                         uoffset |= 0xC0000000; /* Sign-extend. */
                     int32_t offset = (int32_t)uoffset;
-                    unsigned int component_idx = hb_buffer_get_cur(buffer, 0)->codepoint + offset;
+                    unsigned int component_idx = rb_buffer_get_cur(buffer, 0)->codepoint + offset;
                     component_idx = Types::wordOffsetToIndex(component_idx, table, component.arrayZ);
                     const HBUINT16 &componentData = component[component_idx];
                     if (unlikely(!componentData.sanitize(&c->sanitizer)))
@@ -505,26 +505,26 @@ template <typename Types> struct LigatureSubtable
                         hb_codepoint_t lig = ligatureData;
 
                         DEBUG_MSG(APPLY, nullptr, "Produced ligature %u", lig);
-                        hb_buffer_replace_glyph(buffer, lig);
+                        rb_buffer_replace_glyph(buffer, lig);
 
                         unsigned int lig_end =
                             match_positions[(match_length - 1u) % ARRAY_LENGTH(match_positions)] + 1u;
                         /* Now go and delete all subsequent components. */
                         while (match_length - 1u > cursor) {
                             DEBUG_MSG(APPLY, nullptr, "Skipping ligature component");
-                            hb_buffer_move_to(buffer, match_positions[--match_length % ARRAY_LENGTH(match_positions)]);
-                            hb_buffer_replace_glyph(buffer, DELETED_GLYPH);
+                            rb_buffer_move_to(buffer, match_positions[--match_length % ARRAY_LENGTH(match_positions)]);
+                            rb_buffer_replace_glyph(buffer, DELETED_GLYPH);
                         }
 
-                        hb_buffer_move_to(buffer, lig_end);
-                        hb_buffer_merge_out_clusters(buffer,
+                        rb_buffer_move_to(buffer, lig_end);
+                        rb_buffer_merge_out_clusters(buffer,
                                                      match_positions[cursor % ARRAY_LENGTH(match_positions)],
-                                                     hb_buffer_get_out_len(buffer));
+                                                     rb_buffer_get_out_len(buffer));
                     }
 
                     actionData++;
                 } while (!(action & LigActionLast));
-                hb_buffer_move_to(buffer, end);
+                rb_buffer_move_to(buffer, end);
             }
         }
 
@@ -578,8 +578,8 @@ template <typename Types> struct NoncontextualSubtable
         bool ret = false;
         unsigned int num_glyphs = hb_face_get_glyph_count(c->face);
 
-        hb_glyph_info_t *info = hb_buffer_get_info(c->buffer);
-        unsigned int count = hb_buffer_get_length(c->buffer);
+        hb_glyph_info_t *info = rb_buffer_get_info(c->buffer);
+        unsigned int count = rb_buffer_get_length(c->buffer);
         for (unsigned int i = 0; i < count; i++) {
             const HBGlyphID *replacement = substitute.get_value(info[i].codepoint, num_glyphs);
             if (replacement) {
@@ -689,10 +689,10 @@ template <typename Types> struct InsertionSubtable
         }
         void transition(StateTableDriver<Types, EntryData> *driver, const Entry<EntryData> &entry)
         {
-            hb_buffer_t *buffer = driver->buffer;
+            rb_buffer_t *buffer = driver->buffer;
             unsigned int flags = entry.flags;
 
-            unsigned mark_loc = hb_buffer_get_out_len(buffer);
+            unsigned mark_loc = rb_buffer_get_out_len(buffer);
 
             if (entry.data.markedInsertIndex != 0xFFFF) {
                 unsigned int count = (flags & MarkedInsertCount);
@@ -703,21 +703,21 @@ template <typename Types> struct InsertionSubtable
 
                 bool before = flags & MarkedInsertBefore;
 
-                unsigned int end = hb_buffer_get_out_len(buffer);
-                hb_buffer_move_to(buffer, mark);
+                unsigned int end = rb_buffer_get_out_len(buffer);
+                rb_buffer_move_to(buffer, mark);
 
-                if (hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer) && !before)
-                    hb_buffer_copy_glyph(buffer);
+                if (rb_buffer_get_idx(buffer) < rb_buffer_get_length(buffer) && !before)
+                    rb_buffer_copy_glyph(buffer);
                 /* TODO We ignore KashidaLike setting. */
                 for (unsigned int i = 0; i < count; i++)
-                    hb_buffer_output_glyph(buffer, glyphs[i]);
-                if (hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer) && !before)
-                    hb_buffer_skip_glyph(buffer);
+                    rb_buffer_output_glyph(buffer, glyphs[i]);
+                if (rb_buffer_get_idx(buffer) < rb_buffer_get_length(buffer) && !before)
+                    rb_buffer_skip_glyph(buffer);
 
-                hb_buffer_move_to(buffer, end + count);
+                rb_buffer_move_to(buffer, end + count);
 
-                hb_buffer_unsafe_to_break_from_outbuffer(
-                    buffer, mark, hb_min(hb_buffer_get_idx(buffer) + 1, hb_buffer_get_length(buffer)));
+                rb_buffer_unsafe_to_break_from_outbuffer(
+                    buffer, mark, hb_min(rb_buffer_get_idx(buffer) + 1, rb_buffer_get_length(buffer)));
             }
 
             if (flags & SetMark)
@@ -732,15 +732,15 @@ template <typename Types> struct InsertionSubtable
 
                 bool before = flags & CurrentInsertBefore;
 
-                unsigned int end = hb_buffer_get_out_len(buffer);
+                unsigned int end = rb_buffer_get_out_len(buffer);
 
-                if (hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer) && !before)
-                    hb_buffer_copy_glyph(buffer);
+                if (rb_buffer_get_idx(buffer) < rb_buffer_get_length(buffer) && !before)
+                    rb_buffer_copy_glyph(buffer);
                 /* TODO We ignore KashidaLike setting. */
                 for (unsigned int i = 0; i < count; i++)
-                    hb_buffer_output_glyph(buffer, glyphs[i]);
-                if (hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer) && !before)
-                    hb_buffer_skip_glyph(buffer);
+                    rb_buffer_output_glyph(buffer, glyphs[i]);
+                if (rb_buffer_get_idx(buffer) < rb_buffer_get_length(buffer) && !before)
+                    rb_buffer_skip_glyph(buffer);
 
                 /* Humm. Not sure where to move to.  There's this wording under
                  * DontAdvance flag:
@@ -757,7 +757,7 @@ template <typename Types> struct InsertionSubtable
                  *
                  * https://github.com/harfbuzz/harfbuzz/issues/1224#issuecomment-427691417
                  */
-                hb_buffer_move_to(buffer, (flags & DontAdvance) ? end : end + count);
+                rb_buffer_move_to(buffer, (flags & DontAdvance) ? end : end + count);
             }
         }
 
@@ -947,7 +947,7 @@ template <typename Types> struct Chain
                 goto skip;
 
             if (!(subtable->get_coverage() & ChainSubtable<Types>::AllDirections) &&
-                HB_DIRECTION_IS_VERTICAL(hb_buffer_get_direction(c->buffer)) !=
+                HB_DIRECTION_IS_VERTICAL(rb_buffer_get_direction(c->buffer)) !=
                     bool(subtable->get_coverage() & ChainSubtable<Types>::Vertical))
                 goto skip;
 
@@ -981,15 +981,15 @@ template <typename Types> struct Chain
             reverse = subtable->get_coverage() & ChainSubtable<Types>::Logical
                           ? bool(subtable->get_coverage() & ChainSubtable<Types>::Backwards)
                           : bool(subtable->get_coverage() & ChainSubtable<Types>::Backwards) !=
-                                HB_DIRECTION_IS_BACKWARD(hb_buffer_get_direction(c->buffer));
+                                HB_DIRECTION_IS_BACKWARD(rb_buffer_get_direction(c->buffer));
 
             if (reverse)
-                hb_buffer_reverse(c->buffer);
+                rb_buffer_reverse(c->buffer);
 
             subtable->apply(c);
 
             if (reverse)
-                hb_buffer_reverse(c->buffer);
+                rb_buffer_reverse(c->buffer);
 
         skip:
             subtable = &StructAfter<ChainSubtable<Types>>(*subtable);

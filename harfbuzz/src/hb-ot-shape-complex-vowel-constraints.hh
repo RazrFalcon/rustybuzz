@@ -31,4 +31,4 @@
 #include "hb-ot-shape-complex.hh"
 
 HB_INTERNAL void
-_hb_preprocess_text_vowel_constraints(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+_hb_preprocess_text_vowel_constraints(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font);

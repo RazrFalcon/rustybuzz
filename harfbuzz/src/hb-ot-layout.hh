@@ -49,7 +49,7 @@ HB_INTERNAL bool hb_ot_layout_has_machine_kerning(hb_face_t *face);
 
 HB_INTERNAL bool hb_ot_layout_has_cross_kerning(hb_face_t *face);
 
-HB_INTERNAL void hb_ot_layout_kern(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+HB_INTERNAL void hb_ot_layout_kern(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
 /*
  * GDEF
@@ -76,9 +76,9 @@ HB_MARK_AS_FLAG_T(hb_ot_layout_glyph_props_flags_t);
  */
 
 /* Should be called before all the substitute_lookup's are done. */
-HB_INTERNAL void hb_ot_layout_substitute_start(hb_font_t *font, hb_buffer_t *buffer);
+HB_INTERNAL void hb_ot_layout_substitute_start(hb_font_t *font, rb_buffer_t *buffer);
 
-HB_INTERNAL void hb_ot_layout_delete_glyphs_inplace(hb_buffer_t *buffer, bool (*filter)(const hb_glyph_info_t *info));
+HB_INTERNAL void hb_ot_layout_delete_glyphs_inplace(rb_buffer_t *buffer, bool (*filter)(const hb_glyph_info_t *info));
 
 namespace OT {
 struct hb_ot_apply_context_t;
@@ -91,13 +91,13 @@ HB_INTERNAL void hb_ot_layout_substitute_lookup(OT::hb_ot_apply_context_t *c,
                                                 const OT::hb_ot_layout_lookup_accelerator_t &accel);
 
 /* Should be called before all the position_lookup's are done. */
-HB_INTERNAL void hb_ot_layout_position_start(hb_font_t *font, hb_buffer_t *buffer);
+HB_INTERNAL void hb_ot_layout_position_start(hb_font_t *font, rb_buffer_t *buffer);
 
 /* Should be called after all the position_lookup's are done, to fini advances. */
-HB_INTERNAL void hb_ot_layout_position_finish_advances(hb_font_t *font, hb_buffer_t *buffer);
+HB_INTERNAL void hb_ot_layout_position_finish_advances(hb_font_t *font, rb_buffer_t *buffer);
 
 /* Should be called after hb_ot_layout_position_finish_advances, to fini offsets. */
-HB_INTERNAL void hb_ot_layout_position_finish_offsets(hb_font_t *font, hb_buffer_t *buffer);
+HB_INTERNAL void hb_ot_layout_position_finish_offsets(hb_font_t *font, rb_buffer_t *buffer);
 
 /*
  * Buffer var routines.
@@ -113,16 +113,16 @@ HB_INTERNAL void hb_ot_layout_position_finish_offsets(hb_font_t *font, hb_buffer
 
 /* Loop over syllables. Based on foreach_cluster(). */
 #define foreach_syllable(buffer, start, end)                                                                           \
-    for (unsigned int _count = hb_buffer_get_length(buffer),                                                           \
+    for (unsigned int _count = rb_buffer_get_length(buffer),                                                           \
                       start = 0,                                                                                       \
                       end = _count ? _hb_next_syllable(buffer, 0) : 0;                                                 \
          start < _count;                                                                                               \
          start = end, end = _hb_next_syllable(buffer, start))
 
-static inline unsigned int _hb_next_syllable(hb_buffer_t *buffer, unsigned int start)
+static inline unsigned int _hb_next_syllable(rb_buffer_t *buffer, unsigned int start)
 {
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
 
     unsigned int syllable = info[start].syllable();
     while (++start < count && syllable == info[start].syllable())
@@ -132,10 +132,10 @@ static inline unsigned int _hb_next_syllable(hb_buffer_t *buffer, unsigned int s
 }
 
 static inline void
-_hb_clear_syllables(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+_hb_clear_syllables(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer)
 {
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
     for (unsigned int i = 0; i < count; i++)
         info[i].syllable() = 0;
 }
@@ -171,17 +171,17 @@ enum hb_unicode_props_flags_t {
 };
 HB_MARK_AS_FLAG_T(hb_unicode_props_flags_t);
 
-static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, hb_buffer_t *buffer)
+static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, rb_buffer_t *buffer)
 {
     unsigned int u = info->codepoint;
     unsigned int gen_cat = (unsigned int)hb_ucd_general_category(u);
     unsigned int props = gen_cat;
 
     if (u >= 0x80u) {
-        *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
+        *rb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
 
         if (unlikely(hb_ucd_is_default_ignorable(u))) {
-            *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
+            *rb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
             props |= UPROPS_MASK_IGNORABLE;
             if (u == 0x200Cu)
                 props |= UPROPS_MASK_Cf_ZWNJ;
@@ -203,7 +203,7 @@ static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, hb_bu
             /* COMBINING GRAPHEME JOINER should not be skipped; at least some times.
              * https://github.com/harfbuzz/harfbuzz/issues/554 */
             else if (unlikely(u == 0x034Fu)) {
-                *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_CGJ;
+                *rb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_CGJ;
                 props |= UPROPS_MASK_HIDDEN;
             }
         }
@@ -289,16 +289,16 @@ static inline bool _hb_glyph_info_is_continuation(const hb_glyph_info_t *info)
 }
 /* Loop over grapheme. Based on foreach_cluster(). */
 #define foreach_grapheme(buffer, start, end)                                                                           \
-    for (unsigned int _count = hb_buffer_get_length(buffer),                                                           \
+    for (unsigned int _count = rb_buffer_get_length(buffer),                                                           \
                       start = 0,                                                                                       \
                       end = _count ? _hb_next_grapheme(buffer, 0) : 0;                                                 \
          start < _count;                                                                                               \
          start = end, end = _hb_next_grapheme(buffer, start))
 
-static inline unsigned int _hb_next_grapheme(hb_buffer_t *buffer, unsigned int start)
+static inline unsigned int _hb_next_grapheme(rb_buffer_t *buffer, unsigned int start)
 {
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
 
     while (++start < count && _hb_glyph_info_is_continuation(&info[start]))
         ;
@@ -405,9 +405,9 @@ static inline unsigned int _hb_glyph_info_get_lig_num_comps(const hb_glyph_info_
         return 1;
 }
 
-static inline uint8_t _hb_allocate_lig_id(hb_buffer_t *buffer)
+static inline uint8_t _hb_allocate_lig_id(rb_buffer_t *buffer)
 {
-    uint8_t lig_id = hb_buffer_next_serial(buffer) & 0x07;
+    uint8_t lig_id = rb_buffer_next_serial(buffer) & 0x07;
     if (unlikely(!lig_id))
         lig_id = _hb_allocate_lig_id(buffer); /* in case of overflow */
     return lig_id;
@@ -471,10 +471,10 @@ static inline void _hb_glyph_info_clear_substituted(hb_glyph_info_t *info)
 }
 
 static inline void
-_hb_clear_substitution_flags(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+_hb_clear_substitution_flags(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer)
 {
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
     for (unsigned int i = 0; i < count; i++)
         _hb_glyph_info_clear_substituted(&info[i]);
 }

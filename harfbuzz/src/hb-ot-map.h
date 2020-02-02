@@ -2,12 +2,12 @@
 
 #include "hb.h"
 
-typedef struct hb_ot_map_builder_t hb_ot_map_builder_t;
-typedef struct hb_ot_map_t hb_ot_map_t;
+typedef struct rb_ot_map_builder_t rb_ot_map_builder_t;
+typedef struct rb_ot_map_t rb_ot_map_t;
 typedef struct lookup_map_t lookup_map_t;
 typedef struct hb_shape_plan_t hb_shape_plan_t;
 
-typedef void (*pause_func_t)(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+typedef void (*pause_func_t)(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
 typedef enum hb_ot_map_feature_flags_t {
     F_NONE = 0x0000u,
@@ -47,68 +47,68 @@ extern "C" {
 
 // Map
 
-HB_EXTERN hb_ot_map_t *rb_ot_map_init();
+HB_EXTERN rb_ot_map_t *rb_ot_map_init();
 
-HB_EXTERN void rb_ot_map_fini(hb_ot_map_t *map);
+HB_EXTERN void rb_ot_map_fini(rb_ot_map_t *map);
 
-HB_EXTERN hb_mask_t rb_ot_map_get_global_mask(const hb_ot_map_t *map);
+HB_EXTERN hb_mask_t rb_ot_map_get_global_mask(const rb_ot_map_t *map);
 
-HB_EXTERN hb_mask_t rb_ot_map_get_mask(const hb_ot_map_t *map, hb_tag_t feature_tag, unsigned int *shift);
+HB_EXTERN hb_mask_t rb_ot_map_get_mask(const rb_ot_map_t *map, hb_tag_t feature_tag, unsigned int *shift);
 
-HB_EXTERN bool rb_ot_map_needs_fallback(const hb_ot_map_t *map, hb_tag_t feature_tag);
+HB_EXTERN bool rb_ot_map_needs_fallback(const rb_ot_map_t *map, hb_tag_t feature_tag);
 
-HB_EXTERN hb_mask_t rb_ot_map_get_1_mask(const hb_ot_map_t *map, hb_tag_t feature_tag);
-
-HB_EXTERN unsigned int
-rb_ot_map_get_feature_index(const hb_ot_map_t *map, unsigned int table_index, hb_tag_t feature_tag);
+HB_EXTERN hb_mask_t rb_ot_map_get_1_mask(const rb_ot_map_t *map, hb_tag_t feature_tag);
 
 HB_EXTERN unsigned int
-rb_ot_map_get_feature_stage(const hb_ot_map_t *map, unsigned int table_index, hb_tag_t feature_tag);
+rb_ot_map_get_feature_index(const rb_ot_map_t *map, unsigned int table_index, hb_tag_t feature_tag);
 
-HB_EXTERN hb_tag_t rb_ot_map_get_chosen_script(const hb_ot_map_t *map, unsigned int table_index);
+HB_EXTERN unsigned int
+rb_ot_map_get_feature_stage(const rb_ot_map_t *map, unsigned int table_index, hb_tag_t feature_tag);
 
-HB_EXTERN bool rb_ot_map_has_found_script(const hb_ot_map_t *map, unsigned int table_index);
+HB_EXTERN hb_tag_t rb_ot_map_get_chosen_script(const rb_ot_map_t *map, unsigned int table_index);
 
-HB_EXTERN const lookup_map_t *rb_ot_map_get_lookup(const hb_ot_map_t *map, unsigned int table_index, unsigned int i);
+HB_EXTERN bool rb_ot_map_has_found_script(const rb_ot_map_t *map, unsigned int table_index);
 
-HB_EXTERN unsigned int rb_ot_map_get_stages_length(const hb_ot_map_t *map, unsigned int table_index);
+HB_EXTERN const lookup_map_t *rb_ot_map_get_lookup(const rb_ot_map_t *map, unsigned int table_index, unsigned int i);
 
-HB_EXTERN const stage_map_t *rb_ot_map_get_stage(const hb_ot_map_t *map, unsigned int table_index, unsigned int i);
+HB_EXTERN unsigned int rb_ot_map_get_stages_length(const rb_ot_map_t *map, unsigned int table_index);
 
-HB_EXTERN void rb_ot_map_get_stage_lookups(const hb_ot_map_t *map,
+HB_EXTERN const stage_map_t *rb_ot_map_get_stage(const rb_ot_map_t *map, unsigned int table_index, unsigned int i);
+
+HB_EXTERN void rb_ot_map_get_stage_lookups(const rb_ot_map_t *map,
                                            unsigned int table_index,
                                            unsigned int stage,
                                            const struct lookup_map_t **plookups,
                                            unsigned int *lookup_count);
 
-void hb_ot_map_substitute(const hb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+void hb_ot_map_substitute(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
-void hb_ot_map_position(const hb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+void hb_ot_map_position(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
 // Builder
 
-HB_EXTERN hb_ot_map_builder_t *rb_ot_map_builder_init(const void *rust_data, const hb_segment_properties_t *props_);
+HB_EXTERN rb_ot_map_builder_t *rb_ot_map_builder_init(const void *rust_data, const hb_segment_properties_t *props_);
 
-HB_EXTERN void rb_ot_map_builder_fini(hb_ot_map_builder_t *builder);
+HB_EXTERN void rb_ot_map_builder_fini(rb_ot_map_builder_t *builder);
 
-HB_EXTERN void rb_ot_map_builder_compile(hb_ot_map_builder_t *builder,
-                                         hb_ot_map_t *m,
+HB_EXTERN void rb_ot_map_builder_compile(rb_ot_map_builder_t *builder,
+                                         rb_ot_map_t *m,
                                          const void *rust_data,
                                          unsigned int *variations_index);
 
-HB_EXTERN void rb_ot_map_builder_add_feature(hb_ot_map_builder_t *builder,
+HB_EXTERN void rb_ot_map_builder_add_feature(rb_ot_map_builder_t *builder,
                                              hb_tag_t tag,
                                              hb_ot_map_feature_flags_t flags,
                                              unsigned int value);
 
-HB_EXTERN void rb_ot_map_builder_enable_feature(hb_ot_map_builder_t *builder,
+HB_EXTERN void rb_ot_map_builder_enable_feature(rb_ot_map_builder_t *builder,
                                                 hb_tag_t tag,
                                                 hb_ot_map_feature_flags_t flags,
                                                 unsigned int value);
 
-HB_EXTERN void rb_ot_map_builder_disable_feature(hb_ot_map_builder_t *builder, hb_tag_t tag);
+HB_EXTERN void rb_ot_map_builder_disable_feature(rb_ot_map_builder_t *builder, hb_tag_t tag);
 
-HB_EXTERN void rb_ot_map_builder_add_gsub_pause(hb_ot_map_builder_t *builder, pause_func_t pause_func);
+HB_EXTERN void rb_ot_map_builder_add_gsub_pause(rb_ot_map_builder_t *builder, pause_func_t pause_func);
 
-HB_EXTERN hb_tag_t rb_ot_map_builder_chosen_script(hb_ot_map_builder_t *builder, unsigned int table_index);
+HB_EXTERN hb_tag_t rb_ot_map_builder_chosen_script(rb_ot_map_builder_t *builder, unsigned int table_index);
 }

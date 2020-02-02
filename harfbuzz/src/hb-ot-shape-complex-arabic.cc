@@ -151,13 +151,13 @@ static const struct arabic_state_table_entry {
 };
 // clang-format on
 
-static void arabic_fallback_shape(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+static void arabic_fallback_shape(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
-static void record_stch(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+static void record_stch(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
 static void collect_features_arabic(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = plan->map;
+    rb_ot_map_builder_t *map = plan->map;
 
     /* We apply features according to the Arabic spec, with pauses
      * in between most.
@@ -265,16 +265,16 @@ void data_destroy_arabic(void *data)
     free(data);
 }
 
-static void arabic_joining(hb_buffer_t *buffer)
+static void arabic_joining(rb_buffer_t *buffer)
 {
-    unsigned int count = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
     unsigned int prev = (unsigned int)-1, state = 0;
 
     /* Check pre-context */
-    for (unsigned int i = 0; i < hb_buffer_get_context_len(buffer, 0); i++) {
-        unsigned int this_type = get_joining_type(hb_buffer_get_context(buffer, 0, i),
-                                                  hb_ucd_general_category(hb_buffer_get_context(buffer, 0, i)));
+    for (unsigned int i = 0; i < rb_buffer_get_context_len(buffer, 0); i++) {
+        unsigned int this_type = get_joining_type(rb_buffer_get_context(buffer, 0, i),
+                                                  hb_ucd_general_category(rb_buffer_get_context(buffer, 0, i)));
 
         if (unlikely(this_type == JOINING_TYPE_T))
             continue;
@@ -296,7 +296,7 @@ static void arabic_joining(hb_buffer_t *buffer)
 
         if (entry->prev_action != NONE && prev != (unsigned int)-1) {
             info[prev].arabic_shaping_action() = entry->prev_action;
-            hb_buffer_unsafe_to_break(buffer, prev, i + 1);
+            rb_buffer_unsafe_to_break(buffer, prev, i + 1);
         }
 
         info[i].arabic_shaping_action() = entry->curr_action;
@@ -305,9 +305,9 @@ static void arabic_joining(hb_buffer_t *buffer)
         state = entry->next_state;
     }
 
-    for (unsigned int i = 0; i < hb_buffer_get_context_len(buffer, 1); i++) {
-        unsigned int this_type = get_joining_type(hb_buffer_get_context(buffer, 1, i),
-                                                  hb_ucd_general_category(hb_buffer_get_context(buffer, 1, i)));
+    for (unsigned int i = 0; i < rb_buffer_get_context_len(buffer, 1); i++) {
+        unsigned int this_type = get_joining_type(rb_buffer_get_context(buffer, 1, i),
+                                                  hb_ucd_general_category(rb_buffer_get_context(buffer, 1, i)));
 
         if (unlikely(this_type == JOINING_TYPE_T))
             continue;
@@ -319,36 +319,36 @@ static void arabic_joining(hb_buffer_t *buffer)
     }
 }
 
-static void mongolian_variation_selectors(hb_buffer_t *buffer)
+static void mongolian_variation_selectors(rb_buffer_t *buffer)
 {
     /* Copy arabic_shaping_action() from base to Mongolian variation selectors. */
-    unsigned int count = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
     for (unsigned int i = 1; i < count; i++)
         if (unlikely(hb_in_range<hb_codepoint_t>(info[i].codepoint, 0x180Bu, 0x180Du)))
             info[i].arabic_shaping_action() = info[i - 1].arabic_shaping_action();
 }
 
-void setup_masks_arabic_plan(const arabic_shape_plan_t *arabic_plan, hb_buffer_t *buffer, hb_script_t script)
+void setup_masks_arabic_plan(const arabic_shape_plan_t *arabic_plan, rb_buffer_t *buffer, hb_script_t script)
 {
     arabic_joining(buffer);
     if (script == HB_SCRIPT_MONGOLIAN)
         mongolian_variation_selectors(buffer);
 
-    unsigned int count = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
     for (unsigned int i = 0; i < count; i++) {
         info[i].mask |= arabic_plan->mask_array[info[i].arabic_shaping_action()];
     }
 }
 
-static void setup_masks_arabic(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
+static void setup_masks_arabic(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
     const arabic_shape_plan_t *arabic_plan = (const arabic_shape_plan_t *)plan->data;
     setup_masks_arabic_plan(arabic_plan, buffer, plan->props.script);
 }
 
-static void arabic_fallback_shape(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+static void arabic_fallback_shape(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
 #ifdef HB_NO_OT_SHAPE_COMPLEX_ARABIC_FALLBACK
     return;
@@ -381,7 +381,7 @@ retry:
  * marks can use it as well.
  */
 
-static void record_stch(const hb_shape_plan_t *plan, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+static void record_stch(const hb_shape_plan_t *plan, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer)
 {
     const arabic_shape_plan_t *arabic_plan = (const arabic_shape_plan_t *)plan->data;
     if (!arabic_plan->has_stch)
@@ -392,19 +392,19 @@ static void record_stch(const hb_shape_plan_t *plan, hb_font_t *font HB_UNUSED, 
      * are applied before stch, but we assume that they didn't result in
      * anything multiplying into 5 pieces, so it's safe-ish... */
 
-    unsigned int count = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
     for (unsigned int i = 0; i < count; i++)
         if (unlikely(_hb_glyph_info_multiplied(&info[i]))) {
             unsigned int comp = _hb_glyph_info_get_lig_comp(&info[i]);
             info[i].arabic_shaping_action() = comp % 2 ? STCH_REPEATING : STCH_FIXED;
-            *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH;
+            *rb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH;
         }
 }
 
-static void apply_stch(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
+static void apply_stch(const hb_shape_plan_t *plan HB_UNUSED, rb_buffer_t *buffer, hb_font_t *font)
 {
-    if (likely(!(*hb_buffer_get_scratch_flags(buffer) & HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH)))
+    if (likely(!(*rb_buffer_get_scratch_flags(buffer) & HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH)))
         return;
 
     /* The Arabic shaper currently always processes in RTL mode, so we should
@@ -421,9 +421,9 @@ static void apply_stch(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffe
     enum { MEASURE, CUT } /* step_t */;
 
     for (unsigned int step = MEASURE; step <= CUT; step = step + 1) {
-        unsigned int count = hb_buffer_get_length(buffer);
-        hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-        hb_glyph_position_t *pos = hb_buffer_get_pos(buffer);
+        unsigned int count = rb_buffer_get_length(buffer);
+        hb_glyph_info_t *info = rb_buffer_get_info(buffer);
+        hb_glyph_position_t *pos = rb_buffer_get_pos(buffer);
         unsigned int new_len = count + extra_glyphs_needed; // write head during CUT
         unsigned int j = new_len;
         for (unsigned int i = count; i; i--) {
@@ -499,7 +499,7 @@ static void apply_stch(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffe
                 extra_glyphs_needed += n_copies * n_repeating;
                 DEBUG_MSG(ARABIC, nullptr, "will add extra %d copies of repeating tiles", n_copies);
             } else {
-                hb_buffer_unsafe_to_break(buffer, context, end);
+                rb_buffer_unsafe_to_break(buffer, context, end);
                 hb_position_t x_offset = 0;
                 for (unsigned int k = end; k > start; k--) {
                     hb_position_t width = font->get_glyph_h_advance(info[k - 1].codepoint);
@@ -525,15 +525,15 @@ static void apply_stch(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffe
         }
 
         if (step == MEASURE) {
-            hb_buffer_pre_allocate(buffer, count + extra_glyphs_needed);
+            rb_buffer_pre_allocate(buffer, count + extra_glyphs_needed);
         } else {
             assert(j == 0);
-            hb_buffer_set_length(buffer, new_len);
+            rb_buffer_set_length(buffer, new_len);
         }
     }
 }
 
-static void postprocess_glyphs_arabic(const hb_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
+static void postprocess_glyphs_arabic(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font)
 {
     apply_stch(plan, buffer, font);
 }
@@ -562,11 +562,11 @@ static inline bool info_is_mcm(const hb_glyph_info_t &info)
 }
 
 static void reorder_marks_arabic(const hb_shape_plan_t *plan HB_UNUSED,
-                                 hb_buffer_t *buffer,
+                                 rb_buffer_t *buffer,
                                  unsigned int start,
                                  unsigned int end)
 {
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
 
     DEBUG_MSG(ARABIC, buffer, "Reordering marks from %d to %d", start, end);
 
@@ -596,7 +596,7 @@ static void reorder_marks_arabic(const hb_shape_plan_t *plan HB_UNUSED,
         DEBUG_MSG(ARABIC, buffer, "Shifting %d's: %d %d", cc, i, j);
         hb_glyph_info_t temp[HB_OT_SHAPE_COMPLEX_MAX_COMBINING_MARKS];
         assert(j - i <= ARRAY_LENGTH(temp));
-        hb_buffer_merge_clusters(buffer, start, j);
+        rb_buffer_merge_clusters(buffer, start, j);
         memmove(temp, &info[i], (j - i) * sizeof(hb_glyph_info_t));
         memmove(&info[start + j - i], &info[start], (i - start) * sizeof(hb_glyph_info_t));
         memmove(&info[start], temp, (j - i) * sizeof(hb_glyph_info_t));

@@ -163,18 +163,18 @@ struct trak
         if (unlikely(ptem <= 0.f))
             return_trace(false);
 
-        hb_buffer_t *buffer = c->buffer;
-        if (HB_DIRECTION_IS_HORIZONTAL(hb_buffer_get_direction(c->buffer))) {
+        rb_buffer_t *buffer = c->buffer;
+        if (HB_DIRECTION_IS_HORIZONTAL(rb_buffer_get_direction(c->buffer))) {
             const TrackData &trackData = this + horizData;
             int tracking = trackData.get_tracking(this, ptem);
             hb_position_t offset_to_add = c->font->em_scalef_x(tracking / 2);
             hb_position_t advance_to_add = c->font->em_scalef_x(tracking);
             foreach_grapheme(buffer, start, end)
             {
-                if (!(hb_buffer_get_info(buffer)[start].mask & trak_mask))
+                if (!(rb_buffer_get_info(buffer)[start].mask & trak_mask))
                     continue;
-                hb_buffer_get_pos(buffer)[start].x_advance += advance_to_add;
-                hb_buffer_get_pos(buffer)[start].x_offset += offset_to_add;
+                rb_buffer_get_pos(buffer)[start].x_advance += advance_to_add;
+                rb_buffer_get_pos(buffer)[start].x_offset += offset_to_add;
             }
         } else {
             const TrackData &trackData = this + vertData;
@@ -183,10 +183,10 @@ struct trak
             hb_position_t advance_to_add = c->font->em_scalef_y(tracking);
             foreach_grapheme(buffer, start, end)
             {
-                if (!(hb_buffer_get_info(buffer)[start].mask & trak_mask))
+                if (!(rb_buffer_get_info(buffer)[start].mask & trak_mask))
                     continue;
-                hb_buffer_get_pos(buffer)[start].y_advance += advance_to_add;
-                hb_buffer_get_pos(buffer)[start].y_offset += offset_to_add;
+                rb_buffer_get_pos(buffer)[start].y_advance += advance_to_add;
+                rb_buffer_get_pos(buffer)[start].y_offset += offset_to_add;
             }
         }
 

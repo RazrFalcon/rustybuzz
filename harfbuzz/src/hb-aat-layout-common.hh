@@ -704,7 +704,7 @@ struct ExtendedTypes
 
 template <typename Types, typename EntryData> struct StateTableDriver
 {
-    StateTableDriver(const StateTable<Types, EntryData> &machine_, hb_buffer_t *buffer_, hb_face_t *face_)
+    StateTableDriver(const StateTable<Types, EntryData> &machine_, rb_buffer_t *buffer_, hb_face_t *face_)
         : machine(machine_)
         , buffer(buffer_)
         , num_glyphs(hb_face_get_glyph_count(face_))
@@ -714,37 +714,37 @@ template <typename Types, typename EntryData> struct StateTableDriver
     template <typename context_t> void drive(context_t *c)
     {
         if (!c->in_place)
-            hb_buffer_clear_output(buffer);
+            rb_buffer_clear_output(buffer);
 
         int state = StateTable<Types, EntryData>::STATE_START_OF_TEXT;
-        for (hb_buffer_set_idx(buffer, 0);;) {
+        for (rb_buffer_set_idx(buffer, 0);;) {
             unsigned int klass =
-                hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer)
-                    ? machine.get_class(hb_buffer_get_info(buffer)[hb_buffer_get_idx(buffer)].codepoint, num_glyphs)
+                rb_buffer_get_idx(buffer) < rb_buffer_get_length(buffer)
+                    ? machine.get_class(rb_buffer_get_info(buffer)[rb_buffer_get_idx(buffer)].codepoint, num_glyphs)
                     : (unsigned)StateTable<Types, EntryData>::CLASS_END_OF_TEXT;
-            DEBUG_MSG(APPLY, nullptr, "c%u at %u", klass, hb_buffer_get_idx(buffer));
+            DEBUG_MSG(APPLY, nullptr, "c%u at %u", klass, rb_buffer_get_idx(buffer));
             const Entry<EntryData> &entry = machine.get_entry(state, klass);
 
             /* Unsafe-to-break before this if not in state 0, as things might
              * go differently if we start from state 0 here.
              *
              * Ugh.  The indexing here is ugly... */
-            if (state && hb_buffer_backtrack_len(buffer) && hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer)) {
+            if (state && rb_buffer_backtrack_len(buffer) && rb_buffer_get_idx(buffer) < rb_buffer_get_length(buffer)) {
                 /* If there's no action and we're just epsilon-transitioning to state 0,
                  * safe to break. */
                 if (c->is_actionable(this, entry) ||
                     !(entry.newState == StateTable<Types, EntryData>::STATE_START_OF_TEXT &&
                       entry.flags == context_t::DontAdvance))
-                    hb_buffer_unsafe_to_break_from_outbuffer(
-                        buffer, hb_buffer_backtrack_len(buffer) - 1, hb_buffer_get_idx(buffer) + 1);
+                    rb_buffer_unsafe_to_break_from_outbuffer(
+                        buffer, rb_buffer_backtrack_len(buffer) - 1, rb_buffer_get_idx(buffer) + 1);
             }
 
             /* Unsafe-to-break if end-of-text would kick in here. */
-            if (hb_buffer_get_idx(buffer) + 2 <= hb_buffer_get_length(buffer)) {
+            if (rb_buffer_get_idx(buffer) + 2 <= rb_buffer_get_length(buffer)) {
                 const Entry<EntryData> &end_entry =
                     machine.get_entry(state, StateTable<Types, EntryData>::CLASS_END_OF_TEXT);
                 if (c->is_actionable(this, end_entry))
-                    hb_buffer_unsafe_to_break(buffer, hb_buffer_get_idx(buffer), hb_buffer_get_idx(buffer) + 2);
+                    rb_buffer_unsafe_to_break(buffer, rb_buffer_get_idx(buffer), rb_buffer_get_idx(buffer) + 2);
             }
 
             c->transition(this, entry);
@@ -752,23 +752,23 @@ template <typename Types, typename EntryData> struct StateTableDriver
             state = machine.new_state(entry.newState);
             DEBUG_MSG(APPLY, nullptr, "s%d", state);
 
-            if (hb_buffer_get_idx(buffer) == hb_buffer_get_length(buffer))
+            if (rb_buffer_get_idx(buffer) == rb_buffer_get_length(buffer))
                 break;
 
-            if (!(entry.flags & context_t::DontAdvance) || hb_buffer_decrement_max_ops(buffer) <= 0)
-                hb_buffer_next_glyph(buffer);
+            if (!(entry.flags & context_t::DontAdvance) || rb_buffer_decrement_max_ops(buffer) <= 0)
+                rb_buffer_next_glyph(buffer);
         }
 
         if (!c->in_place) {
-            for (; hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer);)
-                hb_buffer_next_glyph(buffer);
-            hb_buffer_swap_buffers(buffer);
+            for (; rb_buffer_get_idx(buffer) < rb_buffer_get_length(buffer);)
+                rb_buffer_next_glyph(buffer);
+            rb_buffer_swap_buffers(buffer);
         }
     }
 
 public:
     const StateTable<Types, EntryData> &machine;
-    hb_buffer_t *buffer;
+    rb_buffer_t *buffer;
     unsigned int num_glyphs;
 };
 
@@ -796,7 +796,7 @@ struct hb_aat_apply_context_t : hb_dispatch_context_t<hb_aat_apply_context_t, bo
     const hb_shape_plan_t *plan;
     hb_font_t *font;
     hb_face_t *face;
-    hb_buffer_t *buffer;
+    rb_buffer_t *buffer;
     hb_sanitize_context_t sanitizer;
     const ankr *ankr_table;
 
@@ -806,7 +806,7 @@ struct hb_aat_apply_context_t : hb_dispatch_context_t<hb_aat_apply_context_t, bo
 
     HB_INTERNAL hb_aat_apply_context_t(const hb_shape_plan_t *plan_,
                                        hb_font_t *font_,
-                                       hb_buffer_t *buffer_,
+                                       rb_buffer_t *buffer_,
                                        hb_blob_t *blob = const_cast<hb_blob_t *>(&Null(hb_blob_t)));
 
     HB_INTERNAL ~hb_aat_apply_context_t();

@@ -41,7 +41,7 @@
 
 AAT::hb_aat_apply_context_t::hb_aat_apply_context_t(const hb_shape_plan_t *plan_,
                                                     hb_font_t *font_,
-                                                    hb_buffer_t *buffer_,
+                                                    rb_buffer_t *buffer_,
                                                     hb_blob_t *blob)
     : plan(plan_)
     , font(font_)
@@ -204,7 +204,7 @@ hb_bool_t hb_aat_layout_has_substitution(hb_face_t *face)
     return face->table.morx->has_data() || face->table.mort->has_data();
 }
 
-void hb_aat_layout_substitute(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+void hb_aat_layout_substitute(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
     hb_blob_t *morx_blob = font->face->table.morx.get_blob();
     const AAT::morx &morx = *morx_blob->as<AAT::morx>();
@@ -223,11 +223,11 @@ void hb_aat_layout_substitute(const hb_shape_plan_t *plan, hb_font_t *font, hb_b
     }
 }
 
-void hb_aat_layout_zero_width_deleted_glyphs(hb_buffer_t *buffer)
+void hb_aat_layout_zero_width_deleted_glyphs(rb_buffer_t *buffer)
 {
-    unsigned int count = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-    hb_glyph_position_t *pos = hb_buffer_get_pos(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
+    hb_glyph_position_t *pos = rb_buffer_get_pos(buffer);
     for (unsigned int i = 0; i < count; i++)
         if (unlikely(info[i].codepoint == AAT::DELETED_GLYPH))
             pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
@@ -238,7 +238,7 @@ static bool is_deleted_glyph(const hb_glyph_info_t *info)
     return info->codepoint == AAT::DELETED_GLYPH;
 }
 
-void hb_aat_layout_remove_deleted_glyphs(hb_buffer_t *buffer)
+void hb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer)
 {
     hb_ot_layout_delete_glyphs_inplace(buffer, is_deleted_glyph);
 }
@@ -255,7 +255,7 @@ hb_bool_t hb_aat_layout_has_positioning(hb_face_t *face)
     return face->table.kerx->has_data();
 }
 
-void hb_aat_layout_position(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+void hb_aat_layout_position(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
     hb_blob_t *kerx_blob = font->face->table.kerx.get_blob();
     const AAT::kerx &kerx = *kerx_blob->as<AAT::kerx>();
@@ -277,7 +277,7 @@ hb_bool_t hb_aat_layout_has_tracking(hb_face_t *face)
     return face->table.trak->has_data();
 }
 
-void hb_aat_layout_track(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+void hb_aat_layout_track(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
     const AAT::trak &trak = *font->face->table.trak;
 

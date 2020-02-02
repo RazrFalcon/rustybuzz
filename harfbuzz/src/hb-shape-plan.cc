@@ -110,11 +110,11 @@ void hb_shape_plan_destroy(hb_shape_plan_t *shape_plan)
  **/
 hb_bool_t hb_shape_plan_execute(hb_shape_plan_t *shape_plan,
                                 hb_font_t *font,
-                                hb_buffer_t *buffer,
+                                rb_buffer_t *buffer,
                                 const hb_feature_t *features,
                                 unsigned int num_features)
 {
-    if (unlikely(!hb_buffer_get_length(buffer)))
+    if (unlikely(!rb_buffer_get_length(buffer)))
         return true;
 
     return _hb_ot_shape(shape_plan, font, buffer, features, num_features);

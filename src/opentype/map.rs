@@ -51,7 +51,7 @@ impl Map {
         }
     }
 
-    fn from_ptr(map: *const ffi::hb_ot_map_t) -> &'static Map {
+    fn from_ptr(map: *const ffi::rb_ot_map_t) -> &'static Map {
         unsafe { &*(map as *const Map) }
     }
 }
@@ -606,23 +606,23 @@ fn language_find_feature(
 // Map
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_init() -> *mut ffi::hb_ot_map_t {
+pub extern "C" fn rb_ot_map_init() -> *mut ffi::rb_ot_map_t {
     Box::into_raw(Box::new(Map::new())) as *mut _
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_fini(map: *mut ffi::hb_ot_map_t) {
+pub extern "C" fn rb_ot_map_fini(map: *mut ffi::rb_ot_map_t) {
     unsafe { Box::from_raw(map as *mut Map) };
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_get_global_mask(map: *const ffi::hb_ot_map_t) -> Mask {
+pub extern "C" fn rb_ot_map_get_global_mask(map: *const ffi::rb_ot_map_t) -> Mask {
     Map::from_ptr(map).global_mask
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_get_mask(
-    map: *const ffi::hb_ot_map_t,
+    map: *const ffi::rb_ot_map_t,
     feature_tag: Tag,
     shift: *mut u32,
 ) -> Mask {
@@ -643,7 +643,7 @@ pub extern "C" fn rb_ot_map_get_mask(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_needs_fallback(map: *const ffi::hb_ot_map_t, feature_tag: Tag) -> bool {
+pub extern "C" fn rb_ot_map_needs_fallback(map: *const ffi::rb_ot_map_t, feature_tag: Tag) -> bool {
     let map = Map::from_ptr(map);
     if let Ok(idx) = map.features.binary_search_by(|v| v.tag.cmp(&feature_tag)) {
         map.features[idx].needs_fallback
@@ -653,7 +653,7 @@ pub extern "C" fn rb_ot_map_needs_fallback(map: *const ffi::hb_ot_map_t, feature
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_get_1_mask(map: *const ffi::hb_ot_map_t, feature_tag: Tag) -> Mask {
+pub extern "C" fn rb_ot_map_get_1_mask(map: *const ffi::rb_ot_map_t, feature_tag: Tag) -> Mask {
     let map = Map::from_ptr(map);
     if let Ok(idx) = map.features.binary_search_by(|v| v.tag.cmp(&feature_tag)) {
         map.features[idx].mask1
@@ -664,7 +664,7 @@ pub extern "C" fn rb_ot_map_get_1_mask(map: *const ffi::hb_ot_map_t, feature_tag
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_get_feature_index(
-    map: *const ffi::hb_ot_map_t,
+    map: *const ffi::rb_ot_map_t,
     table_index: u32,
     feature_tag: Tag,
 ) -> u32 {
@@ -678,7 +678,7 @@ pub extern "C" fn rb_ot_map_get_feature_index(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_get_feature_stage(
-    map: *const ffi::hb_ot_map_t,
+    map: *const ffi::rb_ot_map_t,
     table_index: u32,
     feature_tag: Tag,
 ) -> u32 {
@@ -691,33 +691,33 @@ pub extern "C" fn rb_ot_map_get_feature_stage(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_get_chosen_script(map: *const ffi::hb_ot_map_t, table_index: u32) -> Tag {
+pub extern "C" fn rb_ot_map_get_chosen_script(map: *const ffi::rb_ot_map_t, table_index: u32) -> Tag {
     Map::from_ptr(map).chosen_script[table_index as usize]
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_has_found_script(map: *const ffi::hb_ot_map_t, table_index: u32) -> bool {
+pub extern "C" fn rb_ot_map_has_found_script(map: *const ffi::rb_ot_map_t, table_index: u32) -> bool {
     Map::from_ptr(map).found_script[table_index as usize]
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_get_lookup(map: *const ffi::hb_ot_map_t, table_index: u32, i: u32) -> *const MapLookup {
+pub extern "C" fn rb_ot_map_get_lookup(map: *const ffi::rb_ot_map_t, table_index: u32, i: u32) -> *const MapLookup {
     &Map::from_ptr(map).lookups[table_index as usize][i as usize] as *const _
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_get_stages_length(map: *const ffi::hb_ot_map_t, table_index: u32) -> u32 {
+pub extern "C" fn rb_ot_map_get_stages_length(map: *const ffi::rb_ot_map_t, table_index: u32) -> u32 {
     Map::from_ptr(map).stages[table_index as usize].len() as u32
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_get_stage(map: *const ffi::hb_ot_map_t, table_index: u32, i: u32) -> *const StageMap {
+pub extern "C" fn rb_ot_map_get_stage(map: *const ffi::rb_ot_map_t, table_index: u32, i: u32) -> *const StageMap {
     &Map::from_ptr(map).stages[table_index as usize][i as usize] as *const _
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_get_stage_lookups(
-    map: *const ffi::hb_ot_map_t,
+    map: *const ffi::rb_ot_map_t,
     table_index: u32,
     stage: u32,
     plookups: *mut *const MapLookup,
@@ -765,7 +765,7 @@ pub extern "C" fn rb_ot_map_get_stage_lookups(
 pub extern "C" fn rb_ot_map_builder_init(
     font_data: *const c_void,
     props: *const ffi::hb_segment_properties_t,
-) -> *mut ffi::hb_ot_map_builder_t {
+) -> *mut ffi::rb_ot_map_builder_t {
     use std::str::FromStr;
 
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
@@ -796,14 +796,14 @@ pub extern "C" fn rb_ot_map_builder_init(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_builder_fini(builder: *mut ffi::hb_ot_map_builder_t) {
+pub extern "C" fn rb_ot_map_builder_fini(builder: *mut ffi::rb_ot_map_builder_t) {
     unsafe { Box::from_raw(builder as *mut MapBuilder) };
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_builder_compile(
-    builder: *mut ffi::hb_ot_map_builder_t,
-    map: *mut ffi::hb_ot_map_t,
+    builder: *mut ffi::rb_ot_map_builder_t,
+    map: *mut ffi::rb_ot_map_t,
     font_data: *const c_void,
     variations_index: *const FeatureVariationIndex,
 ) {
@@ -816,7 +816,7 @@ pub extern "C" fn rb_ot_map_builder_compile(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_builder_add_feature(
-    builder: *mut ffi::hb_ot_map_builder_t,
+    builder: *mut ffi::rb_ot_map_builder_t,
     tag: Tag,
     flags: u32,
     value: u32,
@@ -827,7 +827,7 @@ pub extern "C" fn rb_ot_map_builder_add_feature(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_builder_enable_feature(
-    builder: *mut ffi::hb_ot_map_builder_t,
+    builder: *mut ffi::rb_ot_map_builder_t,
     tag: Tag,
     flags: u32,
     value: u32,
@@ -838,7 +838,7 @@ pub extern "C" fn rb_ot_map_builder_enable_feature(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_builder_disable_feature(
-    builder: *mut ffi::hb_ot_map_builder_t,
+    builder: *mut ffi::rb_ot_map_builder_t,
     tag: Tag,
 ) {
     let builder = unsafe { &mut *(builder as *mut MapBuilder) };
@@ -847,7 +847,7 @@ pub extern "C" fn rb_ot_map_builder_disable_feature(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_builder_add_gsub_pause(
-    builder: *mut ffi::hb_ot_map_builder_t,
+    builder: *mut ffi::rb_ot_map_builder_t,
     pause_func: ffi::pause_func_t,
 ) {
     let builder = unsafe { &mut *(builder as *mut MapBuilder) };
@@ -856,7 +856,7 @@ pub extern "C" fn rb_ot_map_builder_add_gsub_pause(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_builder_chosen_script(
-    builder: *mut ffi::hb_ot_map_builder_t,
+    builder: *mut ffi::rb_ot_map_builder_t,
     table_index: u32,
 ) -> Tag {
     let builder = unsafe { &mut *(builder as *mut MapBuilder) };

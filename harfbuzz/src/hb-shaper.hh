@@ -31,7 +31,7 @@
 
 typedef hb_bool_t hb_shape_func_t(hb_shape_plan_t *shape_plan,
                                   hb_font_t *font,
-                                  hb_buffer_t *buffer,
+                                  rb_buffer_t *buffer,
                                   const hb_feature_t *features,
                                   unsigned int num_features);
 

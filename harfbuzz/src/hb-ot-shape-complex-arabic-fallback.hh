@@ -152,7 +152,7 @@ static void arabic_fallback_plan_destroy(arabic_fallback_plan_t *fallback_plan)
     free(fallback_plan);
 }
 
-static void arabic_fallback_plan_shape(arabic_fallback_plan_t *fallback_plan, hb_font_t *font, hb_buffer_t *buffer)
+static void arabic_fallback_plan_shape(arabic_fallback_plan_t *fallback_plan, hb_font_t *font, rb_buffer_t *buffer)
 {
     OT::hb_ot_apply_context_t c(0, font, buffer);
     for (unsigned int i = 0; i < fallback_plan->num_lookups; i++)

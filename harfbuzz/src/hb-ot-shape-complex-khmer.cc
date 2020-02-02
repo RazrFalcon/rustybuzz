@@ -78,12 +78,12 @@ enum {
     KHMER_BASIC_FEATURES = _KHMER_PRES, /* Don't forget to update this! */
 };
 
-static void setup_syllables_khmer(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
-static void reorder_khmer(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+static void setup_syllables_khmer(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
+static void reorder_khmer(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
 static void collect_features_khmer(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = plan->map;
+    rb_ot_map_builder_t *map = plan->map;
 
     /* Do this before any lookups have been applied. */
     rb_ot_map_builder_add_gsub_pause(map, setup_syllables_khmer);
@@ -114,7 +114,7 @@ static void collect_features_khmer(hb_ot_shape_planner_t *plan)
 
 static void override_features_khmer(hb_ot_shape_planner_t *plan)
 {
-    hb_ot_map_builder_t *map = plan->map;
+    rb_ot_map_builder_t *map = plan->map;
 
     /* Khmer spec has 'clig' as part of required shaping features:
      * "Apply feature 'clig' to form ligatures that are desired for
@@ -186,22 +186,22 @@ enum khmer_syllable_type_t {
 
 #include "hb-ot-shape-complex-khmer-machine.hh"
 
-static void setup_masks_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
+static void setup_masks_khmer(const hb_shape_plan_t *plan HB_UNUSED, rb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
     /* We cannot setup masks here.  We save information about characters
      * and setup masks later on in a pause-callback. */
 
-    unsigned int count = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
     for (unsigned int i = 0; i < count; i++)
         set_khmer_properties(info[i]);
 }
 
 static void
-setup_syllables_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+setup_syllables_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer)
 {
     find_syllables_khmer(buffer);
-    foreach_syllable(buffer, start, end) hb_buffer_unsafe_to_break(buffer, start, end);
+    foreach_syllable(buffer, start, end) rb_buffer_unsafe_to_break(buffer, start, end);
 }
 
 /* Rules from:
@@ -209,12 +209,12 @@ setup_syllables_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_
 
 static void reorder_consonant_syllable(const hb_shape_plan_t *plan,
                                        hb_face_t *face HB_UNUSED,
-                                       hb_buffer_t *buffer,
+                                       rb_buffer_t *buffer,
                                        unsigned int start,
                                        unsigned int end)
 {
     const khmer_shape_plan_t *khmer_plan = (const khmer_shape_plan_t *)plan->data;
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
 
     /* Setup masks. */
     {
@@ -247,7 +247,7 @@ static void reorder_consonant_syllable(const hb_shape_plan_t *plan,
                     info[i + j].mask |= khmer_plan->mask_array[KHMER_PREF];
 
                 /* Move the Coeng,Ro sequence to the start. */
-                hb_buffer_merge_clusters(buffer, start, i + 2);
+                rb_buffer_merge_clusters(buffer, start, i + 2);
                 hb_glyph_info_t t0 = info[i];
                 hb_glyph_info_t t1 = info[i + 1];
                 memmove(&info[start + 2], &info[start], (i - start) * sizeof(info[0]));
@@ -271,7 +271,7 @@ static void reorder_consonant_syllable(const hb_shape_plan_t *plan,
         /* Reorder left matra piece. */
         else if (info[i].khmer_category() == OT_VPre) {
             /* Move to the start. */
-            hb_buffer_merge_clusters(buffer, start, i + 1);
+            rb_buffer_merge_clusters(buffer, start, i + 1);
             hb_glyph_info_t t = info[i];
             memmove(&info[start + 1], &info[start], (i - start) * sizeof(info[0]));
             info[start] = t;
@@ -280,9 +280,9 @@ static void reorder_consonant_syllable(const hb_shape_plan_t *plan,
 }
 
 static void reorder_syllable_khmer(
-    const hb_shape_plan_t *plan, hb_face_t *face, hb_buffer_t *buffer, unsigned int start, unsigned int end)
+    const hb_shape_plan_t *plan, hb_face_t *face, rb_buffer_t *buffer, unsigned int start, unsigned int end)
 {
-    khmer_syllable_type_t syllable_type = (khmer_syllable_type_t)(hb_buffer_get_info(buffer)[start].syllable() & 0x0F);
+    khmer_syllable_type_t syllable_type = (khmer_syllable_type_t)(rb_buffer_get_info(buffer)[start].syllable() & 0x0F);
     switch (syllable_type) {
     case khmer_broken_cluster: /* We already inserted dotted-circles, so just call the consonant_syllable. */
     case khmer_consonant_syllable:
@@ -295,16 +295,16 @@ static void reorder_syllable_khmer(
 }
 
 static inline void
-insert_dotted_circles_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font, hb_buffer_t *buffer)
+insert_dotted_circles_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font, rb_buffer_t *buffer)
 {
-    if (unlikely(hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
+    if (unlikely(rb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
         return;
 
     /* Note: This loop is extra overhead, but should not be measurable.
      * TODO Use a buffer scratch flag to remove the loop. */
     bool has_broken_syllables = false;
-    unsigned int count = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *info = hb_buffer_get_info(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
     for (unsigned int i = 0; i < count; i++)
         if ((info[i].syllable() & 0x0F) == khmer_broken_cluster) {
             has_broken_syllables = true;
@@ -322,35 +322,35 @@ insert_dotted_circles_khmer(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *fo
     set_khmer_properties(dottedcircle);
     dottedcircle.codepoint = dottedcircle_glyph;
 
-    hb_buffer_clear_output(buffer);
+    rb_buffer_clear_output(buffer);
 
-    hb_buffer_set_idx(buffer, 0);
+    rb_buffer_set_idx(buffer, 0);
     unsigned int last_syllable = 0;
-    while (hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer)) {
-        unsigned int syllable = hb_buffer_get_cur(buffer, 0)->syllable();
+    while (rb_buffer_get_idx(buffer) < rb_buffer_get_length(buffer)) {
+        unsigned int syllable = rb_buffer_get_cur(buffer, 0)->syllable();
         khmer_syllable_type_t syllable_type = (khmer_syllable_type_t)(syllable & 0x0F);
         if (unlikely(last_syllable != syllable && syllable_type == khmer_broken_cluster)) {
             last_syllable = syllable;
 
             hb_glyph_info_t ginfo = dottedcircle;
-            ginfo.cluster = hb_buffer_get_cur(buffer, 0)->cluster;
-            ginfo.mask = hb_buffer_get_cur(buffer, 0)->mask;
-            ginfo.syllable() = hb_buffer_get_cur(buffer, 0)->syllable();
+            ginfo.cluster = rb_buffer_get_cur(buffer, 0)->cluster;
+            ginfo.mask = rb_buffer_get_cur(buffer, 0)->mask;
+            ginfo.syllable() = rb_buffer_get_cur(buffer, 0)->syllable();
 
             /* Insert dottedcircle after possible Repha. */
-            while (hb_buffer_get_idx(buffer) < hb_buffer_get_length(buffer) &&
-                   last_syllable == hb_buffer_get_cur(buffer, 0)->syllable() &&
-                   hb_buffer_get_cur(buffer, 0)->khmer_category() == OT_Repha)
-                hb_buffer_next_glyph(buffer);
+            while (rb_buffer_get_idx(buffer) < rb_buffer_get_length(buffer) &&
+                   last_syllable == rb_buffer_get_cur(buffer, 0)->syllable() &&
+                   rb_buffer_get_cur(buffer, 0)->khmer_category() == OT_Repha)
+                rb_buffer_next_glyph(buffer);
 
-            hb_buffer_output_info(buffer, ginfo);
+            rb_buffer_output_info(buffer, ginfo);
         } else
-            hb_buffer_next_glyph(buffer);
+            rb_buffer_next_glyph(buffer);
     }
-    hb_buffer_swap_buffers(buffer);
+    rb_buffer_swap_buffers(buffer);
 }
 
-static void reorder_khmer(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+static void reorder_khmer(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
     insert_dotted_circles_khmer(plan, font, buffer);
 

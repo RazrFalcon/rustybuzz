@@ -406,7 +406,7 @@ set_indic_properties (hb_glyph_info_t &info)
 
 struct hb_indic_would_substitute_feature_t
 {
-  void init (const hb_ot_map_t *map, hb_tag_t feature_tag, bool zero_context_)
+  void init (const rb_ot_map_t *map, hb_tag_t feature_tag, bool zero_context_)
   {
     zero_context = zero_context_;
     rb_ot_map_get_stage_lookups(map, 0/*GSUB*/,

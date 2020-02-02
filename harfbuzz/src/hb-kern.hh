@@ -41,7 +41,7 @@ template <typename Driver> struct hb_kern_machine_t
     }
 
     HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
-    void kern(hb_font_t *font, hb_buffer_t *buffer, hb_mask_t kern_mask, bool scale = true) const
+    void kern(hb_font_t *font, rb_buffer_t *buffer, hb_mask_t kern_mask, bool scale = true) const
     {
         OT::hb_ot_apply_context_t c(1, font, buffer);
         c.set_lookup_mask(kern_mask);
@@ -49,10 +49,10 @@ template <typename Driver> struct hb_kern_machine_t
         OT::hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c.iter_input;
         skippy_iter.init(&c);
 
-        bool horizontal = HB_DIRECTION_IS_HORIZONTAL(hb_buffer_get_direction(buffer));
-        unsigned int count = hb_buffer_get_length(buffer);
-        hb_glyph_info_t *info = hb_buffer_get_info(buffer);
-        hb_glyph_position_t *pos = hb_buffer_get_pos(buffer);
+        bool horizontal = HB_DIRECTION_IS_HORIZONTAL(rb_buffer_get_direction(buffer));
+        unsigned int count = rb_buffer_get_length(buffer);
+        hb_glyph_info_t *info = rb_buffer_get_info(buffer);
+        hb_glyph_position_t *pos = rb_buffer_get_pos(buffer);
         for (unsigned int idx = 0; idx < count;) {
             if (!(info[idx].mask & kern_mask)) {
                 idx++;
@@ -78,7 +78,7 @@ template <typename Driver> struct hb_kern_machine_t
                     kern = font->em_scale_x(kern);
                 if (crossStream) {
                     pos[j].y_offset = kern;
-                    *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+                    *rb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
                 } else {
                     hb_position_t kern1 = kern >> 1;
                     hb_position_t kern2 = kern - kern1;
@@ -91,7 +91,7 @@ template <typename Driver> struct hb_kern_machine_t
                     kern = font->em_scale_y(kern);
                 if (crossStream) {
                     pos[j].x_offset = kern;
-                    *hb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+                    *rb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
                 } else {
                     hb_position_t kern1 = kern >> 1;
                     hb_position_t kern2 = kern - kern1;
@@ -101,7 +101,7 @@ template <typename Driver> struct hb_kern_machine_t
                 }
             }
 
-            hb_buffer_unsafe_to_break(buffer, i, j + 1);
+            rb_buffer_unsafe_to_break(buffer, i, j + 1);
 
         skip:
             idx = skippy_iter.idx;

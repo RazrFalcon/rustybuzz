@@ -73,7 +73,7 @@ pub struct hb_blob_t {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct hb_buffer_t {
+pub struct rb_buffer_t {
     _unused: [u8; 0],
 }
 
@@ -137,13 +137,13 @@ pub struct hb_face_t {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct hb_ot_map_t {
+pub struct rb_ot_map_t {
     _unused: [u8; 0],
 }
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct hb_ot_map_builder_t {
+pub struct rb_ot_map_builder_t {
     _unused: [u8; 0],
 }
 
@@ -157,7 +157,7 @@ pub type pause_func_t = Option<
     unsafe extern "C" fn(
         plan: *const hb_ot_shape_plan_t,
         font: *mut hb_font_t,
-        buffer: *mut hb_buffer_t,
+        buffer: *mut rb_buffer_t,
     ),
 >;
 
@@ -180,6 +180,6 @@ extern "C" {
     pub fn hb_font_get_glyph_extents(font: *mut hb_font_t, glyph: hb_codepoint_t, extents: *mut hb_glyph_extents_t) -> bool;
     pub fn hb_ot_glyf_get_side_bearing_var(font: *mut hb_font_t, glyph: u32, is_vertical: bool) -> i32;
     pub fn hb_ot_glyf_get_advance_var(font: *mut hb_font_t, glyph: u32, is_vertical: bool) -> u32;
-    pub fn hb_shape(font: *mut hb_font_t, buffer: *mut hb_buffer_t, features: *const hb_feature_t, num_features: u32);
+    pub fn hb_shape(font: *mut hb_font_t, buffer: *mut rb_buffer_t, features: *const hb_feature_t, num_features: u32);
 
 }

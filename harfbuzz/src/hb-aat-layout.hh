@@ -49,12 +49,12 @@ HB_INTERNAL const hb_aat_feature_mapping_t *hb_aat_layout_find_feature_mapping(h
 
 HB_INTERNAL void hb_aat_layout_compile_map(const hb_aat_map_builder_t *mapper, hb_aat_map_t *map);
 
-HB_INTERNAL void hb_aat_layout_substitute(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+HB_INTERNAL void hb_aat_layout_substitute(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
-HB_INTERNAL void hb_aat_layout_zero_width_deleted_glyphs(hb_buffer_t *buffer);
+HB_INTERNAL void hb_aat_layout_zero_width_deleted_glyphs(rb_buffer_t *buffer);
 
-HB_INTERNAL void hb_aat_layout_remove_deleted_glyphs(hb_buffer_t *buffer);
+HB_INTERNAL void hb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer);
 
-HB_INTERNAL void hb_aat_layout_position(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+HB_INTERNAL void hb_aat_layout_position(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
-HB_INTERNAL void hb_aat_layout_track(const hb_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+HB_INTERNAL void hb_aat_layout_track(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
