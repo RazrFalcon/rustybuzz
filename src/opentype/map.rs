@@ -51,7 +51,15 @@ impl Map {
         }
     }
 
-    fn from_ptr(map: *const ffi::rb_ot_map_t) -> &'static Map {
+    pub fn get_1_mask(&self, feature_tag: Tag) -> Mask {
+        if let Ok(idx) = self.features.binary_search_by(|v| v.tag.cmp(&feature_tag)) {
+            self.features[idx].mask1
+        } else {
+            0
+        }
+    }
+
+    pub fn from_ptr(map: *const ffi::rb_ot_map_t) -> &'static Map {
         unsafe { &*(map as *const Map) }
     }
 }
@@ -175,6 +183,14 @@ impl MapBuilder {
         builder
     }
 
+//    pub fn from_ptr(builder: *const ffi::rb_ot_map_builder_t) -> &'static MapBuilder {
+//        unsafe { &*(builder as *const MapBuilder) }
+//    }
+
+    pub fn from_ptr_mut(builder: *mut ffi::rb_ot_map_builder_t) -> &'static mut MapBuilder {
+        unsafe { &mut *(builder as *mut MapBuilder) }
+    }
+
     pub fn add_feature(&mut self, tag: Tag, flags: FeatureFlags, value: u32) {
         if tag.is_null() {
             return;
@@ -193,9 +209,9 @@ impl MapBuilder {
         self.add_feature(tag, flags | FeatureFlags::GLOBAL, value);
     }
 
-//    pub fn disable_feature(&mut self, tag: Tag) {
-//        self.add_feature(tag, FeatureFlags::GLOBAL, 0);
-//    }
+    pub fn disable_feature(&mut self, tag: Tag) {
+        self.add_feature(tag, FeatureFlags::GLOBAL, 0);
+    }
 
     fn add_lookups(
         &mut self,
@@ -662,12 +678,7 @@ pub extern "C" fn rb_ot_map_needs_fallback(map: *const ffi::rb_ot_map_t, feature
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_get_1_mask(map: *const ffi::rb_ot_map_t, feature_tag: Tag) -> Mask {
-    let map = Map::from_ptr(map);
-    if let Ok(idx) = map.features.binary_search_by(|v| v.tag.cmp(&feature_tag)) {
-        map.features[idx].mask1
-    } else {
-        0
-    }
+    Map::from_ptr(map).get_1_mask(feature_tag)
 }
 
 #[no_mangle]
@@ -816,7 +827,7 @@ pub extern "C" fn rb_ot_map_builder_compile(
     variations_index: *const FeatureVariationIndex,
 ) {
     let font = unsafe { &*(font_data as *const ttf_parser::Font) };
-    let builder = unsafe { &mut *(builder as *mut MapBuilder) };
+    let builder = MapBuilder::from_ptr_mut(builder);
     let map = unsafe { &mut *(map as *mut Map) };
     let variations = unsafe { std::slice::from_raw_parts(variations_index as *const _, 2) };
     builder.compile(font, variations, map).unwrap();
@@ -829,8 +840,7 @@ pub extern "C" fn rb_ot_map_builder_add_feature(
     flags: u32,
     value: u32,
 ) {
-    let builder = unsafe { &mut *(builder as *mut MapBuilder) };
-    builder.add_feature(tag, FeatureFlags(flags as u8), value);
+    MapBuilder::from_ptr_mut(builder).add_feature(tag, FeatureFlags(flags as u8), value);
 }
 
 #[no_mangle]
@@ -840,8 +850,7 @@ pub extern "C" fn rb_ot_map_builder_enable_feature(
     flags: u32,
     value: u32,
 ) {
-    let builder = unsafe { &mut *(builder as *mut MapBuilder) };
-    builder.add_feature(tag, FeatureFlags(flags as u8) | FeatureFlags::GLOBAL, value);
+    MapBuilder::from_ptr_mut(builder).add_feature(tag, FeatureFlags(flags as u8) | FeatureFlags::GLOBAL, value);
 }
 
 #[no_mangle]
@@ -849,8 +858,7 @@ pub extern "C" fn rb_ot_map_builder_disable_feature(
     builder: *mut ffi::rb_ot_map_builder_t,
     tag: Tag,
 ) {
-    let builder = unsafe { &mut *(builder as *mut MapBuilder) };
-    builder.add_feature(tag, FeatureFlags::GLOBAL, 0);
+    MapBuilder::from_ptr_mut(builder).add_feature(tag, FeatureFlags::GLOBAL, 0);
 }
 
 #[no_mangle]
@@ -858,8 +866,7 @@ pub extern "C" fn rb_ot_map_builder_add_gsub_pause(
     builder: *mut ffi::rb_ot_map_builder_t,
     pause_func: ffi::pause_func_t,
 ) {
-    let builder = unsafe { &mut *(builder as *mut MapBuilder) };
-    builder.add_gsub_pause(pause_func);
+    MapBuilder::from_ptr_mut(builder).add_gsub_pause(pause_func);
 }
 
 #[no_mangle]
@@ -867,6 +874,5 @@ pub extern "C" fn rb_ot_map_builder_chosen_script(
     builder: *mut ffi::rb_ot_map_builder_t,
     table_index: u32,
 ) -> Tag {
-    let builder = unsafe { &mut *(builder as *mut MapBuilder) };
-    builder.chosen_script[table_index as usize]
+    MapBuilder::from_ptr_mut(builder).chosen_script[table_index as usize]
 }

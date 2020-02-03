@@ -126,7 +126,7 @@ impl_bit_ops!(GlyphPropsFlags);
 pub struct GlyphInfo {
     /// Unicode codepoint.
     pub codepoint: u32,
-    mask: Mask,
+    pub(crate) mask: Mask,
     /// Codepoint cluster.
     pub cluster: u32,
     pub(crate) var1: u32,
@@ -339,8 +339,8 @@ impl Default for BufferClusterLevel {
 /// shape more text.
 pub struct Buffer {
     // Information about how the text in the buffer should be treated.
-    flags: BufferFlags,
-    cluster_level: BufferClusterLevel,
+    pub(crate) flags: BufferFlags,
+    pub(crate) cluster_level: BufferClusterLevel,
     invisible: Option<char>,
     pub(crate) scratch_flags: BufferScratchFlags,
     /// Maximum allowed operations.
@@ -355,7 +355,7 @@ pub struct Buffer {
     /// Whether we have positions
     have_positions: bool,
 
-    idx: usize,
+    pub(crate) idx: usize,
     len: usize,
     out_len: usize,
 
@@ -426,7 +426,7 @@ impl Buffer {
         }
     }
 
-    fn out_info_mut(&mut self) -> &mut [GlyphInfo] {
+    pub(crate) fn out_info_mut(&mut self) -> &mut [GlyphInfo] {
         if self.have_separate_output {
             unsafe { mem::transmute(self.pos.as_mut_slice()) }
         } else {
@@ -438,7 +438,11 @@ impl Buffer {
         self.out_info_mut()[i] = info;
     }
 
-    fn cur_mut(&mut self, i: usize) -> &mut GlyphInfo {
+    pub(crate) fn cur(&self, i: usize) -> &GlyphInfo {
+        &self.info[self.idx + i]
+    }
+
+    pub(crate) fn cur_mut(&mut self, i: usize) -> &mut GlyphInfo {
         let idx = self.idx + i;
         &mut self.info[idx]
     }
@@ -569,7 +573,7 @@ impl Buffer {
         // TODO: language must be set
     }
 
-    fn swap_buffers(&mut self) {
+    pub(crate) fn swap_buffers(&mut self) {
         assert!(self.have_output);
         self.have_output = false;
 
@@ -592,7 +596,7 @@ impl Buffer {
         self.have_separate_output = false;
     }
 
-    fn clear_output(&mut self) {
+    pub(crate) fn clear_output(&mut self) {
         self.have_output = true;
         self.have_positions = false;
 
@@ -612,7 +616,7 @@ impl Buffer {
         }
     }
 
-    fn replace_glyphs(&mut self, num_in: usize, num_out: usize, glyph_data: &[CodePoint]) {
+    pub(crate) fn replace_glyphs(&mut self, num_in: usize, num_out: usize, glyph_data: &[CodePoint]) {
         self.make_room_for(num_in, num_out);
 
         assert!(self.idx + num_in <= self.len);
@@ -680,7 +684,7 @@ impl Buffer {
     /// Copies glyph at idx to output and advance idx.
     ///
     /// If there's no output, just advance idx.
-    fn next_glyph(&mut self) {
+    pub(crate) fn next_glyph(&mut self) {
         if self.have_output {
             if self.have_separate_output || self.out_len != self.idx {
                 self.make_room_for(1, 1);
@@ -796,7 +800,7 @@ impl Buffer {
         }
     }
 
-    fn merge_out_clusters(&mut self, mut start: usize, mut end: usize) {
+    pub(crate) fn merge_out_clusters(&mut self, mut start: usize, mut end: usize) {
         if self.cluster_level == BufferClusterLevel::Characters {
             return;
         }
@@ -887,7 +891,7 @@ impl Buffer {
         }
     }
 
-    fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize) {
+    pub(crate) fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize) {
         if !self.have_output {
             self.unsafe_to_break_impl(start, end);
             return;
@@ -1070,6 +1074,10 @@ impl Buffer {
     /// Checks that buffer contains no elements.
     pub fn is_empty(&self) -> bool {
         self.len == 0
+    }
+
+    pub(crate) fn out_len(&self) -> usize {
+        self.out_len
     }
 
     fn push_str(&mut self, text: &str) {

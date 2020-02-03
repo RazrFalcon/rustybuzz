@@ -119,8 +119,16 @@ impl<'a> Font<'a> {
         }
     }
 
+    pub(crate) fn font(&self) -> &ttf_parser::Font {
+        unsafe { &*(self.face.ttf as *const ttf_parser::Font) }
+    }
+
     pub(crate) fn font_ptr(&self) -> *const ttf_parser::Font {
         self.face.ttf
+    }
+
+    pub(crate) fn from_ptr(font: *const ffi::hb_font_t) -> &'static Font<'static> {
+        unsafe { &*(font as *const Font) }
     }
 
     pub(crate) fn as_ptr(&self) -> *mut ffi::hb_font_t {
