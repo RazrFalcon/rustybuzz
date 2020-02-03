@@ -8,15 +8,13 @@ But while `harfbuzz` does a lot of things (shaping, subseting, font querying, et
 You can use it already, since we simply linking `hardbuzz` statically.
 And we're testing `rustybuzz` against `harfbuzz` test suite.
 
-You can find more details about porting status in the [changelog](./CHANGELOG.md).
-
 Embedded `harfbuzz` version: 2.6.4
 
 ## Changes
 
+- Subsetting is out of scope and removed.
 - Malformed font is an error now.
   `harfbuzz` accepts malformed fonts, but doesn't do shaping in this case.
-- Subsetting is out of scope and removed.
 - `harfbuzz` configured to not depend on system libraries, like glib, coretext, freetype, icu.
   So it relies only on internal implementation, which should be enough in most cases.
 

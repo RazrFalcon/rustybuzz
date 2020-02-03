@@ -183,10 +183,6 @@ impl MapBuilder {
         builder
     }
 
-//    pub fn from_ptr(builder: *const ffi::rb_ot_map_builder_t) -> &'static MapBuilder {
-//        unsafe { &*(builder as *const MapBuilder) }
-//    }
-
     pub fn from_ptr_mut(builder: *mut ffi::rb_ot_map_builder_t) -> &'static mut MapBuilder {
         unsafe { &mut *(builder as *mut MapBuilder) }
     }
