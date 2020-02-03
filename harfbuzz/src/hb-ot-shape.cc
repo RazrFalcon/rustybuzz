@@ -367,7 +367,7 @@ static void hb_set_unicode_props(rb_buffer_t *buffer)
 #ifndef HB_NO_EMOJI_SEQUENCES
         else if (unlikely(_hb_glyph_info_is_zwj(&info[i]))) {
             _hb_glyph_info_set_continuation(&info[i]);
-            if (i + 1 < count && _hb_unicode_is_emoji_Extended_Pictographic(info[i + 1].codepoint)) {
+            if (i + 1 < count && rb_unicode_is_emoji_extended_pictographic(info[i + 1].codepoint)) {
                 i++;
                 _hb_glyph_info_set_unicode_props(&info[i], buffer);
                 _hb_glyph_info_set_continuation(&info[i]);
@@ -474,7 +474,7 @@ static inline void hb_ot_mirror_chars(const hb_ot_shape_context_t *c)
     unsigned int count = rb_buffer_get_length(buffer);
     hb_glyph_info_t *info = rb_buffer_get_info(buffer);
     for (unsigned int i = 0; i < count; i++) {
-        hb_codepoint_t codepoint = hb_ucd_mirroring(info[i].codepoint);
+        hb_codepoint_t codepoint = rb_ucd_mirroring(info[i].codepoint);
         if (likely(codepoint == info[i].codepoint || !c->font->has_glyph(codepoint)))
             info[i].mask |= rtlm_mask;
         else

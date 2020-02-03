@@ -59,6 +59,7 @@ extern "C" {
 hb_bool_t rb_ucd_is_default_ignorable(hb_codepoint_t ch);
 space_t rb_ucd_space_fallback_type(hb_codepoint_t u);
 unsigned int rb_ucd_modified_combining_class(hb_codepoint_t u);
+HB_INTERNAL bool rb_unicode_is_emoji_extended_pictographic(hb_codepoint_t cp);
 }
 
 inline hb_bool_t hb_ucd_is_variation_selector(hb_codepoint_t unicode)
@@ -166,8 +167,3 @@ inline hb_bool_t hb_ucd_is_variation_selector(hb_codepoint_t unicode)
      (FLAG(HB_UNICODE_GENERAL_CATEGORY_SPACING_MARK) | FLAG(HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |              \
       FLAG(HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)))
 
-/*
- * Emoji.
- */
-
-HB_INTERNAL bool _hb_unicode_is_emoji_Extended_Pictographic(hb_codepoint_t cp);
