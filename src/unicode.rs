@@ -1,8 +1,138 @@
 use std::convert::TryFrom;
 
 pub use unicode_general_category::GeneralCategory;
+pub use unicode_ccc::CanonicalCombiningClass;
 
 use crate::{Script, CodePoint};
+
+// Space estimates based on:
+// https://unicode.org/charts/PDF/U2000.pdf
+// https://docs.microsoft.com/en-us/typography/develop/character-design-standards/whitespace
+#[derive(Clone, Copy, Debug)]
+pub enum Space {
+    SpaceEm  = 1,
+    SpaceEm2 = 2,
+    SpaceEm3 = 3,
+    SpaceEm4 = 4,
+    SpaceEm5 = 5,
+    SpaceEm6 = 6,
+    SpaceEm16 = 16,
+    Space4Em18, // 4/18th of an EM!
+    Space,
+    SpaceFigure,
+    SpacePunctuation,
+    SpaceNarrow,
+}
+
+const MODIFIED_COMBINING_CLASS: &[u8; 256] = &[
+    CanonicalCombiningClass::NotReordered as u8,
+    CanonicalCombiningClass::Overlay as u8,
+    2, 3, 4, 5, 6,
+    CanonicalCombiningClass::Nukta as u8,
+    CanonicalCombiningClass::KanaVoicing as u8,
+    CanonicalCombiningClass::Virama as u8,
+
+    // Hebrew
+    modified_combining_class::CCC10,
+    modified_combining_class::CCC11,
+    modified_combining_class::CCC12,
+    modified_combining_class::CCC13,
+    modified_combining_class::CCC14,
+    modified_combining_class::CCC15,
+    modified_combining_class::CCC16,
+    modified_combining_class::CCC17,
+    modified_combining_class::CCC18,
+    modified_combining_class::CCC19,
+    modified_combining_class::CCC20,
+    modified_combining_class::CCC21,
+    modified_combining_class::CCC22,
+    modified_combining_class::CCC23,
+    modified_combining_class::CCC24,
+    modified_combining_class::CCC25,
+    modified_combining_class::CCC26,
+
+    // Arabic
+    modified_combining_class::CCC27,
+    modified_combining_class::CCC28,
+    modified_combining_class::CCC29,
+    modified_combining_class::CCC30,
+    modified_combining_class::CCC31,
+    modified_combining_class::CCC32,
+    modified_combining_class::CCC33,
+    modified_combining_class::CCC34,
+    modified_combining_class::CCC35,
+
+    // Syriac
+    modified_combining_class::CCC36,
+
+    37, 38, 39,
+    40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+    60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+    80, 81, 82, 83,
+
+    // Telugu
+    modified_combining_class::CCC84,
+    85, 86, 87, 88, 89, 90,
+    modified_combining_class::CCC91,
+    92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102,
+
+    // Thai
+    modified_combining_class::CCC103,
+    104, 105, 106,
+    modified_combining_class::CCC107,
+    108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+
+    // Lao
+    modified_combining_class::CCC118,
+    119, 120, 121,
+    modified_combining_class::CCC122,
+    123, 124, 125, 126, 127, 128,
+
+    // Tibetan
+    modified_combining_class::CCC129,
+    modified_combining_class::CCC130,
+    131,
+    modified_combining_class::CCC132,
+    133, 134, 135, 136, 137, 138, 139,
+
+
+    140, 141, 142, 143, 144, 145, 146, 147, 148, 149,
+    150, 151, 152, 153, 154, 155, 156, 157, 158, 159,
+    160, 161, 162, 163, 164, 165, 166, 167, 168, 169,
+    170, 171, 172, 173, 174, 175, 176, 177, 178, 179,
+    180, 181, 182, 183, 184, 185, 186, 187, 188, 189,
+    190, 191, 192, 193, 194, 195, 196, 197, 198, 199,
+
+    CanonicalCombiningClass::AttachedBelowLeft as u8,
+    201,
+    CanonicalCombiningClass::AttachedBelow as u8,
+    203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213,
+    CanonicalCombiningClass::AttachedAbove as u8,
+    215,
+    CanonicalCombiningClass::AttachedAboveRight as u8,
+    217,
+    CanonicalCombiningClass::BelowLeft as u8,
+    219,
+    CanonicalCombiningClass::Below as u8,
+    221,
+    CanonicalCombiningClass::BelowRight as u8,
+    223,
+    CanonicalCombiningClass::Left as u8,
+    225,
+    CanonicalCombiningClass::Right as u8,
+    227,
+    CanonicalCombiningClass::AboveLeft as u8,
+    229,
+    CanonicalCombiningClass::Above as u8,
+    231,
+    CanonicalCombiningClass::AboveRight as u8,
+    CanonicalCombiningClass::DoubleBelow as u8,
+    CanonicalCombiningClass::DoubleAbove as u8,
+    235, 236, 237, 238, 239,
+    CanonicalCombiningClass::IotaSubscript as u8,
+    241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254,
+    255, /* HB_UNICODE_COMBINING_CLASS_INVALID */
+];
 
 // Default_Ignorable codepoints:
 //
@@ -69,8 +199,7 @@ fn is_default_ignorable(ch: CodePoint) -> bool {
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
-pub extern "C" fn rb_is_default_ignorable(ch: u32) -> i32 {
+pub extern "C" fn rb_ucd_is_default_ignorable(ch: u32) -> i32 {
     is_default_ignorable(ch) as i32
 }
 
@@ -236,13 +365,11 @@ pub fn script_from_char(c: char) -> Script {
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ucd_script(ch: u32) -> u32 {
     script_from_char(char::try_from(ch).unwrap()).tag().as_u32()
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ucd_compose(a: u32, b: u32, ab: *mut u32) -> i32 {
     unsafe {
         let new = unicode_normalization::char::compose(
@@ -260,7 +387,6 @@ pub extern "C" fn rb_ucd_compose(a: u32, b: u32, ab: *mut u32) -> i32 {
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ucd_decompose(ab: u32, a: *mut u32, b: *mut u32) -> i32 {
     unsafe {
         let mut is_a_set = false;
@@ -282,7 +408,6 @@ pub extern "C" fn rb_ucd_decompose(ab: u32, a: *mut u32, b: *mut u32) -> i32 {
 }
 
 #[no_mangle]
-#[allow(missing_docs)]
 pub extern "C" fn rb_ucd_general_category(c: u32) -> u32 {
     let cat = unicode_general_category::get_general_category(char::try_from(c).unwrap());
     cat.to_hb()
@@ -380,11 +505,65 @@ impl GeneralCategoryExt for GeneralCategory {
 
 pub trait CharExt {
     fn general_category(&self) -> GeneralCategory;
+    fn space_fallback(&self) -> Option<Space>;
+    fn modified_combining_class(&self) -> u8;
 }
 
 impl CharExt for char {
     fn general_category(&self) -> GeneralCategory {
         unicode_general_category::get_general_category(*self)
+    }
+
+    fn space_fallback(&self) -> Option<Space> {
+        // All GC=Zs chars that can use a fallback.
+        match self {
+            '\u{0020}' => Some(Space::Space),               // SPACE
+            '\u{00A0}' => Some(Space::Space),               // NO-BREAK SPACE
+            '\u{2000}' => Some(Space::SpaceEm2),            // EN QUAD
+            '\u{2001}' => Some(Space::SpaceEm),             // EM QUAD
+            '\u{2002}' => Some(Space::SpaceEm2),            // EN SPACE
+            '\u{2003}' => Some(Space::SpaceEm),             // EM SPACE
+            '\u{2004}' => Some(Space::SpaceEm3),            // THREE-PER-EM SPACE
+            '\u{2005}' => Some(Space::SpaceEm4),            // FOUR-PER-EM SPACE
+            '\u{2006}' => Some(Space::SpaceEm6),            // SIX-PER-EM SPACE
+            '\u{2007}' => Some(Space::SpaceFigure),         // FIGURE SPACE
+            '\u{2008}' => Some(Space::SpacePunctuation),    // PUNCTUATION SPACE
+            '\u{2009}' => Some(Space::SpaceEm5),            // THIN SPACE
+            '\u{200A}' => Some(Space::SpaceEm16),           // HAIR SPACE
+            '\u{202F}' => Some(Space::SpaceNarrow),         // NARROW NO-BREAK SPACE
+            '\u{205F}' => Some(Space::Space4Em18),          // MEDIUM MATHEMATICAL SPACE
+            '\u{3000}' => Some(Space::SpaceEm),             // IDEOGRAPHIC SPACE
+            _ => None,                                      // OGHAM SPACE MARK
+        }
+    }
+
+    fn modified_combining_class(&self) -> u8 {
+        let mut u = *self;
+
+        // XXX This hack belongs to the Myanmar shaper.
+        if u == '\u{1037}'{
+            u = '\u{103A}';
+        }
+
+        // XXX This hack belongs to the USE shaper (for Tai Tham):
+        // Reorder SAKOT to ensure it comes after any tone marks.
+        if u == '\u{1A60}' {
+            return 254;
+        }
+
+        // XXX This hack belongs to the Tibetan shaper:
+        // Reorder PADMA to ensure it comes after any vowel marks.
+        if u == '\u{0FC6}' {
+            return 254;
+        }
+
+        // Reorder TSA -PHRU to reorder before U+0F74
+        if u == '\u{0F39}' {
+            return 127;
+        }
+
+        let k = unicode_ccc::get_canonical_combining_class(u);
+        MODIFIED_COMBINING_CLASS[k as usize]
     }
 }
 
@@ -466,4 +645,17 @@ pub mod modified_combining_class {
     pub const CCC129: u8 = 129; // sign aa
     pub const CCC130: u8 = 132; // sign i
     pub const CCC132: u8 = 131; // sign u
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ucd_space_fallback_type(u: u32) -> i32 {
+    match char::try_from(u).unwrap().space_fallback() {
+        Some(space) => space as i32,
+        None => 0,
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ucd_modified_combining_class(u: u32) -> u32 {
+    char::try_from(u).unwrap().modified_combining_class() as u32
 }

@@ -173,7 +173,7 @@ static inline void decompose_current_character(const hb_ot_shape_normalize_conte
 
     if (_hb_glyph_info_is_unicode_space(rb_buffer_get_cur(buffer, 0))) {
         hb_codepoint_t space_glyph;
-        space_t space_type = hb_ucd_space_fallback_type(u);
+        space_t space_type = rb_ucd_space_fallback_type(u);
         if (space_type != NOT_SPACE && c->font->get_nominal_glyph(0x0020u, &space_glyph)) {
             _hb_glyph_info_set_unicode_space_fallback_type(rb_buffer_get_cur(buffer, 0), space_type);
             next_char(buffer, space_glyph);

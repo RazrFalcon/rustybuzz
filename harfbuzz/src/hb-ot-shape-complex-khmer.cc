@@ -395,7 +395,7 @@ static bool
 compose_khmer(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab)
 {
     /* Avoid recomposing split matras. */
-    if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK(hb_ucd_general_category(a)))
+    if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK(rb_ucd_general_category(a)))
         return false;
 
     return (bool)hb_ucd_compose(a, b, ab);

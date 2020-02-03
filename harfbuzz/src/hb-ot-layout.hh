@@ -174,13 +174,13 @@ HB_MARK_AS_FLAG_T(hb_unicode_props_flags_t);
 static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, rb_buffer_t *buffer)
 {
     unsigned int u = info->codepoint;
-    unsigned int gen_cat = (unsigned int)hb_ucd_general_category(u);
+    unsigned int gen_cat = (unsigned int)rb_ucd_general_category(u);
     unsigned int props = gen_cat;
 
     if (u >= 0x80u) {
         *rb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
 
-        if (unlikely(hb_ucd_is_default_ignorable(u))) {
+        if (unlikely(rb_ucd_is_default_ignorable(u))) {
             *rb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
             props |= UPROPS_MASK_IGNORABLE;
             if (u == 0x200Cu)
@@ -210,7 +210,7 @@ static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, rb_bu
 
         if (unlikely(HB_UNICODE_GENERAL_CATEGORY_IS_MARK(gen_cat))) {
             props |= UPROPS_MASK_CONTINUATION;
-            props |= hb_ucd_modified_combining_class(u) << 8;
+            props |= rb_ucd_modified_combining_class(u) << 8;
         }
     }
 

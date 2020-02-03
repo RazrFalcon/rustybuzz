@@ -2041,11 +2041,6 @@ _hb_ucd_i16[196] =
      -1,    0,    1,   -1,
 };
 
-static inline uint_fast8_t
-_hb_ucd_ccc (unsigned u)
-{
-  return u<125259u?_hb_ucd_u8[14026+(((_hb_ucd_u8[13034+(((_hb_ucd_u8[12544+(u>>4>>4)])<<4)+((u>>4)&15u))])<<4)+((u)&15u))]:0;
-}
 static inline unsigned
 _hb_ucd_b4 (const uint8_t* a, unsigned i)
 {
