@@ -547,7 +547,7 @@ fn collections_006() {
             "\u{2026}\u{0020}\u{002E}",
             "--face-index=2 --font-funcs=ot",
         ),
-        "font index is out of bounds"
+        "malformed font"
     );
 }
 
@@ -922,7 +922,7 @@ fn indic_decompose_001() {
             "\u{09DC}\u{0020}\u{09DD}\u{0020}\u{09A1}\u{09BC}\u{0020}\u{09A2}\u{09BC}",
             "--font-funcs=ot",
         ),
-        "font doesn't have a HorizontalHeader table"
+        "malformed font"
     );
 }
 

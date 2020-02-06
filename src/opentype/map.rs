@@ -20,9 +20,9 @@ fn with_table<T: Default, F>(font: &ttf_parser::Font, tag: Tag, f: F) -> T
     where F: FnOnce(&dyn GlyphPosSubTable) -> T
 {
     match tag {
-        TAG_GSUB if font.has_table(ttf_parser::TableName::GlyphSubstitution) =>
+        TAG_GSUB if font.substitution_table().is_some() =>
             f(&font.substitution_table().unwrap()),
-        TAG_GPOS if font.has_table(ttf_parser::TableName::GlyphPositioning) =>
+        TAG_GPOS if font.positioning_table().is_some() =>
             f(&font.positioning_table().unwrap()),
         _ => T::default()
     }
@@ -222,40 +222,36 @@ impl MapBuilder {
         map: &mut Map,
     ) {
         with_table(font, TABLE_TAGS[table_index], |table| {
-            let mut process = || -> Result<(), ttf_parser::Error> {
-                let table_lookup_count = table.lookups()?.count() as u16;
+            let table_lookup_count = table.lookups().count() as u16;
 
-                let mut feature = None;
-                if let Some(variation) = table.feature_variation_at(variations_index)? {
-                    if let Some(substitution) = variation.substitutions()?.nth(feature_index.0 as usize) {
-                        if substitution.index() == feature_index {
-                            feature = Some(substitution.feature()?);
-                        }
+            let mut feature = None;
+            if let Some(variation) = table.feature_variation_at(variations_index) {
+                if let Some(substitution) = variation.substitutions().and_then(|mut s| s.nth(feature_index.0 as usize)) {
+                    if substitution.index() == feature_index {
+                        feature = substitution.feature();
                     }
                 }
+            }
 
-                if feature.is_none() {
-                    feature = table.feature_at(feature_index)?;
-                }
+            if feature.is_none() {
+                feature = table.feature_at(feature_index);
+            }
 
-                if let Some(feature) = feature {
-                    for index in feature.lookup_indices {
-                        if index.0 < table_lookup_count {
-                            map.lookups[table_index].push(MapLookup {
-                                index,
-                                auto_zwnj,
-                                auto_zwj,
-                                random,
-                                mask,
-                            });
-                        }
+            if let Some(feature) = feature {
+                for index in feature.lookup_indices {
+                    if index.0 < table_lookup_count {
+                        map.lookups[table_index].push(MapLookup {
+                            index,
+                            auto_zwnj,
+                            auto_zwj,
+                            random,
+                            mask,
+                        });
                     }
                 }
+            }
 
-                Ok(())
-            };
-
-            process().unwrap();
+            Some(())
         });
     }
 
@@ -281,7 +277,7 @@ impl MapBuilder {
         font: &ttf_parser::Font,
         variations_index: &[FeatureVariationIndex],
         map: &mut Map,
-    ) -> Result<(), ttf_parser::Error> {
+    ) -> Option<()> {
         let global_bit_mask = crate::buffer::glyph_flag::DEFINED + 1;
         let global_bit_shift = crate::buffer::glyph_flag::DEFINED.count_ones();
 
@@ -298,7 +294,7 @@ impl MapBuilder {
         map.found_script = self.found_script;
         for table_index in 0..TABLES_COUNT {
             with_table(font, TABLE_TAGS[table_index], |table| {
-                if let Ok(Some(script)) = table.script_at(self.script_index[table_index]) {
+                if let Some(script) = table.script_at(self.script_index[table_index]) {
                     if let Some(lang) = script.language_at(self.language_index[table_index]).or_else(|| script.default_language()) {
                         if let Some(idx) = lang.required_feature_index {
                             required_feature_index[table_index] = idx;
@@ -387,8 +383,8 @@ impl MapBuilder {
             if !found && info.flags.contains(FeatureFlags::GLOBAL_SEARCH) {
                 for table_index in 0..TABLES_COUNT {
                     with_table(font, TABLE_TAGS[table_index], |table| {
-                        for (idx, feature) in table.features().unwrap().enumerate() {
-                            if feature.unwrap().tag == info.tag {
+                        for (idx, feature) in table.features().enumerate() {
+                            if feature.tag == info.tag {
                                 feature_index[0] = FeatureIndex(idx as u16);
                                 found |= true;
                                 break;
@@ -506,7 +502,7 @@ impl MapBuilder {
             }
         }
 
-        Ok(())
+        Some(())
     }
 }
 
@@ -522,12 +518,8 @@ fn select_script(
     scripts: &[Tag],
 ) -> Option<TableScriptInfo> {
     let mut font_scripts = Vec::new();
-    for script in table.scripts().ok()? {
-        if let Ok(script) = script {
-            font_scripts.push(script.tag());
-        } else {
-            font_scripts.push(Tag(0));
-        }
+    for script in table.scripts() {
+        font_scripts.push(script.tag());
     }
 
     for script in scripts.iter().cloned() {
@@ -555,20 +547,16 @@ fn select_language(
     script_index: ScriptIndex,
     languages: &[Tag],
 ) -> Option<LanguageIndex> {
-    if let Ok(Some(script)) = table.script_at(script_index) {
-        for language in languages {
-            if let Some((idx, _)) = script.language_by_tag(*language) {
-                return Some(idx);
-            }
-        }
-
-        // Try finding 'dflt'.
-        if let Some((idx, _)) = script.language_by_tag(Tag::default_language()) {
+    let script = table.script_at(script_index)?;
+    for language in languages {
+        if let Some((idx, _)) = script.language_by_tag(*language) {
             return Some(idx);
         }
     }
 
-    None
+    // Try finding 'dflt'.
+    let (idx, _) = script.language_by_tag(Tag::default_language())?;
+    Some(idx)
 }
 
 
@@ -604,7 +592,7 @@ fn language_find_feature(
     feature_tag: Tag,
 ) -> Option<FeatureIndex> {
     with_table(font, table_tag, |table| {
-        let script = table.script_at(script_index).ok()??;
+        let script = table.script_at(script_index)?;
         let lang = if language_index.0 != 0xFFFF {
             script.language_at(language_index)?
         } else {
@@ -612,7 +600,7 @@ fn language_find_feature(
         };
 
         for idx in lang.feature_indices {
-            if let Ok(Some(feature)) = table.feature_at(idx) {
+            if let Some(feature) = table.feature_at(idx) {
                 if feature.tag == feature_tag {
                     return Some(idx);
                 }

@@ -117,8 +117,8 @@ TEST_OVERRIDES = {
     'gsub_1_001': 'gid2|gid3@500,0|gid1@1000,0',
     'gpos_2_003': 'gid1|gid2',
     # Different error processing
-    'collections_006': "font index is out of bounds",
-    'indic_decompose_001': 'font doesn\'t have a HorizontalHeader table',
+    'collections_006': 'malformed font',
+    'indic_decompose_001': 'malformed font',
 }
 
 

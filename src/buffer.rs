@@ -1196,7 +1196,7 @@ impl GlyphBuffer {
             if !flags.contains(SerializeFlags::NO_GLYPH_NAMES) {
                 assert!(info.codepoint < std::u16::MAX as u32);
                 let g = ttf_parser::GlyphId(info.codepoint as u16);
-                if let Ok(Some(name)) = unsafe { (*font.font_ptr()).glyph_name(g) } {
+                if let Some(name) = unsafe { (*font.font_ptr()).glyph_name(g) } {
                     s.push_str(name);
                 } else {
                     write!(&mut s, "gid{}", info.codepoint).unwrap();

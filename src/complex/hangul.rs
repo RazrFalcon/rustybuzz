@@ -337,7 +337,7 @@ fn is_hangul_tone(u: u32) -> bool {
 }
 
 fn is_zero_width_char(font: &Font, c: char) -> bool {
-    if let Ok(Some(glyph)) = font.font().glyph_index(c) {
+    if let Some(glyph) = font.font().glyph_index(c) {
         let width = unsafe { ffi::hb_font_get_glyph_h_advance_default(
             font.as_ptr(), glyph.0 as u32,
         )};
@@ -376,11 +376,7 @@ fn is_combined_s(u: u32) -> bool {
 }
 
 fn font_has_glyph(font: &Font, u: u32) -> bool {
-    if let Ok(Some(_)) = font.font().glyph_index(char::try_from(u).unwrap()) {
-        true
-    } else {
-        false
-    }
+    font.font().glyph_index(char::try_from(u).unwrap()).is_some()
 }
 
 #[no_mangle]

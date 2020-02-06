@@ -13,7 +13,7 @@ repository = "https://github.com/RazrFalcon/rustybuzz"
 
 [dependencies]
 smallvec = "1.1.0"
-ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "2cccce3" }
+ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "ceb4122" }
 unicode-bidi-mirroring = { git = "https://github.com/RazrFalcon/unicode-bidi-mirroring", rev = "1b6b675" }
 unicode-ccc = { git = "https://github.com/RazrFalcon/unicode-ccc", rev = "38abf3a" }
 unicode-general-category = "0.2.0"

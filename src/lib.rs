@@ -38,24 +38,6 @@ macro_rules! try_opt_or {
     };
 }
 
-macro_rules! try_res_opt_or {
-    ($task:expr, $res:expr) => {
-        match $task {
-            Ok(Some(v)) => v,
-            _ => return $res,
-        }
-    };
-}
-
-macro_rules! try_ok_or {
-    ($task:expr, $res:expr) => {
-        match $task {
-            Ok(v) => v,
-            Err(_) => return $res,
-        }
-    };
-}
-
 macro_rules! impl_bit_ops {
     ($name:ident) => {
         impl std::ops::BitOr for $name {

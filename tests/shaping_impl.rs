@@ -72,8 +72,8 @@ pub fn shape(font: &str, text: &str, options: &str) -> String {
 
     let font_data = std::fs::read(&format!("harfbuzz/test/shaping/data/{}", font)).unwrap();
     let face = match rustybuzz::Face::new(&font_data, args.face_index) {
-        Ok(v) => v,
-        Err(e) => return e.to_string(),
+        Some(v) => v,
+        None => return "malformed font".to_string(),
     };
     let mut font = rustybuzz::Font::new(face);
 

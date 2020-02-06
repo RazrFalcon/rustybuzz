@@ -153,9 +153,9 @@ fn main() {
 
     let font_data = std::fs::read(font_path).expect("failed to load a file");
     let face = match rustybuzz::Face::new(&font_data, args.face_index) {
-        Ok(v) => v,
-        Err(e) => {
-            eprintln!("Error: {}.", e);
+        Some(v) => v,
+        None => {
+            eprintln!("Error: malformed font.");
             std::process::exit(1);
         }
     };

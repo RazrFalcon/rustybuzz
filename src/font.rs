@@ -63,12 +63,12 @@ pub struct Face<'a> {
 
 impl<'a> Face<'a> {
     /// Creates a new `Face` from the data.
-    pub fn new(data: &'a [u8], index: u32) -> Result<Face<'a>, ttf_parser::Error> {
+    pub fn new(data: &'a [u8], index: u32) -> Option<Face<'a>> {
         unsafe {
             let ttf = Box::new(ttf_parser::Font::from_data(data, index)?);
             let ttf = Box::into_raw(ttf);
             let blob = Blob::with_bytes(data);
-            Ok(Face {
+            Some(Face {
                 ptr: ffi::hb_face_create(blob.as_ptr(), ttf as *const _, index),
                 blob,
                 ttf,
@@ -171,11 +171,11 @@ impl<'a> Font<'a> {
     /// Sets a font variations.
     pub fn set_variations(&mut self, variations: &[Variation]) {
         let ttf = unsafe { &*self.face.ttf };
-        let coords_len = try_opt!(ttf.variation_axes_count()) as usize;
+        let coords_len = try_opt!(ttf.variation_axes_count()).get() as usize;
         let mut coords = vec![0; coords_len];
 
         for variation in variations {
-            if let Ok(Some(axis)) = ttf.variation_axis(variation.tag) {
+            if let Some(axis) = ttf.variation_axis(variation.tag) {
                 let mut v = f32_bound(axis.min_value, variation.value, axis.max_value);
 
                 if v == axis.default_value {
@@ -216,7 +216,7 @@ fn font_from_raw(font_data: *const c_void) -> &'static ttf_parser::Font<'static>
 #[no_mangle]
 pub extern "C" fn rb_ot_get_nominal_glyph(font_data: *const c_void, c: u32, glyph: *mut u32) -> i32 {
     match font_from_raw(font_data).glyph_index(char::try_from(c).unwrap()) {
-        Ok(Some(g)) => unsafe { *glyph = g.0 as u32; 1 }
+        Some(g) => unsafe { *glyph = g.0 as u32; 1 }
         _ => 0,
     }
 }
@@ -225,7 +225,7 @@ pub extern "C" fn rb_ot_get_nominal_glyph(font_data: *const c_void, c: u32, glyp
 pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, variant: u32, glyph: *mut u32) -> i32 {
     let font = font_from_raw(font_data);
     match font.glyph_variation_index(char::try_from(c).unwrap(), char::try_from(variant).unwrap()) {
-        Ok(Some(g)) => unsafe { *glyph = g.0 as u32; 1 }
+        Some(g) => unsafe { *glyph = g.0 as u32; 1 }
         _ => 0,
     }
 }
@@ -234,7 +234,7 @@ pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, va
 pub extern "C" fn rb_ot_get_glyph_bbox(font_data: *const c_void, glyph: u32, extents: *mut ffi::hb_glyph_bbox_t) -> i32 {
     let font = font_from_raw(font_data);
     match font.glyph_bounding_box(GlyphId(u16::try_from(glyph).unwrap())) {
-        Ok(Some(bbox)) => unsafe {
+        Some(bbox) => unsafe {
             (*extents).x_min = bbox.x_min;
             (*extents).y_min = bbox.y_min;
             (*extents).x_max = bbox.x_max;
@@ -251,7 +251,7 @@ pub extern "C" fn rb_ot_get_glyph_name(font_data: *const c_void, glyph: u32, mut
 
     let font = font_from_raw(font_data);
     match font.glyph_name(GlyphId(u16::try_from(glyph).unwrap())) {
-        Ok(Some(name)) => unsafe {
+        Some(name) => unsafe {
             let len = std::cmp::min(name.len(), len as usize - 1);
 
             for b in &name.as_bytes()[0..len] {
@@ -275,7 +275,7 @@ pub extern "C" fn rb_ot_layout_has_glyph_classes(font_data: *const c_void) -> i3
 #[no_mangle]
 pub extern "C" fn rb_ot_get_glyph_class(font_data: *const c_void, glyph: u32) -> u32 {
     match font_from_raw(font_data).glyph_class(GlyphId(u16::try_from(glyph).unwrap())) {
-        Ok(Some(c)) => c as u32,
+        Some(c) => c as u32,
         _ => 0,
     }
 }
@@ -283,19 +283,13 @@ pub extern "C" fn rb_ot_get_glyph_class(font_data: *const c_void, glyph: u32) ->
 #[no_mangle]
 pub extern "C" fn rb_ot_get_mark_attachment_class(font_data: *const c_void, glyph: u32) -> u32 {
     let font = font_from_raw(font_data);
-    match font.glyph_mark_attachment_class(GlyphId(u16::try_from(glyph).unwrap())) {
-        Ok(c) => c.0 as u32,
-        Err(_) => 0,
-    }
+    font.glyph_mark_attachment_class(GlyphId(u16::try_from(glyph).unwrap())).0 as u32
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_is_mark_glyph(font_data: *const c_void, set_index: u32, glyph: u32) -> i32 {
     let font = font_from_raw(font_data);
-    match font.is_mark_glyph(GlyphId(u16::try_from(glyph).unwrap()), Some(set_index as u16)) {
-        Ok(c) => c as i32,
-        Err(_) => 0,
-    }
+    font.is_mark_glyph(GlyphId(u16::try_from(glyph).unwrap()), Some(set_index as u16)) as i32
 }
 
 const GSUB_TABLE_TAG: Tag = Tag::from_bytes(b"GSUB");
@@ -303,8 +297,8 @@ const GPOS_TABLE_TAG: Tag = Tag::from_bytes(b"GPOS");
 
 fn has_table(font: &ttf_parser::Font, tag: Tag) -> bool {
     match tag {
-        GSUB_TABLE_TAG => font.has_table(ttf_parser::TableName::GlyphSubstitution),
-        GPOS_TABLE_TAG => font.has_table(ttf_parser::TableName::GlyphPositioning),
+        GSUB_TABLE_TAG => font.substitution_table().is_some(),
+        GPOS_TABLE_TAG => font.positioning_table().is_some(),
         _ => false,
     }
 }
@@ -331,7 +325,7 @@ pub extern "C" fn rb_ot_layout_table_get_script_count(
     }
 
     with_table(font, table_tag, |table| {
-        table.scripts().map(|iter| iter.count()).unwrap_or(0) as u32
+        table.scripts().count() as u32
     })
 }
 
@@ -357,9 +351,7 @@ pub extern "C" fn rb_ot_layout_table_select_script(
     }
 
     with_table(font, table_tag, |table| {
-        let script_by_tag = |tag| {
-            table.scripts().ok().and_then(|s| s.filter_map(Result::ok).position(|s| s.tag() == tag))
-        };
+        let script_by_tag = |tag| table.scripts().position(|s| s.tag() == tag);
 
         for script in scripts {
             if let Some(idx) = script_by_tag(*script) {
@@ -419,7 +411,7 @@ pub extern "C" fn rb_ot_layout_table_find_feature(
     }
 
     with_table(font, table_tag, |table| {
-        if let Some(idx) = try_ok_or!(table.features(), 0).filter_map(Result::ok).position(|f| f.tag == feature_tag) {
+        if let Some(idx) = table.features().position(|f| f.tag == feature_tag) {
             unsafe { *feature_index = idx as u32; };
             1
         } else {
@@ -447,7 +439,7 @@ pub extern "C" fn rb_ot_layout_script_select_language(
     }
 
     with_table(font, table_tag, |table| {
-        let script = try_res_opt_or!(table.script_at(ScriptIndex(script_index as u16)), 0);
+        let script = try_opt_or!(table.script_at(ScriptIndex(script_index as u16)), 0);
 
         for lang in languages {
             if let Some((idx, _)) = script.language_by_tag(*lang) {
@@ -487,10 +479,10 @@ pub extern "C" fn rb_ot_layout_language_get_required_feature(
     }
 
     with_table(font, table_tag, |table| {
-        let script = try_res_opt_or!(table.script_at(ScriptIndex(script_index as u16)), 0);
+        let script = try_opt_or!(table.script_at(ScriptIndex(script_index as u16)), 0);
         let lang = try_opt_or!(script.language_at(LanguageIndex(language_index as u16)), 0);
         if let Some(idx) = lang.required_feature_index {
-            if let Ok(Some(f)) = table.feature_at(idx) {
+            if let Some(f) = table.feature_at(idx) {
                 unsafe {
                     *feature_index = idx.0 as u32;
                     *feature_tag = f.tag;
@@ -522,7 +514,7 @@ pub extern "C" fn rb_ot_layout_language_find_feature(
     }
 
     with_table(font, table_tag, |table| {
-        let script = try_res_opt_or!(table.script_at(ScriptIndex(script_index as u16)), 0);
+        let script = try_opt_or!(table.script_at(ScriptIndex(script_index as u16)), 0);
         let lang = if language_index != 0xFFFF {
             try_opt_or!(script.language_at(LanguageIndex(language_index as u16)), 0)
         } else {
@@ -530,7 +522,7 @@ pub extern "C" fn rb_ot_layout_language_find_feature(
         };
 
         for idx in lang.feature_indices {
-            if let Ok(Some(feature)) = table.feature_at(idx) {
+            if let Some(feature) = table.feature_at(idx) {
                 if feature.tag == feature_tag {
                     unsafe { *feature_index = idx.0 as u32; }
                     return 1;
@@ -554,7 +546,7 @@ pub extern "C" fn rb_ot_layout_table_get_lookup_count(
     }
 
     with_table(font, table_tag, |table| {
-        try_ok_or!(table.lookups(), 0).count() as u32
+        table.lookups().count() as u32
     })
 }
 
@@ -576,13 +568,10 @@ pub extern "C" fn rb_ot_layout_table_find_feature_variations(
     }
 
     with_table(font, table_tag, |table| {
-        let variations = try_ok_or!(table.feature_variations(), 0);
-        for (i, var) in variations.enumerate() {
-            if let Ok(var) = var {
-                if var.evaluate(coords) {
-                    unsafe { *variations_index = i as u32; }
-                    return 1;
-                }
+        for (i, var) in table.feature_variations().enumerate() {
+            if var.evaluate(coords) {
+                unsafe { *variations_index = i as u32; }
+                return 1;
             }
         }
 
@@ -609,12 +598,12 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
     }
 
     with_table(font, table_tag, |table| {
-        let feature = if let Ok(Some(variation)) = table.feature_variation_at(FeatureVariationIndex(variations_index)) {
-            try_ok_or!(variation.substitutions(), 0)
+        let feature = if let Some(variation) = table.feature_variation_at(FeatureVariationIndex(variations_index)) {
+            try_opt_or!(variation.substitutions(), 0)
                 .find(|s| s.index() == FeatureIndex(feature_index as u16))
-                .and_then(|s| s.feature().ok())
+                .and_then(|s| s.feature())
         } else {
-            try_ok_or!(table.feature_at(FeatureIndex(feature_index as u16)), 0)
+            table.feature_at(FeatureIndex(feature_index as u16))
         };
 
         let mut added = 0;
@@ -638,24 +627,24 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
 pub extern "C" fn rb_ot_layout_has_substitution(
     font_data: *const c_void,
 ) -> ffi::hb_bool_t {
-    font_from_raw(font_data).has_table(ttf_parser::TableName::GlyphSubstitution) as i32
+    font_from_raw(font_data).substitution_table().is_some() as i32
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_has_positioning(
     font_data: *const c_void,
 ) -> ffi::hb_bool_t {
-    font_from_raw(font_data).has_table(ttf_parser::TableName::GlyphPositioning) as i32
+    font_from_raw(font_data).positioning_table().is_some() as i32
 }
 
 #[no_mangle]
 pub extern "C" fn hb_ot_get_var_axis_count(font_data: *const c_void) -> u16 {
-    font_from_raw(font_data).variation_axes_count().unwrap_or(0)
+    font_from_raw(font_data).variation_axes_count().map(|n| n.get()).unwrap_or(0)
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_has_vorg_data(font_data: *const c_void) -> i32 {
-    font_from_raw(font_data).has_table(ttf_parser::TableName::VerticalOrigin) as i32
+    font_from_raw(font_data).glyph_y_origin(GlyphId(0)).is_some() as i32
 }
 
 #[no_mangle]
@@ -689,11 +678,7 @@ pub unsafe extern "C" fn rb_ot_metrics_get_position_common(
     let coords = std::slice::from_raw_parts(coords as *const _, coord_count as usize);
 
     let upem = font.units_per_em().unwrap_or(0) as f32;
-    let offset = match font.metrics_variation(Tag(tag), coords) {
-        Ok(Some(v)) => v,
-        _ => 0.0,
-    };
-
+    let offset = font.metrics_variation(Tag(tag), coords).unwrap_or(0.0);
     let rescale = |x: f32| ((x * scale as f32) / upem).round() as i32;
 
     match Tag(tag) {
@@ -732,9 +717,9 @@ pub extern "C" fn rb_font_get_advance(font_data: *const c_void, glyph: u32, is_v
     let pem = font.units_per_em().unwrap_or(1000);
 
     if is_vertical {
-        font.glyph_ver_advance(glyph).ok().flatten().unwrap_or(pem) as u32
+        font.glyph_ver_advance(glyph).unwrap_or(pem) as u32
     } else {
-        font.glyph_hor_advance(glyph).ok().flatten().unwrap_or(pem) as u32
+        font.glyph_hor_advance(glyph).unwrap_or(pem) as u32
     }
 }
 
@@ -759,10 +744,10 @@ pub extern "C" fn rb_font_get_advance_var(
 
     // TODO: check advance for negative values
     if !is_vertical && font.has_table(ttf_parser::TableName::HorizontalMetricsVariations) {
-        let offset = font.glyph_hor_advance_variation(glyph, coords).ok().flatten().unwrap_or(0.0).round();
+        let offset = font.glyph_hor_advance_variation(glyph, coords).unwrap_or(0.0).round();
         return (advance as f32 + offset) as u32;
     } else if is_vertical && font.has_table(ttf_parser::TableName::VerticalMetricsVariations) {
-        let offset = font.glyph_ver_advance_variation(glyph, coords).ok().flatten().unwrap_or(0.0).round();
+        let offset = font.glyph_ver_advance_variation(glyph, coords).unwrap_or(0.0).round();
         return (advance as f32 + offset) as u32;
     }
 
@@ -775,9 +760,9 @@ pub extern "C" fn rb_font_get_side_bearing(font_data: *const c_void, glyph: u32,
     let glyph = GlyphId(u16::try_from(glyph).unwrap());
 
     if is_vertical {
-        font.glyph_ver_side_bearing(glyph).ok().flatten().unwrap_or(0) as i32
+        font.glyph_ver_side_bearing(glyph).unwrap_or(0) as i32
     } else {
-        font.glyph_hor_side_bearing(glyph).ok().flatten().unwrap_or(0) as i32
+        font.glyph_hor_side_bearing(glyph).unwrap_or(0) as i32
     }
 }
 
@@ -801,10 +786,10 @@ pub extern "C" fn rb_font_get_side_bearing_var(
     }
 
     if !is_vertical && font.has_table(ttf_parser::TableName::HorizontalMetricsVariations) {
-        let offset = font.glyph_hor_side_bearing_variation(glyph, coords).ok().flatten().unwrap_or(0.0).round();
+        let offset = font.glyph_hor_side_bearing_variation(glyph, coords).unwrap_or(0.0).round();
         return (side_bearing as f32 + offset) as i32;
     } else if is_vertical && font.has_table(ttf_parser::TableName::VerticalMetricsVariations) {
-        let offset = font.glyph_ver_side_bearing_variation(glyph, coords).ok().flatten().unwrap_or(0.0).round();
+        let offset = font.glyph_ver_side_bearing_variation(glyph, coords).unwrap_or(0.0).round();
         return (side_bearing as f32 + offset) as i32;
     }
 
