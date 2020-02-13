@@ -145,6 +145,13 @@ impl GlyphInfo {
         }
     }
 
+    fn set_glyph_props(&mut self, n: u16) {
+        unsafe {
+            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var1);
+            v.var_u16[0] = n;
+        }
+    }
+
     fn unicode_props(&self) -> u16 {
         unsafe {
             let v: ffi::hb_var_int_t = std::mem::transmute(self.var2);
@@ -173,6 +180,24 @@ impl GlyphInfo {
         self.glyph_props() & GlyphPropsFlags::LIGATED.0 != 0
     }
 
+    pub(crate) fn is_multiplied(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::MULTIPLIED.0 != 0
+    }
+
+    pub(crate) fn clear_ligated_and_multiplied(&mut self) {
+        let mut n = self.glyph_props();
+        n &= !(GlyphPropsFlags::LIGATED | GlyphPropsFlags::MULTIPLIED).0;
+        self.set_glyph_props(n);
+    }
+
+    pub(crate) fn is_substituted(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.0 != 0
+    }
+
+    pub(crate) fn is_ligated_and_didnt_multiply(&self) -> bool {
+        self.is_ligated() && !self.is_multiplied()
+    }
+
     pub(crate) fn is_unicode_mark(&self) -> bool {
         self.general_category().is_unicode_mark()
     }
@@ -192,6 +217,26 @@ impl GlyphInfo {
 
         let n = ((mcc as u16) << 8) | (self.unicode_props() & 0xFF);
         self.set_unicode_props(n);
+    }
+
+    pub(crate) fn reset_continuation(&mut self) {
+        let mut n = self.unicode_props();
+        n &= !UnicodeProps::CONTINUATION.0;
+        self.set_unicode_props(n);
+    }
+
+    pub(crate) fn syllable(&self) -> u8 {
+        unsafe {
+            let v: &ffi::hb_var_int_t = std::mem::transmute(&self.var1);
+            v.var_u8[3]
+        }
+    }
+
+    pub(crate) fn set_syllable(&mut self, n: u8) {
+        unsafe {
+            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var1);
+            v.var_u8[3] = n;
+        }
     }
 }
 
@@ -347,7 +392,7 @@ pub struct Buffer {
     max_ops: i32,
 
     // Buffer contents.
-    props: SegmentProperties,
+    pub(crate) props: SegmentProperties,
 
     /// Whether we have an output buffer going on.
     have_output: bool,
@@ -647,7 +692,7 @@ impl Buffer {
         self.out_len += 1;
     }
 
-    fn output_glyph(&mut self, glyph_index: CodePoint) -> Option<&mut GlyphInfo> {
+    pub(crate) fn output_glyph(&mut self, glyph_index: CodePoint) -> Option<&mut GlyphInfo> {
         self.make_room_for(0, 1);
 
         if self.idx == self.len && self.out_len == 0 {
@@ -668,7 +713,7 @@ impl Buffer {
         self.out_info_mut().get_mut(out_len)
     }
 
-    fn output_info(&mut self, glyph_info: GlyphInfo) {
+    pub(crate) fn output_info(&mut self, glyph_info: GlyphInfo) {
         self.make_room_for(0, 1);
         self.set_out_info(self.out_len, glyph_info);
         self.out_len += 1;
@@ -1126,6 +1171,20 @@ impl Buffer {
         let cluster = self.info[start].cluster;
         start += 1;
         while start < self.len && cluster == self.info[start].cluster {
+            start += 1;
+        }
+
+        start
+    }
+
+    pub(crate) fn next_syllable(&self, mut start: usize) -> usize {
+        if start >= self.len {
+            return start;
+        }
+
+        let syllable = self.info[start].syllable();
+        start += 1;
+        while start < self.len && syllable == self.info[start].syllable() {
             start += 1;
         }
 

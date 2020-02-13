@@ -16,14 +16,12 @@ fn main() {
     build.file("harfbuzz/src/hb-ot-shape-complex-default.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-hangul.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-hebrew.cc");
-    build.file("harfbuzz/src/hb-ot-shape-complex-indic-table.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-indic.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-khmer.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-myanmar.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-thai.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-use-table.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-use.cc");
-    build.file("harfbuzz/src/hb-ot-shape-complex-vowel-constraints.cc");
     build.file("harfbuzz/src/hb-ot-shape-fallback.cc");
     build.file("harfbuzz/src/hb-ot-shape-normalize.cc");
     build.file("harfbuzz/src/hb-ot-shape.cc");

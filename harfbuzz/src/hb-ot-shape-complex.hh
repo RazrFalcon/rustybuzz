@@ -38,6 +38,10 @@
 
 #define HB_OT_SHAPE_COMPLEX_MAX_COMBINING_MARKS 32
 
+extern "C" {
+void rb_preprocess_text_vowel_constraints(rb_buffer_t *buffer);
+}
+
 enum hb_ot_shape_zero_width_marks_type_t {
     HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
     HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,

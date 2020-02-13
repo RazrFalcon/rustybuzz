@@ -32,7 +32,6 @@
 
 #include "hb-ot-shape-complex-arabic.hh"
 #include "hb-ot-shape-complex-use.hh"
-#include "hb-ot-shape-complex-vowel-constraints.hh"
 
 /* buffer var allocations */
 #define use_category() complex_var_u8_0()
@@ -479,7 +478,7 @@ static void reorder_use(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_
 
 static void preprocess_text_use(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font)
 {
-    _hb_preprocess_text_vowel_constraints(plan, buffer, font);
+    rb_preprocess_text_vowel_constraints(buffer);
 }
 
 static bool

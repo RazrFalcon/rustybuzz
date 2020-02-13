@@ -3,6 +3,7 @@ use crate::buffer::BufferScratchFlags;
 use crate::opentype::{MapBuilder, FeatureFlags};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class};
 use crate::ffi;
+use super::{hb_flag_unsafe, hb_flag};
 
 use super::arabic_table;
 
@@ -136,16 +137,6 @@ pub enum JoiningType {
     GroupDalathRish = 5,
     T = 7,
     X = 8, // means: use general-category to choose between U or T.
-}
-
-#[inline]
-fn hb_flag(x: u32) -> u32 {
-    1 << x
-}
-
-#[inline]
-fn hb_flag_unsafe(x: u32) -> u32 {
-    if x < 32 { 1 << x } else { 0 }
 }
 
 fn get_joining_type(u: char, gc: GeneralCategory) -> JoiningType {

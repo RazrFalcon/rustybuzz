@@ -31,7 +31,7 @@ fn with_table<T: Default, F>(font: &ttf_parser::Font, tag: Tag, f: F) -> T
 
 #[derive(Debug)]
 pub struct Map {
-    chosen_script: [Tag; 2],
+    pub chosen_script: [Tag; 2],
     found_script: [bool; 2],
     global_mask: Mask,
     features: Vec<MapFeature>,
@@ -59,6 +59,14 @@ impl Map {
         }
     }
 
+    pub fn feature_stage(&self, table_index: u32, feature_tag: Tag) -> u32 {
+        if let Ok(idx) = self.features.binary_search_by(|v| v.tag.cmp(&feature_tag)) {
+            self.features[idx].stage[table_index as usize]
+        } else {
+            std::u32::MAX // TODO: to None
+        }
+    }
+
     pub fn from_ptr(map: *const ffi::rb_ot_map_t) -> &'static Map {
         unsafe { &*(map as *const Map) }
     }
@@ -82,7 +90,7 @@ struct MapFeature {
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct MapLookup {
-    index: LookupIndex,
+    pub index: LookupIndex,
     // TODO: to bitflags
     auto_zwnj: bool,
     auto_zwj: bool,
@@ -112,22 +120,25 @@ pub struct FeatureFlags(u8);
 
 impl FeatureFlags {
     /// Feature applies to all characters; results in no mask allocated for it.
-    pub const GLOBAL: Self                = Self(0x0001);
+    pub const GLOBAL: Self                  = Self(0x0001);
 
     /// Has fallback implementation, so include mask bit even if feature not found.
-    pub const HAS_FALLBACK: Self          = Self(0x0002);
+    pub const HAS_FALLBACK: Self            = Self(0x0002);
 
     /// Don't skip over ZWNJ when matching **context**.
-    pub const MANUAL_ZWNJ: Self           = Self(0x0004);
+    pub const MANUAL_ZWNJ: Self             = Self(0x0004);
 
     /// Don't skip over ZWJ when matching **input**.
-    pub const MANUAL_ZWJ: Self            = Self(0x0008);
+    pub const MANUAL_ZWJ: Self              = Self(0x0008);
+
+    pub const MANUAL_JOINERS: Self          = Self(Self::MANUAL_ZWNJ.0 | Self::MANUAL_ZWJ.0);
+    pub const GLOBAL_MANUAL_JOINERS: Self   = Self(Self::GLOBAL.0 | Self::MANUAL_JOINERS.0);
 
     /// If feature not found in LangSys, look for it in global feature list and pick one.
-    pub const GLOBAL_SEARCH: Self         = Self(0x0010);
+    pub const GLOBAL_SEARCH: Self           = Self(0x0010);
 
     /// Randomly select a glyph from an AlternateSubstFormat1 subtable.
-    pub const RANDOM: Self                = Self(0x0020);
+    pub const RANDOM: Self                  = Self(0x0020);
 
     #[inline] pub fn contains(&self, other: Self) -> bool { (self.0 & other.0) == other.0 }
     #[inline] pub fn remove(&mut self, other: Self) { self.0 &= !other.0; }
@@ -685,12 +696,7 @@ pub extern "C" fn rb_ot_map_get_feature_stage(
     table_index: u32,
     feature_tag: Tag,
 ) -> u32 {
-    let map = Map::from_ptr(map);
-    if let Ok(idx) = map.features.binary_search_by(|v| v.tag.cmp(&feature_tag)) {
-        map.features[idx].stage[table_index as usize]
-    } else {
-        std::u32::MAX
-    }
+    Map::from_ptr(map).feature_stage(table_index, feature_tag)
 }
 
 #[no_mangle]
@@ -716,6 +722,34 @@ pub extern "C" fn rb_ot_map_get_stages_length(map: *const ffi::rb_ot_map_t, tabl
 #[no_mangle]
 pub extern "C" fn rb_ot_map_get_stage(map: *const ffi::rb_ot_map_t, table_index: u32, i: u32) -> *const StageMap {
     &Map::from_ptr(map).stages[table_index as usize][i as usize] as *const _
+}
+
+// TODO: do not allocate a vector
+pub fn get_stage_lookups(map: &Map, table_index: u32, stage: u32) -> Vec<MapLookup> {
+    if stage == std::u32::MAX {
+        return Vec::new();
+    }
+
+    let stage = stage as usize;
+    let table_index = table_index as usize;
+
+    let start = if stage != 0 {
+        map.stages[table_index][stage - 1].last_lookup as usize
+    } else {
+        0
+    };
+
+    let end = if stage < map.stages[table_index as usize].len() {
+        map.stages[table_index][stage].last_lookup as usize
+    } else {
+        map.lookups[table_index].len()
+    };
+
+    if end == start {
+        Vec::new()
+    } else {
+        map.lookups[table_index][start..end].to_vec()
+    }
 }
 
 #[no_mangle]

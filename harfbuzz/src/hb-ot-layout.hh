@@ -131,6 +131,10 @@ static inline unsigned int _hb_next_syllable(rb_buffer_t *buffer, unsigned int s
     return start;
 }
 
+extern "C" {
+    void hb_layout_clear_syllables(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
+}
+
 static inline void
 _hb_clear_syllables(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer)
 {

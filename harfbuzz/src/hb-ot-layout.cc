@@ -597,4 +597,9 @@ void hb_ot_layout_substitute_lookup(OT::hb_ot_apply_context_t *c,
     apply_string_gsub(c, lookup, accel);
 }
 
+void hb_layout_clear_syllables(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
+{
+    _hb_clear_syllables(plan, font, buffer);
+}
+
 #endif

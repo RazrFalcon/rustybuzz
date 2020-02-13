@@ -61,7 +61,7 @@ pub extern "C" fn rb_complex_hangul_data_create(map: *const ffi::rb_ot_map_t) ->
 
 #[no_mangle]
 pub extern "C" fn rb_complex_hangul_data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data) };
+    unsafe { Box::from_raw(data as *mut HangulShapePlan) };
 }
 
 #[no_mangle]

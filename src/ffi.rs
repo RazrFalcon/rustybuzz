@@ -194,5 +194,6 @@ extern "C" {
     pub fn hb_ot_glyf_get_side_bearing_var(font: *mut hb_font_t, glyph: u32, is_vertical: bool) -> i32;
     pub fn hb_ot_glyf_get_advance_var(font: *mut hb_font_t, glyph: u32, is_vertical: bool) -> u32;
     pub fn hb_shape(font: *mut hb_font_t, buffer: *mut rb_buffer_t, features: *const hb_feature_t, num_features: u32);
-
+    pub fn hb_ot_layout_lookup_would_substitute(face: *mut hb_face_t, lookup_index: u32, glyphs: *const hb_codepoint_t,
+                                                glyphs_length: u32, zero_context: hb_bool_t) -> hb_bool_t;
 }
