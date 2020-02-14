@@ -278,7 +278,7 @@ struct glyf
             {
                 /* Undocumented rasterizer behavior: shift glyph to the left by (lsb - xMin), i.e., xMin = lsb */
                 /* extents->x_bearing = hb_min (glyph_header.xMin, glyph_header.xMax); */
-                extents->x_bearing = font->em_scale_x(rb_font_get_side_bearing(font->rust_data, gid, false));
+                extents->x_bearing = font->em_scale_x(rb_font_get_side_bearing(font->ttf_parser, gid, false));
                 extents->y_bearing = font->em_scale_y(hb_max(yMin, yMax));
                 extents->width = font->em_scale_x(hb_max(xMin, xMax) - hb_min(xMin, xMax));
                 extents->height = font->em_scale_y(hb_min(yMin, yMax) - hb_max(yMin, yMax));
@@ -718,10 +718,10 @@ struct glyf
             loca_table = nullptr;
             glyf_table = nullptr;
             face = face_;
-            if (rb_face_index_to_loc_format(face->rust_data) > 1)
+            if (rb_face_index_to_loc_format(face->ttf_parser) > 1)
                 /* Unknown format.  Leave num_glyphs=0, that takes care of disabling us. */
                 return;
-            short_offset = 0 == rb_face_index_to_loc_format(face->rust_data);
+            short_offset = 0 == rb_face_index_to_loc_format(face->ttf_parser);
 
             loca_table = hb_sanitize_context_t().reference_table<loca>(face);
             glyf_table = hb_sanitize_context_t().reference_table<glyf>(face);
@@ -747,10 +747,10 @@ struct glyf
         void init_phantom_points(hb_codepoint_t gid, hb_array_t<contour_point_t> &phantoms /* IN/OUT */) const
         {
             const Glyph &glyph = glyph_for_gid(gid);
-            int h_delta = (int)glyph.get_header().xMin - rb_font_get_side_bearing(face->rust_data, gid, false);
-            int v_orig = (int)glyph.get_header().yMax + rb_font_get_side_bearing(face->rust_data, gid, true);
-            unsigned int h_adv = rb_font_get_advance(face->rust_data, gid, false);
-            unsigned int v_adv = rb_font_get_advance(face->rust_data, gid, true);
+            int h_delta = (int)glyph.get_header().xMin - rb_font_get_side_bearing(face->ttf_parser, gid, false);
+            int v_orig = (int)glyph.get_header().yMax + rb_font_get_side_bearing(face->ttf_parser, gid, true);
+            unsigned int h_adv = rb_font_get_advance(face->ttf_parser, gid, false);
+            unsigned int v_adv = rb_font_get_advance(face->ttf_parser, gid, true);
 
             phantoms[PHANTOM_LEFT].x = h_delta;
             phantoms[PHANTOM_RIGHT].x = h_adv + h_delta;
@@ -922,7 +922,7 @@ struct glyf
                 success = get_var_metrics(font, gid, phantoms);
 
             if (unlikely(!success))
-                return rb_font_get_advance(face->rust_data, gid, is_vertical);
+                return rb_font_get_advance(face->ttf_parser, gid, is_vertical);
 
             if (is_vertical)
                 return roundf(phantoms[PHANTOM_TOP].y - phantoms[PHANTOM_BOTTOM].y);
@@ -937,7 +937,7 @@ struct glyf
             phantoms.resize(PHANTOM_COUNT);
 
             if (unlikely(!get_var_extents_and_phantoms(font, gid, &extents, &phantoms)))
-                return rb_font_get_side_bearing(face->rust_data, gid, is_vertical);
+                return rb_font_get_side_bearing(face->ttf_parser, gid, is_vertical);
 
             return is_vertical ? ceil(phantoms[PHANTOM_TOP].y) - extents.y_bearing : floor(phantoms[PHANTOM_LEFT].x);
         }

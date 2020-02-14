@@ -29,12 +29,12 @@
 #include "hb-ot-shape-complex.hh"
 
 extern "C" {
-void rb_complex_thai_preprocess_text(rb_ot_map_t *map, hb_tag_t script, const void *rust_data, rb_buffer_t *buffer);
+void rb_complex_thai_preprocess_text(rb_ot_map_t *map, hb_tag_t script, const rb_ttf_parser_t *ttf_parser, rb_buffer_t *buffer);
 }
 
 static void preprocess_text_thai(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font)
 {
-    rb_complex_thai_preprocess_text(plan->map, plan->props.script, font->rust_data, buffer);
+    rb_complex_thai_preprocess_text(plan->map, plan->props.script, font->ttf_parser, buffer);
 }
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_thai = {

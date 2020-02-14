@@ -33,8 +33,8 @@
 #include "hb-font.hh"
 
 extern "C" {
-unsigned int rb_ot_get_glyph_class(const void *rust_data, hb_codepoint_t glyph);
-unsigned int rb_ot_get_mark_attachment_class(const void *rust_data, hb_codepoint_t glyph);
+unsigned int rb_ot_get_glyph_class(const rb_ttf_parser_t *ttf_parser, hb_codepoint_t glyph);
+unsigned int rb_ot_get_mark_attachment_class(const rb_ttf_parser_t *ttf_parser, hb_codepoint_t glyph);
 }
 
 namespace OT {
@@ -360,7 +360,7 @@ struct GDEF
      * Not to be confused with lookup_props which is very similar. */
     unsigned int get_glyph_props(hb_font_t *font, hb_codepoint_t glyph) const
     {
-        unsigned int klass = rb_ot_get_glyph_class(font->rust_data, glyph);
+        unsigned int klass = rb_ot_get_glyph_class(font->ttf_parser, glyph);
 
         static_assert(((unsigned int)HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH == (unsigned int)LookupFlag::IgnoreBaseGlyphs),
                       "");
@@ -376,7 +376,7 @@ struct GDEF
         case LigatureGlyph:
             return HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE;
         case MarkGlyph:
-            klass = rb_ot_get_mark_attachment_class(font->rust_data, glyph);
+            klass = rb_ot_get_mark_attachment_class(font->ttf_parser, glyph);
             return HB_OT_LAYOUT_GLYPH_PROPS_MARK | (klass << 8);
         }
     }

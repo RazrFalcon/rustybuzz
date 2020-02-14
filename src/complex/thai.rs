@@ -1,4 +1,3 @@
-use std::os::raw::c_void;
 use std::convert::TryFrom;
 
 use crate::{ffi, script, CodePoint, Buffer, Tag, Script};
@@ -366,11 +365,11 @@ fn preprocess_text(
 pub extern "C" fn rb_complex_thai_preprocess_text(
     map: *const ffi::rb_ot_map_t,
     script: Tag,
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let map = Map::from_ptr(map);
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
     let buffer = Buffer::from_ptr_mut(buffer);
     preprocess_text(map, Script(script), font, buffer);
 }

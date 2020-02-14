@@ -59,13 +59,13 @@ struct hb_glyph_bbox_t
 };
 
 extern "C" {
-bool rb_ot_get_glyph_bbox(const void *rust_data, hb_codepoint_t glyph, hb_glyph_bbox_t *bbox);
+bool rb_ot_get_glyph_bbox(const rb_ttf_parser_t *ttf_parser, hb_codepoint_t glyph, hb_glyph_bbox_t *bbox);
 
-bool rb_ot_has_vorg_data(const void *rust_data);
+bool rb_ot_has_vorg_data(const rb_ttf_parser_t *ttf_parser);
 
-int rb_ot_get_y_origin(const void *rust_data, hb_codepoint_t glyph);
+int rb_ot_get_y_origin(const rb_ttf_parser_t *ttf_parser, hb_codepoint_t glyph);
 
-bool rb_ot_metrics_get_position_common(const void *rust_data,
+bool rb_ot_metrics_get_position_common(const rb_ttf_parser_t *ttf_parser,
                                        const int *coords,
                                        unsigned int coord_count,
                                        int32_t scale,
@@ -83,7 +83,7 @@ void hb_ot_get_glyph_h_advances(hb_font_t *font,
 {
     for (unsigned int i = 0; i < count; i++) {
         *first_advance = font->em_scale_x(
-            rb_font_get_advance_var(font, font->rust_data, *first_glyph, false, font->coords, font->num_coords));
+            rb_font_get_advance_var(font, font->ttf_parser, *first_glyph, false, font->coords, font->num_coords));
         first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
         first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
     }
@@ -99,7 +99,7 @@ void hb_ot_get_glyph_v_advances(hb_font_t *font,
 {
     for (unsigned int i = 0; i < count; i++) {
         *first_advance = font->em_scale_y(
-            -(int)rb_font_get_advance_var(font, font->rust_data, *first_glyph, true, font->coords, font->num_coords));
+            -(int)rb_font_get_advance_var(font, font->ttf_parser, *first_glyph, true, font->coords, font->num_coords));
         first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
         first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
     }
@@ -112,15 +112,15 @@ hb_ot_get_glyph_v_origin(hb_font_t *font, void *font_data, hb_codepoint_t glyph,
 
     *x = font->get_glyph_h_advance(glyph) / 2;
 
-    if (rb_ot_has_vorg_data(font->rust_data)) {
-        *y = font->em_scale_y(rb_ot_get_y_origin(font->rust_data, glyph));
+    if (rb_ot_has_vorg_data(font->ttf_parser)) {
+        *y = font->em_scale_y(rb_ot_get_y_origin(font->ttf_parser, glyph));
         return true;
     }
 
     hb_glyph_extents_t extents = {0};
     if (ot_face->glyf->get_extents(font, glyph, &extents)) {
         hb_position_t tsb =
-            rb_font_get_side_bearing_var(font, font->rust_data, glyph, true, font->coords, font->num_coords);
+            rb_font_get_side_bearing_var(font, font->ttf_parser, glyph, true, font->coords, font->num_coords);
         *y = extents.y_bearing + font->em_scale_y(tsb);
         return true;
     }
@@ -143,7 +143,7 @@ hb_bool_t hb_ot_get_glyph_extents(hb_font_t *font, void *font_data, hb_codepoint
         ret = ot_face->glyf->get_extents(font, glyph, extents);
     if (!ret) {
         hb_glyph_bbox_t param;
-        ret = rb_ot_get_glyph_bbox(font->rust_data, glyph, &param);
+        ret = rb_ot_get_glyph_bbox(font->ttf_parser, glyph, &param);
         if (ret) {
             if (param.min_x >= param.max_x) {
                 extents->width = 0;
@@ -170,19 +170,19 @@ hb_bool_t hb_ot_get_glyph_extents(hb_font_t *font, void *font_data, hb_codepoint
 
 hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t *metrics)
 {
-    return rb_ot_metrics_get_position_common(font->rust_data,
+    return rb_ot_metrics_get_position_common(font->ttf_parser,
                                              font->coords,
                                              font->num_coords,
                                              font->y_scale,
                                              HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER,
                                              &metrics->ascender) &&
-           rb_ot_metrics_get_position_common(font->rust_data,
+           rb_ot_metrics_get_position_common(font->ttf_parser,
                                              font->coords,
                                              font->num_coords,
                                              font->y_scale,
                                              HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER,
                                              &metrics->descender) &&
-           rb_ot_metrics_get_position_common(font->rust_data,
+           rb_ot_metrics_get_position_common(font->ttf_parser,
                                              font->coords,
                                              font->num_coords,
                                              font->y_scale,
@@ -192,19 +192,19 @@ hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t *metrics)
 
 hb_bool_t hb_ot_get_font_v_extents(hb_font_t *font, hb_font_extents_t *metrics)
 {
-    return rb_ot_metrics_get_position_common(font->rust_data,
+    return rb_ot_metrics_get_position_common(font->ttf_parser,
                                              font->coords,
                                              font->num_coords,
                                              font->x_scale,
                                              HB_OT_METRICS_TAG_VERTICAL_ASCENDER,
                                              &metrics->ascender) &&
-           rb_ot_metrics_get_position_common(font->rust_data,
+           rb_ot_metrics_get_position_common(font->ttf_parser,
                                              font->coords,
                                              font->num_coords,
                                              font->x_scale,
                                              HB_OT_METRICS_TAG_VERTICAL_DESCENDER,
                                              &metrics->descender) &&
-           rb_ot_metrics_get_position_common(font->rust_data,
+           rb_ot_metrics_get_position_common(font->ttf_parser,
                                              font->coords,
                                              font->num_coords,
                                              font->x_scale,

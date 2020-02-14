@@ -69,7 +69,7 @@ hb_shape_plan_t *hb_shape_plan_create2(hb_face_t *face,
     unsigned int variations_index[2];
     for (unsigned int table_index = 0; table_index < 2; table_index++)
         rb_ot_layout_table_find_feature_variations(
-            face->rust_data, table_tags[table_index], coords, num_coords, &variations_index[table_index]);
+            face->ttf_parser, table_tags[table_index], coords, num_coords, &variations_index[table_index]);
 
     auto res = shape_plan->init0(face, variations_index, props, user_features, num_user_features, coords, num_coords);
     if (unlikely(!res)) {

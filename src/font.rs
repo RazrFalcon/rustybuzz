@@ -1,5 +1,5 @@
 use std::convert::TryFrom;
-use std::os::raw::{c_void, c_char};
+use std::os::raw::c_char;
 use std::marker::PhantomData;
 
 use ttf_parser::{
@@ -209,21 +209,21 @@ impl<'a> Drop for Font<'a> {
 }
 
 
-fn font_from_raw(font_data: *const c_void) -> &'static ttf_parser::Font<'static> {
-    unsafe { &*(font_data as *const ttf_parser::Font) }
+pub(crate) fn ttf_parser_from_raw(ttf_parser_data: *const ffi::rb_ttf_parser_t) -> &'static ttf_parser::Font<'static> {
+    unsafe { &*(ttf_parser_data as *const ttf_parser::Font) }
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_nominal_glyph(font_data: *const c_void, c: u32, glyph: *mut u32) -> i32 {
-    match font_from_raw(font_data).glyph_index(char::try_from(c).unwrap()) {
+pub extern "C" fn rb_ot_get_nominal_glyph(ttf_parser_data: *const ffi::rb_ttf_parser_t, c: u32, glyph: *mut u32) -> i32 {
+    match ttf_parser_from_raw(ttf_parser_data).glyph_index(char::try_from(c).unwrap()) {
         Some(g) => unsafe { *glyph = g.0 as u32; 1 }
         _ => 0,
     }
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, variant: u32, glyph: *mut u32) -> i32 {
-    let font = font_from_raw(font_data);
+pub extern "C" fn rb_ot_get_variation_glyph(ttf_parser_data: *const ffi::rb_ttf_parser_t, c: u32, variant: u32, glyph: *mut u32) -> i32 {
+    let font = ttf_parser_from_raw(ttf_parser_data);
     match font.glyph_variation_index(char::try_from(c).unwrap(), char::try_from(variant).unwrap()) {
         Some(g) => unsafe { *glyph = g.0 as u32; 1 }
         _ => 0,
@@ -231,8 +231,8 @@ pub extern "C" fn rb_ot_get_variation_glyph(font_data: *const c_void, c: u32, va
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_glyph_bbox(font_data: *const c_void, glyph: u32, extents: *mut ffi::hb_glyph_bbox_t) -> i32 {
-    let font = font_from_raw(font_data);
+pub extern "C" fn rb_ot_get_glyph_bbox(ttf_parser_data: *const ffi::rb_ttf_parser_t, glyph: u32, extents: *mut ffi::hb_glyph_bbox_t) -> i32 {
+    let font = ttf_parser_from_raw(ttf_parser_data);
     match font.glyph_bounding_box(GlyphId(u16::try_from(glyph).unwrap())) {
         Some(bbox) => unsafe {
             (*extents).x_min = bbox.x_min;
@@ -246,10 +246,10 @@ pub extern "C" fn rb_ot_get_glyph_bbox(font_data: *const c_void, glyph: u32, ext
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_glyph_name(font_data: *const c_void, glyph: u32, mut raw_name: *mut c_char, len: u32) -> i32 {
+pub extern "C" fn rb_ot_get_glyph_name(ttf_parser_data: *const ffi::rb_ttf_parser_t, glyph: u32, mut raw_name: *mut c_char, len: u32) -> i32 {
     assert_ne!(len, 0);
 
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
     match font.glyph_name(GlyphId(u16::try_from(glyph).unwrap())) {
         Some(name) => unsafe {
             let len = std::cmp::min(name.len(), len as usize - 1);
@@ -268,27 +268,27 @@ pub extern "C" fn rb_ot_get_glyph_name(font_data: *const c_void, glyph: u32, mut
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_layout_has_glyph_classes(font_data: *const c_void) -> i32 {
-    font_from_raw(font_data).has_glyph_classes() as i32
+pub extern "C" fn rb_ot_layout_has_glyph_classes(ttf_parser_data: *const ffi::rb_ttf_parser_t) -> i32 {
+    ttf_parser_from_raw(ttf_parser_data).has_glyph_classes() as i32
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_glyph_class(font_data: *const c_void, glyph: u32) -> u32 {
-    match font_from_raw(font_data).glyph_class(GlyphId(u16::try_from(glyph).unwrap())) {
+pub extern "C" fn rb_ot_get_glyph_class(ttf_parser_data: *const ffi::rb_ttf_parser_t, glyph: u32) -> u32 {
+    match ttf_parser_from_raw(ttf_parser_data).glyph_class(GlyphId(u16::try_from(glyph).unwrap())) {
         Some(c) => c as u32,
         _ => 0,
     }
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_mark_attachment_class(font_data: *const c_void, glyph: u32) -> u32 {
-    let font = font_from_raw(font_data);
+pub extern "C" fn rb_ot_get_mark_attachment_class(ttf_parser_data: *const ffi::rb_ttf_parser_t, glyph: u32) -> u32 {
+    let font = ttf_parser_from_raw(ttf_parser_data);
     font.glyph_mark_attachment_class(GlyphId(u16::try_from(glyph).unwrap())).0 as u32
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_is_mark_glyph(font_data: *const c_void, set_index: u32, glyph: u32) -> i32 {
-    let font = font_from_raw(font_data);
+pub extern "C" fn rb_ot_is_mark_glyph(ttf_parser_data: *const ffi::rb_ttf_parser_t, set_index: u32, glyph: u32) -> i32 {
+    let font = ttf_parser_from_raw(ttf_parser_data);
     font.is_mark_glyph(GlyphId(u16::try_from(glyph).unwrap()), Some(set_index as u16)) as i32
 }
 
@@ -315,10 +315,10 @@ fn with_table<T, F>(font: &ttf_parser::Font, tag: Tag, f: F) -> T
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_table_get_script_count(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     table_tag: Tag,
 ) -> u32 {
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
 
     if !has_table(font, table_tag) {
         return 0;
@@ -331,14 +331,14 @@ pub extern "C" fn rb_ot_layout_table_get_script_count(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_table_select_script(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     table_tag: Tag,
     script_count: u32,
     script_tags: *const Tag,
     script_index: *mut u32,
     chosen_script: *mut Tag,
 ) -> ffi::hb_bool_t {
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
     let scripts = unsafe { std::slice::from_raw_parts(script_tags as *const _, script_count as usize) };
 
     unsafe {
@@ -397,12 +397,12 @@ pub extern "C" fn rb_ot_layout_table_select_script(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_table_find_feature(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     table_tag: Tag,
     feature_tag: Tag,
     feature_index: *mut u32,
 ) -> ffi::hb_bool_t {
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
 
     unsafe { *feature_index = 0xFFFF; }
 
@@ -422,14 +422,14 @@ pub extern "C" fn rb_ot_layout_table_find_feature(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_script_select_language(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     table_tag: Tag,
     script_index: u32,
     language_count: u32,
     language_tags: *mut Tag,
     language_index: *mut u32,
 ) -> ffi::hb_bool_t {
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
     let languages = unsafe { std::slice::from_raw_parts(language_tags as *const _, language_count as usize) };
 
     unsafe { *language_index = 0xFFFF; }
@@ -460,14 +460,14 @@ pub extern "C" fn rb_ot_layout_script_select_language(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_language_get_required_feature(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     table_tag: Tag,
     script_index: u32,
     language_index: u32,
     feature_index: *mut u32,
     feature_tag: *mut Tag,
 ) -> ffi::hb_bool_t {
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
 
     unsafe {
         *feature_index = 0xFFFF;
@@ -498,14 +498,14 @@ pub extern "C" fn rb_ot_layout_language_get_required_feature(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_language_find_feature(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     table_tag: Tag,
     script_index: u32,
     language_index: u32,
     feature_tag: Tag,
     feature_index: *mut u32,
 ) -> ffi::hb_bool_t {
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
 
     unsafe { *feature_index = 0xFFFF; }
 
@@ -536,10 +536,10 @@ pub extern "C" fn rb_ot_layout_language_find_feature(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_table_get_lookup_count(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     table_tag: Tag,
 ) -> u32 {
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
 
     if !has_table(font, table_tag) {
         return 0;
@@ -552,13 +552,13 @@ pub extern "C" fn rb_ot_layout_table_get_lookup_count(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_table_find_feature_variations(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     table_tag: Tag,
     coords: *const i32,
     num_coords: u32,
     variations_index: *mut u32,
 ) -> ffi::hb_bool_t {
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
     let coords = unsafe { std::slice::from_raw_parts(coords as *const _, num_coords as usize) };
 
     unsafe { *variations_index = 0xFFFF_FFFF; }
@@ -581,7 +581,7 @@ pub extern "C" fn rb_ot_layout_table_find_feature_variations(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     table_tag: Tag,
     feature_index: u32,
     variations_index: u32,
@@ -589,7 +589,7 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
     lookup_count: *mut u32,
     mut lookup_indexes: *mut u32,
 ) -> u32 {
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
 
     unsafe { *lookup_count = 0; }
 
@@ -625,31 +625,31 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_has_substitution(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
 ) -> ffi::hb_bool_t {
-    font_from_raw(font_data).substitution_table().is_some() as i32
+    ttf_parser_from_raw(ttf_parser_data).substitution_table().is_some() as i32
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_has_positioning(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
 ) -> ffi::hb_bool_t {
-    font_from_raw(font_data).positioning_table().is_some() as i32
+    ttf_parser_from_raw(ttf_parser_data).positioning_table().is_some() as i32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_get_var_axis_count(font_data: *const c_void) -> u16 {
-    font_from_raw(font_data).variation_axes_count().map(|n| n.get()).unwrap_or(0)
+pub extern "C" fn hb_ot_get_var_axis_count(ttf_parser_data: *const ffi::rb_ttf_parser_t) -> u16 {
+    ttf_parser_from_raw(ttf_parser_data).variation_axes_count().map(|n| n.get()).unwrap_or(0)
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_has_vorg_data(font_data: *const c_void) -> i32 {
-    font_from_raw(font_data).glyph_y_origin(GlyphId(0)).is_some() as i32
+pub extern "C" fn rb_ot_has_vorg_data(ttf_parser_data: *const ffi::rb_ttf_parser_t) -> i32 {
+    ttf_parser_from_raw(ttf_parser_data).glyph_y_origin(GlyphId(0)).is_some() as i32
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_y_origin(font_data: *const c_void, glyph: u32) -> i32 {
-    font_from_raw(font_data).glyph_y_origin(GlyphId(u16::try_from(glyph).unwrap())).unwrap_or(0) as i32
+pub extern "C" fn rb_ot_get_y_origin(ttf_parser_data: *const ffi::rb_ttf_parser_t, glyph: u32) -> i32 {
+    ttf_parser_from_raw(ttf_parser_data).glyph_y_origin(GlyphId(u16::try_from(glyph).unwrap())).unwrap_or(0) as i32
 }
 
 mod metrics {
@@ -665,7 +665,7 @@ mod metrics {
 
 #[no_mangle]
 pub unsafe extern "C" fn rb_ot_metrics_get_position_common(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     coords: *const i32,
     coord_count: u32,
     scale: i32,
@@ -674,7 +674,7 @@ pub unsafe extern "C" fn rb_ot_metrics_get_position_common(
 ) -> i32 {
     // TODO: Never executed. Add tests.
 
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
     let coords = std::slice::from_raw_parts(coords as *const _, coord_count as usize);
 
     let upem = font.units_per_em().unwrap_or(0) as f32;
@@ -710,8 +710,8 @@ pub unsafe extern "C" fn rb_ot_metrics_get_position_common(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_font_get_advance(font_data: *const c_void, glyph: u32, is_vertical: bool) -> u32 {
-    let font = font_from_raw(font_data);
+pub extern "C" fn rb_font_get_advance(ttf_parser_data: *const ffi::rb_ttf_parser_t, glyph: u32, is_vertical: bool) -> u32 {
+    let font = ttf_parser_from_raw(ttf_parser_data);
     let glyph = GlyphId(u16::try_from(glyph).unwrap());
 
     let pem = font.units_per_em().unwrap_or(1000);
@@ -726,15 +726,15 @@ pub extern "C" fn rb_font_get_advance(font_data: *const c_void, glyph: u32, is_v
 #[no_mangle]
 pub extern "C" fn rb_font_get_advance_var(
     hb_font: *mut ffi::hb_font_t,
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     hb_glyph: u32,
     is_vertical: bool,
     coords: *const i32,
     coord_count: u32,
 ) -> u32 {
-    let advance = rb_font_get_advance(font_data, hb_glyph, is_vertical);
+    let advance = rb_font_get_advance(ttf_parser_data, hb_glyph, is_vertical);
 
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
     let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
     let glyph = GlyphId(u16::try_from(hb_glyph).unwrap());
 
@@ -755,8 +755,8 @@ pub extern "C" fn rb_font_get_advance_var(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_font_get_side_bearing(font_data: *const c_void, glyph: u32, is_vertical: bool) -> i32 {
-    let font = font_from_raw(font_data);
+pub extern "C" fn rb_font_get_side_bearing(ttf_parser_data: *const ffi::rb_ttf_parser_t, glyph: u32, is_vertical: bool) -> i32 {
+    let font = ttf_parser_from_raw(ttf_parser_data);
     let glyph = GlyphId(u16::try_from(glyph).unwrap());
 
     if is_vertical {
@@ -769,15 +769,15 @@ pub extern "C" fn rb_font_get_side_bearing(font_data: *const c_void, glyph: u32,
 #[no_mangle]
 pub extern "C" fn rb_font_get_side_bearing_var(
     hb_font: *mut ffi::hb_font_t,
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     hb_glyph: u32,
     is_vertical: bool,
     coords: *const i32,
     coord_count: u32,
 ) -> i32 {
-    let side_bearing = rb_font_get_side_bearing(font_data, hb_glyph, is_vertical);
+    let side_bearing = rb_font_get_side_bearing(ttf_parser_data, hb_glyph, is_vertical);
 
-    let font = font_from_raw(font_data);
+    let font = ttf_parser_from_raw(ttf_parser_data);
     let coords = unsafe { std::slice::from_raw_parts(coords as *const _, coord_count as usize) };
     let glyph = GlyphId(u16::try_from(hb_glyph).unwrap());
 
@@ -797,16 +797,16 @@ pub extern "C" fn rb_font_get_side_bearing_var(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_face_get_glyph_count(font_data: *const c_void) -> u32 {
-    font_from_raw(font_data).number_of_glyphs() as u32
+pub extern "C" fn rb_face_get_glyph_count(ttf_parser_data: *const ffi::rb_ttf_parser_t) -> u32 {
+    ttf_parser_from_raw(ttf_parser_data).number_of_glyphs() as u32
 }
 
 #[no_mangle]
-pub extern "C" fn rb_face_get_upem(font_data: *const c_void) -> u32 {
-    font_from_raw(font_data).units_per_em().unwrap_or(1000) as u32
+pub extern "C" fn rb_face_get_upem(ttf_parser_data: *const ffi::rb_ttf_parser_t) -> u32 {
+    ttf_parser_from_raw(ttf_parser_data).units_per_em().unwrap_or(1000) as u32
 }
 
 #[no_mangle]
-pub extern "C" fn rb_face_index_to_loc_format(font_data: *const c_void) -> u32 {
-    font_from_raw(font_data).index_to_location_format().map(|f| f as u32).unwrap_or(0)
+pub extern "C" fn rb_face_index_to_loc_format(ttf_parser_data: *const ffi::rb_ttf_parser_t) -> u32 {
+    ttf_parser_from_raw(ttf_parser_data).index_to_location_format().map(|f| f as u32).unwrap_or(0)
 }

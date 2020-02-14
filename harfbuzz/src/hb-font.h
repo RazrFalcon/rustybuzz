@@ -81,46 +81,17 @@ HB_EXTERN hb_bool_t hb_font_get_glyph(hb_font_t *font,
 
 /* Fonts are very light-weight objects */
 
-HB_EXTERN hb_font_t *hb_font_create(hb_face_t *face, const void *rust_data);
-
-HB_EXTERN hb_font_t *hb_font_create_sub_font(hb_font_t *parent);
+HB_EXTERN hb_font_t *hb_font_create(hb_face_t *face, const rb_ttf_parser_t *ttf_parser);
 
 HB_EXTERN hb_font_t *hb_font_get_empty(void);
 
-HB_EXTERN hb_font_t *hb_font_reference(hb_font_t *font);
-
 HB_EXTERN void hb_font_destroy(hb_font_t *font);
-
-HB_EXTERN void hb_font_make_immutable(hb_font_t *font);
-
-HB_EXTERN hb_bool_t hb_font_is_immutable(hb_font_t *font);
-
-HB_EXTERN void hb_font_set_parent(hb_font_t *font, hb_font_t *parent);
-
-HB_EXTERN hb_font_t *hb_font_get_parent(hb_font_t *font);
-
-HB_EXTERN void hb_font_set_face(hb_font_t *font, hb_face_t *face);
-
-HB_EXTERN hb_face_t *hb_font_get_face(hb_font_t *font);
 
 HB_EXTERN void hb_font_set_scale(hb_font_t *font, int x_scale, int y_scale);
 
 HB_EXTERN void hb_font_get_scale(hb_font_t *font, int *x_scale, int *y_scale);
 
-/*
- * A zero value means "no hinting in that direction"
- */
-HB_EXTERN void hb_font_set_ppem(hb_font_t *font, unsigned int x_ppem, unsigned int y_ppem);
-
-HB_EXTERN void hb_font_get_ppem(hb_font_t *font, unsigned int *x_ppem, unsigned int *y_ppem);
-
-/*
- * Point size per EM.  Used for optical-sizing in CoreText.
- * A value of zero means "not set".
- */
 HB_EXTERN void hb_font_set_ptem(hb_font_t *font, float ptem);
-
-HB_EXTERN float hb_font_get_ptem(hb_font_t *font);
 
 HB_EXTERN void hb_font_set_variations(hb_font_t *font, const int *coords, unsigned int coords_length);
 
@@ -128,19 +99,19 @@ HB_EXTERN const int *hb_font_get_var_coords_normalized(hb_font_t *font, unsigned
 
 HB_EXTERN bool hb_font_get_glyph_extents(hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents);
 
-HB_EXTERN unsigned rb_font_get_advance(const void *rust_data, hb_codepoint_t glyph, hb_bool_t is_vertical);
+HB_EXTERN unsigned rb_font_get_advance(const rb_ttf_parser_t *ttf_parser, hb_codepoint_t glyph, hb_bool_t is_vertical);
 
 HB_EXTERN unsigned rb_font_get_advance_var(hb_font_t *font,
-                                           const void *rust_data,
+                                           const rb_ttf_parser_t *ttf_parser,
                                            hb_codepoint_t glyph,
                                            hb_bool_t is_vertical,
                                            const int *coords,
                                            unsigned int coord_count);
 
-HB_EXTERN int rb_font_get_side_bearing(const void *rust_data, hb_codepoint_t glyph, hb_bool_t is_vertical);
+HB_EXTERN int rb_font_get_side_bearing(const rb_ttf_parser_t *ttf_parser, hb_codepoint_t glyph, hb_bool_t is_vertical);
 
 HB_EXTERN int rb_font_get_side_bearing_var(hb_font_t *font,
-                                           const void *rust_data,
+                                           const rb_ttf_parser_t *ttf_parser,
                                            hb_codepoint_t glyph,
                                            hb_bool_t is_vertical,
                                            const int *coords,
@@ -150,11 +121,11 @@ HB_EXTERN unsigned hb_ot_glyf_get_advance_var(hb_font_t *font, hb_codepoint_t gl
 
 HB_EXTERN int hb_ot_glyf_get_side_bearing_var(hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical);
 
-HB_EXTERN unsigned int rb_face_get_glyph_count(const void *rust_data);
+HB_EXTERN unsigned int rb_face_get_glyph_count(const rb_ttf_parser_t *ttf_parser);
 
-HB_EXTERN unsigned int rb_face_get_upem(const void *rust_data);
+HB_EXTERN unsigned int rb_face_get_upem(const rb_ttf_parser_t *ttf_parser);
 
-HB_EXTERN unsigned int rb_face_index_to_loc_format(const void *rust_data);
+HB_EXTERN unsigned int rb_face_index_to_loc_format(const rb_ttf_parser_t *ttf_parser);
 
 HB_EXTERN hb_position_t hb_font_get_glyph_h_advance_default(hb_font_t *font, hb_codepoint_t glyph);
 

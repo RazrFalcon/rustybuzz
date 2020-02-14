@@ -42,13 +42,13 @@ void* rb_complex_indic_data_create(const rb_ot_map_t *map, hb_tag_t script);
 void rb_complex_indic_data_destroy(void *data);
 bool rb_complex_indic_decompose(const indic_shape_plan_t *indic_plan,
                                 hb_face_t *face,
-                                const void *rust_data,
+                                const rb_ttf_parser_t *ttf_parser,
                                 hb_codepoint_t ab,
                                 hb_codepoint_t *a,
                                 hb_codepoint_t *b);
 bool rb_complex_indic_compose(hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab);
 void rb_indic_setup_masks(rb_buffer_t *buffer);
-void rb_complex_indic_initial_reordering(const void *rust_data,
+void rb_complex_indic_initial_reordering(const rb_ttf_parser_t *ttf_parser,
                                          hb_face_t *face,
                                          indic_shape_plan_t *indic_plan,
                                          rb_buffer_t *buffer);
@@ -92,7 +92,7 @@ void hb_complex_indic_setup_syllables(const hb_shape_plan_t *plan HB_UNUSED,
 void hb_complex_indic_initial_reordering(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
     indic_shape_plan_t *indic_plan = (indic_shape_plan_t *)plan->data;
-    rb_complex_indic_initial_reordering(font->rust_data, font->face, indic_plan, buffer);
+    rb_complex_indic_initial_reordering(font->ttf_parser, font->face, indic_plan, buffer);
 }
 
 void hb_complex_indic_final_reordering(const hb_shape_plan_t *plan, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer)
@@ -110,7 +110,7 @@ static bool
 decompose_indic(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b)
 {
     const indic_shape_plan_t *indic_plan = (const indic_shape_plan_t *)c->plan->data;
-    return rb_complex_indic_decompose(indic_plan, c->font->face, c->font->rust_data, ab, a, b);
+    return rb_complex_indic_decompose(indic_plan, c->font->face, c->font->ttf_parser, ab, a, b);
 }
 
 static bool

@@ -42,9 +42,11 @@ HB_EXTERN unsigned int hb_face_count(hb_blob_t *blob);
  * hb_face_t
  */
 
+typedef struct rb_ttf_parser_t rb_ttf_parser_t;
+
 typedef struct hb_face_t hb_face_t;
 
-HB_EXTERN hb_face_t *hb_face_create(hb_blob_t *blob, const void *rust_data, unsigned int index);
+HB_EXTERN hb_face_t *hb_face_create(hb_blob_t *blob, const rb_ttf_parser_t *ttf_parser, unsigned int index);
 
 typedef hb_blob_t *(*hb_reference_table_func_t)(hb_face_t *face, hb_tag_t tag, void *user_data);
 

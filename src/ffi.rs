@@ -161,6 +161,12 @@ pub type pause_func_t = Option<
 >;
 
 #[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct rb_ttf_parser_t {
+    _unused: [u8; 0],
+}
+
+#[repr(C)]
 #[derive(Copy, Clone)]
 pub union hb_var_int_t {
     pub var_u32: u32,

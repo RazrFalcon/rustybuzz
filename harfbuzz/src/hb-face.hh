@@ -45,7 +45,7 @@ struct hb_face_t
     void *user_data;
     hb_destroy_func_t destroy;
 
-    const void *rust_data;
+    const rb_ttf_parser_t *ttf_parser;
 
     unsigned int index;                 /* Face index in a collection, zero-based. */
     mutable hb_atomic_int_t upem;       /* Units-per-EM. */

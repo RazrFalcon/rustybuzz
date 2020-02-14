@@ -37,7 +37,7 @@
 #define HB_OT_TAG_gvar HB_TAG('g', 'v', 'a', 'r')
 
 extern "C" {
-uint16_t hb_ot_get_var_axis_count(const void *rust_data);
+uint16_t hb_ot_get_var_axis_count(const rb_ttf_parser_t *ttf_parser);
 }
 
 namespace OT {
@@ -482,7 +482,7 @@ public:
         {
             gvar_table = hb_sanitize_context_t().reference_table<gvar>(face);
             if (unlikely((gvar_table->glyphCount != hb_face_get_glyph_count(face)) ||
-                         (gvar_table->axisCount != hb_ot_get_var_axis_count(face->rust_data))))
+                         (gvar_table->axisCount != hb_ot_get_var_axis_count(face->ttf_parser))))
                 fini();
 
             unsigned int num_shared_coord = gvar_table->sharedTupleCount * gvar_table->axisCount;

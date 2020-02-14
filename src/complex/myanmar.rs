@@ -1,5 +1,3 @@
-use std::os::raw::c_void;
-
 use crate::{Tag, Buffer, GlyphInfo};
 use crate::buffer::BufferFlags;
 use crate::opentype::{MapBuilder, FeatureFlags};
@@ -376,10 +374,10 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
 
 #[no_mangle]
 pub extern "C" fn rb_complex_myanmar_reorder(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
     let buffer = Buffer::from_ptr_mut(buffer);
     insert_dotted_circles(font, buffer);
 

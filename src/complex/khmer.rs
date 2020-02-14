@@ -378,14 +378,14 @@ fn reorder_syllable(
 #[no_mangle]
 pub extern "C" fn rb_complex_khmer_reorder(
     plan: *const c_void,
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = unsafe { &*(plan as *const KhmerShapePlan) };
     let buffer = Buffer::from_ptr_mut(buffer);
 
     insert_dotted_circles(
-        unsafe { &*(font_data as *const ttf_parser::Font) },
+        crate::font::ttf_parser_from_raw(ttf_parser_data),
         buffer,
     );
 

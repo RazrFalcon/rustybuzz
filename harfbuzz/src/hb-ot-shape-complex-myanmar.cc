@@ -36,7 +36,7 @@ void rb_complex_myanmar_override_features(rb_ot_map_builder_t *map);
 void rb_complex_myanmar_set_properties(hb_glyph_info_t *info);
 void rb_complex_myanmar_setup_syllables(rb_buffer_t *buffer);
 void rb_complex_myanmar_setup_masks(rb_buffer_t *buffer);
-void rb_complex_myanmar_reorder(const void *rust_data, rb_buffer_t *buffer);
+void rb_complex_myanmar_reorder(const rb_ttf_parser_t *ttf_parser, rb_buffer_t *buffer);
 }
 
 static void collect_features_myanmar(hb_ot_shape_planner_t *plan)
@@ -62,7 +62,7 @@ void hb_complex_myanmar_setup_syllables(const hb_shape_plan_t *plan HB_UNUSED, h
 
 void hb_complex_myanmar_reorder(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
-    rb_complex_myanmar_reorder(font->rust_data, buffer);
+    rb_complex_myanmar_reorder(font->ttf_parser, buffer);
 }
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_myanmar = {

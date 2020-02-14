@@ -48,13 +48,13 @@
  **/
 
 extern "C" {
-  hb_bool_t rb_ot_get_nominal_glyph (const void *rust_data, hb_codepoint_t unicode,
+  hb_bool_t rb_ot_get_nominal_glyph (const rb_ttf_parser_t *ttf_parser, hb_codepoint_t unicode,
                                      hb_codepoint_t *glyph);
 
-  hb_bool_t rb_ot_get_variation_glyph (const void *rust_data, hb_codepoint_t unicode,
+  hb_bool_t rb_ot_get_variation_glyph (const rb_ttf_parser_t *ttf_parser, hb_codepoint_t unicode,
                                        hb_codepoint_t variation_selector, hb_codepoint_t *glyph);
 
-  hb_bool_t rb_ot_get_glyph_name (const void *rust_data, hb_codepoint_t glyph,
+  hb_bool_t rb_ot_get_glyph_name (const rb_ttf_parser_t *ttf_parser, hb_codepoint_t glyph,
                                   char *name, unsigned int len);
 }
 
@@ -181,55 +181,11 @@ _hb_font_create (hb_face_t *face)
  * Since: 0.9.2
  **/
 hb_font_t *
-hb_font_create (hb_face_t *face, const void *rust_data)
+hb_font_create (hb_face_t *face, const rb_ttf_parser_t *ttf_parser)
 {
   hb_font_t *font = _hb_font_create (face);
-  font->rust_data = rust_data;
+  font->ttf_parser = ttf_parser;
   font->user_data = &font->face->table;
-  return font;
-}
-
-/**
- * hb_font_create_sub_font:
- * @parent: parent font.
- *
- *
- *
- * Return value: (transfer full):
- *
- * Since: 0.9.2
- **/
-hb_font_t *
-hb_font_create_sub_font (hb_font_t *parent)
-{
-  if (unlikely (!parent))
-    parent = hb_font_get_empty ();
-
-  hb_font_t *font = _hb_font_create (parent->face);
-
-  if (unlikely (hb_object_is_immutable (font)))
-    return font;
-
-  font->parent = hb_font_reference (parent);
-
-  font->x_scale = parent->x_scale;
-  font->y_scale = parent->y_scale;
-  font->mults_changed ();
-  font->x_ppem = parent->x_ppem;
-  font->y_ppem = parent->y_ppem;
-  font->ptem = parent->ptem;
-
-  font->num_coords = parent->num_coords;
-  if (font->num_coords)
-  {
-    unsigned int size = parent->num_coords * sizeof (parent->coords[0]);
-    font->coords = (int *) malloc (size);
-    if (unlikely (!font->coords))
-      font->num_coords = 0;
-    else
-      memcpy (font->coords, parent->coords, size);
-  }
-
   return font;
 }
 
@@ -246,22 +202,6 @@ hb_font_t *
 hb_font_get_empty ()
 {
   return const_cast<hb_font_t *> (&Null(hb_font_t));
-}
-
-/**
- * hb_font_reference: (skip)
- * @font: a font.
- *
- *
- *
- * Return value: (transfer full):
- *
- * Since: 0.9.2
- **/
-hb_font_t *
-hb_font_reference (hb_font_t *font)
-{
-  return hb_object_reference (font);
 }
 
 /**
@@ -286,128 +226,6 @@ hb_font_destroy (hb_font_t *font)
   free (font->coords);
 
   free (font);
-}
-
-/**
- * hb_font_make_immutable:
- * @font: a font.
- *
- *
- *
- * Since: 0.9.2
- **/
-void
-hb_font_make_immutable (hb_font_t *font)
-{
-  if (hb_object_is_immutable (font))
-    return;
-
-  if (font->parent)
-    hb_font_make_immutable (font->parent);
-
-  hb_object_make_immutable (font);
-}
-
-/**
- * hb_font_is_immutable:
- * @font: a font.
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_bool_t
-hb_font_is_immutable (hb_font_t *font)
-{
-  return hb_object_is_immutable (font);
-}
-
-/**
- * hb_font_set_parent:
- * @font: a font.
- * @parent: new parent.
- *
- * Sets parent font of @font.
- *
- * Since: 1.0.5
- **/
-void
-hb_font_set_parent (hb_font_t *font,
-            hb_font_t *parent)
-{
-  if (hb_object_is_immutable (font))
-    return;
-
-  if (!parent)
-    parent = hb_font_get_empty ();
-
-  hb_font_t *old = font->parent;
-
-  font->parent = hb_font_reference (parent);
-
-  hb_font_destroy (old);
-}
-
-/**
- * hb_font_get_parent:
- * @font: a font.
- *
- *
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.2
- **/
-hb_font_t *
-hb_font_get_parent (hb_font_t *font)
-{
-  return font->parent;
-}
-
-/**
- * hb_font_set_face:
- * @font: a font.
- * @face: new face.
- *
- * Sets font-face of @font.
- *
- * Since: 1.4.3
- **/
-void
-hb_font_set_face (hb_font_t *font,
-          hb_face_t *face)
-{
-  if (hb_object_is_immutable (font))
-    return;
-
-  if (unlikely (!face))
-    face = hb_face_get_empty ();
-
-  hb_face_t *old = font->face;
-
-  hb_face_make_immutable (face);
-  font->face = hb_face_reference (face);
-  font->mults_changed ();
-
-  hb_face_destroy (old);
-}
-
-/**
- * hb_font_get_face:
- * @font: a font.
- *
- *
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.2
- **/
-hb_face_t *
-hb_font_get_face (hb_font_t *font)
-{
-  return font->face;
 }
 
 /**
@@ -453,47 +271,6 @@ hb_font_get_scale (hb_font_t *font,
 }
 
 /**
- * hb_font_set_ppem:
- * @font: a font.
- * @x_ppem:
- * @y_ppem:
- *
- *
- *
- * Since: 0.9.2
- **/
-void
-hb_font_set_ppem (hb_font_t *font,
-          unsigned int x_ppem,
-          unsigned int y_ppem)
-{
-  if (hb_object_is_immutable (font))
-    return;
-
-  font->x_ppem = x_ppem;
-  font->y_ppem = y_ppem;
-}
-
-/**
- * hb_font_get_ppem:
- * @font: a font.
- * @x_ppem: (out):
- * @y_ppem: (out):
- *
- *
- *
- * Since: 0.9.2
- **/
-void
-hb_font_get_ppem (hb_font_t *font,
-          unsigned int *x_ppem,
-          unsigned int *y_ppem)
-{
-  if (x_ppem) *x_ppem = font->x_ppem;
-  if (y_ppem) *y_ppem = font->y_ppem;
-}
-
-/**
  * hb_font_set_ptem:
  * @font: a font.
  * @ptem: font size in points.
@@ -511,22 +288,6 @@ hb_font_set_ptem (hb_font_t *font, float ptem)
     return;
 
   font->ptem = ptem;
-}
-
-/**
- * hb_font_get_ptem:
- * @font: a font.
- *
- * Gets the "point size" of the font.  A value of 0 means unset.
- *
- * Return value: Point size.
- *
- * Since: 0.9.2
- **/
-float
-hb_font_get_ptem (hb_font_t *font)
-{
-  return font->ptem;
 }
 
 /*
@@ -585,7 +346,7 @@ hb_bool_t hb_font_t::get_font_h_extents (hb_font_extents_t *extents)
 hb_bool_t hb_font_t::get_nominal_glyph (hb_codepoint_t unicode, hb_codepoint_t *glyph)
 {
   *glyph = 0;
-  return rb_ot_get_nominal_glyph (rust_data, unicode, glyph);
+  return rb_ot_get_nominal_glyph (ttf_parser, unicode, glyph);
 }
 
 unsigned int hb_font_t::get_nominal_glyphs (unsigned int count, const hb_codepoint_t *first_unicode,
@@ -594,7 +355,7 @@ unsigned int hb_font_t::get_nominal_glyphs (unsigned int count, const hb_codepoi
 {
   uint i = 0;
   for (; i < count; ++i) {
-    if (!rb_ot_get_nominal_glyph (rust_data, *first_unicode, first_glyph)) {
+    if (!rb_ot_get_nominal_glyph (ttf_parser, *first_unicode, first_glyph)) {
       break;
     }
 
@@ -609,7 +370,7 @@ hb_bool_t hb_font_t::get_variation_glyph (hb_codepoint_t unicode, hb_codepoint_t
                                           hb_codepoint_t *glyph)
 {
   *glyph = 0;
-  return rb_ot_get_variation_glyph (rust_data, unicode, variation_selector, glyph);
+  return rb_ot_get_variation_glyph (ttf_parser, unicode, variation_selector, glyph);
 }
 
 hb_position_t hb_font_t::get_glyph_h_advance (hb_codepoint_t glyph)
@@ -668,7 +429,7 @@ hb_bool_t hb_font_t::get_glyph_name (hb_codepoint_t glyph, char *name, unsigned 
 {
   if (!size) return false;
   if (size) *name = '\0';
-  return rb_ot_get_glyph_name (rust_data, glyph, name, size);
+  return rb_ot_get_glyph_name (ttf_parser, glyph, name, size);
 }
 
 bool hb_font_get_glyph_extents(hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents)

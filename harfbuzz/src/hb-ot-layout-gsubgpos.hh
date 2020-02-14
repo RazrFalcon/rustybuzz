@@ -37,7 +37,7 @@
 #include "hb.hh"
 
 extern "C" {
-hb_bool_t rb_ot_is_mark_glyph(const void *rust_data, unsigned int set_index, hb_codepoint_t glyph);
+hb_bool_t rb_ot_is_mark_glyph(const rb_ttf_parser_t *ttf_parser, unsigned int set_index, hb_codepoint_t glyph);
 }
 
 namespace OT {
@@ -568,7 +568,7 @@ struct hb_ot_apply_context_t : hb_dispatch_context_t<hb_ot_apply_context_t, bool
         , lookup_props(0)
         , nesting_level_left(HB_MAX_NESTING_LEVEL)
         , debug_depth(0)
-        , has_glyph_classes(rb_ot_layout_has_glyph_classes(font->rust_data))
+        , has_glyph_classes(rb_ot_layout_has_glyph_classes(font->ttf_parser))
         , auto_zwnj(true)
         , auto_zwj(true)
         , random(false)
@@ -629,7 +629,7 @@ struct hb_ot_apply_context_t : hb_dispatch_context_t<hb_ot_apply_context_t, bool
          * match_props has the set index.
          */
         if (match_props & LookupFlag::UseMarkFilteringSet)
-            return rb_ot_is_mark_glyph(face->rust_data, match_props >> 16, glyph);
+            return rb_ot_is_mark_glyph(face->ttf_parser, match_props >> 16, glyph);
 
         /* The second byte of match_props has the meaning
          * "ignore marks of attachment type different than

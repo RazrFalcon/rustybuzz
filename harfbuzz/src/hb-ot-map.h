@@ -76,13 +76,13 @@ void hb_ot_layout_position(const rb_ot_map_t *map, const hb_shape_plan_t *plan, 
 
 // Builder
 
-HB_EXTERN rb_ot_map_builder_t *rb_ot_map_builder_init(const void *rust_data, const hb_segment_properties_t *props_);
+HB_EXTERN rb_ot_map_builder_t *rb_ot_map_builder_init(const rb_ttf_parser_t *ttf_parser, const hb_segment_properties_t *props_);
 
 HB_EXTERN void rb_ot_map_builder_fini(rb_ot_map_builder_t *builder);
 
 HB_EXTERN void rb_ot_map_builder_compile(rb_ot_map_builder_t *builder,
                                          rb_ot_map_t *m,
-                                         const void *rust_data,
+                                         const rb_ttf_parser_t *ttf_parser,
                                          unsigned int *variations_index);
 
 HB_EXTERN void rb_ot_map_builder_add_feature(rb_ot_map_builder_t *builder,

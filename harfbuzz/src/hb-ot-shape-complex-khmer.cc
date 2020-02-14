@@ -40,7 +40,7 @@ void rb_complex_khmer_collect_features(rb_ot_map_builder_t *map);
 void rb_complex_khmer_override_features(rb_ot_map_builder_t *map);
 bool rb_complex_khmer_decompose(hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b);
 bool rb_complex_khmer_compose(hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab);
-void rb_complex_khmer_reorder(const khmer_shape_plan_t *plan, const void *rust_data, rb_buffer_t *buffer);
+void rb_complex_khmer_reorder(const khmer_shape_plan_t *plan, const rb_ttf_parser_t *ttf_parser, rb_buffer_t *buffer);
 void rb_complex_khmer_setup_masks(rb_buffer_t *buffer);
 void rb_complex_khmer_setup_syllables(rb_buffer_t *buffer);
 }
@@ -80,7 +80,7 @@ hb_complex_khmer_setup_syllables(const hb_shape_plan_t *plan HB_UNUSED, hb_font_
 void hb_complex_khmer_reorder(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
     const khmer_shape_plan_t *khmer_plan = (const khmer_shape_plan_t *)plan->data;
-    rb_complex_khmer_reorder(khmer_plan, font->rust_data, buffer);
+    rb_complex_khmer_reorder(khmer_plan, font->ttf_parser, buffer);
 }
 
 static bool

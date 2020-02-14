@@ -181,7 +181,7 @@ static hb_blob_t *_hb_face_for_data_reference_table(hb_face_t *face HB_UNUSED, h
  *
  * Since: 0.9.2
  **/
-hb_face_t *hb_face_create(hb_blob_t *blob, const void *rust_data, unsigned int index)
+hb_face_t *hb_face_create(hb_blob_t *blob, const rb_ttf_parser_t *ttf_parser, unsigned int index)
 {
     hb_face_t *face;
 
@@ -197,7 +197,7 @@ hb_face_t *hb_face_create(hb_blob_t *blob, const void *rust_data, unsigned int i
     face = hb_face_create_for_tables(_hb_face_for_data_reference_table, closure, _hb_face_for_data_closure_destroy);
 
     face->index = index;
-    face->rust_data = rust_data;
+    face->ttf_parser = ttf_parser;
 
     return face;
 }
@@ -346,7 +346,7 @@ void hb_face_set_upem(hb_face_t *face, unsigned int upem)
  **/
 unsigned int hb_face_get_upem(const hb_face_t *face)
 {
-    return rb_face_get_upem(face->rust_data);
+    return rb_face_get_upem(face->ttf_parser);
 }
 
 /**
@@ -361,7 +361,7 @@ unsigned int hb_face_get_upem(const hb_face_t *face)
  **/
 unsigned int hb_face_get_glyph_count(const hb_face_t *face)
 {
-    return rb_face_get_glyph_count(face->rust_data);
+    return rb_face_get_glyph_count(face->ttf_parser);
 }
 
 /*

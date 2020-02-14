@@ -1239,12 +1239,12 @@ pub extern "C" fn rb_complex_indic_final_reordering(
 
 #[no_mangle]
 pub extern "C" fn rb_complex_indic_initial_reordering(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     face: *mut ffi::hb_face_t,
     indic_plan: *mut c_void,
     buffer: *mut ffi::rb_buffer_t,
 ) {
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
     let plan = unsafe { &mut *(indic_plan as *mut IndicShapePlan) };
     let buffer = Buffer::from_ptr_mut(buffer);
 
@@ -1279,13 +1279,13 @@ pub extern "C" fn rb_complex_indic_setup_syllables(buffer: *mut ffi::rb_buffer_t
 pub extern "C" fn rb_complex_indic_decompose(
     indic_plan: *const c_void,
     face: *mut ffi::hb_face_t,
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     ab: CodePoint,
     a: *mut CodePoint,
     b: *mut CodePoint,
 ) -> bool {
     let plan = unsafe { &*(indic_plan as *const IndicShapePlan) };
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
 
     // Don't decompose these.
     match ab {

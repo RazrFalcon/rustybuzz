@@ -58,7 +58,7 @@ struct hb_font_t
     unsigned int num_coords;
     int *coords;
 
-    const void *rust_data;
+    const rb_ttf_parser_t *ttf_parser;
     void *user_data;
     hb_destroy_func_t destroy;
 

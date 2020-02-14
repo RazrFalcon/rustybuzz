@@ -66,15 +66,15 @@ static inline bool _hb_apply_morx(hb_face_t *face)
         return true;
 
     /* Ignore empty GSUB tables. */
-    return (!rb_ot_layout_has_substitution(face->rust_data) ||
-            !rb_ot_layout_table_get_script_count(face->rust_data, HB_OT_TAG_GSUB)) &&
+    return (!rb_ot_layout_has_substitution(face->ttf_parser) ||
+            !rb_ot_layout_table_get_script_count(face->ttf_parser, HB_OT_TAG_GSUB)) &&
            hb_aat_layout_has_substitution(face);
 }
 
 hb_ot_shape_planner_t::hb_ot_shape_planner_t(hb_face_t *face, const hb_segment_properties_t *props)
     : face(face)
     , props(*props)
-    , map(rb_ot_map_builder_init(face->rust_data, props))
+    , map(rb_ot_map_builder_init(face->ttf_parser, props))
     , aat_map(face, props)
     , apply_morx(_hb_apply_morx(face))
 {
@@ -96,7 +96,7 @@ void hb_ot_shape_planner_t::compile(hb_shape_plan_t &plan, unsigned int *variati
 {
     plan.props = props;
     plan.shaper = shaper;
-    rb_ot_map_builder_compile(map, plan.map, face->rust_data, variations_index);
+    rb_ot_map_builder_compile(map, plan.map, face->ttf_parser, variations_index);
     if (apply_morx)
         aat_map.compile(plan.aat_map);
 
@@ -120,7 +120,7 @@ void hb_ot_shape_planner_t::compile(hb_shape_plan_t &plan, unsigned int *variati
      * Decide who provides glyph classes. GDEF or Unicode.
      */
 
-    if (!rb_ot_layout_has_glyph_classes(face->rust_data))
+    if (!rb_ot_layout_has_glyph_classes(face->ttf_parser))
         plan.fallback_glyph_classes = true;
 
     /*
@@ -137,7 +137,7 @@ void hb_ot_shape_planner_t::compile(hb_shape_plan_t &plan, unsigned int *variati
         ;
     else if (hb_options().aat && hb_aat_layout_has_positioning(face))
         plan.apply_kerx = true;
-    else if (!apply_morx && !disable_gpos && rb_ot_layout_has_positioning(face->rust_data))
+    else if (!apply_morx && !disable_gpos && rb_ot_layout_has_positioning(face->ttf_parser))
         plan.apply_gpos = true;
     else if (hb_aat_layout_has_positioning(face))
         plan.apply_kerx = true;

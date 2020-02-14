@@ -1,5 +1,4 @@
 use std::cmp;
-use std::os::raw::c_void;
 
 use crate::ffi;
 
@@ -742,12 +741,12 @@ pub fn get_stage_lookups(map: &Map, table_index: u32, stage: u32) -> Vec<MapLook
 
 #[no_mangle]
 pub extern "C" fn rb_ot_map_builder_init(
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     props: *const ffi::hb_segment_properties_t,
 ) -> *mut ffi::rb_ot_map_builder_t {
     use std::str::FromStr;
 
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
 
     let props = unsafe {
         let lang = if (*props).language != std::ptr::null() {
@@ -783,10 +782,10 @@ pub extern "C" fn rb_ot_map_builder_fini(builder: *mut ffi::rb_ot_map_builder_t)
 pub extern "C" fn rb_ot_map_builder_compile(
     builder: *mut ffi::rb_ot_map_builder_t,
     map: *mut ffi::rb_ot_map_t,
-    font_data: *const c_void,
+    ttf_parser_data: *const ffi::rb_ttf_parser_t,
     variations_index: *const FeatureVariationIndex,
 ) {
-    let font = unsafe { &*(font_data as *const ttf_parser::Font) };
+    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
     let builder = MapBuilder::from_ptr_mut(builder);
     let map = unsafe { &mut *(map as *mut Map) };
     let variations = unsafe { std::slice::from_raw_parts(variations_index as *const _, 2) };
