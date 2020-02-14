@@ -4,10 +4,10 @@ use std::cmp;
 
 use crate::{Mask, Tag, Script, CodePoint, Buffer, GlyphInfo, script};
 use crate::buffer::BufferFlags;
-use crate::opentype::{Map, MapBuilder, MapLookup, FeatureFlags, get_stage_lookups};
+use crate::opentype::{Map, MapBuilder, FeatureFlags};
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use crate::ffi;
-use super::{hb_flag_unsafe, hb_flag, hb_flag_range};
+use super::{hb_flag_unsafe, hb_flag, hb_flag_range, WouldSubstituteFeature};
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, PartialEq)]
@@ -32,6 +32,9 @@ pub enum Category {
     CM = 17, // Consonant-Medial.
     Symbol = 18, // Avagraha, etc that take marks (SM,A,VD).
     CS = 19,
+    Robatic = 20,
+    Xgroup = 21,
+    Ygroup = 22,
     // The following are used by Khmer & Myanmar shapers.  Defined here for them to share.
     VAbv = 26,
     VBlw = 27,
@@ -228,12 +231,6 @@ extern "C" {
         font: *mut ffi::hb_font_t,
         buffer: *mut ffi::rb_buffer_t,
     );
-
-    fn hb_layout_clear_syllables(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
 }
 
 impl GlyphInfo {
@@ -244,7 +241,7 @@ impl GlyphInfo {
         }
     }
 
-    fn set_indic_category(&mut self, c: Category) {
+    pub(crate) fn set_indic_category(&mut self, c: Category) {
         unsafe {
             let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
             v.var_u8[2] = c as u8;
@@ -451,8 +448,7 @@ fn matra_position_indic(u: CodePoint, side: Position) -> Position {
         }
     }
 
-    match side
-    {
+    match side {
         Position::PreC => Position::PreM,
         Position::PostC => matra_pos_right(u),
         Position::AboveC => matra_pos_top(u),
@@ -489,7 +485,7 @@ pub extern "C" fn rb_complex_indic_collect_features(builder: *mut ffi::rb_ot_map
     builder.enable_feature(Tag::from_bytes(b"calt"), FeatureFlags::default(), 1);
     builder.enable_feature(Tag::from_bytes(b"clig"), FeatureFlags::default(), 1);
 
-    builder.add_gsub_pause(Some(hb_layout_clear_syllables));
+    builder.add_gsub_pause(Some(super::hb_layout_clear_syllables));
 }
 
 #[no_mangle]
@@ -611,40 +607,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
     ),
 ];
 
-struct WouldSubstituteFeature {
-    lookups: Vec<MapLookup>,
-    zero_context: bool,
-}
-
-impl WouldSubstituteFeature {
-    fn new(map: &Map, feature_tag: Tag, zero_context: bool) -> Self {
-        WouldSubstituteFeature {
-            lookups: get_stage_lookups(map, 0, map.feature_stage(0, feature_tag)),
-            zero_context
-        }
-    }
-
-    fn would_substitute(&self, glyphs: &[CodePoint], face: *mut ffi::hb_face_t) -> bool {
-        for lookup in &self.lookups {
-            unsafe {
-                let ok = ffi::hb_ot_layout_lookup_would_substitute(
-                    face,
-                    lookup.index.0 as u32,
-                    glyphs.as_ptr() as *const _,
-                    glyphs.len() as u32,
-                    self.zero_context as i32,
-                );
-
-                if ok != 0 {
-                    return true;
-                }
-            }
-        }
-
-        false
-    }
-}
-
 struct IndicShapePlan {
     config: IndicConfig,
     is_old_spec: bool,
@@ -690,7 +652,7 @@ impl IndicShapePlan {
             config,
             is_old_spec,
             uniscribe_bug_compatible: false,
-            virama_glyph: 0,
+            virama_glyph: std::u32::MAX,
             rphf: WouldSubstituteFeature::new(map, Tag::from_bytes(b"rphf"), zero_context),
             pref: WouldSubstituteFeature::new(map, Tag::from_bytes(b"pref"), zero_context),
             blwf: WouldSubstituteFeature::new(map, Tag::from_bytes(b"blwf"), zero_context),
@@ -726,7 +688,7 @@ pub extern "C" fn rb_complex_indic_data_destroy(data: *mut c_void) {
     unsafe { Box::from_raw(data as *mut IndicShapePlan) };
 }
 
-fn get_category_and_position(u: u32) -> (Category, Position) {
+pub fn get_category_and_position(u: u32) -> (Category, Position) {
     let (c1, c2) = super::indic_table::get_categories(u);
     let c2 = if c1 == SyllabicCategory::ConsonantMedial ||
         c1 == SyllabicCategory::GeminationMark ||
