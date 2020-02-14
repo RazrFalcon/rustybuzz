@@ -1049,32 +1049,32 @@ impl Buffer {
         self.idx += count;
     }
 
-//    fn sort(&mut self, start: usize, end: usize, cmp: fn(&GlyphInfo, &GlyphInfo) -> bool) {
-//        assert!(!self.have_positions);
-//
-//        for i in start+1..end {
-//            let mut j = i;
-//            while j > start && cmp(&self.info[j - 1], &self.info[i]) {
-//                j -= 1;
-//            }
-//
-//            if i == j {
-//                continue;
-//            }
-//
-//            // Move item i to occupy place for item j, shift what's in between.
-//            self.merge_clusters(j, i + 1);
-//
-//            {
-//                let t = self.info[i];
-//                for idx in (0..i-j).rev() {
-//                    self.info[idx + j + 1] = self.info[idx + j];
-//                }
-//
-//                self.info[j] = t;
-//            }
-//        }
-//    }
+    pub(crate) fn sort(&mut self, start: usize, end: usize, cmp: fn(&GlyphInfo, &GlyphInfo) -> bool) {
+        assert!(!self.have_positions);
+
+        for i in start+1..end {
+            let mut j = i;
+            while j > start && cmp(&self.info[j - 1], &self.info[i]) {
+                j -= 1;
+            }
+
+            if i == j {
+                continue;
+            }
+
+            // Move item i to occupy place for item j, shift what's in between.
+            self.merge_clusters(j, i + 1);
+
+            {
+                let t = self.info[i];
+                for idx in (0..i-j).rev() {
+                    self.info[idx + j + 1] = self.info[idx + j];
+                }
+
+                self.info[j] = t;
+            }
+        }
+    }
 
     fn set_cluster(info: &mut GlyphInfo, cluster: u32, mask: Mask) {
         if info.cluster != cluster {

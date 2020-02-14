@@ -35,11 +35,17 @@ pub enum Category {
     Robatic = 20,
     Xgroup = 21,
     Ygroup = 22,
+    MW = 23,
+    MY = 24,
+    PT = 25,
     // The following are used by Khmer & Myanmar shapers.  Defined here for them to share.
     VAbv = 26,
     VBlw = 27,
     VPre = 28,
     VPst = 29,
+    VS = 30, // Variation selectors
+    P = 31,  // Punctuation
+    D = 32,  // Digits except zero
 }
 
 #[allow(dead_code)]
@@ -248,14 +254,14 @@ impl GlyphInfo {
         }
     }
 
-    fn indic_position(&self) -> Position {
+    pub(crate) fn indic_position(&self) -> Position {
         unsafe {
             let v: &ffi::hb_var_int_t = std::mem::transmute(&self.var2);
             std::mem::transmute(v.var_u8[3])
         }
     }
 
-    fn set_indic_position(&mut self, c: Position) {
+    pub(crate) fn set_indic_position(&mut self, c: Position) {
         unsafe {
             let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
             v.var_u8[3] = c as u8;
@@ -282,7 +288,7 @@ impl GlyphInfo {
         self.is_one_of(JOINER_FLAGS)
     }
 
-    fn is_consonant(&self) -> bool {
+    pub(crate) fn is_consonant(&self) -> bool {
         self.is_one_of(CONSONANT_FLAGS)
     }
 
