@@ -14,7 +14,7 @@ mod vowel_constraints;
 
 use crate::{Tag, CodePoint};
 use crate::ffi;
-use crate::opentype::{Map, MapLookup, get_stage_lookups};
+use crate::map::{Map, MapLookup, get_stage_lookups};
 
 #[inline]
 pub const fn hb_flag(x: u32) -> u32 {

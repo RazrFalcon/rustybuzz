@@ -69,14 +69,14 @@ macro_rules! impl_bit_ops {
 
 mod buffer;
 mod common;
+mod complex;
 mod ffi;
 mod font;
-mod unicode;
+mod map;
 mod tag;
 mod tag_table;
 mod text_parser;
-mod opentype;
-mod complex;
+mod unicode;
 
 pub use ttf_parser::Tag;
 

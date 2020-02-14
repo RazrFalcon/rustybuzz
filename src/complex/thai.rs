@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 
 use crate::{ffi, script, CodePoint, Buffer, Tag, Script};
 use crate::buffer::BufferClusterLevel;
-use crate::opentype::Map;
+use crate::map::Map;
 use crate::unicode::GeneralCategory;
 
 #[derive(Clone, Copy, PartialEq)]

@@ -1,6 +1,6 @@
 use crate::{Tag, Buffer, GlyphInfo};
 use crate::buffer::BufferFlags;
-use crate::opentype::{MapBuilder, FeatureFlags};
+use crate::map::{MapBuilder, FeatureFlags};
 use crate::ffi;
 use super::indic::{Category, Position};
 

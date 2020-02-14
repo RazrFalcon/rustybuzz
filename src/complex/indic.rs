@@ -4,7 +4,7 @@ use std::cmp;
 
 use crate::{Mask, Tag, Script, CodePoint, Buffer, GlyphInfo, script};
 use crate::buffer::BufferFlags;
-use crate::opentype::{Map, MapBuilder, FeatureFlags};
+use crate::map::{Map, MapBuilder, FeatureFlags};
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use crate::ffi;
 use super::{hb_flag_unsafe, hb_flag, hb_flag_range, WouldSubstituteFeature};

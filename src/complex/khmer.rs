@@ -3,7 +3,7 @@ use std::os::raw::c_void;
 
 use crate::{Tag, Mask, Buffer, GlyphInfo, CodePoint};
 use crate::buffer::BufferFlags;
-use crate::opentype::{Map, MapBuilder, FeatureFlags};
+use crate::map::{Map, MapBuilder, FeatureFlags};
 use crate::ffi;
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use super::indic::{Category, Position};

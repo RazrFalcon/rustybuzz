@@ -3,7 +3,7 @@ use std::os::raw::c_void;
 
 use crate::{Buffer, Font, GlyphInfo, BufferClusterLevel, Mask, Tag};
 use crate::buffer::BufferFlags;
-use crate::opentype::{Map, MapBuilder, FeatureFlags};
+use crate::map::{Map, MapBuilder, FeatureFlags};
 use crate::ffi;
 
 const L_BASE: u32 = 0x1100;

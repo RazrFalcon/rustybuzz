@@ -1,6 +1,6 @@
 use crate::{Buffer, GlyphInfo, Tag, Script, script};
 use crate::buffer::BufferScratchFlags;
-use crate::opentype::{MapBuilder, FeatureFlags};
+use crate::map::{MapBuilder, FeatureFlags};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class};
 use crate::ffi;
 use super::{hb_flag_unsafe, hb_flag};
