@@ -449,15 +449,6 @@ static inline void _hb_glyph_info_clear_substituted(hb_glyph_info_t *info)
     info->glyph_props() &= ~(HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
 }
 
-static inline void
-_hb_clear_substitution_flags(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer)
-{
-    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
-    unsigned int count = rb_buffer_get_length(buffer);
-    for (unsigned int i = 0; i < count; i++)
-        _hb_glyph_info_clear_substituted(&info[i]);
-}
-
 /* Make sure no one directly touches our props... */
 #undef unicode_props0
 #undef unicode_props1

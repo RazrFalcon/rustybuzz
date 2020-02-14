@@ -120,6 +120,9 @@ impl GlyphPropsFlags {
 impl_bit_ops!(GlyphPropsFlags);
 
 
+const IS_LIG_BASE: u8 = 0x10;
+
+
 /// A glyph info.
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -166,6 +169,13 @@ impl GlyphInfo {
         }
     }
 
+    fn lig_props(&self) -> u8 {
+        unsafe {
+            let v: ffi::hb_var_int_t = std::mem::transmute(self.var1);
+            v.var_u8[2]
+        }
+    }
+
     pub(crate) fn general_category(&self) -> GeneralCategory {
         let n = self.unicode_props() & UnicodeProps::GENERAL_CATEGORY.0;
         GeneralCategory::from_hb(n as u32)
@@ -202,6 +212,18 @@ impl GlyphInfo {
 
     pub(crate) fn is_ligated_and_didnt_multiply(&self) -> bool {
         self.is_ligated() && !self.is_multiplied()
+    }
+
+    pub(crate) fn is_ligated_internal(&self) -> bool {
+        self.lig_props() & IS_LIG_BASE != 0
+    }
+
+    pub(crate) fn lig_comp(&self) -> u8 {
+        if self.is_ligated_internal() {
+            0
+        } else {
+            self.lig_props() & 0x0F
+        }
     }
 
     pub(crate) fn is_unicode_mark(&self) -> bool {

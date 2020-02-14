@@ -11,6 +11,9 @@ mod myanmar;
 mod myanmar_machine;
 mod thai;
 mod vowel_constraints;
+mod universal;
+mod universal_machine;
+mod universal_table;
 
 use crate::{Tag, CodePoint};
 use crate::ffi;
@@ -24,6 +27,16 @@ pub const fn hb_flag(x: u32) -> u32 {
 #[inline]
 pub fn hb_flag_unsafe(x: u32) -> u32 {
     if x < 32 { 1 << x } else { 0 }
+}
+
+#[inline]
+pub const fn hb_flag64(x: u32) -> u64 {
+    1 << x as u64
+}
+
+#[inline]
+pub fn hb_flag64_unsafe(x: u32) -> u64 {
+    if x < 64 { 1 << (x as u64) } else { 0 }
 }
 
 #[inline]

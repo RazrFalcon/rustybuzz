@@ -98,7 +98,4 @@ enum use_category_t {
   USE_FMPst	= 47,	/* CONS_FINAL_MOD	UIPC = Not_Applicable */
 };
 
-HB_INTERNAL USE_TABLE_ELEMENT_TYPE
-hb_use_get_category (hb_codepoint_t u);
-
 #pragma once
