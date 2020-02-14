@@ -62,24 +62,13 @@ HB_EXTERN hb_mask_t rb_ot_map_get_1_mask(const rb_ot_map_t *map, hb_tag_t featur
 HB_EXTERN unsigned int
 rb_ot_map_get_feature_index(const rb_ot_map_t *map, unsigned int table_index, hb_tag_t feature_tag);
 
-HB_EXTERN unsigned int
-rb_ot_map_get_feature_stage(const rb_ot_map_t *map, unsigned int table_index, hb_tag_t feature_tag);
-
 HB_EXTERN hb_tag_t rb_ot_map_get_chosen_script(const rb_ot_map_t *map, unsigned int table_index);
-
-HB_EXTERN bool rb_ot_map_has_found_script(const rb_ot_map_t *map, unsigned int table_index);
 
 HB_EXTERN const lookup_map_t *rb_ot_map_get_lookup(const rb_ot_map_t *map, unsigned int table_index, unsigned int i);
 
 HB_EXTERN unsigned int rb_ot_map_get_stages_length(const rb_ot_map_t *map, unsigned int table_index);
 
 HB_EXTERN const stage_map_t *rb_ot_map_get_stage(const rb_ot_map_t *map, unsigned int table_index, unsigned int i);
-
-HB_EXTERN void rb_ot_map_get_stage_lookups(const rb_ot_map_t *map,
-                                           unsigned int table_index,
-                                           unsigned int stage,
-                                           const struct lookup_map_t **plookups,
-                                           unsigned int *lookup_count);
 
 void hb_ot_layout_substitute(const rb_ot_map_t *map, const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 
@@ -105,8 +94,6 @@ HB_EXTERN void rb_ot_map_builder_enable_feature(rb_ot_map_builder_t *builder,
                                                 hb_tag_t tag,
                                                 hb_ot_map_feature_flags_t flags,
                                                 unsigned int value);
-
-HB_EXTERN void rb_ot_map_builder_disable_feature(rb_ot_map_builder_t *builder, hb_tag_t tag);
 
 HB_EXTERN void rb_ot_map_builder_add_gsub_pause(rb_ot_map_builder_t *builder, pause_func_t pause_func);
 

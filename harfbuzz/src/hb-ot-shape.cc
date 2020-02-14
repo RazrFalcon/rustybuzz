@@ -28,8 +28,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_OT_SHAPE
-
 #ifdef HB_NO_OT_LAYOUT
 #error "Cannot compile 'ot' shaper with HB_NO_OT_LAYOUT."
 #endif
@@ -855,5 +853,3 @@ hb_bool_t _hb_ot_shape(hb_shape_plan_t *shape_plan,
 
     return true;
 }
-
-#endif

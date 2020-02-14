@@ -26,8 +26,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_OT_SHAPE
-
 #include "hb-ot-shape-complex-arabic.hh"
 #include "hb-ot-shape.hh"
 
@@ -167,10 +165,6 @@ static void setup_masks_arabic(const hb_shape_plan_t *plan, rb_buffer_t *buffer,
 
 void hb_complex_arabic_fallback_shape(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
 {
-#ifdef HB_NO_OT_SHAPE_COMPLEX_ARABIC_FALLBACK
-    return;
-#endif
-
     const arabic_shape_plan_t *arabic_plan = (const arabic_shape_plan_t *)plan->data;
 
     if (!arabic_plan->do_fallback)
@@ -248,5 +242,3 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_arabic = {
     HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
     true, /* fallback_position */
 };
-
-#endif

@@ -283,10 +283,6 @@ static inline void _hb_glyph_info_set_continuation(hb_glyph_info_t *info)
 {
     info->unicode_props() |= UPROPS_MASK_CONTINUATION;
 }
-static inline void _hb_glyph_info_reset_continuation(hb_glyph_info_t *info)
-{
-    info->unicode_props() &= ~UPROPS_MASK_CONTINUATION;
-}
 static inline bool _hb_glyph_info_is_continuation(const hb_glyph_info_t *info)
 {
     return info->unicode_props() & UPROPS_MASK_CONTINUATION;
@@ -321,17 +317,6 @@ static inline bool _hb_glyph_info_is_zwnj(const hb_glyph_info_t *info)
 static inline bool _hb_glyph_info_is_zwj(const hb_glyph_info_t *info)
 {
     return _hb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
-}
-static inline bool _hb_glyph_info_is_joiner(const hb_glyph_info_t *info)
-{
-    return _hb_glyph_info_is_unicode_format(info) &&
-           (info->unicode_props() & (UPROPS_MASK_Cf_ZWNJ | UPROPS_MASK_Cf_ZWJ));
-}
-static inline void _hb_glyph_info_flip_joiners(hb_glyph_info_t *info)
-{
-    if (!_hb_glyph_info_is_unicode_format(info))
-        return;
-    info->unicode_props() ^= UPROPS_MASK_Cf_ZWNJ | UPROPS_MASK_Cf_ZWJ;
 }
 
 /* lig_props: aka lig_id / lig_comp
@@ -457,16 +442,6 @@ static inline bool _hb_glyph_info_ligated(const hb_glyph_info_t *info)
 static inline bool _hb_glyph_info_multiplied(const hb_glyph_info_t *info)
 {
     return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED);
-}
-
-static inline bool _hb_glyph_info_ligated_and_didnt_multiply(const hb_glyph_info_t *info)
-{
-    return _hb_glyph_info_ligated(info) && !_hb_glyph_info_multiplied(info);
-}
-
-static inline void _hb_glyph_info_clear_ligated_and_multiplied(hb_glyph_info_t *info)
-{
-    info->glyph_props() &= ~(HB_OT_LAYOUT_GLYPH_PROPS_LIGATED | HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED);
 }
 
 static inline void _hb_glyph_info_clear_substituted(hb_glyph_info_t *info)

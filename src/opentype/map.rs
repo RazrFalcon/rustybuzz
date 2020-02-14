@@ -691,22 +691,8 @@ pub extern "C" fn rb_ot_map_get_feature_index(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_map_get_feature_stage(
-    map: *const ffi::rb_ot_map_t,
-    table_index: u32,
-    feature_tag: Tag,
-) -> u32 {
-    Map::from_ptr(map).feature_stage(table_index, feature_tag)
-}
-
-#[no_mangle]
 pub extern "C" fn rb_ot_map_get_chosen_script(map: *const ffi::rb_ot_map_t, table_index: u32) -> Tag {
     Map::from_ptr(map).chosen_script[table_index as usize]
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_has_found_script(map: *const ffi::rb_ot_map_t, table_index: u32) -> bool {
-    Map::from_ptr(map).found_script[table_index as usize]
 }
 
 #[no_mangle]
@@ -749,50 +735,6 @@ pub fn get_stage_lookups(map: &Map, table_index: u32, stage: u32) -> Vec<MapLook
         Vec::new()
     } else {
         map.lookups[table_index][start..end].to_vec()
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_get_stage_lookups(
-    map: *const ffi::rb_ot_map_t,
-    table_index: u32,
-    stage: u32,
-    plookups: *mut *const MapLookup,
-    lookup_count: *mut u32,
-) {
-    if stage == std::u32::MAX {
-        unsafe {
-            *plookups = std::ptr::null_mut();
-            *lookup_count = 0;
-            return;
-        }
-    }
-
-    let map = Map::from_ptr(map);
-    let table_index = table_index as usize;
-    let stage = stage as usize;
-
-    let start = if stage != 0 {
-        map.stages[table_index][stage - 1].last_lookup as usize
-    } else {
-        0
-    };
-
-
-    let end = if stage < map.stages[table_index].len() {
-        map.stages[table_index][stage].last_lookup as usize
-    } else {
-        map.lookups[table_index].len()
-    };
-
-    unsafe {
-        if end == start {
-            *plookups = std::ptr::null_mut();
-        } else {
-            *plookups = map.lookups[table_index][start..].as_ptr();
-        }
-
-        *lookup_count = (end - start) as u32;
     }
 }
 
@@ -869,14 +811,6 @@ pub extern "C" fn rb_ot_map_builder_enable_feature(
     value: u32,
 ) {
     MapBuilder::from_ptr_mut(builder).add_feature(tag, FeatureFlags(flags as u8) | FeatureFlags::GLOBAL, value);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_builder_disable_feature(
-    builder: *mut ffi::rb_ot_map_builder_t,
-    tag: Tag,
-) {
-    MapBuilder::from_ptr_mut(builder).add_feature(tag, FeatureFlags::GLOBAL, 0);
 }
 
 #[no_mangle]

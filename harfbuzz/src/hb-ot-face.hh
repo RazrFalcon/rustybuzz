@@ -49,9 +49,6 @@ namespace AAT { struct mort; }
 namespace AAT { struct kerx; }
 namespace AAT { struct ankr; }
 namespace AAT { struct trak; }
-namespace AAT { struct lcar; }
-namespace AAT { struct ltag; }
-namespace AAT { struct feat; }
 namespace OT { struct CBDT_accelerator_t; }
 namespace OT { struct sbix_accelerator_t; }
 
@@ -75,9 +72,6 @@ struct hb_ot_face_t
     ORDER_AAT_kerx,
     ORDER_AAT_ankr,
     ORDER_AAT_trak,
-    ORDER_AAT_lcar,
-    ORDER_AAT_ltag,
-    ORDER_AAT_feat,
     ORDER_OT_CBDT,
     ORDER_OT_sbix,
   };
@@ -95,9 +89,6 @@ struct hb_ot_face_t
   hb_table_lazy_loader_t<AAT::kerx, ORDER_AAT_kerx> kerx;
   hb_table_lazy_loader_t<AAT::ankr, ORDER_AAT_ankr> ankr;
   hb_table_lazy_loader_t<AAT::trak, ORDER_AAT_trak> trak;
-  hb_table_lazy_loader_t<AAT::lcar, ORDER_AAT_lcar> lcar;
-  hb_table_lazy_loader_t<AAT::ltag, ORDER_AAT_ltag> ltag;
-  hb_table_lazy_loader_t<AAT::feat, ORDER_AAT_feat> feat;
   hb_face_lazy_loader_t<OT::CBDT_accelerator_t, ORDER_OT_CBDT> CBDT;
   hb_face_lazy_loader_t<OT::sbix_accelerator_t, ORDER_OT_sbix> sbix;
 };

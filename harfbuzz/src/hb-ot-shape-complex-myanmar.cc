@@ -26,9 +26,7 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_OT_SHAPE
-
-#include "hb-ot-shape-complex-myanmar.hh"
+#include "hb-ot-shape-complex.hh"
 
 extern "C" {
 void hb_complex_myanmar_setup_syllables(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
@@ -103,5 +101,3 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_myanmar_zawgyi = {
     HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
     false, /* fallback_position */
 };
-
-#endif

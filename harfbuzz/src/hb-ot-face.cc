@@ -49,9 +49,6 @@ void hb_ot_face_t::init0 (hb_face_t *face)
   kerx.init0 ();
   ankr.init0 ();
   trak.init0 ();
-  lcar.init0 ();
-  ltag.init0 ();
-  feat.init0 ();
   CBDT.init0 ();
   sbix.init0 ();
 }
@@ -68,9 +65,6 @@ void hb_ot_face_t::fini ()
   kerx.fini ();
   ankr.fini ();
   trak.fini ();
-  lcar.fini ();
-  ltag.fini ();
-  feat.fini ();
   CBDT.fini ();
   sbix.fini ();
 }
