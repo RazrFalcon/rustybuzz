@@ -171,6 +171,12 @@ impl GlyphInfo {
         GeneralCategory::from_hb(n as u32)
     }
 
+    pub(crate) fn set_general_category(&mut self, gc: GeneralCategory) {
+        let gc = gc.to_hb();
+        let n = (gc as u16) | (self.unicode_props() & (0xFF & !UnicodeProps::GENERAL_CATEGORY.0));
+        self.set_unicode_props(n);
+    }
+
     pub(crate) fn is_default_ignorable(&self) -> bool {
         let n = self.unicode_props() & UnicodeProps::IGNORABLE.0;
         n != 0 && !self.is_ligated()
@@ -216,6 +222,12 @@ impl GlyphInfo {
         }
 
         let n = ((mcc as u16) << 8) | (self.unicode_props() & 0xFF);
+        self.set_unicode_props(n);
+    }
+
+    pub(crate) fn set_continuation(&mut self) {
+        let mut n = self.unicode_props();
+        n |= UnicodeProps::CONTINUATION.0;
         self.set_unicode_props(n);
     }
 
@@ -463,7 +475,7 @@ impl Buffer {
         &mut self.info[..self.len]
     }
 
-    fn out_info(&self) -> &[GlyphInfo] {
+    pub(crate) fn out_info(&self) -> &[GlyphInfo] {
         if self.have_separate_output {
             unsafe { mem::transmute(self.pos.as_slice()) }
         } else {
@@ -679,7 +691,7 @@ impl Buffer {
         self.out_len += num_out;
     }
 
-    fn replace_glyph(&mut self, glyph_index: CodePoint) {
+    pub(crate) fn replace_glyph(&mut self, glyph_index: CodePoint) {
         if self.have_separate_output || self.out_len != self.idx {
             self.make_room_for(1, 1);
             self.set_out_info(self.out_len, self.info[self.idx]);

@@ -9,6 +9,7 @@ mod khmer;
 mod khmer_machine;
 mod myanmar;
 mod myanmar_machine;
+mod thai;
 mod vowel_constraints;
 
 use crate::{Tag, CodePoint};

@@ -32,7 +32,7 @@ fn with_table<T: Default, F>(font: &ttf_parser::Font, tag: Tag, f: F) -> T
 #[derive(Debug)]
 pub struct Map {
     pub chosen_script: [Tag; 2],
-    found_script: [bool; 2],
+    pub(crate) found_script: [bool; 2],
     global_mask: Mask,
     features: Vec<MapFeature>,
     lookups: [Vec<MapLookup>; 2], // GSUB/GPOS
