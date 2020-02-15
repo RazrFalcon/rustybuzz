@@ -35,22 +35,16 @@
 #define use_category() complex_var_u8_0()
 
 extern "C" {
+void *hb_complex_universal_data_create(const hb_shape_plan_t *plan);
+void hb_complex_universal_data_destroy(void *data);
+void hb_complex_universal_setup_masks(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font HB_UNUSED);
+void hb_complex_universal_preprocess_text(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font);
 USE_TABLE_ELEMENT_TYPE rb_complex_universal_get_category(hb_codepoint_t u);
-void rb_complex_universal_collect_features(rb_ot_map_builder_t *map);
 void hb_complex_universal_setup_syllables(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 void hb_complex_universal_record_rphf(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
-void hb_complex_universal_record_pref(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
-void hb_complex_universal_reorder(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
 void hb_complex_universal_clear_substitution_flags(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
-void rb_complex_universal_insert_dotted_circles(const rb_ttf_parser_t *ttf_parser, rb_buffer_t *buffer);
 void rb_complex_universal_find_syllables(rb_buffer_t *buffer);
 void rb_complex_universal_setup_topographical_masks(rb_ot_map_t *map, rb_buffer_t *buffer);
-void rb_complex_universal_reorder_syllable(unsigned int start, unsigned int end, rb_buffer_t *buffer);
-}
-
-static void collect_features_use(hb_ot_shape_planner_t *plan)
-{
-    rb_complex_universal_collect_features(plan->map);
 }
 
 struct use_shape_plan_t
@@ -92,7 +86,7 @@ static bool has_arabic_joining(hb_script_t script)
     }
 }
 
-static void *data_create_use(const hb_shape_plan_t *plan)
+void *hb_complex_universal_data_create(const hb_shape_plan_t *plan)
 {
     use_shape_plan_t *use_plan = (use_shape_plan_t *)calloc(1, sizeof(use_shape_plan_t));
     if (unlikely(!use_plan))
@@ -101,7 +95,7 @@ static void *data_create_use(const hb_shape_plan_t *plan)
     use_plan->rphf_mask = rb_ot_map_get_1_mask(plan->map, HB_TAG('r', 'p', 'h', 'f'));
 
     if (has_arabic_joining(plan->props.script)) {
-        use_plan->arabic_plan = (arabic_shape_plan_t *)data_create_arabic(plan);
+        use_plan->arabic_plan = (arabic_shape_plan_t *)hb_complex_arabic_data_create(plan);
         if (unlikely(!use_plan->arabic_plan)) {
             free(use_plan);
             return nullptr;
@@ -111,12 +105,12 @@ static void *data_create_use(const hb_shape_plan_t *plan)
     return use_plan;
 }
 
-static void data_destroy_use(void *data)
+void hb_complex_universal_data_destroy(void *data)
 {
     use_shape_plan_t *use_plan = (use_shape_plan_t *)data;
 
     if (use_plan->arabic_plan)
-        data_destroy_arabic(use_plan->arabic_plan);
+        hb_complex_arabic_data_destroy(use_plan->arabic_plan);
 
     free(data);
 }
@@ -133,7 +127,7 @@ enum use_syllable_type_t {
     use_non_cluster,
 };
 
-static void setup_masks_use(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
+void hb_complex_universal_setup_masks(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
     const use_shape_plan_t *use_plan = (const use_shape_plan_t *)plan->data;
 
@@ -206,70 +200,7 @@ void hb_complex_universal_record_rphf(const hb_shape_plan_t *plan, hb_font_t *fo
     }
 }
 
-void hb_complex_universal_record_pref(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer)
-{
-    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
-
-    foreach_syllable(buffer, start, end)
-    {
-        /* Mark a substituted pref as VPre, as they behave the same way. */
-        for (unsigned int i = start; i < end; i++)
-            if (_hb_glyph_info_substituted(&info[i])) {
-                info[i].use_category() = USE_VPre;
-                break;
-            }
-    }
-}
-
-static inline void
-insert_dotted_circles_use(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font, rb_buffer_t *buffer)
-{
-    rb_complex_universal_insert_dotted_circles(font->ttf_parser, buffer);
-}
-
-void hb_complex_universal_reorder(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer)
-{
-    insert_dotted_circles_use(plan, font, buffer);
-
-    foreach_syllable(buffer, start, end) rb_complex_universal_reorder_syllable(start, end, buffer);
-}
-
-static void preprocess_text_use(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font)
+void hb_complex_universal_preprocess_text(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font)
 {
     rb_preprocess_text_vowel_constraints(buffer);
 }
-
-static bool
-compose_use(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab)
-{
-    /* Avoid recomposing split matras. */
-    if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK(rb_ucd_general_category(a)))
-        return false;
-
-    return (bool)hb_ucd_compose(a, b, ab);
-}
-
-void hb_complex_universal_clear_substitution_flags(const hb_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer)
-{
-    hb_glyph_info_t *info = rb_buffer_get_info(buffer);
-    unsigned int count = rb_buffer_get_length(buffer);
-    for (unsigned int i = 0; i < count; i++)
-        _hb_glyph_info_clear_substituted(&info[i]);
-}
-
-const hb_ot_complex_shaper_t _hb_ot_complex_shaper_use = {
-    collect_features_use,
-    nullptr, /* override_features */
-    data_create_use,
-    data_destroy_use,
-    preprocess_text_use,
-    nullptr, /* postprocess_glyphs */
-    HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
-    nullptr, /* decompose */
-    compose_use,
-    setup_masks_use,
-    HB_TAG_NONE, /* gpos_tag */
-    nullptr,     /* reorder_marks */
-    HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
-    false, /* fallback_position */
-};

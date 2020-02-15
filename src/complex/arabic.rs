@@ -1,3 +1,5 @@
+use std::os::raw::c_void;
+
 use crate::{Buffer, GlyphInfo, Tag, Script, script};
 use crate::buffer::BufferScratchFlags;
 use crate::map::{MapBuilder, FeatureFlags};
@@ -120,10 +122,14 @@ fn collect_features_arabic(map: &mut MapBuilder, script: Script) {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_arabic_collect_features(map: *mut ffi::rb_ot_map_builder_t, script: Tag) {
-    let map = unsafe { &mut *(map as *mut MapBuilder) };
-    let script = Script(script);
-    collect_features_arabic(map, script);
+pub extern "C" fn rb_complex_arabic_collect_features(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let script = unsafe { ffi::hb_ot_shape_planner_script(planner) };
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
+
+    collect_features_arabic(builder, Script(Tag(script)));
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -438,11 +444,6 @@ fn is_stch_action(action: Action) -> bool {
     matches!(action, Action::StretchingFixed | Action::StretchingRepeating)
 }
 
-#[no_mangle]
-pub extern "C" fn rb_complex_arabic_apply_stch(buffer: *mut ffi::rb_buffer_t, font: *mut ffi::hb_font_t) {
-    apply_stch(font, Buffer::from_ptr_mut(buffer));
-}
-
 // http://www.unicode.org/reports/tr53/
 const MODIFIER_COMBINING_MARKS: &[u32] = &[
     0x0654, // ARABIC HAMZA ABOVE
@@ -530,6 +531,49 @@ fn reorder_marks_arabic(mut start: usize, end: usize, buffer: &mut Buffer) {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_arabic_reorder_marks(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
+pub extern "C" fn rb_complex_arabic_postprocess_glyphs(
+    _: *const ffi::hb_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::hb_font_t,
+) {
+    apply_stch(font, Buffer::from_ptr_mut(buffer));
+}
+
+#[no_mangle]
+pub extern "C" fn rb_complex_arabic_reorder_marks(
+    _: *const ffi::hb_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    start: u32,
+    end: u32,
+) {
     reorder_marks_arabic(start as usize, end as usize, Buffer::from_ptr_mut(buffer));
+}
+
+extern "C" {
+    fn hb_complex_arabic_data_create(plan: *const ffi::hb_shape_plan_t) -> *mut c_void;
+    fn hb_complex_arabic_data_destroy(data: *mut c_void);
+    fn hb_complex_arabic_setup_masks(plan: *const ffi::hb_shape_plan_t,
+                                     buffer: *mut ffi::rb_buffer_t,
+                                     font: *mut ffi::hb_font_t);
+}
+
+#[no_mangle]
+pub extern "C" fn rb_create_arabic_shaper() -> *const ffi::hb_ot_complex_shaper_t {
+    let shaper = Box::new(ffi::hb_ot_complex_shaper_t {
+        collect_features: Some(rb_complex_arabic_collect_features),
+        override_features: None,
+        data_create: Some(hb_complex_arabic_data_create),
+        data_destroy: Some(hb_complex_arabic_data_destroy),
+        preprocess_text: None,
+        postprocess_glyphs: Some(rb_complex_arabic_postprocess_glyphs),
+        normalization_preference: ffi::HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
+        decompose: None,
+        compose: None,
+        setup_masks: Some(hb_complex_arabic_setup_masks),
+        gpos_tag: 0,
+        reorder_marks: Some(rb_complex_arabic_reorder_marks),
+        zero_width_marks: ffi::HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
+        fallback_position: true,
+    });
+    Box::into_raw(shaper)
 }

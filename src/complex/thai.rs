@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 
-use crate::{ffi, script, CodePoint, Buffer, Tag, Script};
+use crate::{ffi, script, CodePoint, Buffer, Tag, Script, Font};
 use crate::buffer::BufferClusterLevel;
 use crate::map::Map;
 use crate::unicode::GeneralCategory;
@@ -363,13 +363,36 @@ fn preprocess_text(
 
 #[no_mangle]
 pub extern "C" fn rb_complex_thai_preprocess_text(
-    map: *const ffi::rb_ot_map_t,
-    script: Tag,
-    ttf_parser_data: *const ffi::rb_ttf_parser_t,
+    plan: *const ffi::hb_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::hb_font_t
 ) {
-    let map = Map::from_ptr(map);
-    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
-    let buffer = Buffer::from_ptr_mut(buffer);
-    preprocess_text(map, Script(script), font, buffer);
+    unsafe {
+        let map = Map::from_ptr(ffi::hb_shape_plan_map(plan));
+        let script = Script(Tag(ffi::hb_shape_plan_script(plan)));
+        let font = Font::from_ptr(font);
+        let buffer = Buffer::from_ptr_mut(buffer);
+        preprocess_text(map, script, font.ttf_parser(), buffer);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_create_thai_shaper() -> *const ffi::hb_ot_complex_shaper_t {
+    let shaper = Box::new(ffi::hb_ot_complex_shaper_t {
+        collect_features: None,
+        override_features: None,
+        data_create: None,
+        data_destroy: None,
+        preprocess_text: Some(rb_complex_thai_preprocess_text),
+        postprocess_glyphs: None,
+        normalization_preference: ffi::HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
+        decompose: None,
+        compose: None,
+        setup_masks: None,
+        gpos_tag: 0,
+        reorder_marks: None,
+        zero_width_marks: ffi::HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
+        fallback_position: false,
+    });
+    Box::into_raw(shaper)
 }

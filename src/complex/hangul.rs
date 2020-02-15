@@ -54,7 +54,8 @@ impl HangulShapePlan {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_hangul_data_create(map: *const ffi::rb_ot_map_t) -> *mut c_void {
+pub extern "C" fn rb_complex_hangul_data_create(plan: *const ffi::hb_shape_plan_t) -> *mut c_void {
+    let map = unsafe { ffi::hb_shape_plan_map(plan) };
     let plan = HangulShapePlan::new(Map::from_ptr(map));
     Box::into_raw(Box::new(plan)) as *mut _
 }
@@ -65,33 +66,43 @@ pub extern "C" fn rb_complex_hangul_data_destroy(data: *mut c_void) {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_hangul_collect_features(builder: *mut ffi::rb_ot_map_builder_t) {
-    let builder = MapBuilder::from_ptr_mut(builder);
+pub extern "C" fn rb_complex_hangul_collect_features(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
+
     builder.add_feature(Tag::from_bytes(b"ljmo"), FeatureFlags::default(), 1);
     builder.add_feature(Tag::from_bytes(b"vjmo"), FeatureFlags::default(), 1);
     builder.add_feature(Tag::from_bytes(b"tjmo"), FeatureFlags::default(), 1);
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_hangul_override_features(builder: *mut ffi::rb_ot_map_builder_t) {
+pub extern "C" fn rb_complex_hangul_override_features(planner: *mut ffi::hb_ot_shape_planner_t) {
     // Uniscribe does not apply 'calt' for Hangul, and certain fonts
     // (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
     // in calt, which is not desirable.
 
-    let builder = MapBuilder::from_ptr_mut(builder);
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
+
     builder.disable_feature(Tag::from_bytes(b"calt"));
 }
 
 #[no_mangle]
 pub extern "C" fn rb_complex_hangul_setup_masks(
-    hangul_plan: *const c_void,
-    buffer: *mut ffi::rb_buffer_t
+    plan: *const ffi::hb_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    _: *mut ffi::hb_font_t
 ) {
-    let hangul_plan = unsafe { &*(hangul_plan as *const HangulShapePlan) };
+    let plan_data = unsafe { ffi::hb_shape_plan_data(plan) };
+    let plan = unsafe { &*(plan_data as *const HangulShapePlan) };
     let buffer = Buffer::from_ptr_mut(buffer);
 
     for info in buffer.info_slice_mut() {
-        info.mask |= hangul_plan.mask_array[info.hangul_shaping_feature() as usize];
+        info.mask |= plan.mask_array[info.hangul_shaping_feature() as usize];
     }
 }
 
@@ -337,7 +348,7 @@ fn is_hangul_tone(u: u32) -> bool {
 }
 
 fn is_zero_width_char(font: &Font, c: char) -> bool {
-    if let Some(glyph) = font.font().glyph_index(c) {
+    if let Some(glyph) = font.ttf_parser().glyph_index(c) {
         let width = unsafe { ffi::hb_font_get_glyph_h_advance_default(
             font.as_ptr(), glyph.0 as u32,
         )};
@@ -376,10 +387,35 @@ fn is_combined_s(u: u32) -> bool {
 }
 
 fn font_has_glyph(font: &Font, u: u32) -> bool {
-    font.font().glyph_index(char::try_from(u).unwrap()).is_some()
+    font.ttf_parser().glyph_index(char::try_from(u).unwrap()).is_some()
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_hangul_preprocess_text(buffer: *mut ffi::rb_buffer_t, font: *mut ffi::hb_font_t) {
+pub extern "C" fn rb_complex_hangul_preprocess_text(
+    _: *const ffi::hb_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::hb_font_t,
+) {
     preprocess_text(Font::from_ptr(font), Buffer::from_ptr_mut(buffer));
+}
+
+#[no_mangle]
+pub extern "C" fn rb_create_hangul_shaper() -> *const ffi::hb_ot_complex_shaper_t {
+    let shaper = Box::new(ffi::hb_ot_complex_shaper_t {
+        collect_features: Some(rb_complex_hangul_collect_features),
+        override_features: Some(rb_complex_hangul_override_features),
+        data_create: Some(rb_complex_hangul_data_create),
+        data_destroy: Some(rb_complex_hangul_data_destroy),
+        preprocess_text: Some(rb_complex_hangul_preprocess_text),
+        postprocess_glyphs: None,
+        normalization_preference: ffi::HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
+        decompose: None,
+        compose: None,
+        setup_masks: Some(rb_complex_hangul_setup_masks),
+        gpos_tag: 0,
+        reorder_marks: None,
+        zero_width_marks: ffi::HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
+        fallback_position: false,
+    });
+    Box::into_raw(shaper)
 }

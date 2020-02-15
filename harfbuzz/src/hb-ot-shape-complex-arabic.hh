@@ -34,23 +34,14 @@
 
 struct arabic_shape_plan_t;
 
-HB_INTERNAL void *data_create_arabic(const hb_shape_plan_t *plan);
-
-HB_INTERNAL void data_destroy_arabic(void *data);
-
 HB_INTERNAL void
 setup_masks_arabic_plan(const arabic_shape_plan_t *arabic_plan, rb_buffer_t *buffer, hb_script_t script);
 
 extern "C" {
+void *hb_complex_arabic_data_create(const hb_shape_plan_t *plan);
+void hb_complex_arabic_data_destroy(void *data);
+void hb_complex_arabic_setup_masks(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font HB_UNUSED);
 void hb_complex_arabic_record_stch(const hb_shape_plan_t *plan, hb_font_t *font HB_UNUSED, rb_buffer_t *buffer);
-
 void hb_complex_arabic_fallback_shape(const hb_shape_plan_t *plan, hb_font_t *font, rb_buffer_t *buffer);
-
-void rb_complex_arabic_collect_features(rb_ot_map_builder_t *map, hb_tag_t script);
-
 void rb_complex_arabic_joining(rb_buffer_t *buffer);
-
-void rb_complex_arabic_apply_stch(rb_buffer_t *buffer, hb_font_t *font);
-
-void rb_complex_arabic_reorder_marks(rb_buffer_t *buffer, unsigned int start, unsigned int end);
 }

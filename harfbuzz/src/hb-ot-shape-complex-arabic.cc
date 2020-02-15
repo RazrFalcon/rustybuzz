@@ -86,11 +86,6 @@ enum arabic_action_t {
     STCH_REPEATING,
 };
 
-static void collect_features_arabic(hb_ot_shape_planner_t *plan)
-{
-    rb_complex_arabic_collect_features(plan->map, plan->props.script);
-}
-
 #include "hb-ot-shape-complex-arabic-fallback.hh"
 
 struct arabic_shape_plan_t
@@ -107,7 +102,7 @@ struct arabic_shape_plan_t
     unsigned int has_stch : 1;
 };
 
-void *data_create_arabic(const hb_shape_plan_t *plan)
+void *hb_complex_arabic_data_create(const hb_shape_plan_t *plan)
 {
     arabic_shape_plan_t *arabic_plan = (arabic_shape_plan_t *)calloc(1, sizeof(arabic_shape_plan_t));
     if (unlikely(!arabic_plan))
@@ -125,7 +120,7 @@ void *data_create_arabic(const hb_shape_plan_t *plan)
     return arabic_plan;
 }
 
-void data_destroy_arabic(void *data)
+void hb_complex_arabic_data_destroy(void *data)
 {
     arabic_shape_plan_t *arabic_plan = (arabic_shape_plan_t *)data;
 
@@ -157,7 +152,7 @@ void setup_masks_arabic_plan(const arabic_shape_plan_t *arabic_plan, rb_buffer_t
     }
 }
 
-static void setup_masks_arabic(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
+void hb_complex_arabic_setup_masks(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
     const arabic_shape_plan_t *arabic_plan = (const arabic_shape_plan_t *)plan->data;
     setup_masks_arabic_plan(arabic_plan, buffer, plan->props.script);
@@ -212,33 +207,3 @@ void hb_complex_arabic_record_stch(const hb_shape_plan_t *plan, hb_font_t *font 
             *rb_buffer_get_scratch_flags(buffer) |= HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH;
         }
 }
-
-static void postprocess_glyphs_arabic(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font)
-{
-    rb_complex_arabic_apply_stch(buffer, font);
-}
-
-/* http://www.unicode.org/reports/tr53/ */
-
-static void
-reorder_marks_arabic(const hb_shape_plan_t *plan HB_UNUSED, rb_buffer_t *buffer, unsigned int start, unsigned int end)
-{
-    rb_complex_arabic_reorder_marks(buffer, start, end);
-}
-
-const hb_ot_complex_shaper_t _hb_ot_complex_shaper_arabic = {
-    collect_features_arabic,
-    nullptr, /* override_features */
-    data_create_arabic,
-    data_destroy_arabic,
-    nullptr, /* preprocess_text */
-    postprocess_glyphs_arabic,
-    HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
-    nullptr, /* decompose */
-    nullptr, /* compose */
-    setup_masks_arabic,
-    HB_TAG_NONE, /* gpos_tag */
-    reorder_marks_arabic,
-    HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
-    true, /* fallback_position */
-};

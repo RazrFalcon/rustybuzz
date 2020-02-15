@@ -44,6 +44,7 @@ struct hb_shape_plan_t
     hb_mask_t rtlm_mask;
     hb_mask_t kern_mask;
     hb_mask_t trak_mask;
+    hb_face_t *face;
 
     bool requested_kerning : 1;
     bool requested_tracking : 1;
@@ -92,3 +93,16 @@ struct hb_ot_shape_planner_t
 
     HB_INTERNAL void compile(hb_shape_plan_t &plan, unsigned int *variations_index);
 };
+
+extern "C" {
+const rb_ot_map_t *hb_shape_plan_map(const hb_shape_plan_t *plan);
+const void *hb_shape_plan_data(const hb_shape_plan_t *plan);
+hb_script_t hb_shape_plan_script(const hb_shape_plan_t *plan);
+const rb_ttf_parser_t* hb_shape_plan_ttf_parser(const hb_shape_plan_t *plan);
+const hb_face_t* hb_shape_plan_face(const hb_shape_plan_t *plan);
+
+rb_ot_map_builder_t *hb_ot_shape_planner_map(const hb_ot_shape_planner_t *planner);
+hb_script_t hb_ot_shape_planner_script(const hb_ot_shape_planner_t *planner);
+
+void rb_shaper_destroy(hb_ot_complex_shaper_t *shaper);
+}

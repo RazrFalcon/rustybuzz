@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 
-use crate::CodePoint;
+use crate::{ffi, CodePoint, Tag};
 
 const S_DAGESH_FORMS: &[CodePoint] = &[
     0xFB30, // ALEF
@@ -119,15 +119,38 @@ fn compose(
 
 #[no_mangle]
 pub extern "C" fn rb_complex_hebrew_compose(
-    has_gpos_mark: bool,
+    c: *const ffi::hb_ot_shape_normalize_context_t,
     a: CodePoint,
     b: CodePoint,
     ab: *mut CodePoint,
 ) -> bool {
+    let has_gpos_mark = unsafe { ffi::hb_ot_shape_normalize_context_has_gpos_mark(c) };
     if let Some(new_ab) = compose(has_gpos_mark, a, b) {
         unsafe { *ab = new_ab; }
         true
     } else {
         false
     }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_create_hebrew_shaper() -> *const ffi::hb_ot_complex_shaper_t {
+    let shaper = Box::new(ffi::hb_ot_complex_shaper_t {
+        collect_features: None,
+        override_features: None,
+        data_create: None,
+        data_destroy: None,
+        preprocess_text: None,
+        postprocess_glyphs: None,
+        normalization_preference: ffi::HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
+        decompose: None,
+        compose: Some(rb_complex_hebrew_compose),
+        setup_masks: None,
+        // https://github.com/harfbuzz/harfbuzz/issues/347#issuecomment-267838368
+        gpos_tag: Tag::from_bytes(b"hebr").0,
+        reorder_marks: None,
+        zero_width_marks: ffi::HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
+        fallback_position: true,
+    });
+    Box::into_raw(shaper)
 }

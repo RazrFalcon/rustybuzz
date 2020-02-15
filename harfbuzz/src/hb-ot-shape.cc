@@ -80,11 +80,13 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t(hb_face_t *face, const hb_segment_p
 {
     shaper = hb_ot_shape_complex_categorize(this);
 
-    script_zero_marks = shaper->zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
-    script_fallback_mark_positioning = shaper->fallback_position;
+    script_zero_marks = hb_ot_complex_shaper_zero_width_marks(shaper) != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
+    script_fallback_mark_positioning = hb_ot_complex_shaper_fallback_position(shaper);
 
-    if (apply_morx)
-        shaper = &_hb_ot_complex_shaper_default;
+    if (apply_morx) {
+        rb_shaper_destroy((hb_ot_complex_shaper_t*)shaper);
+        shaper = rb_create_default_shaper();
+    }
 }
 
 hb_ot_shape_planner_t::~hb_ot_shape_planner_t()
@@ -114,7 +116,7 @@ void hb_ot_shape_planner_t::compile(hb_shape_plan_t &plan, unsigned int *variati
     plan.requested_tracking = !!plan.trak_mask;
 
     bool has_gpos_kern = rb_ot_map_get_feature_index(plan.map, 1, kern_tag) != HB_OT_LAYOUT_NO_FEATURE_INDEX;
-    bool disable_gpos = plan.shaper->gpos_tag && plan.shaper->gpos_tag != rb_ot_map_get_chosen_script(plan.map, 1);
+    bool disable_gpos = hb_ot_complex_shaper_gpos_tag(plan.shaper) && hb_ot_complex_shaper_gpos_tag(plan.shaper) != rb_ot_map_get_chosen_script(plan.map, 1);
 
     /*
      * Decide who provides glyph classes. GDEF or Unicode.
@@ -163,7 +165,7 @@ void hb_ot_shape_planner_t::compile(hb_shape_plan_t &plan, unsigned int *variati
     plan.apply_trak = plan.requested_tracking && hb_aat_layout_has_tracking(face);
 }
 
-bool hb_shape_plan_t::init0(hb_face_t *face,
+bool hb_shape_plan_t::init0(hb_face_t *face_,
                             unsigned int *variations_index,
                             const hb_segment_properties_t *props,
                             const hb_feature_t *user_features,
@@ -171,6 +173,7 @@ bool hb_shape_plan_t::init0(hb_face_t *face,
                             const int *coords,
                             unsigned int num_coords)
 {
+    face = face_;
     map = rb_ot_map_init();
     aat_map.init();
 
@@ -180,23 +183,17 @@ bool hb_shape_plan_t::init0(hb_face_t *face,
 
     planner.compile(*this, variations_index);
 
-    if (shaper->data_create) {
-        data = shaper->data_create(this);
-        if (unlikely(!data)) {
-            return false;
-        }
-    }
+    data = hb_ot_complex_shaper_data_create(shaper, this);
 
     return true;
 }
 
 void hb_shape_plan_t::fini()
 {
-    if (shaper->data_destroy)
-        shaper->data_destroy(const_cast<void *>(data));
-
+    hb_ot_complex_shaper_data_destroy(shaper, const_cast<void *>(data));
     rb_ot_map_fini(map);
     aat_map.fini();
+    rb_shaper_destroy((hb_ot_complex_shaper_t*)shaper);
 }
 
 void hb_shape_plan_t::substitute(hb_font_t *font, rb_buffer_t *buffer) const
@@ -280,8 +277,9 @@ static void hb_ot_shape_collect_features(hb_ot_shape_planner_t *planner,
 
     rb_ot_map_builder_enable_feature(map, HB_TAG('H', 'A', 'R', 'F'), F_NONE, 1);
 
-    if (planner->shaper->collect_features)
-        planner->shaper->collect_features(planner);
+    hb_ot_complex_shaper_collect_features(planner->shaper, planner);
+//    if (planner->shaper->collect_features)
+//        planner->shaper->collect_features(planner);
 
     rb_ot_map_builder_enable_feature(map, HB_TAG('B', 'U', 'Z', 'Z'), F_NONE, 1);
 
@@ -316,8 +314,7 @@ static void hb_ot_shape_collect_features(hb_ot_shape_planner_t *planner,
         }
     }
 
-    if (planner->shaper->override_features)
-        planner->shaper->override_features(planner);
+    hb_ot_complex_shaper_override_features(planner->shaper, planner);
 }
 
 /*
@@ -538,8 +535,7 @@ static inline void hb_ot_shape_setup_masks(const hb_ot_shape_context_t *c)
 
     hb_ot_shape_setup_masks_fraction(c);
 
-    if (c->plan->shaper->setup_masks)
-        c->plan->shaper->setup_masks(c->plan, buffer, c->font);
+    hb_ot_complex_shaper_setup_masks(c->plan->shaper, c->plan, buffer, c->font);
 
     for (unsigned int i = 0; i < c->num_user_features; i++) {
         const hb_feature_t *feature = &c->user_features[i];
@@ -662,8 +658,7 @@ static inline void hb_ot_substitute_post(const hb_ot_shape_context_t *c)
     if (c->plan->apply_morx)
         hb_aat_layout_remove_deleted_glyphs(c->buffer);
 
-    if (c->plan->shaper->postprocess_glyphs)
-        c->plan->shaper->postprocess_glyphs(c->plan, c->buffer, c->font);
+    hb_ot_complex_shaper_postprocess_glyphs(c->plan->shaper, c->plan, c->buffer, c->font);
 }
 
 /*
@@ -732,7 +727,7 @@ static inline void hb_ot_position_complex(const hb_ot_shape_context_t *c)
     hb_ot_layout_position_start(c->font, c->buffer);
 
     if (c->plan->zero_marks)
-        switch (c->plan->shaper->zero_width_marks) {
+        switch (hb_ot_complex_shaper_zero_width_marks(c->plan->shaper)) {
         case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY:
             zero_mark_widths_by_gdef(c->buffer, adjust_offsets_when_zeroing);
             break;
@@ -746,7 +741,7 @@ static inline void hb_ot_position_complex(const hb_ot_shape_context_t *c)
     c->plan->position(c->font, c->buffer);
 
     if (c->plan->zero_marks)
-        switch (c->plan->shaper->zero_width_marks) {
+        switch (hb_ot_complex_shaper_zero_width_marks(c->plan->shaper)) {
         case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE:
             zero_mark_widths_by_gdef(c->buffer, adjust_offsets_when_zeroing);
             break;
@@ -828,8 +823,7 @@ static void hb_ot_shape_internal(hb_ot_shape_context_t *c)
 
     hb_ensure_native_direction(c->buffer);
 
-    if (c->plan->shaper->preprocess_text)
-        c->plan->shaper->preprocess_text(c->plan, c->buffer, c->font);
+    hb_ot_complex_shaper_preprocess_text(c->plan->shaper, c->plan, c->buffer, c->font);
 
     hb_ot_substitute_pre(c);
     hb_ot_position(c);
@@ -852,4 +846,34 @@ hb_bool_t _hb_ot_shape(hb_shape_plan_t *shape_plan,
     hb_ot_shape_internal(&c);
 
     return true;
+}
+
+const rb_ot_map_t *hb_shape_plan_map(const hb_shape_plan_t *plan)
+{
+    return plan->map;
+}
+
+const void *hb_shape_plan_data(const hb_shape_plan_t *plan)
+{
+    return plan->data;
+}
+
+hb_script_t hb_shape_plan_script(const hb_shape_plan_t *plan)
+{
+    return plan->props.script;
+}
+
+const rb_ttf_parser_t* hb_shape_plan_ttf_parser(const hb_shape_plan_t *plan)
+{
+    return plan->face->ttf_parser;
+}
+
+rb_ot_map_builder_t *hb_ot_shape_planner_map(const hb_ot_shape_planner_t *planner)
+{
+    return planner->map;
+}
+
+hb_script_t hb_ot_shape_planner_script(const hb_ot_shape_planner_t *planner)
+{
+    return planner->props.script;
 }

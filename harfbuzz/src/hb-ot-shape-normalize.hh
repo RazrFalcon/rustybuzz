@@ -51,9 +51,11 @@ struct hb_ot_shape_normalize_context_t
     const hb_shape_plan_t *plan;
     rb_buffer_t *buffer;
     hb_font_t *font;
-    bool (*decompose)(const hb_ot_shape_normalize_context_t *c,
-                      hb_codepoint_t ab,
-                      hb_codepoint_t *a,
-                      hb_codepoint_t *b);
-    bool (*compose)(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab);
 };
+
+extern "C" {
+bool hb_ot_shape_normalize_context_has_gpos_mark(const hb_ot_shape_normalize_context_t *c);
+const rb_ttf_parser_t *hb_ot_shape_normalize_context_ttf_parser(const hb_ot_shape_normalize_context_t *c);
+const void* hb_ot_shape_normalize_context_plan_data(const hb_ot_shape_normalize_context_t *c);
+const hb_face_t* hb_ot_shape_normalize_context_face(const hb_ot_shape_normalize_context_t *c);
+}

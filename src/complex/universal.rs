@@ -1,9 +1,13 @@
 //! Universal Shaping Engine.
 //! https://docs.microsoft.com/en-us/typography/script-development/use
 
+use std::convert::TryFrom;
+use std::os::raw::c_void;
+
 use crate::{ffi, CodePoint, Tag, Buffer, GlyphInfo};
 use crate::buffer::BufferFlags;
 use crate::map::{Map, MapBuilder, FeatureFlags};
+use crate::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_flag64, hb_flag64_unsafe, hb_flag, hb_flag_unsafe};
 
 #[allow(dead_code)]
@@ -82,24 +86,6 @@ extern "C" {
         font: *mut ffi::hb_font_t,
         buffer: *mut ffi::rb_buffer_t,
     );
-
-    fn hb_complex_universal_record_pref(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
-
-    fn hb_complex_universal_reorder(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
-
-    fn hb_complex_universal_clear_substitution_flags(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
 }
 
 // These features are applied all at once, before reordering.
@@ -159,8 +145,11 @@ impl GlyphInfo {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_universal_collect_features(builder: *mut ffi::rb_ot_map_builder_t) {
-    let builder = MapBuilder::from_ptr_mut(builder);
+pub extern "C" fn rb_complex_universal_collect_features(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
 
     // Do this before any lookups have been applied.
     builder.add_gsub_pause(Some(hb_complex_universal_setup_syllables));
@@ -172,19 +161,19 @@ pub extern "C" fn rb_complex_universal_collect_features(builder: *mut ffi::rb_ot
     builder.enable_feature(Tag::from_bytes(b"akhn"), FeatureFlags::MANUAL_ZWJ, 1);
 
     // Reordering group
-    builder.add_gsub_pause(Some(hb_complex_universal_clear_substitution_flags));
+    builder.add_gsub_pause(Some(rb_complex_universal_clear_substitution_flags));
     builder.add_feature(Tag::from_bytes(b"rphf"), FeatureFlags::MANUAL_ZWJ, 1);
     builder.add_gsub_pause(Some(hb_complex_universal_record_rphf));
-    builder.add_gsub_pause(Some(hb_complex_universal_clear_substitution_flags));
+    builder.add_gsub_pause(Some(rb_complex_universal_clear_substitution_flags));
     builder.enable_feature(Tag::from_bytes(b"pref"), FeatureFlags::MANUAL_ZWJ, 1);
-    builder.add_gsub_pause(Some(hb_complex_universal_record_pref));
+    builder.add_gsub_pause(Some(rb_complex_universal_record_pref));
 
     // Orthographic unit shaping group
     for feature in BASIC_FEATURES {
         builder.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
     }
 
-    builder.add_gsub_pause(Some(hb_complex_universal_reorder));
+    builder.add_gsub_pause(Some(rb_complex_universal_reorder));
     builder.add_gsub_pause(Some(super::hb_layout_clear_syllables));
 
     // Topographical features
@@ -449,4 +438,110 @@ pub extern "C" fn rb_complex_universal_reorder_syllable(
         end as usize,
         Buffer::from_ptr_mut(buffer),
     )
+}
+
+#[no_mangle]
+pub extern "C" fn rb_complex_universal_compose(
+    _: *const ffi::hb_ot_shape_normalize_context_t,
+    a: ffi::hb_codepoint_t,
+    b: ffi::hb_codepoint_t,
+    ab: *mut ffi::hb_codepoint_t,
+) -> bool {
+    // Avoid recomposing split matras.
+    if char::try_from(a).unwrap().general_category().is_mark() {
+        return false;
+    }
+
+    crate::unicode::rb_ucd_compose(a, b, ab) != 0
+}
+
+#[no_mangle]
+pub extern "C" fn rb_complex_universal_clear_substitution_flags(
+    _: *const ffi::hb_shape_plan_t,
+    _: *mut ffi::hb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    for info in buffer.info_slice_mut() {
+        info.clear_substituted();
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_complex_universal_record_pref(
+    _: *const ffi::hb_shape_plan_t,
+    _: *mut ffi::hb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let buffer = Buffer::from_ptr_mut(buffer);
+
+    let mut start = 0;
+    let mut end = buffer.next_syllable(0);
+    while start < buffer.len() {
+        // Mark a substituted pref as VPre, as they behave the same way.
+        for i in start..end {
+            if buffer.info[i].is_substituted() {
+                buffer.info[i].set_use_category(Category::VPre);
+                break;
+            }
+        }
+
+        start = end;
+        end = buffer.next_syllable(start);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_complex_universal_reorder(
+    plan: *const ffi::hb_shape_plan_t,
+    _: *mut ffi::hb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    let font = unsafe {
+        let ttf_parser_data = ffi::hb_shape_plan_ttf_parser(plan);
+        crate::font::ttf_parser_from_raw(ttf_parser_data)
+    };
+
+    insert_dotted_circles(font, buffer);
+
+    let mut start = 0;
+    let mut end = buffer.next_syllable(0);
+    while start < buffer.len() {
+        reorder_syllable(start, end, buffer);
+        start = end;
+        end = buffer.next_syllable(start);
+    }
+}
+
+extern "C" {
+    fn hb_complex_universal_data_create(plan: *const ffi::hb_shape_plan_t) -> *mut c_void;
+    fn hb_complex_universal_data_destroy(data: *mut c_void);
+    fn hb_complex_universal_preprocess_text(plan: *const ffi::hb_shape_plan_t,
+                                            buffer: *mut ffi::rb_buffer_t,
+                                            font: *mut ffi::hb_font_t);
+    fn hb_complex_universal_setup_masks(plan: *const ffi::hb_shape_plan_t,
+                                        buffer: *mut ffi::rb_buffer_t,
+                                        font: *mut ffi::hb_font_t);
+}
+
+#[no_mangle]
+pub extern "C" fn rb_create_use_shaper() -> *const ffi::hb_ot_complex_shaper_t {
+    let shaper = Box::new(ffi::hb_ot_complex_shaper_t {
+        collect_features: Some(rb_complex_universal_collect_features),
+        override_features: None,
+        data_create: Some(hb_complex_universal_data_create),
+        data_destroy: Some(hb_complex_universal_data_destroy),
+        preprocess_text: Some(hb_complex_universal_preprocess_text),
+        postprocess_glyphs: None,
+        normalization_preference: ffi::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
+        decompose: None,
+        compose: Some(rb_complex_universal_compose),
+        setup_masks: Some(hb_complex_universal_setup_masks),
+        gpos_tag: 0,
+        reorder_marks: None,
+        zero_width_marks: ffi::HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
+        fallback_position: false,
+    });
+    Box::into_raw(shaper)
 }

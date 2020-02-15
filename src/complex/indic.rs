@@ -219,26 +219,6 @@ const RA_CHARS: &[u32] = &[
     0x179A, // Khmer
 ];
 
-extern "C" {
-    fn hb_complex_indic_setup_syllables(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
-
-    fn hb_complex_indic_initial_reordering(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
-
-    fn hb_complex_indic_final_reordering(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
-}
-
 impl GlyphInfo {
     pub(crate) fn indic_category(&self) -> Category {
         unsafe {
@@ -464,25 +444,28 @@ fn matra_position_indic(u: CodePoint, side: Position) -> Position {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_indic_collect_features(builder: *mut ffi::rb_ot_map_builder_t) {
-    let builder = MapBuilder::from_ptr_mut(builder);
+pub extern "C" fn rb_complex_indic_collect_features(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
 
     // Do this before any lookups have been applied.
-    builder.add_gsub_pause(Some(hb_complex_indic_setup_syllables));
+    builder.add_gsub_pause(Some(rb_complex_indic_setup_syllables));
 
     builder.enable_feature(Tag::from_bytes(b"locl"), FeatureFlags::default(), 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
     builder.enable_feature(Tag::from_bytes(b"ccmp"), FeatureFlags::default(), 1);
 
-    builder.add_gsub_pause(Some(hb_complex_indic_initial_reordering));
+    builder.add_gsub_pause(Some(rb_complex_indic_initial_reordering));
 
     for feature in INDIC_FEATURES.iter().take(10) {
         builder.add_feature(feature.0, feature.1, 1);
         builder.add_gsub_pause(None);
     }
 
-    builder.add_gsub_pause(Some(hb_complex_indic_final_reordering));
+    builder.add_gsub_pause(Some(rb_complex_indic_final_reordering));
 
     for feature in INDIC_FEATURES.iter().skip(10) {
         builder.add_feature(feature.0, feature.1, 1);
@@ -495,8 +478,12 @@ pub extern "C" fn rb_complex_indic_collect_features(builder: *mut ffi::rb_ot_map
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_indic_override_features(builder: *mut ffi::rb_ot_map_builder_t) {
-    let builder = MapBuilder::from_ptr_mut(builder);
+pub extern "C" fn rb_complex_indic_override_features(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
+
     builder.disable_feature(Tag::from_bytes(b"liga"));
 }
 
@@ -617,7 +604,7 @@ struct IndicShapePlan {
     config: IndicConfig,
     is_old_spec: bool,
     uniscribe_bug_compatible: bool,
-    virama_glyph: u32, // TODO: to Option
+    virama_glyph: Option<u32>,
     rphf: WouldSubstituteFeature,
     pref: WouldSubstituteFeature,
     blwf: WouldSubstituteFeature,
@@ -626,7 +613,7 @@ struct IndicShapePlan {
 }
 
 impl IndicShapePlan {
-    fn new(map: &Map, script: Script) -> Self {
+    fn new(map: &Map, script: Script, font: &ttf_parser::Font) -> Self {
         let config = if let Some(c) = INDIC_CONFIGS.iter().skip(1).find(|c| c.script == Some(script)) {
             *c
         } else {
@@ -654,11 +641,18 @@ impl IndicShapePlan {
             }
         }
 
+        let mut virama_glyph = None;
+        if config.virama != 0 {
+            if let Some(g) = font.glyph_index(char::try_from(config.virama).unwrap()) {
+                virama_glyph = Some(g.0 as u32);
+            }
+        }
+
         IndicShapePlan {
             config,
             is_old_spec,
             uniscribe_bug_compatible: false,
-            virama_glyph: std::u32::MAX,
+            virama_glyph,
             rphf: WouldSubstituteFeature::new(map, Tag::from_bytes(b"rphf"), zero_context),
             pref: WouldSubstituteFeature::new(map, Tag::from_bytes(b"pref"), zero_context),
             blwf: WouldSubstituteFeature::new(map, Tag::from_bytes(b"blwf"), zero_context),
@@ -666,26 +660,17 @@ impl IndicShapePlan {
             mask_array,
         }
     }
-
-    fn load_virama_glyph(&mut self, font: &ttf_parser::Font) -> bool {
-        if self.config.virama == 0 {
-            return false;
-        }
-
-        match font.glyph_index(char::try_from(self.config.virama).unwrap()) {
-            Some(g) => {
-                self.virama_glyph = g.0 as u32;
-                true
-            }
-            None => false,
-        }
-    }
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_indic_data_create(map: *const ffi::rb_ot_map_t, script: Tag) -> *mut c_void {
-    let script = Script(script);
-    let plan = IndicShapePlan::new(Map::from_ptr(map), script);
+pub extern "C" fn rb_complex_indic_data_create(plan: *const ffi::hb_shape_plan_t) -> *mut c_void {
+    let map = unsafe { ffi::hb_shape_plan_map(plan) };
+    let script = unsafe { ffi::hb_shape_plan_script(plan) };
+    let font = unsafe {
+        let ttf_parser_data = ffi::hb_shape_plan_ttf_parser(plan);
+        crate::font::ttf_parser_from_raw(ttf_parser_data)
+    };
+    let plan = IndicShapePlan::new(Map::from_ptr(map), Script(Tag(script)), font);
     Box::into_raw(Box::new(plan)) as *mut _
 }
 
@@ -797,8 +782,7 @@ fn final_reordering_impl(plan: &IndicShapePlan, script: Script, start: usize, en
     // class of OT_H is desired but has been lost.
     //
     // We don't call load_virama_glyph(), since we know it's already loaded.
-    let virama_glyph = plan.virama_glyph;
-    if virama_glyph != 0 {
+    if let Some(virama_glyph) = plan.virama_glyph {
         for info in &mut buffer.info[start..end] {
             if info.codepoint == virama_glyph && info.is_ligated() && info.is_multiplied() {
                 // This will make sure that this glyph passes is_halant() test.
@@ -1228,27 +1212,37 @@ fn final_reordering_impl(plan: &IndicShapePlan, script: Script, start: usize, en
 
 #[no_mangle]
 pub extern "C" fn rb_complex_indic_final_reordering(
-    indic_plan: *const c_void,
-    script: Tag,
+    plan: *const ffi::hb_shape_plan_t,
+    _: *mut ffi::hb_font_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
-    let indic_plan = unsafe { &*(indic_plan as *const IndicShapePlan) };
+    let script = Script(Tag(unsafe { ffi::hb_shape_plan_script(plan) }));
+    let plan = unsafe {
+        let plan_data = ffi::hb_shape_plan_data(plan);
+        &*(plan_data as *const IndicShapePlan)
+    };
     let buffer = Buffer::from_ptr_mut(buffer);
-    final_reordering(indic_plan, Script(script), buffer);
+    final_reordering(plan, script, buffer);
 }
 
 #[no_mangle]
 pub extern "C" fn rb_complex_indic_initial_reordering(
-    ttf_parser_data: *const ffi::rb_ttf_parser_t,
-    face: *mut ffi::hb_face_t,
-    indic_plan: *mut c_void,
+    plan: *const ffi::hb_shape_plan_t,
+    font: *mut ffi::hb_font_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
-    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
-    let plan = unsafe { &mut *(indic_plan as *mut IndicShapePlan) };
+    let face = unsafe { ffi::hb_font_face(font) };
+    let font = unsafe {
+        let ttf_parser_data = ffi::hb_shape_plan_ttf_parser(plan);
+        crate::font::ttf_parser_from_raw(ttf_parser_data)
+    };
+    let plan = unsafe {
+        let plan_data = ffi::hb_shape_plan_data(plan);
+        &*(plan_data as *const IndicShapePlan)
+    };
     let buffer = Buffer::from_ptr_mut(buffer);
 
-    update_consonant_positions(font, plan, face, buffer);
+    update_consonant_positions(plan, face, buffer);
     insert_dotted_circles(font, buffer);
 
     let mut start = 0;
@@ -1261,7 +1255,11 @@ pub extern "C" fn rb_complex_indic_initial_reordering(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_indic_setup_syllables(buffer: *mut ffi::rb_buffer_t) {
+pub extern "C" fn rb_complex_indic_setup_syllables(
+    _: *const ffi::hb_shape_plan_t,
+    _: *mut ffi::hb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
     let buffer = Buffer::from_ptr_mut(buffer);
 
     super::indic_machine::find_syllables_indic(buffer);
@@ -1277,15 +1275,20 @@ pub extern "C" fn rb_complex_indic_setup_syllables(buffer: *mut ffi::rb_buffer_t
 
 #[no_mangle]
 pub extern "C" fn rb_complex_indic_decompose(
-    indic_plan: *const c_void,
-    face: *mut ffi::hb_face_t,
-    ttf_parser_data: *const ffi::rb_ttf_parser_t,
+    c: *const ffi::hb_ot_shape_normalize_context_t,
     ab: CodePoint,
     a: *mut CodePoint,
     b: *mut CodePoint,
 ) -> bool {
-    let plan = unsafe { &*(indic_plan as *const IndicShapePlan) };
-    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
+    let plan = unsafe {
+        let plan_data = ffi::hb_ot_shape_normalize_context_plan_data(c);
+        &*(plan_data as *const IndicShapePlan)
+    };
+    let font = {
+        let ttf_parser_data = unsafe { ffi::hb_ot_shape_normalize_context_ttf_parser(c) };
+        crate::font::ttf_parser_from_raw(ttf_parser_data)
+    };
+    let face = unsafe { ffi::hb_ot_shape_normalize_context_face(c) };
 
     // Don't decompose these.
     match ab {
@@ -1343,12 +1346,13 @@ pub extern "C" fn rb_complex_indic_decompose(
 
 #[no_mangle]
 pub extern "C" fn rb_complex_indic_compose(
+    _: *const ffi::hb_ot_shape_normalize_context_t,
     a: CodePoint,
     b: CodePoint,
     ab: *mut CodePoint,
 ) -> bool {
     // Avoid recomposing split matras.
-    if char::try_from(a).unwrap().general_category().is_unicode_mark() {
+    if char::try_from(a).unwrap().general_category().is_mark() {
         return false;
     }
 
@@ -2008,8 +2012,7 @@ fn insert_dotted_circles(font: &ttf_parser::Font, buffer: &mut Buffer) {
 }
 
 fn update_consonant_positions(
-    font: &ttf_parser::Font,
-    plan: &mut IndicShapePlan,
+    plan: &IndicShapePlan,
     face: *mut ffi::hb_face_t,
     buffer: &mut Buffer,
 ) {
@@ -2017,11 +2020,10 @@ fn update_consonant_positions(
         return;
     }
 
-    if plan.load_virama_glyph(font) {
+    if let Some(virama) = plan.virama_glyph {
         for info in buffer.info_slice_mut() {
             if info.indic_position() == Position::BaseC {
                 let consonant = info.codepoint;
-                let virama = plan.virama_glyph;
                 info.set_indic_position(consonant_position_from_face(plan, consonant, virama, face));
             }
         }
@@ -2029,8 +2031,20 @@ fn update_consonant_positions(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_indic_setup_masks(
+pub extern "C" fn rb_complex_indic_preprocess_text(
+    _: *const ffi::hb_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
+    _: *mut ffi::hb_font_t,
+) {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    super::vowel_constraints::preprocess_text_vowel_constraints(buffer);
+}
+
+#[no_mangle]
+pub extern "C" fn rb_complex_indic_setup_masks(
+    _: *const ffi::hb_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    _: *mut ffi::hb_font_t,
 ) {
     // We cannot setup masks here.  We save information about characters
     // and setup masks later on in a pause-callback.
@@ -2039,4 +2053,25 @@ pub extern "C" fn rb_indic_setup_masks(
     for info in buffer.info_slice_mut() {
         info.set_indic_properties();
     }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_create_indic_shaper() -> *const ffi::hb_ot_complex_shaper_t {
+    let shaper = Box::new(ffi::hb_ot_complex_shaper_t {
+        collect_features: Some(rb_complex_indic_collect_features),
+        override_features: Some(rb_complex_indic_override_features),
+        data_create: Some(rb_complex_indic_data_create),
+        data_destroy: Some(rb_complex_indic_data_destroy),
+        preprocess_text: Some(rb_complex_indic_preprocess_text),
+        postprocess_glyphs: None,
+        normalization_preference: ffi::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
+        decompose: Some(rb_complex_indic_decompose),
+        compose: Some(rb_complex_indic_compose),
+        setup_masks: Some(rb_complex_indic_setup_masks),
+        gpos_tag: 0,
+        reorder_marks: None,
+        zero_width_marks: ffi::HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
+        fallback_position: false,
+    });
+    Box::into_raw(shaper)
 }

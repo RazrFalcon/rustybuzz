@@ -48,118 +48,64 @@ enum hb_ot_shape_zero_width_marks_type_t {
     HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE
 };
 
-/* Master OT shaper list */
-#define HB_COMPLEX_SHAPERS_IMPLEMENT_SHAPERS                                                                           \
-    HB_COMPLEX_SHAPER_IMPLEMENT(default) /* should be first */                                                         \
-    HB_COMPLEX_SHAPER_IMPLEMENT(arabic)                                                                                \
-    HB_COMPLEX_SHAPER_IMPLEMENT(hangul)                                                                                \
-    HB_COMPLEX_SHAPER_IMPLEMENT(hebrew)                                                                                \
-    HB_COMPLEX_SHAPER_IMPLEMENT(indic)                                                                                 \
-    HB_COMPLEX_SHAPER_IMPLEMENT(khmer)                                                                                 \
-    HB_COMPLEX_SHAPER_IMPLEMENT(myanmar)                                                                               \
-    HB_COMPLEX_SHAPER_IMPLEMENT(myanmar_zawgyi)                                                                        \
-    HB_COMPLEX_SHAPER_IMPLEMENT(thai)                                                                                  \
-    HB_COMPLEX_SHAPER_IMPLEMENT(use)                                                                                   \
-    /* ^--- Add new shapers here */
+typedef struct hb_ot_complex_shaper_t hb_ot_complex_shaper_t;
 
-struct hb_ot_complex_shaper_t
-{
-    /* collect_features()
-     * Called during shape_plan().
-     * Shapers should use plan->map to add their features and callbacks.
-     * May be NULL.
-     */
-    void (*collect_features)(hb_ot_shape_planner_t *plan);
+extern "C" {
+void hb_ot_complex_shaper_collect_features(const hb_ot_complex_shaper_t *shaper, hb_ot_shape_planner_t *planner);
+void hb_ot_complex_shaper_override_features(const hb_ot_complex_shaper_t *shaper, hb_ot_shape_planner_t *planner);
+void *hb_ot_complex_shaper_data_create(const hb_ot_complex_shaper_t *shaper, hb_shape_plan_t *plan);
+void hb_ot_complex_shaper_data_destroy(const hb_ot_complex_shaper_t *shaper, void *data);
+void hb_ot_complex_shaper_preprocess_text(const hb_ot_complex_shaper_t *shaper,
+                                          const hb_shape_plan_t *plan,
+                                          rb_buffer_t *buffer,
+                                          hb_font_t *font);
+void hb_ot_complex_shaper_postprocess_glyphs(const hb_ot_complex_shaper_t *shaper,
+                                             const hb_shape_plan_t *plan,
+                                             rb_buffer_t *buffer,
+                                             hb_font_t *font);
+hb_ot_shape_normalization_mode_t hb_ot_complex_shaper_normalization_preference(const hb_ot_complex_shaper_t *shaper);
+bool hb_ot_complex_shaper_decompose(const hb_ot_complex_shaper_t *shaper,
+                                    const hb_ot_shape_normalize_context_t *c,
+                                    hb_codepoint_t ab,
+                                    hb_codepoint_t *a,
+                                    hb_codepoint_t *b);
+bool hb_ot_complex_shaper_compose(const hb_ot_complex_shaper_t *shaper,
+                                  const hb_ot_shape_normalize_context_t *c,
+                                  hb_codepoint_t a,
+                                  hb_codepoint_t b,
+                                  hb_codepoint_t *ab);
+void hb_ot_complex_shaper_setup_masks(const hb_ot_complex_shaper_t *shaper,
+                                      const hb_shape_plan_t *plan,
+                                      rb_buffer_t *buffer,
+                                      hb_font_t *font);
+hb_tag_t hb_ot_complex_shaper_gpos_tag(const hb_ot_complex_shaper_t *shaper);
+void hb_ot_complex_shaper_reorder_marks(const hb_ot_complex_shaper_t *shaper,
+                                        const hb_shape_plan_t *plan,
+                                        rb_buffer_t *buffer,
+                                        unsigned int start,
+                                        unsigned int end);
+hb_ot_shape_zero_width_marks_type_t hb_ot_complex_shaper_zero_width_marks(const hb_ot_complex_shaper_t *shaper);
+bool hb_ot_complex_shaper_fallback_position(const hb_ot_complex_shaper_t *shaper);
+}
 
-    /* override_features()
-     * Called during shape_plan().
-     * Shapers should use plan->map to override features and add callbacks after
-     * common features are added.
-     * May be NULL.
-     */
-    void (*override_features)(hb_ot_shape_planner_t *plan);
+extern "C" {
+hb_ot_complex_shaper_t *rb_create_default_shaper();
+hb_ot_complex_shaper_t *rb_create_arabic_shaper();
+hb_ot_complex_shaper_t *rb_create_hangul_shaper();
+hb_ot_complex_shaper_t *rb_create_hebrew_shaper();
+hb_ot_complex_shaper_t *rb_create_indic_shaper();
+hb_ot_complex_shaper_t *rb_create_khmer_shaper();
+hb_ot_complex_shaper_t *rb_create_myanmar_shaper();
+hb_ot_complex_shaper_t *rb_create_myanmar_zawgyi_shaper();
+hb_ot_complex_shaper_t *rb_create_thai_shaper();
+hb_ot_complex_shaper_t *rb_create_use_shaper();
+}
 
-    /* data_create()
-     * Called at the end of shape_plan().
-     * Whatever shapers return will be accessible through plan->data later.
-     * If nullptr is returned, means a plan failure.
-     */
-    void *(*data_create)(const hb_shape_plan_t *plan);
-
-    /* data_destroy()
-     * Called when the shape_plan is being destroyed.
-     * plan->data is passed here for destruction.
-     * If nullptr is returned, means a plan failure.
-     * May be NULL.
-     */
-    void (*data_destroy)(void *data);
-
-    /* preprocess_text()
-     * Called during shape().
-     * Shapers can use to modify text before shaping starts.
-     * May be NULL.
-     */
-    void (*preprocess_text)(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font);
-
-    /* postprocess_glyphs()
-     * Called during shape().
-     * Shapers can use to modify glyphs after shaping ends.
-     * May be NULL.
-     */
-    void (*postprocess_glyphs)(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font);
-
-    hb_ot_shape_normalization_mode_t normalization_preference;
-
-    /* decompose()
-     * Called during shape()'s normalization.
-     * May be NULL.
-     */
-    bool (*decompose)(const hb_ot_shape_normalize_context_t *c,
-                      hb_codepoint_t ab,
-                      hb_codepoint_t *a,
-                      hb_codepoint_t *b);
-
-    /* compose()
-     * Called during shape()'s normalization.
-     * May be NULL.
-     */
-    bool (*compose)(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab);
-
-    /* setup_masks()
-     * Called during shape().
-     * Shapers should use map to get feature masks and set on buffer.
-     * Shapers may NOT modify characters.
-     * May be NULL.
-     */
-    void (*setup_masks)(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb_font_t *font);
-
-    /* gpos_tag()
-     * If not HB_TAG_NONE, then must match found GPOS script tag for
-     * GPOS to be applied.  Otherwise, fallback positioning will be used.
-     */
-    hb_tag_t gpos_tag;
-
-    /* reorder_marks()
-     * Called during shape().
-     * Shapers can use to modify ordering of combining marks.
-     * May be NULL.
-     */
-    void (*reorder_marks)(const hb_shape_plan_t *plan, rb_buffer_t *buffer, unsigned int start, unsigned int end);
-
-    hb_ot_shape_zero_width_marks_type_t zero_width_marks;
-
-    bool fallback_position;
-};
-
-#define HB_COMPLEX_SHAPER_IMPLEMENT(name) extern HB_INTERNAL const hb_ot_complex_shaper_t _hb_ot_complex_shaper_##name;
-HB_COMPLEX_SHAPERS_IMPLEMENT_SHAPERS
-#undef HB_COMPLEX_SHAPER_IMPLEMENT
-
-static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const hb_ot_shape_planner_t *planner)
+inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const hb_ot_shape_planner_t *planner)
 {
     switch ((hb_tag_t)planner->props.script) {
     default:
-        return &_hb_ot_complex_shaper_default;
+        return rb_create_default_shaper();
 
     /* Unicode-1.1 additions */
     case HB_SCRIPT_ARABIC:
@@ -190,27 +136,28 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * This is because we do fallback shaping for Arabic script (and not others).
          * But note that Arabic shaping is applicable only to horizontal layout; for
          * vertical text, just use the generic shaper instead. */
-        if ((rb_ot_map_builder_chosen_script(planner->map, 0) != HB_OT_TAG_DEFAULT_SCRIPT || planner->props.script == HB_SCRIPT_ARABIC) &&
+        if ((rb_ot_map_builder_chosen_script(planner->map, 0) != HB_OT_TAG_DEFAULT_SCRIPT ||
+             planner->props.script == HB_SCRIPT_ARABIC) &&
             HB_DIRECTION_IS_HORIZONTAL(planner->props.direction))
-            return &_hb_ot_complex_shaper_arabic;
+            return rb_create_arabic_shaper();
         else
-            return &_hb_ot_complex_shaper_default;
+            return rb_create_default_shaper();
 
     /* Unicode-1.1 additions */
     case HB_SCRIPT_THAI:
     case HB_SCRIPT_LAO:
 
-        return &_hb_ot_complex_shaper_thai;
+        return rb_create_thai_shaper();
 
     /* Unicode-1.1 additions */
     case HB_SCRIPT_HANGUL:
 
-        return &_hb_ot_complex_shaper_hangul;
+        return rb_create_hangul_shaper();
 
     /* Unicode-1.1 additions */
     case HB_SCRIPT_HEBREW:
 
-        return &_hb_ot_complex_shaper_hebrew;
+        return rb_create_hebrew_shaper();
 
     /* Unicode-1.1 additions */
     case HB_SCRIPT_BENGALI:
@@ -233,14 +180,14 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * If it's indy3 tag, send to USE. */
         if (rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
             rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n'))
-            return &_hb_ot_complex_shaper_default;
+            return rb_create_default_shaper();
         else if ((rb_ot_map_builder_chosen_script(planner->map, 0) & 0x000000FF) == '3')
-            return &_hb_ot_complex_shaper_use;
+            return rb_create_use_shaper();
         else
-            return &_hb_ot_complex_shaper_indic;
+            return rb_create_indic_shaper();
 
     case HB_SCRIPT_KHMER:
-        return &_hb_ot_complex_shaper_khmer;
+        return rb_create_khmer_shaper();
 
     case HB_SCRIPT_MYANMAR:
         /* If the designer designed the font for the 'DFLT' script,
@@ -253,14 +200,14 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
         if (rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
             rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n') ||
             rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('m', 'y', 'm', 'r'))
-            return &_hb_ot_complex_shaper_default;
+            return rb_create_default_shaper();
         else
-            return &_hb_ot_complex_shaper_myanmar;
+            return rb_create_myanmar_shaper();
 
     /* https://github.com/harfbuzz/harfbuzz/issues/1162 */
     case HB_SCRIPT_MYANMAR_ZAWGYI:
 
-        return &_hb_ot_complex_shaper_myanmar_zawgyi;
+        return rb_create_myanmar_zawgyi_shaper();
 
     /* Unicode-2.0 additions */
     case HB_SCRIPT_TIBETAN:
@@ -360,8 +307,8 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
          * GSUB/GPOS needed, so there may be no scripts found! */
         if (rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('D', 'F', 'L', 'T') ||
             rb_ot_map_builder_chosen_script(planner->map, 0) == HB_TAG('l', 'a', 't', 'n'))
-            return &_hb_ot_complex_shaper_default;
+            return rb_create_default_shaper();
         else
-            return &_hb_ot_complex_shaper_use;
+            return rb_create_use_shaper();
     }
 }

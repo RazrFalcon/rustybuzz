@@ -167,6 +167,24 @@ pub struct rb_ttf_parser_t {
 }
 
 #[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct rb_complex_shaper_t {
+    _unused: [u8; 0],
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct hb_ot_shape_planner_t {
+    _unused: [u8; 0],
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct hb_ot_shape_normalize_context_t {
+    _unused: [u8; 0],
+}
+
+#[repr(C)]
 #[derive(Copy, Clone)]
 pub union hb_var_int_t {
     pub var_u32: u32,
@@ -178,17 +196,89 @@ pub union hb_var_int_t {
     _bindgen_union_align: u32,
 }
 
+pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE: hb_ot_shape_zero_width_marks_type_t = 0;
+pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY: hb_ot_shape_zero_width_marks_type_t = 1;
+pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE: hb_ot_shape_zero_width_marks_type_t = 2;
+pub type hb_ot_shape_zero_width_marks_type_t = u32;
+
+//pub type hb_unicode_props_flags_t = u32;
+pub const HB_OT_SHAPE_NORMALIZATION_MODE_NONE: hb_ot_shape_normalization_mode_t = 0;
+//pub const HB_OT_SHAPE_NORMALIZATION_MODE_DECOMPOSED: hb_ot_shape_normalization_mode_t = 1;
+//pub const HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS: hb_ot_shape_normalization_mode_t = 2;
+pub const HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT : hb_ot_shape_normalization_mode_t = 3 ;
+//pub const HB_OT_SHAPE_NORMALIZATION_MODE_AUTO: hb_ot_shape_normalization_mode_t = 4;
+pub const HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT: hb_ot_shape_normalization_mode_t = 4;
+pub type hb_ot_shape_normalization_mode_t = u32;
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct hb_ot_complex_shaper_t {
+    pub collect_features: Option<unsafe extern "C" fn(plan: *mut hb_ot_shape_planner_t)>,
+    pub override_features: Option<unsafe extern "C" fn(plan: *mut hb_ot_shape_planner_t)>,
+    pub data_create: Option<unsafe extern "C" fn(plan: *const hb_shape_plan_t) -> *mut c_void>,
+    pub data_destroy: Option<unsafe extern "C" fn(data: *mut c_void)>,
+    pub preprocess_text: Option<
+        unsafe extern "C" fn(
+            plan: *const hb_shape_plan_t,
+            buffer: *mut rb_buffer_t,
+            font: *mut hb_font_t,
+        ),
+    >,
+    pub postprocess_glyphs: Option<
+        unsafe extern "C" fn(
+            plan: *const hb_shape_plan_t,
+            buffer: *mut rb_buffer_t,
+            font: *mut hb_font_t,
+        ),
+    >,
+    pub normalization_preference: hb_ot_shape_normalization_mode_t,
+    pub decompose: Option<
+        unsafe extern "C" fn(
+            c: *const hb_ot_shape_normalize_context_t,
+            ab: hb_codepoint_t,
+            a: *mut hb_codepoint_t,
+            b: *mut hb_codepoint_t,
+        ) -> bool,
+    >,
+    pub compose: Option<
+        unsafe extern "C" fn(
+            c: *const hb_ot_shape_normalize_context_t,
+            a: hb_codepoint_t,
+            b: hb_codepoint_t,
+            ab: *mut hb_codepoint_t,
+        ) -> bool,
+    >,
+    pub setup_masks: Option<
+        unsafe extern "C" fn(
+            plan: *const hb_shape_plan_t,
+            buffer: *mut rb_buffer_t,
+            font: *mut hb_font_t,
+        ),
+    >,
+    pub gpos_tag: hb_tag_t,
+    pub reorder_marks: Option<
+        unsafe extern "C" fn(
+            plan: *const hb_shape_plan_t,
+            buffer: *mut rb_buffer_t,
+            start: u32,
+            end: u32,
+        ),
+    >,
+    pub zero_width_marks: hb_ot_shape_zero_width_marks_type_t,
+    pub fallback_position: bool,
+}
 
 extern "C" {
     pub fn hb_blob_create(data: *const c_char, length: u32, mode: hb_memory_mode_t, user_data: *mut c_void,
                           destroy: hb_destroy_func_t) -> *mut hb_blob_t;
     pub fn hb_blob_destroy(blob: *mut hb_blob_t);
-    pub fn hb_face_create(blob: *mut hb_blob_t, rust_data: *const c_void, index: u32) -> *mut hb_face_t;
+    pub fn hb_face_create(blob: *mut hb_blob_t, ttf_parser_data: *const rb_ttf_parser_t, index: u32) -> *mut hb_face_t;
     pub fn hb_face_destroy(face: *mut hb_face_t);
     pub fn hb_face_set_upem(face: *mut hb_face_t, upem: u32);
     pub fn hb_face_get_upem(face: *const hb_face_t) -> u32;
-    pub fn hb_font_create(face: *mut hb_face_t, rust_data: *const c_void) -> *mut hb_font_t;
+    pub fn hb_font_create(face: *mut hb_face_t, ttf_parser_data: *const rb_ttf_parser_t) -> *mut hb_font_t;
     pub fn hb_font_destroy(font: *mut hb_font_t);
+    pub fn hb_font_face(font: *mut hb_font_t) -> *mut hb_face_t;
     pub fn hb_font_set_scale(font: *mut hb_font_t, x_scale: i32, y_scale: i32);
     pub fn hb_font_get_scale(font: *mut hb_font_t, x_scale: *mut i32, y_scale: *mut i32);
     pub fn hb_font_set_ppem(font: *mut hb_font_t, x_ppem: u32, y_ppem: u32);
@@ -200,6 +290,16 @@ extern "C" {
     pub fn hb_ot_glyf_get_side_bearing_var(font: *mut hb_font_t, glyph: u32, is_vertical: bool) -> i32;
     pub fn hb_ot_glyf_get_advance_var(font: *mut hb_font_t, glyph: u32, is_vertical: bool) -> u32;
     pub fn hb_shape(font: *mut hb_font_t, buffer: *mut rb_buffer_t, features: *const hb_feature_t, num_features: u32);
-    pub fn hb_ot_layout_lookup_would_substitute(face: *mut hb_face_t, lookup_index: u32, glyphs: *const hb_codepoint_t,
+    pub fn hb_ot_layout_lookup_would_substitute(face: *const hb_face_t, lookup_index: u32, glyphs: *const hb_codepoint_t,
                                                 glyphs_length: u32, zero_context: hb_bool_t) -> hb_bool_t;
+    pub fn hb_shape_plan_map(plan: *const hb_shape_plan_t) -> *const rb_ot_map_t;
+    pub fn hb_shape_plan_data(plan: *const hb_shape_plan_t) -> *const c_void;
+    pub fn hb_shape_plan_script(plan: *const hb_shape_plan_t) -> hb_script_t;
+    pub fn hb_shape_plan_ttf_parser(plan: *const hb_shape_plan_t) -> *const rb_ttf_parser_t;
+    pub fn hb_ot_shape_planner_map(planner: *const hb_ot_shape_planner_t) -> *mut rb_ot_map_builder_t;
+    pub fn hb_ot_shape_planner_script(plan: *const hb_ot_shape_planner_t) -> hb_script_t;
+    pub fn hb_ot_shape_normalize_context_has_gpos_mark(c: *const hb_ot_shape_normalize_context_t) -> bool;
+    pub fn hb_ot_shape_normalize_context_ttf_parser(c: *const hb_ot_shape_normalize_context_t) -> *const rb_ttf_parser_t;
+    pub fn hb_ot_shape_normalize_context_plan_data(c: *const hb_ot_shape_normalize_context_t) -> *const c_void;
+    pub fn hb_ot_shape_normalize_context_face(c: *const hb_ot_shape_normalize_context_t) -> *const hb_face_t;
 }

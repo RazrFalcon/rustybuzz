@@ -228,6 +228,11 @@ hb_font_destroy (hb_font_t *font)
   free (font);
 }
 
+hb_face_t* hb_font_face(hb_font_t *font)
+{
+    return font->face;
+}
+
 /**
  * hb_font_set_scale:
  * @font: a font.

@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 use std::os::raw::c_void;
 
-use crate::{Tag, Mask, Buffer, GlyphInfo, CodePoint};
+use crate::{Tag, Mask, Buffer, GlyphInfo};
 use crate::buffer::BufferFlags;
 use crate::map::{Map, MapBuilder, FeatureFlags};
 use crate::ffi;
@@ -89,8 +89,11 @@ impl KhmerShapePlan {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_khmer_data_create(map: *const ffi::rb_ot_map_t) -> *mut c_void {
-    let plan = KhmerShapePlan::new(Map::from_ptr(map));
+pub extern "C" fn rb_complex_khmer_data_create(plan: *const ffi::hb_shape_plan_t) -> *mut c_void {
+    let plan = {
+        let map = unsafe { ffi::hb_shape_plan_map(plan) };
+        KhmerShapePlan::new(Map::from_ptr(map))
+    };
     Box::into_raw(Box::new(plan)) as *mut _
 }
 
@@ -99,27 +102,16 @@ pub extern "C" fn rb_complex_khmer_data_destroy(data: *mut c_void) {
     unsafe { Box::from_raw(data as *mut KhmerShapePlan) };
 }
 
-extern "C" {
-    fn hb_complex_khmer_setup_syllables(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
-
-    fn hb_complex_khmer_reorder(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
-}
-
 #[no_mangle]
-pub extern "C" fn rb_complex_khmer_collect_features(builder: *mut ffi::rb_ot_map_builder_t) {
-    let builder = MapBuilder::from_ptr_mut(builder);
+pub extern "C" fn rb_complex_khmer_collect_features(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
 
     // Do this before any lookups have been applied.
-    builder.add_gsub_pause(Some(hb_complex_khmer_setup_syllables));
-    builder.add_gsub_pause(Some(hb_complex_khmer_reorder));
+    builder.add_gsub_pause(Some(rb_complex_khmer_setup_syllables));
+    builder.add_gsub_pause(Some(rb_complex_khmer_reorder));
 
     // Testing suggests that Uniscribe does NOT pause between basic
     // features.  Test with KhmerUI.ttf and the following three
@@ -145,8 +137,11 @@ pub extern "C" fn rb_complex_khmer_collect_features(builder: *mut ffi::rb_ot_map
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_khmer_override_features(builder: *mut ffi::rb_ot_map_builder_t) {
-    let builder = MapBuilder::from_ptr_mut(builder);
+pub extern "C" fn rb_complex_khmer_override_features(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
 
     // Khmer spec has 'clig' as part of required shaping features:
     // "Apply feature 'clig' to form ligatures that are desired for
@@ -240,9 +235,10 @@ fn reorder_consonant_syllable(
 
 #[no_mangle]
 pub extern "C" fn rb_complex_khmer_decompose(
-    ab: CodePoint,
-    a: *mut CodePoint,
-    b: *mut CodePoint,
+    _: *const ffi::hb_ot_shape_normalize_context_t,
+    ab: ffi::hb_codepoint_t,
+    a: *mut ffi::hb_codepoint_t,
+    b: *mut ffi::hb_codepoint_t,
 ) -> bool {
     // Decompose split matras that don't have Unicode decompositions.
 
@@ -280,12 +276,13 @@ pub extern "C" fn rb_complex_khmer_decompose(
 
 #[no_mangle]
 pub extern "C" fn rb_complex_khmer_compose(
-    a: CodePoint,
-    b: CodePoint,
-    ab: *mut CodePoint,
+    _: *const ffi::hb_ot_shape_normalize_context_t,
+    a: ffi::hb_codepoint_t,
+    b: ffi::hb_codepoint_t,
+    ab: *mut ffi::hb_codepoint_t,
 ) -> bool {
     // Avoid recomposing split matras.
-    if char::try_from(a).unwrap().general_category().is_unicode_mark() {
+    if char::try_from(a).unwrap().general_category().is_mark() {
         return false;
     }
 
@@ -377,17 +374,21 @@ fn reorder_syllable(
 
 #[no_mangle]
 pub extern "C" fn rb_complex_khmer_reorder(
-    plan: *const c_void,
-    ttf_parser_data: *const ffi::rb_ttf_parser_t,
+    plan: *const ffi::hb_shape_plan_t,
+    _: *mut ffi::hb_font_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
-    let plan = unsafe { &*(plan as *const KhmerShapePlan) };
     let buffer = Buffer::from_ptr_mut(buffer);
+    let font = unsafe {
+        let ttf_parser_data = ffi::hb_shape_plan_ttf_parser(plan);
+        crate::font::ttf_parser_from_raw(ttf_parser_data)
+    };
+    let plan = unsafe {
+        let plan_data = ffi::hb_shape_plan_data(plan);
+        &*(plan_data as *const KhmerShapePlan)
+    };
 
-    insert_dotted_circles(
-        crate::font::ttf_parser_from_raw(ttf_parser_data),
-        buffer,
-    );
+    insert_dotted_circles(font, buffer);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -400,7 +401,9 @@ pub extern "C" fn rb_complex_khmer_reorder(
 
 #[no_mangle]
 pub extern "C" fn rb_complex_khmer_setup_masks(
+    _: *const ffi::hb_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
+    _: *mut ffi::hb_font_t,
 ) {
     // We cannot setup masks here.  We save information about characters
     // and setup masks later on in a pause-callback.
@@ -412,6 +415,8 @@ pub extern "C" fn rb_complex_khmer_setup_masks(
 
 #[no_mangle]
 pub extern "C" fn rb_complex_khmer_setup_syllables(
+    _: *const ffi::hb_shape_plan_t,
+    _: *mut ffi::hb_font_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let buffer = Buffer::from_ptr_mut(buffer);
@@ -425,4 +430,25 @@ pub extern "C" fn rb_complex_khmer_setup_syllables(
         start = end;
         end = buffer.next_syllable(start);
     }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_create_khmer_shaper() -> *const ffi::hb_ot_complex_shaper_t {
+    let shaper = Box::new(ffi::hb_ot_complex_shaper_t {
+        collect_features: Some(rb_complex_khmer_collect_features),
+        override_features: Some(rb_complex_khmer_override_features),
+        data_create: Some(rb_complex_khmer_data_create),
+        data_destroy: Some(rb_complex_khmer_data_destroy),
+        preprocess_text: None,
+        postprocess_glyphs: None,
+        normalization_preference: ffi::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
+        decompose: Some(rb_complex_khmer_decompose),
+        compose: Some(rb_complex_khmer_compose),
+        setup_masks: Some(rb_complex_khmer_setup_masks),
+        gpos_tag: 0,
+        reorder_marks: None,
+        zero_width_marks: ffi::HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
+        fallback_position: false,
+    });
+    Box::into_raw(shaper)
 }

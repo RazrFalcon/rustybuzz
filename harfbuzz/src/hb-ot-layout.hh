@@ -444,11 +444,6 @@ static inline bool _hb_glyph_info_multiplied(const hb_glyph_info_t *info)
     return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED);
 }
 
-static inline void _hb_glyph_info_clear_substituted(hb_glyph_info_t *info)
-{
-    info->glyph_props() &= ~(HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
-}
-
 /* Make sure no one directly touches our props... */
 #undef unicode_props0
 #undef unicode_props1

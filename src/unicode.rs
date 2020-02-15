@@ -369,6 +369,10 @@ pub extern "C" fn rb_ucd_script(ch: u32) -> u32 {
     script_from_char(char::try_from(ch).unwrap()).tag().as_u32()
 }
 
+//pub fn compose(a: char, b: char) -> Option<char> {
+//    unicode_normalization::char::compose(a, b)
+//}
+
 #[no_mangle]
 pub extern "C" fn rb_ucd_compose(a: u32, b: u32, ab: *mut u32) -> i32 {
     unsafe {
@@ -385,6 +389,25 @@ pub extern "C" fn rb_ucd_compose(a: u32, b: u32, ab: *mut u32) -> i32 {
         }
     }
 }
+
+//pub fn decompose(ab: char) -> (char, Option<char>) {
+//    let mut is_a_set = false;
+//    let mut a = ab;
+//    let mut b = None;
+//    unicode_normalization::char::decompose_canonical(
+//        ab,
+//        |c| {
+//            if is_a_set {
+//                b = Some(c);
+//            } else {
+//                is_a_set = true;
+//                a = c;
+//            }
+//        }
+//    );
+//
+//    (a, b)
+//}
 
 #[no_mangle]
 pub extern "C" fn rb_ucd_decompose(ab: u32, a: *mut u32, b: *mut u32) -> i32 {
@@ -416,7 +439,7 @@ pub extern "C" fn rb_ucd_general_category(c: u32) -> u32 {
 pub trait GeneralCategoryExt {
     fn to_hb(&self) -> u32;
     fn from_hb(gc: u32) -> Self;
-    fn is_unicode_mark(&self) -> bool;
+    fn is_mark(&self) -> bool;
 }
 
 impl GeneralCategoryExt for GeneralCategory {
@@ -493,7 +516,7 @@ impl GeneralCategoryExt for GeneralCategory {
         }
     }
 
-    fn is_unicode_mark(&self) -> bool {
+    fn is_mark(&self) -> bool {
         match *self {
             GeneralCategory::SpacingMark |
             GeneralCategory::EnclosingMark |

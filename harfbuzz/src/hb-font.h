@@ -87,6 +87,8 @@ HB_EXTERN hb_font_t *hb_font_get_empty(void);
 
 HB_EXTERN void hb_font_destroy(hb_font_t *font);
 
+HB_EXTERN hb_face_t* hb_font_face(hb_font_t *font);
+
 HB_EXTERN void hb_font_set_scale(hb_font_t *font, int x_scale, int y_scale);
 
 HB_EXTERN void hb_font_get_scale(hb_font_t *font, int *x_scale, int *y_scale);

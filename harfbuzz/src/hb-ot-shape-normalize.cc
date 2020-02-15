@@ -71,18 +71,6 @@
  *     Indic shaper may want to disallow recomposing of two matras.
  */
 
-static bool
-decompose_unicode(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b)
-{
-    return (bool)hb_ucd_decompose(ab, a, b);
-}
-
-static bool
-compose_unicode(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab)
-{
-    return (bool)hb_ucd_compose(a, b, ab);
-}
-
 static inline void set_glyph(hb_glyph_info_t &info, hb_font_t *font)
 {
     (void)font->get_nominal_glyph(info.codepoint, &info.glyph_index());
@@ -113,7 +101,7 @@ static inline unsigned int decompose(const hb_ot_shape_normalize_context_t *c, b
     rb_buffer_t *const buffer = c->buffer;
     hb_font_t *const font = c->font;
 
-    if (!c->decompose(c, ab, &a, &b) || (b && !font->get_nominal_glyph(b, &b_glyph)))
+    if (!hb_ot_complex_shaper_decompose(c->plan->shaper, c, ab, &a, &b) || (b && !font->get_nominal_glyph(b, &b_glyph)))
         return 0;
 
     bool has_a = (bool)font->get_nominal_glyph(a, &a_glyph);
@@ -258,7 +246,7 @@ void _hb_ot_shape_normalize(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb
     if (unlikely(!rb_buffer_get_length(buffer)))
         return;
 
-    hb_ot_shape_normalization_mode_t mode = plan->shaper->normalization_preference;
+    hb_ot_shape_normalization_mode_t mode = hb_ot_complex_shaper_normalization_preference(plan->shaper);
     if (mode == HB_OT_SHAPE_NORMALIZATION_MODE_AUTO) {
         if (plan->has_gpos_mark)
             // https://github.com/harfbuzz/harfbuzz/issues/653#issuecomment-423905920
@@ -268,11 +256,7 @@ void _hb_ot_shape_normalize(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb
             mode = HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS;
     }
 
-    const hb_ot_shape_normalize_context_t c = {plan,
-                                               buffer,
-                                               font,
-                                               plan->shaper->decompose ? plan->shaper->decompose : decompose_unicode,
-                                               plan->shaper->compose ? plan->shaper->compose : compose_unicode};
+    const hb_ot_shape_normalize_context_t c = {plan, buffer, font};
 
     bool always_short_circuit = mode == HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
     bool might_short_circuit =
@@ -353,8 +337,7 @@ void _hb_ot_shape_normalize(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb
 
             rb_buffer_sort(buffer, i, end, compare_combining_class);
 
-            if (plan->shaper->reorder_marks)
-                plan->shaper->reorder_marks(plan, buffer, i, end);
+            hb_ot_complex_shaper_reorder_marks(plan->shaper, plan, buffer, i, end);
 
             i = end;
         }
@@ -395,10 +378,11 @@ void _hb_ot_shape_normalize(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb
                     (starter == rb_buffer_get_out_len(buffer) - 1 ||
                      info_cc(*rb_buffer_get_prev(buffer)) < info_cc(*rb_buffer_get_cur(buffer, 0))) &&
                     /* And compose. */
-                    c.compose(&c,
-                              rb_buffer_get_out_info(buffer)[starter].codepoint,
-                              rb_buffer_get_cur(buffer, 0)->codepoint,
-                              &composed) &&
+                    hb_ot_complex_shaper_compose(c.plan->shaper,
+                                                 &c,
+                                                 rb_buffer_get_out_info(buffer)[starter].codepoint,
+                                                 rb_buffer_get_cur(buffer, 0)->codepoint,
+                                                 &composed) &&
                     /* And the font has glyph for the composite. */
                     font->get_nominal_glyph(composed, &glyph)) {
                     /* Composes. */
@@ -423,4 +407,24 @@ void _hb_ot_shape_normalize(const hb_shape_plan_t *plan, rb_buffer_t *buffer, hb
         }
         rb_buffer_swap_buffers(buffer);
     }
+}
+
+bool hb_ot_shape_normalize_context_has_gpos_mark(const hb_ot_shape_normalize_context_t *c)
+{
+    return c->plan->has_gpos_mark;
+}
+
+const rb_ttf_parser_t* hb_ot_shape_normalize_context_ttf_parser(const hb_ot_shape_normalize_context_t *c)
+{
+    return c->font->ttf_parser;
+}
+
+const void* hb_ot_shape_normalize_context_plan_data(const hb_ot_shape_normalize_context_t *c)
+{
+    return c->plan->data;
+}
+
+const hb_face_t* hb_ot_shape_normalize_context_face(const hb_ot_shape_normalize_context_t *c)
+{
+    return c->font->face;
 }

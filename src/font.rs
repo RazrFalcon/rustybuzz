@@ -119,7 +119,7 @@ impl<'a> Font<'a> {
         }
     }
 
-    pub(crate) fn font(&self) -> &ttf_parser::Font {
+    pub(crate) fn ttf_parser(&self) -> &ttf_parser::Font {
         unsafe { &*(self.face.ttf as *const ttf_parser::Font) }
     }
 

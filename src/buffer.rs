@@ -210,6 +210,12 @@ impl GlyphInfo {
         self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.0 != 0
     }
 
+    pub(crate) fn clear_substituted(&mut self) {
+        let mut n = self.glyph_props();
+        n &= !GlyphPropsFlags::SUBSTITUTED.0;
+        self.set_glyph_props(n);
+    }
+
     pub(crate) fn is_ligated_and_didnt_multiply(&self) -> bool {
         self.is_ligated() && !self.is_multiplied()
     }
@@ -227,7 +233,7 @@ impl GlyphInfo {
     }
 
     pub(crate) fn is_unicode_mark(&self) -> bool {
-        self.general_category().is_unicode_mark()
+        self.general_category().is_mark()
     }
 
     pub(crate) fn modified_combining_class(&self) -> u8 {

@@ -1,4 +1,4 @@
-use crate::{Tag, Buffer, GlyphInfo};
+use crate::{Tag, Buffer, GlyphInfo, Font};
 use crate::buffer::BufferFlags;
 use crate::map::{MapBuilder, FeatureFlags};
 use crate::ffi;
@@ -18,20 +18,6 @@ const MYANMAR_FEATURES: &[Tag] = &[
     Tag::from_bytes(b"blws"),
     Tag::from_bytes(b"psts"),
 ];
-
-extern "C" {
-    fn hb_complex_myanmar_setup_syllables(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
-
-    fn hb_complex_myanmar_reorder(
-        plan: *const ffi::hb_shape_plan_t,
-        font: *mut ffi::hb_font_t,
-        buffer: *mut ffi::rb_buffer_t,
-    );
-}
 
 impl GlyphInfo {
     fn set_myanmar_properties(&mut self) {
@@ -169,18 +155,21 @@ pub extern "C" fn rb_complex_myanmar_set_properties(info: *mut ffi::hb_glyph_inf
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_myanmar_collect_features(builder: *mut ffi::rb_ot_map_builder_t) {
-    let builder = MapBuilder::from_ptr_mut(builder);
+pub extern "C" fn rb_complex_myanmar_collect_features(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
 
     // Do this before any lookups have been applied.
-    builder.add_gsub_pause(Some(hb_complex_myanmar_setup_syllables));
+    builder.add_gsub_pause(Some(rb_complex_myanmar_setup_syllables));
 
     builder.enable_feature(Tag::from_bytes(b"locl"), FeatureFlags::default(), 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
     builder.enable_feature(Tag::from_bytes(b"ccmp"), FeatureFlags::default(), 1);
 
-    builder.add_gsub_pause(Some(hb_complex_myanmar_reorder));
+    builder.add_gsub_pause(Some(rb_complex_myanmar_reorder));
 
     for feature in MYANMAR_FEATURES.iter().take(4) {
         builder.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
@@ -195,8 +184,12 @@ pub extern "C" fn rb_complex_myanmar_collect_features(builder: *mut ffi::rb_ot_m
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_myanmar_override_features(builder: *mut ffi::rb_ot_map_builder_t) {
-    let builder = MapBuilder::from_ptr_mut(builder);
+pub extern "C" fn rb_complex_myanmar_override_features(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let builder = {
+        let map = unsafe { ffi::hb_ot_shape_planner_map(planner) };
+        MapBuilder::from_ptr_mut(map)
+    };
+
     builder.disable_feature(Tag::from_bytes(b"liga"));
 }
 
@@ -374,12 +367,13 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
 
 #[no_mangle]
 pub extern "C" fn rb_complex_myanmar_reorder(
-    ttf_parser_data: *const ffi::rb_ttf_parser_t,
+    _: *const ffi::hb_shape_plan_t,
+    font: *mut ffi::hb_font_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
-    let font = crate::font::ttf_parser_from_raw(ttf_parser_data);
+    let font = Font::from_ptr(font);
     let buffer = Buffer::from_ptr_mut(buffer);
-    insert_dotted_circles(font, buffer);
+    insert_dotted_circles(font.ttf_parser(), buffer);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -391,7 +385,11 @@ pub extern "C" fn rb_complex_myanmar_reorder(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_myanmar_setup_masks(buffer: *mut ffi::rb_buffer_t) {
+pub extern "C" fn rb_complex_myanmar_setup_masks(
+    _: *const ffi::hb_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    _: *mut ffi::hb_font_t,
+) {
     // We cannot setup masks here.  We save information about characters
     // and setup masks later on in a pause-callback.
     let buffer = Buffer::from_ptr_mut(buffer);
@@ -401,7 +399,11 @@ pub extern "C" fn rb_complex_myanmar_setup_masks(buffer: *mut ffi::rb_buffer_t) 
 }
 
 #[no_mangle]
-pub extern "C" fn rb_complex_myanmar_setup_syllables(buffer: *mut ffi::rb_buffer_t) {
+pub extern "C" fn rb_complex_myanmar_setup_syllables(
+    _: *const ffi::hb_shape_plan_t,
+    _: *mut ffi::hb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
     let buffer = Buffer::from_ptr_mut(buffer);
 
     super::myanmar_machine::find_syllables_myanmar(buffer);
@@ -413,4 +415,49 @@ pub extern "C" fn rb_complex_myanmar_setup_syllables(buffer: *mut ffi::rb_buffer
         start = end;
         end = buffer.next_syllable(start);
     }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_create_myanmar_shaper() -> *const ffi::hb_ot_complex_shaper_t {
+    let shaper = Box::new(ffi::hb_ot_complex_shaper_t {
+        collect_features: Some(rb_complex_myanmar_collect_features),
+        override_features: Some(rb_complex_myanmar_override_features),
+        data_create: None,
+        data_destroy: None,
+        preprocess_text: None,
+        postprocess_glyphs: None,
+        normalization_preference: ffi::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
+        decompose: None,
+        compose: None,
+        setup_masks: Some(rb_complex_myanmar_setup_masks),
+        gpos_tag: 0,
+        reorder_marks: None,
+        zero_width_marks: ffi::HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
+        fallback_position: false,
+    });
+    Box::into_raw(shaper)
+}
+
+/* Ugly Zawgyi encoding.
+ * Disable all auto processing.
+ * https://github.com/harfbuzz/harfbuzz/issues/1162 */
+#[no_mangle]
+pub extern "C" fn rb_create_myanmar_zawgyi_shaper() -> *const ffi::hb_ot_complex_shaper_t {
+    let shaper = Box::new(ffi::hb_ot_complex_shaper_t {
+        collect_features: None,
+        override_features: None,
+        data_create: None,
+        data_destroy: None,
+        preprocess_text: None,
+        postprocess_glyphs: None,
+        normalization_preference: ffi::HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
+        decompose: None,
+        compose: None,
+        setup_masks: None,
+        gpos_tag: 0,
+        reorder_marks: None,
+        zero_width_marks: ffi::HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
+        fallback_position: false,
+    });
+    Box::into_raw(shaper)
 }
