@@ -5,7 +5,7 @@
 But while `harfbuzz` does a lot of things (shaping, subseting, font querying, etc.),
 `rustybuzz` is *strictly* an OpenType shaper.
 
-You can use it already, since we simply linking `hardbuzz` statically.
+You can use it already, since we simply linking `harfbuzz` statically.
 And we're testing `rustybuzz` against `harfbuzz` test suite.
 
 Embedded `harfbuzz` version: 2.6.4
