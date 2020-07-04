@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.1] - 2020-07-04
 ### Fixed
 - Compilation with an old XCode.
 
@@ -27,3 +28,6 @@ At this point, this is just a simple Rust bindings to a stripped down harfbuzz.
 - All external dependencies: coretext, directwrite, freetype, gdi, glib, gobject, graphite, icu, uniscribe.
   Embedded harfbuzz relies only on internal TrueType implementation.
 - Most of the non-shaping harfbuzz API.
+
+[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/RazrFalcon/resvg/compare/v0.1.0...v0.1.1

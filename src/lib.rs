@@ -4,7 +4,7 @@
 
 // The current API is a heavily modified version of https://github.com/manuel-rhdt/harfbuzz_rs
 
-#![doc(html_root_url = "https://docs.rs/rustybuzz/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/rustybuzz/0.1.1")]
 #![warn(missing_docs)]
 
 mod buffer;
