@@ -99,11 +99,6 @@ hb_unicode_funcs_t *hb_unicode_funcs_get_default()
     return hb_ucd_get_unicode_funcs();
 }
 
-#if !defined(HB_NO_UNICODE_FUNCS) && defined(HB_UNICODE_FUNCS_NIL)
-#error "Could not find any Unicode functions implementation, you have to provide your own"
-#error "Consider building hb-ucd.cc.  If you absolutely want to build without any, check the code."
-#endif
-
 /**
  * hb_unicode_funcs_create: (Xconstructor)
  * @parent: (nullable):
@@ -197,42 +192,6 @@ void hb_unicode_funcs_destroy(hb_unicode_funcs_t *ufuncs)
     hb_unicode_funcs_destroy(ufuncs->parent);
 
     free(ufuncs);
-}
-
-/**
- * hb_unicode_funcs_set_user_data: (skip)
- * @ufuncs: Unicode functions.
- * @key:
- * @data:
- * @destroy:
- * @replace:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_bool_t hb_unicode_funcs_set_user_data(
-    hb_unicode_funcs_t *ufuncs, hb_user_data_key_t *key, void *data, hb_destroy_func_t destroy, hb_bool_t replace)
-{
-    return hb_object_set_user_data(ufuncs, key, data, destroy, replace);
-}
-
-/**
- * hb_unicode_funcs_get_user_data: (skip)
- * @ufuncs: Unicode functions.
- * @key:
- *
- *
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.2
- **/
-void *hb_unicode_funcs_get_user_data(hb_unicode_funcs_t *ufuncs, hb_user_data_key_t *key)
-{
-    return hb_object_get_user_data(ufuncs, key);
 }
 
 /**

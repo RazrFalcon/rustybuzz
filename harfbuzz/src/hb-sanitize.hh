@@ -334,7 +334,6 @@ private:
 
         init(blob);
 
-    retry:
         DEBUG_MSG_FUNC(SANITIZE, start, "start");
 
         start_processing();
@@ -357,18 +356,6 @@ private:
                 if (edit_count) {
                     DEBUG_MSG_FUNC(SANITIZE, start, "requested %d edits in second round; FAILLING", edit_count);
                     sane = false;
-                }
-            }
-        } else {
-            if (edit_count && !writable) {
-                start = hb_blob_get_data_writable(blob, nullptr);
-                end = start + blob->length;
-
-                if (start) {
-                    writable = true;
-                    /* ok, we made it writable by relocating.  try again */
-                    DEBUG_MSG_FUNC(SANITIZE, start, "retry");
-                    goto retry;
                 }
             }
         }

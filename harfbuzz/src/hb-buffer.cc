@@ -693,42 +693,6 @@ void hb_buffer_destroy(hb_buffer_t *buffer)
 }
 
 /**
- * hb_buffer_set_user_data: (skip)
- * @buffer: an #hb_buffer_t.
- * @key:
- * @data:
- * @destroy:
- * @replace:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_bool_t hb_buffer_set_user_data(
-    hb_buffer_t *buffer, hb_user_data_key_t *key, void *data, hb_destroy_func_t destroy, hb_bool_t replace)
-{
-    return hb_object_set_user_data(buffer, key, data, destroy, replace);
-}
-
-/**
- * hb_buffer_get_user_data: (skip)
- * @buffer: an #hb_buffer_t.
- * @key:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-void *hb_buffer_get_user_data(hb_buffer_t *buffer, hb_user_data_key_t *key)
-{
-    return hb_object_get_user_data(buffer, key);
-}
-
-/**
  * hb_buffer_set_content_type:
  * @buffer: an #hb_buffer_t.
  * @content_type: the type of buffer contents to set

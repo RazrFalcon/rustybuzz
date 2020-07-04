@@ -515,42 +515,6 @@ void hb_font_funcs_destroy(hb_font_funcs_t *ffuncs)
 }
 
 /**
- * hb_font_funcs_set_user_data: (skip)
- * @ffuncs: font functions.
- * @key:
- * @data:
- * @destroy:
- * @replace:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_bool_t hb_font_funcs_set_user_data(
-    hb_font_funcs_t *ffuncs, hb_user_data_key_t *key, void *data, hb_destroy_func_t destroy, hb_bool_t replace)
-{
-    return hb_object_set_user_data(ffuncs, key, data, destroy, replace);
-}
-
-/**
- * hb_font_funcs_get_user_data: (skip)
- * @ffuncs: font functions.
- * @key:
- *
- *
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.2
- **/
-void *hb_font_funcs_get_user_data(hb_font_funcs_t *ffuncs, hb_user_data_key_t *key)
-{
-    return hb_object_get_user_data(ffuncs, key);
-}
-
-/**
  * hb_font_funcs_make_immutable:
  * @ffuncs: font functions.
  *
@@ -1325,42 +1289,6 @@ void hb_font_destroy(hb_font_t *font)
     free(font->design_coords);
 
     free(font);
-}
-
-/**
- * hb_font_set_user_data: (skip)
- * @font: a font.
- * @key:
- * @data:
- * @destroy:
- * @replace:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_bool_t hb_font_set_user_data(
-    hb_font_t *font, hb_user_data_key_t *key, void *data, hb_destroy_func_t destroy, hb_bool_t replace)
-{
-    return hb_object_set_user_data(font, key, data, destroy, replace);
-}
-
-/**
- * hb_font_get_user_data: (skip)
- * @font: a font.
- * @key:
- *
- *
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.2
- **/
-void *hb_font_get_user_data(hb_font_t *font, hb_user_data_key_t *key)
-{
-    return hb_object_get_user_data(font, key);
 }
 
 /**

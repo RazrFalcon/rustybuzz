@@ -174,22 +174,25 @@ auto hb_partial(Appl &&a, V &&v) HB_AUTO_RETURN((hb_partial_t<Pos, Appl, V>(a, v
  * to be deduced as the same type with this particular compiler, and seem
  * to be fine as default code path as well.
  */
+// clang-format off
 #ifdef _MSC_VER
-    /* https://github.com/harfbuzz/harfbuzz/issues/1730 */
-    #define HB_PARTIALIZE(Pos) template <typename _T>
-    decltype(auto) operator()(_T &&_v) const
-{
-    return hb_partial<Pos>(this, hb_forward<_T>(_v));
-}
-static_assert(true, "")
+/* https://github.com/harfbuzz/harfbuzz/issues/1730 */ \
+#define HB_PARTIALIZE(Pos) \
+  template <typename _T> \
+  decltype(auto) operator () (_T&& _v) const \
+  { return hb_partial<Pos> (this, hb_forward<_T> (_v)); } \
+  static_assert (true, "")
 #else
 /* https://github.com/harfbuzz/harfbuzz/issues/1724 */
-#define HB_PARTIALIZE(Pos)                                                                                             \
-    template <typename _T>                                                                                             \
-    auto operator()(_T &&_v) const HB_AUTO_RETURN(hb_partial<Pos>(+this, hb_forward<_T>(_v))) static_assert(true, "")
+#define HB_PARTIALIZE(Pos) \
+  template <typename _T> \
+  auto operator () (_T&& _v) const HB_AUTO_RETURN \
+  (hb_partial<Pos> (+this, hb_forward<_T> (_v))) \
+  static_assert (true, "")
 #endif
+// clang-format on
 
-    struct
+struct
 {
 private:
     template <typename Pred, typename Val>

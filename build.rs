@@ -1,7 +1,23 @@
 fn main() {
     let mut build = cc::Build::new();
     build.cpp(true);
-    build.flag("-std=c++11");
+
+    if build.get_compiler().is_like_msvc() {
+        // From harfbuzz/meson.build
+        build.flag("/wd4018"); // implicit signed/unsigned conversion
+        build.flag("/wd4146"); // unary minus on unsigned (beware INT_MIN)
+        build.flag("/wd4244"); // lossy type conversion (e.g. double -> int)
+        build.flag("/wd4305"); // truncating type conversion (e.g. double -> float)
+
+        // Required by hb-algs.hh
+        build.flag("/std:c++14");
+    } else {
+        build.flag_if_supported("-fno-rtti");
+        build.flag_if_supported("-fno-exceptions");
+        build.flag_if_supported("-fno-threadsafe-statics");
+        build.flag_if_supported("-fvisibility-inlines-hidden");
+    }
+
     build.file("harfbuzz/src/hb-aat-layout.cc");
     build.file("harfbuzz/src/hb-aat-map.cc");
     build.file("harfbuzz/src/hb-blob.cc");

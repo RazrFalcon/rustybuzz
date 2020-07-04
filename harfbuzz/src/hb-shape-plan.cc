@@ -268,42 +268,6 @@ void hb_shape_plan_destroy(hb_shape_plan_t *shape_plan)
 }
 
 /**
- * hb_shape_plan_set_user_data: (skip)
- * @shape_plan: a shape plan.
- * @key:
- * @data:
- * @destroy:
- * @replace:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.7
- **/
-hb_bool_t hb_shape_plan_set_user_data(
-    hb_shape_plan_t *shape_plan, hb_user_data_key_t *key, void *data, hb_destroy_func_t destroy, hb_bool_t replace)
-{
-    return hb_object_set_user_data(shape_plan, key, data, destroy, replace);
-}
-
-/**
- * hb_shape_plan_get_user_data: (skip)
- * @shape_plan: a shape plan.
- * @key:
- *
- *
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.7
- **/
-void *hb_shape_plan_get_user_data(hb_shape_plan_t *shape_plan, hb_user_data_key_t *key)
-{
-    return hb_object_get_user_data(shape_plan, key);
-}
-
-/**
  * hb_shape_plan_get_shaper:
  * @shape_plan: a shape plan.
  *

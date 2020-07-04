@@ -31,8 +31,6 @@
 #include "hb.hh"
 #endif
 
-#include "config.h"
-
 #ifdef HB_TINY
 #define HB_LEAN
 #define HB_MINI

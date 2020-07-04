@@ -98,38 +98,6 @@ void hb_map_destroy(hb_map_t *map)
 }
 
 /**
- * hb_map_set_user_data: (skip)
- * @map: a map.
- * @key:
- * @data:
- * @destroy:
- * @replace:
- *
- * Return value:
- *
- * Since: 1.7.7
- **/
-hb_bool_t
-hb_map_set_user_data(hb_map_t *map, hb_user_data_key_t *key, void *data, hb_destroy_func_t destroy, hb_bool_t replace)
-{
-    return hb_object_set_user_data(map, key, data, destroy, replace);
-}
-
-/**
- * hb_map_get_user_data: (skip)
- * @map: a map.
- * @key:
- *
- * Return value: (transfer none):
- *
- * Since: 1.7.7
- **/
-void *hb_map_get_user_data(hb_map_t *map, hb_user_data_key_t *key)
-{
-    return hb_object_get_user_data(map, key);
-}
-
-/**
  * hb_map_allocation_successful:
  * @map: a map.
  *

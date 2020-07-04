@@ -1,11 +1,11 @@
-dist: bionic
 language: rust
-rust:
-  - stable
-  - nightly
-script:
-  - if [ $TRAVIS_RUST_VERSION == "nightly" ]; then
-        env RUSTFLAGS="-Z sanitizer=address" cargo +nightly test --target x86_64-unknown-linux-gnu;
-    else
-        cargo test;
-    fi
+jobs:
+  include:
+    - os: linux
+      dist: bionic
+    - os: linux
+      dist: bionic
+      rust: nightly
+    - os: osx
+    - os: windows
+script: ./run-tests.sh

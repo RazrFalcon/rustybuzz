@@ -51,10 +51,6 @@ struct hb_blob_t
         }
     }
 
-    HB_INTERNAL bool try_make_writable();
-    HB_INTERNAL bool try_make_writable_inplace();
-    HB_INTERNAL bool try_make_writable_inplace_unix();
-
     hb_bytes_t as_bytes() const
     {
         return hb_bytes_t(data, length);
