@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Compilation with an old XCode.
+
+## [0.1.0] - 2020-07-04
 At this point, this is just a simple Rust bindings to a stripped down harfbuzz.
 
 ### Added

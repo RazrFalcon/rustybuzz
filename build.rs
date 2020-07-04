@@ -12,6 +12,7 @@ fn main() {
         // Required by hb-algs.hh
         build.flag("/std:c++14");
     } else {
+        build.flag("-std=c++11");
         build.flag_if_supported("-fno-rtti");
         build.flag_if_supported("-fno-exceptions");
         build.flag_if_supported("-fno-threadsafe-statics");
