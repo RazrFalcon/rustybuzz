@@ -21,8 +21,6 @@
 #ifndef HB_UNICODE_EMOJI_TABLE_HH
 #define HB_UNICODE_EMOJI_TABLE_HH
 
-#include "hb-unicode.hh"
-
 static const uint8_t _hb_emoji_u8[448] = {
     0,   0,   0,   0,   33,  3,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,

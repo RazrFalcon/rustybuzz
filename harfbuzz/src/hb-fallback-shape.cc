@@ -84,12 +84,11 @@ hb_bool_t _hb_fallback_shape(hb_shape_plan_t *shape_plan HB_UNUSED,
     buffer->clear_positions();
 
     hb_direction_t direction = buffer->props.direction;
-    hb_unicode_funcs_t *unicode = buffer->unicode;
     unsigned int count = buffer->len;
     hb_glyph_info_t *info = buffer->info;
     hb_glyph_position_t *pos = buffer->pos;
     for (unsigned int i = 0; i < count; i++) {
-        if (has_space && unicode->is_default_ignorable(info[i].codepoint)) {
+        if (has_space && hb_ucd_is_default_ignorable(info[i].codepoint)) {
             info[i].codepoint = space;
             pos[i].x_advance = 0;
             pos[i].y_advance = 0;

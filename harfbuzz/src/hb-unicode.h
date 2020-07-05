@@ -46,6 +46,100 @@ HB_BEGIN_DECLS
  **/
 #define HB_UNICODE_MAX 0x10FFFFu
 
+/*
+ * Modified combining marks
+ */
+
+/* Hebrew
+ *
+ * We permute the "fixed-position" classes 10-26 into the order
+ * described in the SBL Hebrew manual:
+ *
+ * https://www.sbl-site.org/Fonts/SBLHebrewUserManual1.5x.pdf
+ *
+ * (as recommended by:
+ *  https://forum.fontlab.com/archive-old-microsoft-volt-group/vista-and-diacritic-ordering/msg22823/)
+ *
+ * More details here:
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=662055
+ */
+#define HB_MODIFIED_COMBINING_CLASS_CCC10 22 /* sheva */
+#define HB_MODIFIED_COMBINING_CLASS_CCC11 15 /* hataf segol */
+#define HB_MODIFIED_COMBINING_CLASS_CCC12 16 /* hataf patah */
+#define HB_MODIFIED_COMBINING_CLASS_CCC13 17 /* hataf qamats */
+#define HB_MODIFIED_COMBINING_CLASS_CCC14 23 /* hiriq */
+#define HB_MODIFIED_COMBINING_CLASS_CCC15 18 /* tsere */
+#define HB_MODIFIED_COMBINING_CLASS_CCC16 19 /* segol */
+#define HB_MODIFIED_COMBINING_CLASS_CCC17 20 /* patah */
+#define HB_MODIFIED_COMBINING_CLASS_CCC18 21 /* qamats */
+#define HB_MODIFIED_COMBINING_CLASS_CCC19 14 /* holam */
+#define HB_MODIFIED_COMBINING_CLASS_CCC20 24 /* qubuts */
+#define HB_MODIFIED_COMBINING_CLASS_CCC21 12 /* dagesh */
+#define HB_MODIFIED_COMBINING_CLASS_CCC22 25 /* meteg */
+#define HB_MODIFIED_COMBINING_CLASS_CCC23 13 /* rafe */
+#define HB_MODIFIED_COMBINING_CLASS_CCC24 10 /* shin dot */
+#define HB_MODIFIED_COMBINING_CLASS_CCC25 11 /* sin dot */
+#define HB_MODIFIED_COMBINING_CLASS_CCC26 26 /* point varika */
+
+/*
+ * Arabic
+ *
+ * Modify to move Shadda (ccc=33) before other marks.  See:
+ * https://unicode.org/faq/normalization.html#8
+ * https://unicode.org/faq/normalization.html#9
+ */
+#define HB_MODIFIED_COMBINING_CLASS_CCC27 28 /* fathatan */
+#define HB_MODIFIED_COMBINING_CLASS_CCC28 29 /* dammatan */
+#define HB_MODIFIED_COMBINING_CLASS_CCC29 30 /* kasratan */
+#define HB_MODIFIED_COMBINING_CLASS_CCC30 31 /* fatha */
+#define HB_MODIFIED_COMBINING_CLASS_CCC31 32 /* damma */
+#define HB_MODIFIED_COMBINING_CLASS_CCC32 33 /* kasra */
+#define HB_MODIFIED_COMBINING_CLASS_CCC33 27 /* shadda */
+#define HB_MODIFIED_COMBINING_CLASS_CCC34 34 /* sukun */
+#define HB_MODIFIED_COMBINING_CLASS_CCC35 35 /* superscript alef */
+
+/* Syriac */
+#define HB_MODIFIED_COMBINING_CLASS_CCC36 36 /* superscript alaph */
+
+/* Telugu
+ *
+ * Modify Telugu length marks (ccc=84, ccc=91).
+ * These are the only matras in the main Indic scripts range that have
+ * a non-zero ccc.  That makes them reorder with the Halant (ccc=9).
+ * Assign 4 and 5, which are otherwise unassigned.
+ */
+#define HB_MODIFIED_COMBINING_CLASS_CCC84 4 /* length mark */
+#define HB_MODIFIED_COMBINING_CLASS_CCC91 5 /* ai length mark */
+
+/* Thai
+ *
+ * Modify U+0E38 and U+0E39 (ccc=103) to be reordered before U+0E3A (ccc=9).
+ * Assign 3, which is unassigned otherwise.
+ * Uniscribe does this reordering too.
+ */
+#define HB_MODIFIED_COMBINING_CLASS_CCC103 3   /* sara u / sara uu */
+#define HB_MODIFIED_COMBINING_CLASS_CCC107 107 /* mai * */
+
+/* Lao */
+#define HB_MODIFIED_COMBINING_CLASS_CCC118 118 /* sign u / sign uu */
+#define HB_MODIFIED_COMBINING_CLASS_CCC122 122 /* mai * */
+
+/* Tibetan
+ *
+ * In case of multiple vowel-signs, use u first (but after achung)
+ * this allows Dzongkha multi-vowel shortcuts to render correctly
+ */
+#define HB_MODIFIED_COMBINING_CLASS_CCC129 129 /* sign aa */
+#define HB_MODIFIED_COMBINING_CLASS_CCC130 132 /* sign i */
+#define HB_MODIFIED_COMBINING_CLASS_CCC132 131 /* sign u */
+
+/* Misc */
+
+#define HB_UNICODE_GENERAL_CATEGORY_IS_MARK(gen_cat)                                                                   \
+    (FLAG_UNSAFE(gen_cat) &                                                                                            \
+     (FLAG(HB_UNICODE_GENERAL_CATEGORY_SPACING_MARK) | FLAG(HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |              \
+      FLAG(HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)))
+
 /* hb_unicode_general_category_t */
 
 /* Unicode Character Database property: General_Category (gc) */
@@ -166,190 +260,37 @@ typedef enum {
     HB_UNICODE_COMBINING_CLASS_INVALID = 255
 } hb_unicode_combining_class_t;
 
-/*
- * hb_unicode_funcs_t
+/* Space estimates based on:
+ * https://unicode.org/charts/PDF/U2000.pdf
+ * https://docs.microsoft.com/en-us/typography/develop/character-design-standards/whitespace
  */
+typedef enum {
+    HB_SPACE_NOT_SPACE = 0,
+    HB_SPACE_EM = 1,
+    HB_SPACE_EM_2 = 2,
+    HB_SPACE_EM_3 = 3,
+    HB_SPACE_EM_4 = 4,
+    HB_SPACE_EM_5 = 5,
+    HB_SPACE_EM_6 = 6,
+    HB_SPACE_EM_16 = 16,
+    HB_SPACE_4_EM_18, /* 4/18th of an EM! */
+    HB_SPACE,
+    HB_SPACE_FIGURE,
+    HB_SPACE_PUNCTUATION,
+    HB_SPACE_NARROW,
+} hb_space_t;
 
-typedef struct hb_unicode_funcs_t hb_unicode_funcs_t;
-
-/*
- * just give me the best implementation you've got there.
- */
-HB_EXTERN hb_unicode_funcs_t *hb_unicode_funcs_get_default(void);
-
-HB_EXTERN hb_unicode_funcs_t *hb_unicode_funcs_create(hb_unicode_funcs_t *parent);
-
-HB_EXTERN hb_unicode_funcs_t *hb_unicode_funcs_get_empty(void);
-
-HB_EXTERN hb_unicode_funcs_t *hb_unicode_funcs_reference(hb_unicode_funcs_t *ufuncs);
-
-HB_EXTERN void hb_unicode_funcs_destroy(hb_unicode_funcs_t *ufuncs);
-
-HB_EXTERN void hb_unicode_funcs_make_immutable(hb_unicode_funcs_t *ufuncs);
-
-HB_EXTERN hb_bool_t hb_unicode_funcs_is_immutable(hb_unicode_funcs_t *ufuncs);
-
-HB_EXTERN hb_unicode_funcs_t *hb_unicode_funcs_get_parent(hb_unicode_funcs_t *ufuncs);
-
-/*
- * funcs
- */
-
-/* typedefs */
-
-typedef hb_unicode_combining_class_t (*hb_unicode_combining_class_func_t)(hb_unicode_funcs_t *ufuncs,
-                                                                          hb_codepoint_t unicode,
-                                                                          void *user_data);
-typedef hb_unicode_general_category_t (*hb_unicode_general_category_func_t)(hb_unicode_funcs_t *ufuncs,
-                                                                            hb_codepoint_t unicode,
-                                                                            void *user_data);
-typedef hb_codepoint_t (*hb_unicode_mirroring_func_t)(hb_unicode_funcs_t *ufuncs,
-                                                      hb_codepoint_t unicode,
-                                                      void *user_data);
-typedef hb_script_t (*hb_unicode_script_func_t)(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode, void *user_data);
-
-typedef hb_bool_t (*hb_unicode_compose_func_t)(
-    hb_unicode_funcs_t *ufuncs, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab, void *user_data);
-typedef hb_bool_t (*hb_unicode_decompose_func_t)(
-    hb_unicode_funcs_t *ufuncs, hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b, void *user_data);
-
-/* setters */
-
-/**
- * hb_unicode_funcs_set_combining_class_func:
- * @ufuncs: a Unicode function structure
- * @func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
- *
- *
- *
- * Since: 0.9.2
- **/
-HB_EXTERN void hb_unicode_funcs_set_combining_class_func(hb_unicode_funcs_t *ufuncs,
-                                                         hb_unicode_combining_class_func_t func,
-                                                         void *user_data,
-                                                         hb_destroy_func_t destroy);
-
-/**
- * hb_unicode_funcs_set_general_category_func:
- * @ufuncs: a Unicode function structure
- * @func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
- *
- *
- *
- * Since: 0.9.2
- **/
-HB_EXTERN void hb_unicode_funcs_set_general_category_func(hb_unicode_funcs_t *ufuncs,
-                                                          hb_unicode_general_category_func_t func,
-                                                          void *user_data,
-                                                          hb_destroy_func_t destroy);
-
-/**
- * hb_unicode_funcs_set_mirroring_func:
- * @ufuncs: a Unicode function structure
- * @func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
- *
- *
- *
- * Since: 0.9.2
- **/
-HB_EXTERN void hb_unicode_funcs_set_mirroring_func(hb_unicode_funcs_t *ufuncs,
-                                                   hb_unicode_mirroring_func_t func,
-                                                   void *user_data,
-                                                   hb_destroy_func_t destroy);
-
-/**
- * hb_unicode_funcs_set_script_func:
- * @ufuncs: a Unicode function structure
- * @func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
- *
- *
- *
- * Since: 0.9.2
- **/
-HB_EXTERN void hb_unicode_funcs_set_script_func(hb_unicode_funcs_t *ufuncs,
-                                                hb_unicode_script_func_t func,
-                                                void *user_data,
-                                                hb_destroy_func_t destroy);
-
-/**
- * hb_unicode_funcs_set_compose_func:
- * @ufuncs: a Unicode function structure
- * @func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
- *
- *
- *
- * Since: 0.9.2
- **/
-HB_EXTERN void hb_unicode_funcs_set_compose_func(hb_unicode_funcs_t *ufuncs,
-                                                 hb_unicode_compose_func_t func,
-                                                 void *user_data,
-                                                 hb_destroy_func_t destroy);
-
-/**
- * hb_unicode_funcs_set_decompose_func:
- * @ufuncs: a Unicode function structure
- * @func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
- *
- *
- *
- * Since: 0.9.2
- **/
-HB_EXTERN void hb_unicode_funcs_set_decompose_func(hb_unicode_funcs_t *ufuncs,
-                                                   hb_unicode_decompose_func_t func,
-                                                   void *user_data,
-                                                   hb_destroy_func_t destroy);
-
-/* accessors */
-
-/**
- * hb_unicode_combining_class:
- *
- * Since: 0.9.2
- **/
-HB_EXTERN hb_unicode_combining_class_t hb_unicode_combining_class(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode);
-
-/**
- * hb_unicode_general_category:
- *
- * Since: 0.9.2
- **/
-HB_EXTERN hb_unicode_general_category_t hb_unicode_general_category(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode);
-
-/**
- * hb_unicode_mirroring:
- *
- * Since: 0.9.2
- **/
-HB_EXTERN hb_codepoint_t hb_unicode_mirroring(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode);
-
-/**
- * hb_unicode_script:
- *
- * Since: 0.9.2
- **/
-HB_EXTERN hb_script_t hb_unicode_script(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode);
-
-HB_EXTERN hb_bool_t hb_unicode_compose(hb_unicode_funcs_t *ufuncs,
-                                       hb_codepoint_t a,
-                                       hb_codepoint_t b,
-                                       hb_codepoint_t *ab);
-
-HB_EXTERN hb_bool_t hb_unicode_decompose(hb_unicode_funcs_t *ufuncs,
-                                         hb_codepoint_t ab,
-                                         hb_codepoint_t *a,
-                                         hb_codepoint_t *b);
+HB_EXTERN hb_bool_t hb_ucd_is_default_ignorable(hb_codepoint_t cp);
+HB_EXTERN hb_script_t hb_ucd_script(hb_codepoint_t cp);
+HB_EXTERN hb_unicode_combining_class_t hb_ucd_combining_class(hb_codepoint_t cp);
+HB_EXTERN hb_unicode_general_category_t hb_ucd_general_category(hb_codepoint_t cp);
+HB_EXTERN hb_codepoint_t hb_ucd_mirroring(hb_codepoint_t cp);
+HB_EXTERN unsigned int hb_ucd_modified_combining_class(hb_codepoint_t u);
+HB_EXTERN hb_bool_t hb_ucd_compose(hb_codepoint_t a, hb_codepoint_t b,hb_codepoint_t *ab);
+HB_EXTERN hb_bool_t hb_ucd_decompose(hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b);
+HB_EXTERN hb_space_t hb_ucd_space_fallback_type(hb_codepoint_t cp);
+HB_EXTERN hb_bool_t hb_ucd_is_variation_selector(hb_codepoint_t cp);
+HB_EXTERN hb_bool_t hb_unicode_is_emoji_extended_pictographic(hb_codepoint_t cp);
 
 HB_END_DECLS
 

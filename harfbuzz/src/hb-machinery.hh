@@ -358,16 +358,5 @@ template <typename Subclass> struct hb_font_funcs_lazy_loader_t : hb_lazy_loader
         return hb_font_funcs_get_empty();
     }
 };
-template <typename Subclass> struct hb_unicode_funcs_lazy_loader_t : hb_lazy_loader_t<hb_unicode_funcs_t, Subclass>
-{
-    static void destroy(hb_unicode_funcs_t *p)
-    {
-        hb_unicode_funcs_destroy(p);
-    }
-    static const hb_unicode_funcs_t *get_null()
-    {
-        return hb_unicode_funcs_get_empty();
-    }
-};
 
 #endif /* HB_MACHINERY_HH */

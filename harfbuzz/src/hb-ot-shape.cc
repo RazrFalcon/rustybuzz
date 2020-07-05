@@ -430,7 +430,7 @@ static void hb_set_unicode_props(hb_buffer_t *buffer)
 #ifndef HB_NO_EMOJI_SEQUENCES
         else if (unlikely(_hb_glyph_info_is_zwj(&info[i]))) {
             _hb_glyph_info_set_continuation(&info[i]);
-            if (i + 1 < count && _hb_unicode_is_emoji_Extended_Pictographic(info[i + 1].codepoint)) {
+            if (i + 1 < count && hb_unicode_is_emoji_extended_pictographic(info[i + 1].codepoint)) {
                 i++;
                 _hb_glyph_info_set_unicode_props(&info[i], buffer);
                 _hb_glyph_info_set_continuation(&info[i]);
@@ -623,11 +623,10 @@ static inline void hb_ot_rotate_chars(const hb_ot_shape_context_t *c)
     hb_glyph_info_t *info = buffer->info;
 
     if (HB_DIRECTION_IS_BACKWARD(c->target_direction)) {
-        hb_unicode_funcs_t *unicode = buffer->unicode;
         hb_mask_t rtlm_mask = c->plan->rtlm_mask;
 
         for (unsigned int i = 0; i < count; i++) {
-            hb_codepoint_t codepoint = unicode->mirroring(info[i].codepoint);
+            hb_codepoint_t codepoint = hb_ucd_mirroring(info[i].codepoint);
             if (unlikely(codepoint != info[i].codepoint && c->font->has_glyph(codepoint)))
                 info[i].codepoint = codepoint;
             else
@@ -1075,13 +1074,13 @@ void hb_ot_shape_plan_collect_lookups(hb_shape_plan_t *shape_plan,
 }
 
 /* TODO Move this to hb-ot-shape-normalize, make it do decompose, and make it public. */
-static void add_char(hb_font_t *font, hb_unicode_funcs_t *unicode, hb_bool_t mirror, hb_codepoint_t u, hb_set_t *glyphs)
+static void add_char(hb_font_t *font, hb_bool_t mirror, hb_codepoint_t u, hb_set_t *glyphs)
 {
     hb_codepoint_t glyph;
     if (font->get_nominal_glyph(u, &glyph))
         glyphs->add(glyph);
     if (mirror) {
-        hb_codepoint_t m = unicode->mirroring(u);
+        hb_codepoint_t m = hb_ucd_mirroring(u);
         if (m != u && font->get_nominal_glyph(m, &glyph))
             glyphs->add(glyph);
     }
@@ -1104,7 +1103,7 @@ void hb_ot_shape_glyphs_closure(
     unsigned int count = buffer->len;
     hb_glyph_info_t *info = buffer->info;
     for (unsigned int i = 0; i < count; i++)
-        add_char(font, buffer->unicode, mirror, info[i].codepoint, glyphs);
+        add_char(font, mirror, info[i].codepoint, glyphs);
 
     hb_set_t *lookups = hb_set_create();
     hb_ot_shape_plan_collect_lookups(shape_plan, HB_OT_TAG_GSUB, lookups);

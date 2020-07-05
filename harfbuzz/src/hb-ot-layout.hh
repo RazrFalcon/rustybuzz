@@ -176,15 +176,14 @@ HB_MARK_AS_FLAG_T(hb_unicode_props_flags_t);
 
 static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, hb_buffer_t *buffer)
 {
-    hb_unicode_funcs_t *unicode = buffer->unicode;
     unsigned int u = info->codepoint;
-    unsigned int gen_cat = (unsigned int)unicode->general_category(u);
+    unsigned int gen_cat = (unsigned int)hb_ucd_general_category(u);
     unsigned int props = gen_cat;
 
     if (u >= 0x80u) {
         buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
 
-        if (unlikely(unicode->is_default_ignorable(u))) {
+        if (unlikely(hb_ucd_is_default_ignorable(u))) {
             buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
             props |= UPROPS_MASK_IGNORABLE;
             if (u == 0x200Cu)
@@ -214,7 +213,7 @@ static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, hb_bu
 
         if (unlikely(HB_UNICODE_GENERAL_CATEGORY_IS_MARK(gen_cat))) {
             props |= UPROPS_MASK_CONTINUATION;
-            props |= unicode->modified_combining_class(u) << 8;
+            props |= hb_ucd_modified_combining_class(u) << 8;
         }
     }
 
@@ -252,16 +251,16 @@ static inline bool _hb_glyph_info_is_unicode_space(const hb_glyph_info_t *info)
 {
     return _hb_glyph_info_get_general_category(info) == HB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR;
 }
-static inline void _hb_glyph_info_set_unicode_space_fallback_type(hb_glyph_info_t *info, hb_unicode_funcs_t::space_t s)
+static inline void _hb_glyph_info_set_unicode_space_fallback_type(hb_glyph_info_t *info, hb_space_t s)
 {
     if (unlikely(!_hb_glyph_info_is_unicode_space(info)))
         return;
     info->unicode_props() = (((unsigned int)s) << 8) | (info->unicode_props() & 0xFF);
 }
-static inline hb_unicode_funcs_t::space_t _hb_glyph_info_get_unicode_space_fallback_type(const hb_glyph_info_t *info)
+static inline hb_space_t _hb_glyph_info_get_unicode_space_fallback_type(const hb_glyph_info_t *info)
 {
-    return _hb_glyph_info_is_unicode_space(info) ? (hb_unicode_funcs_t::space_t)(info->unicode_props() >> 8)
-                                                 : hb_unicode_funcs_t::NOT_SPACE;
+    return _hb_glyph_info_is_unicode_space(info) ? (hb_space_t)(info->unicode_props() >> 8)
+                                                 : hb_space_t::HB_SPACE_NOT_SPACE;
 }
 
 static inline bool _hb_glyph_info_ligated(const hb_glyph_info_t *info);

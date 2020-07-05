@@ -1050,9 +1050,9 @@ static void final_reordering_syllable_indic(const hb_ot_shape_plan_t *plan,
              * not belong to the Matra itself! */
             if (is_halant(info[new_pos]) && info[new_pos].indic_position() != POS_PRE_M) {
 #if 0 // See comment above
-	/* -> If ZWJ or ZWNJ follow this halant, position is moved after it. */
-	if (new_pos + 1 < end && is_joiner (info[new_pos + 1]))
-	  new_pos++;
+    /* -> If ZWJ or ZWNJ follow this halant, position is moved after it. */
+    if (new_pos + 1 < end && is_joiner (info[new_pos + 1]))
+      new_pos++;
 #endif
                 if (new_pos + 1 < end) {
                     /* -> If ZWJ follows this halant, matra is NOT repositioned after this halant. */
@@ -1416,14 +1416,14 @@ decompose_indic(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t ab, hb_
         }
     }
 
-    return (bool)c->unicode->decompose(ab, a, b);
+    return (bool)hb_ucd_decompose(ab, a, b);
 }
 
 static bool
 compose_indic(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab)
 {
     /* Avoid recomposing split matras. */
-    if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK(c->unicode->general_category(a)))
+    if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK(hb_ucd_general_category(a)))
         return false;
 
     /* Composition-exclusion exceptions that we want to recompose. */
@@ -1432,7 +1432,7 @@ compose_indic(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_cod
         return true;
     }
 
-    return (bool)c->unicode->compose(a, b, ab);
+    return (bool)hb_ucd_compose(a, b, ab);
 }
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_indic = {

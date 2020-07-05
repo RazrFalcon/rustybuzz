@@ -444,35 +444,34 @@ void _hb_ot_shape_fallback_spaces(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_f
     unsigned int count = buffer->len;
     for (unsigned int i = 0; i < count; i++)
         if (_hb_glyph_info_is_unicode_space(&info[i]) && !_hb_glyph_info_ligated(&info[i])) {
-            hb_unicode_funcs_t::space_t space_type = _hb_glyph_info_get_unicode_space_fallback_type(&info[i]);
+            hb_space_t space_type = _hb_glyph_info_get_unicode_space_fallback_type(&info[i]);
             hb_codepoint_t glyph;
-            typedef hb_unicode_funcs_t t;
             switch (space_type) {
-            case t::NOT_SPACE: /* Shouldn't happen. */
-            case t::SPACE:
+            case HB_SPACE_NOT_SPACE: /* Shouldn't happen. */
+            case HB_SPACE:
                 break;
 
-            case t::SPACE_EM:
-            case t::SPACE_EM_2:
-            case t::SPACE_EM_3:
-            case t::SPACE_EM_4:
-            case t::SPACE_EM_5:
-            case t::SPACE_EM_6:
-            case t::SPACE_EM_16:
+            case HB_SPACE_EM:
+            case HB_SPACE_EM_2:
+            case HB_SPACE_EM_3:
+            case HB_SPACE_EM_4:
+            case HB_SPACE_EM_5:
+            case HB_SPACE_EM_6:
+            case HB_SPACE_EM_16:
                 if (horizontal)
                     pos[i].x_advance = +(font->x_scale + ((int)space_type) / 2) / (int)space_type;
                 else
                     pos[i].y_advance = -(font->y_scale + ((int)space_type) / 2) / (int)space_type;
                 break;
 
-            case t::SPACE_4_EM_18:
+            case HB_SPACE_4_EM_18:
                 if (horizontal)
                     pos[i].x_advance = (int64_t) + font->x_scale * 4 / 18;
                 else
                     pos[i].y_advance = (int64_t)-font->y_scale * 4 / 18;
                 break;
 
-            case t::SPACE_FIGURE:
+            case HB_SPACE_FIGURE:
                 for (char u = '0'; u <= '9'; u++)
                     if (font->get_nominal_glyph(u, &glyph)) {
                         if (horizontal)
@@ -483,7 +482,7 @@ void _hb_ot_shape_fallback_spaces(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_f
                     }
                 break;
 
-            case t::SPACE_PUNCTUATION:
+            case HB_SPACE_PUNCTUATION:
                 if (font->get_nominal_glyph('.', &glyph) || font->get_nominal_glyph(',', &glyph)) {
                     if (horizontal)
                         pos[i].x_advance = font->get_glyph_h_advance(glyph);
@@ -492,7 +491,7 @@ void _hb_ot_shape_fallback_spaces(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_f
                 }
                 break;
 
-            case t::SPACE_NARROW:
+            case HB_SPACE_NARROW:
                 /* Half-space?
                  * Unicode doc https://unicode.org/charts/PDF/U2000.pdf says ~1/4 or 1/5 of EM.
                  * However, in my testing, many fonts have their regular space being about that

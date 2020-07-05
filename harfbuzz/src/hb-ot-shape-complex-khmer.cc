@@ -387,17 +387,17 @@ decompose_khmer(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t ab, hb_
         return true;
     }
 
-    return (bool)c->unicode->decompose(ab, a, b);
+    return (bool)hb_ucd_decompose(ab, a, b);
 }
 
 static bool
 compose_khmer(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab)
 {
     /* Avoid recomposing split matras. */
-    if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK(c->unicode->general_category(a)))
+    if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK(hb_ucd_general_category(a)))
         return false;
 
-    return (bool)c->unicode->compose(a, b, ab);
+    return (bool)hb_ucd_compose(a, b, ab);
 }
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_khmer = {

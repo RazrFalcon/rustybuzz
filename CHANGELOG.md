@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Removed
+- `hb_unicode_funcs_t`. Only the embedded Unicode implementation is used.
 
 ## [0.1.1] - 2020-07-04
 ### Fixed
