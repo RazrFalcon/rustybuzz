@@ -31,17 +31,12 @@
 
 #include "hb.hh"
 
-#include "hb-shaper.hh"
 #include "hb-shape-plan.hh"
 #include "hb-ot-face.hh"
 
 /*
  * hb_face_t
  */
-
-#define HB_SHAPER_IMPLEMENT(shaper) HB_SHAPER_DATA_INSTANTIATE_SHAPERS(shaper, face);
-#include "hb-shaper-list.hh"
-#undef HB_SHAPER_IMPLEMENT
 
 struct hb_face_t
 {
@@ -55,16 +50,7 @@ struct hb_face_t
     mutable hb_atomic_int_t upem;       /* Units-per-EM. */
     mutable hb_atomic_int_t num_glyphs; /* Number of glyphs. */
 
-    hb_shaper_object_dataset_t<hb_face_t> data; /* Various shaper data. */
     hb_ot_face_t table;                         /* All the face's tables. */
-
-    /* Cache */
-    struct plan_node_t
-    {
-        hb_shape_plan_t *shape_plan;
-        plan_node_t *next;
-    };
-    hb_atomic_ptr_t<plan_node_t> shape_plans;
 
     hb_blob_t *reference_table(hb_tag_t tag) const
     {

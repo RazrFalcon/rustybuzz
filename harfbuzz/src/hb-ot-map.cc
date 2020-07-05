@@ -138,7 +138,7 @@ void hb_ot_map_builder_t::add_pause(unsigned int table_index, hb_ot_map_t::pause
     current_stage[table_index]++;
 }
 
-void hb_ot_map_builder_t::compile(hb_ot_map_t &m, const hb_ot_shape_plan_key_t &key)
+void hb_ot_map_builder_t::compile(hb_ot_map_t &m, unsigned int *variations_index)
 {
     static_assert((!(HB_GLYPH_FLAG_DEFINED & (HB_GLYPH_FLAG_DEFINED + 1))), "");
     unsigned int global_bit_mask = HB_GLYPH_FLAG_DEFINED + 1;
@@ -270,7 +270,7 @@ void hb_ot_map_builder_t::compile(hb_ot_map_t &m, const hb_ot_shape_plan_key_t &
                 add_lookups(m,
                             table_index,
                             required_feature_index[table_index],
-                            key.variations_index[table_index],
+                            variations_index[table_index],
                             global_bit_mask);
 
             for (unsigned i = 0; i < m.features.length; i++)
@@ -278,7 +278,7 @@ void hb_ot_map_builder_t::compile(hb_ot_map_t &m, const hb_ot_shape_plan_key_t &
                     add_lookups(m,
                                 table_index,
                                 m.features[i].index[table_index],
-                                key.variations_index[table_index],
+                                variations_index[table_index],
                                 m.features[i].mask,
                                 m.features[i].auto_zwnj,
                                 m.features[i].auto_zwj,

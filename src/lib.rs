@@ -24,12 +24,11 @@ pub use crate::font::*;
 pub fn shape(font: &Font<'_>, features: &[Feature], mut buffer: UnicodeBuffer) -> GlyphBuffer {
     buffer.guess_segment_properties();
     unsafe {
-        ffi::hb_shape_full(
+        ffi::hb_shape(
             font.as_ptr(),
             buffer.0.as_ptr(),
             features.as_ptr() as *mut _,
             features.len() as u32,
-            std::ptr::null(),
         )
     };
 

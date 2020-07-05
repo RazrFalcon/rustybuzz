@@ -32,16 +32,11 @@
 #include "hb.hh"
 
 #include "hb-face.hh"
-#include "hb-shaper.hh"
 #include "hb-ot-font.h"
 
 /*
  * hb_font_t
  */
-
-#define HB_SHAPER_IMPLEMENT(shaper) HB_SHAPER_DATA_INSTANTIATE_SHAPERS(shaper, font);
-#include "hb-shaper-list.hh"
-#undef HB_SHAPER_IMPLEMENT
 
 struct hb_font_t
 {
@@ -64,8 +59,6 @@ struct hb_font_t
     unsigned int num_coords;
     int *coords;
     float *design_coords;
-
-    hb_shaper_object_dataset_t<hb_font_t> data; /* Various shaper data. */
 
     /* Convert from font-space to user-space */
     int64_t dir_mult(hb_direction_t direction)

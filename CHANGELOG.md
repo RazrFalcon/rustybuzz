@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - `hb_font_funcs_t`. Only the embedded TrueType implementation is used.
 - `hb_unicode_funcs_t`. Only the embedded Unicode implementation is used.
+- Shaping plan caching.
+- Fallback shaper.
 
 ## [0.1.1] - 2020-07-04
 ### Fixed

@@ -262,11 +262,10 @@ extern "C" {
         feature: *mut hb_feature_t,
     ) -> hb_bool_t;
 
-    pub fn hb_shape_full(
+    pub fn hb_shape(
         font: *mut hb_font_t,
         buffer: *mut hb_buffer_t,
         features: *const hb_feature_t,
         num_features: u32,
-        shaper_list: *const *const i8,
     ) -> hb_bool_t;
 }

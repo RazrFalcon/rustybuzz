@@ -88,11 +88,11 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t(hb_face_t *face, const hb_segment_p
         shaper = &_hb_ot_complex_shaper_dumber;
 }
 
-void hb_ot_shape_planner_t::compile(hb_ot_shape_plan_t &plan, const hb_ot_shape_plan_key_t &key)
+void hb_ot_shape_planner_t::compile(hb_ot_shape_plan_t &plan, unsigned int *variations_index)
 {
     plan.props = props;
     plan.shaper = shaper;
-    map.compile(plan.map, key);
+    map.compile(plan.map, variations_index);
 #ifndef HB_NO_AAT_SHAPE
     if (apply_morx)
         aat_map.compile(plan.aat_map);
@@ -186,18 +186,22 @@ void hb_ot_shape_planner_t::compile(hb_ot_shape_plan_t &plan, const hb_ot_shape_
 #endif
 }
 
-bool hb_ot_shape_plan_t::init0(hb_face_t *face, const hb_shape_plan_key_t *key)
+bool hb_ot_shape_plan_t::init0(hb_face_t *face,
+                               const hb_segment_properties_t *props,
+                               const hb_feature_t *user_features,
+                               unsigned int num_user_features,
+                               unsigned int *variations_index)
 {
     map.init();
 #ifndef HB_NO_AAT_SHAPE
     aat_map.init();
 #endif
 
-    hb_ot_shape_planner_t planner(face, &key->props);
+    hb_ot_shape_planner_t planner(face, props);
 
-    hb_ot_shape_collect_features(&planner, key->user_features, key->num_user_features);
+    hb_ot_shape_collect_features(&planner, user_features, num_user_features);
 
-    planner.compile(*this, key->ot);
+    planner.compile(*this, variations_index);
 
     if (shaper->data_create) {
         data = shaper->data_create(this);
@@ -354,36 +358,6 @@ static void hb_ot_shape_collect_features(hb_ot_shape_planner_t *planner,
     if (planner->shaper->override_features)
         planner->shaper->override_features(planner);
 }
-
-/*
- * shaper face data
- */
-
-struct hb_ot_face_data_t
-{
-};
-
-hb_ot_face_data_t *_hb_ot_shaper_face_data_create(hb_face_t *face)
-{
-    return (hb_ot_face_data_t *)HB_SHAPER_DATA_SUCCEEDED;
-}
-
-void _hb_ot_shaper_face_data_destroy(hb_ot_face_data_t *data) {}
-
-/*
- * shaper font data
- */
-
-struct hb_ot_font_data_t
-{
-};
-
-hb_ot_font_data_t *_hb_ot_shaper_font_data_create(hb_font_t *font HB_UNUSED)
-{
-    return (hb_ot_font_data_t *)HB_SHAPER_DATA_SUCCEEDED;
-}
-
-void _hb_ot_shaper_font_data_destroy(hb_ot_font_data_t *data HB_UNUSED) {}
 
 /*
  * shaper
@@ -1031,16 +1005,14 @@ static void hb_ot_shape_internal(hb_ot_shape_context_t *c)
     c->buffer->deallocate_var_all();
 }
 
-hb_bool_t _hb_ot_shape(hb_shape_plan_t *shape_plan,
-                       hb_font_t *font,
-                       hb_buffer_t *buffer,
-                       const hb_feature_t *features,
-                       unsigned int num_features)
+void _hb_ot_shape(hb_shape_plan_t *shape_plan,
+                  hb_font_t *font,
+                  hb_buffer_t *buffer,
+                  const hb_feature_t *features,
+                  unsigned int num_features)
 {
     hb_ot_shape_context_t c = {&shape_plan->ot, font, font->face, buffer, features, num_features};
     hb_ot_shape_internal(&c);
-
-    return true;
 }
 
 /**
@@ -1053,47 +1025,6 @@ void hb_ot_shape_plan_collect_lookups(hb_shape_plan_t *shape_plan,
                                       hb_set_t *lookup_indexes /* OUT */)
 {
     shape_plan->ot.collect_lookups(table_tag, lookup_indexes);
-}
-
-/* TODO Move this to hb-ot-shape-normalize, make it do decompose, and make it public. */
-static void add_char(hb_font_t *font, hb_bool_t mirror, hb_codepoint_t u, hb_set_t *glyphs)
-{
-    hb_codepoint_t glyph;
-    if (font->get_nominal_glyph(u, &glyph))
-        glyphs->add(glyph);
-    if (mirror) {
-        hb_codepoint_t m = hb_ucd_mirroring(u);
-        if (m != u && font->get_nominal_glyph(m, &glyph))
-            glyphs->add(glyph);
-    }
-}
-
-/**
- * hb_ot_shape_glyphs_closure:
- *
- * Since: 0.9.2
- **/
-void hb_ot_shape_glyphs_closure(
-    hb_font_t *font, hb_buffer_t *buffer, const hb_feature_t *features, unsigned int num_features, hb_set_t *glyphs)
-{
-    const char *shapers[] = {"ot", nullptr};
-    hb_shape_plan_t *shape_plan =
-        hb_shape_plan_create_cached(font->face, &buffer->props, features, num_features, shapers);
-
-    bool mirror = hb_script_get_horizontal_direction(buffer->props.script) == HB_DIRECTION_RTL;
-
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
-    for (unsigned int i = 0; i < count; i++)
-        add_char(font, mirror, info[i].codepoint, glyphs);
-
-    hb_set_t *lookups = hb_set_create();
-    hb_ot_shape_plan_collect_lookups(shape_plan, HB_OT_TAG_GSUB, lookups);
-    hb_ot_layout_lookups_substitute_closure(font->face, lookups, glyphs);
-
-    hb_set_destroy(lookups);
-
-    hb_shape_plan_destroy(shape_plan);
 }
 
 #endif

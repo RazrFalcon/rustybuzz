@@ -26,7 +26,6 @@ fn main() {
     build.file("harfbuzz/src/hb-buffer-serialize.cc");
     build.file("harfbuzz/src/hb-common.cc");
     build.file("harfbuzz/src/hb-face.cc");
-    build.file("harfbuzz/src/hb-fallback-shape.cc");
     build.file("harfbuzz/src/hb-font.cc");
     build.file("harfbuzz/src/hb-map.cc");
     build.file("harfbuzz/src/hb-number.cc");
@@ -57,7 +56,6 @@ fn main() {
     build.file("harfbuzz/src/hb-set.cc");
     build.file("harfbuzz/src/hb-shape.cc");
     build.file("harfbuzz/src/hb-shape-plan.cc");
-    build.file("harfbuzz/src/hb-shaper.cc");
     build.file("harfbuzz/src/hb-static.cc");
     build.file("harfbuzz/src/hb-unicode.cc");
     build.include("harfbuzz/src");

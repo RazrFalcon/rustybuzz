@@ -118,7 +118,6 @@ hb_face_create_for_tables(hb_reference_table_func_t reference_table_func, void *
 
     face->num_glyphs.set_relaxed(-1);
 
-    face->data.init0(face);
     face->table.init0(face);
 
     return face;
@@ -243,14 +242,6 @@ void hb_face_destroy(hb_face_t *face)
     if (!hb_object_destroy(face))
         return;
 
-    for (hb_face_t::plan_node_t *node = face->shape_plans; node;) {
-        hb_face_t::plan_node_t *next = node->next;
-        hb_shape_plan_destroy(node->shape_plan);
-        free(node);
-        node = next;
-    }
-
-    face->data.fini();
     face->table.fini();
 
     if (face->destroy)

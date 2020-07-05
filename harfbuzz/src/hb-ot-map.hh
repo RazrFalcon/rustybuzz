@@ -199,8 +199,6 @@ struct hb_ot_map_feature_t
     hb_ot_map_feature_flags_t flags;
 };
 
-struct hb_ot_shape_plan_key_t;
-
 struct hb_ot_map_builder_t
 {
 public:
@@ -234,7 +232,7 @@ public:
         add_pause(1, pause_func);
     }
 
-    HB_INTERNAL void compile(hb_ot_map_t &m, const hb_ot_shape_plan_key_t &key);
+    HB_INTERNAL void compile(hb_ot_map_t &m, unsigned int *variations_index);
 
 private:
     HB_INTERNAL void add_lookups(hb_ot_map_t &m,
