@@ -42,7 +42,6 @@ struct hb_font_t
 {
     hb_object_header_t header;
 
-    hb_font_t *parent;
     hb_face_t *face;
 
     int32_t x_scale;
@@ -92,39 +91,6 @@ struct hb_font_t
     hb_position_t em_scale_dir(int16_t v, hb_direction_t direction)
     {
         return em_mult(v, dir_mult(direction));
-    }
-
-    /* Convert from parent-font user-space to our user-space */
-    hb_position_t parent_scale_x_distance(hb_position_t v)
-    {
-        if (unlikely(parent && parent->x_scale != x_scale))
-            return (hb_position_t)(v * (int64_t)this->x_scale / this->parent->x_scale);
-        return v;
-    }
-    hb_position_t parent_scale_y_distance(hb_position_t v)
-    {
-        if (unlikely(parent && parent->y_scale != y_scale))
-            return (hb_position_t)(v * (int64_t)this->y_scale / this->parent->y_scale);
-        return v;
-    }
-    hb_position_t parent_scale_x_position(hb_position_t v)
-    {
-        return parent_scale_x_distance(v);
-    }
-    hb_position_t parent_scale_y_position(hb_position_t v)
-    {
-        return parent_scale_y_distance(v);
-    }
-
-    void parent_scale_distance(hb_position_t *x, hb_position_t *y)
-    {
-        *x = parent_scale_x_distance(*x);
-        *y = parent_scale_y_distance(*y);
-    }
-    void parent_scale_position(hb_position_t *x, hb_position_t *y)
-    {
-        *x = parent_scale_x_position(*x);
-        *y = parent_scale_y_position(*y);
     }
 
     hb_bool_t get_font_h_extents(hb_font_extents_t *extents)

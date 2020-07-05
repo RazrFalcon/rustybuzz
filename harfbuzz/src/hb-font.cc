@@ -503,7 +503,6 @@ hb_bool_t hb_font_glyph_from_string(hb_font_t *font,
 DEFINE_NULL_INSTANCE(hb_font_t) = {
     HB_OBJECT_HEADER_STATIC,
 
-    nullptr, /* parent */
     const_cast<hb_face_t *>(&_hb_Null_hb_face_t),
 
     1000,    /* x_scale */
@@ -532,7 +531,6 @@ static hb_font_t *_hb_font_create(hb_face_t *face)
         return hb_font_get_empty();
 
     hb_face_make_immutable(face);
-    font->parent = hb_font_get_empty();
     font->face = hb_face_reference(face);
     font->x_scale = font->y_scale = hb_face_get_upem(face);
     font->x_mult = font->y_mult = 1 << 16;
@@ -567,52 +565,6 @@ static void _hb_font_adopt_var_coords(hb_font_t *font,
     font->coords = coords;
     font->design_coords = design_coords;
     font->num_coords = coords_length;
-}
-
-/**
- * hb_font_create_sub_font:
- * @parent: parent font.
- *
- *
- *
- * Return value: (transfer full):
- *
- * Since: 0.9.2
- **/
-hb_font_t *hb_font_create_sub_font(hb_font_t *parent)
-{
-    if (unlikely(!parent))
-        parent = hb_font_get_empty();
-
-    hb_font_t *font = _hb_font_create(parent->face);
-
-    if (unlikely(hb_object_is_immutable(font)))
-        return font;
-
-    font->parent = hb_font_reference(parent);
-
-    font->x_scale = parent->x_scale;
-    font->y_scale = parent->y_scale;
-    font->mults_changed();
-    font->x_ppem = parent->x_ppem;
-    font->y_ppem = parent->y_ppem;
-    font->ptem = parent->ptem;
-
-    unsigned int num_coords = parent->num_coords;
-    if (num_coords) {
-        int *coords = (int *)calloc(num_coords, sizeof(parent->coords[0]));
-        float *design_coords = (float *)calloc(num_coords, sizeof(parent->design_coords[0]));
-        if (likely(coords && design_coords)) {
-            memcpy(coords, parent->coords, num_coords * sizeof(parent->coords[0]));
-            memcpy(design_coords, parent->design_coords, num_coords * sizeof(parent->design_coords[0]));
-            _hb_font_adopt_var_coords(font, coords, design_coords, num_coords);
-        } else {
-            free(coords);
-            free(design_coords);
-        }
-    }
-
-    return font;
 }
 
 /**
@@ -657,32 +609,12 @@ void hb_font_destroy(hb_font_t *font)
     if (!hb_object_destroy(font))
         return;
 
-    hb_font_destroy(font->parent);
     hb_face_destroy(font->face);
 
     free(font->coords);
     free(font->design_coords);
 
     free(font);
-}
-
-/**
- * hb_font_make_immutable:
- * @font: a font.
- *
- *
- *
- * Since: 0.9.2
- **/
-void hb_font_make_immutable(hb_font_t *font)
-{
-    if (hb_object_is_immutable(font))
-        return;
-
-    if (font->parent)
-        hb_font_make_immutable(font->parent);
-
-    hb_object_make_immutable(font);
 }
 
 /**
@@ -698,45 +630,6 @@ void hb_font_make_immutable(hb_font_t *font)
 hb_bool_t hb_font_is_immutable(hb_font_t *font)
 {
     return hb_object_is_immutable(font);
-}
-
-/**
- * hb_font_set_parent:
- * @font: a font.
- * @parent: new parent.
- *
- * Sets parent font of @font.
- *
- * Since: 1.0.5
- **/
-void hb_font_set_parent(hb_font_t *font, hb_font_t *parent)
-{
-    if (hb_object_is_immutable(font))
-        return;
-
-    if (!parent)
-        parent = hb_font_get_empty();
-
-    hb_font_t *old = font->parent;
-
-    font->parent = hb_font_reference(parent);
-
-    hb_font_destroy(old);
-}
-
-/**
- * hb_font_get_parent:
- * @font: a font.
- *
- *
- *
- * Return value: (transfer none):
- *
- * Since: 0.9.2
- **/
-hb_font_t *hb_font_get_parent(hb_font_t *font)
-{
-    return font->parent;
 }
 
 /**
