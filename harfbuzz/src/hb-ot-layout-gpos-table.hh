@@ -773,15 +773,6 @@ struct PairValueRecord
         return secondGlyph.cmp(k);
     }
 
-    struct serialize_closure_t
-    {
-        const void *base;
-        const ValueFormat *valueFormats;
-        unsigned len1; /* valueFormats[0].get_len() */
-        const hb_map_t *glyph_map;
-        const hb_map_t *layout_variation_idx_map;
-    };
-
     void collect_variation_indices(hb_collect_variation_indices_context_t *c,
                                    const ValueFormat *valueFormats,
                                    const void *base) const

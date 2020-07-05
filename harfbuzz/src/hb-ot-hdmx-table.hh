@@ -44,24 +44,6 @@ struct DeviceRecord
         return hb_ceil_to_4(min_size + count * HBUINT8::static_size);
     }
 
-    template <typename Iterator, hb_requires(hb_is_iterator(Iterator))>
-    bool serialize(hb_serialize_context_t *c, unsigned pixelSize, Iterator it)
-    {
-        TRACE_SERIALIZE(this);
-
-        unsigned length = it.len();
-
-        if (unlikely(!c->extend(*this, length)))
-            return_trace(false);
-
-        this->pixelSize = pixelSize;
-        this->maxWidth = +it | hb_reduce(hb_max, 0u);
-
-        +it | hb_sink(widthsZ.as_array(length));
-
-        return_trace(true);
-    }
-
     bool sanitize(hb_sanitize_context_t *c, unsigned sizeDeviceRecord) const
     {
         TRACE_SANITIZE(this);

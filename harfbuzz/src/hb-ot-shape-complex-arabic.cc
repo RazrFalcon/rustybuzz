@@ -270,8 +270,6 @@ static void collect_features_arabic(hb_ot_shape_planner_t *plan)
     map->enable_feature(HB_TAG('m', 's', 'e', 't'));
 }
 
-#include "hb-ot-shape-complex-arabic-fallback.hh"
-
 struct arabic_shape_plan_t
 {
     /* The "+ 1" in the next array is to accommodate for the "NONE" command,
