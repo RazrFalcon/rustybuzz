@@ -29,7 +29,6 @@
 #define HB_OT_OS2_TABLE_HH
 
 #include "hb-open-type.hh"
-#include "hb-ot-os2-unicode-ranges.hh"
 #include "hb-ot-cmap-table.hh"
 
 #include "hb-set.hh"
@@ -89,21 +88,6 @@ public:
 
 struct OS2V5Tail
 {
-    inline bool get_optical_size(unsigned int *lower, unsigned int *upper) const
-    {
-        unsigned int lower_optical_size = usLowerOpticalPointSize;
-        unsigned int upper_optical_size = usUpperOpticalPointSize;
-
-        /* Per https://docs.microsoft.com/en-us/typography/opentype/spec/os2#lps */
-        if (lower_optical_size < upper_optical_size && lower_optical_size >= 1 && lower_optical_size <= 0xFFFE &&
-            upper_optical_size >= 2 && upper_optical_size <= 0xFFFF) {
-            *lower = lower_optical_size;
-            *upper = upper_optical_size;
-            return true;
-        }
-        return false;
-    }
-
     bool sanitize(hb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
@@ -153,104 +137,9 @@ struct OS2
         OBLIQUE = 1u << 9
     };
 
-    bool is_italic() const
-    {
-        return fsSelection & ITALIC;
-    }
-    bool is_oblique() const
-    {
-        return fsSelection & OBLIQUE;
-    }
     bool use_typo_metrics() const
     {
         return fsSelection & USE_TYPO_METRICS;
-    }
-
-    enum width_class_t {
-        FWIDTH_ULTRA_CONDENSED = 1, /* 50% */
-        FWIDTH_EXTRA_CONDENSED = 2, /* 62.5% */
-        FWIDTH_CONDENSED = 3,       /* 75% */
-        FWIDTH_SEMI_CONDENSED = 4,  /* 87.5% */
-        FWIDTH_NORMAL = 5,          /* 100% */
-        FWIDTH_SEMI_EXPANDED = 6,   /* 112.5% */
-        FWIDTH_EXPANDED = 7,        /* 125% */
-        FWIDTH_EXTRA_EXPANDED = 8,  /* 150% */
-        FWIDTH_ULTRA_EXPANDED = 9   /* 200% */
-    };
-
-    float get_width() const
-    {
-        switch (usWidthClass) {
-        case FWIDTH_ULTRA_CONDENSED:
-            return 50.f;
-        case FWIDTH_EXTRA_CONDENSED:
-            return 62.5f;
-        case FWIDTH_CONDENSED:
-            return 75.f;
-        case FWIDTH_SEMI_CONDENSED:
-            return 87.5f;
-        default:
-        case FWIDTH_NORMAL:
-            return 100.f;
-        case FWIDTH_SEMI_EXPANDED:
-            return 112.5f;
-        case FWIDTH_EXPANDED:
-            return 125.f;
-        case FWIDTH_EXTRA_EXPANDED:
-            return 150.f;
-        case FWIDTH_ULTRA_EXPANDED:
-            return 200.f;
-        }
-    }
-
-    void _update_unicode_ranges(const hb_set_t *codepoints, HBUINT32 ulUnicodeRange[4]) const
-    {
-        HBUINT32 newBits[4];
-        for (unsigned int i = 0; i < 4; i++)
-            newBits[i] = 0;
-
-        hb_codepoint_t cp = HB_SET_VALUE_INVALID;
-        while (codepoints->next(&cp)) {
-            unsigned int bit = _hb_ot_os2_get_unicode_range_bit(cp);
-            if (bit < 128) {
-                unsigned int block = bit / 32;
-                unsigned int bit_in_block = bit % 32;
-                unsigned int mask = 1 << bit_in_block;
-                newBits[block] = newBits[block] | mask;
-            }
-            if (cp >= 0x10000 && cp <= 0x110000) {
-                /* the spec says that bit 57 ("Non Plane 0") implies that there's
-                   at least one codepoint beyond the BMP; so I also include all
-                   the non-BMP codepoints here */
-                newBits[1] = newBits[1] | (1 << 25);
-            }
-        }
-
-        for (unsigned int i = 0; i < 4; i++)
-            ulUnicodeRange[i] = ulUnicodeRange[i] & newBits[i]; // set bits only if set in the original
-    }
-
-    static void find_min_and_max_codepoint(const hb_set_t *codepoints,
-                                           uint16_t *min_cp, /* OUT */
-                                           uint16_t *max_cp /* OUT */)
-    {
-        *min_cp = hb_min(0xFFFFu, codepoints->get_min());
-        *max_cp = hb_min(0xFFFFu, codepoints->get_max());
-    }
-
-    /* https://github.com/Microsoft/Font-Validator/blob/520aaae/OTFontFileVal/val_OS2.cs#L644-L681 */
-    enum font_page_t {
-        FONT_PAGE_HEBREW = 0xB100,      /* Hebrew Windows 3.1 font page */
-        FONT_PAGE_SIMP_ARABIC = 0xB200, /* Simplified Arabic Windows 3.1 font page */
-        FONT_PAGE_TRAD_ARABIC = 0xB300, /* Traditional Arabic Windows 3.1 font page */
-        FONT_PAGE_OEM_ARABIC = 0xB400,  /* OEM Arabic Windows 3.1 font page */
-        FONT_PAGE_SIMP_FARSI = 0xBA00,  /* Simplified Farsi Windows 3.1 font page */
-        FONT_PAGE_TRAD_FARSI = 0xBB00,  /* Traditional Farsi Windows 3.1 font page */
-        FONT_PAGE_THAI = 0xDE00         /* Thai Windows 3.1 font page */
-    };
-    font_page_t get_font_page() const
-    {
-        return (font_page_t)(version == 0 ? fsSelection & 0xFF00 : 0);
     }
 
     unsigned get_size() const
