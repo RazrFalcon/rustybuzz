@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Ported
+- `hb_script_t`
 - `hb_feature_t`
 - `hb_variation_t`
 

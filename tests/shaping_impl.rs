@@ -8,7 +8,7 @@ struct Args {
     variations: Vec<String>,
     direction: Option<rustybuzz::Direction>,
     language: Option<rustybuzz::Language>,
-    script: Option<rustybuzz::Tag>,
+    script: Option<rustybuzz::Script>,
     #[allow(dead_code)] remove_default_ignorables: bool, // we don't use it, but have to parse it anyway
     cluster_level: rustybuzz::BufferClusterLevel,
     features: Vec<String>,

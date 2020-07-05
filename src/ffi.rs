@@ -7,7 +7,6 @@ pub type hb_codepoint_t = u32;
 pub type hb_mask_t = u32;
 pub type hb_position_t = i32;
 pub type hb_script_t = u32;
-pub type hb_tag_t = u32;
 
 pub const HB_DIRECTION_INVALID: hb_direction_t = 0;
 pub const HB_DIRECTION_LTR: hb_direction_t = 4;
@@ -120,12 +119,6 @@ pub struct hb_font_t {
 }
 
 extern "C" {
-    pub fn hb_script_from_iso15924_tag(tag: hb_tag_t) -> hb_script_t;
-
-    pub fn hb_script_to_iso15924_tag(script: hb_script_t) -> hb_tag_t;
-
-    pub fn hb_script_get_horizontal_direction(script: hb_script_t) -> hb_direction_t;
-
     pub fn hb_language_from_string(
         str: *const i8,
         len: i32,

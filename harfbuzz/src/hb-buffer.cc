@@ -568,7 +568,7 @@ void hb_buffer_t::guess_segment_properties()
 
     /* If direction is set to INVALID, guess from script */
     if (props.direction == HB_DIRECTION_INVALID) {
-        props.direction = hb_script_get_horizontal_direction(props.script);
+        props.direction = rb_script_get_horizontal_direction(props.script);
         if (props.direction == HB_DIRECTION_INVALID)
             props.direction = HB_DIRECTION_LTR;
     }

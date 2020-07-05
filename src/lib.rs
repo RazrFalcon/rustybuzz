@@ -13,9 +13,15 @@ mod ffi;
 mod font;
 mod text_parser;
 
-pub use crate::buffer::*;
-pub use crate::common::*;
-pub use crate::font::*;
+pub use ttf_parser::Tag;
+
+pub use crate::buffer::{
+    GlyphPosition, GlyphInfo, BufferClusterLevel,
+    SerializeFlags, SerializeFormat, BufferSerializer,
+    UnicodeBuffer, GlyphBuffer
+};
+pub use crate::common::{Direction, Script, Language, Feature, Variation, script};
+pub use crate::font::Font;
 
 
 /// Shapes the buffer content using provided font and features.

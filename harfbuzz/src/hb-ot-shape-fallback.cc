@@ -339,7 +339,7 @@ static inline void position_around_base(const hb_ot_shape_plan_t *plan,
                         if (HB_DIRECTION_IS_HORIZONTAL(plan->props.direction))
                             horiz_dir = plan->props.direction;
                         else
-                            horiz_dir = hb_script_get_horizontal_direction(plan->props.script);
+                            horiz_dir = rb_script_get_horizontal_direction(plan->props.script);
                     }
                     if (horiz_dir == HB_DIRECTION_LTR)
                         component_extents.x_bearing +=

@@ -54,7 +54,7 @@ struct Args {
     unicodes: Option<String>,
     direction: Option<rustybuzz::Direction>,
     language: rustybuzz::Language,
-    script: Option<rustybuzz::Tag>,
+    script: Option<rustybuzz::Script>,
     utf8_clusters: bool,
     cluster_level: rustybuzz::BufferClusterLevel,
     features: Vec<rustybuzz::Feature>,

@@ -418,7 +418,7 @@ static void hb_form_clusters(hb_buffer_t *buffer)
 static void hb_ensure_native_direction(hb_buffer_t *buffer)
 {
     hb_direction_t direction = buffer->props.direction;
-    hb_direction_t horiz_dir = hb_script_get_horizontal_direction(buffer->props.script);
+    hb_direction_t horiz_dir = rb_script_get_horizontal_direction(buffer->props.script);
 
     /* TODO vertical:
      * The only BTT vertical script is Ogham, but it's not clear to me whether OpenType

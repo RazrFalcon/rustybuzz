@@ -383,21 +383,9 @@ typedef enum {
 
 /* Script functions */
 
-HB_EXTERN hb_script_t hb_script_from_iso15924_tag(hb_tag_t tag);
-
-HB_EXTERN hb_script_t hb_script_from_string(const char *str, int len);
-
-HB_EXTERN hb_tag_t hb_script_to_iso15924_tag(hb_script_t script);
-
-HB_EXTERN hb_direction_t hb_script_get_horizontal_direction(hb_script_t script);
-
-/* User data */
-
-typedef struct hb_user_data_key_t
-{
-    /*< private >*/
-    char unused;
-} hb_user_data_key_t;
+extern "C" {
+    hb_direction_t rb_script_get_horizontal_direction(hb_script_t script);
+}
 
 typedef void (*hb_destroy_func_t)(void *user_data);
 

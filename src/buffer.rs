@@ -2,7 +2,9 @@ use std::fmt;
 use std::io::Read;
 use std::ptr::NonNull;
 
-use crate::common::{Direction, Language, Tag};
+use ttf_parser::Tag;
+
+use crate::common::{Direction, Language, Script};
 use crate::ffi;
 
 /// Holds the positions of the glyph in both horizontal and vertical directions.
@@ -250,19 +252,17 @@ impl UnicodeBuffer {
     }
 
     /// Set the script from an ISO15924 tag.
-    pub fn set_script(&mut self, script: Tag) {
+    pub fn set_script(&mut self, script: Script) {
         unsafe {
-            let script = ffi::hb_script_from_iso15924_tag(script.0);
-            ffi::hb_buffer_set_script(self.0.as_ptr(), script)
+            ffi::hb_buffer_set_script(self.0.as_ptr(), script.0.as_u32())
         }
     }
 
     /// Get the ISO15924 script tag.
-    pub fn script(&self) -> Tag {
-        Tag(unsafe {
-            let script = ffi::hb_buffer_get_script(self.0.as_ptr());
-            ffi::hb_script_to_iso15924_tag(script)
-        })
+    pub fn script(&self) -> Script {
+        unsafe {
+            Script(Tag(ffi::hb_buffer_get_script(self.0.as_ptr())))
+        }
     }
 
     /// Set the buffer language.
