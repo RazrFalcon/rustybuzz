@@ -450,10 +450,6 @@ typedef struct hb_variation_t
     float value;
 } hb_variation_t;
 
-HB_EXTERN hb_bool_t hb_variation_from_string(const char *str, int len, hb_variation_t *variation);
-
-HB_EXTERN void hb_variation_to_string(hb_variation_t *variation, char *buf, unsigned int size);
-
 /**
  * hb_color_t:
  *

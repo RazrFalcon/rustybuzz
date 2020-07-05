@@ -77,13 +77,6 @@ impl std::fmt::Debug for _hb_var_int_t {
 pub type hb_var_int_t = _hb_var_int_t;
 
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug)]
-pub struct hb_variation_t {
-    pub tag: hb_tag_t,
-    pub value: f32,
-}
-
-#[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct hb_glyph_extents_t {
     pub x_bearing: hb_position_t,
@@ -237,15 +230,9 @@ extern "C" {
 
     pub fn hb_font_set_variations(
         font: *mut hb_font_t,
-        variations: *const hb_variation_t,
+        variations: *const crate::Variation,
         variations_length: u32,
     );
-
-    pub fn hb_variation_from_string(
-        str: *const i8,
-        len: i32,
-        variation: *mut hb_variation_t,
-    ) -> hb_bool_t;
 
     pub fn hb_shape(
         font: *mut hb_font_t,

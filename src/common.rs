@@ -422,22 +422,50 @@ mod tests_features {
 
 
 /// A font variation.
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug)]
-pub struct Variation(ffi::hb_variation_t);
+#[repr(C)]
+#[allow(missing_docs)]
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub struct Variation {
+    pub tag: Tag,
+    pub value: f32,
+}
 
 impl std::str::FromStr for Variation {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut variation = ffi::hb_variation_t::default();
-        let ok = unsafe {
-            ffi::hb_variation_from_string(s.as_ptr() as _, s.len() as i32, &mut variation as _)
-        };
-        if ok != 0 {
-            Ok(Variation(variation))
-        } else {
-            Err("invalid variation")
+        fn parse(s: &str) -> Option<Variation> {
+            if s.is_empty() {
+                return None;
+            }
+
+            let mut p = TextParser::new(s);
+
+            // Parse tag.
+            p.skip_spaces();
+            let quote = p.consume_quote();
+
+            let tag = p.consume_tag()?;
+
+            // Force closing quote.
+            if let Some(quote) = quote {
+                p.consume_byte(quote)?;
+            }
+
+            let _ = p.consume_byte(b'=');
+            let value = p.consume_f32()?;
+            p.skip_spaces();
+
+            if !p.at_end() {
+                return None;
+            }
+
+            Some(Variation {
+                tag,
+                value,
+            })
         }
+
+        parse(s).ok_or("invalid variation")
     }
 }

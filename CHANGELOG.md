@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Ported
 - `hb_feature_t`
+- `hb_variation_t`
 
 ### Removed
 - `hb_font_funcs_t`. Only the embedded TrueType implementation is used.
