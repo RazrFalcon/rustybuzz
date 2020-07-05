@@ -34,9 +34,7 @@ struct hb_shape_plan_t
 {
     hb_object_header_t header;
     hb_face_t *face_unsafe; /* We don't carry a reference to face. */
-#ifndef HB_NO_OT_SHAPE
     hb_ot_shape_plan_t ot;
-#endif
 };
 
 #endif /* HB_SHAPE_PLAN_HH */

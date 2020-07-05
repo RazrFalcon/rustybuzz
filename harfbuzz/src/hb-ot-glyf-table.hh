@@ -663,10 +663,8 @@ struct glyf
                 phantoms[PHANTOM_BOTTOM].y = v_orig - (int)v_adv;
             }
 
-#ifndef HB_NO_VAR
             if (unlikely(!face->table.gvar->apply_deltas_to_points(gid, font, points.as_array())))
                 return false;
-#endif
 
             switch (type) {
             case SIMPLE:
@@ -822,7 +820,6 @@ struct glyf
         }
 
     public:
-#ifndef HB_NO_VAR
         struct points_aggregator_t
         {
             hb_font_t *font;
@@ -922,16 +919,13 @@ struct glyf
 
             return is_vertical ? ceilf(phantoms[PHANTOM_TOP].y) - extents.y_bearing : floorf(phantoms[PHANTOM_LEFT].x);
         }
-#endif
 
         bool get_extents(hb_font_t *font, hb_codepoint_t gid, hb_glyph_extents_t *extents) const
         {
             if (unlikely(gid >= num_glyphs))
                 return false;
-#ifndef HB_NO_VAR
             if (font->num_coords && font->num_coords == face->table.gvar->get_axis_count())
                 return get_points(font, gid, points_aggregator_t(font, extents, nullptr));
-#endif
             return glyph_for_gid(gid).get_extents(font, extents);
         }
 

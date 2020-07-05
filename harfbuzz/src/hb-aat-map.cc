@@ -28,8 +28,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_AAT_SHAPE
-
 #include "hb-aat-map.hh"
 
 #include "hb-aat-layout.hh"
@@ -94,5 +92,3 @@ void hb_aat_map_builder_t::compile(hb_aat_map_t &m)
 
     hb_aat_layout_compile_map(this, &m);
 }
-
-#endif

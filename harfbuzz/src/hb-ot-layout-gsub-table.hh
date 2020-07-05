@@ -1093,7 +1093,6 @@ struct GSUB_accelerator_t : GSUB::accelerator_t
 
 /* Out-of-class implementation for methods recursing */
 
-#ifndef HB_NO_OT_LAYOUT
 /*static*/ inline bool ExtensionSubst::is_reverse() const
 {
     return SubstLookup::lookup_type_is_reverse(get_type());
@@ -1124,7 +1123,6 @@ SubstLookup::dispatch_closure_lookups_recurse_func(hb_closure_lookups_context_t 
     c->set_lookup_props(saved_lookup_props);
     return ret;
 }
-#endif
 
 } /* namespace OT */
 

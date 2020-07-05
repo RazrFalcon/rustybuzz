@@ -73,16 +73,12 @@ hb_shape_plan_t *hb_shape_plan_create(hb_face_t *face,
     hb_face_make_immutable(face);
     shape_plan->face_unsafe = face;
 
-#ifndef HB_NO_OT_SHAPE
     if (unlikely(!shape_plan->ot.init0(face, props, user_features, num_user_features, variations_index)))
         goto bail3;
-#endif
 
     return shape_plan;
 
-#ifndef HB_NO_OT_SHAPE
 bail3:
-#endif
     free(shape_plan);
 bail:
     return hb_shape_plan_get_empty();
@@ -130,9 +126,7 @@ void hb_shape_plan_destroy(hb_shape_plan_t *shape_plan)
     if (!hb_object_destroy(shape_plan))
         return;
 
-#ifndef HB_NO_OT_SHAPE
     shape_plan->ot.fini();
-#endif
     free(shape_plan);
 }
 

@@ -39,8 +39,6 @@
  */
 
 /* Note: This context is used for kerning, even without AAT, hence the condition. */
-#if !defined(HB_NO_AAT) || !defined(HB_NO_OT_KERN)
-
 AAT::hb_aat_apply_context_t::hb_aat_apply_context_t(const hb_ot_shape_plan_t *plan_,
                                                     hb_font_t *font_,
                                                     hb_buffer_t *buffer_,
@@ -69,8 +67,6 @@ void AAT::hb_aat_apply_context_t::set_ankr_table(const AAT::ankr *ankr_table_)
     ankr_table = ankr_table_;
 }
 
-#endif
-
 /**
  * SECTION:hb-aat-layout
  * @title: hb-aat-layout
@@ -79,8 +75,6 @@ void AAT::hb_aat_apply_context_t::set_ankr_table(const AAT::ankr *ankr_table_)
  *
  * Functions for querying OpenType Layout features in the font face.
  **/
-
-#if !defined(HB_NO_AAT) || defined(HAVE_CORETEXT)
 
 /* Table data courtesy of Apple.  Converted from mnemonics to integers
  * when moving to this file. */
@@ -395,9 +389,6 @@ const hb_aat_feature_mapping_t *hb_aat_layout_find_feature_mapping(hb_tag_t tag)
 {
     return hb_sorted_array(feature_mappings).bsearch(tag);
 }
-#endif
-
-#ifndef HB_NO_AAT
 
 /*
  * mort/morx/kerx/trak
@@ -571,5 +562,3 @@ unsigned int hb_aat_layout_feature_type_get_selector_infos(
 {
     return face->table.feat->get_selector_infos(feature_type, start_offset, selector_count, selectors, default_index);
 }
-
-#endif

@@ -28,8 +28,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_OT_SHAPE
-
 #include "hb-set.hh"
 #include "hb-ot-map.hh"
 #include "hb-ot-shape.hh"
@@ -312,5 +310,3 @@ void hb_ot_map_builder_t::compile(hb_ot_map_t &m, unsigned int *variations_index
         }
     }
 }
-
-#endif

@@ -26,8 +26,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_OT_SHAPE
-
 #include "hb-ot-shape-fallback.hh"
 #include "hb-kern.hh"
 
@@ -158,10 +156,6 @@ void _hb_ot_shape_fallback_mark_position_recategorize_marks(const hb_ot_shape_pl
                                                             hb_font_t *font HB_UNUSED,
                                                             hb_buffer_t *buffer)
 {
-#ifdef HB_NO_OT_SHAPE_FALLBACK
-    return;
-#endif
-
     unsigned int count = buffer->len;
     hb_glyph_info_t *info = buffer->info;
     for (unsigned int i = 0; i < count; i++)
@@ -413,10 +407,6 @@ void _hb_ot_shape_fallback_mark_position(const hb_ot_shape_plan_t *plan,
                                          hb_buffer_t *buffer,
                                          bool adjust_offsets_when_zeroing)
 {
-#ifdef HB_NO_OT_SHAPE_FALLBACK
-    return;
-#endif
-
     _hb_buffer_assert_gsubgpos_vars(buffer);
 
     unsigned int start = 0;
@@ -505,5 +495,3 @@ void _hb_ot_shape_fallback_spaces(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_f
             }
         }
 }
-
-#endif

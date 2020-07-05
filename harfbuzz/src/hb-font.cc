@@ -889,7 +889,6 @@ float hb_font_get_ptem(hb_font_t *font)
     return font->ptem;
 }
 
-#ifndef HB_NO_VAR
 /*
  * Variations
  */
@@ -1038,6 +1037,3 @@ const int *hb_font_get_var_coords_normalized(hb_font_t *font, unsigned int *leng
 
     return font->coords;
 }
-
-#endif
-

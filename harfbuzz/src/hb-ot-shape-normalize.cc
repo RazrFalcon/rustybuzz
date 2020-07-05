@@ -26,8 +26,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_OT_SHAPE
-
 #include "hb-ot-shape-normalize.hh"
 #include "hb-ot-shape-complex.hh"
 #include "hb-ot-shape.hh"
@@ -420,5 +418,3 @@ void _hb_ot_shape_normalize(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer,
         buffer->swap_buffers();
     }
 }
-
-#endif

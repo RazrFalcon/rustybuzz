@@ -30,12 +30,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_OT_LAYOUT
-
-#ifdef HB_NO_OT_TAG
-#error "Cannot compile hb-ot-layout.cc with HB_NO_OT_TAG."
-#endif
-
 #include "hb-open-type.hh"
 #include "hb-ot-layout.hh"
 #include "hb-ot-face.hh"
@@ -63,7 +57,6 @@
  * kern
  */
 
-#ifndef HB_NO_OT_KERN
 /**
  * hb_ot_layout_has_kerning:
  * @face: The #hb_face_t to work on
@@ -122,7 +115,6 @@ void hb_ot_layout_kern(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffe
 
     kern.apply(&c);
 }
-#endif
 
 /*
  * GDEF
@@ -130,9 +122,6 @@ void hb_ot_layout_kern(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffe
 
 bool OT::GDEF::is_blocklisted(hb_blob_t *blob, hb_face_t *face) const
 {
-#ifdef HB_NO_OT_LAYOUT_BLACKLIST
-    return false;
-#endif
     /* The ugly business of blocklisting individual fonts' tables happen here!
      * See this thread for why we finally had to bend in and do this:
      * https://lists.freedesktop.org/archives/harfbuzz/2016-February/005489.html
@@ -324,17 +313,11 @@ unsigned int hb_ot_layout_get_attach_points(hb_face_t *face,
 
 bool OT::GSUB::is_blocklisted(hb_blob_t *blob HB_UNUSED, hb_face_t *face) const
 {
-#ifdef HB_NO_OT_LAYOUT_BLACKLIST
-    return false;
-#endif
     return false;
 }
 
 bool OT::GPOS::is_blocklisted(hb_blob_t *blob HB_UNUSED, hb_face_t *face HB_UNUSED) const
 {
-#ifdef HB_NO_OT_LAYOUT_BLACKLIST
-    return false;
-#endif
     return false;
 }
 
@@ -1730,5 +1713,3 @@ hb_ot_layout_lookup_get_glyph_alternates(hb_face_t *face,
         *alternate_count = 0;
     return ret;
 }
-
-#endif

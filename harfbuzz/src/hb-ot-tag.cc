@@ -28,8 +28,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_OT_TAG
-
 /* hb_script_t */
 
 static hb_tag_t hb_ot_old_tag_from_script(hb_script_t script)
@@ -491,5 +489,3 @@ void hb_ot_tags_to_script_and_language(hb_tag_t script_tag,
         }
     }
 }
-
-#endif

@@ -71,5 +71,4 @@ unsigned int hb_face_t::load_upem() const
     upem.set_relaxed(ret);
     return ret;
 }
-
 #endif

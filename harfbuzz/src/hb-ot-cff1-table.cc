@@ -26,8 +26,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_CFF
-
 #include "hb-algs.hh"
 #include "hb-ot-cff1-table.hh"
 #include "hb-cff1-interp-cs.hh"
@@ -360,11 +358,6 @@ bool _get_bounds(const OT::cff1::accelerator_t *cff, hb_codepoint_t glyph, bound
 
 bool OT::cff1::accelerator_t::get_extents(hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents) const
 {
-#ifdef HB_NO_OT_FONT_CFF
-    /* XXX Remove check when this code moves to .hh file. */
-    return true;
-#endif
-
     bounds_t bounds;
 
     if (!_get_bounds(this, glyph, bounds))
@@ -443,5 +436,3 @@ bool OT::cff1::accelerator_t::get_seac_components(hb_codepoint_t glyph,
     }
     return false;
 }
-
-#endif

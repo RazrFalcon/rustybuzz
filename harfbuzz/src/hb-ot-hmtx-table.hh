@@ -117,7 +117,6 @@ template <typename T, typename H> struct hmtxvmtx
         {
             int side_bearing = get_side_bearing(glyph);
 
-#ifndef HB_NO_VAR
             if (unlikely(glyph >= num_metrics) || !font->num_coords)
                 return side_bearing;
 
@@ -126,9 +125,6 @@ template <typename T, typename H> struct hmtxvmtx
                        var_table->get_side_bearing_var(glyph, font->coords, font->num_coords); // TODO Optimize?!
 
             return _glyf_get_side_bearing_var(font, glyph, T::tableTag == HB_OT_TAG_vmtx);
-#else
-            return side_bearing;
-#endif
         }
 
         unsigned int get_advance(hb_codepoint_t glyph) const
@@ -150,7 +146,6 @@ template <typename T, typename H> struct hmtxvmtx
         {
             unsigned int advance = get_advance(glyph);
 
-#ifndef HB_NO_VAR
             if (unlikely(glyph >= num_metrics) || !font->num_coords)
                 return advance;
 
@@ -158,9 +153,6 @@ template <typename T, typename H> struct hmtxvmtx
                 return advance + roundf(var_table->get_advance_var(glyph, font)); // TODO Optimize?!
 
             return _glyf_get_advance_var(font, glyph, T::tableTag == HB_OT_TAG_vmtx);
-#else
-            return advance;
-#endif
         }
 
     protected:

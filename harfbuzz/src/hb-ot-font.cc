@@ -26,8 +26,6 @@
 
 #include "hb.hh"
 
-#ifndef HB_NO_OT_FONT
-
 #include "hb-ot.h"
 
 #include "hb-font.hh"
@@ -115,13 +113,11 @@ hb_bool_t hb_ot_get_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_pos
 {
     *x = font->get_glyph_h_advance(glyph) / 2;
 
-#ifndef HB_NO_OT_FONT_CFF
     const OT::VORG &VORG = *font->face->table.VORG;
     if (VORG.has_data()) {
         *y = font->em_scale_y(VORG.get_y_origin(glyph));
         return true;
     }
-#endif
 
     hb_glyph_extents_t extents = {0};
     if (font->face->table.glyf->get_extents(font, glyph, &extents)) {
@@ -140,22 +136,16 @@ hb_bool_t hb_ot_get_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_pos
 
 hb_bool_t hb_ot_get_glyph_extents(hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents)
 {
-#if !defined(HB_NO_OT_FONT_BITMAP) && !defined(HB_NO_COLOR)
     if (font->face->table.sbix->get_extents(font, glyph, extents))
         return true;
-#endif
     if (font->face->table.glyf->get_extents(font, glyph, extents))
         return true;
-#ifndef HB_NO_OT_FONT_CFF
     if (font->face->table.cff1->get_extents(font, glyph, extents))
         return true;
     if (font->face->table.cff2->get_extents(font, glyph, extents))
         return true;
-#endif
-#if !defined(HB_NO_OT_FONT_BITMAP) && !defined(HB_NO_COLOR)
     if (font->face->table.CBDT->get_extents(font, glyph, extents))
         return true;
-#endif
 
     // TODO Hook up side-bearings variations.
     return false;
@@ -165,20 +155,16 @@ hb_bool_t hb_ot_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *name
 {
     if (font->face->table.post->get_glyph_name(glyph, name, size))
         return true;
-#ifndef HB_NO_OT_FONT_CFF
     if (font->face->table.cff1->get_glyph_name(glyph, name, size))
         return true;
-#endif
     return false;
 }
 hb_bool_t hb_ot_get_glyph_from_name(hb_font_t *font, const char *name, int len, hb_codepoint_t *glyph)
 {
     if (font->face->table.post->get_glyph_from_name(name, len, glyph))
         return true;
-#ifndef HB_NO_OT_FONT_CFF
     if (font->face->table.cff1->get_glyph_from_name(name, len, glyph))
         return true;
-#endif
     return false;
 }
 
@@ -196,7 +182,6 @@ hb_bool_t hb_ot_get_font_v_extents(hb_font_t *font, hb_font_extents_t *metrics)
            _hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
 }
 
-#ifndef HB_NO_VAR
 int _glyf_get_side_bearing_var(hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
 {
     return font->face->table.glyf->get_side_bearing_var(font, glyph, is_vertical);
@@ -206,6 +191,3 @@ unsigned _glyf_get_advance_var(hb_font_t *font, hb_codepoint_t glyph, bool is_ve
 {
     return font->face->table.glyf->get_advance_var(font, glyph, is_vertical);
 }
-#endif
-
-#endif

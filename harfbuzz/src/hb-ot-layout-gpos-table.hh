@@ -2092,7 +2092,6 @@ struct GPOS_accelerator_t : GPOS::accelerator_t
 
 /* Out-of-class implementation for methods recursing */
 
-#ifndef HB_NO_OT_LAYOUT
 template <typename context_t>
 /*static*/ typename context_t::return_t PosLookup::dispatch_recurse_func(context_t *c, unsigned int lookup_index)
 {
@@ -2119,7 +2118,6 @@ PosLookup::dispatch_closure_lookups_recurse_func(hb_closure_lookups_context_t *c
     c->set_lookup_props(saved_lookup_props);
     return ret;
 }
-#endif
 
 } /* namespace OT */
 

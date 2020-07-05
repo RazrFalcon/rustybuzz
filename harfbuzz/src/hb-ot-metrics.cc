@@ -208,7 +208,6 @@ hb_bool_t hb_ot_metrics_get_position(hb_font_t *font,
     }
 }
 
-#ifndef HB_NO_VAR
 /**
  * hb_ot_metrics_get_variation:
  * @font:
@@ -250,6 +249,5 @@ hb_position_t hb_ot_metrics_get_y_variation(hb_font_t *font, hb_ot_metrics_tag_t
 {
     return font->em_scalef_y(hb_ot_metrics_get_variation(font, metrics_tag));
 }
-#endif
 
 #endif

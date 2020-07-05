@@ -617,13 +617,7 @@ struct hb_ot_apply_context_t : hb_dispatch_context_t<hb_ot_apply_context_t, bool
         , face(font->face)
         , buffer(buffer_)
         , recurse_func(nullptr)
-        , gdef(
-#ifndef HB_NO_OT_LAYOUT
-              *face->table.GDEF->table
-#else
-              Null(GDEF)
-#endif
-              )
+        , gdef(*face->table.GDEF->table)
         , var_store(gdef.get_var_store())
         , direction(buffer_->props.direction)
         , lookup_mask(1)
@@ -2722,31 +2716,23 @@ struct GSUBGPOS
 
     bool find_variations_index(const int *coords, unsigned int num_coords, unsigned int *index) const
     {
-#ifdef HB_NO_VAR
-        *index = FeatureVariations::NOT_FOUND_INDEX;
-        return false;
-#endif
         return (version.to_int() >= 0x00010001u ? this + featureVars : Null(FeatureVariations))
             .find_index(coords, num_coords, index);
     }
     const Feature &get_feature_variation(unsigned int feature_index, unsigned int variations_index) const
     {
-#ifndef HB_NO_VAR
         if (FeatureVariations::NOT_FOUND_INDEX != variations_index && version.to_int() >= 0x00010001u) {
             const Feature *feature = (this + featureVars).find_substitute(variations_index, feature_index);
             if (feature)
                 return *feature;
         }
-#endif
         return get_feature(feature_index);
     }
 
     void feature_variation_collect_lookups(const hb_set_t *feature_indexes, hb_set_t *lookup_indexes /* OUT */) const
     {
-#ifndef HB_NO_VAR
         if (version.to_int() >= 0x00010001u)
             (this + featureVars).collect_lookups(feature_indexes, lookup_indexes);
-#endif
     }
 
     template <typename TLookup>
@@ -2771,10 +2757,8 @@ struct GSUBGPOS
             if ((!f.featureParams.is_null()) || f.intersects_lookup_indexes(lookup_indexes))
                 feature_indexes->add(i);
         }
-#ifndef HB_NO_VAR
         if (version.to_int() >= 0x00010001u)
             (this + featureVars).closure_features(lookup_indexes, feature_indexes);
-#endif
     }
 
     unsigned int get_size() const
@@ -2791,10 +2775,8 @@ struct GSUBGPOS
                        reinterpret_cast<const OffsetTo<TLookupList> &>(lookupList).sanitize(c, this))))
             return_trace(false);
 
-#ifndef HB_NO_VAR
         if (unlikely(!(version.to_int() < 0x00010001u || featureVars.sanitize(c, this))))
             return_trace(false);
-#endif
 
         return_trace(true);
     }
