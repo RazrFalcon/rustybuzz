@@ -11,6 +11,7 @@ mod buffer;
 mod common;
 mod ffi;
 mod font;
+mod text_parser;
 
 pub use crate::buffer::*;
 pub use crate::common::*;

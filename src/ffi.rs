@@ -78,15 +78,6 @@ pub type hb_var_int_t = _hb_var_int_t;
 
 #[repr(C)]
 #[derive(Clone, Copy, Default, Debug)]
-pub struct hb_feature_t {
-    pub tag: hb_tag_t,
-    pub value: u32,
-    pub start: u32,
-    pub end: u32,
-}
-
-#[repr(C)]
-#[derive(Clone, Copy, Default, Debug)]
 pub struct hb_variation_t {
     pub tag: hb_tag_t,
     pub value: f32,
@@ -256,16 +247,10 @@ extern "C" {
         variation: *mut hb_variation_t,
     ) -> hb_bool_t;
 
-    pub fn hb_feature_from_string(
-        str: *const i8,
-        len: i32,
-        feature: *mut hb_feature_t,
-    ) -> hb_bool_t;
-
     pub fn hb_shape(
         font: *mut hb_font_t,
         buffer: *mut hb_buffer_t,
-        features: *const hb_feature_t,
+        features: *const crate::Feature,
         num_features: u32,
     ) -> hb_bool_t;
 }

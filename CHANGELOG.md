@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Ported
+- `hb_feature_t`
+
 ### Removed
 - `hb_font_funcs_t`. Only the embedded TrueType implementation is used.
 - `hb_unicode_funcs_t`. Only the embedded Unicode implementation is used.
