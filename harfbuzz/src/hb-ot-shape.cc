@@ -34,8 +34,6 @@
 #error "Cannot compile 'ot' shaper with HB_NO_OT_LAYOUT."
 #endif
 
-#include "hb-shaper-impl.hh"
-
 #include "hb-ot-shape.hh"
 #include "hb-ot-shape-complex.hh"
 #include "hb-ot-shape-fallback.hh"
