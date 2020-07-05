@@ -83,6 +83,11 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
     test_name = file_name.replace('.tests', '').replace('-', '_') + f'_{idx:03d}'
     test_name = test_name.lower()
 
+    options = options.replace('--shaper=ot', '')
+    options = options.replace(' --font-funcs=ft', '').replace('--font-funcs=ft', '')
+    options = options.replace(' --font-funcs=ot', '').replace('--font-funcs=ot', '')
+    options = options.strip()
+
     # We have to actually run hb-shape instead of using predefined results,
     # because hb sometimes stores results for freetype and not for embedded OpenType
     # engine, which we are using.
@@ -96,9 +101,6 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
 
     # Force OT functions, since this is the only one we support in rustybuzz.
     options_list.append('--font-funcs=ot')
-    # Remove FT when present.
-    if '--font-funcs=ft' in options_list:
-        options_list.remove('--font-funcs=ft')
 
     abs_font_path = hb_dir.joinpath('test/shaping/data')\
         .joinpath(tests_name)\

@@ -515,7 +515,7 @@ fn collections_001() {
         shape(
             "tests/fonts/in-house/DFONT.dfont",
             "\u{2026}\u{0020}\u{002E}",
-            "--face-index=0 --font-funcs=ot",
+            "--face-index=0",
         ),
         "ellipsis=0+723|\
          space=1+250|\
@@ -529,7 +529,7 @@ fn collections_002() {
         shape(
             "tests/fonts/in-house/DFONT.dfont",
             "\u{2026}\u{0020}\u{002E}",
-            "--face-index=1 --font-funcs=ot",
+            "--face-index=1",
         ),
         "gid0=0+1000|\
          gid0=1+1000|\
@@ -543,7 +543,7 @@ fn collections_003() {
         shape(
             "tests/fonts/in-house/DFONT.dfont",
             "\u{2026}\u{0020}\u{002E}",
-            "--face-index=2 --font-funcs=ot",
+            "--face-index=2",
         ),
         "gid0=0+1000|\
          gid0=1+1000|\
@@ -557,7 +557,7 @@ fn collections_004() {
         shape(
             "tests/fonts/in-house/TTC.ttc",
             "\u{2026}\u{0020}\u{002E}",
-            "--face-index=0 --font-funcs=ot",
+            "--face-index=0",
         ),
         "ellipsis=0+723|\
          space=1+250|\
@@ -571,7 +571,7 @@ fn collections_005() {
         shape(
             "tests/fonts/in-house/TTC.ttc",
             "\u{2026}\u{0020}\u{002E}",
-            "--face-index=1 --font-funcs=ot",
+            "--face-index=1",
         ),
         "ellipsis=0+723|\
          space=1+250|\
@@ -585,7 +585,7 @@ fn collections_006() {
         shape(
             "tests/fonts/in-house/TTC.ttc",
             "\u{2026}\u{0020}\u{002E}",
-            "--face-index=2 --font-funcs=ot",
+            "--face-index=2",
         ),
         "gid0=0+1000|\
          gid0=1+1000|\
@@ -599,7 +599,7 @@ fn color_fonts_001() {
         shape(
             "tests/fonts/in-house/ee39587d13b2afa5499cc79e45780aa79293bbd4.ttf",
             "\u{1F42F}",
-            "--font-funcs=ot --show-extents",
+            "--show-extents",
         ),
         "gid1=0+2963<0,2179,2963,-2789>"
     );
@@ -611,7 +611,7 @@ fn color_fonts_002() {
         shape(
             "tests/fonts/in-house/fcbaa518d3cce441ed37ae3b1fed6a19e9b54efd.ttf",
             "\u{1F600}",
-            "--font-funcs=ot --show-extents",
+            "--show-extents",
         ),
         "gid4=0+2550<0,1898,2555,-2405>"
     );
@@ -705,7 +705,7 @@ fn cursive_positioning_004() {
         shape(
             "tests/fonts/in-house/07f054357ff8638bac3711b422a1e31180bba863.ttf",
             "\u{0606}\u{06E1}",
-            "--font-funcs=ot --no-glyph-names",
+            "--no-glyph-names",
         ),
         "2=0@40,502+0|\
          1=0+1000"
@@ -792,7 +792,7 @@ fn emoji_003() {
         shape(
             "tests/fonts/in-house/3cf6f8ac6d647473a43a3100e7494b202b2cfafe.ttf",
             "\u{1F481}\u{1F3FB}\u{200D}\u{2642}\u{FE0F}",
-            "--font-funcs=ot --direction=l",
+            "--direction=l",
         ),
         "gid7=0+2550"
     );
@@ -804,7 +804,7 @@ fn emoji_004() {
         shape(
             "tests/fonts/in-house/3cf6f8ac6d647473a43a3100e7494b202b2cfafe.ttf",
             "\u{1F481}\u{1F3FB}\u{200D}\u{2642}\u{FE0F}",
-            "--font-funcs=ot --direction=r",
+            "--direction=r",
         ),
         "gid7=0+2550"
     );
@@ -962,7 +962,7 @@ fn indic_decompose_001() {
         shape(
             "tests/fonts/in-house/932ad5132c2761297c74e9976fe25b08e5ffa10b.ttf",
             "\u{09DC}\u{0020}\u{09DD}\u{0020}\u{09A1}\u{09BC}\u{0020}\u{09A2}\u{09BC}",
-            "--font-funcs=ot",
+            "",
         ),
         "bn_rha=0+1024|\
          space=1+1024|\
@@ -1325,7 +1325,7 @@ fn indic_syllable_004() {
         shape(
             "tests/fonts/in-house/87f85d17d26f1fe9ad28d7365101958edaefb967.ttf",
             "\u{0980}\u{0981}",
-            "--font-funcs=ot",
+            "",
         ),
         "anjibeng=0+520|\
          candrabindubeng=0+0"
@@ -6325,7 +6325,7 @@ fn simple_001() {
         shape(
             "tests/fonts/in-house/49c9f7485c1392fa09a1b801bc2ffea79275f22e.ttf",
             "\u{0056}\u{0041}\u{0042}\u{0045}\u{0061}\u{0062}\u{0063}\u{0064}",
-            "--shaper=ot",
+            "",
         ),
         "V=0+1142|\
          A=1+1295|\
@@ -6357,7 +6357,7 @@ fn spaces_001() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{0020}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+560"
     );
@@ -6369,7 +6369,7 @@ fn spaces_002() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{00A0}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+560"
     );
@@ -6381,7 +6381,7 @@ fn spaces_003() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{1680}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid0=0+692"
     );
@@ -6393,7 +6393,7 @@ fn spaces_004() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2000}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+1024"
     );
@@ -6405,7 +6405,7 @@ fn spaces_005() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2001}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+2048"
     );
@@ -6417,7 +6417,7 @@ fn spaces_006() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2002}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+1024"
     );
@@ -6429,7 +6429,7 @@ fn spaces_007() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2003}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+2048"
     );
@@ -6441,7 +6441,7 @@ fn spaces_008() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2004}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+683"
     );
@@ -6453,7 +6453,7 @@ fn spaces_009() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2005}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+512"
     );
@@ -6465,7 +6465,7 @@ fn spaces_010() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2006}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+341"
     );
@@ -6477,7 +6477,7 @@ fn spaces_011() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2007}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+560"
     );
@@ -6489,7 +6489,7 @@ fn spaces_012() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2008}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+560"
     );
@@ -6501,7 +6501,7 @@ fn spaces_013() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2009}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+410"
     );
@@ -6513,7 +6513,7 @@ fn spaces_014() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{200A}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+128"
     );
@@ -6525,7 +6525,7 @@ fn spaces_015() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{202F}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+280"
     );
@@ -6537,7 +6537,7 @@ fn spaces_016() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{205F}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+455"
     );
@@ -6549,7 +6549,7 @@ fn spaces_017() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{3000}",
-            "--font-funcs=ot",
+            "",
         ),
         "gid1=0+2048"
     );
@@ -6561,7 +6561,7 @@ fn spaces_018() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{0020}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-2048"
     );
@@ -6573,7 +6573,7 @@ fn spaces_019() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{00A0}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-2048"
     );
@@ -6585,7 +6585,7 @@ fn spaces_020() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{1680}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid0=0@-346,0+0,-2048"
     );
@@ -6597,7 +6597,7 @@ fn spaces_021() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2000}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-1024"
     );
@@ -6609,7 +6609,7 @@ fn spaces_022() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2001}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-2048"
     );
@@ -6621,7 +6621,7 @@ fn spaces_023() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2002}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-1024"
     );
@@ -6633,7 +6633,7 @@ fn spaces_024() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2003}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-2048"
     );
@@ -6645,7 +6645,7 @@ fn spaces_025() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2004}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-683"
     );
@@ -6657,7 +6657,7 @@ fn spaces_026() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2005}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-512"
     );
@@ -6669,7 +6669,7 @@ fn spaces_027() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2006}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-341"
     );
@@ -6681,7 +6681,7 @@ fn spaces_028() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2007}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-2048"
     );
@@ -6693,7 +6693,7 @@ fn spaces_029() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2008}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-2048"
     );
@@ -6705,7 +6705,7 @@ fn spaces_030() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{2009}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-410"
     );
@@ -6717,7 +6717,7 @@ fn spaces_031() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{200A}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-128"
     );
@@ -6729,7 +6729,7 @@ fn spaces_032() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{202F}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-1024"
     );
@@ -6741,7 +6741,7 @@ fn spaces_033() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{205F}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-455"
     );
@@ -6753,7 +6753,7 @@ fn spaces_034() {
         shape(
             "tests/fonts/in-house/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf",
             "\u{3000}",
-            "--font-funcs=ot --direction=ttb",
+            "--direction=ttb",
         ),
         "gid1=0@-280,0+0,-2048"
     );
@@ -10704,7 +10704,7 @@ fn use_004() {
         shape(
             "tests/fonts/in-house/6ff0fbead4462d9f229167b4e6839eceb8465058.ttf",
             "\u{11103}\u{11128}",
-            "--font-funcs=ot",
+            "",
         ),
         "u11103=0+837|\
          u11128=0+0"
@@ -12071,7 +12071,7 @@ fn vertical_001() {
         shape(
             "tests/fonts/in-house/191826b9643e3f124d865d617ae609db6a2ce203.ttf",
             "\u{300C}",
-            "--direction=t --font-funcs=ft",
+            "--direction=t",
         ),
         "uni300C.vert=0@-512,-189+0,-1024"
     );
@@ -12083,7 +12083,7 @@ fn vertical_002() {
         shape(
             "tests/fonts/in-house/f9b1dd4dcb515e757789a22cb4241107746fd3d0.ttf",
             "\u{0041}\u{0042}",
-            "--direction=t --font-funcs=ft",
+            "--direction=t",
         ),
         "gid1=0@-654,-1468+0,-2048|\
          gid2=1@-665,-1462+0,-2048"
@@ -12096,7 +12096,7 @@ fn vertical_003() {
         shape(
             "tests/fonts/in-house/f9b1dd4dcb515e757789a22cb4241107746fd3d0.ttf",
             "\u{0041}\u{0042}",
-            "--direction=t --font-funcs=ot",
+            "--direction=t",
         ),
         "gid1=0@-654,-1468+0,-2048|\
          gid2=1@-665,-1462+0,-2048"
@@ -12109,7 +12109,7 @@ fn vertical_004() {
         shape(
             "tests/fonts/in-house/4cbbc461be066fccc611dcc634af6e8cb2705537.ttf",
             "\u{FF38}",
-            "--direction=t --font-funcs=ot",
+            "--direction=t",
         ),
         "gid2=0@-500,-867+0,-1000"
     );

@@ -9,7 +9,7 @@ fn avar_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=100",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=100",
         ),
         "gid1"
     );
@@ -21,7 +21,7 @@ fn avar_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=150",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=150",
         ),
         "gid1"
     );
@@ -33,7 +33,7 @@ fn avar_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=200",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=200",
         ),
         "gid1"
     );
@@ -45,7 +45,7 @@ fn avar_1_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=250",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=250",
         ),
         "gid1"
     );
@@ -57,7 +57,7 @@ fn avar_1_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=300",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=300",
         ),
         "gid1"
     );
@@ -69,7 +69,7 @@ fn avar_1_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=350",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=350",
         ),
         "gid1"
     );
@@ -81,7 +81,7 @@ fn avar_1_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=400",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=400",
         ),
         "gid1"
     );
@@ -93,7 +93,7 @@ fn avar_1_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=450",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=450",
         ),
         "gid1"
     );
@@ -105,7 +105,7 @@ fn avar_1_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=500",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=500",
         ),
         "gid1"
     );
@@ -117,7 +117,7 @@ fn avar_1_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=550",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=550",
         ),
         "gid1"
     );
@@ -129,7 +129,7 @@ fn avar_1_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=600",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=600",
         ),
         "gid1"
     );
@@ -141,7 +141,7 @@ fn avar_1_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=650",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=650",
         ),
         "gid1"
     );
@@ -153,7 +153,7 @@ fn avar_1_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=700",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=700",
         ),
         "gid1"
     );
@@ -165,7 +165,7 @@ fn avar_1_014() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=750",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=750",
         ),
         "gid1"
     );
@@ -177,7 +177,7 @@ fn avar_1_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=800",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=800",
         ),
         "gid1"
     );
@@ -189,7 +189,7 @@ fn avar_1_016() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=850",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=850",
         ),
         "gid1"
     );
@@ -201,7 +201,7 @@ fn avar_1_017() {
         shape(
             "tests/fonts/text-rendering-tests/TestAVAR.ttf",
             "\u{2A01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=900",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=900",
         ),
         "gid1"
     );
@@ -213,7 +213,7 @@ fn cff_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66"
     );
@@ -225,7 +225,7 @@ fn cff_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{211D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid30"
     );
@@ -237,7 +237,7 @@ fn cff_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{24EA}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid235"
     );
@@ -249,7 +249,7 @@ fn cff_1_004() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{2460}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid97"
     );
@@ -261,7 +261,7 @@ fn cff_1_005() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{2461}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid98"
     );
@@ -273,7 +273,7 @@ fn cff_1_006() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{4EFF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid256"
     );
@@ -285,7 +285,7 @@ fn cff_1_007() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{FF21}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid34"
     );
@@ -297,7 +297,7 @@ fn cff_1_008() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{10133}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid52"
     );
@@ -309,7 +309,7 @@ fn cff_1_009() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{1D4D0}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid209"
     );
@@ -321,7 +321,7 @@ fn cff_1_010() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{1F33A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid59"
     );
@@ -333,7 +333,7 @@ fn cff_1_011() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{1F33B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid60"
     );
@@ -345,7 +345,7 @@ fn cff_1_012() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{1F4A7}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid168"
     );
@@ -357,7 +357,7 @@ fn cff_1_013() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest257.otf",
             "\u{1F95D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid94"
     );
@@ -369,7 +369,7 @@ fn cff_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66"
     );
@@ -381,7 +381,7 @@ fn cff_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{211D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid8478"
     );
@@ -393,7 +393,7 @@ fn cff_2_003() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{24EA}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid9451"
     );
@@ -405,7 +405,7 @@ fn cff_2_004() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{2460}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid9313"
     );
@@ -417,7 +417,7 @@ fn cff_2_005() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{2461}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid9314"
     );
@@ -429,7 +429,7 @@ fn cff_2_006() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{4EFF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid20224"
     );
@@ -441,7 +441,7 @@ fn cff_2_007() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{FF21}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid65314"
     );
@@ -453,7 +453,7 @@ fn cff_2_008() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{10133}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid308"
     );
@@ -465,7 +465,7 @@ fn cff_2_009() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{1D4D0}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid54481"
     );
@@ -477,7 +477,7 @@ fn cff_2_010() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{1F33A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid62267"
     );
@@ -489,7 +489,7 @@ fn cff_2_011() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{1F33B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid62268"
     );
@@ -501,7 +501,7 @@ fn cff_2_012() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{1F4A7}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid62632"
     );
@@ -513,7 +513,7 @@ fn cff_2_013() {
         shape(
             "tests/fonts/text-rendering-tests/FDArrayTest65535.otf",
             "\u{1F95D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid63838"
     );
@@ -525,7 +525,7 @@ fn cff2_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/AdobeVFPrototype-Subset.otf",
             "\u{0024}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=100",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=100",
         ),
         "dollar"
     );
@@ -537,7 +537,7 @@ fn cff2_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/AdobeVFPrototype-Subset.otf",
             "\u{0024}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=200",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=200",
         ),
         "dollar"
     );
@@ -549,7 +549,7 @@ fn cff2_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/AdobeVFPrototype-Subset.otf",
             "\u{0024}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=300",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=300",
         ),
         "dollar"
     );
@@ -561,7 +561,7 @@ fn cff2_1_004() {
         shape(
             "tests/fonts/text-rendering-tests/AdobeVFPrototype-Subset.otf",
             "\u{0024}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=400",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=400",
         ),
         "dollar"
     );
@@ -573,7 +573,7 @@ fn cff2_1_005() {
         shape(
             "tests/fonts/text-rendering-tests/AdobeVFPrototype-Subset.otf",
             "\u{0024}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=500",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=500",
         ),
         "dollar"
     );
@@ -585,7 +585,7 @@ fn cff2_1_006() {
         shape(
             "tests/fonts/text-rendering-tests/AdobeVFPrototype-Subset.otf",
             "\u{0024}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=600",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=600",
         ),
         "dollar"
     );
@@ -597,7 +597,7 @@ fn cff2_1_007() {
         shape(
             "tests/fonts/text-rendering-tests/AdobeVFPrototype-Subset.otf",
             "\u{0024}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=700",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=700",
         ),
         "dollar"
     );
@@ -609,7 +609,7 @@ fn cff2_1_008() {
         shape(
             "tests/fonts/text-rendering-tests/AdobeVFPrototype-Subset.otf",
             "\u{0024}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=800",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=800",
         ),
         "dollar.nostroke"
     );
@@ -621,7 +621,7 @@ fn cff2_1_009() {
         shape(
             "tests/fonts/text-rendering-tests/AdobeVFPrototype-Subset.otf",
             "\u{0024}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=900",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=900",
         ),
         "dollar.nostroke"
     );
@@ -633,7 +633,7 @@ fn cmap_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAP14.otf",
             "\u{82A6}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni82A6_uE0100"
     );
@@ -645,7 +645,7 @@ fn cmap_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAP14.otf",
             "\u{82A6}\u{E0100}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni82A6_uE0100"
     );
@@ -657,7 +657,7 @@ fn cmap_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAP14.otf",
             "\u{82A6}\u{E0101}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni82A6_uE0101"
     );
@@ -669,7 +669,7 @@ fn cmap_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAP14.otf",
             "\u{2269}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni2269"
     );
@@ -681,7 +681,7 @@ fn cmap_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAP14.otf",
             "\u{2269}\u{FE00}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni2269FE00"
     );
@@ -693,7 +693,7 @@ fn cmap_3_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{201C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -705,7 +705,7 @@ fn cmap_3_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -717,7 +717,7 @@ fn cmap_3_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -729,7 +729,7 @@ fn cmap_3_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{00C7}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -741,7 +741,7 @@ fn cmap_3_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{011E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -753,7 +753,7 @@ fn cmap_3_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{0049}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -765,7 +765,7 @@ fn cmap_3_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{0130}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -777,7 +777,7 @@ fn cmap_3_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{00D6}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -789,7 +789,7 @@ fn cmap_3_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{015E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -801,7 +801,7 @@ fn cmap_3_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{00DC}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -813,7 +813,7 @@ fn cmap_3_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{201D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -825,7 +825,7 @@ fn cmap_3_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{0061}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -837,7 +837,7 @@ fn cmap_3_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{0062}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -849,7 +849,7 @@ fn cmap_3_014() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{00E7}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -861,7 +861,7 @@ fn cmap_3_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{011F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -873,7 +873,7 @@ fn cmap_3_016() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{0131}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -885,7 +885,7 @@ fn cmap_3_017() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{0069}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -897,7 +897,7 @@ fn cmap_3_018() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{00F6}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -909,7 +909,7 @@ fn cmap_3_019() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{015F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -921,7 +921,7 @@ fn cmap_3_020() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{00FC}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid0"
     );
@@ -933,7 +933,7 @@ fn cvar_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestCVARGVARTwo.ttf",
             "\u{0068}\u{006F}\u{006E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=28,wdth=100,opsz=72",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=28,wdth=100,opsz=72",
         ),
         "uni0068|\
          uni006F@595,0|\
@@ -947,7 +947,7 @@ fn cvar_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestCVARGVARTwo.ttf",
             "\u{0068}\u{006F}\u{006E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=94,wdth=100,opsz=72",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=94,wdth=100,opsz=72",
         ),
         "uni0068|\
          uni006F@635,0|\
@@ -961,7 +961,7 @@ fn cvar_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestCVARGVARTwo.ttf",
             "\u{0068}\u{006F}\u{006E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=194,wdth=100,opsz=72",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=194,wdth=100,opsz=72",
         ),
         "uni0068|\
          uni006F@691,0|\
@@ -975,7 +975,7 @@ fn cvar_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestCVARGVAROne.ttf",
             "\u{0068}\u{006F}\u{006E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=28,wdth=100,opsz=72",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=28,wdth=100,opsz=72",
         ),
         "uni0068|\
          uni006F@595,0|\
@@ -989,7 +989,7 @@ fn cvar_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestCVARGVAROne.ttf",
             "\u{0068}\u{006F}\u{006E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=94,wdth=100,opsz=72",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=94,wdth=100,opsz=72",
         ),
         "uni0068|\
          uni006F@635,0|\
@@ -1003,7 +1003,7 @@ fn cvar_2_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestCVARGVAROne.ttf",
             "\u{0068}\u{006F}\u{006E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=194,wdth=100,opsz=72",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=194,wdth=100,opsz=72",
         ),
         "uni0068|\
          uni006F@691,0|\
@@ -1017,7 +1017,7 @@ fn glyf_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGLYFOne.ttf",
             "\u{0123}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gcommaabove"
     );
@@ -1029,7 +1029,7 @@ fn gpos_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0104}\u{004A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "Aogonek|\
          J@732,0"
@@ -1042,7 +1042,7 @@ fn gpos_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0104}\u{0067}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "Aogonek|\
          g@692,0"
@@ -1055,7 +1055,7 @@ fn gpos_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0104}\u{0123}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "Aogonek|\
          gcommaabove@692,0"
@@ -1068,7 +1068,7 @@ fn gpos_1_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0104}\u{006A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "Aogonek|\
          j@752,0"
@@ -1081,7 +1081,7 @@ fn gpos_1_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0104}\u{0237}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "Aogonek|\
          dotlessj@752,0"
@@ -1094,7 +1094,7 @@ fn gpos_1_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0051}\u{0237}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "Q|\
          dotlessj@734,0"
@@ -1107,7 +1107,7 @@ fn gpos_1_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0105}\u{006A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "aogonek|\
          j@588,0"
@@ -1120,7 +1120,7 @@ fn gpos_1_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0105}\u{0237}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "aogonek|\
          dotlessj@588,0"
@@ -1133,7 +1133,7 @@ fn gpos_1_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0067}\u{0237}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "g|\
          dotlessj@563,0"
@@ -1146,7 +1146,7 @@ fn gpos_1_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0123}\u{0237}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gcommaabove|\
          dotlessj@563,0"
@@ -1159,7 +1159,7 @@ fn gpos_1_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0131}\u{0237}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "dotlessi|\
          dotlessj@334,0"
@@ -1172,7 +1172,7 @@ fn gpos_1_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0173}\u{0237}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uogonek|\
          dotlessj@656,0"
@@ -1185,7 +1185,7 @@ fn gpos_1_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0076}\u{0237}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "v|\
          dotlessj@587,0"
@@ -1198,7 +1198,7 @@ fn gpos_1_014() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0056}\u{0061}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "V|\
          a@594,0"
@@ -1211,7 +1211,7 @@ fn gpos_1_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0056}\u{00E1}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "V|\
          aacute@594,0"
@@ -1224,7 +1224,7 @@ fn gpos_1_016() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0056}\u{0105}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "V|\
          aogonek@594,0"
@@ -1237,7 +1237,7 @@ fn gpos_1_017() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0056}\u{0066}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "V|\
          f@634,0"
@@ -1250,7 +1250,7 @@ fn gpos_1_018() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0056}\u{FB02}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "V|\
          fl@634,0"
@@ -1263,7 +1263,7 @@ fn gpos_1_019() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSOne.ttf",
             "\u{0056}\u{002E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "V|\
          period@504,0"
@@ -1276,7 +1276,7 @@ fn gpos_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSTwo.otf",
             "\u{25EF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni25EF"
     );
@@ -1288,7 +1288,7 @@ fn gpos_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSTwo.otf",
             "\u{263C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "sun"
     );
@@ -1300,7 +1300,7 @@ fn gpos_2_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSTwo.otf",
             "\u{25EF}\u{263C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni25EF|\
          sun"
@@ -1313,7 +1313,7 @@ fn gpos_3_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1208}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1208"
     );
@@ -1325,7 +1325,7 @@ fn gpos_3_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1208}\u{135E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1208|\
          uni135E@303,0"
@@ -1338,7 +1338,7 @@ fn gpos_3_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1208}\u{135F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1208|\
          uni135F@303,0"
@@ -1351,7 +1351,7 @@ fn gpos_3_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1208}\u{135D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1208|\
          uni135D@303,0"
@@ -1364,7 +1364,7 @@ fn gpos_4_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSThree.ttf",
             "\u{0075}\u{0308}\u{0301}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "u|\
          uni0308@529,-31|\
@@ -1378,7 +1378,7 @@ fn gpos_4_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSThree.ttf",
             "\u{0075}\u{0308}\u{0304}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "u|\
          uni0308@529,-31|\
@@ -1392,7 +1392,7 @@ fn gpos_4_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSThree.ttf",
             "\u{0075}\u{0308}\u{0308}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "u|\
          uni0308@529,-31|\
@@ -1406,7 +1406,7 @@ fn gpos_4_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSThree.ttf",
             "\u{0075}\u{0308}\u{0308}\u{0308}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "u|\
          uni0308@529,-31|\
@@ -1421,7 +1421,7 @@ fn gpos_5_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSFour.ttf",
             "\u{0634}\u{0652}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=100",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=100",
         ),
         "uni0652@663,144|\
          uni0634"
@@ -1434,7 +1434,7 @@ fn gpos_5_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSFour.ttf",
             "\u{0634}\u{0652}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=300",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=300",
         ),
         "uni0652@680,165|\
          uni0634"
@@ -1447,7 +1447,7 @@ fn gpos_5_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSFour.ttf",
             "\u{0634}\u{0652}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=600",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=600",
         ),
         "uni0652@730,246|\
          uni0634"
@@ -1460,7 +1460,7 @@ fn gpos_5_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSFour.ttf",
             "\u{0634}\u{0652}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=700",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=700",
         ),
         "uni0652@750,282|\
          uni0634"
@@ -1473,7 +1473,7 @@ fn gpos_5_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestGPOSFour.ttf",
             "\u{0634}\u{0652}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=900",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=900",
         ),
         "uni0652@784,351|\
          uni0634"
@@ -1486,7 +1486,7 @@ fn gsub_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGSUBOne.otf",
             "\u{0061}\u{0020}\u{0061}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "a.alt|\
          space@500,0|\
@@ -1500,7 +1500,7 @@ fn gsub_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1373}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1373"
     );
@@ -1512,7 +1512,7 @@ fn gsub_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{136B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni136B"
     );
@@ -1524,7 +1524,7 @@ fn gsub_2_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1375}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1375"
     );
@@ -1536,7 +1536,7 @@ fn gsub_2_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{136D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni136D"
     );
@@ -1548,7 +1548,7 @@ fn gsub_2_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1373}\u{136B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1373.init|\
          uni136B.fina@621,0"
@@ -1561,7 +1561,7 @@ fn gsub_2_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1375}\u{136D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1375.init|\
          uni136D.fina@662,0"
@@ -1574,7 +1574,7 @@ fn gsub_2_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{137B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni137B"
     );
@@ -1586,7 +1586,7 @@ fn gsub_2_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1373}\u{136B}\u{137B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1373.init|\
          uni136B.medi@621,0|\
@@ -1600,7 +1600,7 @@ fn gsub_2_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1373}\u{136B}\u{137B}\u{1373}\u{136B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1373.init|\
          uni136B.medi@621,0|\
@@ -1616,7 +1616,7 @@ fn gsub_2_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1373}\u{136B}\u{137B}\u{1375}\u{136D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1373.init|\
          uni136B.medi@621,0|\
@@ -1632,7 +1632,7 @@ fn gsub_2_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeEthi.ttf",
             "\u{1375}\u{136D}\u{137B}\u{1373}\u{136B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1375.init|\
          uni136D.medi@662,0|\
@@ -3660,7 +3660,7 @@ fn gvar_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAROne.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=300",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=300",
         ),
         "gid2"
     );
@@ -3672,7 +3672,7 @@ fn gvar_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAROne.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=350",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=350",
         ),
         "gid2"
     );
@@ -3684,7 +3684,7 @@ fn gvar_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAROne.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=400",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=400",
         ),
         "gid2"
     );
@@ -3696,7 +3696,7 @@ fn gvar_1_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAROne.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=450",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=450",
         ),
         "gid2"
     );
@@ -3708,7 +3708,7 @@ fn gvar_1_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAROne.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=500",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=500",
         ),
         "gid2"
     );
@@ -3720,7 +3720,7 @@ fn gvar_1_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAROne.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=550",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=550",
         ),
         "gid2"
     );
@@ -3732,7 +3732,7 @@ fn gvar_1_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAROne.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=600",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=600",
         ),
         "gid2"
     );
@@ -3744,7 +3744,7 @@ fn gvar_1_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAROne.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=650",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=650",
         ),
         "gid2"
     );
@@ -3756,7 +3756,7 @@ fn gvar_1_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAROne.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=700",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=700",
         ),
         "gid2"
     );
@@ -3768,7 +3768,7 @@ fn gvar_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARTwo.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=300",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=300",
         ),
         "gid2"
     );
@@ -3780,7 +3780,7 @@ fn gvar_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARTwo.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=350",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=350",
         ),
         "gid2"
     );
@@ -3792,7 +3792,7 @@ fn gvar_2_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARTwo.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=400",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=400",
         ),
         "gid2"
     );
@@ -3804,7 +3804,7 @@ fn gvar_2_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARTwo.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=450",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=450",
         ),
         "gid2"
     );
@@ -3816,7 +3816,7 @@ fn gvar_2_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARTwo.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=500",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=500",
         ),
         "gid2"
     );
@@ -3828,7 +3828,7 @@ fn gvar_2_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARTwo.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=550",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=550",
         ),
         "gid2"
     );
@@ -3840,7 +3840,7 @@ fn gvar_2_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARTwo.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=600",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=600",
         ),
         "gid2"
     );
@@ -3852,7 +3852,7 @@ fn gvar_2_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARTwo.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=650",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=650",
         ),
         "gid2"
     );
@@ -3864,7 +3864,7 @@ fn gvar_2_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARTwo.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=700",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=700",
         ),
         "gid2"
     );
@@ -3876,7 +3876,7 @@ fn gvar_3_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARThree.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=300",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=300",
         ),
         "gid2"
     );
@@ -3888,7 +3888,7 @@ fn gvar_3_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARThree.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=350",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=350",
         ),
         "gid2"
     );
@@ -3900,7 +3900,7 @@ fn gvar_3_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARThree.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=400",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=400",
         ),
         "gid2"
     );
@@ -3912,7 +3912,7 @@ fn gvar_3_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARThree.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=450",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=450",
         ),
         "gid2"
     );
@@ -3924,7 +3924,7 @@ fn gvar_3_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARThree.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=500",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=500",
         ),
         "gid2"
     );
@@ -3936,7 +3936,7 @@ fn gvar_3_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARThree.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=550",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=550",
         ),
         "gid2"
     );
@@ -3948,7 +3948,7 @@ fn gvar_3_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARThree.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=600",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=600",
         ),
         "gid2"
     );
@@ -3960,7 +3960,7 @@ fn gvar_3_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARThree.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=650",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=650",
         ),
         "gid2"
     );
@@ -3972,7 +3972,7 @@ fn gvar_3_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARThree.ttf",
             "\u{5F4C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=700",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=700",
         ),
         "gid2"
     );
@@ -3984,7 +3984,7 @@ fn gvar_4_001() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-1.0,T1=0.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-1.0,T1=0.0",
         ),
         "gid5"
     );
@@ -3996,7 +3996,7 @@ fn gvar_4_002() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-0.8,T1=0.1",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-0.8,T1=0.1",
         ),
         "gid5"
     );
@@ -4008,7 +4008,7 @@ fn gvar_4_003() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-0.6,T1=0.2",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-0.6,T1=0.2",
         ),
         "gid5"
     );
@@ -4020,7 +4020,7 @@ fn gvar_4_004() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-0.4,T1=0.3",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-0.4,T1=0.3",
         ),
         "gid5"
     );
@@ -4032,7 +4032,7 @@ fn gvar_4_005() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-0.2,T1=0.4",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-0.2,T1=0.4",
         ),
         "gid5"
     );
@@ -4044,7 +4044,7 @@ fn gvar_4_006() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.0,T1=0.5",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.0,T1=0.5",
         ),
         "gid5"
     );
@@ -4056,7 +4056,7 @@ fn gvar_4_007() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.2,T1=0.6",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.2,T1=0.6",
         ),
         "gid5"
     );
@@ -4068,7 +4068,7 @@ fn gvar_4_008() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.4,T1=0.7",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.4,T1=0.7",
         ),
         "gid5"
     );
@@ -4080,7 +4080,7 @@ fn gvar_4_009() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.6,T1=0.8",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.6,T1=0.8",
         ),
         "gid5"
     );
@@ -4092,7 +4092,7 @@ fn gvar_4_010() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.8,T1=0.9",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.8,T1=0.9",
         ),
         "gid5"
     );
@@ -4104,7 +4104,7 @@ fn gvar_4_011() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F98E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=1.0,T1=1.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=1.0,T1=1.0",
         ),
         "gid5"
     );
@@ -4116,7 +4116,7 @@ fn gvar_5_001() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-1.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-1.0",
         ),
         "gid15"
     );
@@ -4128,7 +4128,7 @@ fn gvar_5_002() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-0.8",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-0.8",
         ),
         "gid15"
     );
@@ -4140,7 +4140,7 @@ fn gvar_5_003() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-0.6",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-0.6",
         ),
         "gid15"
     );
@@ -4152,7 +4152,7 @@ fn gvar_5_004() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-0.4",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-0.4",
         ),
         "gid15"
     );
@@ -4164,7 +4164,7 @@ fn gvar_5_005() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=-0.2",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=-0.2",
         ),
         "gid15"
     );
@@ -4176,7 +4176,7 @@ fn gvar_5_006() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.0",
         ),
         "gid15"
     );
@@ -4188,7 +4188,7 @@ fn gvar_5_007() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.2",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.2",
         ),
         "gid15"
     );
@@ -4200,7 +4200,7 @@ fn gvar_5_008() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.4",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.4",
         ),
         "gid15"
     );
@@ -4212,7 +4212,7 @@ fn gvar_5_009() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.6",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.6",
         ),
         "gid15"
     );
@@ -4224,7 +4224,7 @@ fn gvar_5_010() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=0.8",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=0.8",
         ),
         "gid15"
     );
@@ -4236,7 +4236,7 @@ fn gvar_5_011() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F31D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=M1=1.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=M1=1.0",
         ),
         "gid15"
     );
@@ -4248,7 +4248,7 @@ fn gvar_6_001() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.0",
         ),
         "gid12"
     );
@@ -4260,7 +4260,7 @@ fn gvar_6_002() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.1",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.1",
         ),
         "gid12"
     );
@@ -4272,7 +4272,7 @@ fn gvar_6_003() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.2",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.2",
         ),
         "gid12"
     );
@@ -4284,7 +4284,7 @@ fn gvar_6_004() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.3",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.3",
         ),
         "gid12"
     );
@@ -4296,7 +4296,7 @@ fn gvar_6_005() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.4",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.4",
         ),
         "gid12"
     );
@@ -4308,7 +4308,7 @@ fn gvar_6_006() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.5",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.5",
         ),
         "gid12"
     );
@@ -4320,7 +4320,7 @@ fn gvar_6_007() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.6",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.6",
         ),
         "gid12"
     );
@@ -4332,7 +4332,7 @@ fn gvar_6_008() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.7",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.7",
         ),
         "gid12"
     );
@@ -4344,7 +4344,7 @@ fn gvar_6_009() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.8",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.8",
         ),
         "gid12"
     );
@@ -4356,7 +4356,7 @@ fn gvar_6_010() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=0.9",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=0.9",
         ),
         "gid12"
     );
@@ -4368,7 +4368,7 @@ fn gvar_6_011() {
         shape(
             "tests/fonts/text-rendering-tests/Zycon.ttf",
             "\u{1F422}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=T1=1.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=T1=1.0",
         ),
         "gid12"
     );
@@ -4380,7 +4380,7 @@ fn gvar_7_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARFour.ttf",
             "\u{004F}\u{0049}\u{004F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=150",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=150",
         ),
         "uni004F|\
          uni0049@706,0|\
@@ -4394,7 +4394,7 @@ fn gvar_7_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARFour.ttf",
             "\u{004F}\u{0049}\u{004F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=200",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=200",
         ),
         "uni004F|\
          uni0049@707,0|\
@@ -4408,7 +4408,7 @@ fn gvar_7_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARFour.ttf",
             "\u{004F}\u{0049}\u{004F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=250",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=250",
         ),
         "uni004F|\
          uni0049@707,0|\
@@ -4422,7 +4422,7 @@ fn gvar_7_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARFour.ttf",
             "\u{004F}\u{0049}\u{004F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=300",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=300",
         ),
         "uni004F|\
          uni0049@707,0|\
@@ -4436,7 +4436,7 @@ fn gvar_7_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARFour.ttf",
             "\u{004F}\u{0049}\u{004F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=350",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=350",
         ),
         "uni004F|\
          uni0049@707,0|\
@@ -4450,7 +4450,7 @@ fn gvar_7_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARFour.ttf",
             "\u{004F}\u{0049}\u{004F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=400",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=400",
         ),
         "uni004F|\
          uni0049@707,0|\
@@ -4464,7 +4464,7 @@ fn gvar_7_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARFour.ttf",
             "\u{004F}\u{0049}\u{004F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=450",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=450",
         ),
         "uni004F|\
          uni0049@706,0|\
@@ -4478,7 +4478,7 @@ fn gvar_8_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAREight.ttf",
             "\u{0048}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=HV=0.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=HV=0.0",
         ),
         "H"
     );
@@ -4490,7 +4490,7 @@ fn gvar_8_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAREight.ttf",
             "\u{0048}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=HV=-0.2",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=HV=-0.2",
         ),
         "H"
     );
@@ -4502,7 +4502,7 @@ fn gvar_8_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAREight.ttf",
             "\u{0048}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=HV=-0.4",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=HV=-0.4",
         ),
         "H"
     );
@@ -4514,7 +4514,7 @@ fn gvar_8_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAREight.ttf",
             "\u{0048}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=HV=-0.6",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=HV=-0.6",
         ),
         "H"
     );
@@ -4526,7 +4526,7 @@ fn gvar_8_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAREight.ttf",
             "\u{0048}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=HV=-0.8",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=HV=-0.8",
         ),
         "H"
     );
@@ -4538,7 +4538,7 @@ fn gvar_8_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVAREight.ttf",
             "\u{0048}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=HV=-1.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=HV=-1.0",
         ),
         "H"
     );
@@ -4550,7 +4550,7 @@ fn gvar_9_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=-1.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=-1.0",
         ),
         "A"
     );
@@ -4562,7 +4562,7 @@ fn gvar_9_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=-0.5",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=-0.5",
         ),
         "A"
     );
@@ -4574,7 +4574,7 @@ fn gvar_9_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=0.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=0.0",
         ),
         "A"
     );
@@ -4586,7 +4586,7 @@ fn gvar_9_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=0.5",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=0.5",
         ),
         "A"
     );
@@ -4598,7 +4598,7 @@ fn gvar_9_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=0.6",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=0.6",
         ),
         "A"
     );
@@ -4610,7 +4610,7 @@ fn gvar_9_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=0.7",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=0.7",
         ),
         "A"
     );
@@ -4622,7 +4622,7 @@ fn gvar_9_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=0.8",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=0.8",
         ),
         "A"
     );
@@ -4634,7 +4634,7 @@ fn gvar_9_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=0.9",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=0.9",
         ),
         "A"
     );
@@ -4646,7 +4646,7 @@ fn gvar_9_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=0.944444",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=0.944444",
         ),
         "A"
     );
@@ -4658,7 +4658,7 @@ fn gvar_9_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestGVARNine.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=TEST=1.0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=TEST=1.0",
         ),
         "A"
     );
@@ -4670,7 +4670,7 @@ fn hvar_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVAROne.otf",
             "\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=0",
         ),
         "A|\
          B@520,0|\
@@ -4684,7 +4684,7 @@ fn hvar_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVAROne.otf",
             "\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=200",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=200",
         ),
         "A|\
          B@533,0|\
@@ -4698,7 +4698,7 @@ fn hvar_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVAROne.otf",
             "\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=400",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=400",
         ),
         "A|\
          B@546,0|\
@@ -4712,7 +4712,7 @@ fn hvar_1_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVAROne.otf",
             "\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=600",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=600",
         ),
         "A|\
          B@558,0|\
@@ -4726,7 +4726,7 @@ fn hvar_1_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVAROne.otf",
             "\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=800",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=800",
         ),
         "A|\
          B@571,0|\
@@ -4740,7 +4740,7 @@ fn hvar_1_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVAROne.otf",
             "\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=1000",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=1000",
         ),
         "A|\
          B@584,0|\
@@ -4754,7 +4754,7 @@ fn hvar_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVARTwo.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=0",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=0",
         ),
         "uni0041|\
          uni0042@450,0"
@@ -4767,7 +4767,7 @@ fn hvar_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVARTwo.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=200",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=200",
         ),
         "uni0041|\
          uni0042@515,0"
@@ -4780,7 +4780,7 @@ fn hvar_2_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVARTwo.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=400",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=400",
         ),
         "uni0041|\
          uni0042@584,0"
@@ -4793,7 +4793,7 @@ fn hvar_2_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVARTwo.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=600",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=600",
         ),
         "uni0041|\
          uni0042@673,0"
@@ -4806,7 +4806,7 @@ fn hvar_2_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVARTwo.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=800",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=800",
         ),
         "uni0041|\
          uni0042@761,0"
@@ -4819,7 +4819,7 @@ fn hvar_2_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestHVARTwo.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft --variations=wght=1000",
+            "--font-size=1000 --ned --remove-default-ignorables --variations=wght=1000",
         ),
         "uni0041|\
          uni0042@850,0"
@@ -4832,7 +4832,7 @@ fn kern_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestKERNOne.otf",
             "\u{0131}\u{0054}\u{0075}\u{0054}\u{0075}\u{0054}\u{0131}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "dotlessi|\
          T|\
@@ -4850,7 +4850,7 @@ fn kern_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestKERNOne.otf",
             "\u{0075}\u{0131}\u{0131}\u{0054}\u{0131}\u{0131}\u{0054}\u{0131}\u{0131}\u{0075}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "u|\
          dotlessi@400,0|\
@@ -4871,7 +4871,7 @@ fn morx_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXOne.ttf",
             "\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A.alt|\
          B@1000,0|\
@@ -4885,7 +4885,7 @@ fn morx_10_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTen.ttf",
             "\u{0041}\u{0042}\u{0041}\u{0042}\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@638,0|\
@@ -4902,7 +4902,7 @@ fn morx_11_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEleven.ttf",
             "\u{0042}\u{0041}\u{0042}\u{0042}\u{0041}\u{0041}\u{0042}\u{0058}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          A@650,0|\
@@ -4921,7 +4921,7 @@ fn morx_12_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwelve.ttf",
             "\u{0058}\u{0041}\u{0042}\u{0043}\u{0058}\u{0031}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "X|\
          C@598,0|\
@@ -4938,7 +4938,7 @@ fn morx_12_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwelve.ttf",
             "\u{0058}\u{0041}\u{0042}\u{0043}\u{0058}\u{0032}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "X|\
          C@598,0|\
@@ -4955,7 +4955,7 @@ fn morx_12_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwelve.ttf",
             "\u{0058}\u{0041}\u{0042}\u{0043}\u{0058}\u{0033}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "X|\
          B@598,0|\
@@ -4972,7 +4972,7 @@ fn morx_13_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirteen.ttf",
             "\u{0041}\u{0042}\u{0043}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          C@626,0|\
@@ -4988,7 +4988,7 @@ fn morx_14_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFourteen.ttf",
             "\u{0041}\u{0042}\u{0043}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          C@626,0|\
@@ -5031,7 +5031,7 @@ fn morx_16_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXSixteen.ttf",
             "\u{0041}\u{0042}\u{0043}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          C@626,0|\
@@ -5047,7 +5047,7 @@ fn morx_17_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXSeventeen.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          A@626,0"
@@ -5060,7 +5060,7 @@ fn morx_18_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEighteen.ttf",
             "\u{0041}\u{0042}\u{0043}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B.alt@639,0|\
@@ -5076,7 +5076,7 @@ fn morx_18_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEighteen.ttf",
             "\u{0041}\u{0042}\u{0042}\u{0042}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@639,0|\
@@ -5093,7 +5093,7 @@ fn morx_18_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEighteen.ttf",
             "\u{0041}\u{0042}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B.alt@639,0|\
@@ -5108,7 +5108,7 @@ fn morx_18_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEighteen.ttf",
             "\u{0041}\u{0042}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@639,0|\
@@ -5122,7 +5122,7 @@ fn morx_19_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEighteen.ttf",
             "\u{0041}\u{0043}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A.alt|\
          C@1000,0|\
@@ -5137,7 +5137,7 @@ fn morx_19_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEighteen.ttf",
             "\u{0044}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "D.alt"
     );
@@ -5150,7 +5150,7 @@ fn morx_2_001() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{24FF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5176,7 +5176,7 @@ fn morx_2_002() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{278A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5202,7 +5202,7 @@ fn morx_2_003() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{278B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5228,7 +5228,7 @@ fn morx_2_004() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{0033}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5254,7 +5254,7 @@ fn morx_2_005() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{0034}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5280,7 +5280,7 @@ fn morx_2_006() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{0035}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5306,7 +5306,7 @@ fn morx_2_007() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{0036}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5332,7 +5332,7 @@ fn morx_2_008() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{0037}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5358,7 +5358,7 @@ fn morx_2_009() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{0038}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5384,7 +5384,7 @@ fn morx_2_010() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{0039}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5410,7 +5410,7 @@ fn morx_2_011() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{2793}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5436,7 +5436,7 @@ fn morx_2_012() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{24EB}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5462,7 +5462,7 @@ fn morx_2_013() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{24EC}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5488,7 +5488,7 @@ fn morx_2_014() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{24ED}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5514,7 +5514,7 @@ fn morx_2_015() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{24EE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5540,7 +5540,7 @@ fn morx_2_016() {
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0043}\u{0044}\
              \u{004F}\u{004F}\u{004F}\u{24EF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "O|\
          O@418,0|\
@@ -5565,7 +5565,7 @@ fn morx_20_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwenty.ttf",
             "\u{0041}\u{0042}\u{0043}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@639,0|\
@@ -5581,7 +5581,7 @@ fn morx_20_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwenty.ttf",
             "\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@639,0|\
@@ -5595,7 +5595,7 @@ fn morx_20_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwenty.ttf",
             "\u{0041}\u{0042}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B.alt@639,0|\
@@ -5609,7 +5609,7 @@ fn morx_20_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwenty.ttf",
             "\u{0041}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A.alt|\
          E.alt1@1000,0"
@@ -5622,7 +5622,7 @@ fn morx_20_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwenty.ttf",
             "\u{0045}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "E|\
          E@556,0"
@@ -5635,7 +5635,7 @@ fn morx_20_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwenty.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A.alt"
     );
@@ -5647,7 +5647,7 @@ fn morx_20_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwenty.ttf",
             "\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "E"
     );
@@ -5659,7 +5659,7 @@ fn morx_21_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyone.ttf",
             "\u{0041}\u{0042}\u{0043}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B.alt@639,0|\
@@ -5675,7 +5675,7 @@ fn morx_22_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentytwo.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "C"
     );
@@ -5687,7 +5687,7 @@ fn morx_23_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentythree.ttf",
             "\u{0041}\u{0042}\u{0043}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "E|\
          E@556,0|\
@@ -5719,7 +5719,7 @@ fn morx_25_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyfive.ttf",
             "\u{0041}\u{0042}\u{0043}\u{0044}\u{0045}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A.alt|\
          B.alt@1000,0|\
@@ -5735,7 +5735,7 @@ fn morx_25_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyfive.ttf",
             "\u{0045}\u{0042}\u{0043}\u{0044}\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "E|\
          B@556,0|\
@@ -5751,7 +5751,7 @@ fn morx_25_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyfive.ttf",
             "\u{0043}\u{0042}\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "C|\
          B@596,0|\
@@ -5767,7 +5767,7 @@ fn morx_25_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyfive.ttf",
             "\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A.alt|\
          B.alt@1000,0|\
@@ -5781,7 +5781,7 @@ fn morx_25_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyfive.ttf",
             "\u{0043}\u{0042}\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "C|\
          B@596,0|\
@@ -5795,7 +5795,7 @@ fn morx_25_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyfive.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A.alt|\
          B.alt@1000,0"
@@ -5808,7 +5808,7 @@ fn morx_25_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyfive.ttf",
             "\u{0042}\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          A@626,0"
@@ -5821,7 +5821,7 @@ fn morx_25_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyfive.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A"
     );
@@ -5833,7 +5833,7 @@ fn morx_25_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyfive.ttf",
             "\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B"
     );
@@ -5845,7 +5845,7 @@ fn morx_26_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentysix.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@639,0"
@@ -5858,7 +5858,7 @@ fn morx_26_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentysix.ttf",
             "\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B.alt"
     );
@@ -5870,7 +5870,7 @@ fn morx_27_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyseven.ttf",
             "\u{0041}\u{0045}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A_E_B"
     );
@@ -5882,7 +5882,7 @@ fn morx_27_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyseven.ttf",
             "\u{0041}\u{0045}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A_E_C"
     );
@@ -5894,7 +5894,7 @@ fn morx_27_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyseven.ttf",
             "\u{0041}\u{0045}\u{0044}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A_E_D"
     );
@@ -5906,7 +5906,7 @@ fn morx_28_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyeight.ttf",
             "\u{0041}\u{0045}\u{0044}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A_E_D"
     );
@@ -5918,7 +5918,7 @@ fn morx_28_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyeight.ttf",
             "\u{0041}\u{0078}\u{0045}\u{0044}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A_E_D|\
          x@1394,0"
@@ -5931,7 +5931,7 @@ fn morx_28_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyeight.ttf",
             "\u{0041}\u{0045}\u{0079}\u{0044}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A_E_D|\
          y@1394,0"
@@ -5944,7 +5944,7 @@ fn morx_28_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyeight.ttf",
             "\u{0041}\u{0078}\u{0045}\u{0079}\u{0044}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A_E_D|\
          x@1394,0|\
@@ -5958,7 +5958,7 @@ fn morx_28_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwentyeight.ttf",
             "\u{0041}\u{0078}\u{0078}\u{0078}\u{0045}\u{0079}\u{0079}\u{0079}\u{0044}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A_E_D|\
          x@1394,0|\
@@ -5976,7 +5976,7 @@ fn morx_3_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0030}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -5993,7 +5993,7 @@ fn morx_3_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0031}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6010,7 +6010,7 @@ fn morx_3_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0032}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6027,7 +6027,7 @@ fn morx_3_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0033}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6044,7 +6044,7 @@ fn morx_3_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0034}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6061,7 +6061,7 @@ fn morx_3_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0035}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6078,7 +6078,7 @@ fn morx_3_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0036}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6095,7 +6095,7 @@ fn morx_3_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0037}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6112,7 +6112,7 @@ fn morx_3_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0038}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6129,7 +6129,7 @@ fn morx_3_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{0039}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6146,7 +6146,7 @@ fn morx_3_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{2793}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6163,7 +6163,7 @@ fn morx_3_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{24EB}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6180,7 +6180,7 @@ fn morx_3_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{24EC}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6197,7 +6197,7 @@ fn morx_3_014() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{24ED}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6214,7 +6214,7 @@ fn morx_3_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{24EE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6231,7 +6231,7 @@ fn morx_3_016() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThree.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0043}\u{0044}\u{24EF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@363,0|\
@@ -6248,7 +6248,7 @@ fn morx_31_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyone.ttf",
             "\u{0058}\u{0058}\u{0041}\u{0059}\u{0059}\u{0041}\u{005A}\u{005A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "I|\
          N@830,0|\
@@ -6273,7 +6273,7 @@ fn morx_31_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyone.ttf",
             "\u{0058}\u{0058}\u{0041}\u{0059}\u{0059}\u{0042}\u{0059}\u{0059}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "I|\
          N@830,0|\
@@ -6298,7 +6298,7 @@ fn morx_31_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyone.ttf",
             "\u{0058}\u{0058}\u{0042}\u{0059}\u{0059}\u{0041}\u{005A}\u{005A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "X|\
          I@364,0|\
@@ -6323,7 +6323,7 @@ fn morx_31_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyone.ttf",
             "\u{0058}\u{0058}\u{0042}\u{0059}\u{0059}\u{0042}\u{005A}\u{005A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "X|\
          I@364,0|\
@@ -6348,7 +6348,7 @@ fn morx_31_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyone.ttf",
             "\u{004D}\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "I|\
          N@830,0|\
@@ -6374,7 +6374,7 @@ fn morx_31_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyone.ttf",
             "\u{004D}\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "I|\
          N@830,0|\
@@ -6400,7 +6400,7 @@ fn morx_31_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyone.ttf",
             "\u{004D}\u{0050}\u{0051}\u{0052}\u{0042}\u{0058}\u{0059}\u{005A}\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "M|\
          I@830,0|\
@@ -6426,7 +6426,7 @@ fn morx_31_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyone.ttf",
             "\u{004D}\u{0050}\u{0051}\u{0052}\u{0042}\u{0058}\u{0059}\u{005A}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "M|\
          I@830,0|\
@@ -6452,7 +6452,7 @@ fn morx_32_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtytwo.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "I|\
          N@830,0|\
@@ -6467,7 +6467,7 @@ fn morx_32_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtytwo.ttf",
             "\u{0058}\u{0041}\u{0059}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "I|\
          N@830,0|\
@@ -6484,7 +6484,7 @@ fn morx_32_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtytwo.ttf",
             "\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          I@830,0|\
@@ -6499,7 +6499,7 @@ fn morx_32_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtytwo.ttf",
             "\u{0058}\u{0042}\u{0059}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "X|\
          I@364,0|\
@@ -6516,7 +6516,7 @@ fn morx_33_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtythree.ttf",
             "\u{0068}\u{0061}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "h|\
          a@618,0|\
@@ -6531,7 +6531,7 @@ fn morx_33_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtythree.ttf",
             "\u{0068}\u{0061}\u{0068}\u{0061}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "h|\
          a@618,0|\
@@ -6550,7 +6550,7 @@ fn morx_33_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtythree.ttf",
             "\u{0061}\u{0068}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "a|\
          h@561,0"
@@ -8574,7 +8574,7 @@ fn morx_35_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyfive.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@639,0|\
@@ -8589,7 +8589,7 @@ fn morx_35_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyfive.ttf",
             "\u{0058}\u{0041}\u{0059}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "X|\
          A@586,0|\
@@ -9644,7 +9644,7 @@ fn morx_37_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyseven.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A.alt|\
          B.alt@1000,0"
@@ -9657,7 +9657,7 @@ fn morx_37_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyseven.ttf",
             "\u{0042}\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          A@650,0"
@@ -9670,7 +9670,7 @@ fn morx_37_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyseven.ttf",
             "\u{05D0}\u{05D1}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni05D1|\
          uni05D0@542,0"
@@ -9683,7 +9683,7 @@ fn morx_37_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyseven.ttf",
             "\u{05D1}\u{05D0}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni05D0.alt|\
          uni05D1.alt@1000,0"
@@ -9696,7 +9696,7 @@ fn morx_38_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyeight.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A.alt|\
          B.alt@1000,0"
@@ -9709,7 +9709,7 @@ fn morx_38_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyeight.ttf",
             "\u{0042}\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          A@650,0"
@@ -9722,7 +9722,7 @@ fn morx_38_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyeight.ttf",
             "\u{05D0}\u{05D1}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni05D1.alt|\
          uni05D0.alt@1000,0"
@@ -9735,7 +9735,7 @@ fn morx_38_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtyeight.ttf",
             "\u{05D1}\u{05D0}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni05D0|\
          uni05D1@606,0"
@@ -9748,7 +9748,7 @@ fn morx_39_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtynine.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@639,0"
@@ -9761,7 +9761,7 @@ fn morx_39_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtynine.ttf",
             "\u{0042}\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B.alt|\
          A.alt@1000,0"
@@ -9774,7 +9774,7 @@ fn morx_39_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtynine.ttf",
             "\u{05D0}\u{05D1}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni05D1.alt|\
          uni05D0.alt@1000,0"
@@ -9787,7 +9787,7 @@ fn morx_39_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXThirtynine.ttf",
             "\u{05D1}\u{05D0}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni05D0|\
          uni05D1@606,0"
@@ -9800,7 +9800,7 @@ fn morx_4_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0031}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -9819,7 +9819,7 @@ fn morx_4_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0032}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -9838,7 +9838,7 @@ fn morx_4_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0044}\u{0058}\u{0059}\u{005A}\u{0033}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -9858,7 +9858,7 @@ fn morx_4_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0034}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -9878,7 +9878,7 @@ fn morx_4_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0035}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -9898,7 +9898,7 @@ fn morx_4_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0036}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -9918,7 +9918,7 @@ fn morx_4_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0037}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -9938,7 +9938,7 @@ fn morx_4_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0043}\u{0044}\u{0058}\u{0059}\u{005A}\u{0038}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -9959,7 +9959,7 @@ fn morx_4_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0043}\u{0044}\u{0058}\u{0059}\u{005A}\u{0039}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -9980,7 +9980,7 @@ fn morx_4_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0044}\u{0058}\u{0059}\u{005A}\u{2793}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10001,7 +10001,7 @@ fn morx_4_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0044}\u{0058}\u{0059}\u{005A}\u{24EB}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10023,7 +10023,7 @@ fn morx_4_012() {
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0043}\u{0044}\u{0058}\u{0059}\u{005A}\
              \u{24EC}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10046,7 +10046,7 @@ fn morx_4_013() {
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0043}\u{0044}\u{0058}\u{0059}\u{005A}\
              \u{24ED}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10069,7 +10069,7 @@ fn morx_4_014() {
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0043}\u{0044}\u{0058}\u{0059}\u{005A}\
              \u{24EE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10092,7 +10092,7 @@ fn morx_4_015() {
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0043}\u{0044}\u{0058}\u{0059}\u{005A}\
              \u{24EF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10114,7 +10114,7 @@ fn morx_40_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXForty.ttf",
             "\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A|\
          B@639,0"
@@ -10127,7 +10127,7 @@ fn morx_40_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXForty.ttf",
             "\u{0042}\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B.alt|\
          A.alt@1000,0"
@@ -10140,7 +10140,7 @@ fn morx_40_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXForty.ttf",
             "\u{05D0}\u{05D1}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni05D1|\
          uni05D0@542,0"
@@ -10153,7 +10153,7 @@ fn morx_40_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXForty.ttf",
             "\u{05D1}\u{05D0}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni05D0.alt|\
          uni05D1.alt@1000,0"
@@ -10166,7 +10166,7 @@ fn morx_41_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFourtyone.ttf",
             "\u{0061}\u{0063}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "a_c"
     );
@@ -10178,7 +10178,7 @@ fn morx_41_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFourtyone.ttf",
             "\u{0062}\u{0063}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "b_c"
     );
@@ -10217,7 +10217,7 @@ fn morx_5_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0033}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10236,7 +10236,7 @@ fn morx_5_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0034}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10255,7 +10255,7 @@ fn morx_5_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0035}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10274,7 +10274,7 @@ fn morx_5_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0036}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10293,7 +10293,7 @@ fn morx_5_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0037}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10312,7 +10312,7 @@ fn morx_5_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0038}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10331,7 +10331,7 @@ fn morx_5_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0038}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10351,7 +10351,7 @@ fn morx_5_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{0039}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10370,7 +10370,7 @@ fn morx_5_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{0039}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10390,7 +10390,7 @@ fn morx_5_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{2793}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10409,7 +10409,7 @@ fn morx_5_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{2793}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10429,7 +10429,7 @@ fn morx_5_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{24EB}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10448,7 +10448,7 @@ fn morx_5_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{24EB}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10468,7 +10468,7 @@ fn morx_5_014() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{24EC}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10487,7 +10487,7 @@ fn morx_5_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{24EC}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10507,7 +10507,7 @@ fn morx_5_016() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0043}\u{0058}\u{0059}\u{005A}\u{24EC}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10528,7 +10528,7 @@ fn morx_5_017() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{24ED}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10547,7 +10547,7 @@ fn morx_5_018() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{24ED}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10567,7 +10567,7 @@ fn morx_5_019() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0043}\u{0058}\u{0059}\u{005A}\u{24ED}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10588,7 +10588,7 @@ fn morx_5_020() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{24EE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10607,7 +10607,7 @@ fn morx_5_021() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{24EE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10627,7 +10627,7 @@ fn morx_5_022() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0043}\u{0058}\u{0059}\u{005A}\u{24EE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10648,7 +10648,7 @@ fn morx_5_023() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0058}\u{0059}\u{005A}\u{24EF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10667,7 +10667,7 @@ fn morx_5_024() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0058}\u{0059}\u{005A}\u{24EF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10687,7 +10687,7 @@ fn morx_5_025() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXFour.ttf",
             "\u{0050}\u{0051}\u{0052}\u{0041}\u{0042}\u{0043}\u{0058}\u{0059}\u{005A}\u{24EF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "P|\
          Q@333,0|\
@@ -10708,7 +10708,7 @@ fn morx_7_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
             "\u{004F}\u{0042}\u{0043}\u{0044}\u{0031}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          C@830,0|\
@@ -10724,7 +10724,7 @@ fn morx_8_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEight.ttf",
             "\u{0030}\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "zero|\
          A@914,0|\
@@ -10739,7 +10739,7 @@ fn morx_8_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEight.ttf",
             "\u{0031}\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "one|\
          B@914,0|\
@@ -10754,7 +10754,7 @@ fn morx_8_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXEight.ttf",
             "\u{0032}\u{0041}\u{0042}\u{0043}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "two|\
          C@914,0|\
@@ -10769,7 +10769,7 @@ fn morx_9_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestMORXNine.ttf",
             "\u{0041}\u{0042}\u{0058}\u{0041}\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B|\
          A@650,0|\
@@ -10785,7 +10785,7 @@ fn sfnt_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestSFNTOne.otf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A"
     );
@@ -10797,7 +10797,7 @@ fn sfnt_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestSFNTOne.otf",
             "\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B"
     );
@@ -10809,7 +10809,7 @@ fn sfnt_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestSFNTTwo.ttf",
             "\u{0041}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "A"
     );
@@ -10821,7 +10821,7 @@ fn sfnt_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestSFNTTwo.ttf",
             "\u{0042}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "B"
     );
@@ -10833,7 +10833,7 @@ fn sharan_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeAran.ttf",
             "\u{0644}\u{0633}\u{0627}\u{0646}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "OneDotEnclNS@398,-1|\
          NoonxSep|\
@@ -10850,7 +10850,7 @@ fn shbali_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B38}\u{1B00}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid60@1113,0|\
@@ -10864,7 +10864,7 @@ fn shbali_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B15}\u{1B44}\u{1B16}\u{1B02}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid25|\
          gid132@1092,0|\
@@ -10878,7 +10878,7 @@ fn shbali_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B18}\u{1B3B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid28|\
          gid62@796,0|\
@@ -10892,7 +10892,7 @@ fn shbali_1_004() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B19}\u{1B40}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid29@483,0|\
@@ -10906,7 +10906,7 @@ fn shbali_1_005() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B1A}\u{1B3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid67|\
          gid30@483,0"
@@ -10919,7 +10919,7 @@ fn shbali_1_006() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B14}\u{1B36}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid24|\
          gid58@828,0"
@@ -10932,7 +10932,7 @@ fn shbali_1_007() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B13}\u{1B01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid129@1111,0|\
@@ -10946,7 +10946,7 @@ fn shbali_1_008() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B1B}\u{1B01}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid137@1111,0|\
@@ -10960,7 +10960,7 @@ fn shbali_1_009() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B26}\u{1B03}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid148@1111,0|\
@@ -10974,7 +10974,7 @@ fn shbali_1_010() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B13}\u{1B38}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid129@1111,0|\
@@ -10988,7 +10988,7 @@ fn shbali_1_011() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B13}\u{1B3C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid129@1111,0|\
@@ -11003,7 +11003,7 @@ fn shbali_1_012() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B13}\u{1B3D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid129@1111,0|\
@@ -11019,7 +11019,7 @@ fn shbali_1_013() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0"
@@ -11032,7 +11032,7 @@ fn shbali_1_014() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B36}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid58@1064,0|\
@@ -11047,7 +11047,7 @@ fn shbali_1_015() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B38}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid60@1113,0|\
@@ -11062,7 +11062,7 @@ fn shbali_1_016() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B15}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11076,7 +11076,7 @@ fn shbali_1_017() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B40}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11090,7 +11090,7 @@ fn shbali_1_018() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0"
@@ -11103,7 +11103,7 @@ fn shbali_1_019() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B3E}\u{1B36}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11117,7 +11117,7 @@ fn shbali_1_020() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B3E}\u{1B38}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11131,7 +11131,7 @@ fn shbali_1_021() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B15}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11145,7 +11145,7 @@ fn shbali_1_022() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B40}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11159,7 +11159,7 @@ fn shbali_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B27}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11173,7 +11173,7 @@ fn shbali_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B28}\u{1B3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid67|\
          gid23@483,0|\
@@ -11187,7 +11187,7 @@ fn shbali_2_003() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B31}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11201,7 +11201,7 @@ fn shbali_2_004() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B32}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11216,7 +11216,7 @@ fn shbali_2_005() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B4A}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid23@483,0|\
@@ -11231,7 +11231,7 @@ fn shbali_2_006() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B1B}\u{1B44}\u{1B13}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid181|\
          gid129@1064,-195"
@@ -11244,7 +11244,7 @@ fn shbali_2_007() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B1B}\u{1B44}\u{1B13}\u{1B3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid66|\
          gid181@483,0|\
@@ -11258,7 +11258,7 @@ fn shbali_2_008() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B1B}\u{1B44}\u{1B13}\u{1B38}\u{1B00}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid181|\
          gid129@1064,-195|\
@@ -11273,7 +11273,7 @@ fn shbali_2_009() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B13}\u{1B38}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid129@1111,0|\
@@ -11287,7 +11287,7 @@ fn shbali_2_010() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B1B}\u{1B39}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid137@1111,0|\
@@ -11301,7 +11301,7 @@ fn shbali_2_011() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B31}\u{1B3A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid159@1110,0|\
@@ -11315,7 +11315,7 @@ fn shbali_2_012() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B13}\u{1B44}\u{1B45}\u{1B38}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid23|\
          gid162@1111,0|\
@@ -11329,7 +11329,7 @@ fn shbali_3_001() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B66}\u{1B6B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid102|\
          gid107@560,-10"
@@ -11342,7 +11342,7 @@ fn shbali_3_002() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B66}\u{1B6C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid102|\
          gid108@573,49"
@@ -11355,7 +11355,7 @@ fn shbali_3_003() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B66}\u{1B6D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid102|\
          gid109@652,-10"
@@ -11368,7 +11368,7 @@ fn shbali_3_004() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B66}\u{1B6E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid102|\
          gid110@652,-98"
@@ -11381,7 +11381,7 @@ fn shbali_3_005() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B66}\u{1B6F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid102|\
          gid111@667,-10"
@@ -11394,7 +11394,7 @@ fn shbali_3_006() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B66}\u{1B70}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid102|\
          gid112@667,-10"
@@ -11407,7 +11407,7 @@ fn shbali_3_007() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B66}\u{1B71}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid102|\
          gid113@667,-10"
@@ -11420,7 +11420,7 @@ fn shbali_3_008() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B66}\u{1B72}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid102|\
          gid114@667,-10"
@@ -11433,7 +11433,7 @@ fn shbali_3_009() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansBalinese-Regular.ttf",
             "\u{1B66}\u{1B73}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid102|\
          gid115@599,-10"
@@ -11446,7 +11446,7 @@ fn shknda_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CB2}\u{0CCD}\u{0CB2}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knLI|\
          knLAc2@756,0"
@@ -11459,7 +11459,7 @@ fn shknda_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0C9F}\u{0CCD}\u{0CB8}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knTT|\
          knSAc2@1021,0"
@@ -11472,7 +11472,7 @@ fn shknda_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CB3}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knLLI"
     );
@@ -11484,7 +11484,7 @@ fn shknda_1_004() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA1}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knDDI"
     );
@@ -11496,7 +11496,7 @@ fn shknda_1_005() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CAE}\u{0CC6}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knME"
     );
@@ -11508,7 +11508,7 @@ fn shknda_1_006() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CB0}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knRI"
     );
@@ -11520,7 +11520,7 @@ fn shknda_1_007() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0C96}\u{0CCD}\u{0CAF}\u{0CC6}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knKHE|\
          knYAc2@846,0"
@@ -11533,7 +11533,7 @@ fn shknda_1_008() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CAB}\u{0CCD}\u{0CB0}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knPHI|\
          knRAc2@734,0"
@@ -11546,7 +11546,7 @@ fn shknda_1_009() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA8}\u{0CC6}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knNE"
     );
@@ -11558,7 +11558,7 @@ fn shknda_1_010() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0C97}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knGI"
     );
@@ -11570,7 +11570,7 @@ fn shknda_1_011() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CB7}\u{0CCD}\u{0C9F}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knSSI|\
          knTTAc2@746,0"
@@ -11583,7 +11583,7 @@ fn shknda_1_012() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CAF}\u{0CBF}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knYI|\
          knAnusvara@1251,0"
@@ -11596,7 +11596,7 @@ fn shknda_1_013() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0C9A}\u{0CC0}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knCI|\
          knLengthmark@766,0"
@@ -11609,7 +11609,7 @@ fn shknda_1_014() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA8}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knNI"
     );
@@ -11621,7 +11621,7 @@ fn shknda_1_015() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0C97}\u{0CCD}\u{0CB2}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knGI|\
          knLAc2@620,0"
@@ -11634,7 +11634,7 @@ fn shknda_1_016() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CB7}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knSSI"
     );
@@ -11646,7 +11646,7 @@ fn shknda_1_017() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0C97}\u{0CC6}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knGE"
     );
@@ -11658,7 +11658,7 @@ fn shknda_1_018() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA6}\u{0CCD}\u{0CB5}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knDI|\
          knVAc2@740,0"
@@ -11671,7 +11671,7 @@ fn shknda_1_019() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA4}\u{0CC0}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knTI|\
          knLengthmark@612,0"
@@ -11684,7 +11684,7 @@ fn shknda_1_020() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CAE}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knMI"
     );
@@ -11696,7 +11696,7 @@ fn shknda_1_021() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CB2}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knLI"
     );
@@ -11708,7 +11708,7 @@ fn shknda_1_022() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0C97}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knGI"
     );
@@ -11720,7 +11720,7 @@ fn shknda_1_023() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA8}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knN"
     );
@@ -11732,7 +11732,7 @@ fn shknda_1_024() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CAC}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knBI"
     );
@@ -11744,7 +11744,7 @@ fn shknda_1_025() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CB2}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knLI"
     );
@@ -11756,7 +11756,7 @@ fn shknda_1_026() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA8}\u{0CCD}\u{0CA8}\u{0CBF}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knNI|\
          knNAc2@678,0|\
@@ -11770,7 +11770,7 @@ fn shknda_1_027() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CB2}\u{0CCD}\u{0CB2}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knLI|\
          knLAc2@756,0"
@@ -11783,7 +11783,7 @@ fn shknda_1_028() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA7}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knDHI"
     );
@@ -11795,7 +11795,7 @@ fn shknda_1_029() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CAA}\u{0CCC}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knPA.base|\
          knmAU@739,0"
@@ -11808,7 +11808,7 @@ fn shknda_1_030() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CB5}\u{0CBF}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knVI|\
          knAnusvara@748,0"
@@ -11821,7 +11821,7 @@ fn shknda_1_031() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA1}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knDDI"
     );
@@ -11833,7 +11833,7 @@ fn shknda_1_032() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0C9F}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knTTI"
     );
@@ -11845,7 +11845,7 @@ fn shknda_1_033() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA8}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knNI"
     );
@@ -11857,7 +11857,7 @@ fn shknda_1_034() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSerifKannada-Regular.ttf",
             "\u{0CA7}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "knDHI"
     );
@@ -11869,7 +11869,7 @@ fn shknda_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA8}\u{0CCD}\u{0CA8}\u{0CBE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid150|\
          gid57@710,0|\
@@ -11883,7 +11883,7 @@ fn shknda_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA8}\u{0CCD}\u{0CA8}\u{0CBE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid150|\
          gid57@710,0|\
@@ -11897,7 +11897,7 @@ fn shknda_2_003() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA4}\u{0CCD}\u{0CA4}\u{0CBE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid146|\
          gid57@622,0|\
@@ -11911,7 +11911,7 @@ fn shknda_2_004() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9F}\u{0CCD}\u{0C9F}\u{0CBE}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid141|\
          gid57@814,0|\
@@ -11925,7 +11925,7 @@ fn shknda_2_005() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA1}\u{0CCB}\u{0C82}\u{0C97}\u{0CBF}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid249|\
          gid61@768,0|\
@@ -11941,7 +11941,7 @@ fn shknda_2_006() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9C}\u{0CBF}\u{0CBC}\u{0CD5}\u{0CAC}\u{0CC6}\u{0CA8}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid211|\
          gid55@652,0|\
@@ -11957,7 +11957,7 @@ fn shknda_2_007() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9C}\u{0CBE}\u{0CBC}\u{0C95}\u{0CBF}\u{0CB0}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid139|\
          gid57@776,0|\
@@ -11974,7 +11974,7 @@ fn shknda_2_008() {
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C87}\u{0CA8}\u{0CCD}\u{0CAB}\u{0CCD}\u{0CB2}\u{0CC6}\u{0C95}\u{0CCD}\u{0CB7}\
              \u{0CA8}\u{0CB2}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid8|\
          gid256@711,0|\
@@ -11993,7 +11993,7 @@ fn shknda_2_009() {
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C87}\u{0CA8}\u{0CCD}\u{0CAB}\u{0CCD}\u{0CB2}\u{0CC6}\u{0C95}\u{0CCD}\u{0CB7}\
              \u{0CA8}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid8|\
          gid256@711,0|\
@@ -12010,7 +12010,7 @@ fn shknda_2_010() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA6}\u{0C9F}\u{0CCD}\u{0CB8}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid37|\
          gid177@764,0|\
@@ -12024,7 +12024,7 @@ fn shknda_2_011() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C8E}\u{0C95}\u{0CCD}\u{0CB8}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid14|\
          gid167@787,0|\
@@ -12038,7 +12038,7 @@ fn shknda_2_012() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CAE}\u{0CBE}\u{0CB0}\u{0CCD}\u{0C9A}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid155|\
          gid57@1155,0|\
@@ -12053,7 +12053,7 @@ fn shknda_2_013() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9F}\u{0CC6}\u{0C95}\u{0CCD}\u{0CB8}\u{0CCD}\u{0C9F}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid247|\
          gid167@814,0|\
@@ -12068,7 +12068,7 @@ fn shknda_2_014() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CAC}\u{0CC1}\u{0C95}\u{0CCD}\u{0CB8}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid42|\
          gid60@801,0|\
@@ -12083,7 +12083,7 @@ fn shknda_2_015() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CB8}\u{0CBE}\u{0CAB}\u{0CCD}\u{0C9F}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid163|\
          gid57@708,0|\
@@ -12098,7 +12098,7 @@ fn shknda_2_016() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9C}\u{0CB8}\u{0CCD}\u{0C9F}\u{0CCD}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid27|\
          gid200@776,0|\
@@ -12112,7 +12112,7 @@ fn shknda_3_001() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C95}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid239|\
          gid61@574,0|\
@@ -12127,7 +12127,7 @@ fn shknda_3_002() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C96}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid240|\
          gid61@865,0|\
@@ -12142,7 +12142,7 @@ fn shknda_3_003() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C97}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid241|\
          gid61@647,0|\
@@ -12157,7 +12157,7 @@ fn shknda_3_004() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C98}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid242|\
          gid279@996,0|\
@@ -12172,7 +12172,7 @@ fn shknda_3_005() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C99}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid24|\
          gid67@736,0|\
@@ -12187,7 +12187,7 @@ fn shknda_3_006() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9A}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid243|\
          gid61@794,0|\
@@ -12202,7 +12202,7 @@ fn shknda_3_007() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9B}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid244|\
          gid61@843,0|\
@@ -12217,7 +12217,7 @@ fn shknda_3_008() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9C}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid245|\
          gid61@776,0|\
@@ -12232,7 +12232,7 @@ fn shknda_3_009() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9D}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid246|\
          gid61@1378,0|\
@@ -12247,7 +12247,7 @@ fn shknda_3_010() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9E}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid29|\
          gid67@967,0|\
@@ -12262,7 +12262,7 @@ fn shknda_3_011() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0C9F}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid247|\
          gid61@814,0|\
@@ -12277,7 +12277,7 @@ fn shknda_3_012() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA0}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid248|\
          gid61@651,0|\
@@ -12292,7 +12292,7 @@ fn shknda_3_013() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA1}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid249|\
          gid61@768,0|\
@@ -12307,7 +12307,7 @@ fn shknda_3_014() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA2}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid250|\
          gid61@768,0|\
@@ -12322,7 +12322,7 @@ fn shknda_3_015() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA3}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid251|\
          gid61@866,0|\
@@ -12337,7 +12337,7 @@ fn shknda_3_016() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA4}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid252|\
          gid61@622,0|\
@@ -12352,7 +12352,7 @@ fn shknda_3_017() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA5}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid253|\
          gid61@764,0|\
@@ -12367,7 +12367,7 @@ fn shknda_3_018() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA6}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid254|\
          gid61@764,0|\
@@ -12382,7 +12382,7 @@ fn shknda_3_019() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA7}\u{0CCB}\u{0C82}\u{0020}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid255|\
          gid61@764,0|\
@@ -12398,7 +12398,7 @@ fn shknda_3_020() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CA8}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid256|\
          gid61@710,0|\
@@ -12413,7 +12413,7 @@ fn shknda_3_021() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CAA}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid257|\
          gid275@791,0|\
@@ -12428,7 +12428,7 @@ fn shknda_3_022() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CAB}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid258|\
          gid277@791,0|\
@@ -12443,7 +12443,7 @@ fn shknda_3_023() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CAC}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid259|\
          gid61@806,0|\
@@ -12458,7 +12458,7 @@ fn shknda_3_024() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CAD}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid260|\
          gid61@806,0|\
@@ -12473,7 +12473,7 @@ fn shknda_3_025() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CAE}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid280|\
          gid71@1539,0|\
@@ -12487,7 +12487,7 @@ fn shknda_3_026() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CAF}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid281|\
          gid71@1711,0|\
@@ -12501,7 +12501,7 @@ fn shknda_3_027() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CB0}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid263|\
          gid61@651,0|\
@@ -12516,7 +12516,7 @@ fn shknda_3_028() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CB1}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid47|\
          gid67@830,0|\
@@ -12531,7 +12531,7 @@ fn shknda_3_029() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CB2}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid264|\
          gid61@768,0|\
@@ -12546,7 +12546,7 @@ fn shknda_3_030() {
         shape(
             "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
             "\u{0CB5}\u{0CCB}\u{0C82}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "gid266|\
          gid275@793,0|\
@@ -12561,7 +12561,7 @@ fn shlana_1_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A6B@762,0"
@@ -12574,7 +12574,7 @@ fn shlana_1_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A74@592,0"
@@ -12587,7 +12587,7 @@ fn shlana_1_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A27}\u{1A62}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A27|\
          uni1A62@592,0"
@@ -12600,7 +12600,7 @@ fn shlana_1_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A32}\u{1A60}\u{1A45}\u{1A6B}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A32|\
          uni1A601A45@762,0|\
@@ -12615,7 +12615,7 @@ fn shlana_1_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A37}\u{1A60}\u{1A45}\u{1A6B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A37|\
          uni1A601A45@592,0|\
@@ -12629,7 +12629,7 @@ fn shlana_1_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A60}\u{1A45}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A601A45@762,0"
@@ -12642,7 +12642,7 @@ fn shlana_1_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A21}\u{1A6C}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A21|\
          uni1A6C@592,-98|\
@@ -12656,7 +12656,7 @@ fn shlana_1_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A6C.wide@933,0"
@@ -12669,7 +12669,7 @@ fn shlana_1_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A26}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A26|\
          uni1A61@591,0"
@@ -12682,7 +12682,7 @@ fn shlana_1_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A63@932,0"
@@ -12695,7 +12695,7 @@ fn shlana_1_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A34}\u{1A64}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A34|\
          uni1A64@591,0"
@@ -12708,7 +12708,7 @@ fn shlana_1_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A4C}\u{1A63}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A4C|\
          uni1A74@762,0|\
@@ -12722,7 +12722,7 @@ fn shlana_1_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A64}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A74@592,0|\
@@ -12736,7 +12736,7 @@ fn shlana_1_014() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A33}\u{1A65}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A33|\
          uni1A65@592,0"
@@ -12749,7 +12749,7 @@ fn shlana_1_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3A}\u{1A66}\u{0020}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3A|\
          uni1A66@738,0|\
@@ -12763,7 +12763,7 @@ fn shlana_1_016() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A29}\u{1A67}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A29|\
          uni1A67@592,0"
@@ -12776,7 +12776,7 @@ fn shlana_1_017() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3E}\u{1A68}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3E.v2|\
          uni1A68@592,0"
@@ -12789,7 +12789,7 @@ fn shlana_1_018() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A35}\u{1A69}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A35|\
          uni1A69@592,0"
@@ -12802,7 +12802,7 @@ fn shlana_1_019() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A26}\u{1A6A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A26|\
          uni1A6A@592,0"
@@ -12815,7 +12815,7 @@ fn shlana_1_020() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A32}\u{1A6E}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A32@591,0|\
@@ -12829,7 +12829,7 @@ fn shlana_1_021() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3D}\u{1A6E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A3D@591,0"
@@ -12842,7 +12842,7 @@ fn shlana_1_022() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A24}\u{1A6F}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6F|\
          uni1A24@1095,0|\
@@ -12856,7 +12856,7 @@ fn shlana_1_023() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A27}\u{1A6F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6F|\
          uni1A27@1095,0"
@@ -12869,7 +12869,7 @@ fn shlana_1_024() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A38}\u{1A6E}\u{1A6C}\u{1A65}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A38@591,0|\
@@ -12886,7 +12886,7 @@ fn shlana_1_025() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A6E}\u{1A6C}\u{1A65}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A36@591,0|\
@@ -12902,7 +12902,7 @@ fn shlana_1_026() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6E}\u{1A6C}\u{1A68}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A20@591,0|\
@@ -12919,7 +12919,7 @@ fn shlana_1_027() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6E}\u{1A6C}\u{1A68}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A20@591,0|\
@@ -12935,7 +12935,7 @@ fn shlana_1_028() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A41}\u{1A6E}\u{1A62}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A41@591,0|\
@@ -12950,7 +12950,7 @@ fn shlana_1_029() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3E}\u{1A73}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3E.v2|\
          uni1A73@592,0"
@@ -12963,7 +12963,7 @@ fn shlana_1_030() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6E}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A20@591,0|\
@@ -12977,7 +12977,7 @@ fn shlana_1_031() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A39}\u{1A60}\u{1A3F}\u{1A6E}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A39@591,0|\
@@ -12992,7 +12992,7 @@ fn shlana_1_032() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A60}\u{1A3F}\u{1A6E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A3B@591,0|\
@@ -13006,7 +13006,7 @@ fn shlana_1_033() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A601A3F@932,0"
@@ -13019,7 +13019,7 @@ fn shlana_1_034() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3E}\u{1A6E}\u{1A6C}\u{1A65}\u{1A4B}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A3E.v2@591,0|\
@@ -13037,7 +13037,7 @@ fn shlana_1_035() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A56}\u{1A6E}\u{1A6C}\u{1A65}\u{1A4B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A20@591,0|\
@@ -13055,7 +13055,7 @@ fn shlana_1_036() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A70}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A70|\
          uni1A48@591,0|\
@@ -13069,7 +13069,7 @@ fn shlana_1_037() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3E}\u{1A70}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A70|\
          uni1A3E.v2@591,0"
@@ -13082,7 +13082,7 @@ fn shlana_1_038() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2A}\u{1A70}\u{1A6C}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A70|\
          uni1A2A@591,0|\
@@ -13097,7 +13097,7 @@ fn shlana_1_039() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A29}\u{1A62}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A29|\
          uni1A62@592,0|\
@@ -13111,7 +13111,7 @@ fn shlana_1_040() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A72}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A72|\
          uni1A36@591,0"
@@ -13124,7 +13124,7 @@ fn shlana_1_041() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A22}\u{1A71}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A71|\
          uni1A22@591,0"
@@ -13137,7 +13137,7 @@ fn shlana_1_042() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A34}\u{1A71}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A71|\
          uni1A34@591,0|\
@@ -13151,7 +13151,7 @@ fn shlana_1_043() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6E}\u{1A6C}\u{1A68}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A20@591,0|\
@@ -13168,7 +13168,7 @@ fn shlana_1_044() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6E}\u{1A6C}\u{1A68}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A20@591,0|\
@@ -13184,7 +13184,7 @@ fn shlana_1_045() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A70}\u{1A62}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A70|\
          uni1A20@591,0|\
@@ -13198,7 +13198,7 @@ fn shlana_1_046() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A58}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A58@592,0"
@@ -13211,7 +13211,7 @@ fn shlana_1_047() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A34}\u{1A62}\u{1A60}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A34|\
          uni1A62@592,0|\
@@ -13225,7 +13225,7 @@ fn shlana_1_048() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A4C}\u{1A65}\u{1A74}\u{0020}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A4C|\
          uni1A65@762,0|\
@@ -13240,7 +13240,7 @@ fn shlana_1_049() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A65}\u{1A60}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A65@762,0|\
@@ -13254,7 +13254,7 @@ fn shlana_1_050() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A62}\u{1A60}\u{1A3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A62@762,0|\
@@ -13268,7 +13268,7 @@ fn shlana_1_051() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A62}\u{1A3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A62@762,0|\
@@ -13282,7 +13282,7 @@ fn shlana_1_052() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2F}\u{1A6D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A2F|\
          uni1A6D@591,0"
@@ -13295,7 +13295,7 @@ fn shlana_10_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A53}\u{1A6F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6F|\
          uni1A53@1095,0"
@@ -13308,7 +13308,7 @@ fn shlana_10_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A50}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A50|\
          uni1A63@591,0"
@@ -13321,7 +13321,7 @@ fn shlana_10_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A50}\u{1A75}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A50|\
          uni1A75@738,0|\
@@ -13336,7 +13336,7 @@ fn shlana_10_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2F}\u{1A6A}\u{1A55}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A2F|\
          uni1A6A@592,-188|\
@@ -13352,7 +13352,7 @@ fn shlana_10_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A63}\u{1A37}\u{1A70}\u{1A56}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3B|\
          uni1A63@932,0|\
@@ -13369,7 +13369,7 @@ fn shlana_10_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A76}\u{1A6D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A36|\
          uni1A76@592,0|\
@@ -13384,7 +13384,7 @@ fn shlana_10_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A39}\u{1A65}\u{1A56}\u{1A69}\u{1A75}\u{1A7B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A39|\
          uni1A65@592,0|\
@@ -13402,7 +13402,7 @@ fn shlana_10_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A56}\u{1A60}\u{1A45}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A56.wide@933,0|\
@@ -13417,7 +13417,7 @@ fn shlana_10_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A56}\u{1A60}\u{1A45}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A56.wide@933,0|\
@@ -13433,7 +13433,7 @@ fn shlana_10_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A55}\u{1A60}\u{1A3F}\u{1A6E}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A55|\
          uni1A3B@226,0|\
@@ -13450,7 +13450,7 @@ fn shlana_10_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A69}\u{1A76}\u{1A63}\u{1A60}\u{1A36}\u{1A60}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A69@762,0|\
@@ -13468,7 +13468,7 @@ fn shlana_10_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A4B}\u{1A62}\u{1A60}\u{1A2D}\u{1A5B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A4B|\
          uni1A62@592,0|\
@@ -13484,7 +13484,7 @@ fn shlana_10_014() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A46}\u{1A62}\u{1A20}\u{1A60}\u{1A2F}\u{1A65}\u{1A7A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A46|\
          uni1A62@592,0|\
@@ -13501,7 +13501,7 @@ fn shlana_10_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A46}\u{1A62}\u{1A20}\u{1A60}\u{1A2F}\u{1A65}\u{1A7C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A46|\
          uni1A62@592,0|\
@@ -13518,7 +13518,7 @@ fn shlana_10_018() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A46}\u{1A63}\u{1A48}\u{1A60}\u{1A32}\u{1A55}\u{1A7A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A46|\
          uni1A63@680,0|\
@@ -13535,7 +13535,7 @@ fn shlana_10_019() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A63}\u{1A48}\u{1A60}\u{1A32}\u{1A55}\u{1A7C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A63@591,0|\
@@ -13552,7 +13552,7 @@ fn shlana_10_020() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A41}\u{1A6A}\u{1A60}\u{1A37}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A41|\
          uni1A601A37@591,0|\
@@ -13566,7 +13566,7 @@ fn shlana_10_021() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A66}\u{1A75}\u{1A60}\u{1A36}\u{1A6C}\u{1A76}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3B|\
          uni1A66@762,0|\
@@ -13585,7 +13585,7 @@ fn shlana_10_022() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A38}\u{1A62}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A38|\
          uni1A62@506,0|\
@@ -13599,7 +13599,7 @@ fn shlana_10_023() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A43}\u{1A6A}\u{1A62}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A43|\
          uni1A6A@762,0|\
@@ -13614,7 +13614,7 @@ fn shlana_10_024() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2F}\u{1A6C}\u{1A62}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A2F|\
          uni1A6C@592,-188|\
@@ -13629,7 +13629,7 @@ fn shlana_10_025() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2F}\u{1A6C}\u{1A62}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A2F|\
          uni1A6C@592,-188|\
@@ -13645,7 +13645,7 @@ fn shlana_10_026() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A60}\u{1A45}\u{1A62}\u{1A61}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3B|\
          uni1A601A45@762,0|\
@@ -13660,7 +13660,7 @@ fn shlana_10_027() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A32}\u{1A6F}\u{1A60}\u{1A36}\u{1A6C}\u{1A74}\u{1A75}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6F|\
          uni1A32@1095,0|\
@@ -13678,7 +13678,7 @@ fn shlana_10_029() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A32}\u{1A6C}\u{1A74}\u{1A75}\u{1A6F}\u{1A60}\u{1A36}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A32|\
          uni1A6C.wide@933,0|\
@@ -13696,7 +13696,7 @@ fn shlana_10_030() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A60}\u{1A36}\u{1A6B}\u{1A7B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A601A36@592,0|\
@@ -13711,7 +13711,7 @@ fn shlana_10_031() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A3E}\u{1A5B}\u{1A66}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A3E1A5B@932,0|\
@@ -13725,7 +13725,7 @@ fn shlana_10_032() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A65}\u{1A3B}\u{1A5B}\u{1A63}\u{1A60}\u{1A36}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A36|\
          uni1A65@592,0|\
@@ -13741,7 +13741,7 @@ fn shlana_10_033() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A35}\u{1A3E}\u{1A5C}\u{1A65}\u{1A20}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A35|\
          uni1A3E.v2@591,0|\
@@ -13757,7 +13757,7 @@ fn shlana_10_034() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A35}\u{1A69}\u{1A60}\u{1A37}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A35@591,0|\
@@ -13772,7 +13772,7 @@ fn shlana_10_035() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A45}\u{1A65}\u{1A48}\u{1A6E}\u{1A60}\u{1A48}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A45|\
          uni1A65@592,0|\
@@ -13788,7 +13788,7 @@ fn shlana_10_036() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A22}\u{1A76}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A22|\
          uni1A76@738,0|\
@@ -13803,7 +13803,7 @@ fn shlana_10_037() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A63}\u{1A48}\u{1A36}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A63@591,0|\
@@ -13818,7 +13818,7 @@ fn shlana_10_038() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A63}\u{1A48}\u{1A60}\u{1A36}\u{1A7B}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A63@591,0|\
@@ -13836,7 +13836,7 @@ fn shlana_10_039() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A60}\u{1A36}\u{1A7B}\u{1A6E}\u{1A62}\u{1A76}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A601A36@592,0|\
@@ -13855,7 +13855,7 @@ fn shlana_10_040() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A60}\u{1A36}\u{1A7B}\u{1A6E}\u{1A62}\u{1A62}\u{1A76}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A601A36@592,0|\
@@ -13874,7 +13874,7 @@ fn shlana_10_042() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A3E}\u{1A75}\u{1A63}\u{1A74}\u{1A7B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A3E@762,0|\
@@ -13891,7 +13891,7 @@ fn shlana_10_043() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A43}\u{1A6E}\u{1A5E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A43@591,0|\
@@ -13906,7 +13906,7 @@ fn shlana_10_045() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2F}\u{1A63}\u{1A74}\u{1A7B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A2F|\
          uni1A74@592,0|\
@@ -13921,7 +13921,7 @@ fn shlana_10_046() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A3E}\u{1A74}\u{1A75}\u{1A63}\u{1A7B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A3E@762,0|\
@@ -13939,7 +13939,7 @@ fn shlana_10_047() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2F}\u{1A74}\u{1A63}\u{1A7B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A2F|\
          uni1A74@592,0|\
@@ -13955,7 +13955,7 @@ fn shlana_2_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A93}\u{1A60}\u{1A34}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A93|\
          uni1A601A34@591,0"
@@ -13968,7 +13968,7 @@ fn shlana_2_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A32}\u{1A75}\u{1A63}\u{1A60}\u{1A26}\u{1A7B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A32|\
          uni1A75@762,0|\
@@ -13985,7 +13985,7 @@ fn shlana_2_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A33}\u{1A60}\u{1A36}\u{1A7B}\u{1A6B}\u{1A41}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A33|\
          uni1A601A36@592,0|\
@@ -14002,7 +14002,7 @@ fn shlana_2_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A21}\u{1A62}\u{1A76}\u{1A7B}\u{1A6C}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A21|\
          uni1A621A76@592,0|\
@@ -14019,7 +14019,7 @@ fn shlana_2_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1AAD}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1AAD|\
          uni25CC@591,0|\
@@ -14033,7 +14033,7 @@ fn shlana_2_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A36}\u{1A66}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A36@762,0|\
@@ -14047,7 +14047,7 @@ fn shlana_2_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A24}\u{1A60}\u{1A45}\u{1A6F}\u{1A76}\u{1A41}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6F|\
          uni1A24@1095,0|\
@@ -14063,7 +14063,7 @@ fn shlana_2_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A45}\u{1A6B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A45@762,0|\
@@ -14077,7 +14077,7 @@ fn shlana_2_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2F}\u{1A62}\u{1A75}\u{1A26}\u{1A60}\u{1A36}\u{1A66}\u{1A76}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A2F|\
          uni1A621A75@592,0|\
@@ -14094,7 +14094,7 @@ fn shlana_2_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A65}\u{1A60}\u{1A36}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A65@762,0|\
@@ -14108,7 +14108,7 @@ fn shlana_2_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A32}\u{1A63}\u{1A60}\u{1A3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A32|\
          uni1A63@932,0|\
@@ -14122,7 +14122,7 @@ fn shlana_2_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A60}\u{1A3F}\u{1A63}\u{1A60}\u{1A35}\u{1A65}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3B|\
          uni1A601A3F@932,0|\
@@ -14139,7 +14139,7 @@ fn shlana_2_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A38}\u{1A60}\u{1A43}\u{1A60}\u{1A3F}\u{1A75}\u{1A41}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A38|\
          uni1A601A43@591,0|\
@@ -14155,7 +14155,7 @@ fn shlana_2_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A60}\u{1A45}\u{1A6F}\u{1A75}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6F|\
          uni1A48@1095,0|\
@@ -14170,7 +14170,7 @@ fn shlana_2_016() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A75}\u{1A6F}\u{1A60}\u{1A45}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A75@592,0|\
@@ -14186,7 +14186,7 @@ fn shlana_2_017() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3F}\u{1A6A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3F|\
          uni1A6A@762,0"
@@ -14199,7 +14199,7 @@ fn shlana_2_018() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3E}\u{1A66}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3E.v2|\
          uni1A66@592,0"
@@ -14212,7 +14212,7 @@ fn shlana_2_019() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A3E}\u{1A6A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A3E@762,0|\
@@ -14226,7 +14226,7 @@ fn shlana_2_020() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A3E}\u{1A66}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A3E@762,0|\
@@ -14240,7 +14240,7 @@ fn shlana_2_021() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A39}\u{1A60}\u{1A45}\u{1A6B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A39|\
          uni1A601A45@592,0|\
@@ -14254,7 +14254,7 @@ fn shlana_2_022() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A43}\u{1A6C}\u{1A74}\u{1A75}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A43@932,0|\
@@ -14270,7 +14270,7 @@ fn shlana_2_023() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3E}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3E.v2|\
          uni1A63@732,0"
@@ -14283,7 +14283,7 @@ fn shlana_2_024() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A71}\u{1A75}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A71|\
          uni1A49@591,0|\
@@ -14297,7 +14297,7 @@ fn shlana_2_025() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A45}\u{1A60}\u{1A3F}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A45|\
          uni1A601A3F@591,0|\
@@ -14311,7 +14311,7 @@ fn shlana_2_026() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A63}\u{1A60}\u{1A3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A63@932,0|\
@@ -14325,7 +14325,7 @@ fn shlana_2_027() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2F}\u{1A63}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A2F|\
          uni1A74@592,0|\
@@ -14339,7 +14339,7 @@ fn shlana_2_028() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A3E}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A3E@762,0|\
@@ -14353,7 +14353,7 @@ fn shlana_2_029() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A55}\u{1A63}\u{1A60}\u{1A38}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A55|\
          uni1A20@226,0|\
@@ -14368,7 +14368,7 @@ fn shlana_2_030() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A55}\u{1A75}\u{1A63}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A55|\
          uni1A3B@226,0|\
@@ -14384,7 +14384,7 @@ fn shlana_2_031() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A55}\u{1A6C}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A55|\
          uni1A20@226,0|\
@@ -14399,7 +14399,7 @@ fn shlana_2_032() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A55}\u{1A6B}\u{1A3E}\u{1A60}\u{1A31}\u{1A7A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A55|\
          uni1A48@226,0|\
@@ -14416,7 +14416,7 @@ fn shlana_2_033() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A55}\u{1A60}\u{1A45}\u{1A6B}\u{1A3E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A55|\
          uni1A48@226,0|\
@@ -14433,7 +14433,7 @@ fn shlana_2_034() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A3E}\u{1A75}\u{1A63}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A3E@762,0|\
@@ -14449,7 +14449,7 @@ fn shlana_2_035() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A3E}\u{1A6E}\u{1A6C}\u{1A68}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A49@591,0|\
@@ -14467,7 +14467,7 @@ fn shlana_2_036() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A3F}\u{1A6E}\u{1A6C}\u{1A68}\u{1A26}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A49@591,0|\
@@ -14485,7 +14485,7 @@ fn shlana_2_037() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A43}\u{1A63}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A43@932,0|\
@@ -14500,7 +14500,7 @@ fn shlana_3_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6C}\u{1A62}\u{1A43}\u{1A60}\u{1A3C}\u{1A7A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A6C.wide@933,0|\
@@ -14519,7 +14519,7 @@ fn shlana_3_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6C}\u{1A62}\u{1A43}\u{1A7A}\u{1A60}\u{1A3C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A6C.wide@933,0|\
@@ -14538,7 +14538,7 @@ fn shlana_3_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6C}\u{1A62}\u{1A43}\u{1A60}\u{1A7A}\u{1A3C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A6C.wide@933,0|\
@@ -14557,7 +14557,7 @@ fn shlana_3_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A55}\u{1A63}\u{1A60}\u{1A3C}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A55|\
          uni1A20@226,0|\
@@ -14573,7 +14573,7 @@ fn shlana_3_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A34}\u{1A6C}\u{1A3C}\u{1A60}\u{1A3C}\u{1A66}\u{1A75}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A34|\
          uni1A6C@592,0|\
@@ -14591,7 +14591,7 @@ fn shlana_3_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A3D}\u{1A5A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A20|\
          uni1A3D@932,0|\
@@ -14605,7 +14605,7 @@ fn shlana_3_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A31}\u{1A5B}\u{1A63}\u{1A60}\u{1A36}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A311A5B@591,0|\
@@ -14620,7 +14620,7 @@ fn shlana_3_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A41}\u{1A2D}\u{1A5B}\u{1A37}\u{1A63}\u{1A60}\u{1A43}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A41|\
          uni1A2D1A5B@591,0|\
@@ -14636,7 +14636,7 @@ fn shlana_3_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A41}\u{1A62}\u{1A2D}\u{1A5B}\u{1A37}\u{1A63}\u{1A60}\u{1A43}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A41|\
          uni1A62@592,0|\
@@ -14653,7 +14653,7 @@ fn shlana_3_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A3B}\u{1A5B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A3B1A5B@591,0"
@@ -14666,7 +14666,7 @@ fn shlana_3_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A4B}\u{1A3E}\u{1A5B}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A4B|\
          uni1A3E1A5B@591,0"
@@ -14679,7 +14679,7 @@ fn shlana_3_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A41}\u{1A63}\u{1A29}\u{1A3D}\u{1A62}\u{1A60}\u{1A2E}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A41|\
          uni1A63@591,0|\
@@ -14696,7 +14696,7 @@ fn shlana_4_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A34}\u{1A58}\u{1A60}\u{1A43}\u{1A63}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A34|\
          uni1A58@592,0|\
@@ -14713,7 +14713,7 @@ fn shlana_4_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A58}\u{1A25}\u{1A6E}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A6E@591,0|\
@@ -14729,7 +14729,7 @@ fn shlana_4_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A41}\u{1A58}\u{1A48}\u{1A66}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A41|\
          uni1A58@592,0|\
@@ -14744,7 +14744,7 @@ fn shlana_5_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A63}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A361A63|\
          uni1A74@592,0"
@@ -14757,7 +14757,7 @@ fn shlana_5_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3E}\u{1A36}\u{1A6E}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3E.v2|\
          uni1A6E@732,0|\
@@ -14771,7 +14771,7 @@ fn shlana_5_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A6E}\u{1A62}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A361A63@591,0|\
@@ -14785,7 +14785,7 @@ fn shlana_5_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A63}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A361A63|\
          uni1A601A3F@591,0"
@@ -14798,7 +14798,7 @@ fn shlana_5_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A75}\u{1A63}\u{1A60}\u{1A36}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A36|\
          uni1A75@592,0|\
@@ -14814,7 +14814,7 @@ fn shlana_5_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A4D}\u{1A36}\u{1A60}\u{1A34}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A4D|\
          uni1A361A63@932,0|\
@@ -14828,7 +14828,7 @@ fn shlana_5_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A4B}\u{1A6B}\u{1A36}\u{1A60}\u{1A32}\u{1A55}\u{1A63}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A4B|\
          uni1A6B@592,0|\
@@ -14845,7 +14845,7 @@ fn shlana_5_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A76}\u{1A63}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A36|\
          uni1A76@592,0|\
@@ -14860,7 +14860,7 @@ fn shlana_5_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A60}\u{1A45}\u{1A63}\u{1A60}\u{1A37}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A361A63|\
          uni1A601A45@592,0|\
@@ -14874,7 +14874,7 @@ fn shlana_5_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A32}\u{1A75}\u{1A63}\u{1A74}\u{1A36}\u{1A60}\u{1A45}\u{1A63}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A32|\
          uni1A75@762,0|\
@@ -14892,7 +14892,7 @@ fn shlana_5_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A36}\u{1A76}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A36@762,0|\
@@ -14908,7 +14908,7 @@ fn shlana_6_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6F}\u{1A62}\u{1A60}\u{1A48}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6F|\
          uni1A20@1095,0|\
@@ -14923,7 +14923,7 @@ fn shlana_6_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A36}\u{1A70}\u{1A6B}\u{1A76}\u{1A60}\u{1A32}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A70|\
          uni1A36@591,0|\
@@ -14939,7 +14939,7 @@ fn shlana_6_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A37}\u{1A55}\u{1A70}\u{1A34}\u{1A66}\u{1A60}\u{1A36}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A70|\
          uni1A55@591,0|\
@@ -14956,7 +14956,7 @@ fn shlana_6_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3C}\u{1A65}\u{1A45}\u{1A60}\u{1A48}\u{1A7A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3C|\
          uni1A65@859,0|\
@@ -14972,7 +14972,7 @@ fn shlana_6_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A32}\u{1A6F}\u{1A3E}\u{1A60}\u{1A37}\u{1A7A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A6F@591,0|\
@@ -14989,7 +14989,7 @@ fn shlana_6_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A6E}\u{1A65}\u{1A41}\u{1A7A}\u{1A60}\u{1A37}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A48@591,0|\
@@ -15006,7 +15006,7 @@ fn shlana_7_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A34}\u{1A62}\u{1A75}\u{1A57}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A34|\
          uni1A621A75@592,0|\
@@ -15022,7 +15022,7 @@ fn shlana_7_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A21}\u{1A36}\u{1A60}\u{1A35}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A21|\
          uni1A361A63@591,0|\
@@ -15036,7 +15036,7 @@ fn shlana_7_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A76}\u{1A60}\u{1A2F}\u{1A66}\u{00A0}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A76@592,0|\
@@ -15053,7 +15053,7 @@ fn shlana_7_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A37}\u{1A76}\u{1A60}\u{1A3E}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A37|\
          uni1A76@592,0|\
@@ -15069,7 +15069,7 @@ fn shlana_7_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A37}\u{1A60}\u{1A76}\u{1A3E}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A37|\
          uni1A76@592,0|\
@@ -15085,7 +15085,7 @@ fn shlana_7_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A37}\u{1A76}\u{1A60}\u{1A2F}\u{1A63}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A37|\
          uni1A76@592,0|\
@@ -15102,7 +15102,7 @@ fn shlana_7_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A27}\u{1A62}\u{1A60}\u{1A45}\u{1A64}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A27|\
          uni1A62@592,0|\
@@ -15118,7 +15118,7 @@ fn shlana_7_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A6E}\u{1A60}\u{1A53}\u{1A60}\u{1A45}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A48@591,0|\
@@ -15133,7 +15133,7 @@ fn shlana_7_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A34}\u{1A6F}\u{1A60}\u{1A36}\u{1A73}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6F|\
          uni1A34@1095,0|\
@@ -15149,7 +15149,7 @@ fn shlana_7_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A53}\u{1A60}\u{1A3E}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A53|\
          uni1A601A3E@762,0|\
@@ -15163,7 +15163,7 @@ fn shlana_7_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A20}\u{1A6E}\u{1A60}\u{1A48}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A20@591,0|\
@@ -15179,7 +15179,7 @@ fn shlana_7_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A71}\u{1A60}\u{1A3E}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A71|\
          uni1A3B@591,0|\
@@ -15195,7 +15195,7 @@ fn shlana_7_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A6E}\u{1A60}\u{1A45}\u{1A76}\u{1A64}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A48@591,0|\
@@ -15213,7 +15213,7 @@ fn shlana_7_014() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A45}\u{1A6E}\u{1A60}\u{1A43}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A45@591,0|\
@@ -15229,7 +15229,7 @@ fn shlana_7_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A35}\u{1A64}\u{1A60}\u{1A32}\u{1A69}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A35|\
          uni1A64@591,0|\
@@ -15245,7 +15245,7 @@ fn shlana_7_016() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A29}\u{1A60}\u{1A53}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A29|\
          uni1A601A53@591,0"
@@ -15258,7 +15258,7 @@ fn shlana_7_017() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A6D}\u{1A60}\u{1A45}\u{1A7B}\u{1A63}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3B|\
          uni1A6D@932,0|\
@@ -15275,7 +15275,7 @@ fn shlana_7_018() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A6B}\u{1A60}\u{1A26}\u{1A63}\u{1A60}\u{1A36}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A6B@592,0|\
@@ -15292,7 +15292,7 @@ fn shlana_8_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A6C}\u{1A73}\u{1A75}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A3B|\
          uni1A6C.wide@933,0|\
@@ -15308,7 +15308,7 @@ fn shlana_8_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A48}\u{1A37}\u{1A77}\u{1A63}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A48|\
          uni1A37@591,0|\
@@ -15325,7 +15325,7 @@ fn shlana_8_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A45}\u{1A60}\u{1A3F}\u{1A59}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A45|\
          uni1A601A3F@591,0|\
@@ -15339,7 +15339,7 @@ fn shlana_8_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A6A}\u{1A7A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A6A@592,0|\
@@ -15354,7 +15354,7 @@ fn shlana_8_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A3B}\u{1A71}\u{1A7B}\u{1A63}\u{1A60}\u{1A3F}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A71|\
          uni1A3B@591,0|\
@@ -15371,7 +15371,7 @@ fn shlana_8_007() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A29}\u{1A60}\u{1A3F}\u{1A59}\u{1A32}\u{1A69}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A29|\
          uni1A601A3F@591,0|\
@@ -15388,7 +15388,7 @@ fn shlana_8_008() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A45}\u{1A32}\u{1A5B}\u{1A69}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A45|\
          uni1A321A5B@591,0|\
@@ -15402,7 +15402,7 @@ fn shlana_8_009() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A45}\u{1A32}\u{1A60}\u{1A33}\u{1A69}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A45|\
          uni1A32@591,0|\
@@ -15417,7 +15417,7 @@ fn shlana_8_010() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A2F}\u{1A60}\u{1A3F}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A2F|\
          uni1A601A3F@591,0|\
@@ -15431,7 +15431,7 @@ fn shlana_8_011() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A49}\u{1A60}\u{1A36}\u{1A66}\u{1A62}\u{1A76}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A49|\
          uni1A601A36@762,0|\
@@ -15446,7 +15446,7 @@ fn shlana_8_012() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A41}\u{1A6E}\u{1A42}\u{1A60}\u{1A20}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A6E|\
          uni1A41@591,0|\
@@ -15461,7 +15461,7 @@ fn shlana_8_013() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A41}\u{1A60}\u{1A3F}\u{1A7A}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A41|\
          uni1A601A3F@591,0|\
@@ -15475,7 +15475,7 @@ fn shlana_9_001() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A74}\u{1A37}\u{1A74}\u{1A75}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A74@592,0|\
@@ -15491,7 +15491,7 @@ fn shlana_9_002() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A74}\u{1A37}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A74@592,0|\
@@ -15506,7 +15506,7 @@ fn shlana_9_003() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A5D}\u{1A74}\u{1A75}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A5D@592,0|\
@@ -15521,7 +15521,7 @@ fn shlana_9_004() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A74}\u{1A5D}\u{1A75}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A74@592,0|\
@@ -15537,7 +15537,7 @@ fn shlana_9_005() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A5D}\u{1A74}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A5D@592,0|\
@@ -15551,7 +15551,7 @@ fn shlana_9_006() {
         shape(
             "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
             "\u{1A23}\u{1A74}\u{1A5D}",
-            "--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft",
+            "--font-size=1000 --ned --remove-default-ignorables",
         ),
         "uni1A23|\
          uni1A74@592,0|\

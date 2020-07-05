@@ -5,10 +5,7 @@ struct Args {
     face_index: u32,
     font_size: Option<f32>,
     font_ptem: Option<f32>,
-    #[allow(dead_code)] font_funcs: Option<String>, // we don't use it, but have to parse it anyway
     variations: Vec<String>,
-    #[allow(dead_code)] shaper: Vec<String>, // we don't use it, but have to parse it anyway
-    #[allow(dead_code)] shapers: Vec<String>, // we don't use it, but have to parse it anyway
     direction: Option<rustybuzz::Direction>,
     language: Option<rustybuzz::Language>,
     script: Option<rustybuzz::Tag>,
@@ -30,10 +27,7 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
         face_index: parser.opt_value_from_str("--face-index")?.unwrap_or(0),
         font_size: parser.opt_value_from_str("--font-size")?,
         font_ptem: parser.opt_value_from_str("--font-ptem")?,
-        font_funcs: parser.opt_value_from_str("--font-funcs")?,
         variations: parser.opt_value_from_fn("--variations", parse_string_list)?.unwrap_or_default(),
-        shaper: parser.opt_value_from_fn("--shaper", parse_string_list)?.unwrap_or_default(),
-        shapers: parser.opt_value_from_fn("--shapers", parse_string_list)?.unwrap_or_default(),
         direction: parser.opt_value_from_str("--direction")?,
         language: parser.opt_value_from_str("--language")?,
         script: parser.opt_value_from_str("--script")?,
