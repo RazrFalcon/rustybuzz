@@ -69,8 +69,6 @@ HB_EXTERN hb_bool_t hb_ot_get_glyph_extents(hb_font_t *font, hb_codepoint_t glyp
 
 HB_EXTERN hb_bool_t hb_ot_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *name, unsigned int size);
 
-HB_EXTERN hb_bool_t hb_ot_get_glyph_from_name(hb_font_t *font, const char *name, int len, hb_codepoint_t *glyph);
-
 HB_EXTERN hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t *metrics);
 
 HB_EXTERN hb_bool_t hb_ot_get_font_v_extents(hb_font_t *font, hb_font_extents_t *metrics);

@@ -112,46 +112,6 @@ struct post
             return true;
         }
 
-        bool get_glyph_from_name(const char *name, int len, hb_codepoint_t *glyph) const
-        {
-            unsigned int count = get_glyph_count();
-            if (unlikely(!count))
-                return false;
-
-            if (len < 0)
-                len = strlen(name);
-
-            if (unlikely(!len))
-                return false;
-
-        retry:
-            uint16_t *gids = gids_sorted_by_name.get();
-
-            if (unlikely(!gids)) {
-                gids = (uint16_t *)malloc(count * sizeof(gids[0]));
-                if (unlikely(!gids))
-                    return false; /* Anything better?! */
-
-                for (unsigned int i = 0; i < count; i++)
-                    gids[i] = i;
-                hb_qsort(gids, count, sizeof(gids[0]), cmp_gids, (void *)this);
-
-                if (unlikely(!gids_sorted_by_name.cmpexch(nullptr, gids))) {
-                    free(gids);
-                    goto retry;
-                }
-            }
-
-            hb_bytes_t st(name, len);
-            auto *gid = hb_bsearch(st, gids, count, sizeof(gids[0]), cmp_key, (void *)this);
-            if (gid) {
-                *glyph = *gid;
-                return true;
-            }
-
-            return false;
-        }
-
         hb_blob_ptr_t<post> table;
 
     protected:

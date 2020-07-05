@@ -107,10 +107,6 @@ HB_EXTERN hb_bool_t hb_font_get_glyph_contour_point(
     hb_font_t *font, hb_codepoint_t glyph, unsigned int point_index, hb_position_t *x, hb_position_t *y);
 
 HB_EXTERN hb_bool_t hb_font_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *name, unsigned int size);
-HB_EXTERN hb_bool_t hb_font_get_glyph_from_name(hb_font_t *font,
-                                                const char *name,
-                                                int len, /* -1 means nul-terminated */
-                                                hb_codepoint_t *glyph);
 
 /* high-level funcs, with fallback */
 
@@ -152,11 +148,6 @@ HB_EXTERN hb_bool_t hb_font_get_glyph_contour_point_for_origin(hb_font_t *font,
 
 /* Generates gidDDD if glyph has no name. */
 HB_EXTERN void hb_font_glyph_to_string(hb_font_t *font, hb_codepoint_t glyph, char *s, unsigned int size);
-/* Parses gidDDD and uniUUUU strings automatically. */
-HB_EXTERN hb_bool_t hb_font_glyph_from_string(hb_font_t *font,
-                                              const char *s,
-                                              int len, /* -1 means nul-terminated */
-                                              hb_codepoint_t *glyph);
 
 /*
  * hb_font_t

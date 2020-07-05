@@ -159,14 +159,6 @@ hb_bool_t hb_ot_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *name
         return true;
     return false;
 }
-hb_bool_t hb_ot_get_glyph_from_name(hb_font_t *font, const char *name, int len, hb_codepoint_t *glyph)
-{
-    if (font->face->table.post->get_glyph_from_name(name, len, glyph))
-        return true;
-    if (font->face->table.cff1->get_glyph_from_name(name, len, glyph))
-        return true;
-    return false;
-}
 
 hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t *metrics)
 {

@@ -195,16 +195,6 @@ struct hb_font_t
         return hb_ot_get_glyph_name(this, glyph, name, size);
     }
 
-    hb_bool_t get_glyph_from_name(const char *name,
-                                  int len, /* -1 means nul-terminated */
-                                  hb_codepoint_t *glyph)
-    {
-        *glyph = 0;
-        if (len == -1)
-            len = strlen(name);
-        return hb_ot_get_glyph_from_name(this, name, len, glyph);
-    }
-
     /* A bit higher-level, and with fallback */
 
     void get_h_extents_with_fallback(hb_font_extents_t *extents)
@@ -381,36 +371,6 @@ struct hb_font_t
 
         if (size && snprintf(s, size, "gid%u", glyph) < 0)
             *s = '\0';
-    }
-
-    /* Parses gidDDD and uniUUUU strings automatically. */
-    hb_bool_t glyph_from_string(const char *s,
-                                int len, /* -1 means nul-terminated */
-                                hb_codepoint_t *glyph)
-    {
-        if (get_glyph_from_name(s, len, glyph))
-            return true;
-
-        if (len == -1)
-            len = strlen(s);
-
-        /* Straight glyph index. */
-        if (hb_codepoint_parse(s, len, 10, glyph))
-            return true;
-
-        if (len > 3) {
-            /* gidDDD syntax for glyph indices. */
-            if (0 == strncmp(s, "gid", 3) && hb_codepoint_parse(s + 3, len - 3, 10, glyph))
-                return true;
-
-            /* uniUUUU and other Unicode character indices. */
-            hb_codepoint_t unichar;
-            if (0 == strncmp(s, "uni", 3) && hb_codepoint_parse(s + 3, len - 3, 16, &unichar) &&
-                get_nominal_glyph(unichar, glyph))
-                return true;
-        }
-
-        return false;
     }
 
     void mults_changed()

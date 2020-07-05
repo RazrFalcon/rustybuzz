@@ -1306,24 +1306,6 @@ struct cff1
             return true;
         }
 
-        bool get_glyph_from_name(const char *name, int len, hb_codepoint_t *glyph) const
-        {
-            if (len < 0)
-                len = strlen(name);
-            if (unlikely(!len))
-                return false;
-
-            gname_t key = {hb_bytes_t(name, len), 0};
-            const gname_t *gname = glyph_names.bsearch(key);
-            if (!gname)
-                return false;
-            hb_codepoint_t gid = sid_to_glyph(gname->sid);
-            if (!gid && gname->sid)
-                return false;
-            *glyph = gid;
-            return true;
-        }
-
         HB_INTERNAL bool get_extents(hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents) const;
         HB_INTERNAL bool get_seac_components(hb_codepoint_t glyph, hb_codepoint_t *base, hb_codepoint_t *accent) const;
 

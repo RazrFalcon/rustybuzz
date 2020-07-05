@@ -954,18 +954,6 @@ template <typename T> static inline void hb_stable_sort(T *array, unsigned int l
     hb_stable_sort(array, len, compar, (int *)nullptr);
 }
 
-static inline hb_bool_t hb_codepoint_parse(const char *s, unsigned int len, int base, hb_codepoint_t *out)
-{
-    unsigned int v;
-    const char *p = s;
-    const char *end = p + len;
-    if (unlikely(!hb_parse_uint(&p, end, &v, true /* whole buffer */, base)))
-        return false;
-
-    *out = v;
-    return true;
-}
-
 /* Operators. */
 
 struct hb_bitwise_and

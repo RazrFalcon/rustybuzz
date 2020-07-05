@@ -283,27 +283,6 @@ hb_bool_t hb_font_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *na
     return font->get_glyph_name(glyph, name, size);
 }
 
-/**
- * hb_font_get_glyph_from_name:
- * @font: a font.
- * @name: (array length=len):
- * @len:
- * @glyph: (out):
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_bool_t hb_font_get_glyph_from_name(hb_font_t *font,
-                                      const char *name,
-                                      int len, /* -1 means nul-terminated */
-                                      hb_codepoint_t *glyph)
-{
-    return font->get_glyph_from_name(name, len, glyph);
-}
-
 /* A bit higher-level, and with fallback */
 
 /**
@@ -472,28 +451,6 @@ hb_bool_t hb_font_get_glyph_contour_point_for_origin(hb_font_t *font,
 void hb_font_glyph_to_string(hb_font_t *font, hb_codepoint_t glyph, char *s, unsigned int size)
 {
     font->glyph_to_string(glyph, s, size);
-}
-
-/* Parses gidDDD and uniUUUU strings automatically. */
-/**
- * hb_font_glyph_from_string:
- * @font: a font.
- * @s: (array length=len) (element-type uint8_t):
- * @len:
- * @glyph: (out):
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-hb_bool_t hb_font_glyph_from_string(hb_font_t *font,
-                                    const char *s,
-                                    int len, /* -1 means nul-terminated */
-                                    hb_codepoint_t *glyph)
-{
-    return font->glyph_from_string(s, len, glyph);
 }
 
 /*
