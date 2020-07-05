@@ -375,58 +375,6 @@ hb_language_t hb_language_get_default()
     return language;
 }
 
-/**
- * hb_color_get_alpha:
- * color: a #hb_color_t we are interested in its channels.
- *
- * Return value: Alpha channel value of the given color
- *
- * Since: 2.1.0
- */
-uint8_t(hb_color_get_alpha)(hb_color_t color)
-{
-    return hb_color_get_alpha(color);
-}
-
-/**
- * hb_color_get_red:
- * color: a #hb_color_t we are interested in its channels.
- *
- * Return value: Red channel value of the given color
- *
- * Since: 2.1.0
- */
-uint8_t(hb_color_get_red)(hb_color_t color)
-{
-    return hb_color_get_red(color);
-}
-
-/**
- * hb_color_get_green:
- * color: a #hb_color_t we are interested in its channels.
- *
- * Return value: Green channel value of the given color
- *
- * Since: 2.1.0
- */
-uint8_t(hb_color_get_green)(hb_color_t color)
-{
-    return hb_color_get_green(color);
-}
-
-/**
- * hb_color_get_blue:
- * color: a #hb_color_t we are interested in its channels.
- *
- * Return value: Blue channel value of the given color
- *
- * Since: 2.1.0
- */
-uint8_t(hb_color_get_blue)(hb_color_t color)
-{
-    return hb_color_get_blue(color);
-}
-
 /* If there is no visibility control, then hb-static.cc will NOT
  * define anything.  Instead, we get it to define one set in here
  * only, so only libharfbuzz.so defines them, not other libs. */
