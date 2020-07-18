@@ -195,6 +195,9 @@ hb_font_subtract_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_positi
 HB_EXTERN void
 hb_font_guess_v_origin_minus_h_origin(hb_font_t *font, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y);
 
+HB_EXTERN hb_bool_t hb_font_has_vorg_data(hb_font_t *font);
+HB_EXTERN int hb_font_get_y_origin(hb_font_t *font, hb_codepoint_t glyph);
+
 HB_END_DECLS
 
 #endif /* HB_FONT_H */

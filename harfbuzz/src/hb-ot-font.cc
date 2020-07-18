@@ -32,7 +32,6 @@
 #include "hb-ot-face.hh"
 
 #include "hb-ot-cmap-table.hh"
-#include "hb-ot-vorg-table.hh"
 
 extern "C" {
 HB_EXTERN hb_bool_t hb_ot_metrics_get_position_common(hb_font_t *font, hb_tag_t tag, int *position);
@@ -105,9 +104,8 @@ hb_bool_t hb_ot_get_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_pos
 {
     *x = hb_font_get_glyph_h_advance(font, glyph) / 2;
 
-    const OT::VORG &VORG = *hb_font_get_face(font)->table.VORG;
-    if (VORG.has_data()) {
-        *y = VORG.get_y_origin(glyph);
+    if (hb_font_has_vorg_data(font)) {
+        *y = hb_font_get_y_origin(font, glyph);
         return true;
     }
 

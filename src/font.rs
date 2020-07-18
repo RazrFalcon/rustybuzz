@@ -352,6 +352,17 @@ pub extern "C" fn hb_ot_get_glyph_name(
     }
 }
 
+#[no_mangle]
+pub extern "C" fn hb_font_has_vorg_data(font: *const ffi::hb_font_t) -> ffi::hb_bool_t {
+    font_from_raw(font).ttfp_face.has_table(ttf_parser::TableName::VerticalOrigin) as i32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_font_get_y_origin(font: *const ffi::hb_font_t, glyph: ffi::hb_codepoint_t) -> i32 {
+    let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
+    font_from_raw(font).ttfp_face.glyph_y_origin(glyph_id).unwrap_or(0) as i32
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
