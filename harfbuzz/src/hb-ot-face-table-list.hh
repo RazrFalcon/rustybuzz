@@ -48,14 +48,6 @@ HB_OT_TABLE(OT, head)
 HB_OT_ACCELERATOR(OT, cmap)
 HB_OT_TABLE(AAT, fdsc)
 
-/* CFF outlines. */
-HB_OT_TABLE(OT, VORG)
-
-/* OpenType variations. */
-HB_OT_TABLE(OT, fvar)
-HB_OT_TABLE(OT, avar)
-HB_OT_TABLE(OT, MVAR)
-
 /* Legacy kern. */
 HB_OT_TABLE(OT, kern)
 

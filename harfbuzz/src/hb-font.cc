@@ -33,8 +33,6 @@
 #include "hb-ot.h"
 #include "hb-face.hh"
 #include "hb-ot-font.h"
-#include "hb-ot-var-avar-table.hh"
-#include "hb-ot-var-fvar-table.hh"
 
 /**
  * SECTION:hb-font
