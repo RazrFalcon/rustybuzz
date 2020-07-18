@@ -73,6 +73,9 @@ HB_EXTERN hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t 
 
 HB_EXTERN hb_bool_t hb_ot_get_font_v_extents(hb_font_t *font, hb_font_extents_t *metrics);
 
+HB_EXTERN unsigned int hb_font_get_advance(hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical);
+HB_EXTERN int hb_font_get_side_bearing(hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical);
+
 HB_END_DECLS
 
 #endif /* HB_OT_FONT_H */

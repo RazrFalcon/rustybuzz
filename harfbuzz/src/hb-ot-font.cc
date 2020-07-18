@@ -32,15 +32,10 @@
 #include "hb-ot-face.hh"
 
 #include "hb-ot-cmap-table.hh"
-#include "hb-ot-glyf-table.hh"
-#include "hb-ot-cff1-table.hh"
-#include "hb-ot-cff2-table.hh"
-#include "hb-ot-hmtx-table.hh"
-#include "hb-ot-post-table.hh"
 #include "hb-ot-vorg-table.hh"
 
 extern "C" {
-    HB_EXTERN hb_bool_t hb_ot_metrics_get_position_common(hb_font_t *font, hb_tag_t tag, int *position);
+HB_EXTERN hb_bool_t hb_ot_metrics_get_position_common(hb_font_t *font, hb_tag_t tag, int *position);
 }
 
 /**
@@ -66,7 +61,8 @@ unsigned int hb_ot_get_nominal_glyphs(hb_font_t *font,
                                       hb_codepoint_t *first_glyph,
                                       unsigned int glyph_stride)
 {
-    return hb_font_get_face(font)->table.cmap->get_nominal_glyphs(count, first_unicode, unicode_stride, first_glyph, glyph_stride);
+    return hb_font_get_face(font)->table.cmap->get_nominal_glyphs(
+        count, first_unicode, unicode_stride, first_glyph, glyph_stride);
 }
 
 hb_bool_t hb_ot_get_variation_glyph(hb_font_t *font,
@@ -84,10 +80,8 @@ void hb_ot_get_glyph_h_advances(hb_font_t *font,
                                 hb_position_t *first_advance,
                                 unsigned advance_stride)
 {
-    const OT::hmtx_accelerator_t &hmtx = *hb_font_get_face(font)->table.hmtx;
-
     for (unsigned int i = 0; i < count; i++) {
-        *first_advance = hmtx.get_advance(*first_glyph, font);
+        *first_advance = hb_font_get_advance(font, *first_glyph, 0);
         first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
         first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
     }
@@ -100,10 +94,8 @@ void hb_ot_get_glyph_v_advances(hb_font_t *font,
                                 hb_position_t *first_advance,
                                 unsigned advance_stride)
 {
-    const OT::vmtx_accelerator_t &vmtx = *hb_font_get_face(font)->table.vmtx;
-
     for (unsigned int i = 0; i < count; i++) {
-        *first_advance = -(int)vmtx.get_advance(*first_glyph, font);
+        *first_advance = -hb_font_get_advance(font, *first_glyph, 1);
         first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
         first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
     }
@@ -120,27 +112,11 @@ hb_bool_t hb_ot_get_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_pos
     }
 
     hb_glyph_extents_t extents = {0};
-    if (hb_font_get_face(font)->table.glyf->get_extents(font, glyph, &extents)) {
-        const OT::vmtx_accelerator_t &vmtx = *hb_font_get_face(font)->table.vmtx;
-        hb_position_t tsb = vmtx.get_side_bearing(font, glyph);
-        *y = extents.y_bearing + tsb;
-        return true;
-    }
+    hb_ot_get_glyph_extents(font, glyph, &extents);
 
-    hb_font_extents_t font_extents;
-    hb_font_get_h_extents_with_fallback(font, &font_extents);
-    *y = font_extents.ascender;
-
+    hb_position_t tsb = hb_font_get_side_bearing(font, glyph, true);
+    *y = extents.y_bearing + tsb;
     return true;
-}
-
-hb_bool_t hb_ot_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *name, unsigned int size)
-{
-    if (hb_font_get_face(font)->table.post->get_glyph_name(glyph, name, size))
-        return true;
-    if (hb_font_get_face(font)->table.cff1->get_glyph_name(glyph, name, size))
-        return true;
-    return false;
 }
 
 hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t *metrics)
@@ -155,14 +131,4 @@ hb_bool_t hb_ot_get_font_v_extents(hb_font_t *font, hb_font_extents_t *metrics)
     return hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_ASCENDER, &metrics->ascender) &&
            hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_DESCENDER, &metrics->descender) &&
            hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
-}
-
-int _glyf_get_side_bearing_var(hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
-{
-    return hb_font_get_face(font)->table.glyf->get_side_bearing_var(font, glyph, is_vertical);
-}
-
-unsigned _glyf_get_advance_var(hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
-{
-    return hb_font_get_face(font)->table.glyf->get_advance_var(font, glyph, is_vertical);
 }

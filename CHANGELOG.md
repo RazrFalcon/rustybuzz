@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Ported
-- Tables: `OS/2`, `CBDT`, `SVG`, `sbix`.
+- Tables: `CBDT`, `CFF`, `CFF2`, `OS/2`, `SVG`, `glyf`, `gvar`, `hhea`, `hmtx`,
+  `post`, `sbix`, `vhea`, `vmtx`.
 - `hb_script_t`
 - `hb_feature_t`
 - `hb_variation_t`

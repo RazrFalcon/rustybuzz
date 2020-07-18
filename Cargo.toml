@@ -13,7 +13,7 @@ categories = ["text-processing"]
 
 [dependencies]
 bitflags = "1.2"
-ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "b3d2b05" }
+ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "9a71782" }
 
 [dev-dependencies]
 pico-args = "0.3"

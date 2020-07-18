@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
 use std::marker::PhantomData;
+use std::os::raw::c_char;
 use std::ptr::NonNull;
 
 use ttf_parser::{Tag, GlyphId};
@@ -219,6 +220,67 @@ pub extern "C" fn hb_ot_get_glyph_extents(
     }
 }
 
+#[no_mangle]
+pub extern "C" fn hb_font_get_advance(
+    font: *const ffi::hb_font_t,
+    glyph: ffi::hb_codepoint_t,
+    is_vertical: ffi::hb_bool_t,
+) -> u32 {
+    let face = &font_from_raw(font).ttfp_face;
+    let glyph = GlyphId(u16::try_from(glyph).unwrap());
+
+    if  face.is_variable() &&
+        face.has_non_default_variation_coordinates() &&
+       !face.has_table(ttf_parser::TableName::HorizontalMetricsVariations) &&
+       !face.has_table(ttf_parser::TableName::VerticalMetricsVariations)
+    {
+        return match face.glyph_bounding_box(glyph) {
+            Some(bbox) => {
+                (if is_vertical == 1 {
+                    bbox.y_max + bbox.y_min
+                } else {
+                    bbox.x_max + bbox.x_min
+                }) as u32
+            }
+            None => 0,
+        };
+    }
+
+    if is_vertical == 1 && face.has_table(ttf_parser::TableName::VerticalMetrics) {
+        face.glyph_ver_advance(glyph).unwrap_or(0) as u32
+    } else if is_vertical == 0 && face.has_table(ttf_parser::TableName::HorizontalMetrics) {
+        face.glyph_hor_advance(glyph).unwrap_or(0) as u32
+    } else {
+        face.units_per_em().unwrap_or(1000) as u32
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn hb_font_get_side_bearing(
+    font: *const ffi::hb_font_t,
+    glyph: ffi::hb_codepoint_t,
+    is_vertical: ffi::hb_bool_t,
+) -> i32 {
+    let face = &font_from_raw(font).ttfp_face;
+    let glyph = GlyphId(u16::try_from(glyph).unwrap());
+
+    if  face.is_variable() &&
+       !face.has_table(ttf_parser::TableName::HorizontalMetricsVariations) &&
+       !face.has_table(ttf_parser::TableName::VerticalMetricsVariations)
+    {
+        return match face.glyph_bounding_box(glyph) {
+            Some(bbox) => (if is_vertical == 1 { bbox.x_min } else { bbox.y_min }) as i32,
+            None => 0,
+        }
+    }
+
+    if is_vertical == 1 {
+        face.glyph_ver_side_bearing(glyph).unwrap_or(0) as i32
+    } else {
+        face.glyph_hor_side_bearing(glyph).unwrap_or(0) as i32
+    }
+}
+
 mod metrics {
     use crate::Tag;
 
@@ -261,6 +323,33 @@ pub extern "C" fn hb_ot_metrics_get_position_common(
 
     unsafe { *position = pos; }
     1
+}
+
+#[no_mangle]
+pub extern "C" fn hb_ot_get_glyph_name(
+    font: *const ffi::hb_font_t,
+    glyph: ffi::hb_codepoint_t,
+    mut raw_name: *mut c_char,
+    len: u32,
+) -> i32 {
+    assert_ne!(len, 0);
+
+    let face = &font_from_raw(font).ttfp_face;
+    match face.glyph_name(GlyphId(u16::try_from(glyph).unwrap())) {
+        Some(name) => unsafe {
+            let len = std::cmp::min(name.len(), len as usize - 1);
+
+            for b in &name.as_bytes()[0..len] {
+                *raw_name = *b as c_char;
+                raw_name = raw_name.offset(1);
+            }
+
+            *raw_name = b'\0' as c_char;
+
+            1
+        }
+        _ => 0,
+    }
 }
 
 #[cfg(test)]

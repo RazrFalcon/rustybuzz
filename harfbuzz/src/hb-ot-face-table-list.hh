@@ -46,27 +46,14 @@
 /* OpenType fundamentals. */
 HB_OT_TABLE(OT, head)
 HB_OT_ACCELERATOR(OT, cmap)
-HB_OT_TABLE(OT, hhea)
-HB_OT_ACCELERATOR(OT, hmtx)
-HB_OT_ACCELERATOR(OT, post)
 HB_OT_TABLE(AAT, fdsc)
 
-/* Vertical layout. */
-HB_OT_TABLE(OT, vhea)
-HB_OT_ACCELERATOR(OT, vmtx)
-
-/* TrueType outlines. */
-HB_OT_ACCELERATOR(OT, glyf)
-
 /* CFF outlines. */
-HB_OT_ACCELERATOR(OT, cff1)
-HB_OT_ACCELERATOR(OT, cff2)
 HB_OT_TABLE(OT, VORG)
 
 /* OpenType variations. */
 HB_OT_TABLE(OT, fvar)
 HB_OT_TABLE(OT, avar)
-HB_OT_ACCELERATOR(OT, gvar)
 HB_OT_TABLE(OT, MVAR)
 
 /* Legacy kern. */
