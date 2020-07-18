@@ -1,7 +1,8 @@
+use std::convert::TryFrom;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 
-use ttf_parser::Tag;
+use ttf_parser::{Tag, GlyphId};
 
 use crate::common::Variation;
 use crate::ffi;
@@ -73,9 +74,9 @@ impl Drop for Face<'_> {
 pub struct Font<'a> {
     ttfp_face: ttf_parser::Face<'a>,
     hb_face: Face<'a>,
-    upem: i32,
-    ppem: Option<(u32, u32)>,
-    ptem: Option<f32>,
+    units_per_em: i32,
+    pixels_per_em: Option<(u16, u16)>,
+    points_per_em: Option<f32>,
     coords: Vec<i32>,
 }
 
@@ -91,9 +92,9 @@ impl<'a> Font<'a> {
         Some(Font {
             ttfp_face,
             hb_face: face,
-            upem,
-            ppem: None,
-            ptem: None,
+            units_per_em: upem,
+            pixels_per_em: None,
+            points_per_em: None,
             coords: Vec::new(),
         })
     }
@@ -107,8 +108,8 @@ impl<'a> Font<'a> {
     /// Used during raster glyphs processing and hinting.
     ///
     /// `None` by default.
-    pub fn set_ppem(&mut self, ppem: Option<(u32, u32)>) {
-        self.ppem = ppem;
+    pub fn set_pixels_per_em(&mut self, ppem: Option<(u16, u16)>) {
+        self.pixels_per_em = ppem;
     }
 
     /// Sets point size per EM.
@@ -116,8 +117,8 @@ impl<'a> Font<'a> {
     /// Used for optical-sizing in Apple fonts.
     ///
     /// `None` by default.
-    pub fn set_ptem(&mut self, ptem: Option<f32>) {
-        self.ptem = ptem;
+    pub fn set_points_per_em(&mut self, ptem: Option<f32>) {
+        self.points_per_em = ptem;
     }
 
     /// Sets font variations.
@@ -144,22 +145,22 @@ pub extern "C" fn hb_font_get_face(font: *const ffi::hb_font_t) -> *mut ffi::hb_
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_upem(font: *const ffi::hb_font_t) -> i32 {
-    font_from_raw(font).upem
+    font_from_raw(font).units_per_em
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_ptem(font: *const ffi::hb_font_t) -> f32 {
-    font_from_raw(font).ptem.unwrap_or(0.0)
+    font_from_raw(font).points_per_em.unwrap_or(0.0)
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_ppem_x(font: *const ffi::hb_font_t) -> u32 {
-    font_from_raw(font).ppem.map(|ppem| ppem.0).unwrap_or(0)
+    font_from_raw(font).pixels_per_em.map(|ppem| ppem.0).unwrap_or(0) as u32
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_ppem_y(font: *const ffi::hb_font_t) -> u32 {
-    font_from_raw(font).ppem.map(|ppem| ppem.1).unwrap_or(0)
+    font_from_raw(font).pixels_per_em.map(|ppem| ppem.1).unwrap_or(0) as u32
 }
 
 #[no_mangle]
@@ -170,6 +171,52 @@ pub extern "C" fn hb_font_get_coords(font: *const ffi::hb_font_t) -> *const i32 
 #[no_mangle]
 pub extern "C" fn hb_font_get_num_coords(font: *const ffi::hb_font_t) -> u32 {
     font_from_raw(font).coords.len() as u32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_ot_get_glyph_extents(
+    font: *const ffi::hb_font_t,
+    glyph: ffi::hb_codepoint_t,
+    extents: *mut ffi::hb_glyph_extents_t,
+) -> ffi::hb_bool_t {
+    let font = font_from_raw(font);
+    let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
+
+    let pixels_per_em = match font.pixels_per_em {
+        Some(ppem) => ppem.0,
+        None => std::u16::MAX,
+    };
+
+    if let Some(img) = font.ttfp_face.glyph_raster_image(glyph_id, pixels_per_em) {
+        // HarfBuzz also supports only PNG.
+        if img.format == ttf_parser::RasterImageFormat::PNG {
+            let scale = font.units_per_em as f32 / img.pixels_per_em as f32;
+            unsafe {
+                *extents = ffi::hb_glyph_extents_t {
+                    x_bearing: (f32::from(img.x) * scale).round() as i32,
+                    y_bearing: ((f32::from(img.y) + f32::from(img.height)) * scale).round() as i32,
+                    width: (f32::from(img.width) * scale).round() as i32,
+                    height: (-f32::from(img.height) * scale).round() as i32,
+                };
+            }
+
+            return 1;
+        }
+    }
+
+    match font.ttfp_face.glyph_bounding_box(glyph_id) {
+        Some(bbox) => unsafe {
+            *extents = ffi::hb_glyph_extents_t {
+                x_bearing: i32::from(bbox.x_min),
+                y_bearing: i32::from(bbox.y_max),
+                width: i32::from(bbox.width()),
+                height: i32::from(bbox.y_min - bbox.y_max),
+            };
+
+            1
+        }
+        _ => 0,
+    }
 }
 
 mod metrics {

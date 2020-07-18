@@ -85,11 +85,6 @@ HB_OT_TABLE(AAT, ankr)
 HB_OT_TABLE(AAT, trak)
 HB_OT_TABLE(AAT, feat)
 
-/* OpenType color fonts. */
-HB_OT_ACCELERATOR(OT, CBDT)
-HB_OT_ACCELERATOR(OT, sbix)
-HB_OT_ACCELERATOR(OT, SVG)
-
 #ifdef _HB_OT_ACCELERATOR_UNDEF
 #undef HB_OT_ACCELERATOR
 #endif

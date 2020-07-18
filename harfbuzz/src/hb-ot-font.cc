@@ -38,8 +38,6 @@
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-post-table.hh"
 #include "hb-ot-vorg-table.hh"
-#include "hb-ot-color-cbdt-table.hh"
-#include "hb-ot-color-sbix-table.hh"
 
 extern "C" {
     HB_EXTERN hb_bool_t hb_ot_metrics_get_position_common(hb_font_t *font, hb_tag_t tag, int *position);
@@ -134,23 +132,6 @@ hb_bool_t hb_ot_get_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_pos
     *y = font_extents.ascender;
 
     return true;
-}
-
-hb_bool_t hb_ot_get_glyph_extents(hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents)
-{
-    if (hb_font_get_face(font)->table.sbix->get_extents(font, glyph, extents))
-        return true;
-    if (hb_font_get_face(font)->table.glyf->get_extents(font, glyph, extents))
-        return true;
-    if (hb_font_get_face(font)->table.cff1->get_extents(font, glyph, extents))
-        return true;
-    if (hb_font_get_face(font)->table.cff2->get_extents(font, glyph, extents))
-        return true;
-    if (hb_font_get_face(font)->table.CBDT->get_extents(font, glyph, extents))
-        return true;
-
-    // TODO Hook up side-bearings variations.
-    return false;
 }
 
 hb_bool_t hb_ot_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *name, unsigned int size)
