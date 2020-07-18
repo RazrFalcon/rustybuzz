@@ -92,18 +92,6 @@ impl<'a> Font<'a> {
         self.ptr.as_ptr()
     }
 
-    /// Returns the EM scale of the font.
-    pub fn scale(&self) -> (i32, i32) {
-        let mut result = (0i32, 0i32);
-        unsafe { ffi::hb_font_get_scale(self.as_ptr(), &mut result.0, &mut result.1) };
-        result
-    }
-
-    /// Sets the EM scale of the font.
-    pub fn set_scale(&mut self, x: i32, y: i32) {
-        unsafe { ffi::hb_font_set_scale(self.as_ptr(), x, y) };
-    }
-
     /// Sets point size per EM.
     ///
     /// Used for optical-sizing in Apple fonts.

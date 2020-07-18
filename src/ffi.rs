@@ -207,18 +207,6 @@ extern "C" {
 
     pub fn hb_font_destroy(font: *mut hb_font_t);
 
-    pub fn hb_font_set_scale(
-        font: *mut hb_font_t,
-        x_scale: i32,
-        y_scale: i32,
-    );
-
-    pub fn hb_font_get_scale(
-        font: *mut hb_font_t,
-        x_scale: *mut i32,
-        y_scale: *mut i32,
-    );
-
     pub fn hb_font_set_ptem(font: *mut hb_font_t, ptem: f32);
 
     pub fn hb_font_set_variations(

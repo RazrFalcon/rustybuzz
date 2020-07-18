@@ -93,7 +93,7 @@ struct CaretValueFormat1
 private:
     hb_position_t get_caret_value(hb_font_t *font, hb_direction_t direction) const
     {
-        return HB_DIRECTION_IS_HORIZONTAL(direction) ? font->em_scale_x(coordinate) : font->em_scale_y(coordinate);
+        return coordinate;
     }
 
     bool sanitize(hb_sanitize_context_t *c) const
@@ -142,8 +142,8 @@ struct CaretValueFormat3
     hb_position_t get_caret_value(hb_font_t *font, hb_direction_t direction, const VariationStore &var_store) const
     {
         return HB_DIRECTION_IS_HORIZONTAL(direction)
-                   ? font->em_scale_x(coordinate) + (this + deviceTable).get_x_delta(font, var_store)
-                   : font->em_scale_y(coordinate) + (this + deviceTable).get_y_delta(font, var_store);
+                   ? coordinate + (this + deviceTable).get_x_delta(font, var_store)
+                   : coordinate + (this + deviceTable).get_y_delta(font, var_store);
     }
 
     void collect_variation_indices(hb_set_t *layout_variation_indices) const

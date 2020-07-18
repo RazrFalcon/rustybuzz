@@ -86,6 +86,7 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
     options = options.replace('--shaper=ot', '')
     options = options.replace(' --font-funcs=ft', '').replace('--font-funcs=ft', '')
     options = options.replace(' --font-funcs=ot', '').replace('--font-funcs=ot', '')
+    options = options.replace('--font-size=1000', '')  # we don't support font scaling
     options = options.strip()
 
     # We have to actually run hb-shape instead of using predefined results,

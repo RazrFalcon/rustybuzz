@@ -312,10 +312,10 @@ struct glyf
             {
                 /* Undocumented rasterizer behavior: shift glyph to the left by (lsb - xMin), i.e., xMin = lsb */
                 /* extents->x_bearing = hb_min (glyph_header.xMin, glyph_header.xMax); */
-                extents->x_bearing = font->em_scale_x(font->face->table.hmtx->get_side_bearing(gid));
-                extents->y_bearing = font->em_scale_y(hb_max(yMin, yMax));
-                extents->width = font->em_scale_x(hb_max(xMin, xMax) - hb_min(xMin, xMax));
-                extents->height = font->em_scale_y(hb_min(yMin, yMax) - hb_max(yMin, yMax));
+                extents->x_bearing = font->face->table.hmtx->get_side_bearing(gid);
+                extents->y_bearing = hb_max(yMin, yMax);
+                extents->width = hb_max(xMin, xMax) - hb_min(xMin, xMax);
+                extents->height = hb_min(yMin, yMax) - hb_max(yMin, yMax);
 
                 return true;
             }
@@ -856,10 +856,10 @@ struct glyf
                         extents->y_bearing = 0;
                         return;
                     }
-                    extents->x_bearing = font->em_scalef_x(min_x);
-                    extents->width = font->em_scalef_x(max_x - min_x);
-                    extents->y_bearing = font->em_scalef_y(max_y);
-                    extents->height = font->em_scalef_y(min_y - max_y);
+                    extents->x_bearing = (hb_position_t)roundf(min_x);
+                    extents->width = (hb_position_t)roundf(max_x - min_x);
+                    extents->y_bearing = (hb_position_t)roundf(max_y);
+                    extents->height = (hb_position_t)roundf(min_y - max_y);
                 }
 
             protected:

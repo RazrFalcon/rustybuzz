@@ -434,7 +434,7 @@ static void apply_stch(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *bu
      * Second pass applies the stretch, copying things to the end of buffer.
      */
 
-    int sign = font->x_scale < 0 ? -1 : +1;
+    int sign = font->upem < 0 ? -1 : +1;
     unsigned int extra_glyphs_needed = 0; // Set during MEASURE, used during CUT
     enum { MEASURE, CUT } /* step_t */;
 

@@ -11,7 +11,6 @@ OPTIONS:
         --version                       Show version number
         --font-file FILENAME            Set font file-name
         --face-index INDEX              Set face index [default: 0]
-        --font-size NUMBER              Font size [default: upem]
         --font-ptem NUMBER              Set font point-size
         --variations LIST               Set comma-separated list of font variations
         --text TEXT                     Set input text
@@ -47,7 +46,6 @@ struct Args {
     version: bool,
     font_file: Option<PathBuf>,
     face_index: u32,
-    font_size: Option<f32>,
     font_ptem: Option<f32>,
     variations: Vec<rustybuzz::Variation>,
     text: Option<String>,
@@ -75,7 +73,6 @@ fn parse_args() -> Result<Args, pico_args::Error> {
         version: args.contains("--version"),
         font_file: args.opt_value_from_str("--font-file")?,
         face_index: args.opt_value_from_str("--face-index")?.unwrap_or(0),
-        font_size: args.opt_value_from_str("--font-size")?,
         font_ptem: args.opt_value_from_str("--font-ptem")?,
         variations: args.opt_value_from_fn("--variations", parse_variations)?.unwrap_or_default(),
         text: args.opt_value_from_str("--text")?,
@@ -139,10 +136,6 @@ fn main() {
 
     if let Some(ptem) = args.font_ptem {
         font.set_ptem(ptem);
-    }
-
-    if let Some(size) = args.font_size {
-        font.set_scale(size as i32, size as i32);
     }
 
     if !args.variations.is_empty() {

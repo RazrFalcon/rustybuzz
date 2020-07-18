@@ -168,8 +168,8 @@ struct trak
         if (HB_DIRECTION_IS_HORIZONTAL(buffer->props.direction)) {
             const TrackData &trackData = this + horizData;
             int tracking = trackData.get_tracking(this, ptem);
-            hb_position_t offset_to_add = c->font->em_scalef_x(tracking / 2);
-            hb_position_t advance_to_add = c->font->em_scalef_x(tracking);
+            hb_position_t offset_to_add =(hb_position_t)roundf(tracking / 2);
+            hb_position_t advance_to_add = (hb_position_t)roundf(tracking);
             foreach_grapheme(buffer, start, end)
             {
                 if (!(buffer->info[start].mask & trak_mask))
@@ -180,8 +180,8 @@ struct trak
         } else {
             const TrackData &trackData = this + vertData;
             int tracking = trackData.get_tracking(this, ptem);
-            hb_position_t offset_to_add = c->font->em_scalef_y(tracking / 2);
-            hb_position_t advance_to_add = c->font->em_scalef_y(tracking);
+            hb_position_t offset_to_add = (hb_position_t)roundf(tracking / 2);
+            hb_position_t advance_to_add = (hb_position_t)roundf(tracking);
             foreach_grapheme(buffer, start, end)
             {
                 if (!(buffer->info[start].mask & trak_mask))

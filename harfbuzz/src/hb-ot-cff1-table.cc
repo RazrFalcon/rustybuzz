@@ -367,15 +367,15 @@ bool OT::cff1::accelerator_t::get_extents(hb_font_t *font, hb_codepoint_t glyph,
         extents->width = 0;
         extents->x_bearing = 0;
     } else {
-        extents->x_bearing = font->em_scalef_x(bounds.min.x.to_real());
-        extents->width = font->em_scalef_x(bounds.max.x.to_real() - bounds.min.x.to_real());
+        extents->x_bearing = (hb_position_t)roundf(bounds.min.x.to_real());
+        extents->width = (hb_position_t)roundf(bounds.max.x.to_real() - bounds.min.x.to_real());
     }
     if (bounds.min.y >= bounds.max.y) {
         extents->height = 0;
         extents->y_bearing = 0;
     } else {
-        extents->y_bearing = font->em_scalef_y(bounds.max.y.to_real());
-        extents->height = font->em_scalef_y(bounds.min.y.to_real() - bounds.max.y.to_real());
+        extents->y_bearing = (hb_position_t)roundf(bounds.max.y.to_real());
+        extents->height = (hb_position_t)roundf(bounds.min.y.to_real() - bounds.max.y.to_real());
     }
 
     return true;

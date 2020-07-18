@@ -44,10 +44,7 @@ struct hb_font_t
 
     hb_face_t *face;
 
-    int32_t x_scale;
-    int32_t y_scale;
-    int64_t x_mult;
-    int64_t y_mult;
+    int32_t upem;
 
     unsigned int x_ppem;
     unsigned int y_ppem;
@@ -58,40 +55,6 @@ struct hb_font_t
     unsigned int num_coords;
     int *coords;
     float *design_coords;
-
-    /* Convert from font-space to user-space */
-    int64_t dir_mult(hb_direction_t direction)
-    {
-        return HB_DIRECTION_IS_VERTICAL(direction) ? y_mult : x_mult;
-    }
-    hb_position_t em_scale_x(int16_t v)
-    {
-        return em_mult(v, x_mult);
-    }
-    hb_position_t em_scale_y(int16_t v)
-    {
-        return em_mult(v, y_mult);
-    }
-    hb_position_t em_scalef_x(float v)
-    {
-        return em_scalef(v, x_scale);
-    }
-    hb_position_t em_scalef_y(float v)
-    {
-        return em_scalef(v, y_scale);
-    }
-    float em_fscale_x(int16_t v)
-    {
-        return em_fscale(v, x_scale);
-    }
-    float em_fscale_y(int16_t v)
-    {
-        return em_fscale(v, y_scale);
-    }
-    hb_position_t em_scale_dir(int16_t v, hb_direction_t direction)
-    {
-        return em_mult(v, dir_mult(direction));
-    }
 
     hb_bool_t get_font_h_extents(hb_font_extents_t *extents)
     {
@@ -200,16 +163,16 @@ struct hb_font_t
     void get_h_extents_with_fallback(hb_font_extents_t *extents)
     {
         if (!get_font_h_extents(extents)) {
-            extents->ascender = y_scale * .8;
-            extents->descender = extents->ascender - y_scale;
+            extents->ascender = upem * .8;
+            extents->descender = extents->ascender - upem;
             extents->line_gap = 0;
         }
     }
     void get_v_extents_with_fallback(hb_font_extents_t *extents)
     {
         if (!get_font_v_extents(extents)) {
-            extents->ascender = x_scale / 2;
-            extents->descender = extents->ascender - x_scale;
+            extents->ascender = upem / 2;
+            extents->descender = extents->ascender - upem;
             extents->line_gap = 0;
         }
     }
@@ -371,26 +334,6 @@ struct hb_font_t
 
         if (size && snprintf(s, size, "gid%u", glyph) < 0)
             *s = '\0';
-    }
-
-    void mults_changed()
-    {
-        signed upem = face->get_upem();
-        x_mult = ((int64_t)x_scale << 16) / upem;
-        y_mult = ((int64_t)y_scale << 16) / upem;
-    }
-
-    hb_position_t em_mult(int16_t v, int64_t mult)
-    {
-        return (hb_position_t)((v * mult) >> 16);
-    }
-    hb_position_t em_scalef(float v, int scale)
-    {
-        return (hb_position_t)roundf(v * scale / face->get_upem());
-    }
-    float em_fscale(int16_t v, int scale)
-    {
-        return (float)v * scale / face->get_upem();
     }
 };
 DECLARE_NULL_INSTANCE(hb_font_t);

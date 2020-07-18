@@ -3,7 +3,6 @@ use std::str::FromStr;
 
 struct Args {
     face_index: u32,
-    font_size: Option<f32>,
     font_ptem: Option<f32>,
     variations: Vec<String>,
     direction: Option<rustybuzz::Direction>,
@@ -25,7 +24,6 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
     let mut parser = pico_args::Arguments::from_vec(args);
     let args = Args {
         face_index: parser.opt_value_from_str("--face-index")?.unwrap_or(0),
-        font_size: parser.opt_value_from_str("--font-size")?,
         font_ptem: parser.opt_value_from_str("--font-ptem")?,
         variations: parser.opt_value_from_fn("--variations", parse_string_list)?.unwrap_or_default(),
         direction: parser.opt_value_from_str("--direction")?,
@@ -70,10 +68,6 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
 
     if let Some(ptem) = args.font_ptem {
         font.set_ptem(ptem);
-    }
-
-    if let Some(size) = args.font_size {
-        font.set_scale(size as i32, size as i32);
     }
 
     if !args.variations.is_empty() {

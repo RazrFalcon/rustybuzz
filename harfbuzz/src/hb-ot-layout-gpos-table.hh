@@ -124,18 +124,18 @@ struct ValueFormat : HBUINT16
         bool horizontal = HB_DIRECTION_IS_HORIZONTAL(c->direction);
 
         if (format & xPlacement)
-            glyph_pos.x_offset += font->em_scale_x(get_short(values++, &ret));
+            glyph_pos.x_offset += get_short(values++, &ret);
         if (format & yPlacement)
-            glyph_pos.y_offset += font->em_scale_y(get_short(values++, &ret));
+            glyph_pos.y_offset += get_short(values++, &ret);
         if (format & xAdvance) {
             if (likely(horizontal))
-                glyph_pos.x_advance += font->em_scale_x(get_short(values, &ret));
+                glyph_pos.x_advance += get_short(values, &ret);
             values++;
         }
         /* y_advance values grow downward but font-space grows upward, hence negation */
         if (format & yAdvance) {
             if (unlikely(!horizontal))
-                glyph_pos.y_advance -= font->em_scale_y(get_short(values, &ret));
+                glyph_pos.y_advance -= get_short(values, &ret);
             values++;
         }
 
@@ -312,9 +312,8 @@ struct AnchorFormat1
 {
     void get_anchor(hb_ot_apply_context_t *c, hb_codepoint_t glyph_id HB_UNUSED, float *x, float *y) const
     {
-        hb_font_t *font = c->font;
-        *x = font->em_fscale_x(xCoordinate);
-        *y = font->em_fscale_y(yCoordinate);
+        *x = (float)xCoordinate;
+        *y = (float)yCoordinate;
     }
 
     bool sanitize(hb_sanitize_context_t *c) const
@@ -350,8 +349,8 @@ struct AnchorFormat2
 
         ret = (x_ppem || y_ppem) &&
               font->get_glyph_contour_point_for_origin(glyph_id, anchorPoint, HB_DIRECTION_LTR, &cx, &cy);
-        *x = ret && x_ppem ? cx : font->em_fscale_x(xCoordinate);
-        *y = ret && y_ppem ? cy : font->em_fscale_y(yCoordinate);
+        *x = ret && x_ppem ? cx : (float)xCoordinate;
+        *y = ret && y_ppem ? cy : (float)yCoordinate;
     }
 
     bool sanitize(hb_sanitize_context_t *c) const
@@ -374,8 +373,8 @@ struct AnchorFormat3
     void get_anchor(hb_ot_apply_context_t *c, hb_codepoint_t glyph_id HB_UNUSED, float *x, float *y) const
     {
         hb_font_t *font = c->font;
-        *x = font->em_fscale_x(xCoordinate);
-        *y = font->em_fscale_y(yCoordinate);
+        *x = (float)xCoordinate;
+        *y = (float)yCoordinate;
 
         if (font->x_ppem || font->num_coords)
             *x += (this + xDeviceTable).get_x_delta(font, c->var_store);

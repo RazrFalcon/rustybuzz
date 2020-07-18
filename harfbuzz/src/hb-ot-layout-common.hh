@@ -1993,12 +1993,12 @@ struct HintingDevice
 private:
     hb_position_t get_x_delta(hb_font_t *font) const
     {
-        return get_delta(font->x_ppem, font->x_scale);
+        return get_delta(font->x_ppem, font->upem);
     }
 
     hb_position_t get_y_delta(hb_font_t *font) const
     {
-        return get_delta(font->y_ppem, font->y_scale);
+        return get_delta(font->y_ppem, font->upem);
     }
 
 public:
@@ -2072,12 +2072,12 @@ struct VariationDevice
 private:
     hb_position_t get_x_delta(hb_font_t *font, const VariationStore &store) const
     {
-        return font->em_scalef_x(get_delta(font, store));
+        return (hb_position_t)roundf(get_delta(font, store));
     }
 
     hb_position_t get_y_delta(hb_font_t *font, const VariationStore &store) const
     {
-        return font->em_scalef_y(get_delta(font, store));
+        return (hb_position_t)roundf(get_delta(font, store));
     }
 
     void record_variation_index(hb_set_t *layout_variation_indices) const

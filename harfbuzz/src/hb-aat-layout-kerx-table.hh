@@ -287,12 +287,12 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat1
                                 o.attach_chain() = 0;
                                 o.y_offset = 0;
                             } else if (o.attach_type()) {
-                                o.y_offset += c->font->em_scale_y(v);
+                                o.y_offset += v;
                                 buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
                             }
                         } else if (buffer->info[idx].mask & kern_mask) {
-                            o.x_advance += c->font->em_scale_x(v);
-                            o.x_offset += c->font->em_scale_x(v);
+                            o.x_advance += v;
+                            o.x_offset += v;
                         }
                     } else {
                         if (crossStream) {
@@ -302,12 +302,12 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat1
                                 o.attach_chain() = 0;
                                 o.x_offset = 0;
                             } else if (o.attach_type()) {
-                                o.x_offset += c->font->em_scale_x(v);
+                                o.x_offset += v;
                                 buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
                             }
                         } else if (buffer->info[idx].mask & kern_mask) {
-                            o.y_advance += c->font->em_scale_y(v);
-                            o.y_offset += c->font->em_scale_y(v);
+                            o.y_advance += v;
+                            o.y_offset += v;
                         }
                     }
                 }
@@ -517,10 +517,8 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
                     const Anchor &currAnchor = c->ankr_table->get_anchor(
                         c->buffer->cur().codepoint, currAnchorPoint, c->sanitizer.get_num_glyphs());
 
-                    o.x_offset =
-                        c->font->em_scale_x(markAnchor.xCoordinate) - c->font->em_scale_x(currAnchor.xCoordinate);
-                    o.y_offset =
-                        c->font->em_scale_y(markAnchor.yCoordinate) - c->font->em_scale_y(currAnchor.yCoordinate);
+                    o.x_offset = markAnchor.xCoordinate - currAnchor.xCoordinate;
+                    o.y_offset = markAnchor.yCoordinate - currAnchor.yCoordinate;
                 } break;
 
                 case 2: /* Control Point Coordinate Actions. */
@@ -533,8 +531,8 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
                     int currX = *data++;
                     int currY = *data++;
 
-                    o.x_offset = c->font->em_scale_x(markX) - c->font->em_scale_x(currX);
-                    o.y_offset = c->font->em_scale_y(markY) - c->font->em_scale_y(currY);
+                    o.x_offset = markX - currX;
+                    o.y_offset = markY - currY;
                 } break;
                 }
                 o.attach_type() = ATTACH_TYPE_MARK;

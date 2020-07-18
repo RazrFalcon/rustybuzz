@@ -42,7 +42,7 @@ template <typename Driver> struct hb_kern_machine_t
     }
 
     HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
-    void kern(hb_font_t *font, hb_buffer_t *buffer, hb_mask_t kern_mask, bool scale = true) const
+    void kern(hb_font_t *font, hb_buffer_t *buffer, hb_mask_t kern_mask) const
     {
         OT::hb_ot_apply_context_t c(1, font, buffer);
         c.set_lookup_mask(kern_mask);
@@ -74,8 +74,6 @@ template <typename Driver> struct hb_kern_machine_t
                 goto skip;
 
             if (horizontal) {
-                if (scale)
-                    kern = font->em_scale_x(kern);
                 if (crossStream) {
                     pos[j].y_offset = kern;
                     buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
@@ -87,8 +85,6 @@ template <typename Driver> struct hb_kern_machine_t
                     pos[j].x_offset += kern2;
                 }
             } else {
-                if (scale)
-                    kern = font->em_scale_y(kern);
                 if (crossStream) {
                     pos[j].x_offset = kern;
                     buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;

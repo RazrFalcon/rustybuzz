@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - `hb_font_funcs_t`. Only the embedded TrueType implementation is used.
 - `hb_unicode_funcs_t`. Only the embedded Unicode implementation is used.
+- `Font::set_scale`/`hb_font_set_scale`/`--font-size`. Shaping is always in font units now.
+  This simplifies the code quite a lot.
 - Shaping plan caching.
 - Fallback shaper.
 - Unused `hdmx` table.

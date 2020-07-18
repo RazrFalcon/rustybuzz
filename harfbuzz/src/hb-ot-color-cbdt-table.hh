@@ -80,10 +80,10 @@ struct SmallGlyphMetrics
 
     void get_extents(hb_font_t *font, hb_glyph_extents_t *extents) const
     {
-        extents->x_bearing = font->em_scale_x(bearingX);
-        extents->y_bearing = font->em_scale_y(bearingY);
-        extents->width = font->em_scale_x(width);
-        extents->height = font->em_scale_y(-static_cast<int>(height));
+        extents->x_bearing = bearingX;
+        extents->y_bearing = bearingY;
+        extents->width = width;
+        extents->height = -static_cast<int>(height);
     }
 
     HBUINT8 height;

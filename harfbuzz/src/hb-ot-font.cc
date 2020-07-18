@@ -87,7 +87,7 @@ void hb_ot_get_glyph_h_advances(hb_font_t *font,
     const OT::hmtx_accelerator_t &hmtx = *font->face->table.hmtx;
 
     for (unsigned int i = 0; i < count; i++) {
-        *first_advance = font->em_scale_x(hmtx.get_advance(*first_glyph, font));
+        *first_advance = hmtx.get_advance(*first_glyph, font);
         first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
         first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
     }
@@ -103,7 +103,7 @@ void hb_ot_get_glyph_v_advances(hb_font_t *font,
     const OT::vmtx_accelerator_t &vmtx = *font->face->table.vmtx;
 
     for (unsigned int i = 0; i < count; i++) {
-        *first_advance = font->em_scale_y(-(int)vmtx.get_advance(*first_glyph, font));
+        *first_advance = -(int)vmtx.get_advance(*first_glyph, font);
         first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
         first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
     }
@@ -115,7 +115,7 @@ hb_bool_t hb_ot_get_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_pos
 
     const OT::VORG &VORG = *font->face->table.VORG;
     if (VORG.has_data()) {
-        *y = font->em_scale_y(VORG.get_y_origin(glyph));
+        *y = VORG.get_y_origin(glyph);
         return true;
     }
 
@@ -123,7 +123,7 @@ hb_bool_t hb_ot_get_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_pos
     if (font->face->table.glyf->get_extents(font, glyph, &extents)) {
         const OT::vmtx_accelerator_t &vmtx = *font->face->table.vmtx;
         hb_position_t tsb = vmtx.get_side_bearing(font, glyph);
-        *y = extents.y_bearing + font->em_scale_y(tsb);
+        *y = extents.y_bearing + tsb;
         return true;
     }
 

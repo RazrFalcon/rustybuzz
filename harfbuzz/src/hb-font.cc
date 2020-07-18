@@ -463,9 +463,6 @@ DEFINE_NULL_INSTANCE(hb_font_t) = {
     const_cast<hb_face_t *>(&_hb_Null_hb_face_t),
 
     1000,    /* x_scale */
-    1000,    /* y_scale */
-    1 << 16, /* x_mult */
-    1 << 16, /* y_mult */
 
     0, /* x_ppem */
     0, /* y_ppem */
@@ -489,8 +486,7 @@ static hb_font_t *_hb_font_create(hb_face_t *face)
 
     hb_face_make_immutable(face);
     font->face = hb_face_reference(face);
-    font->x_scale = font->y_scale = hb_face_get_upem(face);
-    font->x_mult = font->y_mult = 1 << 16;
+    font->upem = hb_face_get_upem(face);
 
     return font;
 }
@@ -590,32 +586,6 @@ hb_bool_t hb_font_is_immutable(hb_font_t *font)
 }
 
 /**
- * hb_font_set_face:
- * @font: a font.
- * @face: new face.
- *
- * Sets font-face of @font.
- *
- * Since: 1.4.3
- **/
-void hb_font_set_face(hb_font_t *font, hb_face_t *face)
-{
-    if (hb_object_is_immutable(font))
-        return;
-
-    if (unlikely(!face))
-        face = hb_face_get_empty();
-
-    hb_face_t *old = font->face;
-
-    hb_face_make_immutable(face);
-    font->face = hb_face_reference(face);
-    font->mults_changed();
-
-    hb_face_destroy(old);
-}
-
-/**
  * hb_font_get_face:
  * @font: a font.
  *
@@ -628,44 +598,6 @@ void hb_font_set_face(hb_font_t *font, hb_face_t *face)
 hb_face_t *hb_font_get_face(hb_font_t *font)
 {
     return font->face;
-}
-
-/**
- * hb_font_set_scale:
- * @font: a font.
- * @x_scale:
- * @y_scale:
- *
- *
- *
- * Since: 0.9.2
- **/
-void hb_font_set_scale(hb_font_t *font, int x_scale, int y_scale)
-{
-    if (hb_object_is_immutable(font))
-        return;
-
-    font->x_scale = x_scale;
-    font->y_scale = y_scale;
-    font->mults_changed();
-}
-
-/**
- * hb_font_get_scale:
- * @font: a font.
- * @x_scale: (out):
- * @y_scale: (out):
- *
- *
- *
- * Since: 0.9.2
- **/
-void hb_font_get_scale(hb_font_t *font, int *x_scale, int *y_scale)
-{
-    if (x_scale)
-        *x_scale = font->x_scale;
-    if (y_scale)
-        *y_scale = font->y_scale;
 }
 
 /**
