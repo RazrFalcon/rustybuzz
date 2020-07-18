@@ -184,7 +184,7 @@ struct sbix
             if (unlikely(!count))
                 return Null(SBIXStrike);
 
-            unsigned int requested_ppem = hb_max(font->x_ppem, font->y_ppem);
+            unsigned int requested_ppem = hb_max(hb_font_get_ppem_x(font), hb_font_get_ppem_y(font));
             if (!requested_ppem)
                 requested_ppem = 1 << 30; /* Choose largest strike. */
             /* TODO Add DPI sensitivity as well? */
@@ -245,7 +245,7 @@ struct sbix
 
             /* Convert to font units. */
             if (strike_ppem) {
-                float scale = font->face->get_upem() / (float)strike_ppem;
+                float scale = hb_font_get_upem(font) / (float)strike_ppem;
                 extents->x_bearing = (hb_position_t)roundf(extents->x_bearing * scale);
                 extents->y_bearing = (hb_position_t)roundf(extents->y_bearing * scale);
                 extents->width = (hb_position_t)roundf(extents->width * scale);

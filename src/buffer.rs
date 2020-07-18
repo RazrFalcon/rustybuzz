@@ -185,7 +185,7 @@ impl<'a> Read for BufferSerializer<'a> {
                         &mut bytes_written,
                         self.font
                             .map(|f| f.as_ptr())
-                            .unwrap_or(std::ptr::null_mut()),
+                            .unwrap_or(std::ptr::null()),
                         self.format.into(),
                         self.flags.bits(),
                     )

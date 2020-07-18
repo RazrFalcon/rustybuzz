@@ -1993,12 +1993,12 @@ struct HintingDevice
 private:
     hb_position_t get_x_delta(hb_font_t *font) const
     {
-        return get_delta(font->x_ppem, font->upem);
+        return get_delta(hb_font_get_ppem_x(font), hb_font_get_upem(font));
     }
 
     hb_position_t get_y_delta(hb_font_t *font) const
     {
-        return get_delta(font->y_ppem, font->upem);
+        return get_delta(hb_font_get_ppem_y(font), hb_font_get_upem(font));
     }
 
 public:
@@ -2095,7 +2095,7 @@ private:
 private:
     float get_delta(hb_font_t *font, const VariationStore &store) const
     {
-        return store.get_delta(outerIndex, innerIndex, font->coords, font->num_coords);
+        return store.get_delta(outerIndex, innerIndex, hb_font_get_coords(font), hb_font_get_num_coords(font));
     }
 
 protected:

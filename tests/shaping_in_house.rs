@@ -510,48 +510,6 @@ fn cluster_002() {
 }
 
 #[test]
-fn collections_001() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/DFONT.dfont",
-            "\u{2026}\u{0020}\u{002E}",
-            "--face-index=0",
-        ),
-        "ellipsis=0+723|\
-         space=1+250|\
-         period=2+241"
-    );
-}
-
-#[test]
-fn collections_002() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/DFONT.dfont",
-            "\u{2026}\u{0020}\u{002E}",
-            "--face-index=1",
-        ),
-        "gid0=0+1000|\
-         gid0=1+1000|\
-         gid0=2+1000"
-    );
-}
-
-#[test]
-fn collections_003() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/DFONT.dfont",
-            "\u{2026}\u{0020}\u{002E}",
-            "--face-index=2",
-        ),
-        "gid0=0+1000|\
-         gid0=1+1000|\
-         gid0=2+1000"
-    );
-}
-
-#[test]
 fn collections_004() {
     assert_eq!(
         shape(
@@ -576,20 +534,6 @@ fn collections_005() {
         "ellipsis=0+723|\
          space=1+250|\
          period=2+241"
-    );
-}
-
-#[test]
-fn collections_006() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/TTC.ttc",
-            "\u{2026}\u{0020}\u{002E}",
-            "--face-index=2",
-        ),
-        "gid0=0+1000|\
-         gid0=1+1000|\
-         gid0=2+1000"
     );
 }
 
@@ -953,26 +897,6 @@ fn indic_consonant_with_stacker_004() {
             "--no-glyph-names",
         ),
         "1=0+1539"
-    );
-}
-
-#[test]
-fn indic_decompose_001() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/932ad5132c2761297c74e9976fe25b08e5ffa10b.ttf",
-            "\u{09DC}\u{0020}\u{09DD}\u{0020}\u{09A1}\u{09BC}\u{0020}\u{09A2}\u{09BC}",
-            "",
-        ),
-        "bn_rha=0+1024|\
-         space=1+1024|\
-         bn_yya=2+1024|\
-         space=3+1024|\
-         bn_dda=4+1024|\
-         bn_nukta=4+1024|\
-         space=6+1024|\
-         bn_ddha=7+1024|\
-         bn_nukta=7+1024"
     );
 }
 

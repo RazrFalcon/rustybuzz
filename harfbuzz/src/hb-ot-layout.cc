@@ -108,7 +108,7 @@ bool hb_ot_layout_has_cross_kerning(hb_face_t *face)
 
 void hb_ot_layout_kern(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
-    hb_blob_t *blob = font->face->table.kern.get_blob();
+    hb_blob_t *blob = hb_font_get_face(font)->table.kern.get_blob();
     const AAT::kern &kern = *blob->as<AAT::kern>();
 
     AAT::hb_aat_apply_context_t c(plan, font, buffer, blob);
@@ -222,7 +222,7 @@ static void _hb_ot_layout_set_glyph_props(hb_font_t *font, hb_buffer_t *buffer)
 {
     _hb_buffer_assert_gsubgpos_vars(buffer);
 
-    const OT::GDEF &gdef = *font->face->table.GDEF->table;
+    const OT::GDEF &gdef = *hb_font_get_face(font)->table.GDEF->table;
     unsigned int count = buffer->len;
     for (unsigned int i = 0; i < count; i++) {
         _hb_glyph_info_set_glyph_props(&buffer->info[i], gdef.get_glyph_props(buffer->info[i].codepoint));
@@ -1631,7 +1631,7 @@ hb_ot_map_t::apply(const Proxy &proxy, const hb_ot_shape_plan_t *plan, hb_font_t
 
 void hb_ot_map_t::substitute(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
-    GSUBProxy proxy(font->face);
+    GSUBProxy proxy(hb_font_get_face(font));
     if (!buffer->message(font, "start table GSUB"))
         return;
     apply(proxy, plan, font, buffer);
@@ -1640,7 +1640,7 @@ void hb_ot_map_t::substitute(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb
 
 void hb_ot_map_t::position(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
-    GPOSProxy proxy(font->face);
+    GPOSProxy proxy(hb_font_get_face(font));
     if (!buffer->message(font, "start table GPOS"))
         return;
     apply(proxy, plan, font, buffer);

@@ -29,7 +29,6 @@
 #define HB_OT_VAR_GVAR_TABLE_HH
 
 #include "hb-open-type.hh"
-#include "hb-font.hh"
 
 /*
  * gvar -- Glyph Variation Table
@@ -534,7 +533,7 @@ public:
         apply_deltas_to_points(hb_codepoint_t glyph, hb_font_t *font, const hb_array_t<contour_point_t> points) const
         {
             /* num_coords should exactly match gvar's axisCount due to how GlyphVariationData tuples are aligned */
-            if (!font->num_coords || font->num_coords != table->axisCount)
+            if (!hb_font_get_num_coords(font) || hb_font_get_num_coords(font) != table->axisCount)
                 return true;
 
             hb_bytes_t var_data_bytes = table->get_glyph_var_data_bytes(table.get_blob(), glyph);
@@ -559,8 +558,8 @@ public:
                 if (points[i].is_end_point)
                     end_points.push(i);
 
-            int *coords = font->coords;
-            unsigned num_coords = font->num_coords;
+            const int *coords = hb_font_get_coords(font);
+            unsigned num_coords = hb_font_get_num_coords(font);
             hb_array_t<const F2DOT14> shared_tuples =
                 (table + table->sharedTuples).as_array(table->sharedTupleCount * table->axisCount);
             do {

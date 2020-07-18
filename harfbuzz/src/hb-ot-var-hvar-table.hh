@@ -121,7 +121,7 @@ struct HVARVVAR
     float get_advance_var(hb_codepoint_t glyph, hb_font_t *font) const
     {
         unsigned int varidx = (this + advMap).map(glyph);
-        return (this + varStore).get_delta(varidx, font->coords, font->num_coords);
+        return (this + varStore).get_delta(varidx, hb_font_get_coords(font), hb_font_get_num_coords(font));
     }
 
     float get_side_bearing_var(hb_codepoint_t glyph, const int *coords, unsigned int coord_count) const

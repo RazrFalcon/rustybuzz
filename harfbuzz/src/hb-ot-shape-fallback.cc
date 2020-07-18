@@ -189,10 +189,10 @@ static inline void position_mark(const hb_ot_shape_plan_t *plan HB_UNUSED,
                                  unsigned int combining_class)
 {
     hb_glyph_extents_t mark_extents;
-    if (!font->get_glyph_extents(buffer->info[i].codepoint, &mark_extents))
+    if (!hb_font_get_glyph_extents(font, buffer->info[i].codepoint, &mark_extents))
         return;
 
-    hb_position_t y_gap = font->upem / 16;
+    hb_position_t y_gap = hb_font_get_upem(font) / 16;
 
     hb_glyph_position_t &pos = buffer->pos[i];
     pos.x_offset = pos.y_offset = 0;
@@ -295,7 +295,7 @@ static inline void position_around_base(const hb_ot_shape_plan_t *plan,
     buffer->unsafe_to_break(base, end);
 
     hb_glyph_extents_t base_extents;
-    if (!font->get_glyph_extents(buffer->info[base].codepoint, &base_extents)) {
+    if (!hb_font_get_glyph_extents(font, buffer->info[base].codepoint, &base_extents)) {
         /* If extents don't work, zero marks and go home. */
         zero_mark_advances(buffer, base + 1, end, adjust_offsets_when_zeroing);
         return;
@@ -305,7 +305,7 @@ static inline void position_around_base(const hb_ot_shape_plan_t *plan,
      * Generally a better idea.  Also works for zero-ink glyphs.  See:
      * https://github.com/harfbuzz/harfbuzz/issues/1532 */
     base_extents.x_bearing = 0;
-    base_extents.width = font->get_glyph_h_advance(buffer->info[base].codepoint);
+    base_extents.width = hb_font_get_glyph_h_advance(font, buffer->info[base].codepoint);
 
     unsigned int lig_id = _hb_glyph_info_get_lig_id(&buffer->info[base]);
     /* Use integer for num_lig_components such that it doesn't convert to unsigned
@@ -449,35 +449,35 @@ void _hb_ot_shape_fallback_spaces(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_f
             case HB_SPACE_EM_6:
             case HB_SPACE_EM_16:
                 if (horizontal)
-                    pos[i].x_advance = +(font->upem + ((int)space_type) / 2) / (int)space_type;
+                    pos[i].x_advance = +(hb_font_get_upem(font) + ((int)space_type) / 2) / (int)space_type;
                 else
-                    pos[i].y_advance = -(font->upem + ((int)space_type) / 2) / (int)space_type;
+                    pos[i].y_advance = -(hb_font_get_upem(font) + ((int)space_type) / 2) / (int)space_type;
                 break;
 
             case HB_SPACE_4_EM_18:
                 if (horizontal)
-                    pos[i].x_advance = (int64_t) + font->upem * 4 / 18;
+                    pos[i].x_advance = (int64_t) + hb_font_get_upem(font) * 4 / 18;
                 else
-                    pos[i].y_advance = (int64_t)-font->upem * 4 / 18;
+                    pos[i].y_advance = (int64_t) - hb_font_get_upem(font) * 4 / 18;
                 break;
 
             case HB_SPACE_FIGURE:
                 for (char u = '0'; u <= '9'; u++)
-                    if (font->get_nominal_glyph(u, &glyph)) {
+                    if (hb_font_get_nominal_glyph(font, u, &glyph)) {
                         if (horizontal)
-                            pos[i].x_advance = font->get_glyph_h_advance(glyph);
+                            pos[i].x_advance = hb_font_get_glyph_h_advance(font, glyph);
                         else
-                            pos[i].y_advance = font->get_glyph_v_advance(glyph);
+                            pos[i].y_advance = hb_font_get_glyph_v_advance(font, glyph);
                         break;
                     }
                 break;
 
             case HB_SPACE_PUNCTUATION:
-                if (font->get_nominal_glyph('.', &glyph) || font->get_nominal_glyph(',', &glyph)) {
+                if (hb_font_get_nominal_glyph(font, '.', &glyph) || hb_font_get_nominal_glyph(font, ',', &glyph)) {
                     if (horizontal)
-                        pos[i].x_advance = font->get_glyph_h_advance(glyph);
+                        pos[i].x_advance = hb_font_get_glyph_h_advance(font, glyph);
                     else
-                        pos[i].y_advance = font->get_glyph_v_advance(glyph);
+                        pos[i].y_advance = hb_font_get_glyph_v_advance(font, glyph);
                 }
                 break;
 

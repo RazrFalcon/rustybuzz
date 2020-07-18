@@ -30,7 +30,6 @@
 
 #include "hb-shape-plan.hh"
 #include "hb-buffer.hh"
-#include "hb-font.hh"
 #include "hb-machinery.hh"
 
 /**
@@ -63,11 +62,15 @@
  *
  * Since: 0.9.2
  **/
-hb_bool_t hb_shape(hb_font_t *font, hb_buffer_t *buffer, const hb_feature_t *features, unsigned int num_features)
+hb_bool_t hb_shape(const hb_font_t *font, hb_buffer_t *buffer, const hb_feature_t *features, unsigned int num_features)
 {
-    hb_shape_plan_t *shape_plan =
-        hb_shape_plan_create(font->face, &buffer->props, features, num_features, font->coords, font->num_coords);
-    hb_bool_t res = hb_shape_plan_execute(shape_plan, font, buffer, features, num_features);
+    hb_shape_plan_t *shape_plan = hb_shape_plan_create(hb_font_get_face((hb_font_t *)font),
+                                                       &buffer->props,
+                                                       features,
+                                                       num_features,
+                                                       hb_font_get_coords((hb_font_t *)font),
+                                                       hb_font_get_num_coords((hb_font_t *)font));
+    hb_bool_t res = hb_shape_plan_execute(shape_plan, (hb_font_t *)font, buffer, features, num_features);
     hb_shape_plan_destroy(shape_plan);
 
     if (res)

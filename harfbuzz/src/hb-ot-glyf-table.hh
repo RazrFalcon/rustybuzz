@@ -312,7 +312,7 @@ struct glyf
             {
                 /* Undocumented rasterizer behavior: shift glyph to the left by (lsb - xMin), i.e., xMin = lsb */
                 /* extents->x_bearing = hb_min (glyph_header.xMin, glyph_header.xMax); */
-                extents->x_bearing = font->face->table.hmtx->get_side_bearing(gid);
+                extents->x_bearing = hb_font_get_face(font)->table.hmtx->get_side_bearing(gid);
                 extents->y_bearing = hb_max(yMin, yMax);
                 extents->width = hb_max(xMin, xMax) - hb_min(xMin, xMax);
                 extents->height = hb_min(yMin, yMax) - hb_max(yMin, yMax);
@@ -644,7 +644,7 @@ struct glyf
                 return false; /* empty glyph */
             }
 
-            hb_face_t *face = font->face;
+            hb_face_t *face = hb_font_get_face(font);
 
             /* Init phantom points */
             if (unlikely(!points.resize(points.length + PHANTOM_COUNT)))
@@ -899,7 +899,7 @@ struct glyf
             bool success = false;
 
             contour_point_t phantoms[PHANTOM_COUNT];
-            if (likely(font->num_coords == face->table.gvar->get_axis_count()))
+            if (likely(hb_font_get_num_coords(font) == face->table.gvar->get_axis_count()))
                 success = get_points(font, gid, points_aggregator_t(font, nullptr, phantoms));
 
             if (unlikely(!success))
@@ -924,7 +924,7 @@ struct glyf
         {
             if (unlikely(gid >= num_glyphs))
                 return false;
-            if (font->num_coords && font->num_coords == face->table.gvar->get_axis_count())
+            if (hb_font_get_num_coords(font) && hb_font_get_num_coords(font) == face->table.gvar->get_axis_count())
                 return get_points(font, gid, points_aggregator_t(font, extents, nullptr));
             return glyph_for_gid(gid).get_extents(font, extents);
         }

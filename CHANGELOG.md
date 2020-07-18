@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_script_t`
 - `hb_feature_t`
 - `hb_variation_t`
+- `hb_font_t`
+
+### Changed
+- Rename `Font::from_data` into `Font::from_slice`.
+- Font is parsed via `ttf-parser` first.
+  And if the parsing fails, the `Font` will not be created.
+  `harfbuzz` allows malfomed fonts.
 
 ### Removed
 - `hb_font_funcs_t`. Only the embedded TrueType implementation is used.

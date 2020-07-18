@@ -434,7 +434,7 @@ static void apply_stch(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *bu
      * Second pass applies the stretch, copying things to the end of buffer.
      */
 
-    int sign = font->upem < 0 ? -1 : +1;
+    int sign = hb_font_get_upem(font) < 0 ? -1 : +1;
     unsigned int extra_glyphs_needed = 0; // Set during MEASURE, used during CUT
     enum { MEASURE, CUT } /* step_t */;
 
@@ -465,7 +465,7 @@ static void apply_stch(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *bu
             unsigned int end = i;
             while (i && hb_in_range<uint8_t>(info[i - 1].arabic_shaping_action(), STCH_FIXED, STCH_REPEATING)) {
                 i--;
-                hb_position_t width = font->get_glyph_h_advance(info[i].codepoint);
+                hb_position_t width = hb_font_get_glyph_h_advance(font, info[i].codepoint);
                 if (info[i].arabic_shaping_action() == STCH_FIXED) {
                     w_fixed += width;
                     n_fixed++;
@@ -520,7 +520,7 @@ static void apply_stch(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *bu
                 buffer->unsafe_to_break(context, end);
                 hb_position_t x_offset = 0;
                 for (unsigned int k = end; k > start; k--) {
-                    hb_position_t width = font->get_glyph_h_advance(info[k - 1].codepoint);
+                    hb_position_t width = hb_font_get_glyph_h_advance(font, info[k - 1].codepoint);
 
                     unsigned int repeat = 1;
                     if (info[k - 1].arabic_shaping_action() == STCH_REPEATING)

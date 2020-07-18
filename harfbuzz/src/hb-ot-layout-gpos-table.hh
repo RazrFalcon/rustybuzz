@@ -142,8 +142,8 @@ struct ValueFormat : HBUINT16
         if (!has_device())
             return ret;
 
-        bool use_x_device = font->x_ppem || font->num_coords;
-        bool use_y_device = font->y_ppem || font->num_coords;
+        bool use_x_device = hb_font_get_ppem_x(font) || hb_font_get_num_coords(font);
+        bool use_y_device = hb_font_get_ppem_y(font) || hb_font_get_num_coords(font);
 
         if (!use_x_device && !use_y_device)
             return ret;
@@ -342,13 +342,13 @@ struct AnchorFormat2
         return;
 #endif
 
-        unsigned int x_ppem = font->x_ppem;
-        unsigned int y_ppem = font->y_ppem;
+        unsigned int x_ppem = hb_font_get_ppem_x(font);
+        unsigned int y_ppem = hb_font_get_ppem_y(font);
         hb_position_t cx = 0, cy = 0;
         bool ret;
 
         ret = (x_ppem || y_ppem) &&
-              font->get_glyph_contour_point_for_origin(glyph_id, anchorPoint, HB_DIRECTION_LTR, &cx, &cy);
+              hb_font_get_glyph_contour_point_for_origin(font, glyph_id, anchorPoint, HB_DIRECTION_LTR, &cx, &cy);
         *x = ret && x_ppem ? cx : (float)xCoordinate;
         *y = ret && y_ppem ? cy : (float)yCoordinate;
     }
@@ -376,9 +376,9 @@ struct AnchorFormat3
         *x = (float)xCoordinate;
         *y = (float)yCoordinate;
 
-        if (font->x_ppem || font->num_coords)
+        if (hb_font_get_ppem_x(font) || hb_font_get_num_coords(font))
             *x += (this + xDeviceTable).get_x_delta(font, c->var_store);
-        if (font->y_ppem || font->num_coords)
+        if (hb_font_get_ppem_y(font) || hb_font_get_num_coords(font))
             *y += (this + yDeviceTable).get_y_delta(font, c->var_store);
     }
 

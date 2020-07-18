@@ -327,11 +327,12 @@ unsigned int hb_buffer_serialize_glyphs(hb_buffer_t *buffer,
                                         char *buf,
                                         unsigned int buf_size,
                                         unsigned int *buf_consumed,
-                                        hb_font_t *font,
+                                        const hb_font_t *font,
                                         hb_buffer_serialize_format_t format,
                                         hb_buffer_serialize_flags_t flags)
 {
     assert(start <= end && end <= buffer->len);
+    assert(font);
 
     unsigned int sconsumed;
     if (!buf_consumed)
@@ -349,15 +350,12 @@ unsigned int hb_buffer_serialize_glyphs(hb_buffer_t *buffer,
     if (unlikely(start == end))
         return 0;
 
-    if (!font)
-        font = hb_font_get_empty();
-
     switch (format) {
     case HB_BUFFER_SERIALIZE_FORMAT_TEXT:
-        return _hb_buffer_serialize_glyphs_text(buffer, start, end, buf, buf_size, buf_consumed, font, flags);
+        return _hb_buffer_serialize_glyphs_text(buffer, start, end, buf, buf_size, buf_consumed, (hb_font_t *)font, flags);
 
     case HB_BUFFER_SERIALIZE_FORMAT_JSON:
-        return _hb_buffer_serialize_glyphs_json(buffer, start, end, buf, buf_size, buf_consumed, font, flags);
+        return _hb_buffer_serialize_glyphs_json(buffer, start, end, buf, buf_size, buf_consumed, (hb_font_t *)font, flags);
 
     default:
     case HB_BUFFER_SERIALIZE_FORMAT_INVALID:

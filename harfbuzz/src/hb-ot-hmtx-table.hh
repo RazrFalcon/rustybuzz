@@ -117,12 +117,13 @@ template <typename T, typename H> struct hmtxvmtx
         {
             int side_bearing = get_side_bearing(glyph);
 
-            if (unlikely(glyph >= num_metrics) || !font->num_coords)
+            if (unlikely(glyph >= num_metrics) || !hb_font_get_num_coords(font))
                 return side_bearing;
 
             if (var_table.get_length())
-                return side_bearing +
-                       var_table->get_side_bearing_var(glyph, font->coords, font->num_coords); // TODO Optimize?!
+                return side_bearing + var_table->get_side_bearing_var(glyph,
+                                                                      hb_font_get_coords(font),
+                                                                      hb_font_get_num_coords(font)); // TODO Optimize?!
 
             return _glyf_get_side_bearing_var(font, glyph, T::tableTag == HB_OT_TAG_vmtx);
         }
@@ -146,7 +147,7 @@ template <typename T, typename H> struct hmtxvmtx
         {
             unsigned int advance = get_advance(glyph);
 
-            if (unlikely(glyph >= num_metrics) || !font->num_coords)
+            if (unlikely(glyph >= num_metrics) || !hb_font_get_num_coords(font))
                 return advance;
 
             if (var_table.get_length())

@@ -46,10 +46,10 @@ bool _hb_ot_metrics_get_position_common(hb_font_t *font,
                                         hb_ot_metrics_tag_t metrics_tag,
                                         hb_position_t *position /* OUT.  May be NULL. */)
 {
-    hb_face_t *face = font->face;
+    hb_face_t *face = hb_font_get_face(font);
     switch ((unsigned)metrics_tag) {
 #ifndef HB_NO_VAR
-#define GET_VAR face->table.MVAR->get_var(metrics_tag, font->coords, font->num_coords)
+#define GET_VAR face->table.MVAR->get_var(metrics_tag, hb_font_get_coords(font), hb_font_get_num_coords(font))
 #else
 #define GET_VAR .0f
 #endif

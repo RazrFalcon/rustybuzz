@@ -31,7 +31,6 @@
 
 #include "hb.hh"
 
-#include "hb-font.hh"
 #include "hb-buffer.hh"
 #include "hb-open-type.hh"
 #include "hb-ot-shape.hh"

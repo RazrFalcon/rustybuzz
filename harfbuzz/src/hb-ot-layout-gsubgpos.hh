@@ -614,7 +614,7 @@ struct hb_ot_apply_context_t : hb_dispatch_context_t<hb_ot_apply_context_t, bool
         : iter_input()
         , iter_context()
         , font(font_)
-        , face(font->face)
+        , face(hb_font_get_face(font))
         , buffer(buffer_)
         , recurse_func(nullptr)
         , gdef(*face->table.GDEF->table)

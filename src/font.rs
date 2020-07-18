@@ -68,52 +68,104 @@ impl Drop for Face<'_> {
 
 
 /// A font handle.
-///
-/// Combines `hb_font_t`, `hb_face_t` and `hb_blob_t`.
 pub struct Font<'a> {
-    ptr: NonNull<ffi::hb_font_t>,
-    #[allow(dead_code)] face: Face<'a>,
+    ttfp_face: ttf_parser::Face<'a>,
+    hb_face: Face<'a>,
+    upem: i32,
+    ppem: Option<(u32, u32)>,
+    ptem: Option<f32>,
+    coords: Vec<i32>,
 }
 
 impl<'a> Font<'a> {
     /// Creates a new `Font` from data.
     ///
     /// Data will be referenced, not owned.
-    pub fn from_data(data: &'a [u8], face_index: u32) -> Option<Self> {
+    pub fn from_slice(data: &'a [u8], face_index: u32) -> Option<Self> {
+        let ttfp_face = ttf_parser::Face::from_slice(data, face_index).ok()?;
+        let upem = ttfp_face.units_per_em()? as i32;
+
         let face = Face::from_data(data, face_index)?;
-        let ptr = NonNull::new(unsafe { ffi::hb_font_create(face.as_ptr()) })?;
         Some(Font {
-            ptr,
-            face,
+            ttfp_face,
+            hb_face: face,
+            upem,
+            ppem: None,
+            ptem: None,
+            coords: Vec::new(),
         })
     }
 
-    pub(crate) fn as_ptr(&self) -> *mut ffi::hb_font_t {
-        self.ptr.as_ptr()
+    pub(crate) fn as_ptr(&self) -> *const ffi::rb_font_t {
+        self as *const _ as *const ffi::rb_font_t
+    }
+
+    /// Sets pixels per EM.
+    ///
+    /// Used during raster glyphs processing and hinting.
+    ///
+    /// `None` by default.
+    pub fn set_ppem(&mut self, ppem: Option<(u32, u32)>) {
+        self.ppem = ppem;
     }
 
     /// Sets point size per EM.
     ///
     /// Used for optical-sizing in Apple fonts.
-    /// A value of zero means "not set".
-    pub fn set_ptem(&mut self, v: f32) {
-        unsafe { ffi::hb_font_set_ptem(self.as_ptr(), v) };
+    ///
+    /// `None` by default.
+    pub fn set_ptem(&mut self, ptem: Option<f32>) {
+        self.ptem = ptem;
     }
 
     /// Sets font variations.
     pub fn set_variations(&mut self, variations: &[Variation]) {
-        unsafe {
-            ffi::hb_font_set_variations(
-                self.as_ptr(),
-                variations.as_ptr() as _,
-                variations.len() as u32,
-            )
-        };
+        for variation in variations {
+            self.ttfp_face.set_variation(variation.tag, variation.value);
+        }
+
+        self.coords.clear();
+        for c in self.ttfp_face.variation_coordinates() {
+            self.coords.push(c.get() as i32)
+        }
     }
 }
 
-impl Drop for Font<'_> {
-    fn drop(&mut self) {
-        unsafe { ffi::hb_font_destroy(self.as_ptr()) }
-    }
+fn font_from_raw(font: *const ffi::rb_font_t) -> &'static Font<'static> {
+    unsafe { &*(font as *const Font) }
+}
+
+#[no_mangle]
+pub extern "C" fn hb_font_get_face(font: *const ffi::rb_font_t) -> *mut ffi::hb_face_t {
+    font_from_raw(font).hb_face.as_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn hb_font_get_upem(font: *const ffi::rb_font_t) -> i32 {
+    font_from_raw(font).upem
+}
+
+#[no_mangle]
+pub extern "C" fn hb_font_get_ptem(font: *const ffi::rb_font_t) -> f32 {
+    font_from_raw(font).ptem.unwrap_or(0.0)
+}
+
+#[no_mangle]
+pub extern "C" fn hb_font_get_ppem_x(font: *const ffi::rb_font_t) -> u32 {
+    font_from_raw(font).ppem.map(|ppem| ppem.0).unwrap_or(0)
+}
+
+#[no_mangle]
+pub extern "C" fn hb_font_get_ppem_y(font: *const ffi::rb_font_t) -> u32 {
+    font_from_raw(font).ppem.map(|ppem| ppem.1).unwrap_or(0)
+}
+
+#[no_mangle]
+pub extern "C" fn hb_font_get_coords(font: *const ffi::rb_font_t) -> *const i32 {
+    font_from_raw(font).coords.as_ptr() as _
+}
+
+#[no_mangle]
+pub extern "C" fn hb_font_get_num_coords(font: *const ffi::rb_font_t) -> u32 {
+    font_from_raw(font).coords.len() as u32
 }

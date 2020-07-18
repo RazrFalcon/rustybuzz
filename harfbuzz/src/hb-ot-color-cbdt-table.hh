@@ -28,7 +28,6 @@
 #define HB_OT_COLOR_CBDT_TABLE_HH
 
 #include "hb-open-type.hh"
-#include "hb-font.hh"
 
 /*
  * CBLC -- Color Bitmap Location
@@ -421,7 +420,7 @@ protected:
         if (unlikely(!count))
             return Null(BitmapSizeTable);
 
-        unsigned int requested_ppem = hb_max(font->x_ppem, font->y_ppem);
+        unsigned int requested_ppem = hb_max(hb_font_get_ppem_x(font), hb_font_get_ppem_y(font));
         if (!requested_ppem)
             requested_ppem = 1 << 30; /* Choose largest strike. */
         unsigned int best_i = 0;

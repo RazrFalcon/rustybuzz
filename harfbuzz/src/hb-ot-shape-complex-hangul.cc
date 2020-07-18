@@ -194,7 +194,7 @@ static void preprocess_text_hangul(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_
                 }
             } else {
                 /* No valid syllable as base for tone mark; try to insert dotted circle. */
-                if (!(buffer->flags & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE) && font->has_glyph(0x25CCu)) {
+                if (!(buffer->flags & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE) && hb_font_has_glyph(font, 0x25CCu)) {
                     hb_codepoint_t chars[2];
                     if (!is_zero_width_char(font, u)) {
                         chars[0] = u;
@@ -237,7 +237,7 @@ static void preprocess_text_hangul(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_
                 if (isCombiningL(l) && isCombiningV(v) && (t == 0 || isCombiningT(t))) {
                     /* Try to compose; if this succeeds, end is set to start+1. */
                     hb_codepoint_t s = SBase + (l - LBase) * NCount + (v - VBase) * TCount + tindex;
-                    if (font->has_glyph(s)) {
+                    if (hb_font_has_glyph(font, s)) {
                         buffer->replace_glyphs(t ? 3 : 2, 1, &s);
                         if (unlikely(!buffer->successful))
                             return;
@@ -270,7 +270,7 @@ static void preprocess_text_hangul(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_
         else if (isCombinedS(u)) {
             /* Have <LV>, <LVT>, or <LV,T> */
             hb_codepoint_t s = u;
-            bool has_glyph = font->has_glyph(s);
+            bool has_glyph = hb_font_has_glyph(font, s);
             unsigned int lindex = (s - SBase) / NCount;
             unsigned int nindex = (s - SBase) % NCount;
             unsigned int vindex = nindex / TCount;
@@ -280,7 +280,7 @@ static void preprocess_text_hangul(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_
                 /* <LV,T>, try to combine. */
                 unsigned int new_tindex = buffer->cur(+1).codepoint - TBase;
                 hb_codepoint_t new_s = s + new_tindex;
-                if (font->has_glyph(new_s)) {
+                if (hb_font_has_glyph(font, new_s)) {
                     buffer->replace_glyphs(2, 1, &new_s);
                     if (unlikely(!buffer->successful))
                         return;
@@ -295,8 +295,8 @@ static void preprocess_text_hangul(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_
              * combining <LV,T> above. */
             if (!has_glyph || (!tindex && buffer->idx + 1 < count && isT(buffer->cur(+1).codepoint))) {
                 hb_codepoint_t decomposed[3] = {LBase + lindex, VBase + vindex, TBase + tindex};
-                if (font->has_glyph(decomposed[0]) && font->has_glyph(decomposed[1]) &&
-                    (!tindex || font->has_glyph(decomposed[2]))) {
+                if (hb_font_has_glyph(font, decomposed[0]) && hb_font_has_glyph(font, decomposed[1]) &&
+                    (!tindex || hb_font_has_glyph(font, decomposed[2]))) {
                     unsigned int s_len = tindex ? 3 : 2;
                     buffer->replace_glyphs(1, s_len, decomposed);
 

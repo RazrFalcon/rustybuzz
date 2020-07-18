@@ -85,7 +85,7 @@ compose_unicode(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_c
 
 static inline void set_glyph(hb_glyph_info_t &info, hb_font_t *font)
 {
-    (void)font->get_nominal_glyph(info.codepoint, &info.glyph_index());
+    hb_font_get_nominal_glyph(font, info.codepoint, &info.glyph_index());
 }
 
 static inline void output_char(hb_buffer_t *buffer, hb_codepoint_t unichar, hb_codepoint_t glyph)
@@ -113,10 +113,10 @@ static inline unsigned int decompose(const hb_ot_shape_normalize_context_t *c, b
     hb_buffer_t *const buffer = c->buffer;
     hb_font_t *const font = c->font;
 
-    if (!c->decompose(c, ab, &a, &b) || (b && !font->get_nominal_glyph(b, &b_glyph)))
+    if (!c->decompose(c, ab, &a, &b) || (b && !hb_font_get_nominal_glyph(font, b, &b_glyph)))
         return 0;
 
-    bool has_a = (bool)font->get_nominal_glyph(a, &a_glyph);
+    bool has_a = (bool)hb_font_get_nominal_glyph(font, a, &a_glyph);
     if (shortest && has_a) {
         /* Output a and b */
         output_char(buffer, a, a_glyph);
@@ -154,7 +154,7 @@ static inline void decompose_current_character(const hb_ot_shape_normalize_conte
     hb_codepoint_t u = buffer->cur().codepoint;
     hb_codepoint_t glyph = 0;
 
-    if (shortest && c->font->get_nominal_glyph(u, &glyph)) {
+    if (shortest && hb_font_get_nominal_glyph(c->font, u, &glyph)) {
         next_char(buffer, glyph);
         return;
     }
@@ -164,7 +164,7 @@ static inline void decompose_current_character(const hb_ot_shape_normalize_conte
         return;
     }
 
-    if (!shortest && c->font->get_nominal_glyph(u, &glyph)) {
+    if (!shortest && hb_font_get_nominal_glyph(c->font, u, &glyph)) {
         next_char(buffer, glyph);
         return;
     }
@@ -172,7 +172,7 @@ static inline void decompose_current_character(const hb_ot_shape_normalize_conte
     if (_hb_glyph_info_is_unicode_space(&buffer->cur())) {
         hb_codepoint_t space_glyph;
         hb_space_t space_type = hb_ucd_space_fallback_type(u);
-        if (space_type != HB_SPACE_NOT_SPACE && c->font->get_nominal_glyph(0x0020u, &space_glyph)) {
+        if (space_type != HB_SPACE_NOT_SPACE && hb_font_get_nominal_glyph(c->font, 0x0020u, &space_glyph)) {
             _hb_glyph_info_set_unicode_space_fallback_type(&buffer->cur(), space_type);
             next_char(buffer, space_glyph);
             buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK;
@@ -184,7 +184,7 @@ static inline void decompose_current_character(const hb_ot_shape_normalize_conte
         /* U+2011 is the only sensible character that is a no-break version of another character
          * and not a space.  The space ones are handled already.  Handle this lone one. */
         hb_codepoint_t other_glyph;
-        if (c->font->get_nominal_glyph(0x2010u, &other_glyph)) {
+        if (hb_font_get_nominal_glyph(c->font, 0x2010u, &other_glyph)) {
             next_char(buffer, other_glyph);
             return;
         }
@@ -202,8 +202,8 @@ static inline void handle_variation_selector_cluster(const hb_ot_shape_normalize
     hb_font_t *const font = c->font;
     for (; buffer->idx < end - 1 && buffer->successful;) {
         if (unlikely(hb_ucd_is_variation_selector(buffer->cur(+1).codepoint))) {
-            if (font->get_variation_glyph(
-                    buffer->cur().codepoint, buffer->cur(+1).codepoint, &buffer->cur().glyph_index())) {
+            if (hb_font_get_variation_glyph(
+                    font, buffer->cur().codepoint, buffer->cur(+1).codepoint, &buffer->cur().glyph_index())) {
                 hb_codepoint_t unicode = buffer->cur().codepoint;
                 buffer->replace_glyphs(2, 1, &unicode);
             } else {
@@ -304,11 +304,12 @@ void _hb_ot_shape_normalize(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer,
 
             /* From idx to end are simple clusters. */
             if (might_short_circuit) {
-                unsigned int done = font->get_nominal_glyphs(end - buffer->idx,
-                                                             &buffer->cur().codepoint,
-                                                             sizeof(buffer->info[0]),
-                                                             &buffer->cur().glyph_index(),
-                                                             sizeof(buffer->info[0]));
+                unsigned int done = hb_font_get_nominal_glyphs(font,
+                                                               end - buffer->idx,
+                                                               &buffer->cur().codepoint,
+                                                               sizeof(buffer->info[0]),
+                                                               &buffer->cur().glyph_index(),
+                                                               sizeof(buffer->info[0]));
                 buffer->next_glyphs(done);
             }
             while (buffer->idx < end && buffer->successful)
@@ -393,7 +394,7 @@ void _hb_ot_shape_normalize(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer,
                     /* And compose. */
                     c.compose(&c, buffer->out_info[starter].codepoint, buffer->cur().codepoint, &composed) &&
                     /* And the font has glyph for the composite. */
-                    font->get_nominal_glyph(composed, &glyph)) {
+                    hb_font_get_nominal_glyph(font, composed, &glyph)) {
                     /* Composes. */
                     buffer->next_glyph(); /* Copy to out-buffer. */
                     if (unlikely(!buffer->successful))

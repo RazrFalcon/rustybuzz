@@ -45,7 +45,7 @@ AAT::hb_aat_apply_context_t::hb_aat_apply_context_t(const hb_ot_shape_plan_t *pl
                                                     hb_blob_t *blob)
     : plan(plan_)
     , font(font_)
-    , face(font->face)
+    , face(hb_font_get_face(font))
     , buffer(buffer_)
     , sanitizer()
     , ankr_table(&Null(AAT::ankr))
@@ -423,7 +423,7 @@ hb_bool_t hb_aat_layout_has_substitution(hb_face_t *face)
 
 void hb_aat_layout_substitute(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
-    hb_blob_t *morx_blob = font->face->table.morx.get_blob();
+    hb_blob_t *morx_blob = hb_font_get_face(font)->table.morx.get_blob();
     const AAT::morx &morx = *morx_blob->as<AAT::morx>();
     if (morx.has_data()) {
         AAT::hb_aat_apply_context_t c(plan, font, buffer, morx_blob);
@@ -431,7 +431,7 @@ void hb_aat_layout_substitute(const hb_ot_shape_plan_t *plan, hb_font_t *font, h
         return;
     }
 
-    hb_blob_t *mort_blob = font->face->table.mort.get_blob();
+    hb_blob_t *mort_blob = hb_font_get_face(font)->table.mort.get_blob();
     const AAT::mort &mort = *mort_blob->as<AAT::mort>();
     if (mort.has_data()) {
         AAT::hb_aat_apply_context_t c(plan, font, buffer, mort_blob);
@@ -474,11 +474,11 @@ hb_bool_t hb_aat_layout_has_positioning(hb_face_t *face)
 
 void hb_aat_layout_position(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
-    hb_blob_t *kerx_blob = font->face->table.kerx.get_blob();
+    hb_blob_t *kerx_blob = hb_font_get_face(font)->table.kerx.get_blob();
     const AAT::kerx &kerx = *kerx_blob->as<AAT::kerx>();
 
     AAT::hb_aat_apply_context_t c(plan, font, buffer, kerx_blob);
-    c.set_ankr_table(font->face->table.ankr.get());
+    c.set_ankr_table(hb_font_get_face(font)->table.ankr.get());
     kerx.apply(&c);
 }
 
@@ -496,7 +496,7 @@ hb_bool_t hb_aat_layout_has_tracking(hb_face_t *face)
 
 void hb_aat_layout_track(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
 {
-    const AAT::trak &trak = *font->face->table.trak;
+    const AAT::trak &trak = *hb_font_get_face(font)->table.trak;
 
     AAT::hb_aat_apply_context_t c(plan, font, buffer);
     trak.apply(&c);

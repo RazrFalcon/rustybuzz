@@ -160,7 +160,7 @@ struct trak
 
         hb_mask_t trak_mask = c->plan->trak_mask;
 
-        const float ptem = c->font->ptem;
+        const float ptem = hb_font_get_ptem(c->font);
         if (unlikely(ptem <= 0.f))
             return_trace(false);
 

@@ -252,7 +252,7 @@ insert_dotted_circles_myanmar(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_
         return;
 
     hb_codepoint_t dottedcircle_glyph;
-    if (!font->get_nominal_glyph(0x25CCu, &dottedcircle_glyph))
+    if (!hb_font_get_nominal_glyph(font, 0x25CCu, &dottedcircle_glyph))
         return;
 
     hb_glyph_info_t dottedcircle = {0};
@@ -286,7 +286,8 @@ static void reorder_myanmar(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_
 {
     insert_dotted_circles_myanmar(plan, font, buffer);
 
-    foreach_syllable(buffer, start, end) reorder_syllable_myanmar(plan, font->face, buffer, start, end);
+    auto face = hb_font_get_face(font);
+    foreach_syllable(buffer, start, end) reorder_syllable_myanmar(plan, face, buffer, start, end);
 
     HB_BUFFER_DEALLOCATE_VAR(buffer, myanmar_category);
     HB_BUFFER_DEALLOCATE_VAR(buffer, myanmar_position);

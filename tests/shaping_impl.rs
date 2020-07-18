@@ -64,11 +64,9 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
     let args = parse_args(args).unwrap();
 
     let font_data = std::fs::read(font_path).unwrap();
-    let mut font = rustybuzz::Font::from_data(&font_data, args.face_index).unwrap();
+    let mut font = rustybuzz::Font::from_slice(&font_data, args.face_index).unwrap();
 
-    if let Some(ptem) = args.font_ptem {
-        font.set_ptem(ptem);
-    }
+    font.set_ptem(args.font_ptem);
 
     if !args.variations.is_empty() {
         let variations: Vec<_> = args.variations.iter()

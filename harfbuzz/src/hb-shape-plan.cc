@@ -26,7 +26,6 @@
 
 #include "hb.hh"
 #include "hb-shape-plan.hh"
-#include "hb-font.hh"
 #include "hb-buffer.hh"
 
 /**
@@ -161,7 +160,7 @@ hb_bool_t hb_shape_plan_execute(hb_shape_plan_t *shape_plan,
     if (unlikely(hb_object_is_inert(shape_plan)))
         return false;
 
-    assert(shape_plan->face_unsafe == font->face);
+    assert(shape_plan->face_unsafe == hb_font_get_face(font));
 
     _hb_ot_shape(shape_plan, font, buffer, features, num_features);
     return true;

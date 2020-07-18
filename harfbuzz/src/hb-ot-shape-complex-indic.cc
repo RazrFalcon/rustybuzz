@@ -217,7 +217,7 @@ struct indic_shape_plan_t
     {
         hb_codepoint_t glyph = virama_glyph.get_relaxed();
         if (unlikely(glyph == (hb_codepoint_t)-1)) {
-            if (!config->virama || !font->get_nominal_glyph(config->virama, &glyph))
+            if (!config->virama || !hb_font_get_nominal_glyph(font, config->virama, &glyph))
                 glyph = 0;
             /* Technically speaking, the spec says we should apply 'locl' to virama too.
              * Maybe one day... */
@@ -376,7 +376,7 @@ static void update_consonant_positions_indic(const hb_ot_shape_plan_t *plan, hb_
 
     hb_codepoint_t virama;
     if (indic_plan->load_virama_glyph(font, &virama)) {
-        hb_face_t *face = font->face;
+        hb_face_t *face = hb_font_get_face(font);
         unsigned int count = buffer->len;
         hb_glyph_info_t *info = buffer->info;
         for (unsigned int i = 0; i < count; i++)
@@ -874,7 +874,7 @@ insert_dotted_circles_indic(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t 
         return;
 
     hb_codepoint_t dottedcircle_glyph;
-    if (!font->get_nominal_glyph(0x25CCu, &dottedcircle_glyph))
+    if (!hb_font_get_nominal_glyph(font, 0x25CCu, &dottedcircle_glyph))
         return;
 
     hb_glyph_info_t dottedcircle = {0};
@@ -914,7 +914,8 @@ static void initial_reordering_indic(const hb_ot_shape_plan_t *plan, hb_font_t *
     update_consonant_positions_indic(plan, font, buffer);
     insert_dotted_circles_indic(plan, font, buffer);
 
-    foreach_syllable(buffer, start, end) initial_reordering_syllable_indic(plan, font->face, buffer, start, end);
+    foreach_syllable(buffer, start, end)
+        initial_reordering_syllable_indic(plan, hb_font_get_face(font), buffer, start, end);
 }
 
 static void final_reordering_syllable_indic(const hb_ot_shape_plan_t *plan,
@@ -1406,7 +1407,8 @@ decompose_indic(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t ab, hb_
         const indic_shape_plan_t *indic_plan = (const indic_shape_plan_t *)c->plan->data;
         hb_codepoint_t glyph;
         if (indic_plan->uniscribe_bug_compatible ||
-            (c->font->get_nominal_glyph(ab, &glyph) && indic_plan->pstf.would_substitute(&glyph, 1, c->font->face))) {
+            (hb_font_get_nominal_glyph(c->font, ab, &glyph) &&
+             indic_plan->pstf.would_substitute(&glyph, 1, hb_font_get_face(c->font)))) {
             /* Ok, safe to use Uniscribe-style decomposition. */
             *a = 0x0DD9u;
             *b = ab;

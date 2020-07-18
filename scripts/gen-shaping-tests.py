@@ -22,6 +22,14 @@ IGNORE_TEST_CASES = [
     'simple_002',
     # Not possible to implement without shaping.
     'arabic_fallback_shaping_001',
+    # `dfont` is not supported.
+    'collections_001',
+    'collections_002',
+    'collections_003',
+    # Face index out of bounds. ttf-parser doesn't permit this.
+    'collections_006',
+    # no `hhea` table.
+    'indic_decompose_001',
 
     # text-rendering-tests tests
     # Unknown issue. Investigate.

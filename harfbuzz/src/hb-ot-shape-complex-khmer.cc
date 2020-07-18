@@ -129,7 +129,7 @@ struct khmer_shape_plan_t
     {
         hb_codepoint_t glyph = virama_glyph;
         if (unlikely(virama_glyph == (hb_codepoint_t)-1)) {
-            if (!font->get_nominal_glyph(0x17D2u, &glyph))
+            if (!hb_font_get_nominal_glyph(font, 0x17D2u, &glyph))
                 glyph = 0;
             /* Technically speaking, the spec says we should apply 'locl' to virama too.
              * Maybe one day... */
@@ -310,7 +310,7 @@ insert_dotted_circles_khmer(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t 
         return;
 
     hb_codepoint_t dottedcircle_glyph;
-    if (!font->get_nominal_glyph(0x25CCu, &dottedcircle_glyph))
+    if (!hb_font_get_nominal_glyph(font, 0x25CCu, &dottedcircle_glyph))
         return;
 
     hb_glyph_info_t dottedcircle = {0};
@@ -349,7 +349,7 @@ static void reorder_khmer(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_bu
 {
     insert_dotted_circles_khmer(plan, font, buffer);
 
-    foreach_syllable(buffer, start, end) reorder_syllable_khmer(plan, font->face, buffer, start, end);
+    foreach_syllable(buffer, start, end) reorder_syllable_khmer(plan, hb_font_get_face(font), buffer, start, end);
 
     HB_BUFFER_DEALLOCATE_VAR(buffer, khmer_category);
 }

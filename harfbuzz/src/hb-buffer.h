@@ -389,7 +389,7 @@ HB_EXTERN unsigned int hb_buffer_serialize_glyphs(hb_buffer_t *buffer,
                                                   char *buf,
                                                   unsigned int buf_size,
                                                   unsigned int *buf_consumed,
-                                                  hb_font_t *font,
+                                                  const hb_font_t *font,
                                                   hb_buffer_serialize_format_t format,
                                                   hb_buffer_serialize_flags_t flags);
 

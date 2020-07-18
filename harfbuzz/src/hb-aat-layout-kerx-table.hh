@@ -332,7 +332,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat1
 
         driver_context_t dc(this, c);
 
-        StateTableDriver<Types, EntryData> driver(machine, c->buffer, c->font->face);
+        StateTableDriver<Types, EntryData> driver(machine, c->buffer, hb_font_get_face(c->font));
         driver.drive(&dc);
 
         return_trace(true);
@@ -491,13 +491,18 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
                     hb_position_t markY = 0;
                     hb_position_t currX = 0;
                     hb_position_t currY = 0;
-                    if (!c->font->get_glyph_contour_point_for_origin(c->buffer->info[mark].codepoint,
-                                                                     markControlPoint,
-                                                                     HB_DIRECTION_LTR /*XXX*/,
-                                                                     &markX,
-                                                                     &markY) ||
-                        !c->font->get_glyph_contour_point_for_origin(
-                            c->buffer->cur().codepoint, currControlPoint, HB_DIRECTION_LTR /*XXX*/, &currX, &currY))
+                    if (!hb_font_get_glyph_contour_point_for_origin(c->font,
+                                                                    c->buffer->info[mark].codepoint,
+                                                                    markControlPoint,
+                                                                    HB_DIRECTION_LTR /*XXX*/,
+                                                                    &markX,
+                                                                    &markY) ||
+                        !hb_font_get_glyph_contour_point_for_origin(c->font,
+                                                                    c->buffer->cur().codepoint,
+                                                                    currControlPoint,
+                                                                    HB_DIRECTION_LTR /*XXX*/,
+                                                                    &currX,
+                                                                    &currY))
                         return;
 
                     o.x_offset = markX - currX;
@@ -560,7 +565,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
 
         driver_context_t dc(this, c);
 
-        StateTableDriver<Types, EntryData> driver(machine, c->buffer, c->font->face);
+        StateTableDriver<Types, EntryData> driver(machine, c->buffer, hb_font_get_face(c->font));
         driver.drive(&dc);
 
         return_trace(true);

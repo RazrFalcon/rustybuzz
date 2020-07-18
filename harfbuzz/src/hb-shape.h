@@ -39,7 +39,7 @@
 
 HB_BEGIN_DECLS
 
-HB_EXTERN hb_bool_t hb_shape(hb_font_t *font,
+HB_EXTERN hb_bool_t hb_shape(const hb_font_t *font,
                              hb_buffer_t *buffer,
                              const hb_feature_t *features,
                              unsigned int num_features);
