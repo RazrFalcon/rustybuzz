@@ -124,7 +124,7 @@ extern "C" {
         len: i32,
     ) -> hb_language_t;
 
-    pub fn hb_language_to_string(language: hb_language_t) -> *const i8;
+    pub fn hb_language_to_string(language: hb_language_t) -> *const c_char;
 
     pub fn hb_language_get_default() -> hb_language_t;
 
