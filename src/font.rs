@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 
+use ttf_parser::Tag;
+
 use crate::common::Variation;
 use crate::ffi;
 
@@ -168,4 +170,112 @@ pub extern "C" fn hb_font_get_coords(font: *const ffi::hb_font_t) -> *const i32 
 #[no_mangle]
 pub extern "C" fn hb_font_get_num_coords(font: *const ffi::hb_font_t) -> u32 {
     font_from_raw(font).coords.len() as u32
+}
+
+mod metrics {
+    use crate::Tag;
+
+    pub const HORIZONTAL_ASCENDER: Tag  = Tag::from_bytes(b"hasc");
+    pub const HORIZONTAL_DESCENDER: Tag = Tag::from_bytes(b"hdsc");
+    pub const HORIZONTAL_LINE_GAP: Tag  = Tag::from_bytes(b"hlgp");
+    pub const VERTICAL_ASCENDER: Tag    = Tag::from_bytes(b"vasc");
+    pub const VERTICAL_DESCENDER: Tag   = Tag::from_bytes(b"vdsc");
+    pub const VERTICAL_LINE_GAP: Tag    = Tag::from_bytes(b"vlgp");
+}
+
+#[no_mangle]
+pub extern "C" fn hb_ot_metrics_get_position_common(
+    font: *const ffi::hb_font_t,
+    tag: Tag,
+    position: *mut i32,
+) -> ffi::hb_bool_t {
+    let face = &font_from_raw(font).ttfp_face;
+    let pos = match tag {
+        metrics::HORIZONTAL_ASCENDER => {
+            i32::from(face.ascender())
+        }
+        metrics::HORIZONTAL_DESCENDER => {
+            -i32::from(face.descender()).abs()
+        }
+        metrics::HORIZONTAL_LINE_GAP => {
+            i32::from(face.line_gap())
+        }
+        metrics::VERTICAL_ASCENDER if face.has_table(ttf_parser::TableName::VerticalHeader) => {
+            i32::from(face.vertical_ascender().unwrap_or(0))
+        }
+        metrics::VERTICAL_DESCENDER if face.has_table(ttf_parser::TableName::VerticalHeader) => {
+            -i32::from(face.vertical_descender().unwrap_or(0)).abs()
+        }
+        metrics::VERTICAL_LINE_GAP if face.has_table(ttf_parser::TableName::VerticalHeader) => {
+            i32::from(face.vertical_line_gap().unwrap_or(0))
+        }
+        _ => return 0,
+    };
+
+    unsafe { *position = pos; }
+    1
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn metrics_get_position_common_vertical() {
+        // Vertical font.
+        let font_data = std::fs::read("tests/fonts/text-rendering-tests/TestGVAROne.ttf").unwrap();
+        let font = Font::from_slice(&font_data, 0).unwrap();
+
+        unsafe {
+            let pos = &mut 0i32 as _;
+
+            // Horizontal.
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
+            assert_eq!(*pos, 967);
+
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
+            assert_eq!(*pos, -253);
+
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
+            assert_eq!(*pos, 0);
+
+            // Vertical.
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_ASCENDER, pos), 1);
+            assert_eq!(*pos, 500);
+
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_DESCENDER, pos), 1);
+            assert_eq!(*pos, -500);
+
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_LINE_GAP, pos), 1);
+            assert_eq!(*pos, 0);
+
+            // TODO: find font with variable metrics
+        }
+    }
+
+    #[test]
+    fn metrics_get_position_common_use_typo() {
+        // A font with OS/2.useTypographicMetrics flag set.
+        let font_data = std::fs::read("tests/fonts/in-house/1a3d8f381387dd29be1e897e4b5100ac8b4829e1.ttf").unwrap();
+        let font = Font::from_slice(&font_data, 0).unwrap();
+
+        unsafe {
+            let pos = &mut 0i32 as _;
+
+            // Horizontal.
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
+            assert_eq!(*pos, 800);
+
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
+            assert_eq!(*pos, -200);
+
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
+            assert_eq!(*pos, 90);
+
+            // Vertical.
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_ASCENDER, pos), 0);
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_DESCENDER, pos), 0);
+            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_LINE_GAP, pos), 0);
+        }
+    }
 }

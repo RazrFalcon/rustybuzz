@@ -36,11 +36,14 @@
 #include "hb-ot-cff1-table.hh"
 #include "hb-ot-cff2-table.hh"
 #include "hb-ot-hmtx-table.hh"
-#include "hb-ot-os2-table.hh"
 #include "hb-ot-post-table.hh"
 #include "hb-ot-vorg-table.hh"
 #include "hb-ot-color-cbdt-table.hh"
 #include "hb-ot-color-sbix-table.hh"
+
+extern "C" {
+    HB_EXTERN hb_bool_t hb_ot_metrics_get_position_common(hb_font_t *font, hb_tag_t tag, int *position);
+}
 
 /**
  * SECTION:hb-ot-font
@@ -161,16 +164,16 @@ hb_bool_t hb_ot_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *name
 
 hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t *metrics)
 {
-    return _hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER, &metrics->ascender) &&
-           _hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER, &metrics->descender) &&
-           _hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP, &metrics->line_gap);
+    return hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER, &metrics->ascender) &&
+           hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER, &metrics->descender) &&
+           hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP, &metrics->line_gap);
 }
 
 hb_bool_t hb_ot_get_font_v_extents(hb_font_t *font, hb_font_extents_t *metrics)
 {
-    return _hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_ASCENDER, &metrics->ascender) &&
-           _hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_DESCENDER, &metrics->descender) &&
-           _hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
+    return hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_ASCENDER, &metrics->ascender) &&
+           hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_DESCENDER, &metrics->descender) &&
+           hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
 }
 
 int _glyf_get_side_bearing_var(hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)

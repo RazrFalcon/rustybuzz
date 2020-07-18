@@ -30,7 +30,6 @@
 #include "hb-open-type.hh"
 #include "hb-ot-hhea-table.hh"
 #include "hb-ot-var-hvar-table.hh"
-#include "hb-ot-metrics.hh"
 
 /*
  * hmtx -- Horizontal Metrics
