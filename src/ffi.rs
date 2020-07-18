@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types)]
 
-use std::os::raw::c_void;
+use std::os::raw::{c_char, c_void};
 
 pub type hb_bool_t = i32;
 pub type hb_codepoint_t = u32;
@@ -120,7 +120,7 @@ pub struct hb_font_t {
 
 extern "C" {
     pub fn hb_language_from_string(
-        str: *const i8,
+        str: *const c_char,
         len: i32,
     ) -> hb_language_t;
 
@@ -129,7 +129,7 @@ extern "C" {
     pub fn hb_language_get_default() -> hb_language_t;
 
     pub fn hb_blob_create(
-        data: *const i8,
+        data: *const c_char,
         length: u32,
         mode: hb_memory_mode_t,
         user_data: *mut c_void,
@@ -169,7 +169,7 @@ extern "C" {
 
     pub fn hb_buffer_add_utf8(
         buffer: *mut hb_buffer_t,
-        text: *const i8,
+        text: *const c_char,
         text_length: i32,
         item_offset: u32,
         item_length: i32,
@@ -191,7 +191,7 @@ extern "C" {
         buffer: *mut hb_buffer_t,
         start: u32,
         end: u32,
-        buf: *mut i8,
+        buf: *mut c_char,
         buf_size: u32,
         buf_consumed: *mut u32,
         font: *mut hb_font_t,
