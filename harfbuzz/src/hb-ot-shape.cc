@@ -347,7 +347,7 @@ static void hb_set_unicode_props(hb_buffer_t *buffer)
 #ifndef HB_NO_EMOJI_SEQUENCES
         else if (unlikely(_hb_glyph_info_is_zwj(&info[i]))) {
             _hb_glyph_info_set_continuation(&info[i]);
-            if (i + 1 < count && hb_unicode_is_emoji_extended_pictographic(info[i + 1].codepoint)) {
+            if (i + 1 < count && hb_ucd_is_emoji_extended_pictographic(info[i + 1].codepoint)) {
                 i++;
                 _hb_glyph_info_set_unicode_props(&info[i], buffer);
                 _hb_glyph_info_set_continuation(&info[i]);

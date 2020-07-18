@@ -290,7 +290,7 @@ HB_EXTERN hb_bool_t hb_ucd_compose(hb_codepoint_t a, hb_codepoint_t b,hb_codepoi
 HB_EXTERN hb_bool_t hb_ucd_decompose(hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b);
 HB_EXTERN hb_space_t hb_ucd_space_fallback_type(hb_codepoint_t cp);
 HB_EXTERN hb_bool_t hb_ucd_is_variation_selector(hb_codepoint_t cp);
-HB_EXTERN hb_bool_t hb_unicode_is_emoji_extended_pictographic(hb_codepoint_t cp);
+HB_EXTERN hb_bool_t hb_ucd_is_emoji_extended_pictographic(hb_codepoint_t cp);
 
 HB_END_DECLS
 

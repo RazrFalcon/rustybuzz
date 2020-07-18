@@ -12,6 +12,7 @@ mod common;
 mod ffi;
 mod font;
 mod text_parser;
+mod unicode;
 
 pub use ttf_parser::Tag;
 

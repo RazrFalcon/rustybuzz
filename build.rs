@@ -53,7 +53,6 @@ fn main() {
     build.file("harfbuzz/src/hb-shape.cc");
     build.file("harfbuzz/src/hb-shape-plan.cc");
     build.file("harfbuzz/src/hb-static.cc");
-    build.file("harfbuzz/src/hb-unicode.cc");
     build.include("harfbuzz/src");
     build.compile("librustybuzz.a");
 }

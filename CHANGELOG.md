@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_variation_t`
 - `hb_font_t`
 - `hb-ot-metrics`
+- Unicode functions and tables.
 
 ### Changed
 - Rename `Font::from_data` into `Font::from_slice`.

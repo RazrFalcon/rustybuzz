@@ -14,6 +14,11 @@ categories = ["text-processing"]
 [dependencies]
 bitflags = "1.2"
 ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "9a71782" }
+unicode-bidi-mirroring = "0.1"
+unicode-ccc = "0.1"
+unicode-general-category = "0.2"
+unic-ucd-normal = "0.9"
+unicode-script = "0.5"
 
 [dev-dependencies]
 pico-args = "0.3"
