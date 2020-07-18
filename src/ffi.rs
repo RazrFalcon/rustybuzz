@@ -114,7 +114,7 @@ pub struct hb_face_t {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct rb_font_t {
+pub struct hb_font_t {
     _unused: [u8; 0],
 }
 
@@ -194,7 +194,7 @@ extern "C" {
         buf: *mut c_char,
         buf_size: u32,
         buf_consumed: *mut u32,
-        font: *const rb_font_t,
+        font: *const hb_font_t,
         format: hb_buffer_serialize_format_t,
         flags: hb_buffer_serialize_flags_t,
     ) -> u32;
@@ -204,7 +204,7 @@ extern "C" {
     pub fn hb_face_destroy(face: *mut hb_face_t);
 
     pub fn hb_shape(
-        font: *const rb_font_t,
+        font: *const hb_font_t,
         buffer: *mut hb_buffer_t,
         features: *const crate::Feature,
         num_features: u32,

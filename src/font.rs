@@ -96,8 +96,8 @@ impl<'a> Font<'a> {
         })
     }
 
-    pub(crate) fn as_ptr(&self) -> *const ffi::rb_font_t {
-        self as *const _ as *const ffi::rb_font_t
+    pub(crate) fn as_ptr(&self) -> *const ffi::hb_font_t {
+        self as *const _ as *const ffi::hb_font_t
     }
 
     /// Sets pixels per EM.
@@ -131,41 +131,41 @@ impl<'a> Font<'a> {
     }
 }
 
-fn font_from_raw(font: *const ffi::rb_font_t) -> &'static Font<'static> {
+fn font_from_raw(font: *const ffi::hb_font_t) -> &'static Font<'static> {
     unsafe { &*(font as *const Font) }
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_face(font: *const ffi::rb_font_t) -> *mut ffi::hb_face_t {
+pub extern "C" fn hb_font_get_face(font: *const ffi::hb_font_t) -> *mut ffi::hb_face_t {
     font_from_raw(font).hb_face.as_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_upem(font: *const ffi::rb_font_t) -> i32 {
+pub extern "C" fn hb_font_get_upem(font: *const ffi::hb_font_t) -> i32 {
     font_from_raw(font).upem
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_ptem(font: *const ffi::rb_font_t) -> f32 {
+pub extern "C" fn hb_font_get_ptem(font: *const ffi::hb_font_t) -> f32 {
     font_from_raw(font).ptem.unwrap_or(0.0)
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_ppem_x(font: *const ffi::rb_font_t) -> u32 {
+pub extern "C" fn hb_font_get_ppem_x(font: *const ffi::hb_font_t) -> u32 {
     font_from_raw(font).ppem.map(|ppem| ppem.0).unwrap_or(0)
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_ppem_y(font: *const ffi::rb_font_t) -> u32 {
+pub extern "C" fn hb_font_get_ppem_y(font: *const ffi::hb_font_t) -> u32 {
     font_from_raw(font).ppem.map(|ppem| ppem.1).unwrap_or(0)
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_coords(font: *const ffi::rb_font_t) -> *const i32 {
+pub extern "C" fn hb_font_get_coords(font: *const ffi::hb_font_t) -> *const i32 {
     font_from_raw(font).coords.as_ptr() as _
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_num_coords(font: *const ffi::rb_font_t) -> u32 {
+pub extern "C" fn hb_font_get_num_coords(font: *const ffi::hb_font_t) -> u32 {
     font_from_raw(font).coords.len() as u32
 }
