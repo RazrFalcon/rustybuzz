@@ -1146,29 +1146,6 @@ struct cff1
             return topDict.EncodingOffset <= ExpertEncoding;
         }
 
-        hb_codepoint_t glyph_to_code(hb_codepoint_t glyph) const
-        {
-            if (encoding != &Null(Encoding))
-                return encoding->get_code(glyph);
-            else {
-                hb_codepoint_t sid = glyph_to_sid(glyph);
-                if (sid == 0)
-                    return 0;
-                hb_codepoint_t code = 0;
-                switch (topDict.EncodingOffset) {
-                case StandardEncoding:
-                    code = lookup_standard_encoding_for_code(sid);
-                    break;
-                case ExpertEncoding:
-                    code = lookup_expert_encoding_for_code(sid);
-                    break;
-                default:
-                    break;
-                }
-                return code;
-            }
-        }
-
         hb_codepoint_t glyph_to_sid(hb_codepoint_t glyph) const
         {
             if (charset != &Null(Charset))
@@ -1190,30 +1167,6 @@ struct cff1
                     break;
                 }
                 return sid;
-            }
-        }
-
-        hb_codepoint_t sid_to_glyph(hb_codepoint_t sid) const
-        {
-            if (charset != &Null(Charset))
-                return charset->get_glyph(sid, num_glyphs);
-            else {
-                hb_codepoint_t glyph = 0;
-                switch (topDict.CharsetOffset) {
-                case ISOAdobeCharset:
-                    if (sid <= 228 /*zcaron*/)
-                        glyph = sid;
-                    break;
-                case ExpertCharset:
-                    glyph = lookup_expert_charset_for_glyph(sid);
-                    break;
-                case ExpertSubsetCharset:
-                    glyph = lookup_expert_subset_charset_for_glyph(sid);
-                    break;
-                default:
-                    break;
-                }
-                return glyph;
             }
         }
 
