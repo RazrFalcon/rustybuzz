@@ -574,7 +574,7 @@ void hb_buffer_t::guess_segment_properties()
     }
 
     /* If language is not set, use default language from locale */
-    if (props.language == HB_LANGUAGE_INVALID) {
+    if (props.language == NULL) {
         /* TODO get_default_for_script? using $LANGUAGE */
         props.language = hb_language_get_default();
     }
@@ -816,7 +816,7 @@ hb_script_t hb_buffer_get_script(hb_buffer_t *buffer)
  *
  * Since: 0.9.2
  **/
-void hb_buffer_set_language(hb_buffer_t *buffer, hb_language_t language)
+void hb_buffer_set_language(hb_buffer_t *buffer, const char* language)
 {
     if (unlikely(hb_object_is_immutable(buffer)))
         return;
@@ -835,7 +835,7 @@ void hb_buffer_set_language(hb_buffer_t *buffer, hb_language_t language)
  *
  * Since: 0.9.2
  **/
-hb_language_t hb_buffer_get_language(hb_buffer_t *buffer)
+const char* hb_buffer_get_language(hb_buffer_t *buffer)
 {
     return buffer->props.language;
 }

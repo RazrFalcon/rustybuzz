@@ -155,32 +155,13 @@ pub extern "C" fn rb_script_get_horizontal_direction(script: ffi::hb_script_t) -
 
 
 /// A script language.
-pub struct Language(pub ffi::hb_language_t);
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub struct Language(pub(crate) std::ffi::CString);
 
-impl Default for Language {
-    fn default() -> Language {
-        Language(unsafe { ffi::hb_language_get_default() })
-    }
-}
-
-impl std::fmt::Debug for Language {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Language(\"{}\")", self)
-    }
-}
-
-impl std::fmt::Display for Language {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let string = unsafe {
-            let char_ptr = ffi::hb_language_to_string(self.0);
-            if char_ptr.is_null() {
-                return Err(std::fmt::Error);
-            }
-            std::ffi::CStr::from_ptr(char_ptr)
-                .to_str()
-                .expect("String representation of language is not valid utf8.")
-        };
-        write!(f, "{}", string)
+impl Language {
+    /// Returns the language as a string.
+    pub fn as_str(&self) -> &str {
+        self.0.to_str().unwrap()
     }
 }
 
@@ -188,12 +169,11 @@ impl std::str::FromStr for Language {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let len = std::cmp::min(s.len(), std::i32::MAX as _) as i32;
-        let lang = unsafe { ffi::hb_language_from_string(s.as_ptr() as *mut _, len) };
-        if lang.is_null() {
-            Err("invalid language")
+        if !s.is_empty() {
+            let s = s.to_ascii_lowercase();
+            Ok(Language(std::ffi::CString::new(s.into_bytes()).unwrap()))
         } else {
-            Ok(Language(lang))
+            Err("invalid language")
         }
     }
 }

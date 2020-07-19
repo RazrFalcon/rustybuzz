@@ -80,12 +80,16 @@ impl Default for BufferClusterLevel {
 
 pub(crate) struct Buffer {
     ptr: NonNull<ffi::hb_buffer_t>,
+    language: Option<Language>,
 }
 
 impl Buffer {
     fn new() -> Buffer {
         let ptr = NonNull::new(unsafe { ffi::hb_buffer_create() }).unwrap(); // can't fail
-        Buffer { ptr }
+        Buffer {
+            ptr,
+            language: None,
+        }
     }
 
     pub fn as_ptr(&self) -> *mut ffi::hb_buffer_t {
@@ -267,7 +271,9 @@ impl UnicodeBuffer {
 
     /// Set the buffer language.
     pub fn set_language(&mut self, lang: Language) {
-        unsafe { ffi::hb_buffer_set_language(self.0.as_ptr(), lang.0) }
+        let lang_ptr = lang.0.as_ptr();
+        self.0.language = Some(lang); // Language must outlive Buffer.
+        unsafe { ffi::hb_buffer_set_language(self.0.as_ptr(), lang_ptr) }
     }
 
     /// Get the buffer language.
@@ -276,7 +282,7 @@ impl UnicodeBuffer {
         if raw_lang.is_null() {
             None
         } else {
-            Some(Language(raw_lang))
+            unsafe { Some(Language(std::ffi::CStr::from_ptr(raw_lang).into())) }
         }
     }
 

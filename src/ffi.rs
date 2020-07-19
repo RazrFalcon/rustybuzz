@@ -115,12 +115,7 @@ pub struct hb_glyph_extents_t {
     pub height: hb_position_t,
 }
 
-#[repr(C)]
-#[derive(Clone, Copy, Debug)]
-pub struct hb_language_impl_t {
-    _unused: [u8; 0],
-}
-pub type hb_language_t = *const hb_language_impl_t;
+pub type hb_language_t = *const c_char;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
@@ -150,15 +145,6 @@ pub struct hb_font_t {
 }
 
 extern "C" {
-    pub fn hb_language_from_string(
-        str: *const c_char,
-        len: i32,
-    ) -> hb_language_t;
-
-    pub fn hb_language_to_string(language: hb_language_t) -> *const c_char;
-
-    pub fn hb_language_get_default() -> hb_language_t;
-
     pub fn hb_blob_create(
         data: *const c_char,
         length: u32,

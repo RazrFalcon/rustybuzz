@@ -138,11 +138,6 @@ typedef enum {
     HB_DIRECTION_BTT
 } hb_direction_t;
 
-/* len=-1 means str is NUL-terminated */
-HB_EXTERN hb_direction_t hb_direction_from_string(const char *str, int len);
-
-HB_EXTERN const char *hb_direction_to_string(hb_direction_t direction);
-
 #define HB_DIRECTION_IS_VALID(dir) ((((unsigned int)(dir)) & ~3U) == 4)
 /* Direction must be valid for the following */
 #define HB_DIRECTION_IS_HORIZONTAL(dir) ((((unsigned int)(dir)) & ~1U) == 4)
@@ -153,15 +148,7 @@ HB_EXTERN const char *hb_direction_to_string(hb_direction_t direction);
 
 /* hb_language_t */
 
-typedef const struct hb_language_impl_t *hb_language_t;
-
-HB_EXTERN hb_language_t hb_language_from_string(const char *str, int len);
-
-HB_EXTERN const char *hb_language_to_string(hb_language_t language);
-
-#define HB_LANGUAGE_INVALID ((hb_language_t)0)
-
-HB_EXTERN hb_language_t hb_language_get_default(void);
+HB_EXTERN const char* hb_language_get_default(void);
 
 /* hb_script_t */
 

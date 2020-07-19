@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_script_t`
 - `hb_feature_t`
 - `hb_variation_t`
+- `hb_language_t`
 - `hb_font_t`
 - `hb-ot-metrics`
 - Unicode functions and tables.
