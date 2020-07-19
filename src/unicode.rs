@@ -772,3 +772,15 @@ pub extern "C" fn hb_ucd_decompose(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn check_unicode_version() {
+        assert_eq!(unicode_bidi_mirroring::UNICODE_VERSION,     (13, 0, 0));
+        assert_eq!(unicode_ccc::UNICODE_VERSION,                (13, 0, 0));
+        assert_eq!(unicode_general_category::UNICODE_VERSION,   (12, 1, 0)); // TODO: update
+        assert_eq!(unicode_script::UNICODE_VERSION,             (13, 0, 0));
+        assert_eq!(unic_ucd_normal::UNICODE_VERSION.major,      10); // TODO: update
+    }
+}
