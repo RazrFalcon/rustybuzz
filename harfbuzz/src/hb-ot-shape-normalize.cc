@@ -256,8 +256,6 @@ void _hb_ot_shape_normalize(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer,
     if (unlikely(!buffer->len))
         return;
 
-    _hb_buffer_assert_unicode_vars(buffer);
-
     hb_ot_shape_normalization_mode_t mode = plan->shaper->normalization_preference;
     if (mode == HB_OT_SHAPE_NORMALIZATION_MODE_AUTO) {
         if (plan->has_gpos_mark)

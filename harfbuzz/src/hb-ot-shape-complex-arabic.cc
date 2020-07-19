@@ -368,8 +368,6 @@ static void mongolian_variation_selectors(hb_buffer_t *buffer)
 
 void setup_masks_arabic_plan(const arabic_shape_plan_t *arabic_plan, hb_buffer_t *buffer, hb_script_t script)
 {
-    HB_BUFFER_ALLOCATE_VAR(buffer, arabic_shaping_action);
-
     arabic_joining(buffer);
     if (script == HB_SCRIPT_MONGOLIAN)
         mongolian_variation_selectors(buffer);
@@ -555,8 +553,6 @@ static void apply_stch(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *bu
 static void postprocess_glyphs_arabic(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
 {
     apply_stch(plan, buffer, font);
-
-    HB_BUFFER_DEALLOCATE_VAR(buffer, arabic_shaping_action);
 }
 
 /* https://www.unicode.org/reports/tr53/ */

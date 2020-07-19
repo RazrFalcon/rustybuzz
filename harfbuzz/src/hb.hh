@@ -132,8 +132,6 @@
 #endif
 #endif
 
-#include "hb-config.hh"
-
 /*
  * Following added based on what AC_USE_SYSTEM_EXTENSIONS adds to
  * config.h.in.  Copied here for the convenience of those embedding

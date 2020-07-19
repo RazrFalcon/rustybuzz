@@ -116,8 +116,6 @@ static bool is_zero_width_char(hb_font_t *font, hb_codepoint_t unicode)
 
 static void preprocess_text_hangul(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font)
 {
-    HB_BUFFER_ALLOCATE_VAR(buffer, hangul_shaping_feature);
-
     /* Hangul syllables come in two shapes: LV, and LVT.  Of those:
      *
      *   - LV can be precomposed, or decomposed.  Lets call those
@@ -356,8 +354,6 @@ static void setup_masks_hangul(const hb_ot_shape_plan_t *plan, hb_buffer_t *buff
         for (unsigned int i = 0; i < count; i++, info++)
             info->mask |= hangul_plan->mask_array[info->hangul_shaping_feature()];
     }
-
-    HB_BUFFER_DEALLOCATE_VAR(buffer, hangul_shaping_feature);
 }
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_hangul = {

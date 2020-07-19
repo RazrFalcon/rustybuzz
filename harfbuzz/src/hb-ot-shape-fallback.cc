@@ -407,8 +407,6 @@ void _hb_ot_shape_fallback_mark_position(const hb_ot_shape_plan_t *plan,
                                          hb_buffer_t *buffer,
                                          bool adjust_offsets_when_zeroing)
 {
-    _hb_buffer_assert_gsubgpos_vars(buffer);
-
     unsigned int start = 0;
     unsigned int count = buffer->len;
     hb_glyph_info_t *info = buffer->info;

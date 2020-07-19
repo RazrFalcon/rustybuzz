@@ -982,9 +982,6 @@ template <typename Types> struct Chain
                           : bool(subtable->get_coverage() & ChainSubtable<Types>::Backwards) !=
                                 HB_DIRECTION_IS_BACKWARD(c->buffer->props.direction);
 
-            if (!c->buffer->message(c->font, "start chainsubtable %d", c->lookup_index))
-                goto skip;
-
             if (reverse)
                 c->buffer->reverse();
 
@@ -992,8 +989,6 @@ template <typename Types> struct Chain
 
             if (reverse)
                 c->buffer->reverse();
-
-            (void)c->buffer->message(c->font, "end chainsubtable %d", c->lookup_index);
 
             if (unlikely(!c->buffer->successful))
                 return;

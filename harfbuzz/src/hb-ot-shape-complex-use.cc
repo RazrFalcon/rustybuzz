@@ -208,8 +208,6 @@ static void setup_masks_use(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer,
         setup_masks_arabic_plan(use_plan->arabic_plan, buffer, plan->props.script);
     }
 
-    HB_BUFFER_ALLOCATE_VAR(buffer, use_category);
-
     /* We cannot setup masks here.  We save information about characters
      * and setup masks later on in a pause-callback. */
 
@@ -460,8 +458,6 @@ static void reorder_use(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buff
     insert_dotted_circles_use(plan, font, buffer);
 
     foreach_syllable(buffer, start, end) reorder_syllable_use(buffer, start, end);
-
-    HB_BUFFER_DEALLOCATE_VAR(buffer, use_category);
 }
 
 static void preprocess_text_use(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)

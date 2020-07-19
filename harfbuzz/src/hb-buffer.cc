@@ -225,8 +225,6 @@ void hb_buffer_t::clear()
 
     memset(context, 0, sizeof context);
     memset(context_len, 0, sizeof context_len);
-
-    deallocate_var_all();
 }
 
 void hb_buffer_t::add(hb_codepoint_t codepoint, unsigned int cluster)
@@ -679,11 +677,6 @@ void hb_buffer_destroy(hb_buffer_t *buffer)
 
     free(buffer->info);
     free(buffer->pos);
-#ifndef HB_NO_BUFFER_MESSAGE
-    if (buffer->message_destroy)
-        buffer->message_destroy(buffer->message_data);
-#endif
-
     free(buffer);
 }
 
@@ -1608,45 +1601,3 @@ hb_buffer_diff_flags_t hb_buffer_diff(hb_buffer_t *buffer,
 
     return result;
 }
-
-/*
- * Debugging.
- */
-
-#ifndef HB_NO_BUFFER_MESSAGE
-/**
- * hb_buffer_set_message_func:
- * @buffer: an #hb_buffer_t.
- * @func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
- *
- *
- *
- * Since: 1.1.3
- **/
-void hb_buffer_set_message_func(hb_buffer_t *buffer,
-                                hb_buffer_message_func_t func,
-                                void *user_data,
-                                hb_destroy_func_t destroy)
-{
-    if (buffer->message_destroy)
-        buffer->message_destroy(buffer->message_data);
-
-    if (func) {
-        buffer->message_func = func;
-        buffer->message_data = user_data;
-        buffer->message_destroy = destroy;
-    } else {
-        buffer->message_func = nullptr;
-        buffer->message_data = nullptr;
-        buffer->message_destroy = nullptr;
-    }
-}
-bool hb_buffer_t::message_impl(hb_font_t *font, const char *fmt, va_list ap)
-{
-    char buf[100];
-    vsnprintf(buf, sizeof(buf), fmt, ap);
-    return (bool)this->message_func(this, font, buf, this->message_data);
-}
-#endif

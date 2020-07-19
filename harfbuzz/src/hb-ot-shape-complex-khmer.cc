@@ -182,8 +182,6 @@ enum khmer_syllable_type_t {
 
 static void setup_masks_khmer(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
-    HB_BUFFER_ALLOCATE_VAR(buffer, khmer_category);
-
     /* We cannot setup masks here.  We save information about characters
      * and setup masks later on in a pause-callback. */
 
@@ -350,8 +348,6 @@ static void reorder_khmer(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_bu
     insert_dotted_circles_khmer(plan, font, buffer);
 
     foreach_syllable(buffer, start, end) reorder_syllable_khmer(plan, hb_font_get_face(font), buffer, start, end);
-
-    HB_BUFFER_DEALLOCATE_VAR(buffer, khmer_category);
 }
 
 static bool

@@ -219,8 +219,6 @@ bool OT::GDEF::is_blocklisted(hb_blob_t *blob, hb_face_t *face) const
 
 static void _hb_ot_layout_set_glyph_props(hb_font_t *font, hb_buffer_t *buffer)
 {
-    _hb_buffer_assert_gsubgpos_vars(buffer);
-
     const OT::GDEF &gdef = *hb_font_get_face(font)->table.GDEF->table;
     unsigned int count = buffer->len;
     for (unsigned int i = 0; i < count; i++) {
@@ -1607,8 +1605,6 @@ hb_ot_map_t::apply(const Proxy &proxy, const hb_ot_shape_plan_t *plan, hb_font_t
         const stage_map_t *stage = &stages[table_index][stage_index];
         for (; i < stage->last_lookup; i++) {
             unsigned int lookup_index = lookups[table_index][i].index;
-            if (!buffer->message(font, "start lookup %d", lookup_index))
-                continue;
             c.set_lookup_index(lookup_index);
             c.set_lookup_mask(lookups[table_index][i].mask);
             c.set_auto_zwj(lookups[table_index][i].auto_zwj);
@@ -1618,7 +1614,6 @@ hb_ot_map_t::apply(const Proxy &proxy, const hb_ot_shape_plan_t *plan, hb_font_t
                 buffer->unsafe_to_break_all();
             }
             apply_string<Proxy>(&c, proxy.table.get_lookup(lookup_index), proxy.accels[lookup_index]);
-            (void)buffer->message(font, "end lookup %d", lookup_index);
         }
 
         if (stage->pause_func) {
@@ -1631,19 +1626,13 @@ hb_ot_map_t::apply(const Proxy &proxy, const hb_ot_shape_plan_t *plan, hb_font_t
 void hb_ot_map_t::substitute(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
     GSUBProxy proxy(hb_font_get_face(font));
-    if (!buffer->message(font, "start table GSUB"))
-        return;
     apply(proxy, plan, font, buffer);
-    (void)buffer->message(font, "end table GSUB");
 }
 
 void hb_ot_map_t::position(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
     GPOSProxy proxy(hb_font_get_face(font));
-    if (!buffer->message(font, "start table GPOS"))
-        return;
     apply(proxy, plan, font, buffer);
-    (void)buffer->message(font, "end table GPOS");
 }
 
 void hb_ot_layout_substitute_lookup(OT::hb_ot_apply_context_t *c,

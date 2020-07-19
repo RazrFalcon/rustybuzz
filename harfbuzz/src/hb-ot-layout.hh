@@ -480,44 +480,6 @@ _hb_clear_substitution_flags(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t
         _hb_glyph_info_clear_substituted(&info[i]);
 }
 
-/* Allocation / deallocation. */
-
-static inline void _hb_buffer_allocate_unicode_vars(hb_buffer_t *buffer)
-{
-    HB_BUFFER_ALLOCATE_VAR(buffer, unicode_props);
-}
-
-static inline void _hb_buffer_deallocate_unicode_vars(hb_buffer_t *buffer)
-{
-    HB_BUFFER_DEALLOCATE_VAR(buffer, unicode_props);
-}
-
-static inline void _hb_buffer_assert_unicode_vars(hb_buffer_t *buffer)
-{
-    HB_BUFFER_ASSERT_VAR(buffer, unicode_props);
-}
-
-static inline void _hb_buffer_allocate_gsubgpos_vars(hb_buffer_t *buffer)
-{
-    HB_BUFFER_ALLOCATE_VAR(buffer, glyph_props);
-    HB_BUFFER_ALLOCATE_VAR(buffer, lig_props);
-    HB_BUFFER_ALLOCATE_VAR(buffer, syllable);
-}
-
-static inline void _hb_buffer_deallocate_gsubgpos_vars(hb_buffer_t *buffer)
-{
-    HB_BUFFER_DEALLOCATE_VAR(buffer, syllable);
-    HB_BUFFER_DEALLOCATE_VAR(buffer, lig_props);
-    HB_BUFFER_DEALLOCATE_VAR(buffer, glyph_props);
-}
-
-static inline void _hb_buffer_assert_gsubgpos_vars(hb_buffer_t *buffer)
-{
-    HB_BUFFER_ASSERT_VAR(buffer, glyph_props);
-    HB_BUFFER_ASSERT_VAR(buffer, lig_props);
-    HB_BUFFER_ASSERT_VAR(buffer, syllable);
-}
-
 /* Make sure no one directly touches our props... */
 #undef unicode_props0
 #undef unicode_props1

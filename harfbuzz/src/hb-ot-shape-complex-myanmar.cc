@@ -98,9 +98,6 @@ enum myanmar_syllable_type_t {
 static void
 setup_masks_myanmar(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
-    HB_BUFFER_ALLOCATE_VAR(buffer, myanmar_category);
-    HB_BUFFER_ALLOCATE_VAR(buffer, myanmar_position);
-
     /* We cannot setup masks here.  We save information about characters
      * and setup masks later on in a pause-callback. */
 
@@ -288,9 +285,6 @@ static void reorder_myanmar(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_
 
     auto face = hb_font_get_face(font);
     foreach_syllable(buffer, start, end) reorder_syllable_myanmar(plan, face, buffer, start, end);
-
-    HB_BUFFER_DEALLOCATE_VAR(buffer, myanmar_category);
-    HB_BUFFER_DEALLOCATE_VAR(buffer, myanmar_position);
 }
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_myanmar = {

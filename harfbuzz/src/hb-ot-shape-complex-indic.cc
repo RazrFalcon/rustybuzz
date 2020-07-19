@@ -340,9 +340,6 @@ enum indic_syllable_type_t {
 
 static void setup_masks_indic(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_buffer_t *buffer, hb_font_t *font HB_UNUSED)
 {
-    HB_BUFFER_ALLOCATE_VAR(buffer, indic_category);
-    HB_BUFFER_ALLOCATE_VAR(buffer, indic_position);
-
     /* We cannot setup masks here.  We save information about characters
      * and setup masks later on in a pause-callback. */
 
@@ -1338,9 +1335,6 @@ static void final_reordering_indic(const hb_ot_shape_plan_t *plan, hb_font_t *fo
         return;
 
     foreach_syllable(buffer, start, end) final_reordering_syllable_indic(plan, buffer, start, end);
-
-    HB_BUFFER_DEALLOCATE_VAR(buffer, indic_category);
-    HB_BUFFER_DEALLOCATE_VAR(buffer, indic_position);
 }
 
 static void preprocess_text_indic(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font)
