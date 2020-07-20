@@ -47,6 +47,10 @@ impl MapBuilder {
         self.add_feature(tag, flags | FeatureFlags::GLOBAL, value);
     }
 
+    pub fn disable_feature(&mut self, tag: Tag) {
+        self.add_feature(tag, FeatureFlags::GLOBAL, 0);
+    }
+
     pub fn add_gsub_pause(&mut self, pause: ffi::hb_ot_pause_func_t) {
         unsafe { ffi::hb_ot_map_builder_add_gsub_pause(self.0.as_ptr(), pause) }
     }

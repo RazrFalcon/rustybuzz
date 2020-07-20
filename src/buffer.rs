@@ -212,6 +212,17 @@ impl Buffer {
     }
 
     #[inline]
+    pub(crate) fn set_cluster_level(&mut self, cluster_level: BufferClusterLevel) {
+        unsafe { ffi::hb_buffer_set_cluster_level(self.as_ptr(), cluster_level.into_raw()) }
+    }
+
+    #[inline]
+    pub(crate) fn cluster_level(&self) -> BufferClusterLevel {
+        BufferClusterLevel::from_raw(unsafe { ffi::hb_buffer_get_cluster_level(self.as_ptr()) })
+    }
+
+    // buffer.info 0..allocated slice.
+    #[inline]
     pub(crate) fn info(&self) -> &[GlyphInfo] {
         unsafe {
             let ptr = ffi::hb_buffer_get_glyph_infos_ptr(self.as_ptr());
@@ -219,11 +230,21 @@ impl Buffer {
         }
     }
 
+    // buffer.info 0..allocated slice.
     #[inline]
     pub(crate) fn info_mut(&mut self) -> &mut [GlyphInfo] {
         unsafe {
             let ptr = ffi::hb_buffer_get_glyph_infos_ptr(self.as_ptr());
             std::slice::from_raw_parts_mut(ptr as _, self.allocated())
+        }
+    }
+
+    // buffer.info 0..len slice.
+    #[inline]
+    pub(crate) fn info_slice_mut(&mut self) -> &mut [GlyphInfo] {
+        unsafe {
+            let ptr = ffi::hb_buffer_get_glyph_infos_ptr(self.as_ptr());
+            std::slice::from_raw_parts_mut(ptr as _, self.len())
         }
     }
 
@@ -243,6 +264,36 @@ impl Buffer {
         }
     }
 
+    // buffer.out_info 0..allocated slice.
+    #[inline]
+    pub(crate) fn out_info_mut(&mut self) -> &mut [GlyphInfo] {
+        unsafe {
+            let ptr = ffi::hb_buffer_get_out_glyph_infos_ptr(self.as_ptr());
+            std::slice::from_raw_parts_mut(ptr as _, self.allocated())
+        }
+    }
+
+    #[inline]
+    pub(crate) fn cur(&self, i: usize) -> &GlyphInfo {
+        &self.info()[self.idx() + i]
+    }
+
+    #[inline]
+    pub(crate) fn cur_mut(&mut self, i: usize) -> &mut GlyphInfo {
+        let offset = self.idx() + i;
+        &mut self.info_mut()[offset]
+    }
+
+    #[inline]
+    pub(crate) fn idx(&self) -> usize {
+        unsafe { ffi::hb_buffer_get_index(self.as_ptr()) as usize }
+    }
+
+    #[inline]
+    pub(crate) fn set_idx(&self, idx: usize) {
+        unsafe { ffi::hb_buffer_set_index(self.as_ptr(), idx as u32) };
+    }
+
     #[inline]
     pub(crate) fn allocated(&self) -> usize {
         unsafe { ffi::hb_buffer_get_allocated(self.as_ptr()) as usize }
@@ -259,6 +310,11 @@ impl Buffer {
     }
 
     #[inline]
+    pub(crate) fn out_len(&self) -> usize {
+        unsafe { ffi::hb_buffer_get_out_length(self.as_ptr()) as usize }
+    }
+
+    #[inline]
     pub(crate) fn context_len(&self, index: u32) -> u32 {
         unsafe { ffi::hb_buffer_context_len(self.as_ptr(), index) }
     }
@@ -272,6 +328,13 @@ impl Buffer {
     #[inline]
     pub(crate) fn ensure(&self, len: usize) {
         unsafe { ffi::hb_buffer_ensure(self.as_ptr(), len as u32) };
+    }
+
+    #[inline]
+    pub(crate) fn flags(&self) -> BufferFlags {
+        unsafe {
+            BufferFlags::from_bits_unchecked(ffi::hb_buffer_get_flags(self.as_ptr()))
+        }
     }
 
     #[inline]
@@ -294,8 +357,23 @@ impl Buffer {
     }
 
     #[inline]
+    pub(crate) fn next_glyph(&mut self) {
+        unsafe { ffi::hb_buffer_next_glyph(self.as_ptr()) };
+    }
+
+    #[inline]
+    pub(crate) fn replace_glyphs(&mut self, num_in: usize, num_out: usize, glyph_data: &[ffi::hb_codepoint_t]) {
+        unsafe { ffi::hb_buffer_replace_glyphs(self.as_ptr(), num_in as u32, num_out as u32, glyph_data.as_ptr()) };
+    }
+
+    #[inline]
     pub(crate) fn merge_clusters(&mut self, start: usize, end: usize) {
         unsafe { ffi::hb_buffer_merge_clusters(self.as_ptr(), start as u32, end as u32) };
+    }
+
+    #[inline]
+    pub(crate) fn merge_out_clusters(&mut self, start: usize, end: usize) {
+        unsafe { ffi::hb_buffer_merge_out_clusters(self.as_ptr(), start as u32, end as u32) };
     }
 
     #[inline]
@@ -304,8 +382,23 @@ impl Buffer {
     }
 
     #[inline]
+    pub(crate) fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize) {
+        unsafe { ffi::hb_buffer_unsafe_to_break_from_outbuffer(self.as_ptr(), start as u32, end as u32) };
+    }
+
+    #[inline]
+    pub(crate) fn swap_buffers(&mut self) {
+        unsafe { ffi::hb_buffer_swap_buffers(self.as_ptr()) };
+    }
+
+    #[inline]
     fn clear(&mut self) {
         unsafe { ffi::hb_buffer_clear_contents(self.as_ptr()) };
+    }
+
+    #[inline]
+    pub(crate) fn clear_output(&mut self) {
+        unsafe { ffi::hb_buffer_clear_output(self.as_ptr()) };
     }
 }
 
@@ -348,6 +441,18 @@ bitflags::bitflags! {
         const MULTIPLIED    = 0x40;
 
         const PRESERVE      = Self::SUBSTITUTED.bits | Self::LIGATED.bits | Self::MULTIPLIED.bits;
+    }
+}
+
+
+bitflags::bitflags! {
+    #[derive(Default)]
+    pub struct BufferFlags: u32 {
+        const BEGINNING_OF_TEXT             = 1 << 1;
+        const END_OF_TEXT                   = 1 << 2;
+        const PRESERVE_DEFAULT_IGNORABLES   = 1 << 3;
+        const REMOVE_DEFAULT_IGNORABLES     = 1 << 4;
+        const DO_NOT_INSERT_DOTTED_CIRCLE   = 1 << 5;
     }
 }
 
@@ -549,12 +654,12 @@ impl UnicodeBuffer {
 
     /// Set the cluster level of the buffer.
     pub fn set_cluster_level(&mut self, cluster_level: BufferClusterLevel) {
-        unsafe { ffi::hb_buffer_set_cluster_level(self.0.as_ptr(), cluster_level.into_raw()) }
+        self.0.set_cluster_level(cluster_level)
     }
 
     /// Retrieve the cluster level of the buffer.
     pub fn cluster_level(&self) -> BufferClusterLevel {
-        BufferClusterLevel::from_raw(unsafe { ffi::hb_buffer_get_cluster_level(self.0.as_ptr()) })
+        self.0.cluster_level()
     }
 
     /// Resets clusters.

@@ -138,6 +138,15 @@ impl<'a> Font<'a> {
         }
     }
 
+    pub(crate) fn glyph(&self, c: char, variation: char) -> Option<u32> {
+        let mut glyph = 0;
+        let ok = unsafe {
+            ffi::hb_font_get_glyph(self.as_ptr() as _, c as u32, variation as u32, &mut glyph as _)
+        };
+
+        if ok != 0 { Some(glyph) } else { None }
+    }
+
     pub(crate) fn glyph_h_advance(&self, glyph: u32) -> u32 {
         hb_font_get_advance(self.as_ptr(), glyph, 0)
     }

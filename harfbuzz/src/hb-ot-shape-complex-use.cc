@@ -29,7 +29,6 @@
 #include "hb.hh"
 
 #include "hb-ot-shape-complex-use.hh"
-#include "hb-ot-shape-complex-arabic.hh"
 #include "hb-ot-shape-complex-vowel-constraints.hh"
 
 /* buffer var allocations */

@@ -27,7 +27,6 @@
 #include "hb.hh"
 
 #include "hb-ot-shape-complex.hh"
-#include "hb-ot-shape-complex-arabic.hh"
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_arabic = {
     hb_ot_complex_collect_features_arabic,
@@ -44,6 +43,23 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_arabic = {
     hb_ot_complex_reorder_marks_arabic,
     HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
     true, /* fallback_position */
+};
+
+const hb_ot_complex_shaper_t _hb_ot_complex_shaper_hangul = {
+    hb_ot_complex_collect_features_hangul,
+    hb_ot_complex_override_features_hangul,
+    hb_ot_complex_data_create_hangul,
+    hb_ot_complex_data_destroy_hangul,
+    hb_ot_complex_preprocess_text_hangul,
+    nullptr, /* postprocess_glyphs */
+    HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
+    nullptr, /* decompose */
+    nullptr, /* compose */
+    hb_ot_complex_setup_masks_hangul,
+    HB_TAG_NONE, /* gpos_tag */
+    nullptr,     /* reorder_marks */
+    HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
+    false, /* fallback_position */
 };
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_default = {

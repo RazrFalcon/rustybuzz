@@ -368,4 +368,32 @@ static inline const hb_ot_complex_shaper_t *hb_ot_shape_complex_categorize(const
     }
 }
 
+extern "C" {
+typedef struct hb_ot_arabic_shape_plan_t hb_ot_arabic_shape_plan_t;
+
+HB_EXTERN void *hb_ot_complex_data_create_arabic(const hb_ot_shape_plan_t *plan);
+HB_EXTERN void hb_ot_complex_data_destroy_arabic(void *data);
+HB_EXTERN void hb_ot_complex_setup_masks_arabic_plan(const hb_ot_arabic_shape_plan_t *arabic_plan,
+                                                     hb_buffer_t *buffer,
+                                                     hb_script_t script);
+HB_EXTERN void hb_ot_complex_collect_features_arabic(hb_ot_shape_planner_t *plan);
+HB_EXTERN void
+hb_ot_complex_postprocess_glyphs_arabic(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+HB_EXTERN void hb_ot_complex_setup_masks_arabic(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+HB_EXTERN void hb_ot_complex_reorder_marks_arabic(const hb_ot_shape_plan_t *plan,
+                                                  hb_buffer_t *buffer,
+                                                  unsigned int start,
+                                                  unsigned int end);
+}
+
+extern "C" {
+HB_EXTERN void *hb_ot_complex_data_create_hangul(const hb_ot_shape_plan_t *plan);
+HB_EXTERN void hb_ot_complex_data_destroy_hangul(void *data);
+HB_EXTERN void hb_ot_complex_collect_features_hangul(hb_ot_shape_planner_t *plan);
+HB_EXTERN void hb_ot_complex_override_features_hangul(hb_ot_shape_planner_t *plan);
+HB_EXTERN void
+hb_ot_complex_preprocess_text_hangul(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+HB_EXTERN void hb_ot_complex_setup_masks_hangul(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+}
+
 #endif /* HB_OT_SHAPE_COMPLEX_HH */

@@ -1,5 +1,6 @@
 mod arabic;
 mod arabic_table;
+mod hangul;
 
 #[inline]
 pub const fn hb_flag(x: u32) -> u32 {

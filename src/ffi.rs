@@ -210,11 +210,28 @@ extern "C" {
 
     pub fn hb_buffer_reset_clusters(buffer: *mut hb_buffer_t);
 
+    pub fn hb_buffer_next_glyph(buffer: *mut hb_buffer_t);
+
+    pub fn hb_buffer_replace_glyphs(
+        buffer: *mut hb_buffer_t,
+        num_in: u32,
+        num_out: u32,
+        glyph_data: *const hb_codepoint_t,
+    );
+
     pub fn hb_buffer_merge_clusters(buffer: *mut hb_buffer_t, start: u32, end: u32);
+
+    pub fn hb_buffer_merge_out_clusters(buffer: *mut hb_buffer_t, start: u32, end: u32);
 
     pub fn hb_buffer_unsafe_to_break(buffer: *mut hb_buffer_t, start: u32, end: u32);
 
+    pub fn hb_buffer_unsafe_to_break_from_outbuffer(buffer: *mut hb_buffer_t, start: u32, end: u32);
+
+    pub fn hb_buffer_swap_buffers(buffer: *mut hb_buffer_t);
+
     pub fn hb_buffer_clear_contents(buffer: *mut hb_buffer_t);
+
+    pub fn hb_buffer_clear_output(buffer: *mut hb_buffer_t);
 
     pub fn hb_buffer_add_utf8(
         buffer: *mut hb_buffer_t,
@@ -224,9 +241,15 @@ extern "C" {
         item_length: i32,
     );
 
+    pub fn hb_buffer_get_index(buffer: *mut hb_buffer_t) -> u32;
+
+    pub fn hb_buffer_set_index(buffer: *mut hb_buffer_t, len: u32);
+
     pub fn hb_buffer_get_length(buffer: *mut hb_buffer_t) -> u32;
 
     pub fn hb_buffer_set_length_force(buffer: *mut hb_buffer_t, len: u32);
+
+    pub fn hb_buffer_get_out_length(buffer: *mut hb_buffer_t) -> u32;
 
     pub fn hb_buffer_get_allocated(buffer: *mut hb_buffer_t) -> u32;
 
@@ -235,6 +258,8 @@ extern "C" {
     pub fn hb_buffer_context_len(buffer: *mut hb_buffer_t, index: u32) -> u32;
 
     pub fn hb_buffer_context(buffer: *mut hb_buffer_t, context_index: u32, index: u32) -> hb_codepoint_t;
+
+    pub fn hb_buffer_get_flags(buffer: *mut hb_buffer_t) -> u32;
 
     pub fn hb_buffer_get_scratch_flags(buffer: *mut hb_buffer_t) -> u32;
     pub fn hb_buffer_set_scratch_flags(buffer: *mut hb_buffer_t, flags: u32);
@@ -245,6 +270,8 @@ extern "C" {
     ) -> *mut hb_glyph_info_t;
 
     pub fn hb_buffer_get_glyph_infos_ptr(buffer: *mut hb_buffer_t) -> *mut hb_glyph_info_t;
+
+    pub fn hb_buffer_get_out_glyph_infos_ptr(buffer: *mut hb_buffer_t) -> *mut hb_glyph_info_t;
 
     pub fn hb_buffer_get_glyph_positions(
         buffer: *mut hb_buffer_t,
@@ -268,6 +295,13 @@ extern "C" {
     pub fn hb_face_create(blob: *mut hb_blob_t, index: u32) -> *mut hb_face_t;
 
     pub fn hb_face_destroy(face: *mut hb_face_t);
+
+    pub fn hb_font_get_glyph(
+        font: *mut hb_font_t,
+        unicode: hb_codepoint_t,
+        variation_selector: hb_codepoint_t,
+        glyph: *mut hb_codepoint_t,
+    ) -> hb_bool_t;
 
     pub fn hb_ot_map_get_1_mask(plan: *const hb_ot_map_t, tag: Tag) -> hb_mask_t;
 

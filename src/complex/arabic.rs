@@ -144,13 +144,14 @@ impl ArabicShapePlan {
     }
 }
 
+
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_collect_features_arabic(plan: *mut ffi::hb_ot_shape_planner_t) {
-    let mut plan = ShapePlanner::from_ptr_mut(plan);
-    collect_features(&mut plan)
+pub extern "C" fn hb_ot_complex_collect_features_arabic(planner: *mut ffi::hb_ot_shape_planner_t) {
+    let mut planner = ShapePlanner::from_ptr_mut(planner);
+    collect_features(&mut planner)
 }
 
-fn collect_features(plan: &mut ShapePlanner) {
+fn collect_features(planner: &mut ShapePlanner) {
     // We apply features according to the Arabic spec, with pauses
     // in between most.
     //
@@ -172,36 +173,36 @@ fn collect_features(plan: &mut ShapePlanner) {
     // A pause after calt is required to make KFGQPC Uthmanic Script HAFS
     // work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
 
-    plan.ot_map.enable_feature(Tag::from_bytes(b"stch"), FeatureFlags::NONE, 1);
-    plan.ot_map.add_gsub_pause(Some(record_stch));
+    planner.ot_map.enable_feature(Tag::from_bytes(b"stch"), FeatureFlags::NONE, 1);
+    planner.ot_map.add_gsub_pause(Some(record_stch));
 
-    plan.ot_map.enable_feature(Tag::from_bytes(b"ccmp"), FeatureFlags::NONE, 1);
-    plan.ot_map.enable_feature(Tag::from_bytes(b"locl"), FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(Tag::from_bytes(b"ccmp"), FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(Tag::from_bytes(b"locl"), FeatureFlags::NONE, 1);
 
-    plan.ot_map.add_gsub_pause(None);
+    planner.ot_map.add_gsub_pause(None);
 
     for feature in ARABIC_FEATURES {
-        let has_fallback = plan.script() == script::ARABIC && !feature_is_syriac(*feature);
+        let has_fallback = planner.script() == script::ARABIC && !feature_is_syriac(*feature);
         let flags = if has_fallback { FeatureFlags::HAS_FALLBACK } else { FeatureFlags::NONE };
-        plan.ot_map.add_feature(*feature, flags, 1);
-        plan.ot_map.add_gsub_pause(None);
+        planner.ot_map.add_feature(*feature, flags, 1);
+        planner.ot_map.add_gsub_pause(None);
     }
 
     // Normally, Unicode says a ZWNJ means "don't ligate".  In Arabic script
     // however, it says a ZWJ should also mean "don't ligate".  So we run
     // the main ligating features as MANUAL_ZWJ.
 
-    plan.ot_map.enable_feature(Tag::from_bytes(b"rlig"), FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK, 1);
+    planner.ot_map.enable_feature(Tag::from_bytes(b"rlig"), FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK, 1);
 
-    if plan.script() == script::ARABIC {
-        plan.ot_map.add_gsub_pause(Some(fallback_shape));
+    if planner.script() == script::ARABIC {
+        planner.ot_map.add_gsub_pause(Some(fallback_shape));
     }
 
     // No pause after rclt.
     // See 98460779bae19e4d64d29461ff154b3527bf8420
-    plan.ot_map.enable_feature(Tag::from_bytes(b"rclt"), FeatureFlags::MANUAL_ZWJ, 1);
-    plan.ot_map.enable_feature(Tag::from_bytes(b"calt"), FeatureFlags::MANUAL_ZWJ, 1);
-    plan.ot_map.add_gsub_pause(None);
+    planner.ot_map.enable_feature(Tag::from_bytes(b"rclt"), FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.enable_feature(Tag::from_bytes(b"calt"), FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.add_gsub_pause(None);
 
     // And undo here.
 
@@ -215,7 +216,7 @@ fn collect_features(plan: &mut ShapePlanner) {
     // Test case: U+0643,U+0640,U+0631.
 
     // plan.ot_map.enable_feature(Tag::from_bytes(b"cswh"), FeatureFlags::NONE, 1);
-    plan.ot_map.enable_feature(Tag::from_bytes(b"mset"), FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(Tag::from_bytes(b"mset"), FeatureFlags::NONE, 1);
 }
 
 extern "C" fn fallback_shape(

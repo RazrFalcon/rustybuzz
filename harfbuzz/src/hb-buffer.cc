@@ -1031,6 +1031,11 @@ void hb_buffer_clear_contents(hb_buffer_t *buffer)
     buffer->clear();
 }
 
+void hb_buffer_clear_output(hb_buffer_t *buffer)
+{
+    buffer->clear_output();
+}
+
 /**
  * hb_buffer_pre_allocate:
  * @buffer: an #hb_buffer_t.
@@ -1168,6 +1173,16 @@ hb_codepoint_t hb_buffer_context(hb_buffer_t *buffer, unsigned int context_index
     return buffer->context[context_index][index];
 }
 
+unsigned int hb_buffer_get_index(hb_buffer_t *buffer)
+{
+    return buffer->idx;
+}
+
+void hb_buffer_set_index(hb_buffer_t *buffer, unsigned int index)
+{
+    buffer->idx = index;
+}
+
 /**
  * hb_buffer_get_glyph_infos:
  * @buffer: an #hb_buffer_t.
@@ -1193,6 +1208,11 @@ hb_glyph_info_t *hb_buffer_get_glyph_infos(hb_buffer_t *buffer, unsigned int *le
 hb_glyph_info_t *hb_buffer_get_glyph_infos_ptr(hb_buffer_t *buffer)
 {
     return buffer->info;
+}
+
+hb_glyph_info_t *hb_buffer_get_out_glyph_infos_ptr(hb_buffer_t *buffer)
+{
+    return buffer->out_info;
 }
 
 /**
@@ -1560,7 +1580,22 @@ void hb_buffer_set_scratch_flags(hb_buffer_t *buffer, unsigned int flags)
     buffer->scratch_flags = (hb_buffer_scratch_flags_t)flags;
 }
 
+void hb_buffer_next_glyph(hb_buffer_t *buffer)
+{
+    buffer->next_glyph();
+}
+
+void hb_buffer_replace_glyphs(hb_buffer_t *buffer, unsigned int num_in, unsigned int num_out, const hb_codepoint_t *glyph_data)
+{
+    buffer->replace_glyphs(num_in, num_out, glyph_data);
+}
+
 void hb_buffer_unsafe_to_break(hb_buffer_t *buffer, unsigned int start, unsigned int end)
+{
+    buffer->unsafe_to_break(start, end);
+}
+
+void hb_buffer_unsafe_to_break_from_outbuffer(hb_buffer_t *buffer, unsigned int start, unsigned int end)
 {
     buffer->unsafe_to_break(start, end);
 }
@@ -1568,6 +1603,16 @@ void hb_buffer_unsafe_to_break(hb_buffer_t *buffer, unsigned int start, unsigned
 void hb_buffer_merge_clusters(hb_buffer_t *buffer, unsigned int start, unsigned int end)
 {
     buffer->merge_clusters(start, end);
+}
+
+void hb_buffer_merge_out_clusters(hb_buffer_t *buffer, unsigned int start, unsigned int end)
+{
+    buffer->merge_out_clusters(start, end);
+}
+
+void hb_buffer_swap_buffers(hb_buffer_t *buffer)
+{
+    buffer->swap_buffers();
 }
 
 /*
@@ -1655,4 +1700,9 @@ hb_buffer_diff_flags_t hb_buffer_diff(hb_buffer_t *buffer,
     }
 
     return result;
+}
+
+unsigned int hb_buffer_get_out_length(hb_buffer_t *buffer)
+{
+    return buffer->out_len;
 }
