@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Ported
 - Tables: `CBDT`, `CFF`, `CFF2`, `HVAR`, `MVAR`, `OS/2`, `SVG`, `VORG`, `VVAR`, 
   `avar`, `fvar`, `glyf`, `gvar`, `hhea`, `hmtx`, `post`, `sbix`, `vhea`, `vmtx`.
+- Shapers: arabic.
 - `hb_script_t`
 - `hb_feature_t`
 - `hb_variation_t`

@@ -188,6 +188,10 @@ impl std::str::FromStr for Language {
 pub struct Script(pub(crate) Tag);
 
 impl Script {
+    pub(crate) const fn from_raw(script: ffi::hb_script_t) -> Self {
+        Script(Tag(script))
+    }
+
     pub(crate) const fn from_bytes(bytes: &[u8; 4]) -> Self {
         Script(Tag::from_bytes(bytes))
     }

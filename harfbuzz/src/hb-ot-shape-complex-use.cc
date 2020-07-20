@@ -121,7 +121,7 @@ struct use_shape_plan_t
 {
     hb_mask_t rphf_mask;
 
-    arabic_shape_plan_t *arabic_plan;
+    hb_ot_arabic_shape_plan_t *arabic_plan;
 };
 
 static bool has_arabic_joining(hb_script_t script)
@@ -165,7 +165,7 @@ static void *data_create_use(const hb_ot_shape_plan_t *plan)
     use_plan->rphf_mask = plan->map.get_1_mask(HB_TAG('r', 'p', 'h', 'f'));
 
     if (has_arabic_joining(plan->props.script)) {
-        use_plan->arabic_plan = (arabic_shape_plan_t *)data_create_arabic(plan);
+        use_plan->arabic_plan = (hb_ot_arabic_shape_plan_t *)hb_ot_complex_data_create_arabic(plan);
         if (unlikely(!use_plan->arabic_plan)) {
             free(use_plan);
             return nullptr;
@@ -180,7 +180,7 @@ static void data_destroy_use(void *data)
     use_shape_plan_t *use_plan = (use_shape_plan_t *)data;
 
     if (use_plan->arabic_plan)
-        data_destroy_arabic(use_plan->arabic_plan);
+        hb_ot_complex_data_destroy_arabic(use_plan->arabic_plan);
 
     free(data);
 }
@@ -205,7 +205,7 @@ static void setup_masks_use(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer,
 
     /* Do this before allocating use_category(). */
     if (use_plan->arabic_plan) {
-        setup_masks_arabic_plan(use_plan->arabic_plan, buffer, plan->props.script);
+        hb_ot_complex_setup_masks_arabic_plan(use_plan->arabic_plan, buffer, plan->props.script);
     }
 
     /* We cannot setup masks here.  We save information about characters

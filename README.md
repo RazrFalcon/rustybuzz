@@ -17,6 +17,14 @@ The current progress can be found at [CHANGELOG.md](./CHANGELOG.md)
 
 Embedded `harfbuzz` version: 2.6.8
 
+## Major changes
+
+- Subsetting removed.
+- Malformed fonts will cause an error. HarfBuzz uses fallback/dummy shaper in this case.
+- Most of the TrueType and Unicode handling code moved into separate crates.
+- rustybuzz doesn't interact with any system libraries and must produce exactly the same
+  results on all OS'es and targets.
+
 ## Prior work
 
 This is mine yet another attempt to port harfbuzz to Rust.

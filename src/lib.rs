@@ -13,6 +13,8 @@ mod ffi;
 mod font;
 mod text_parser;
 mod unicode;
+mod complex;
+mod ot;
 
 pub use ttf_parser::Tag;
 
@@ -23,6 +25,8 @@ pub use crate::buffer::{
 };
 pub use crate::common::{Direction, Script, Language, Feature, Variation, script};
 pub use crate::font::Font;
+
+type Mask = u32;
 
 
 /// Shapes the buffer content using provided font and features.

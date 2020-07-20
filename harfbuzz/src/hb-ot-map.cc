@@ -33,6 +33,11 @@
 #include "hb-ot-shape.hh"
 #include "hb-ot-layout.hh"
 
+hb_mask_t hb_ot_map_get_1_mask(const hb_ot_map_t *map, hb_tag_t tag)
+{
+    return map->get_1_mask(tag);
+}
+
 void hb_ot_map_t::collect_lookups(unsigned int table_index, hb_set_t *lookups_out) const
 {
     for (unsigned int i = 0; i < lookups[table_index].length; i++)
@@ -91,6 +96,14 @@ void hb_ot_map_builder_t::add_feature(hb_tag_t tag, hb_ot_map_feature_flags_t fl
     info->stage[1] = current_stage[1];
 }
 
+void hb_ot_map_builder_add_feature(hb_ot_map_builder_t *builder,
+                                   hb_tag_t tag,
+                                   hb_ot_map_feature_flags_t flags,
+                                   unsigned int value)
+{
+    builder->add_feature(tag, flags, value);
+}
+
 void hb_ot_map_builder_t::add_lookups(hb_ot_map_t &m,
                                       unsigned int table_index,
                                       unsigned int feature_index,
@@ -127,13 +140,23 @@ void hb_ot_map_builder_t::add_lookups(hb_ot_map_t &m,
     } while (len == ARRAY_LENGTH(lookup_indices));
 }
 
-void hb_ot_map_builder_t::add_pause(unsigned int table_index, hb_ot_map_t::pause_func_t pause_func)
+void hb_ot_map_builder_t::add_pause(unsigned int table_index, hb_ot_pause_func_t pause_func)
 {
     stage_info_t *s = stages[table_index].push();
     s->index = current_stage[table_index];
     s->pause_func = pause_func;
 
     current_stage[table_index]++;
+}
+
+void hb_ot_map_builder_add_gsub_pause(hb_ot_map_builder_t *builder, hb_ot_pause_func_t pause_func)
+{
+    builder->add_gsub_pause(pause_func);
+}
+
+void hb_ot_map_builder_add_gpos_pause(hb_ot_map_builder_t *builder, hb_ot_pause_func_t pause_func)
+{
+    builder->add_gpos_pause(pause_func);
 }
 
 void hb_ot_map_builder_t::compile(hb_ot_map_t &m, unsigned int *variations_index)

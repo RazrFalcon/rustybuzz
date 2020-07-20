@@ -100,6 +100,10 @@ impl<'a> Font<'a> {
         })
     }
 
+    pub(crate) fn from_ptr(font: *const ffi::hb_font_t) -> &'static Font<'static> {
+        unsafe { &*(font as *const Font) }
+    }
+
     pub(crate) fn as_ptr(&self) -> *const ffi::hb_font_t {
         self as *const _ as *const ffi::hb_font_t
     }
@@ -133,45 +137,45 @@ impl<'a> Font<'a> {
             self.coords.push(c.get() as i32)
         }
     }
-}
 
-fn font_from_raw(font: *const ffi::hb_font_t) -> &'static Font<'static> {
-    unsafe { &*(font as *const Font) }
+    pub(crate) fn glyph_h_advance(&self, glyph: u32) -> u32 {
+        hb_font_get_advance(self.as_ptr(), glyph, 0)
+    }
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_face(font: *const ffi::hb_font_t) -> *mut ffi::hb_face_t {
-    font_from_raw(font).hb_face.as_ptr()
+    Font::from_ptr(font).hb_face.as_ptr()
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_upem(font: *const ffi::hb_font_t) -> i32 {
-    font_from_raw(font).units_per_em
+    Font::from_ptr(font).units_per_em
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_ptem(font: *const ffi::hb_font_t) -> f32 {
-    font_from_raw(font).points_per_em.unwrap_or(0.0)
+    Font::from_ptr(font).points_per_em.unwrap_or(0.0)
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_ppem_x(font: *const ffi::hb_font_t) -> u32 {
-    font_from_raw(font).pixels_per_em.map(|ppem| ppem.0).unwrap_or(0) as u32
+    Font::from_ptr(font).pixels_per_em.map(|ppem| ppem.0).unwrap_or(0) as u32
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_ppem_y(font: *const ffi::hb_font_t) -> u32 {
-    font_from_raw(font).pixels_per_em.map(|ppem| ppem.1).unwrap_or(0) as u32
+    Font::from_ptr(font).pixels_per_em.map(|ppem| ppem.1).unwrap_or(0) as u32
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_coords(font: *const ffi::hb_font_t) -> *const i32 {
-    font_from_raw(font).coords.as_ptr() as _
+    Font::from_ptr(font).coords.as_ptr() as _
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_num_coords(font: *const ffi::hb_font_t) -> u32 {
-    font_from_raw(font).coords.len() as u32
+    Font::from_ptr(font).coords.len() as u32
 }
 
 #[no_mangle]
@@ -180,7 +184,7 @@ pub extern "C" fn hb_ot_get_glyph_extents(
     glyph: ffi::hb_codepoint_t,
     extents: *mut ffi::hb_glyph_extents_t,
 ) -> ffi::hb_bool_t {
-    let font = font_from_raw(font);
+    let font = Font::from_ptr(font);
     let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
 
     let pixels_per_em = match font.pixels_per_em {
@@ -226,7 +230,7 @@ pub extern "C" fn hb_font_get_advance(
     glyph: ffi::hb_codepoint_t,
     is_vertical: ffi::hb_bool_t,
 ) -> u32 {
-    let face = &font_from_raw(font).ttfp_face;
+    let face = &Font::from_ptr(font).ttfp_face;
     let glyph = GlyphId(u16::try_from(glyph).unwrap());
 
     if  face.is_variable() &&
@@ -261,7 +265,7 @@ pub extern "C" fn hb_font_get_side_bearing(
     glyph: ffi::hb_codepoint_t,
     is_vertical: ffi::hb_bool_t,
 ) -> i32 {
-    let face = &font_from_raw(font).ttfp_face;
+    let face = &Font::from_ptr(font).ttfp_face;
     let glyph = GlyphId(u16::try_from(glyph).unwrap());
 
     if  face.is_variable() &&
@@ -298,7 +302,7 @@ pub extern "C" fn hb_ot_metrics_get_position_common(
     tag: Tag,
     position: *mut i32,
 ) -> ffi::hb_bool_t {
-    let face = &font_from_raw(font).ttfp_face;
+    let face = &Font::from_ptr(font).ttfp_face;
     let pos = match tag {
         metrics::HORIZONTAL_ASCENDER => {
             i32::from(face.ascender())
@@ -334,7 +338,7 @@ pub extern "C" fn hb_ot_get_glyph_name(
 ) -> i32 {
     assert_ne!(len, 0);
 
-    let face = &font_from_raw(font).ttfp_face;
+    let face = &Font::from_ptr(font).ttfp_face;
     match face.glyph_name(GlyphId(u16::try_from(glyph).unwrap())) {
         Some(name) => unsafe {
             let len = std::cmp::min(name.len(), len as usize - 1);
@@ -354,13 +358,13 @@ pub extern "C" fn hb_ot_get_glyph_name(
 
 #[no_mangle]
 pub extern "C" fn hb_font_has_vorg_data(font: *const ffi::hb_font_t) -> ffi::hb_bool_t {
-    font_from_raw(font).ttfp_face.has_table(ttf_parser::TableName::VerticalOrigin) as i32
+    Font::from_ptr(font).ttfp_face.has_table(ttf_parser::TableName::VerticalOrigin) as i32
 }
 
 #[no_mangle]
 pub extern "C" fn hb_font_get_y_origin(font: *const ffi::hb_font_t, glyph: ffi::hb_codepoint_t) -> i32 {
     let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
-    font_from_raw(font).ttfp_face.glyph_y_origin(glyph_id).unwrap_or(0) as i32
+    Font::from_ptr(font).ttfp_face.glyph_y_origin(glyph_id).unwrap_or(0) as i32
 }
 
 #[cfg(test)]

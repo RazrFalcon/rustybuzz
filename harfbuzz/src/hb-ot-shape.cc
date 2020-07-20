@@ -39,6 +39,31 @@
 
 #include "hb-aat-layout.hh"
 
+const hb_ot_map_t* hb_ot_shape_plan_get_ot_map(const hb_ot_shape_plan_t *plan)
+{
+    return &plan->map;
+}
+
+const void* hb_ot_shape_plan_get_data(const hb_ot_shape_plan_t *plan)
+{
+    return plan->data;
+}
+
+hb_script_t hb_ot_shape_plan_get_script(const hb_ot_shape_plan_t *plan)
+{
+    return plan->props.script;
+}
+
+hb_ot_map_builder_t* hb_ot_shape_planner_get_ot_map(hb_ot_shape_planner_t *planner)
+{
+    return &planner->map;
+}
+
+HB_EXTERN hb_script_t hb_ot_shape_planner_get_script(hb_ot_shape_planner_t *planner)
+{
+    return planner->props.script;
+}
+
 static inline bool _hb_apply_morx(hb_face_t *face, const hb_segment_properties_t *props)
 {
     /* https://github.com/harfbuzz/harfbuzz/issues/2124 */

@@ -38,6 +38,8 @@ struct hb_ot_shape_plan_t;
 
 static const hb_tag_t table_tags[2] = {HB_OT_TAG_GSUB, HB_OT_TAG_GPOS};
 
+typedef void (*hb_ot_pause_func_t)(const struct hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+
 struct hb_ot_map_t
 {
     friend struct hb_ot_map_builder_t;
@@ -78,12 +80,10 @@ public:
         }
     };
 
-    typedef void (*pause_func_t)(const struct hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
-
     struct stage_map_t
     {
         unsigned int last_lookup; /* Cumulative */
-        pause_func_t pause_func;
+        hb_ot_pause_func_t pause_func;
     };
 
     void init()
@@ -223,11 +223,11 @@ public:
         add_feature(tag, F_GLOBAL, 0);
     }
 
-    void add_gsub_pause(hb_ot_map_t::pause_func_t pause_func)
+    void add_gsub_pause(hb_ot_pause_func_t pause_func)
     {
         add_pause(0, pause_func);
     }
-    void add_gpos_pause(hb_ot_map_t::pause_func_t pause_func)
+    void add_gpos_pause(hb_ot_pause_func_t pause_func)
     {
         add_pause(1, pause_func);
     }
@@ -264,10 +264,10 @@ private:
     struct stage_info_t
     {
         unsigned int index;
-        hb_ot_map_t::pause_func_t pause_func;
+        hb_ot_pause_func_t pause_func;
     };
 
-    HB_INTERNAL void add_pause(unsigned int table_index, hb_ot_map_t::pause_func_t pause_func);
+    HB_INTERNAL void add_pause(unsigned int table_index, hb_ot_pause_func_t pause_func);
 
 public:
     hb_face_t *face;
@@ -282,5 +282,16 @@ private:
     hb_vector_t<feature_info_t> feature_infos;
     hb_vector_t<stage_info_t> stages[2]; /* GSUB/GPOS */
 };
+
+extern "C" {
+HB_EXTERN hb_mask_t hb_ot_map_get_1_mask(const hb_ot_map_t *map, hb_tag_t tag);
+
+HB_EXTERN void hb_ot_map_builder_add_feature(hb_ot_map_builder_t *builder,
+                                             hb_tag_t tag,
+                                             hb_ot_map_feature_flags_t flags,
+                                             unsigned int value);
+HB_EXTERN void hb_ot_map_builder_add_gsub_pause(hb_ot_map_builder_t *builder, hb_ot_pause_func_t pause_func);
+HB_EXTERN void hb_ot_map_builder_add_gpos_pause(hb_ot_map_builder_t *builder, hb_ot_pause_func_t pause_func);
+}
 
 #endif /* HB_OT_MAP_HH */

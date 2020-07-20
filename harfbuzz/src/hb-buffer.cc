@@ -1126,6 +1126,11 @@ hb_bool_t hb_buffer_set_length(hb_buffer_t *buffer, unsigned int length)
     return true;
 }
 
+void hb_buffer_set_length_force(hb_buffer_t *buffer, unsigned int length)
+{
+    buffer->len = length;
+}
+
 /**
  * hb_buffer_get_length:
  * @buffer: an #hb_buffer_t.
@@ -1141,6 +1146,26 @@ hb_bool_t hb_buffer_set_length(hb_buffer_t *buffer, unsigned int length)
 unsigned int hb_buffer_get_length(hb_buffer_t *buffer)
 {
     return buffer->len;
+}
+
+unsigned int hb_buffer_get_allocated(hb_buffer_t *buffer)
+{
+    return buffer->allocated;
+}
+
+hb_bool_t hb_buffer_ensure(hb_buffer_t *buffer, unsigned int length)
+{
+    return buffer->ensure(length);
+}
+
+unsigned int hb_buffer_context_len(hb_buffer_t *buffer, unsigned int index)
+{
+    return buffer->context_len[index];
+}
+
+hb_codepoint_t hb_buffer_context(hb_buffer_t *buffer, unsigned int context_index, unsigned int index)
+{
+    return buffer->context[context_index][index];
 }
 
 /**
@@ -1163,6 +1188,11 @@ hb_glyph_info_t *hb_buffer_get_glyph_infos(hb_buffer_t *buffer, unsigned int *le
         *length = buffer->len;
 
     return (hb_glyph_info_t *)buffer->info;
+}
+
+hb_glyph_info_t *hb_buffer_get_glyph_infos_ptr(hb_buffer_t *buffer)
+{
+    return buffer->info;
 }
 
 /**
@@ -1188,6 +1218,11 @@ hb_glyph_position_t *hb_buffer_get_glyph_positions(hb_buffer_t *buffer, unsigned
         *length = buffer->len;
 
     return (hb_glyph_position_t *)buffer->pos;
+}
+
+hb_glyph_position_t *hb_buffer_get_glyph_positions_ptr(hb_buffer_t *buffer)
+{
+    return buffer->pos;
 }
 
 /**
@@ -1513,6 +1548,26 @@ void hb_buffer_t::sort(unsigned int start,
             info[j] = t;
         }
     }
+}
+
+unsigned int hb_buffer_get_scratch_flags(hb_buffer_t *buffer)
+{
+    return buffer->scratch_flags;
+}
+
+void hb_buffer_set_scratch_flags(hb_buffer_t *buffer, unsigned int flags)
+{
+    buffer->scratch_flags = (hb_buffer_scratch_flags_t)flags;
+}
+
+void hb_buffer_unsafe_to_break(hb_buffer_t *buffer, unsigned int start, unsigned int end)
+{
+    buffer->unsafe_to_break(start, end);
+}
+
+void hb_buffer_merge_clusters(hb_buffer_t *buffer, unsigned int start, unsigned int end)
+{
+    buffer->merge_clusters(start, end);
 }
 
 /*

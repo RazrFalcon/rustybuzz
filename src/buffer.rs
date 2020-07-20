@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::fmt;
 use std::io::Read;
 use std::ptr::NonNull;
@@ -6,6 +7,7 @@ use ttf_parser::Tag;
 
 use crate::common::{Direction, Language, Script};
 use crate::ffi;
+use crate::unicode::{GeneralCategory, GeneralCategoryExt};
 
 /// Holds the positions of the glyph in both horizontal and vertical directions.
 ///
@@ -25,21 +27,121 @@ pub struct GlyphPosition {
     /// How much the glyph moves on the Y-axis before drawing it, this should
     /// not affect how much the line advances.
     pub y_offset: i32,
-    var: ffi::hb_var_int_t,
+    var: u32,
 }
 
 
 /// A glyph info.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Default, Debug)]
 #[repr(C)]
 pub struct GlyphInfo {
     /// A selected glyph.
-    pub glyph: u32,
-    mask: ffi::hb_mask_t,
+    pub codepoint: u32,
+    pub(crate) mask: ffi::hb_mask_t,
     /// An original cluster index.
     pub cluster: u32,
-    var1: ffi::hb_var_int_t,
-    var2: ffi::hb_var_int_t,
+    pub(crate) var1: u32,
+    pub(crate) var2: u32,
+}
+
+impl GlyphInfo {
+    #[inline]
+    pub(crate) fn as_char(&self) -> char {
+        char::try_from(self.codepoint).unwrap()
+    }
+
+    #[inline]
+    pub(crate) fn glyph_props(&self) -> u16 {
+        unsafe {
+            let v: ffi::hb_var_int_t = std::mem::transmute(self.var1);
+            v.var_u16[0]
+        }
+    }
+
+    #[inline]
+    fn unicode_props(&self) -> u16 {
+        unsafe {
+            let v: ffi::hb_var_int_t = std::mem::transmute(self.var2);
+            v.var_u16[0]
+        }
+    }
+
+    #[inline]
+    fn set_unicode_props(&mut self, n: u16) {
+        unsafe {
+            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
+            v.var_u16[0] = n;
+        }
+    }
+
+    #[inline]
+    fn lig_props(&self) -> u8 {
+        unsafe {
+            let v: ffi::hb_var_int_t = std::mem::transmute(self.var1);
+            v.var_u8[2]
+        }
+    }
+
+    #[inline]
+    pub(crate) fn general_category(&self) -> GeneralCategory {
+        let n = self.unicode_props() & UnicodeProps::GENERAL_CATEGORY.bits;
+        GeneralCategory::from_hb(n as u32)
+    }
+
+    #[inline]
+    pub(crate) fn is_default_ignorable(&self) -> bool {
+        let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
+        n != 0 && !self.is_ligated()
+    }
+
+    #[inline]
+    pub(crate) fn is_ligated(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::LIGATED.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_unicode_mark(&self) -> bool {
+        self.general_category().is_mark()
+    }
+
+    #[inline]
+    pub(crate) fn modified_combining_class(&self) -> u8 {
+        if self.is_unicode_mark() {
+            (self.unicode_props() >> 8) as u8
+        } else {
+            0
+        }
+    }
+
+    #[inline]
+    pub(crate) fn set_modified_combining_class(&mut self, mcc: u8) {
+        if !self.is_unicode_mark() {
+            return;
+        }
+
+        let n = ((mcc as u16) << 8) | (self.unicode_props() & 0xFF);
+        self.set_unicode_props(n);
+    }
+
+    #[inline]
+    pub(crate) fn is_multiplied(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::MULTIPLIED.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_ligated_internal(&self) -> bool {
+        const IS_LIG_BASE: u8 = 0x10;
+        self.lig_props() & IS_LIG_BASE != 0
+    }
+
+    #[inline]
+    pub(crate) fn lig_comp(&self) -> u8 {
+        if self.is_ligated_internal() {
+            0
+        } else {
+            self.lig_props() & 0x0F
+        }
+    }
 }
 
 
@@ -81,29 +183,127 @@ impl Default for BufferClusterLevel {
 pub(crate) struct Buffer {
     ptr: NonNull<ffi::hb_buffer_t>,
     language: Option<Language>,
+    should_drop: bool,
 }
 
 impl Buffer {
-    fn new() -> Buffer {
+    #[inline]
+    fn new() -> Self {
         let ptr = NonNull::new(unsafe { ffi::hb_buffer_create() }).unwrap(); // can't fail
         Buffer {
             ptr,
             language: None,
+            should_drop: true,
         }
     }
 
-    pub fn as_ptr(&self) -> *mut ffi::hb_buffer_t {
+    #[inline]
+    pub(crate) fn from_ptr_mut(ptr: *mut ffi::hb_buffer_t) -> Self {
+        Buffer {
+            ptr: NonNull::new(ptr).unwrap(),
+            language: None,
+            should_drop: false,
+        }
+    }
+
+    #[inline]
+    pub(crate) fn as_ptr(&self) -> *mut ffi::hb_buffer_t {
         self.ptr.as_ptr()
     }
 
-    fn len(&self) -> usize {
+    #[inline]
+    pub(crate) fn info(&self) -> &[GlyphInfo] {
+        unsafe {
+            let ptr = ffi::hb_buffer_get_glyph_infos_ptr(self.as_ptr());
+            std::slice::from_raw_parts(ptr as *const _, self.allocated())
+        }
+    }
+
+    #[inline]
+    pub(crate) fn info_mut(&mut self) -> &mut [GlyphInfo] {
+        unsafe {
+            let ptr = ffi::hb_buffer_get_glyph_infos_ptr(self.as_ptr());
+            std::slice::from_raw_parts_mut(ptr as _, self.allocated())
+        }
+    }
+
+    #[inline]
+    pub(crate) fn pos(&self) -> &[GlyphPosition] {
+        unsafe {
+            let ptr = ffi::hb_buffer_get_glyph_positions_ptr(self.as_ptr());
+            std::slice::from_raw_parts(ptr as *const _, self.allocated())
+        }
+    }
+
+    #[inline]
+    pub(crate) fn pos_mut(&mut self) -> &mut [GlyphPosition] {
+        unsafe {
+            let ptr = ffi::hb_buffer_get_glyph_positions_ptr(self.as_ptr());
+            std::slice::from_raw_parts_mut(ptr as _, self.allocated())
+        }
+    }
+
+    #[inline]
+    pub(crate) fn allocated(&self) -> usize {
+        unsafe { ffi::hb_buffer_get_allocated(self.as_ptr()) as usize }
+    }
+
+    #[inline]
+    pub(crate) fn len(&self) -> usize {
         unsafe { ffi::hb_buffer_get_length(self.as_ptr()) as usize }
     }
 
+    #[inline]
+    pub(crate) fn set_len(&self, len: usize) {
+        unsafe { ffi::hb_buffer_set_length_force(self.as_ptr(), len as u32) };
+    }
+
+    #[inline]
+    pub(crate) fn context_len(&self, index: u32) -> u32 {
+        unsafe { ffi::hb_buffer_context_len(self.as_ptr(), index) }
+    }
+
+    #[inline]
+    pub(crate) fn context(&self, context_index: u32, index: u32) -> char {
+        let c = unsafe { ffi::hb_buffer_context(self.as_ptr(), context_index, index) };
+        char::try_from(c).unwrap()
+    }
+
+    #[inline]
+    pub(crate) fn ensure(&self, len: usize) {
+        unsafe { ffi::hb_buffer_ensure(self.as_ptr(), len as u32) };
+    }
+
+    #[inline]
+    pub(crate) fn scratch_flags(&self) -> BufferScratchFlags {
+        unsafe {
+            BufferScratchFlags::from_bits_unchecked(ffi::hb_buffer_get_scratch_flags(self.as_ptr()))
+        }
+    }
+
+    #[inline]
+    pub(crate) fn set_scratch_flags(&mut self, flags: BufferScratchFlags) {
+        unsafe {
+            ffi::hb_buffer_set_scratch_flags(self.as_ptr(), flags.bits)
+        }
+    }
+
+    #[inline]
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    #[inline]
+    pub(crate) fn merge_clusters(&mut self, start: usize, end: usize) {
+        unsafe { ffi::hb_buffer_merge_clusters(self.as_ptr(), start as u32, end as u32) };
+    }
+
+    #[inline]
+    pub(crate) fn unsafe_to_break(&mut self, start: usize, end: usize) {
+        unsafe { ffi::hb_buffer_unsafe_to_break(self.as_ptr(), start as u32, end as u32) };
+    }
+
+    #[inline]
     fn clear(&mut self) {
         unsafe { ffi::hb_buffer_clear_contents(self.as_ptr()) };
     }
@@ -111,7 +311,62 @@ impl Buffer {
 
 impl Drop for Buffer {
     fn drop(&mut self) {
-        unsafe { ffi::hb_buffer_destroy(self.as_ptr()) }
+        if self.should_drop {
+            unsafe { ffi::hb_buffer_destroy(self.as_ptr()) }
+        }
+    }
+}
+
+
+bitflags::bitflags! {
+    #[derive(Default)]
+    pub struct UnicodeProps: u16 {
+        const GENERAL_CATEGORY  = 0x001F;
+        const IGNORABLE         = 0x0020;
+        // MONGOLIAN FREE VARIATION SELECTOR 1..3, or TAG characters
+        const HIDDEN            = 0x0040;
+        const CONTINUATION      = 0x0080;
+
+        // If GEN_CAT=FORMAT, top byte masks:
+        const CF_ZWJ            = 0x0100;
+        const CF_ZWNJ           = 0x0200;
+    }
+}
+
+
+bitflags::bitflags! {
+    #[derive(Default)]
+    pub struct GlyphPropsFlags: u16 {
+        // The following three match LookupFlags::Ignore* numbers.
+        const BASE_GLYPH    = 0x02;
+        const LIGATURE      = 0x04;
+        const MARK          = 0x08;
+
+        // The following are used internally; not derived from GDEF.
+        const SUBSTITUTED   = 0x10;
+        const LIGATED       = 0x20;
+        const MULTIPLIED    = 0x40;
+
+        const PRESERVE      = Self::SUBSTITUTED.bits | Self::LIGATED.bits | Self::MULTIPLIED.bits;
+    }
+}
+
+
+bitflags::bitflags! {
+    #[derive(Default)]
+    pub struct BufferScratchFlags: u32 {
+        const HAS_NON_ASCII             = 0x00000001;
+        const HAS_DEFAULT_IGNORABLES    = 0x00000002;
+        const HAS_SPACE_FALLBACK        = 0x00000004;
+        const HAS_GPOS_ATTACHMENT       = 0x00000008;
+        const HAS_UNSAFE_TO_BREAK       = 0x00000010;
+        const HAS_CGJ                   = 0x00000020;
+
+        // Reserved for complex shapers' internal use.
+        const COMPLEX0                  = 0x01000000;
+        const COMPLEX1                  = 0x02000000;
+        const COMPLEX2                  = 0x04000000;
+        const COMPLEX3                  = 0x08000000;
     }
 }
 

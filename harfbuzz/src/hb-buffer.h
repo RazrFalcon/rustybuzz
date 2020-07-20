@@ -321,15 +321,35 @@ HB_EXTERN void hb_buffer_append(hb_buffer_t *buffer, hb_buffer_t *source, unsign
 
 HB_EXTERN hb_bool_t hb_buffer_set_length(hb_buffer_t *buffer, unsigned int length);
 
+HB_EXTERN void hb_buffer_set_length_force(hb_buffer_t *buffer, unsigned int length);
+
 HB_EXTERN unsigned int hb_buffer_get_length(hb_buffer_t *buffer);
+
+HB_EXTERN unsigned int hb_buffer_get_allocated(hb_buffer_t *buffer);
+
+HB_EXTERN hb_bool_t hb_buffer_ensure(hb_buffer_t *buffer, unsigned int length);
+
+HB_EXTERN unsigned int hb_buffer_context_len(hb_buffer_t *buffer, unsigned int index);
+HB_EXTERN hb_codepoint_t hb_buffer_context(hb_buffer_t *buffer, unsigned int context_index, unsigned int index);
 
 /* Getting glyphs out of the buffer */
 
 HB_EXTERN hb_glyph_info_t *hb_buffer_get_glyph_infos(hb_buffer_t *buffer, unsigned int *length);
 
+HB_EXTERN hb_glyph_info_t *hb_buffer_get_glyph_infos_ptr(hb_buffer_t *buffer);
+
 HB_EXTERN hb_glyph_position_t *hb_buffer_get_glyph_positions(hb_buffer_t *buffer, unsigned int *length);
 
+HB_EXTERN hb_glyph_position_t *hb_buffer_get_glyph_positions_ptr(hb_buffer_t *buffer);
+
 HB_EXTERN void hb_buffer_normalize_glyphs(hb_buffer_t *buffer);
+
+HB_EXTERN unsigned int hb_buffer_get_scratch_flags(hb_buffer_t *buffer);
+HB_EXTERN void hb_buffer_set_scratch_flags(hb_buffer_t *buffer, unsigned int flags);
+
+HB_EXTERN void hb_buffer_unsafe_to_break(hb_buffer_t *buffer, unsigned int start, unsigned int end);
+
+HB_EXTERN void hb_buffer_merge_clusters(hb_buffer_t *buffer, unsigned int start, unsigned int end);
 
 /*
  * Serialize

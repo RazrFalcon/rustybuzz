@@ -44,6 +44,17 @@ HB_EXTERN void _hb_ot_shape(hb_shape_plan_t *shape_plan,
                             const hb_feature_t *features,
                             unsigned int num_features);
 
+typedef struct hb_ot_shape_plan_t hb_ot_shape_plan_t;
+typedef struct hb_ot_map_t hb_ot_map_t;
+HB_EXTERN const hb_ot_map_t* hb_ot_shape_plan_get_ot_map(const hb_ot_shape_plan_t *plan);
+HB_EXTERN const void* hb_ot_shape_plan_get_data(const hb_ot_shape_plan_t *plan);
+HB_EXTERN hb_script_t hb_ot_shape_plan_get_script(const hb_ot_shape_plan_t *plan);
+
+typedef struct hb_ot_shape_planner_t hb_ot_shape_planner_t;
+typedef struct hb_ot_map_builder_t hb_ot_map_builder_t;
+HB_EXTERN hb_ot_map_builder_t* hb_ot_shape_planner_get_ot_map(hb_ot_shape_planner_t *planner);
+HB_EXTERN hb_script_t hb_ot_shape_planner_get_script(hb_ot_shape_planner_t *planner);
+
 HB_END_DECLS
 
 #endif /* HB_OT_SHAPE_H */
