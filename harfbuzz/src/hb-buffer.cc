@@ -1585,9 +1585,19 @@ void hb_buffer_next_glyph(hb_buffer_t *buffer)
     buffer->next_glyph();
 }
 
+void hb_buffer_replace_glyph(hb_buffer_t *buffer, const hb_codepoint_t glyph_index)
+{
+    buffer->replace_glyph(glyph_index);
+}
+
 void hb_buffer_replace_glyphs(hb_buffer_t *buffer, unsigned int num_in, unsigned int num_out, const hb_codepoint_t *glyph_data)
 {
     buffer->replace_glyphs(num_in, num_out, glyph_data);
+}
+
+void hb_buffer_output_glyph(hb_buffer_t *buffer, const hb_codepoint_t glyph_index)
+{
+    buffer->output_glyph(glyph_index);
 }
 
 void hb_buffer_unsafe_to_break(hb_buffer_t *buffer, unsigned int start, unsigned int end)

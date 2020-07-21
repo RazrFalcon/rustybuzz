@@ -89,6 +89,13 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn set_general_category(&mut self, gc: GeneralCategory) {
+        let gc = gc.to_hb();
+        let n = (gc as u16) | (self.unicode_props() & (0xFF & !UnicodeProps::GENERAL_CATEGORY.bits));
+        self.set_unicode_props(n);
+    }
+
+    #[inline]
     pub(crate) fn is_default_ignorable(&self) -> bool {
         let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
         n != 0 && !self.is_ligated()
@@ -141,6 +148,13 @@ impl GlyphInfo {
         } else {
             self.lig_props() & 0x0F
         }
+    }
+
+    #[inline]
+    pub(crate) fn set_continuation(&mut self) {
+        let mut n = self.unicode_props();
+        n |= UnicodeProps::CONTINUATION.bits;
+        self.set_unicode_props(n);
     }
 }
 
@@ -266,6 +280,15 @@ impl Buffer {
 
     // buffer.out_info 0..allocated slice.
     #[inline]
+    pub(crate) fn out_info(&self) -> &[GlyphInfo] {
+        unsafe {
+            let ptr = ffi::hb_buffer_get_out_glyph_infos_ptr(self.as_ptr());
+            std::slice::from_raw_parts(ptr as _, self.allocated())
+        }
+    }
+
+    // buffer.out_info 0..allocated slice.
+    #[inline]
     pub(crate) fn out_info_mut(&mut self) -> &mut [GlyphInfo] {
         unsafe {
             let ptr = ffi::hb_buffer_get_out_glyph_infos_ptr(self.as_ptr());
@@ -362,8 +385,18 @@ impl Buffer {
     }
 
     #[inline]
+    pub(crate) fn replace_glyph(&mut self, glyph_index: u32) {
+        unsafe { ffi::hb_buffer_replace_glyph(self.as_ptr(), glyph_index) };
+    }
+
+    #[inline]
     pub(crate) fn replace_glyphs(&mut self, num_in: usize, num_out: usize, glyph_data: &[ffi::hb_codepoint_t]) {
         unsafe { ffi::hb_buffer_replace_glyphs(self.as_ptr(), num_in as u32, num_out as u32, glyph_data.as_ptr()) };
+    }
+
+    #[inline]
+    pub(crate) fn output_glyph(&mut self, glyph_index: u32) {
+        unsafe { ffi::hb_buffer_output_glyph(self.as_ptr(), glyph_index) };
     }
 
     #[inline]

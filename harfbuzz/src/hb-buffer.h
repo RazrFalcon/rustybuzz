@@ -144,7 +144,7 @@ typedef struct hb_segment_properties_t
 {
     hb_direction_t direction;
     hb_script_t script;
-    const char* language;
+    const char *language;
     /*< private >*/
     void *reserved1;
     void *reserved2;
@@ -152,7 +152,7 @@ typedef struct hb_segment_properties_t
 
 #define HB_SEGMENT_PROPERTIES_DEFAULT                                                                                  \
     {                                                                                                                  \
-        HB_DIRECTION_INVALID, HB_SCRIPT_INVALID, NULL, (void *)0, (void *)0                             \
+        HB_DIRECTION_INVALID, HB_SCRIPT_INVALID, NULL, (void *)0, (void *)0                                            \
     }
 
 HB_EXTERN hb_bool_t hb_segment_properties_equal(const hb_segment_properties_t *a, const hb_segment_properties_t *b);
@@ -200,9 +200,9 @@ HB_EXTERN void hb_buffer_set_script(hb_buffer_t *buffer, hb_script_t script);
 
 HB_EXTERN hb_script_t hb_buffer_get_script(hb_buffer_t *buffer);
 
-HB_EXTERN void hb_buffer_set_language(hb_buffer_t *buffer, const char* language);
+HB_EXTERN void hb_buffer_set_language(hb_buffer_t *buffer, const char *language);
 
-HB_EXTERN const char* hb_buffer_get_language(hb_buffer_t *buffer);
+HB_EXTERN const char *hb_buffer_get_language(hb_buffer_t *buffer);
 
 HB_EXTERN void hb_buffer_set_segment_properties(hb_buffer_t *buffer, const hb_segment_properties_t *props);
 
@@ -361,7 +361,14 @@ HB_EXTERN void hb_buffer_set_scratch_flags(hb_buffer_t *buffer, unsigned int fla
 
 HB_EXTERN void hb_buffer_next_glyph(hb_buffer_t *buffer);
 
-HB_EXTERN void hb_buffer_replace_glyphs(hb_buffer_t *buffer, unsigned int num_in, unsigned int num_out, const hb_codepoint_t *glyph_data);
+HB_EXTERN void hb_buffer_replace_glyph(hb_buffer_t *buffer, const hb_codepoint_t glyph_index);
+
+HB_EXTERN void hb_buffer_replace_glyphs(hb_buffer_t *buffer,
+                                        unsigned int num_in,
+                                        unsigned int num_out,
+                                        const hb_codepoint_t *glyph_data);
+
+HB_EXTERN void hb_buffer_output_glyph(hb_buffer_t *buffer, const hb_codepoint_t glyph_index);
 
 HB_EXTERN void hb_buffer_unsafe_to_break(hb_buffer_t *buffer, unsigned int start, unsigned int end);
 

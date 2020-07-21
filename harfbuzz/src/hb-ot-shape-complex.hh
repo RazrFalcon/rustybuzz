@@ -403,4 +403,8 @@ HB_EXTERN bool hb_ot_complex_compose_hebrew(const hb_ot_shape_normalize_context_
                                             hb_codepoint_t *ab);
 }
 
+extern "C" {
+HB_EXTERN void hb_ot_complex_preprocess_text_thai(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+}
+
 #endif /* HB_OT_SHAPE_COMPLEX_HH */

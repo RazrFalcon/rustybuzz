@@ -216,12 +216,16 @@ extern "C" {
 
     pub fn hb_buffer_next_glyph(buffer: *mut hb_buffer_t);
 
+    pub fn hb_buffer_replace_glyph(buffer: *mut hb_buffer_t, glyph_index: hb_codepoint_t);
+
     pub fn hb_buffer_replace_glyphs(
         buffer: *mut hb_buffer_t,
         num_in: u32,
         num_out: u32,
         glyph_data: *const hb_codepoint_t,
     );
+
+    pub fn hb_buffer_output_glyph(buffer: *mut hb_buffer_t, glyph_index: hb_codepoint_t);
 
     pub fn hb_buffer_merge_clusters(buffer: *mut hb_buffer_t, start: u32, end: u32);
 
@@ -308,6 +312,8 @@ extern "C" {
     ) -> hb_bool_t;
 
     pub fn hb_ot_map_get_1_mask(plan: *const hb_ot_map_t, tag: Tag) -> hb_mask_t;
+
+    pub fn hb_ot_map_get_found_script(plan: *const hb_ot_map_t, index: u32) -> bool;
 
     pub fn hb_ot_shape_plan_get_ot_map(plan: *const hb_ot_shape_plan_t) -> *const hb_ot_map_t;
 

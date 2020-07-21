@@ -12,4 +12,8 @@ impl Map {
     pub fn get_1_mask(&self, feature_tag: Tag) -> Mask {
         unsafe { ffi::hb_ot_map_get_1_mask(self.0.as_ptr(), feature_tag) }
     }
+
+    pub fn found_script(&self, index: usize) -> bool {
+        unsafe { ffi::hb_ot_map_get_found_script(self.0.as_ptr(), index as u32) }
+    }
 }
