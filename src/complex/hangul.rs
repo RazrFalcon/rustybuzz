@@ -112,7 +112,7 @@ pub extern "C" fn hb_ot_complex_preprocess_text_hangul(
 }
 
 fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
-// Hangul syllables come in two shapes: LV, and LVT.  Of those:
+    // Hangul syllables come in two shapes: LV, and LVT.  Of those:
     //
     //   - LV can be precomposed, or decomposed.  Lets call those
     //     <LV> and <L,V>,

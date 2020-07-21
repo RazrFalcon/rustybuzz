@@ -9,6 +9,21 @@ use crate::common::Variation;
 use crate::ffi;
 
 
+// https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
+const WINDOWS_SYMBOL_ENCODING: u16 = 0;
+const WINDOWS_UNICODE_BMP_ENCODING: u16 = 1;
+const WINDOWS_UNICODE_FULL_ENCODING: u16 = 10;
+
+// https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-specific-encoding-and-language-ids-unicode-platform-platform-id--0
+const UNICODE_1_0_ENCODING: u16 = 0;
+const UNICODE_1_1_ENCODING: u16 = 1;
+const UNICODE_ISO_ENCODING: u16 = 2;
+const UNICODE_2_0_BMP_ENCODING: u16 = 3;
+const UNICODE_2_0_FULL_ENCODING: u16 = 4;
+//const UNICODE_VARIATION_ENCODING: u16 = 5;
+const UNICODE_FULL_ENCODING: u16 = 6;
+
+
 struct Blob<'a> {
     ptr: NonNull<ffi::hb_blob_t>,
     marker: PhantomData<&'a [u8]>,
@@ -79,6 +94,7 @@ pub struct Font<'a> {
     pixels_per_em: Option<(u16, u16)>,
     points_per_em: Option<f32>,
     coords: Vec<i32>,
+    prefered_cmap_encoding_subtable: Option<u16>,
 }
 
 impl<'a> Font<'a> {
@@ -88,7 +104,7 @@ impl<'a> Font<'a> {
     pub fn from_slice(data: &'a [u8], face_index: u32) -> Option<Self> {
         let ttfp_face = ttf_parser::Face::from_slice(data, face_index).ok()?;
         let upem = ttfp_face.units_per_em()? as i32;
-
+        let prefered_cmap_encoding_subtable = find_best_cmap_subtable(&ttfp_face);
         let face = Face::from_data(data, face_index)?;
         Some(Font {
             ttfp_face,
@@ -97,6 +113,7 @@ impl<'a> Font<'a> {
             pixels_per_em: None,
             points_per_em: None,
             coords: Vec::new(),
+            prefered_cmap_encoding_subtable,
         })
     }
 
@@ -147,9 +164,78 @@ impl<'a> Font<'a> {
         if ok != 0 { Some(glyph) } else { None }
     }
 
+    pub(crate) fn glyph_index(&self, c: u32) -> Option<GlyphId> {
+        let subtable_idx = self.prefered_cmap_encoding_subtable?;
+        let subtable = self.ttfp_face.character_mapping_subtables().nth(subtable_idx as usize)?;
+        match subtable.glyph_index(c) {
+            Some(gid) => Some(gid),
+            None => {
+                // Special case for Windows Symbol fonts.
+                // TODO: add tests
+                if  subtable.platform_id() == ttf_parser::PlatformId::Windows &&
+                    subtable.encoding_id() == WINDOWS_SYMBOL_ENCODING
+                {
+                    if c <= 0x00FF {
+                        // For symbol-encoded OpenType fonts, we duplicate the
+                        // U+F000..F0FF range at U+0000..U+00FF.  That's what
+                        // Windows seems to do, and that's hinted about at:
+                        // https://docs.microsoft.com/en-us/typography/opentype/spec/recom
+                        // under "Non-Standard (Symbol) Fonts".
+                        return self.glyph_index(0xF000 + c);
+                    }
+                }
+
+                None
+            }
+        }
+    }
+
+    pub(crate) fn glyph_variation_index(&self, c: char, variation: char) -> Option<GlyphId> {
+        let res = self.ttfp_face.character_mapping_subtables()
+            .find(|e| e.format() == ttf_parser::cmap::Format::UnicodeVariationSequences)
+            .and_then(|e| e.glyph_variation_index(c, variation))?;
+        match res {
+            ttf_parser::cmap::GlyphVariationResult::Found(v) => Some(v),
+            ttf_parser::cmap::GlyphVariationResult::UseDefault => self.glyph_index(c as u32),
+        }
+    }
+
     pub(crate) fn glyph_h_advance(&self, glyph: u32) -> u32 {
         hb_font_get_advance(self.as_ptr(), glyph, 0)
     }
+}
+
+fn find_best_cmap_subtable(face: &ttf_parser::Face) -> Option<u16> {
+    use ttf_parser::PlatformId;
+
+    // Symbol subtable.
+    // Prefer symbol if available.
+    // https://github.com/harfbuzz/harfbuzz/issues/1918
+    find_cmap_subtable(face, PlatformId::Windows, WINDOWS_SYMBOL_ENCODING)
+        // 32-bit subtables:
+        .or(find_cmap_subtable(face, PlatformId::Windows, WINDOWS_UNICODE_FULL_ENCODING))
+        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_FULL_ENCODING))
+        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_2_0_FULL_ENCODING))
+        // 16-bit subtables:
+        .or(find_cmap_subtable(face, PlatformId::Windows, WINDOWS_UNICODE_BMP_ENCODING))
+        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_2_0_BMP_ENCODING))
+        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_ISO_ENCODING))
+        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_1_1_ENCODING))
+        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_1_0_ENCODING))
+}
+
+fn find_cmap_subtable(
+    face: &ttf_parser::Face,
+    platform_id: ttf_parser::PlatformId,
+    encoding_id: u16,
+) -> Option<u16> {
+    for (i, subtable) in face.character_mapping_subtables().enumerate() {
+        if subtable.platform_id() == platform_id && subtable.encoding_id() == encoding_id {
+            return Some(i as u16)
+        }
+    }
+
+    None
 }
 
 #[no_mangle]
@@ -374,6 +460,39 @@ pub extern "C" fn hb_font_has_vorg_data(font: *const ffi::hb_font_t) -> ffi::hb_
 pub extern "C" fn hb_font_get_y_origin(font: *const ffi::hb_font_t, glyph: ffi::hb_codepoint_t) -> i32 {
     let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
     Font::from_ptr(font).ttfp_face.glyph_y_origin(glyph_id).unwrap_or(0) as i32
+}
+
+#[no_mangle]
+pub extern "C" fn hb_ot_get_nominal_glyph(
+    font: *const ffi::hb_font_t,
+    u: ffi::hb_codepoint_t,
+    glyph: *mut ffi::hb_codepoint_t,
+) -> ffi::hb_bool_t {
+    match Font::from_ptr(font).glyph_index(u) {
+        Some(gid) => {
+            unsafe { *glyph = gid.0 as u32 };
+            1
+        }
+        None => 0,
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn hb_ot_get_variation_glyph(
+    font: *const ffi::hb_font_t,
+    u: ffi::hb_codepoint_t,
+    variation: ffi::hb_codepoint_t,
+    glyph: *mut ffi::hb_codepoint_t,
+) -> ffi::hb_bool_t {
+    let u = char::try_from(u).unwrap();
+    let variation = char::try_from(variation).unwrap();
+    match Font::from_ptr(font).glyph_variation_index(u, variation) {
+        Some(gid) => {
+            unsafe { *glyph = gid.0 as u32 };
+            1
+        }
+        None => 0,
+    }
 }
 
 #[cfg(test)]

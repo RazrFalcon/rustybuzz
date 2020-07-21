@@ -26,7 +26,6 @@
 
 #include "hb-ot-face.hh"
 
-#include "hb-ot-cmap-table.hh"
 #include "hb-ot-kern-table.hh"
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
