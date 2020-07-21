@@ -54,6 +54,11 @@ hb_script_t hb_ot_shape_plan_get_script(const hb_ot_shape_plan_t *plan)
     return plan->props.script;
 }
 
+bool hb_ot_shape_plan_has_gpos_mark(const hb_ot_shape_plan_t *plan)
+{
+    return plan->has_gpos_mark;
+}
+
 hb_ot_map_builder_t* hb_ot_shape_planner_get_ot_map(hb_ot_shape_planner_t *planner)
 {
     return &planner->map;

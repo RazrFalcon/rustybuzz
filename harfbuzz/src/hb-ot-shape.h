@@ -49,6 +49,7 @@ typedef struct hb_ot_map_t hb_ot_map_t;
 HB_EXTERN const hb_ot_map_t* hb_ot_shape_plan_get_ot_map(const hb_ot_shape_plan_t *plan);
 HB_EXTERN const void* hb_ot_shape_plan_get_data(const hb_ot_shape_plan_t *plan);
 HB_EXTERN hb_script_t hb_ot_shape_plan_get_script(const hb_ot_shape_plan_t *plan);
+HB_EXTERN bool hb_ot_shape_plan_has_gpos_mark(const hb_ot_shape_plan_t *plan);
 
 typedef struct hb_ot_shape_planner_t hb_ot_shape_planner_t;
 typedef struct hb_ot_map_builder_t hb_ot_map_builder_t;

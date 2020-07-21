@@ -396,4 +396,11 @@ hb_ot_complex_preprocess_text_hangul(const hb_ot_shape_plan_t *plan, hb_buffer_t
 HB_EXTERN void hb_ot_complex_setup_masks_hangul(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
 }
 
+extern "C" {
+HB_EXTERN bool hb_ot_complex_compose_hebrew(const hb_ot_shape_normalize_context_t *c,
+                                            hb_codepoint_t a,
+                                            hb_codepoint_t b,
+                                            hb_codepoint_t *ab);
+}
+
 #endif /* HB_OT_SHAPE_COMPLEX_HH */

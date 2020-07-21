@@ -164,6 +164,10 @@ pub struct hb_ot_shape_plan_t { _unused: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct hb_ot_shape_planner_t { _unused: [u8; 0] }
 
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct hb_ot_shape_normalize_context_t { _unused: [u8; 0] }
+
 pub type hb_ot_pause_func_t = Option<
     unsafe extern "C" fn(
         plan: *const hb_ot_shape_plan_t,
@@ -305,17 +309,13 @@ extern "C" {
 
     pub fn hb_ot_map_get_1_mask(plan: *const hb_ot_map_t, tag: Tag) -> hb_mask_t;
 
-    pub fn hb_ot_shape_plan_get_ot_map(
-        plan: *const hb_ot_shape_plan_t,
-    ) -> *const hb_ot_map_t;
+    pub fn hb_ot_shape_plan_get_ot_map(plan: *const hb_ot_shape_plan_t) -> *const hb_ot_map_t;
 
-    pub fn hb_ot_shape_plan_get_data(
-        planner: *mut hb_ot_shape_plan_t,
-    ) -> *const c_void;
+    pub fn hb_ot_shape_plan_get_data(plan: *mut hb_ot_shape_plan_t) -> *const c_void;
 
-    pub fn hb_ot_shape_plan_get_script(
-        planner: *mut hb_ot_shape_plan_t,
-    ) -> hb_script_t;
+    pub fn hb_ot_shape_plan_get_script(plan: *mut hb_ot_shape_plan_t) -> hb_script_t;
+
+    pub fn hb_ot_shape_plan_has_gpos_mark(plan: *mut hb_ot_shape_plan_t) -> bool;
 
     pub fn hb_ot_shape_planner_get_ot_map(
         planner: *mut hb_ot_shape_planner_t,
@@ -336,6 +336,10 @@ extern "C" {
         builder: *mut hb_ot_map_builder_t,
         pause: hb_ot_pause_func_t,
     );
+
+    pub fn hb_ot_shape_normalize_context_get_plan(
+        ctx: *const hb_ot_shape_normalize_context_t,
+    ) -> *const hb_ot_shape_plan_t;
 
     pub fn hb_shape(
         font: *const hb_font_t,

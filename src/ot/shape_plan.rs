@@ -31,4 +31,10 @@ impl ShapePlan {
             Script::from_raw(ffi::hb_ot_shape_plan_get_script(self.plan.as_ptr()))
         }
     }
+
+    pub fn has_gpos_mark(&self) -> bool {
+        unsafe {
+            ffi::hb_ot_shape_plan_has_gpos_mark(self.plan.as_ptr())
+        }
+    }
 }

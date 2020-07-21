@@ -59,4 +59,8 @@ struct hb_ot_shape_normalize_context_t
     bool (*compose)(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab);
 };
 
+extern "C" {
+HB_EXTERN const hb_ot_shape_plan_t *hb_ot_shape_normalize_context_get_plan(const hb_ot_shape_normalize_context_t *c);
+}
+
 #endif /* HB_OT_SHAPE_NORMALIZE_HH */

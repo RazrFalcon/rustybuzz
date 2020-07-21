@@ -417,3 +417,8 @@ void _hb_ot_shape_normalize(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer,
         buffer->swap_buffers();
     }
 }
+
+const hb_ot_shape_plan_t *hb_ot_shape_normalize_context_get_plan(const hb_ot_shape_normalize_context_t *c)
+{
+    return c->plan;
+}

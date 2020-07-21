@@ -62,6 +62,23 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_hangul = {
     false, /* fallback_position */
 };
 
+const hb_ot_complex_shaper_t _hb_ot_complex_shaper_hebrew = {
+    nullptr, /* collect_features */
+    nullptr, /* override_features */
+    nullptr, /* data_create */
+    nullptr, /* data_destroy */
+    nullptr, /* preprocess_text */
+    nullptr, /* postprocess_glyphs */
+    HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
+    nullptr, /* decompose */
+    hb_ot_complex_compose_hebrew,
+    nullptr,                    /* setup_masks */
+    HB_TAG('h', 'e', 'b', 'r'), /* gpos_tag. https://github.com/harfbuzz/harfbuzz/issues/347#issuecomment-267838368 */
+    nullptr,                    /* reorder_marks */
+    HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
+    true, /* fallback_position */
+};
+
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_default = {
     nullptr, /* collect_features */
     nullptr, /* override_features */

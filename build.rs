@@ -35,7 +35,6 @@ fn main() {
     build.file("harfbuzz/src/hb-ot-map.cc");
     build.file("harfbuzz/src/hb-ot-shape.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-default.cc");
-    build.file("harfbuzz/src/hb-ot-shape-complex-hebrew.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-indic.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-indic-table.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-khmer.cc");

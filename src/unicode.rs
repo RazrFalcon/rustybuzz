@@ -744,6 +744,10 @@ pub extern "C" fn hb_ucd_is_variation_selector(u: hb_codepoint_t) -> ffi::hb_boo
     char::try_from(u).unwrap().is_variation_selector() as i32
 }
 
+pub fn compose(a: char, b: char) -> Option<char> {
+    unic_ucd_normal::compose(a, b)
+}
+
 #[no_mangle]
 pub extern "C" fn hb_ucd_compose(a: hb_codepoint_t, b: hb_codepoint_t, ab: *mut hb_codepoint_t) -> ffi::hb_bool_t {
     unsafe {
