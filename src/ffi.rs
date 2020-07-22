@@ -308,6 +308,8 @@ extern "C" {
 
     pub fn hb_ot_map_get_1_mask(map: *const hb_ot_map_t, tag: Tag) -> hb_mask_t;
 
+    pub fn hb_ot_map_global_mask(map: *const hb_ot_map_t) -> hb_mask_t;
+
     pub fn hb_ot_map_get_found_script(map: *const hb_ot_map_t, index: u32) -> bool;
 
     pub fn hb_ot_map_get_chosen_script(map: *const hb_ot_map_t, index: u32) -> Tag;
@@ -367,6 +369,12 @@ extern "C" {
     ) -> hb_bool_t;
 
     pub fn hb_layout_clear_syllables(
+        plan: *const hb_ot_shape_plan_t,
+        font: *mut hb_font_t,
+        buffer: *mut hb_buffer_t,
+    );
+
+    pub fn hb_clear_substitution_flags(
         plan: *const hb_ot_shape_plan_t,
         font: *mut hb_font_t,
         buffer: *mut hb_buffer_t,

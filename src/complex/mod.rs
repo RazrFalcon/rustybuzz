@@ -10,6 +10,9 @@ mod khmer_machine;
 mod myanmar;
 mod myanmar_machine;
 mod thai;
+mod universal;
+mod universal_machine;
+mod universal_table;
 mod vowel_constraints;
 
 
@@ -26,4 +29,14 @@ pub fn hb_flag_unsafe(x: u32) -> u32 {
 #[inline]
 pub fn hb_flag_range(x: u32, y: u32) -> u32 {
     (x < y) as u32 + hb_flag(y + 1) - hb_flag(x)
+}
+
+#[inline]
+pub const fn hb_flag64(x: u32) -> u64 {
+    1 << x as u64
+}
+
+#[inline]
+pub fn hb_flag64_unsafe(x: u32) -> u64 {
+    if x < 64 { 1 << (x as u64) } else { 0 }
 }

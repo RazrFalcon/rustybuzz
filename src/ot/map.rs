@@ -30,6 +30,11 @@ impl Map {
     }
 
     #[inline]
+    pub fn global_mask(&self) -> Mask {
+        unsafe { ffi::hb_ot_map_global_mask(self.0.as_ptr()) }
+    }
+
+    #[inline]
     pub fn get_1_mask(&self, feature_tag: Tag) -> Mask {
         unsafe { ffi::hb_ot_map_get_1_mask(self.0.as_ptr(), feature_tag) }
     }

@@ -33,9 +33,6 @@ fn main() {
     build.file("harfbuzz/src/hb-ot-map.cc");
     build.file("harfbuzz/src/hb-ot-shape.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-default.cc");
-    build.file("harfbuzz/src/hb-ot-shape-complex-use.cc");
-    build.file("harfbuzz/src/hb-ot-shape-complex-use-table.cc");
-    build.file("harfbuzz/src/hb-ot-shape-complex-vowel-constraints.cc");
     build.file("harfbuzz/src/hb-ot-shape-fallback.cc");
     build.file("harfbuzz/src/hb-ot-shape-normalize.cc");
     build.file("harfbuzz/src/hb-ot-tag.cc");

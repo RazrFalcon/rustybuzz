@@ -6,9 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Ported
+- All complex shapers.
 - Tables: `CBDT`, `CFF`, `CFF2`, `HVAR`, `MVAR`, `OS/2`, `SVG`, `VORG`, `VVAR`,
   `avar`, `cmap`, `fvar`, `glyf`, `gvar`, `hhea`, `hmtx`, `post`, `sbix`, `vhea`, `vmtx`.
-- Shapers: arabic, hangul, hebrew, indic, khmer, myanmar, thai.
 - `hb_script_t`
 - `hb_feature_t`
 - `hb_variation_t`

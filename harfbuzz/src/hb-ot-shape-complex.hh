@@ -449,4 +449,17 @@ extern "C" {
 HB_EXTERN void hb_ot_complex_preprocess_text_thai(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
 }
 
+extern "C" {
+HB_EXTERN void hb_ot_complex_collect_features_use(hb_ot_shape_planner_t *plan);
+HB_EXTERN void hb_clear_substitution_flags(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+HB_EXTERN void *hb_ot_complex_data_create_use(const hb_ot_shape_plan_t *plan);
+HB_EXTERN void hb_ot_complex_data_destroy_use(void *data);
+HB_EXTERN void hb_ot_complex_preprocess_text_use(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+HB_EXTERN bool hb_ot_complex_compose_use(const hb_ot_shape_normalize_context_t *c,
+                                         hb_codepoint_t a,
+                                         hb_codepoint_t b,
+                                         hb_codepoint_t *ab);
+HB_EXTERN void hb_ot_complex_setup_masks_use(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+}
+
 #endif /* HB_OT_SHAPE_COMPLEX_HH */

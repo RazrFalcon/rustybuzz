@@ -285,6 +285,7 @@ private:
 
 extern "C" {
 HB_EXTERN hb_mask_t hb_ot_map_get_1_mask(const hb_ot_map_t *map, hb_tag_t tag);
+HB_EXTERN hb_mask_t hb_ot_map_global_mask(const hb_ot_map_t *map);
 HB_EXTERN bool hb_ot_map_get_found_script(const hb_ot_map_t *map, unsigned int index);
 HB_EXTERN hb_tag_t hb_ot_map_get_chosen_script(const hb_ot_map_t *map, unsigned int index);
 HB_EXTERN unsigned int

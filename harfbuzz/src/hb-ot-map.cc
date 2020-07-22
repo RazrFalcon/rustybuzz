@@ -38,6 +38,11 @@ hb_mask_t hb_ot_map_get_1_mask(const hb_ot_map_t *map, hb_tag_t tag)
     return map->get_1_mask(tag);
 }
 
+hb_mask_t hb_ot_map_global_mask(const hb_ot_map_t *map)
+{
+    return map->get_global_mask();
+}
+
 bool hb_ot_map_get_found_script(const hb_ot_map_t *map, unsigned int index)
 {
     return map->found_script[index];

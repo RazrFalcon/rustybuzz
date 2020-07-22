@@ -128,7 +128,7 @@ impl GlyphInfo {
 }
 
 
-struct ArabicShapePlan {
+pub struct ArabicShapePlan {
     // The "+ 1" in the next array is to accommodate for the "NONE" command,
     // which is not an OpenType feature, but this simplifies the code by not
     // having to do a "if (... < NONE) ..." and just rely on the fact that
@@ -461,7 +461,7 @@ pub extern "C" fn hb_ot_complex_setup_masks_arabic_plan(
     setup_masks(arabic_plan, Script::from_raw(script), &mut buffer)
 }
 
-fn setup_masks(plan: &ArabicShapePlan, script: Script, buffer: &mut Buffer) {
+pub(crate) fn setup_masks(plan: &ArabicShapePlan, script: Script, buffer: &mut Buffer) {
     arabic_joining(buffer);
     if script == script::MONGOLIAN {
         mongolian_variation_selectors(buffer);
@@ -551,7 +551,7 @@ pub extern "C" fn hb_ot_complex_data_create_arabic(
     Box::into_raw(Box::new(data_create(&plan))) as _
 }
 
-fn data_create(plan: &ShapePlan) -> ArabicShapePlan {
+pub fn data_create(plan: &ShapePlan) -> ArabicShapePlan {
     let mut arabic_plan = ArabicShapePlan {
         mask_array: [0; ARABIC_FEATURES.len() + 1],
         has_stch: false,

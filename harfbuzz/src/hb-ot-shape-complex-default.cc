@@ -28,6 +28,14 @@
 
 #include "hb-ot-shape-complex.hh"
 
+void hb_clear_substitution_flags(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+{
+    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = buffer->len;
+    for (unsigned int i = 0; i < count; i++)
+        _hb_glyph_info_clear_substituted(&info[i]);
+}
+
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_arabic = {
     hb_ot_complex_collect_features_arabic,
     nullptr, /* override_features */
@@ -167,6 +175,24 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_thai = {
     HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
     false, /* fallback_position */
 };
+
+const hb_ot_complex_shaper_t _hb_ot_complex_shaper_use = {
+    hb_ot_complex_collect_features_use,
+    nullptr, /* override_features */
+    hb_ot_complex_data_create_use,
+    hb_ot_complex_data_destroy_use,
+    hb_ot_complex_preprocess_text_use,
+    nullptr, /* postprocess_glyphs */
+    HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
+    nullptr, /* decompose */
+    hb_ot_complex_compose_use,
+    hb_ot_complex_setup_masks_use,
+    HB_TAG_NONE, /* gpos_tag */
+    nullptr,     /* reorder_marks */
+    HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
+    false, /* fallback_position */
+};
+
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_default = {
     nullptr, /* collect_features */
