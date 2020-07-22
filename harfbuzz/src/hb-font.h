@@ -103,41 +103,7 @@ HB_EXTERN void hb_font_get_glyph_v_advances(hb_font_t *font,
 
 HB_EXTERN hb_bool_t hb_font_get_glyph_extents(hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents);
 
-HB_EXTERN hb_bool_t hb_font_get_glyph_contour_point(
-    hb_font_t *font, hb_codepoint_t glyph, unsigned int point_index, hb_position_t *x, hb_position_t *y);
-
-HB_EXTERN hb_bool_t hb_font_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *name, unsigned int size);
-
 /* high-level funcs, with fallback */
-
-/* Calls either hb_font_get_nominal_glyph() if variation_selector is 0,
- * otherwise calls hb_font_get_variation_glyph(). */
-HB_EXTERN hb_bool_t hb_font_get_glyph(hb_font_t *font,
-                                      hb_codepoint_t unicode,
-                                      hb_codepoint_t variation_selector,
-                                      hb_codepoint_t *glyph);
-
-HB_EXTERN void hb_font_get_extents_for_direction(hb_font_t *font, hb_direction_t direction, hb_font_extents_t *extents);
-HB_EXTERN void hb_font_get_glyph_advance_for_direction(
-    hb_font_t *font, hb_codepoint_t glyph, hb_direction_t direction, hb_position_t *x, hb_position_t *y);
-HB_EXTERN void hb_font_get_glyph_advances_for_direction(hb_font_t *font,
-                                                        hb_direction_t direction,
-                                                        unsigned int count,
-                                                        const hb_codepoint_t *first_glyph,
-                                                        unsigned glyph_stride,
-                                                        hb_position_t *first_advance,
-                                                        unsigned advance_stride);
-HB_EXTERN void hb_font_get_glyph_origin_for_direction(
-    hb_font_t *font, hb_codepoint_t glyph, hb_direction_t direction, hb_position_t *x, hb_position_t *y);
-HB_EXTERN void hb_font_add_glyph_origin_for_direction(
-    hb_font_t *font, hb_codepoint_t glyph, hb_direction_t direction, hb_position_t *x, hb_position_t *y);
-HB_EXTERN void hb_font_subtract_glyph_origin_for_direction(
-    hb_font_t *font, hb_codepoint_t glyph, hb_direction_t direction, hb_position_t *x, hb_position_t *y);
-
-HB_EXTERN hb_bool_t hb_font_get_glyph_extents_for_origin(hb_font_t *font,
-                                                         hb_codepoint_t glyph,
-                                                         hb_direction_t direction,
-                                                         hb_glyph_extents_t *extents);
 
 HB_EXTERN hb_bool_t hb_font_get_glyph_contour_point_for_origin(hb_font_t *font,
                                                                hb_codepoint_t glyph,
@@ -145,9 +111,6 @@ HB_EXTERN hb_bool_t hb_font_get_glyph_contour_point_for_origin(hb_font_t *font,
                                                                hb_direction_t direction,
                                                                hb_position_t *x,
                                                                hb_position_t *y);
-
-/* Generates gidDDD if glyph has no name. */
-HB_EXTERN void hb_font_glyph_to_string(hb_font_t *font, hb_codepoint_t glyph, char *s, unsigned int size);
 
 /*
  * hb_font_t
@@ -168,10 +131,7 @@ HB_EXTERN unsigned int hb_font_get_num_coords(hb_font_t *font);
 HB_EXTERN hb_bool_t hb_font_has_glyph(hb_font_t *font, hb_codepoint_t unicode);
 
 HB_EXTERN void hb_font_get_h_extents_with_fallback(hb_font_t *font, hb_font_extents_t *extents);
-HB_EXTERN void hb_font_get_v_extents_with_fallback(hb_font_t *font, hb_font_extents_t *extents);
 
-HB_EXTERN void
-hb_font_get_glyph_h_origin_with_fallback(hb_font_t *font, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y);
 HB_EXTERN void
 hb_font_get_glyph_v_origin_with_fallback(hb_font_t *font, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y);
 
@@ -184,11 +144,6 @@ HB_EXTERN hb_bool_t hb_font_get_glyph_v_origin(hb_font_t *font,
                                                hb_position_t *x,
                                                hb_position_t *y);
 
-HB_EXTERN void hb_font_add_glyph_h_origin(hb_font_t *font, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y);
-HB_EXTERN void hb_font_add_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y);
-
-HB_EXTERN void
-hb_font_subtract_glyph_h_origin(hb_font_t *font, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y);
 HB_EXTERN void
 hb_font_subtract_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y);
 

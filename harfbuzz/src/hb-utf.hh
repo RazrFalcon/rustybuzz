@@ -104,47 +104,6 @@ struct hb_utf8_t
     {
         return ::strlen((const char *)text);
     }
-
-    static unsigned int encode_len(hb_codepoint_t unicode)
-    {
-        if (unicode < 0x0080u)
-            return 1;
-        if (unicode < 0x0800u)
-            return 2;
-        if (unicode < 0x10000u)
-            return 3;
-        if (unicode < 0x110000u)
-            return 4;
-        return 3;
-    }
-
-    static codepoint_t *encode(codepoint_t *text, const codepoint_t *end, hb_codepoint_t unicode)
-    {
-        if (unlikely(unicode >= 0xD800u && (unicode <= 0xDFFFu || unicode > 0x10FFFFu)))
-            unicode = 0xFFFDu;
-        if (unicode < 0x0080u)
-            *text++ = unicode;
-        else if (unicode < 0x0800u) {
-            if (end - text >= 2) {
-                *text++ = 0xC0u + (0x1Fu & (unicode >> 6));
-                *text++ = 0x80u + (0x3Fu & (unicode));
-            }
-        } else if (unicode < 0x10000u) {
-            if (end - text >= 3) {
-                *text++ = 0xE0u + (0x0Fu & (unicode >> 12));
-                *text++ = 0x80u + (0x3Fu & (unicode >> 6));
-                *text++ = 0x80u + (0x3Fu & (unicode));
-            }
-        } else {
-            if (end - text >= 4) {
-                *text++ = 0xF0u + (0x07u & (unicode >> 18));
-                *text++ = 0x80u + (0x3Fu & (unicode >> 12));
-                *text++ = 0x80u + (0x3Fu & (unicode >> 6));
-                *text++ = 0x80u + (0x3Fu & (unicode));
-            }
-        }
-        return text;
-    }
 };
 
 #endif /* HB_UTF_HH */

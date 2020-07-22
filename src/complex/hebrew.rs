@@ -52,7 +52,6 @@ pub extern "C" fn hb_ot_complex_compose_hebrew(
     }
 }
 
-// TODO: write test
 fn compose(ctx: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     // Hebrew presentation-form shaping.
     // https://bugzilla.mozilla.org/show_bug.cgi?id=728866

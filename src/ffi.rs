@@ -288,13 +288,6 @@ extern "C" {
 
     pub fn hb_face_destroy(face: *mut hb_face_t);
 
-    pub fn hb_font_get_glyph(
-        font: *mut hb_font_t,
-        unicode: hb_codepoint_t,
-        variation_selector: hb_codepoint_t,
-        glyph: *mut hb_codepoint_t,
-    ) -> hb_bool_t;
-
     pub fn hb_ot_map_get_1_mask(plan: *const hb_ot_map_t, tag: Tag) -> hb_mask_t;
 
     pub fn hb_ot_map_get_found_script(plan: *const hb_ot_map_t, index: u32) -> bool;

@@ -155,15 +155,6 @@ impl<'a> Font<'a> {
         }
     }
 
-    pub(crate) fn glyph(&self, c: char, variation: char) -> Option<u32> {
-        let mut glyph = 0;
-        let ok = unsafe {
-            ffi::hb_font_get_glyph(self.as_ptr() as _, c as u32, variation as u32, &mut glyph as _)
-        };
-
-        if ok != 0 { Some(glyph) } else { None }
-    }
-
     pub(crate) fn glyph_index(&self, c: u32) -> Option<GlyphId> {
         let subtable_idx = self.prefered_cmap_encoding_subtable?;
         let subtable = self.ttfp_face.character_mapping_subtables().nth(subtable_idx as usize)?;

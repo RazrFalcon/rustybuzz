@@ -1,4 +1,3 @@
-use std::convert::TryFrom;
 use std::os::raw::c_void;
 
 use crate::{ffi, Tag, Font, GlyphInfo, Mask};
@@ -353,7 +352,7 @@ fn is_hangul_tone(u: u32) -> bool {
 }
 
 fn is_zero_width_char(font: &Font, c: char) -> bool {
-    if let Some(glyph) = font.glyph(c, '\0') {
+    if let Some(glyph) = font.glyph_index(c as u32).map(|gid| gid.0 as u32) {
         font.glyph_h_advance(glyph) == 0
     } else {
         false
@@ -389,7 +388,7 @@ fn is_combined_s(u: u32) -> bool {
 }
 
 fn font_has_glyph(font: &Font, u: u32) -> bool {
-    font.glyph(char::try_from(u).unwrap(), '\0').is_some()
+    font.glyph_index(u).is_some()
 }
 
 #[no_mangle]

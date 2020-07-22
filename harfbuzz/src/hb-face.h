@@ -67,8 +67,6 @@ HB_EXTERN hb_blob_t *hb_face_reference_table(const hb_face_t *face, hb_tag_t tag
 
 HB_EXTERN hb_blob_t *hb_face_reference_blob(hb_face_t *face);
 
-HB_EXTERN void hb_face_set_upem(hb_face_t *face, unsigned int upem);
-
 HB_EXTERN unsigned int hb_face_get_upem(const hb_face_t *face);
 
 HB_EXTERN unsigned int hb_face_get_glyph_count(const hb_face_t *face);

@@ -45,7 +45,6 @@
 
 /* OpenType fundamentals. */
 HB_OT_TABLE(OT, head)
-HB_OT_TABLE(AAT, fdsc)
 
 /* Legacy kern. */
 HB_OT_TABLE(OT, kern)

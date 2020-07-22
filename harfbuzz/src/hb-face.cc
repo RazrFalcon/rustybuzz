@@ -315,23 +315,6 @@ hb_blob_t *hb_face_reference_blob(hb_face_t *face)
 }
 
 /**
- * hb_face_set_upem:
- * @face: a face.
- * @upem:
- *
- *
- *
- * Since: 0.9.2
- **/
-void hb_face_set_upem(hb_face_t *face, unsigned int upem)
-{
-    if (hb_object_is_immutable(face))
-        return;
-
-    face->upem.set_relaxed(upem);
-}
-
-/**
  * hb_face_get_upem:
  * @face: a face.
  *
