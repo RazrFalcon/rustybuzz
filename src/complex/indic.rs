@@ -700,29 +700,37 @@ pub extern "C" fn hb_ot_complex_decompose_indic(
     crate::unicode::hb_ucd_decompose(ab, a, b) != 0
 }
 
-// fn compose(ctx: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
-//
-// }
-
 #[no_mangle]
 pub extern "C" fn hb_ot_complex_compose_indic(
-    _: *const ffi::hb_ot_shape_normalize_context_t,
+    ctx: *const ffi::hb_ot_shape_normalize_context_t,
     a: u32,
     b: u32,
     ab: *mut u32,
 ) -> bool {
+    let ctx = ShapeNormalizeContext::from_ptr(ctx);
+    let a = char::try_from(a).unwrap();
+    let b = char::try_from(b).unwrap();
+    match compose(&ctx, a, b) {
+        Some(c) => unsafe {
+            *ab = c as u32;
+            true
+        }
+        None => false,
+    }
+}
+
+fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     // Avoid recomposing split matras.
-    if char::try_from(a).unwrap().general_category().is_mark() {
-        return false;
+    if a.general_category().is_mark() {
+        return None;
     }
 
     // Composition-exclusion exceptions that we want to recompose.
-    if a == 0x09AF && b == 0x09BC {
-        unsafe { *ab = 0x09DF; }
-        return true;
+    if a == '\u{09AF}' && b == '\u{09BC}' {
+        return Some('\u{09DF}');
     }
 
-    crate::unicode::hb_ucd_compose(a, b, ab) != 0
+    crate::unicode::compose(a, b)
 }
 
 #[no_mangle]
@@ -1883,7 +1891,9 @@ fn final_reordering_impl(
                     // The glyphs formed by 'half' are Chillus or ligated explicit viramas.
                     // We want to position matra after them.
                     if buffer.script() != script::MALAYALAM && buffer.script() != script::TAMIL {
-                        while new_pos > start && !buffer.info()[new_pos - 1].is_one_of(hb_flag(Category::M as u32) | hb_flag(Category::H as u32)) {
+                        while new_pos > start && !buffer.info()[new_pos - 1].is_one_of(hb_flag(Category::M as u32) |
+                            hb_flag(Category::H as u32))
+                        {
                             new_pos -= 1;
                         }
                     }

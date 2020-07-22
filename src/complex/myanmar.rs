@@ -6,16 +6,16 @@ use super::indic::{Category, Position};
 const MYANMAR_FEATURES: &[Tag] = &[
     // Basic features.
     // These features are applied in order, one at a time, after reordering.
-    Tag::from_bytes(b"rphf"),
-    Tag::from_bytes(b"pref"),
-    Tag::from_bytes(b"blwf"),
-    Tag::from_bytes(b"pstf"),
+    feature::REPH_FORMS,
+    feature::PRE_BASE_FORMS,
+    feature::BELOW_BASE_FORMS,
+    feature::POST_BASE_FORMS,
     // Other features.
     // These features are applied all at once after clearing syllables.
-    Tag::from_bytes(b"pres"),
-    Tag::from_bytes(b"abvs"),
-    Tag::from_bytes(b"blws"),
-    Tag::from_bytes(b"psts"),
+    feature::PRE_BASE_SUBSTITUTIONS,
+    feature::ABOVE_BASE_SUBSTITUTIONS,
+    feature::BELOW_BASE_SUBSTITUTIONS,
+    feature::POST_BASE_SUBSTITUTIONS,
 ];
 
 impl GlyphInfo {
@@ -157,10 +157,10 @@ fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
     planner.ot_map.add_gsub_pause(Some(setup_syllables_raw));
 
-    planner.ot_map.enable_feature(Tag::from_bytes(b"locl"), FeatureFlags::default(), 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::default(), 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.ot_map.enable_feature(Tag::from_bytes(b"ccmp"), FeatureFlags::default(), 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::default(), 1);
 
     planner.ot_map.add_gsub_pause(Some(reorder_raw));
 
@@ -410,7 +410,7 @@ pub extern "C" fn hb_ot_complex_override_features_myanmar(planner: *mut ffi::hb_
 }
 
 fn override_features(planner: &mut ShapePlanner) {
-    planner.ot_map.disable_feature(Tag::from_bytes(b"liga"));
+    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
 #[no_mangle]

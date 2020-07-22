@@ -404,17 +404,30 @@ pub extern "C" fn hb_ot_complex_decompose_khmer(
 
 #[no_mangle]
 pub extern "C" fn hb_ot_complex_compose_khmer(
-    _: *const ffi::hb_ot_shape_normalize_context_t,
+    ctx: *const ffi::hb_ot_shape_normalize_context_t,
     a: u32,
     b: u32,
     ab: *mut u32,
 ) -> bool {
+    let ctx = ShapeNormalizeContext::from_ptr(ctx);
+    let a = char::try_from(a).unwrap();
+    let b = char::try_from(b).unwrap();
+    match compose(&ctx, a, b) {
+        Some(c) => unsafe {
+            *ab = c as u32;
+            true
+        }
+        None => false,
+    }
+}
+
+fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     // Avoid recomposing split matras.
-    if char::try_from(a).unwrap().general_category().is_mark() {
-        return false;
+    if a.general_category().is_mark() {
+        return None;
     }
 
-    crate::unicode::hb_ucd_compose(a, b, ab) != 0
+    crate::unicode::compose(a, b)
 }
 
 #[no_mangle]
