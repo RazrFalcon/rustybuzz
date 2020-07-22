@@ -382,6 +382,8 @@ HB_EXTERN void hb_buffer_merge_out_clusters(hb_buffer_t *buffer, unsigned int st
 
 HB_EXTERN void hb_buffer_swap_buffers(hb_buffer_t *buffer);
 
+HB_EXTERN void hb_buffer_sort(hb_buffer_t *buffer, unsigned int start, unsigned int end, int (*compar)(const hb_glyph_info_t *, const hb_glyph_info_t *));
+
 HB_END_DECLS
 
 #endif /* HB_BUFFER_H */

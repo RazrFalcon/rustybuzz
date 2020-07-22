@@ -7,6 +7,8 @@ mod indic_machine;
 mod indic_table;
 mod khmer;
 mod khmer_machine;
+mod myanmar;
+mod myanmar_machine;
 mod thai;
 mod vowel_constraints;
 

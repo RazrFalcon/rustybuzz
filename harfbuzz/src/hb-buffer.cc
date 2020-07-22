@@ -1634,3 +1634,8 @@ unsigned int hb_buffer_get_out_length(hb_buffer_t *buffer)
 {
     return buffer->out_len;
 }
+
+void hb_buffer_sort(hb_buffer_t *buffer, unsigned int start, unsigned int end, int (*compar)(const hb_glyph_info_t *, const hb_glyph_info_t *))
+{
+    buffer->sort(start, end, compar);
+}

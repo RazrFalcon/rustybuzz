@@ -178,6 +178,12 @@ pub type hb_ot_pause_func_t = Option<
     ),
 >;
 
+pub type hb_sort_funct_t =
+    unsafe extern "C" fn(
+        a: *const hb_glyph_info_t,
+        b: *const hb_glyph_info_t,
+    ) -> i32;
+
 extern "C" {
     pub fn hb_blob_create(
         data: *const c_char,
@@ -240,6 +246,8 @@ extern "C" {
     pub fn hb_buffer_unsafe_to_break_from_outbuffer(buffer: *mut hb_buffer_t, start: u32, end: u32);
 
     pub fn hb_buffer_swap_buffers(buffer: *mut hb_buffer_t);
+
+    pub fn hb_buffer_sort(buffer: *mut hb_buffer_t, start: u32, end: u32, p: hb_sort_funct_t);
 
     pub fn hb_buffer_clear_contents(buffer: *mut hb_buffer_t);
 

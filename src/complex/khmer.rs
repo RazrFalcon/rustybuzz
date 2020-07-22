@@ -10,17 +10,17 @@ use super::indic::{Category, Position};
 const KHMER_FEATURES: &[(Tag, FeatureFlags)] = &[
     // Basic features.
     // These features are applied in order, one at a time, after reordering.
-    (Tag::from_bytes(b"pref"), FeatureFlags::MANUAL_JOINERS),
-    (Tag::from_bytes(b"blwf"), FeatureFlags::MANUAL_JOINERS),
-    (Tag::from_bytes(b"abvf"), FeatureFlags::MANUAL_JOINERS),
-    (Tag::from_bytes(b"pstf"), FeatureFlags::MANUAL_JOINERS),
-    (Tag::from_bytes(b"cfar"), FeatureFlags::MANUAL_JOINERS),
+    (feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
+    (feature::BELOW_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
+    (feature::ABOVE_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
+    (feature::POST_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
+    (feature::CONJUNCT_FORM_AFTER_RO, FeatureFlags::MANUAL_JOINERS),
     // Other features.
     // These features are applied all at once after clearing syllables.
-    (Tag::from_bytes(b"pres"), FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (Tag::from_bytes(b"abvs"), FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (Tag::from_bytes(b"blws"), FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (Tag::from_bytes(b"psts"), FeatureFlags::GLOBAL_MANUAL_JOINERS),
+    (feature::PRE_BASE_SUBSTITUTIONS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
+    (feature::ABOVE_BASE_SUBSTITUTIONS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
+    (feature::BELOW_BASE_SUBSTITUTIONS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
+    (feature::POST_BASE_SUBSTITUTIONS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
 ];
 
 // Must be in the same order as the KHMER_FEATURES array.
@@ -111,8 +111,8 @@ fn collect_features(planner: &mut ShapePlanner) {
     //   U+1789,U+17D2,U+1789,U+17BC
     //
     // https://github.com/harfbuzz/harfbuzz/issues/974
-    planner.ot_map.enable_feature(Tag::from_bytes(b"locl"), FeatureFlags::default(), 1);
-    planner.ot_map.enable_feature(Tag::from_bytes(b"ccmp"), FeatureFlags::default(), 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::default(), 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::default(), 1);
 
     for feature in KHMER_FEATURES.iter().take(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
@@ -342,9 +342,9 @@ fn override_features(planner: &mut ShapePlanner) {
     // Khmer spec has 'clig' as part of required shaping features:
     // "Apply feature 'clig' to form ligatures that are desired for
     // typographical correctness.", hence in overrides...
-    planner.ot_map.enable_feature(Tag::from_bytes(b"clig"), FeatureFlags::default(), 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::default(), 1);
 
-    planner.ot_map.disable_feature(Tag::from_bytes(b"liga"));
+    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
 #[no_mangle]

@@ -440,6 +440,12 @@ HB_EXTERN void hb_ot_complex_setup_masks_khmer(const hb_ot_shape_plan_t *plan, h
 }
 
 extern "C" {
+HB_EXTERN void hb_ot_complex_collect_features_myanmar(hb_ot_shape_planner_t *plan);
+HB_EXTERN void hb_ot_complex_override_features_myanmar(hb_ot_shape_planner_t *plan);
+HB_EXTERN void hb_ot_complex_setup_masks_myanmar(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+}
+
+extern "C" {
 HB_EXTERN void hb_ot_complex_preprocess_text_thai(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
 }
 

@@ -524,6 +524,11 @@ impl Buffer {
     }
 
     #[inline]
+    pub(crate) fn sort(&mut self, start: usize, end: usize, p: ffi::hb_sort_funct_t) {
+        unsafe { ffi::hb_buffer_sort(self.as_ptr(), start as u32, end as u32, p) };
+    }
+
+    #[inline]
     fn clear(&mut self) {
         unsafe { ffi::hb_buffer_clear_contents(self.as_ptr()) };
     }
