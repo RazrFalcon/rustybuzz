@@ -5,6 +5,8 @@ mod hebrew;
 mod indic;
 mod indic_machine;
 mod indic_table;
+mod khmer;
+mod khmer_machine;
 mod thai;
 mod vowel_constraints;
 

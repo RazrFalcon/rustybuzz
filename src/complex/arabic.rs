@@ -139,7 +139,7 @@ struct ArabicShapePlan {
 }
 
 impl ArabicShapePlan {
-    fn from_ptr(plan: *const ffi::hb_ot_arabic_shape_plan_t) -> &'static ArabicShapePlan {
+    fn from_ptr(plan: *const c_void) -> &'static ArabicShapePlan {
         unsafe { &*(plan as *const ArabicShapePlan) }
     }
 }
@@ -452,7 +452,7 @@ pub extern "C" fn hb_ot_complex_setup_masks_arabic(
 
 #[no_mangle]
 pub extern "C" fn hb_ot_complex_setup_masks_arabic_plan(
-    arabic_plan: *const ffi::hb_ot_arabic_shape_plan_t,
+    arabic_plan: *const c_void,
     buffer: *mut ffi::hb_buffer_t,
     script: ffi::hb_script_t,
 ) {

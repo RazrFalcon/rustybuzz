@@ -424,6 +424,22 @@ HB_EXTERN void hb_ot_complex_setup_masks_indic(const hb_ot_shape_plan_t *plan, h
 }
 
 extern "C" {
+HB_EXTERN void hb_ot_complex_collect_features_khmer(hb_ot_shape_planner_t *plan);
+HB_EXTERN void hb_ot_complex_override_features_khmer(hb_ot_shape_planner_t *plan);
+HB_EXTERN void *hb_ot_complex_data_create_khmer(const hb_ot_shape_plan_t *plan);
+HB_EXTERN void hb_ot_complex_data_destroy_khmer(void *data);
+HB_EXTERN bool hb_ot_complex_decompose_khmer(const hb_ot_shape_normalize_context_t *c,
+                                             hb_codepoint_t ab,
+                                             hb_codepoint_t *a,
+                                             hb_codepoint_t *b);
+HB_EXTERN bool hb_ot_complex_compose_khmer(const hb_ot_shape_normalize_context_t *c,
+                                           hb_codepoint_t a,
+                                           hb_codepoint_t b,
+                                           hb_codepoint_t *ab);
+HB_EXTERN void hb_ot_complex_setup_masks_khmer(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
+}
+
+extern "C" {
 HB_EXTERN void hb_ot_complex_preprocess_text_thai(const hb_ot_shape_plan_t *plan, hb_buffer_t *buffer, hb_font_t *font);
 }
 

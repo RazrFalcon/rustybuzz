@@ -152,14 +152,6 @@ pub struct hb_font_t {
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct hb_ot_arabic_shape_plan_t { _unused: [u8; 0] }
-
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct hb_ot_indic_shape_plan_t { _unused: [u8; 0] }
-
-#[repr(C)]
-#[derive(Clone, Copy)]
 pub struct hb_ot_map_t { _unused: [u8; 0] }
 
 #[repr(C)]

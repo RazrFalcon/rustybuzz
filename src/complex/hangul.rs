@@ -53,7 +53,7 @@ impl HangulShapePlan {
         }
     }
 
-    fn from_ptr(plan: *const ffi::hb_ot_arabic_shape_plan_t) -> &'static HangulShapePlan {
+    fn from_ptr(plan: *const c_void) -> &'static HangulShapePlan {
         unsafe { &*(plan as *const HangulShapePlan) }
     }
 }

@@ -432,7 +432,7 @@ impl IndicShapePlan {
         }
     }
 
-    fn from_ptr(plan: *const ffi::hb_ot_indic_shape_plan_t) -> &'static IndicShapePlan {
+    fn from_ptr(plan: *const c_void) -> &'static IndicShapePlan {
         unsafe { &*(plan as *const IndicShapePlan) }
     }
 }
@@ -643,17 +643,7 @@ pub extern "C" fn hb_ot_complex_decompose_indic(
     a: *mut ffi::hb_codepoint_t,
     b: *mut ffi::hb_codepoint_t,
 ) -> bool {
-    // let plan = unsafe {
-    //     let plan_data = ffi::hb_ot_shape_normalize_context_plan_data(c);
-    //     &*(plan_data as *const IndicShapePlan)
-    // };
-
     let ctx = ShapeNormalizeContext::from_ptr(ctx);
-    // let font = {
-    //     let ttf_parser_data = unsafe { ffi::hb_ot_shape_normalize_context_ttf_parser(c) };
-    //     crate::font::ttf_parser_from_raw(ttf_parser_data)
-    // };
-    // let face = unsafe { ffi::hb_ot_shape_normalize_context_face(c) };
 
     // Don't decompose these.
     match ab {
@@ -1942,7 +1932,7 @@ fn final_reordering_impl(
     }
 }
 
-fn get_category_and_position(u: u32) -> (Category, Position) {
+pub fn get_category_and_position(u: u32) -> (Category, Position) {
     let (c1, c2) = super::indic_table::get_categories(u);
     let c2 = if c1 == SyllabicCategory::ConsonantMedial ||
         c1 == SyllabicCategory::GeminationMark ||
