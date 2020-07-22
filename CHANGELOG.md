@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `hb_font_t`
 - `hb-ot-metrics`
 - Unicode functions and tables.
+- Buffer serialization.
 
 ### Changed
 - Rename `Font::from_data` into `Font::from_slice`.

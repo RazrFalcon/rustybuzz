@@ -203,6 +203,41 @@ impl<'a> Font<'a> {
     pub(crate) fn glyph_h_advance(&self, glyph: u32) -> u32 {
         hb_font_get_advance(self.as_ptr(), glyph, 0)
     }
+
+    pub(crate) fn glyph_extents(&self, glyph: u32) -> Option<ffi::hb_glyph_extents_t> {
+        let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
+
+        let pixels_per_em = match self.pixels_per_em {
+            Some(ppem) => ppem.0,
+            None => std::u16::MAX,
+        };
+
+        if let Some(img) = self.ttfp_face.glyph_raster_image(glyph_id, pixels_per_em) {
+            // HarfBuzz also supports only PNG.
+            if img.format == ttf_parser::RasterImageFormat::PNG {
+                let scale = self.units_per_em as f32 / img.pixels_per_em as f32;
+                return Some(ffi::hb_glyph_extents_t {
+                    x_bearing: (f32::from(img.x) * scale).round() as i32,
+                    y_bearing: ((f32::from(img.y) + f32::from(img.height)) * scale).round() as i32,
+                    width: (f32::from(img.width) * scale).round() as i32,
+                    height: (-f32::from(img.height) * scale).round() as i32,
+                });
+            }
+        }
+
+        let bbox = self.ttfp_face.glyph_bounding_box(glyph_id)?;
+        Some(ffi::hb_glyph_extents_t {
+            x_bearing: i32::from(bbox.x_min),
+            y_bearing: i32::from(bbox.y_max),
+            width: i32::from(bbox.width()),
+            height: i32::from(bbox.y_min - bbox.y_max),
+        })
+    }
+
+    pub(crate) fn glyph_name(&self, glyph: u32) -> Option<&str> {
+        let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
+        self.ttfp_face.glyph_name(glyph_id)
+    }
 }
 
 fn find_best_cmap_subtable(face: &ttf_parser::Face) -> Option<u16> {
@@ -280,42 +315,12 @@ pub extern "C" fn hb_ot_get_glyph_extents(
     extents: *mut ffi::hb_glyph_extents_t,
 ) -> ffi::hb_bool_t {
     let font = Font::from_ptr(font);
-    let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
-
-    let pixels_per_em = match font.pixels_per_em {
-        Some(ppem) => ppem.0,
-        None => std::u16::MAX,
-    };
-
-    if let Some(img) = font.ttfp_face.glyph_raster_image(glyph_id, pixels_per_em) {
-        // HarfBuzz also supports only PNG.
-        if img.format == ttf_parser::RasterImageFormat::PNG {
-            let scale = font.units_per_em as f32 / img.pixels_per_em as f32;
-            unsafe {
-                *extents = ffi::hb_glyph_extents_t {
-                    x_bearing: (f32::from(img.x) * scale).round() as i32,
-                    y_bearing: ((f32::from(img.y) + f32::from(img.height)) * scale).round() as i32,
-                    width: (f32::from(img.width) * scale).round() as i32,
-                    height: (-f32::from(img.height) * scale).round() as i32,
-                };
-            }
-
-            return 1;
-        }
-    }
-
-    match font.ttfp_face.glyph_bounding_box(glyph_id) {
-        Some(bbox) => unsafe {
-            *extents = ffi::hb_glyph_extents_t {
-                x_bearing: i32::from(bbox.x_min),
-                y_bearing: i32::from(bbox.y_max),
-                width: i32::from(bbox.width()),
-                height: i32::from(bbox.y_min - bbox.y_max),
-            };
-
+    match font.glyph_extents(glyph) {
+        Some(bbox) => {
+            unsafe { *extents = bbox; }
             1
         }
-        _ => 0,
+        None => 0,
     }
 }
 

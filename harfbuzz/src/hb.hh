@@ -633,7 +633,6 @@ private:
  * They express dependency amongst themselves, but no other file should include
  * them directly.*/
 #include "hb-meta.hh"
-#include "hb-number.hh"
 #include "hb-atomic.hh" // Requires: hb-meta
 #include "hb-null.hh"   // Requires: hb-meta
 #include "hb-algs.hh"   // Requires: hb-meta hb-null hb-number

@@ -1,4 +1,3 @@
-use std::io::Read;
 use std::str::FromStr;
 
 struct Args {
@@ -125,13 +124,5 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
         format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
     }
 
-    let mut serializer = glyph_buffer.serializer(
-        Some(&font),
-        rustybuzz::SerializeFormat::Text,
-        format_flags,
-    );
-
-    let mut string = String::new();
-    serializer.read_to_string(&mut string).unwrap();
-    string
+    glyph_buffer.serialize(&font, format_flags)
 }

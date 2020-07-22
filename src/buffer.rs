@@ -1,13 +1,38 @@
 use std::convert::TryFrom;
 use std::fmt;
-use std::io::Read;
 use std::ptr::NonNull;
 
 use ttf_parser::Tag;
 
+use crate::Font;
 use crate::common::{Direction, Language, Script};
 use crate::ffi;
 use crate::unicode::{GeneralCategory, GeneralCategoryExt};
+
+
+pub(crate) mod glyph_flag {
+    /// Indicates that if input text is broken at the
+    /// beginning of the cluster this glyph is part of,
+    /// then both sides need to be re-shaped, as the
+    /// result might be different.  On the flip side,
+    /// it means that when this flag is not present,
+    /// then it's safe to break the glyph-run at the
+    /// beginning of this cluster, and the two sides
+    /// represent the exact same result one would get
+    /// if breaking input text at the beginning of
+    /// this cluster and shaping the two sides
+    /// separately.  This can be used to optimize
+    /// paragraph layout, by avoiding re-shaping
+    /// of each line after line-breaking, or limiting
+    /// the reshaping to a small piece around the
+    /// breaking point only.
+    #[allow(dead_code)]
+    pub const UNSAFE_TO_BREAK: u32 = 0x00000001;
+
+    /// All the currently defined flags.
+    pub const DEFINED: u32 = 0x00000001; // OR of all defined flags
+}
+
 
 /// Holds the positions of the glyph in both horizontal and vertical directions.
 ///
@@ -509,24 +534,6 @@ bitflags::bitflags! {
 }
 
 
-/// The serialization format used in `BufferSerializer`.
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub enum SerializeFormat {
-    /// A human-readable, plain text format
-    Text,
-    /// A machine-readable JSON format.
-    Json,
-}
-
-impl From<SerializeFormat> for ffi::hb_buffer_serialize_format_t {
-    fn from(fmt: SerializeFormat) -> Self {
-        match fmt {
-            SerializeFormat::Text => ffi::HB_BUFFER_SERIALIZE_FORMAT_TEXT,
-            SerializeFormat::Json => ffi::HB_BUFFER_SERIALIZE_FORMAT_JSON,
-        }
-    }
-}
-
 bitflags::bitflags! {
     /// Flags used for serialization with a `BufferSerializer`.
     #[derive(Default)]
@@ -544,58 +551,6 @@ bitflags::bitflags! {
         /// Do not serialize glyph advances, glyph offsets will reflect absolute
         /// glyph positions.
         const NO_ADVANCES = ffi::HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES;
-    }
-}
-
-/// A type that can be used to serialize a `GlyphBuffer`.
-///
-/// A `BufferSerializer` is obtained by calling the `GlyphBuffer::serializer`
-/// method and provides a `Read` implementation that allows you to read the
-/// serialized buffer contents.
-pub struct BufferSerializer<'a> {
-    font: Option<&'a crate::Font<'a>>,
-    buffer: &'a Buffer,
-    start: usize,
-    end: usize,
-    format: SerializeFormat,
-    flags: SerializeFlags,
-
-    bytes: std::io::Cursor<Vec<u8>>,
-}
-
-impl<'a> Read for BufferSerializer<'a> {
-    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        match self.bytes.read(buf) {
-            // if `bytes` is empty refill it
-            Ok(0) => {
-                if self.start > self.end.saturating_sub(1) {
-                    return Ok(0);
-                }
-                let mut bytes_written = 0;
-                let num_serialized_items = unsafe {
-                    ffi::hb_buffer_serialize_glyphs(
-                        self.buffer.as_ptr(),
-                        self.start as u32,
-                        self.end as u32,
-                        self.bytes.get_mut().as_mut_ptr() as *mut _,
-                        self.bytes.get_ref().capacity() as u32,
-                        &mut bytes_written,
-                        self.font
-                            .map(|f| f.as_ptr())
-                            .unwrap_or(std::ptr::null()),
-                        self.format.into(),
-                        self.flags.bits(),
-                    )
-                };
-                self.start += num_serialized_items as usize;
-                self.bytes.set_position(0);
-                unsafe { self.bytes.get_mut().set_len(bytes_written as usize) };
-
-                self.read(buf)
-            }
-            Ok(size) => Ok(size),
-            Err(err) => Err(err),
-        }
     }
 }
 
@@ -768,30 +723,68 @@ impl GlyphBuffer {
         UnicodeBuffer(self.0)
     }
 
-    /// Returns a serializer that allows the contents of the buffer to be
-    /// converted into a human or machine readable representation.
-    ///
-    /// # Arguments
-    /// - `font`: Optionally a font can be provided for access to glyph names
-    ///   and glyph extents. If `None` is passed an empty font is assumed.
-    /// - `format`: The serialization format to use.
-    /// - `flags`: Allows you to control which information will be contained in
-    ///   the serialized output.
-    pub fn serializer<'a>(
-        &'a self,
-        font: Option<&'a crate::Font<'a>>,
-        format: SerializeFormat,
-        flags: SerializeFlags,
-    ) -> BufferSerializer<'a> {
-        BufferSerializer {
-            font,
-            buffer: &self.0,
-            start: 0,
-            end: self.len(),
-            format,
-            flags,
-            bytes: std::io::Cursor::new(Vec::with_capacity(128)),
+    /// Converts the glyph buffer content into a string.
+    pub fn serialize(&self, font: &Font, flags: SerializeFlags) -> String {
+        use std::fmt::Write;
+
+        let mut s = String::with_capacity(64);
+
+        let info = self.glyph_infos();
+        let pos = self.glyph_positions();
+        let mut x = 0;
+        let mut y = 0;
+        for (info, pos) in info.iter().zip(pos) {
+            if !flags.contains(SerializeFlags::NO_GLYPH_NAMES) {
+                match font.glyph_name(info.codepoint) {
+                    Some(name) => s.push_str(name),
+                    None => write!(&mut s, "gid{}", info.codepoint).unwrap(),
+                }
+            } else {
+                write!(&mut s, "{}", info.codepoint).unwrap();
+            }
+
+            if !flags.contains(SerializeFlags::NO_CLUSTERS) {
+                write!(&mut s, "={}", info.cluster).unwrap();
+            }
+
+            if !flags.contains(SerializeFlags::NO_POSITIONS) {
+                if x + pos.x_offset != 0 || y + pos.y_offset != 0 {
+                    write!(&mut s, "@{},{}", x + pos.x_offset, y + pos.y_offset).unwrap();
+                }
+
+                if !flags.contains(SerializeFlags::NO_ADVANCES) {
+                    write!(&mut s, "+{}", pos.x_advance).unwrap();
+                    if pos.y_advance != 0 {
+                        write!(&mut s, ",{}", pos.y_advance).unwrap();
+                    }
+                }
+            }
+
+            if flags.contains(SerializeFlags::GLYPH_FLAGS) {
+                if info.mask & glyph_flag::DEFINED != 0 {
+                    write!(&mut s, "#{:X}", info.mask & glyph_flag::DEFINED).unwrap();
+                }
+            }
+
+            if flags.contains(SerializeFlags::GLYPH_EXTENTS) {
+                let extents = font.glyph_extents(info.codepoint).unwrap_or_default();
+                write!(&mut s, "<{},{},{},{}>", extents.x_bearing, extents.y_bearing, extents.width, extents.height).unwrap();
+            }
+
+            if flags.contains(SerializeFlags::NO_ADVANCES) {
+                x += pos.x_advance;
+                y += pos.y_advance;
+            }
+
+            s.push('|');
         }
+
+        // Remove last `|`.
+        if !s.is_empty() {
+            s.pop();
+        }
+
+        s
     }
 }
 
@@ -801,16 +794,5 @@ impl fmt::Debug for GlyphBuffer {
             .field("glyph_positions", &self.glyph_positions())
             .field("glyph_infos", &self.glyph_infos())
             .finish()
-    }
-}
-
-impl fmt::Display for GlyphBuffer {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut serializer =
-            self.serializer(None, SerializeFormat::Text, SerializeFlags::default());
-        let mut string = String::new();
-        serializer.read_to_string(&mut string).unwrap();
-        write!(fmt, "{}", string)?;
-        Ok(())
     }
 }

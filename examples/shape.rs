@@ -1,4 +1,3 @@
-use std::io::Read;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -199,15 +198,7 @@ fn main() {
         format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
     }
 
-    let mut serializer = glyph_buffer.serializer(
-        Some(&font),
-        rustybuzz::SerializeFormat::Text,
-        format_flags,
-    );
-
-    let mut string = String::new();
-    serializer.read_to_string(&mut string).unwrap();
-    println!("{}", string);
+    println!("{}", glyph_buffer.serialize(&font,  format_flags));
 }
 
 fn parse_unicodes(s: &str) -> Result<String, String> {

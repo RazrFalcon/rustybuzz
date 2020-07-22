@@ -25,10 +25,6 @@ pub const HB_BUFFER_SERIALIZE_FLAG_GLYPH_FLAGS: hb_buffer_serialize_flags_t = 16
 pub const HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES: hb_buffer_serialize_flags_t = 32;
 pub type hb_buffer_serialize_flags_t = u32;
 
-pub const HB_BUFFER_SERIALIZE_FORMAT_TEXT: hb_buffer_serialize_format_t = 1413830740;
-pub const HB_BUFFER_SERIALIZE_FORMAT_JSON: hb_buffer_serialize_format_t = 1246973774;
-pub type hb_buffer_serialize_format_t = u32;
-
 pub const HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES: hb_buffer_cluster_level_t = 0;
 pub const HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS: hb_buffer_cluster_level_t = 1;
 pub const HB_BUFFER_CLUSTER_LEVEL_CHARACTERS: hb_buffer_cluster_level_t = 2;
@@ -107,7 +103,7 @@ impl std::fmt::Debug for hb_var_int_t {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct hb_glyph_extents_t {
     pub x_bearing: hb_position_t,
     pub y_bearing: hb_position_t,
@@ -287,18 +283,6 @@ extern "C" {
     ) -> *mut hb_glyph_position_t;
 
     pub fn hb_buffer_get_glyph_positions_ptr(buffer: *mut hb_buffer_t) -> *mut hb_glyph_position_t;
-
-    pub fn hb_buffer_serialize_glyphs(
-        buffer: *mut hb_buffer_t,
-        start: u32,
-        end: u32,
-        buf: *mut c_char,
-        buf_size: u32,
-        buf_consumed: *mut u32,
-        font: *const hb_font_t,
-        format: hb_buffer_serialize_format_t,
-        flags: hb_buffer_serialize_flags_t,
-    ) -> u32;
 
     pub fn hb_face_create(blob: *mut hb_blob_t, index: u32) -> *mut hb_face_t;
 
