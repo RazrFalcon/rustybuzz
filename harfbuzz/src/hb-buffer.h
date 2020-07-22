@@ -368,7 +368,9 @@ HB_EXTERN void hb_buffer_replace_glyphs(hb_buffer_t *buffer,
                                         unsigned int num_out,
                                         const hb_codepoint_t *glyph_data);
 
-HB_EXTERN void hb_buffer_output_glyph(hb_buffer_t *buffer, const hb_codepoint_t glyph_index);
+HB_EXTERN void hb_buffer_output_glyph(hb_buffer_t *buffer, hb_codepoint_t glyph_index);
+
+HB_EXTERN void hb_buffer_output_info(hb_buffer_t *buffer, hb_glyph_info_t ginfo);
 
 HB_EXTERN void hb_buffer_unsafe_to_break(hb_buffer_t *buffer, unsigned int start, unsigned int end);
 

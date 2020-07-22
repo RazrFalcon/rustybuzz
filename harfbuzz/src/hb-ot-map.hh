@@ -40,6 +40,22 @@ static const hb_tag_t table_tags[2] = {HB_OT_TAG_GSUB, HB_OT_TAG_GPOS};
 
 typedef void (*hb_ot_pause_func_t)(const struct hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
 
+struct hb_ot_map_lookup_map_t
+{
+    unsigned short index;
+    bool auto_zwnj;
+    bool auto_zwj;
+    bool random;
+    hb_mask_t mask;
+
+    HB_INTERNAL static int cmp(const void *pa, const void *pb)
+    {
+        const hb_ot_map_lookup_map_t *a = (const hb_ot_map_lookup_map_t *)pa;
+        const hb_ot_map_lookup_map_t *b = (const hb_ot_map_lookup_map_t *)pb;
+        return a->index < b->index ? -1 : a->index > b->index ? 1 : 0;
+    }
+};
+
 struct hb_ot_map_t
 {
     friend struct hb_ot_map_builder_t;
@@ -61,22 +77,6 @@ public:
         int cmp(const hb_tag_t tag_) const
         {
             return tag_ < tag ? -1 : tag_ > tag ? 1 : 0;
-        }
-    };
-
-    struct lookup_map_t
-    {
-        unsigned short index;
-        unsigned short auto_zwnj : 1;
-        unsigned short auto_zwj : 1;
-        unsigned short random : 1;
-        hb_mask_t mask;
-
-        HB_INTERNAL static int cmp(const void *pa, const void *pb)
-        {
-            const lookup_map_t *a = (const lookup_map_t *)pa;
-            const lookup_map_t *b = (const lookup_map_t *)pb;
-            return a->index < b->index ? -1 : a->index > b->index ? 1 : 0;
         }
     };
 
@@ -144,7 +144,7 @@ public:
 
     void get_stage_lookups(unsigned int table_index,
                            unsigned int stage,
-                           const struct lookup_map_t **plookups,
+                           const struct hb_ot_map_lookup_map_t **plookups,
                            unsigned int *lookup_count) const
     {
         if (unlikely(stage == UINT_MAX)) {
@@ -175,8 +175,8 @@ private:
     hb_mask_t global_mask;
 
     hb_sorted_vector_t<feature_map_t> features;
-    hb_vector_t<lookup_map_t> lookups[2]; /* GSUB/GPOS */
-    hb_vector_t<stage_map_t> stages[2];   /* GSUB/GPOS */
+    hb_vector_t<hb_ot_map_lookup_map_t> lookups[2]; /* GSUB/GPOS */
+    hb_vector_t<stage_map_t> stages[2];             /* GSUB/GPOS */
 };
 
 enum hb_ot_map_feature_flags_t {
@@ -286,6 +286,14 @@ private:
 extern "C" {
 HB_EXTERN hb_mask_t hb_ot_map_get_1_mask(const hb_ot_map_t *map, hb_tag_t tag);
 HB_EXTERN bool hb_ot_map_get_found_script(const hb_ot_map_t *map, unsigned int index);
+HB_EXTERN hb_tag_t hb_ot_map_get_chosen_script(const hb_ot_map_t *map, unsigned int index);
+HB_EXTERN unsigned int
+hb_ot_map_get_feature_stage(const hb_ot_map_t *map, unsigned int table_index, hb_tag_t feature_tag);
+HB_EXTERN void hb_ot_map_get_stage_lookups(const hb_ot_map_t *map,
+                                           unsigned int table_index,
+                                           unsigned int stage,
+                                           const struct hb_ot_map_lookup_map_t **plookups,
+                                           unsigned int *lookup_count);
 
 HB_EXTERN void hb_ot_map_builder_add_feature(hb_ot_map_builder_t *builder,
                                              hb_tag_t tag,

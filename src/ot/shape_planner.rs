@@ -8,6 +8,7 @@ pub struct ShapePlanner {
 }
 
 impl ShapePlanner {
+    #[inline]
     pub fn from_ptr_mut(ptr: *mut ffi::hb_ot_shape_planner_t) -> Self {
         unsafe {
             ShapePlanner {
@@ -17,6 +18,7 @@ impl ShapePlanner {
         }
     }
 
+    #[inline]
     pub fn script(&self) -> Script {
         unsafe {
             Script::from_raw(ffi::hb_ot_shape_planner_get_script(self.planner.as_ptr()))

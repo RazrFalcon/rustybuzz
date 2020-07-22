@@ -100,7 +100,7 @@ static void collect_features_khmer(hb_ot_shape_planner_t *plan)
     for (; i < KHMER_BASIC_FEATURES; i++)
         map->add_feature(khmer_features[i]);
 
-    map->add_gsub_pause(_hb_clear_syllables);
+    map->add_gsub_pause(hb_layout_clear_syllables);
 
     for (; i < KHMER_NUM_FEATURES; i++)
         map->add_feature(khmer_features[i]);
@@ -114,11 +114,6 @@ static void override_features_khmer(hb_ot_shape_planner_t *plan)
      * "Apply feature 'clig' to form ligatures that are desired for
      * typographical correctness.", hence in overrides... */
     map->enable_feature(HB_TAG('c', 'l', 'i', 'g'));
-
-    /* Uniscribe does not apply 'kern' in Khmer. */
-    if (hb_options().uniscribe_bug_compatible) {
-        map->disable_feature(HB_TAG('k', 'e', 'r', 'n'));
-    }
 
     map->disable_feature(HB_TAG('l', 'i', 'g', 'a'));
 }

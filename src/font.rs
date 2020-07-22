@@ -125,6 +125,10 @@ impl<'a> Font<'a> {
         self as *const _ as *const ffi::hb_font_t
     }
 
+    pub(crate) fn face_ptr(&self) -> *mut ffi::hb_face_t {
+        self.hb_face.as_ptr()
+    }
+
     /// Sets pixels per EM.
     ///
     /// Used during raster glyphs processing and hinting.

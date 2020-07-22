@@ -104,7 +104,7 @@ static void collect_features_use(hb_ot_shape_planner_t *plan)
         map->enable_feature(use_basic_features[i], F_MANUAL_ZWJ);
 
     map->add_gsub_pause(reorder_use);
-    map->add_gsub_pause(_hb_clear_syllables);
+    map->add_gsub_pause(hb_layout_clear_syllables);
 
     /* "Topographical features" */
     for (unsigned int i = 0; i < ARRAY_LENGTH(use_topographical_features); i++)

@@ -2,8 +2,6 @@
 `rustybuzz` is an attempt to incrementally port [harfbuzz](https://github.com/harfbuzz/harfbuzz) to Rust.
 */
 
-// The current API is a heavily modified version of https://github.com/manuel-rhdt/harfbuzz_rs
-
 #![doc(html_root_url = "https://docs.rs/rustybuzz/0.1.1")]
 #![warn(missing_docs)]
 

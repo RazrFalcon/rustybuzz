@@ -9,13 +9,13 @@ use super::{hb_flag, hb_flag_unsafe};
 const ARABIC_HAS_STCH: BufferScratchFlags = BufferScratchFlags::COMPLEX0;
 
 const ARABIC_FEATURES: &[Tag] = &[
-    Tag::from_bytes(b"isol"),
-    Tag::from_bytes(b"fina"),
-    Tag::from_bytes(b"fin2"),
-    Tag::from_bytes(b"fin3"),
-    Tag::from_bytes(b"medi"),
-    Tag::from_bytes(b"med2"),
-    Tag::from_bytes(b"init"),
+    feature::ISOLATED_FORMS,
+    feature::TERMINAL_FORMS_1,
+    feature::TERMINAL_FORMS_2,
+    feature::TERMINAL_FORMS_3,
+    feature::MEDIAL_FORMS_1,
+    feature::MEDIAL_FORMS_2,
+    feature::INITIAL_FORMS,
 ];
 
 fn feature_is_syriac(tag: Tag) -> bool {
@@ -173,11 +173,11 @@ fn collect_features(planner: &mut ShapePlanner) {
     // A pause after calt is required to make KFGQPC Uthmanic Script HAFS
     // work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
 
-    planner.ot_map.enable_feature(Tag::from_bytes(b"stch"), FeatureFlags::NONE, 1);
-    planner.ot_map.add_gsub_pause(Some(record_stch));
+    planner.ot_map.enable_feature(feature::STRETCHING_GLYPH_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.add_gsub_pause(Some(record_stch_raw));
 
-    planner.ot_map.enable_feature(Tag::from_bytes(b"ccmp"), FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(Tag::from_bytes(b"locl"), FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
 
     planner.ot_map.add_gsub_pause(None);
 
@@ -192,16 +192,17 @@ fn collect_features(planner: &mut ShapePlanner) {
     // however, it says a ZWJ should also mean "don't ligate".  So we run
     // the main ligating features as MANUAL_ZWJ.
 
-    planner.ot_map.enable_feature(Tag::from_bytes(b"rlig"), FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK, 1);
+    planner.ot_map.enable_feature(feature::REQUIRED_LIGATURES,
+                                  FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK, 1);
 
     if planner.script() == script::ARABIC {
-        planner.ot_map.add_gsub_pause(Some(fallback_shape));
+        planner.ot_map.add_gsub_pause(Some(fallback_shape_raw));
     }
 
     // No pause after rclt.
     // See 98460779bae19e4d64d29461ff154b3527bf8420
-    planner.ot_map.enable_feature(Tag::from_bytes(b"rclt"), FeatureFlags::MANUAL_ZWJ, 1);
-    planner.ot_map.enable_feature(Tag::from_bytes(b"calt"), FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.enable_feature(feature::REQUIRED_CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(None);
 
     // And undo here.
@@ -215,11 +216,11 @@ fn collect_features(planner: &mut ShapePlanner) {
     // to fixup broken glyph sequences.  Oh well...
     // Test case: U+0643,U+0640,U+0631.
 
-    // plan.ot_map.enable_feature(Tag::from_bytes(b"cswh"), FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(Tag::from_bytes(b"mset"), FeatureFlags::NONE, 1);
+    // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::MARK_POSITIONING_VIA_SUBSTITUTION, FeatureFlags::NONE, 1);
 }
 
-extern "C" fn fallback_shape(
+extern "C" fn fallback_shape_raw(
     _: *const ffi::hb_ot_shape_plan_t,
     _: *mut ffi::hb_font_t,
     _: *mut ffi::hb_buffer_t,
@@ -231,7 +232,7 @@ extern "C" fn fallback_shape(
 // https://docs.microsoft.com/en-us/typography/script-development/syriac
 // We implement this in a generic way, such that the Arabic subtending
 // marks can use it as well.
-extern "C" fn record_stch(
+extern "C" fn record_stch_raw(
     plan: *const ffi::hb_ot_shape_plan_t,
     font: *mut ffi::hb_font_t,
     buffer: *mut ffi::hb_buffer_t,
@@ -239,10 +240,10 @@ extern "C" fn record_stch(
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    record_stch_impl(&plan, font, &mut buffer);
+    record_stch(&plan, font, &mut buffer);
 }
 
-fn record_stch_impl(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn record_stch(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
     let arabic_plan = ArabicShapePlan::from_ptr(plan.data() as _);
     if !arabic_plan.has_stch {
         return;
@@ -556,7 +557,7 @@ fn data_create(plan: &ShapePlan) -> ArabicShapePlan {
         has_stch: false,
     };
 
-    arabic_plan.has_stch = plan.ot_map.get_1_mask(Tag::from_bytes(b"stch")) != 0;
+    arabic_plan.has_stch = plan.ot_map.get_1_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
     for i in 0..ARABIC_FEATURES.len() {
         arabic_plan.mask_array[i] = plan.ot_map.get_1_mask(ARABIC_FEATURES[i]);
     }

@@ -43,6 +43,25 @@ bool hb_ot_map_get_found_script(const hb_ot_map_t *map, unsigned int index)
     return map->found_script[index];
 }
 
+hb_tag_t hb_ot_map_get_chosen_script(const hb_ot_map_t *map, unsigned int index)
+{
+    return map->chosen_script[index];
+}
+
+unsigned int hb_ot_map_get_feature_stage(const hb_ot_map_t *map, unsigned int table_index, hb_tag_t feature_tag)
+{
+    return map->get_feature_stage(table_index, feature_tag);
+}
+
+void hb_ot_map_get_stage_lookups(const hb_ot_map_t *map,
+                                 unsigned int table_index,
+                                 unsigned int stage,
+                                 const struct hb_ot_map_lookup_map_t **plookups,
+                                 unsigned int *lookup_count)
+{
+    map->get_stage_lookups(table_index, stage, plookups, lookup_count);
+}
+
 void hb_ot_map_t::collect_lookups(unsigned int table_index, hb_set_t *lookups_out) const
 {
     for (unsigned int i = 0; i < lookups[table_index].length; i++)
@@ -133,7 +152,7 @@ void hb_ot_map_builder_t::add_lookups(hb_ot_map_t &m,
         for (unsigned int i = 0; i < len; i++) {
             if (lookup_indices[i] >= table_lookup_count)
                 continue;
-            hb_ot_map_t::lookup_map_t *lookup = m.lookups[table_index].push();
+            hb_ot_map_lookup_map_t *lookup = m.lookups[table_index].push();
             lookup->mask = mask;
             lookup->index = lookup_indices[i];
             lookup->auto_zwnj = auto_zwnj;

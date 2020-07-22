@@ -1701,3 +1701,23 @@ hb_ot_layout_lookup_get_glyph_alternates(hb_face_t *face,
         *alternate_count = 0;
     return ret;
 }
+
+unsigned int hb_layout_next_syllable(hb_buffer_t *buffer, unsigned int start)
+{
+    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = buffer->len;
+
+    unsigned int syllable = info[start].syllable();
+    while (++start < count && syllable == info[start].syllable())
+        ;
+
+    return start;
+}
+
+void hb_layout_clear_syllables(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+{
+    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = buffer->len;
+    for (unsigned int i = 0; i < count; i++)
+        info[i].syllable() = 0;
+}

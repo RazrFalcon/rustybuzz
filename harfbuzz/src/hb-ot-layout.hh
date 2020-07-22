@@ -117,29 +117,15 @@ HB_INTERNAL void hb_ot_layout_position_finish_offsets(hb_font_t *font, hb_buffer
 
 /* Loop over syllables. Based on foreach_cluster(). */
 #define foreach_syllable(buffer, start, end)                                                                           \
-    for (unsigned int _count = buffer->len, start = 0, end = _count ? _hb_next_syllable(buffer, 0) : 0;                \
+    for (unsigned int _count = buffer->len, start = 0, end = _count ? hb_layout_next_syllable(buffer, 0) : 0;                \
          start < _count;                                                                                               \
-         start = end, end = _hb_next_syllable(buffer, start))
+         start = end, end = hb_layout_next_syllable(buffer, start))
 
-static inline unsigned int _hb_next_syllable(hb_buffer_t *buffer, unsigned int start)
-{
-    hb_glyph_info_t *info = buffer->info;
-    unsigned int count = buffer->len;
+extern "C" {
+HB_EXTERN unsigned int hb_layout_next_syllable(hb_buffer_t *buffer, unsigned int start);
 
-    unsigned int syllable = info[start].syllable();
-    while (++start < count && syllable == info[start].syllable())
-        ;
-
-    return start;
-}
-
-static inline void
-_hb_clear_syllables(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
-{
-    hb_glyph_info_t *info = buffer->info;
-    unsigned int count = buffer->len;
-    for (unsigned int i = 0; i < count; i++)
-        info[i].syllable() = 0;
+HB_EXTERN void
+hb_layout_clear_syllables(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
 }
 
 /* unicode_props */

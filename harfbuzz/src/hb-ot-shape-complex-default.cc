@@ -79,6 +79,23 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_hebrew = {
     true, /* fallback_position */
 };
 
+const hb_ot_complex_shaper_t _hb_ot_complex_shaper_indic = {
+    hb_ot_complex_collect_features_indic,
+    hb_ot_complex_override_features_indic,
+    hb_ot_complex_data_create_indic,
+    hb_ot_complex_data_destroy_indic,
+    hb_ot_complex_preprocess_text_indic,
+    nullptr, /* postprocess_glyphs */
+    HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
+    hb_ot_complex_decompose_indic,
+    hb_ot_complex_compose_indic,
+    hb_ot_complex_setup_masks_indic,
+    HB_TAG_NONE, /* gpos_tag */
+    nullptr,     /* reorder_marks */
+    HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
+    false, /* fallback_position */
+};
+
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_thai = {
     nullptr, /* collect_features */
     nullptr, /* override_features */

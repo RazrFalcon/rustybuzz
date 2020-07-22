@@ -61,6 +61,7 @@ struct hb_ot_shape_normalize_context_t
 
 extern "C" {
 HB_EXTERN const hb_ot_shape_plan_t *hb_ot_shape_normalize_context_get_plan(const hb_ot_shape_normalize_context_t *c);
+HB_EXTERN const hb_font_t *hb_ot_shape_normalize_context_get_font(const hb_ot_shape_normalize_context_t *c);
 }
 
 #endif /* HB_OT_SHAPE_NORMALIZE_HH */

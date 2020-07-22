@@ -5,7 +5,7 @@ use crate::{ffi, Tag};
 bitflags::bitflags! {
     /// Flags used for serialization with a `BufferSerializer`.
     #[derive(Default)]
-        pub struct FeatureFlags: u32 {
+    pub struct FeatureFlags: u32 {
         const NONE                      = 0x00;
 
         /// Feature applies to all characters; results in no mask allocated for it.
@@ -35,22 +35,27 @@ bitflags::bitflags! {
 pub struct MapBuilder(NonNull<ffi::hb_ot_map_builder_t>);
 
 impl MapBuilder {
+    #[inline]
     pub fn from_ptr_mut(ptr: *mut ffi::hb_ot_map_builder_t) -> Self {
         MapBuilder(NonNull::new(ptr).unwrap())
     }
 
+    #[inline]
     pub fn add_feature(&mut self, tag: Tag, flags: FeatureFlags, value: u32) {
         unsafe { ffi::hb_ot_map_builder_add_feature(self.0.as_ptr(), tag, flags.bits, value) };
     }
 
+    #[inline]
     pub fn enable_feature(&mut self, tag: Tag, flags: FeatureFlags, value: u32) {
         self.add_feature(tag, flags | FeatureFlags::GLOBAL, value);
     }
 
+    #[inline]
     pub fn disable_feature(&mut self, tag: Tag) {
         self.add_feature(tag, FeatureFlags::GLOBAL, 0);
     }
 
+    #[inline]
     pub fn add_gsub_pause(&mut self, pause: ffi::hb_ot_pause_func_t) {
         unsafe { ffi::hb_ot_map_builder_add_gsub_pause(self.0.as_ptr(), pause) }
     }

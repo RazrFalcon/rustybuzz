@@ -75,7 +75,7 @@ static void collect_features_myanmar(hb_ot_shape_planner_t *plan)
         map->add_gsub_pause(nullptr);
     }
 
-    map->add_gsub_pause(_hb_clear_syllables);
+    map->add_gsub_pause(hb_layout_clear_syllables);
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(myanmar_other_features); i++)
         map->enable_feature(myanmar_other_features[i], F_MANUAL_ZWJ);

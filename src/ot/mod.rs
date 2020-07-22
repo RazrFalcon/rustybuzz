@@ -1,3 +1,4 @@
+pub mod feature;
 mod map;
 mod map_builder;
 mod shape_normalize_context;
@@ -9,3 +10,10 @@ pub use map_builder::*;
 pub use shape_normalize_context::*;
 pub use shape_plan::*;
 pub use shape_planner::*;
+
+#[allow(dead_code)]
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum TableIndex {
+    GSUB = 0,
+    GPOS = 1,
+}

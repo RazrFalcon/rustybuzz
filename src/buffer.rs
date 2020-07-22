@@ -84,6 +84,14 @@ impl GlyphInfo {
     }
 
     #[inline]
+    fn set_glyph_props(&mut self, n: u16) {
+        unsafe {
+            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var1);
+            v.var_u16[0] = n;
+        }
+    }
+
+    #[inline]
     fn unicode_props(&self) -> u16 {
         unsafe {
             let v: ffi::hb_var_int_t = std::mem::transmute(self.var2);
@@ -161,6 +169,23 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn clear_ligated_and_multiplied(&mut self) {
+        let mut n = self.glyph_props();
+        n &= !(GlyphPropsFlags::LIGATED | GlyphPropsFlags::MULTIPLIED).bits;
+        self.set_glyph_props(n);
+    }
+
+    #[inline]
+    pub(crate) fn is_substituted(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_ligated_and_didnt_multiply(&self) -> bool {
+        self.is_ligated() && !self.is_multiplied()
+    }
+
+    #[inline]
     pub(crate) fn is_ligated_internal(&self) -> bool {
         const IS_LIG_BASE: u8 = 0x10;
         self.lig_props() & IS_LIG_BASE != 0
@@ -180,6 +205,29 @@ impl GlyphInfo {
         let mut n = self.unicode_props();
         n |= UnicodeProps::CONTINUATION.bits;
         self.set_unicode_props(n);
+    }
+
+    #[inline]
+    pub(crate) fn reset_continuation(&mut self) {
+        let mut n = self.unicode_props();
+        n &= !UnicodeProps::CONTINUATION.bits;
+        self.set_unicode_props(n);
+    }
+
+    #[inline]
+    pub(crate) fn syllable(&self) -> u8 {
+        unsafe {
+            let v: &ffi::hb_var_int_t = std::mem::transmute(&self.var1);
+            v.var_u8[3]
+        }
+    }
+
+    #[inline]
+    pub(crate) fn set_syllable(&mut self, n: u8) {
+        unsafe {
+            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var1);
+            v.var_u8[3] = n;
+        }
     }
 }
 
@@ -251,6 +299,13 @@ impl Buffer {
     }
 
     #[inline]
+    pub fn script(&self) -> Script {
+        unsafe {
+            Script(Tag(ffi::hb_buffer_get_script(self.as_ptr())))
+        }
+    }
+
+    #[inline]
     pub(crate) fn set_cluster_level(&mut self, cluster_level: BufferClusterLevel) {
         unsafe { ffi::hb_buffer_set_cluster_level(self.as_ptr(), cluster_level.into_raw()) }
     }
@@ -275,6 +330,15 @@ impl Buffer {
         unsafe {
             let ptr = ffi::hb_buffer_get_glyph_infos_ptr(self.as_ptr());
             std::slice::from_raw_parts_mut(ptr as _, self.allocated())
+        }
+    }
+
+    // buffer.info 0..len slice.
+    #[inline]
+    pub(crate) fn info_slice(&mut self) -> &[GlyphInfo] {
+        unsafe {
+            let ptr = ffi::hb_buffer_get_glyph_infos_ptr(self.as_ptr());
+            std::slice::from_raw_parts(ptr as _, self.len())
         }
     }
 
@@ -400,7 +464,7 @@ impl Buffer {
     }
 
     #[inline]
-    fn is_empty(&self) -> bool {
+    pub(crate) fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
@@ -422,6 +486,16 @@ impl Buffer {
     #[inline]
     pub(crate) fn output_glyph(&mut self, glyph_index: u32) {
         unsafe { ffi::hb_buffer_output_glyph(self.as_ptr(), glyph_index) };
+    }
+
+    #[inline]
+    pub(crate) fn output_info(&mut self, info: GlyphInfo) {
+        unsafe { ffi::hb_buffer_output_info(self.as_ptr(), std::mem::transmute(info)) };
+    }
+
+    #[inline]
+    pub(crate) fn next_syllable(&mut self, start: usize) -> usize {
+        unsafe { ffi::hb_layout_next_syllable(self.as_ptr(), start as u32) as usize }
     }
 
     #[inline]
@@ -612,9 +686,7 @@ impl UnicodeBuffer {
 
     /// Get the ISO15924 script tag.
     pub fn script(&self) -> Script {
-        unsafe {
-            Script(Tag(ffi::hb_buffer_get_script(self.0.as_ptr())))
-        }
+        self.0.script()
     }
 
     /// Set the buffer language.

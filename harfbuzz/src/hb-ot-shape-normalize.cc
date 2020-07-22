@@ -422,3 +422,8 @@ const hb_ot_shape_plan_t *hb_ot_shape_normalize_context_get_plan(const hb_ot_sha
 {
     return c->plan;
 }
+
+const hb_font_t *hb_ot_shape_normalize_context_get_font(const hb_ot_shape_normalize_context_t *c)
+{
+    return c->font;
+}

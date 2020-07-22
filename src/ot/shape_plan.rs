@@ -10,6 +10,7 @@ pub struct ShapePlan {
 }
 
 impl ShapePlan {
+    #[inline]
     pub fn from_ptr(ptr: *const ffi::hb_ot_shape_plan_t) -> Self {
         assert!(!ptr.is_null());
         unsafe {
@@ -20,18 +21,21 @@ impl ShapePlan {
         }
     }
 
+    #[inline]
     pub fn data(&self) -> *const c_void {
         unsafe {
             ffi::hb_ot_shape_plan_get_data(self.plan.as_ptr())
         }
     }
 
+    #[inline]
     pub fn script(&self) -> Script {
         unsafe {
             Script::from_raw(ffi::hb_ot_shape_plan_get_script(self.plan.as_ptr()))
         }
     }
 
+    #[inline]
     pub fn has_gpos_mark(&self) -> bool {
         unsafe {
             ffi::hb_ot_shape_plan_has_gpos_mark(self.plan.as_ptr())

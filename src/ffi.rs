@@ -111,6 +111,16 @@ pub struct hb_glyph_extents_t {
     pub height: hb_position_t,
 }
 
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct hb_ot_map_lookup_map_t {
+    pub index: u16,
+    pub auto_zwnj: bool,
+    pub auto_zwj: bool,
+    pub random: bool,
+    pub mask: hb_mask_t,
+}
+
 pub type hb_language_t = *const c_char;
 
 #[repr(C)]
@@ -143,6 +153,10 @@ pub struct hb_font_t {
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct hb_ot_arabic_shape_plan_t { _unused: [u8; 0] }
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct hb_ot_indic_shape_plan_t { _unused: [u8; 0] }
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -223,6 +237,8 @@ extern "C" {
 
     pub fn hb_buffer_output_glyph(buffer: *mut hb_buffer_t, glyph_index: hb_codepoint_t);
 
+    pub fn hb_buffer_output_info(buffer: *mut hb_buffer_t, glyph_index: hb_glyph_info_t);
+
     pub fn hb_buffer_merge_clusters(buffer: *mut hb_buffer_t, start: u32, end: u32);
 
     pub fn hb_buffer_merge_out_clusters(buffer: *mut hb_buffer_t, start: u32, end: u32);
@@ -284,13 +300,27 @@ extern "C" {
 
     pub fn hb_buffer_get_glyph_positions_ptr(buffer: *mut hb_buffer_t) -> *mut hb_glyph_position_t;
 
+    pub fn hb_layout_next_syllable(buffer: *mut hb_buffer_t, start: u32) -> u32;
+
     pub fn hb_face_create(blob: *mut hb_blob_t, index: u32) -> *mut hb_face_t;
 
     pub fn hb_face_destroy(face: *mut hb_face_t);
 
-    pub fn hb_ot_map_get_1_mask(plan: *const hb_ot_map_t, tag: Tag) -> hb_mask_t;
+    pub fn hb_ot_map_get_1_mask(map: *const hb_ot_map_t, tag: Tag) -> hb_mask_t;
 
-    pub fn hb_ot_map_get_found_script(plan: *const hb_ot_map_t, index: u32) -> bool;
+    pub fn hb_ot_map_get_found_script(map: *const hb_ot_map_t, index: u32) -> bool;
+
+    pub fn hb_ot_map_get_chosen_script(map: *const hb_ot_map_t, index: u32) -> Tag;
+
+    pub fn hb_ot_map_get_feature_stage(map: *const hb_ot_map_t, table_index: u32, feature_tag: Tag) -> u32;
+
+    pub fn hb_ot_map_get_stage_lookups(
+        plan: *const hb_ot_map_t,
+        table_index: u32,
+        stage: u32,
+        plookups: *mut *const hb_ot_map_lookup_map_t,
+        lookup_count: *mut u32,
+    );
 
     pub fn hb_ot_shape_plan_get_ot_map(plan: *const hb_ot_shape_plan_t) -> *const hb_ot_map_t;
 
@@ -323,6 +353,24 @@ extern "C" {
     pub fn hb_ot_shape_normalize_context_get_plan(
         ctx: *const hb_ot_shape_normalize_context_t,
     ) -> *const hb_ot_shape_plan_t;
+
+    pub fn hb_ot_shape_normalize_context_get_font(
+        ctx: *const hb_ot_shape_normalize_context_t,
+    ) -> *const hb_font_t;
+
+    pub fn hb_ot_layout_lookup_would_substitute(
+        face: *mut hb_face_t,
+        lookup_index: u32,
+        glyphs: *const hb_codepoint_t,
+        glyphs_length: u32,
+        zero_context: hb_bool_t,
+    ) -> hb_bool_t;
+
+    pub fn hb_layout_clear_syllables(
+        plan: *const hb_ot_shape_plan_t,
+        font: *mut hb_font_t,
+        buffer: *mut hb_buffer_t,
+    );
 
     pub fn hb_shape(
         font: *const hb_font_t,

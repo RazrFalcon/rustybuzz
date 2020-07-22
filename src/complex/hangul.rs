@@ -1,6 +1,6 @@
 use std::os::raw::c_void;
 
-use crate::{ffi, Tag, Font, GlyphInfo, Mask};
+use crate::{ffi, Font, GlyphInfo, Mask};
 use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
 use crate::ot::*;
 
@@ -46,9 +46,9 @@ impl HangulShapePlan {
         HangulShapePlan {
             mask_array: [
                 0,
-                map.get_1_mask(Tag::from_bytes(b"ljmo")),
-                map.get_1_mask(Tag::from_bytes(b"vjmo")),
-                map.get_1_mask(Tag::from_bytes(b"tjmo")),
+                map.get_1_mask(feature::LEADING_JAMO_FORMS),
+                map.get_1_mask(feature::VOWEL_JAMO_FORMS),
+                map.get_1_mask(feature::TRAILING_JAMO_FORMS),
             ]
         }
     }
@@ -66,9 +66,9 @@ pub extern "C" fn hb_ot_complex_collect_features_hangul(planner: *mut ffi::hb_ot
 }
 
 fn collect_features(planner: &mut ShapePlanner) {
-    planner.ot_map.add_feature(Tag::from_bytes(b"ljmo"), FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(Tag::from_bytes(b"vjmo"), FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(Tag::from_bytes(b"tjmo"), FeatureFlags::NONE, 1);
+    planner.ot_map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::NONE, 1);
 }
 
 #[no_mangle]
@@ -81,7 +81,7 @@ fn override_features(planner: &mut ShapePlanner) {
     // Uniscribe does not apply 'calt' for Hangul, and certain fonts
     // (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
     // in calt, which is not desirable.
-    planner.ot_map.disable_feature(Tag::from_bytes(b"calt"));
+    planner.ot_map.disable_feature(feature::CONTEXTUAL_ALTERNATES);
 }
 
 #[no_mangle]
