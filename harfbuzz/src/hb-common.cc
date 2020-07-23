@@ -31,7 +31,7 @@
 
 #include <locale.h>
 
-#ifdef HB_NO_SETLOCALE
+#ifdef RB_NO_SETLOCALE
 #define setlocale(Category, Locale) "C"
 #endif
 
@@ -44,10 +44,10 @@
  * Common data types used across HarfBuzz are defined here.
  **/
 
-/* hb_tag_t */
+/* rb_tag_t */
 
 /**
- * hb_tag_from_string:
+ * rb_tag_from_string:
  * @str: (array length=len) (element-type uint8_t):
  * @len:
  *
@@ -57,13 +57,13 @@
  *
  * Since: 0.9.2
  **/
-hb_tag_t hb_tag_from_string(const char *str, int len)
+rb_tag_t rb_tag_from_string(const char *str, int len)
 {
     char tag[4];
     unsigned int i;
 
     if (!str || !len || !*str)
-        return HB_TAG_NONE;
+        return RB_TAG_NONE;
 
     if (len < 0 || len > 4)
         len = 4;
@@ -72,31 +72,14 @@ hb_tag_t hb_tag_from_string(const char *str, int len)
     for (; i < 4; i++)
         tag[i] = ' ';
 
-    return HB_TAG(tag[0], tag[1], tag[2], tag[3]);
-}
-
-/**
- * hb_tag_to_string:
- * @tag:
- * @buf: (out caller-allocates) (array fixed-size=4) (element-type uint8_t):
- *
- *
- *
- * Since: 0.9.5
- **/
-void hb_tag_to_string(hb_tag_t tag, char *buf)
-{
-    buf[0] = (char)(uint8_t)(tag >> 24);
-    buf[1] = (char)(uint8_t)(tag >> 16);
-    buf[2] = (char)(uint8_t)(tag >> 8);
-    buf[3] = (char)(uint8_t)(tag >> 0);
+    return RB_TAG(tag[0], tag[1], tag[2], tag[3]);
 }
 
 /* If there is no visibility control, then hb-static.cc will NOT
  * define anything.  Instead, we get it to define one set in here
  * only, so only libharfbuzz.so defines them, not other libs. */
-#ifdef HB_NO_VISIBILITY
-#undef HB_NO_VISIBILITY
+#ifdef RB_NO_VISIBILITY
+#undef RB_NO_VISIBILITY
 #include "hb-static.cc"
-#define HB_NO_VISIBILITY 1
+#define RB_NO_VISIBILITY 1
 #endif

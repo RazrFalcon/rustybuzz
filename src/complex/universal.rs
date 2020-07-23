@@ -5,7 +5,7 @@ use crate::{ffi, script, Tag, Font, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferFlags};
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use crate::ot::*;
-use super::{hb_flag, hb_flag_unsafe, hb_flag64, hb_flag64_unsafe};
+use super::{rb_flag, rb_flag_unsafe, rb_flag64, rb_flag64_unsafe};
 use super::arabic::ArabicShapePlan;
 
 #[allow(dead_code)]
@@ -106,14 +106,14 @@ const OTHER_FEATURES: &[Tag] = &[
 impl GlyphInfo {
     fn use_category(&self) -> Category {
         unsafe {
-            let v: &ffi::hb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
             std::mem::transmute(v.var_u8[2])
         }
     }
 
     fn set_use_category(&mut self, c: Category) {
         unsafe {
-            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
             v.var_u8[2] = c as u8;
         }
     }
@@ -135,7 +135,7 @@ impl UniversalShapePlan {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_collect_features_use(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_collect_features_use(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     collect_features(&mut planner)
 }
@@ -151,10 +151,10 @@ fn collect_features(planner: &mut ShapePlanner) {
     planner.ot_map.enable_feature(feature::AKHANDS, FeatureFlags::MANUAL_ZWJ, 1);
 
     // Reordering group
-    planner.ot_map.add_gsub_pause(Some(ffi::hb_clear_substitution_flags));
+    planner.ot_map.add_gsub_pause(Some(ffi::rb_clear_substitution_flags));
     planner.ot_map.add_feature(feature::REPH_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_rphf_raw));
-    planner.ot_map.add_gsub_pause(Some(ffi::hb_clear_substitution_flags));
+    planner.ot_map.add_gsub_pause(Some(ffi::rb_clear_substitution_flags));
     planner.ot_map.enable_feature(feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_pref_raw));
 
@@ -164,7 +164,7 @@ fn collect_features(planner: &mut ShapePlanner) {
     }
 
     planner.ot_map.add_gsub_pause(Some(reorder_raw));
-    planner.ot_map.add_gsub_pause(Some(ffi::hb_layout_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(ffi::rb_layout_clear_syllables));
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {
@@ -179,9 +179,9 @@ fn collect_features(planner: &mut ShapePlanner) {
 }
 
 extern "C" fn setup_syllables_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -296,9 +296,9 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
 }
 
 extern "C" fn record_rphf_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -335,9 +335,9 @@ fn record_rphf(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 }
 
 extern "C" fn reorder_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -417,11 +417,11 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
 }
 
 const fn category_flag(c: Category) -> u32 {
-    hb_flag(c as u32)
+    rb_flag(c as u32)
 }
 
 const fn category_flag64(c: Category) -> u64 {
-    hb_flag64(c as u32)
+    rb_flag64(c as u32)
 }
 
 const BASE_FLAGS: u64 =
@@ -447,11 +447,11 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
 
     let syllable_type = (buffer.info[start].syllable() & 0x0F) as u32;
     // Only a few syllable types need reordering.
-    if (hb_flag_unsafe(syllable_type) &
-        (hb_flag(SyllableType::ViramaTerminatedCluster as u32) |
-         hb_flag(SyllableType::SakotTerminatedCluster as u32) |
-         hb_flag(SyllableType::StandardCluster as u32) |
-         hb_flag(SyllableType::BrokenCluster as u32) |
+    if (rb_flag_unsafe(syllable_type) &
+        (rb_flag(SyllableType::ViramaTerminatedCluster as u32) |
+         rb_flag(SyllableType::SakotTerminatedCluster as u32) |
+         rb_flag(SyllableType::StandardCluster as u32) |
+         rb_flag(SyllableType::BrokenCluster as u32) |
             0)) == 0
     {
         return;
@@ -462,7 +462,7 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
         // Got a repha.  Reorder it towards the end, but before the first post-base glyph.
         for i in start+1..end {
             let is_post_base_glyph =
-                (hb_flag64_unsafe(buffer.info[i].use_category() as u32) & BASE_FLAGS) != 0 ||
+                (rb_flag64_unsafe(buffer.info[i].use_category() as u32) & BASE_FLAGS) != 0 ||
                     buffer.info[i].is_halant_use();
 
             if is_post_base_glyph || i == end - 1 {
@@ -489,7 +489,7 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
     // Move things back.
     let mut j = start;
     for i in start..end {
-        let flag = hb_flag_unsafe(buffer.info[i].use_category() as u32);
+        let flag = rb_flag_unsafe(buffer.info[i].use_category() as u32);
         if buffer.info[i].is_halant_use() {
             // If we hit a halant, move after it; otherwise move to the beginning, and
             // shift things in between forward.
@@ -509,9 +509,9 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
 }
 
 extern "C" fn record_pref_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -537,8 +537,8 @@ fn record_pref(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_create_use(
-    plan: *const ffi::hb_ot_shape_plan_t,
+pub extern "C" fn rb_ot_complex_data_create_use(
+    plan: *const ffi::rb_ot_shape_plan_t,
 ) -> *mut c_void {
     let plan = ShapePlan::from_ptr(plan);
     Box::into_raw(Box::new(data_create(&plan))) as _
@@ -586,15 +586,15 @@ fn has_arabic_joining(script: Script) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_destroy_use(data: *mut c_void) {
+pub extern "C" fn rb_ot_complex_data_destroy_use(data: *mut c_void) {
     unsafe { Box::from_raw(data) };
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_preprocess_text_use(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_preprocess_text_use(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -607,8 +607,8 @@ fn preprocess_text(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_compose_use(
-    ctx: *const ffi::hb_ot_shape_normalize_context_t,
+pub extern "C" fn rb_ot_complex_compose_use(
+    ctx: *const ffi::rb_ot_shape_normalize_context_t,
     a: u32,
     b: u32,
     ab: *mut u32,
@@ -635,10 +635,10 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_setup_masks_use(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_setup_masks_use(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);

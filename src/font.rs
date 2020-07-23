@@ -25,17 +25,16 @@ const UNICODE_FULL_ENCODING: u16 = 6;
 
 
 struct Blob<'a> {
-    ptr: NonNull<ffi::hb_blob_t>,
+    ptr: NonNull<ffi::rb_blob_t>,
     marker: PhantomData<&'a [u8]>,
 }
 
 impl<'a> Blob<'a> {
     fn from_data(bytes: &'a [u8]) -> Option<Self> {
         let ptr = NonNull::new(unsafe {
-            ffi::hb_blob_create(
+            ffi::rb_blob_create(
                 bytes.as_ptr() as *const _,
                 bytes.len() as u32,
-                ffi::HB_MEMORY_MODE_READONLY,
                 std::ptr::null_mut(),
                 None,
             )
@@ -47,41 +46,41 @@ impl<'a> Blob<'a> {
         })
     }
 
-    pub fn as_ptr(&self) -> *mut ffi::hb_blob_t {
+    pub fn as_ptr(&self) -> *mut ffi::rb_blob_t {
         self.ptr.as_ptr()
     }
 }
 
 impl Drop for Blob<'_> {
     fn drop(&mut self) {
-        unsafe { ffi::hb_blob_destroy(self.as_ptr()) }
+        unsafe { ffi::rb_blob_destroy(self.as_ptr()) }
     }
 }
 
 
 struct Face<'a> {
-    ptr: NonNull<ffi::hb_face_t>,
+    ptr: NonNull<ffi::rb_face_t>,
     #[allow(dead_code)] blob: Blob<'a>,
 }
 
 impl<'a> Face<'a> {
     fn from_data(data: &'a [u8], face_index: u32) -> Option<Self> {
         let blob = Blob::from_data(data)?;
-        let ptr = NonNull::new(unsafe { ffi::hb_face_create(blob.as_ptr(), face_index) })?;
+        let ptr = NonNull::new(unsafe { ffi::rb_face_create(blob.as_ptr(), face_index) })?;
         Some(Face {
             ptr,
             blob,
         })
     }
 
-    pub fn as_ptr(&self) -> *mut ffi::hb_face_t {
+    pub fn as_ptr(&self) -> *mut ffi::rb_face_t {
         self.ptr.as_ptr()
     }
 }
 
 impl Drop for Face<'_> {
     fn drop(&mut self) {
-        unsafe { ffi::hb_face_destroy(self.as_ptr()) }
+        unsafe { ffi::rb_face_destroy(self.as_ptr()) }
     }
 }
 
@@ -89,7 +88,7 @@ impl Drop for Face<'_> {
 /// A font handle.
 pub struct Font<'a> {
     ttfp_face: ttf_parser::Face<'a>,
-    hb_face: Face<'a>,
+    rb_face: Face<'a>,
     units_per_em: i32,
     pixels_per_em: Option<(u16, u16)>,
     points_per_em: Option<f32>,
@@ -108,7 +107,7 @@ impl<'a> Font<'a> {
         let face = Face::from_data(data, face_index)?;
         Some(Font {
             ttfp_face,
-            hb_face: face,
+            rb_face: face,
             units_per_em: upem,
             pixels_per_em: None,
             points_per_em: None,
@@ -118,18 +117,18 @@ impl<'a> Font<'a> {
     }
 
     #[inline]
-    pub(crate) fn from_ptr(font: *const ffi::hb_font_t) -> &'static Font<'static> {
+    pub(crate) fn from_ptr(font: *const ffi::rb_font_t) -> &'static Font<'static> {
         unsafe { &*(font as *const Font) }
     }
 
     #[inline]
-    pub(crate) fn as_ptr(&self) -> *const ffi::hb_font_t {
-        self as *const _ as *const ffi::hb_font_t
+    pub(crate) fn as_ptr(&self) -> *const ffi::rb_font_t {
+        self as *const _ as *const ffi::rb_font_t
     }
 
     #[inline]
-    pub(crate) fn face_ptr(&self) -> *mut ffi::hb_face_t {
-        self.hb_face.as_ptr()
+    pub(crate) fn face_ptr(&self) -> *mut ffi::rb_face_t {
+        self.rb_face.as_ptr()
     }
 
     /// Sets pixels per EM.
@@ -201,10 +200,10 @@ impl<'a> Font<'a> {
     }
 
     pub(crate) fn glyph_h_advance(&self, glyph: u32) -> u32 {
-        hb_font_get_advance(self.as_ptr(), glyph, 0)
+        rb_font_get_advance(self.as_ptr(), glyph, 0)
     }
 
-    pub(crate) fn glyph_extents(&self, glyph: u32) -> Option<ffi::hb_glyph_extents_t> {
+    pub(crate) fn glyph_extents(&self, glyph: u32) -> Option<ffi::rb_glyph_extents_t> {
         let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
 
         let pixels_per_em = match self.pixels_per_em {
@@ -216,7 +215,7 @@ impl<'a> Font<'a> {
             // HarfBuzz also supports only PNG.
             if img.format == ttf_parser::RasterImageFormat::PNG {
                 let scale = self.units_per_em as f32 / img.pixels_per_em as f32;
-                return Some(ffi::hb_glyph_extents_t {
+                return Some(ffi::rb_glyph_extents_t {
                     x_bearing: (f32::from(img.x) * scale).round() as i32,
                     y_bearing: ((f32::from(img.y) + f32::from(img.height)) * scale).round() as i32,
                     width: (f32::from(img.width) * scale).round() as i32,
@@ -226,7 +225,7 @@ impl<'a> Font<'a> {
         }
 
         let bbox = self.ttfp_face.glyph_bounding_box(glyph_id)?;
-        Some(ffi::hb_glyph_extents_t {
+        Some(ffi::rb_glyph_extents_t {
             x_bearing: i32::from(bbox.x_min),
             y_bearing: i32::from(bbox.y_max),
             width: i32::from(bbox.width()),
@@ -274,46 +273,46 @@ fn find_cmap_subtable(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_face(font: *const ffi::hb_font_t) -> *mut ffi::hb_face_t {
-    Font::from_ptr(font).hb_face.as_ptr()
+pub extern "C" fn rb_font_get_face(font: *const ffi::rb_font_t) -> *mut ffi::rb_face_t {
+    Font::from_ptr(font).rb_face.as_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_upem(font: *const ffi::hb_font_t) -> i32 {
+pub extern "C" fn rb_font_get_upem(font: *const ffi::rb_font_t) -> i32 {
     Font::from_ptr(font).units_per_em
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_ptem(font: *const ffi::hb_font_t) -> f32 {
+pub extern "C" fn rb_font_get_ptem(font: *const ffi::rb_font_t) -> f32 {
     Font::from_ptr(font).points_per_em.unwrap_or(0.0)
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_ppem_x(font: *const ffi::hb_font_t) -> u32 {
+pub extern "C" fn rb_font_get_ppem_x(font: *const ffi::rb_font_t) -> u32 {
     Font::from_ptr(font).pixels_per_em.map(|ppem| ppem.0).unwrap_or(0) as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_ppem_y(font: *const ffi::hb_font_t) -> u32 {
+pub extern "C" fn rb_font_get_ppem_y(font: *const ffi::rb_font_t) -> u32 {
     Font::from_ptr(font).pixels_per_em.map(|ppem| ppem.1).unwrap_or(0) as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_coords(font: *const ffi::hb_font_t) -> *const i32 {
+pub extern "C" fn rb_font_get_coords(font: *const ffi::rb_font_t) -> *const i32 {
     Font::from_ptr(font).coords.as_ptr() as _
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_num_coords(font: *const ffi::hb_font_t) -> u32 {
+pub extern "C" fn rb_font_get_num_coords(font: *const ffi::rb_font_t) -> u32 {
     Font::from_ptr(font).coords.len() as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_get_glyph_extents(
-    font: *const ffi::hb_font_t,
-    glyph: ffi::hb_codepoint_t,
-    extents: *mut ffi::hb_glyph_extents_t,
-) -> ffi::hb_bool_t {
+pub extern "C" fn rb_ot_get_glyph_extents(
+    font: *const ffi::rb_font_t,
+    glyph: ffi::rb_codepoint_t,
+    extents: *mut ffi::rb_glyph_extents_t,
+) -> ffi::rb_bool_t {
     let font = Font::from_ptr(font);
     match font.glyph_extents(glyph) {
         Some(bbox) => {
@@ -325,10 +324,10 @@ pub extern "C" fn hb_ot_get_glyph_extents(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_advance(
-    font: *const ffi::hb_font_t,
-    glyph: ffi::hb_codepoint_t,
-    is_vertical: ffi::hb_bool_t,
+pub extern "C" fn rb_font_get_advance(
+    font: *const ffi::rb_font_t,
+    glyph: ffi::rb_codepoint_t,
+    is_vertical: ffi::rb_bool_t,
 ) -> u32 {
     let face = &Font::from_ptr(font).ttfp_face;
     let glyph = GlyphId(u16::try_from(glyph).unwrap());
@@ -360,10 +359,10 @@ pub extern "C" fn hb_font_get_advance(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_side_bearing(
-    font: *const ffi::hb_font_t,
-    glyph: ffi::hb_codepoint_t,
-    is_vertical: ffi::hb_bool_t,
+pub extern "C" fn rb_font_get_side_bearing(
+    font: *const ffi::rb_font_t,
+    glyph: ffi::rb_codepoint_t,
+    is_vertical: ffi::rb_bool_t,
 ) -> i32 {
     let face = &Font::from_ptr(font).ttfp_face;
     let glyph = GlyphId(u16::try_from(glyph).unwrap());
@@ -397,11 +396,11 @@ mod metrics {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_metrics_get_position_common(
-    font: *const ffi::hb_font_t,
+pub extern "C" fn rb_ot_metrics_get_position_common(
+    font: *const ffi::rb_font_t,
     tag: Tag,
     position: *mut i32,
-) -> ffi::hb_bool_t {
+) -> ffi::rb_bool_t {
     let face = &Font::from_ptr(font).ttfp_face;
     let pos = match tag {
         metrics::HORIZONTAL_ASCENDER => {
@@ -430,9 +429,9 @@ pub extern "C" fn hb_ot_metrics_get_position_common(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_get_glyph_name(
-    font: *const ffi::hb_font_t,
-    glyph: ffi::hb_codepoint_t,
+pub extern "C" fn rb_ot_get_glyph_name(
+    font: *const ffi::rb_font_t,
+    glyph: ffi::rb_codepoint_t,
     mut raw_name: *mut c_char,
     len: u32,
 ) -> i32 {
@@ -457,22 +456,22 @@ pub extern "C" fn hb_ot_get_glyph_name(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_has_vorg_data(font: *const ffi::hb_font_t) -> ffi::hb_bool_t {
+pub extern "C" fn rb_font_has_vorg_data(font: *const ffi::rb_font_t) -> ffi::rb_bool_t {
     Font::from_ptr(font).ttfp_face.has_table(ttf_parser::TableName::VerticalOrigin) as i32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_font_get_y_origin(font: *const ffi::hb_font_t, glyph: ffi::hb_codepoint_t) -> i32 {
+pub extern "C" fn rb_font_get_y_origin(font: *const ffi::rb_font_t, glyph: ffi::rb_codepoint_t) -> i32 {
     let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
     Font::from_ptr(font).ttfp_face.glyph_y_origin(glyph_id).unwrap_or(0) as i32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_get_nominal_glyph(
-    font: *const ffi::hb_font_t,
-    u: ffi::hb_codepoint_t,
-    glyph: *mut ffi::hb_codepoint_t,
-) -> ffi::hb_bool_t {
+pub extern "C" fn rb_ot_get_nominal_glyph(
+    font: *const ffi::rb_font_t,
+    u: ffi::rb_codepoint_t,
+    glyph: *mut ffi::rb_codepoint_t,
+) -> ffi::rb_bool_t {
     match Font::from_ptr(font).glyph_index(u) {
         Some(gid) => {
             unsafe { *glyph = gid.0 as u32 };
@@ -483,12 +482,12 @@ pub extern "C" fn hb_ot_get_nominal_glyph(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_get_variation_glyph(
-    font: *const ffi::hb_font_t,
-    u: ffi::hb_codepoint_t,
-    variation: ffi::hb_codepoint_t,
-    glyph: *mut ffi::hb_codepoint_t,
-) -> ffi::hb_bool_t {
+pub extern "C" fn rb_ot_get_variation_glyph(
+    font: *const ffi::rb_font_t,
+    u: ffi::rb_codepoint_t,
+    variation: ffi::rb_codepoint_t,
+    glyph: *mut ffi::rb_codepoint_t,
+) -> ffi::rb_bool_t {
     let u = char::try_from(u).unwrap();
     let variation = char::try_from(variation).unwrap();
     match Font::from_ptr(font).glyph_variation_index(u, variation) {
@@ -514,23 +513,23 @@ mod tests {
             let pos = &mut 0i32 as _;
 
             // Horizontal.
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
             assert_eq!(*pos, 967);
 
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
             assert_eq!(*pos, -253);
 
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
             assert_eq!(*pos, 0);
 
             // Vertical.
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_ASCENDER, pos), 1);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_ASCENDER, pos), 1);
             assert_eq!(*pos, 500);
 
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_DESCENDER, pos), 1);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_DESCENDER, pos), 1);
             assert_eq!(*pos, -500);
 
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_LINE_GAP, pos), 1);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_LINE_GAP, pos), 1);
             assert_eq!(*pos, 0);
 
             // TODO: find font with variable metrics
@@ -547,19 +546,19 @@ mod tests {
             let pos = &mut 0i32 as _;
 
             // Horizontal.
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
             assert_eq!(*pos, 800);
 
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
             assert_eq!(*pos, -200);
 
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
             assert_eq!(*pos, 90);
 
             // Vertical.
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_ASCENDER, pos), 0);
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_DESCENDER, pos), 0);
-            assert_eq!(hb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_LINE_GAP, pos), 0);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_ASCENDER, pos), 0);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_DESCENDER, pos), 0);
+            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_LINE_GAP, pos), 0);
         }
     }
 }

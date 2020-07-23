@@ -45,16 +45,16 @@
  **/
 
 /**
- * hb_shape:
- * @font: an #hb_font_t to use for shaping
- * @buffer: an #hb_buffer_t to shape
+ * rb_shape:
+ * @font: an #rb_font_t to use for shaping
+ * @buffer: an #rb_buffer_t to shape
  * @features: (array length=num_features) (allow-none): an array of user
- *    specified #hb_feature_t or %NULL
+ *    specified #rb_feature_t or %NULL
  * @num_features: the length of @features array
  * @shaper_list: (array zero-terminated=1) (allow-none): a %NULL-terminated
  *    array of shapers to use or %NULL
  *
- * See hb_shape() for details. If @shaper_list is not %NULL, the specified
+ * See rb_shape() for details. If @shaper_list is not %NULL, the specified
  * shapers will be used in the given order, otherwise the default shapers list
  * will be used.
  *
@@ -62,18 +62,18 @@
  *
  * Since: 0.9.2
  **/
-hb_bool_t hb_shape(const hb_font_t *font, hb_buffer_t *buffer, const hb_feature_t *features, unsigned int num_features)
+rb_bool_t rb_shape(const rb_font_t *font, rb_buffer_t *buffer, const rb_feature_t *features, unsigned int num_features)
 {
-    hb_segment_properties_t props;
-    hb_buffer_get_segment_properties(buffer, &props);
+    rb_segment_properties_t props;
+    rb_buffer_get_segment_properties(buffer, &props);
 
-    hb_shape_plan_t *shape_plan = hb_shape_plan_create(hb_font_get_face((hb_font_t *)font),
+    rb_shape_plan_t *shape_plan = rb_shape_plan_create(rb_font_get_face((rb_font_t *)font),
                                                        &props,
                                                        features,
                                                        num_features,
-                                                       hb_font_get_coords((hb_font_t *)font),
-                                                       hb_font_get_num_coords((hb_font_t *)font));
-    hb_bool_t res = hb_shape_plan_execute(shape_plan, (hb_font_t *)font, buffer, features, num_features);
-    hb_shape_plan_destroy(shape_plan);
+                                                       rb_font_get_coords((rb_font_t *)font),
+                                                       rb_font_get_num_coords((rb_font_t *)font));
+    rb_bool_t res = rb_shape_plan_execute(shape_plan, (rb_font_t *)font, buffer, features, num_features);
+    rb_shape_plan_destroy(shape_plan);
     return res;
 }

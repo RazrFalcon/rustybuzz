@@ -24,14 +24,14 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_AAT_MAP_HH
-#define HB_AAT_MAP_HH
+#ifndef RB_AAT_MAP_HH
+#define RB_AAT_MAP_HH
 
 #include "hb.hh"
 
-struct hb_aat_map_t
+struct rb_aat_map_t
 {
-    friend struct hb_aat_map_builder_t;
+    friend struct rb_aat_map_builder_t;
 
 public:
     void init()
@@ -45,30 +45,30 @@ public:
     }
 
 public:
-    hb_vector_t<hb_mask_t> chain_flags;
+    rb_vector_t<rb_mask_t> chain_flags;
 };
 
-struct hb_aat_map_builder_t
+struct rb_aat_map_builder_t
 {
 public:
-    HB_INTERNAL hb_aat_map_builder_t(hb_face_t *face_, const hb_segment_properties_t *props_ HB_UNUSED)
+    RB_INTERNAL rb_aat_map_builder_t(rb_face_t *face_, const rb_segment_properties_t *props_ RB_UNUSED)
         : face(face_)
     {
     }
 
-    HB_INTERNAL void add_feature(hb_tag_t tag, unsigned int value = 1);
+    RB_INTERNAL void add_feature(rb_tag_t tag, unsigned int value = 1);
 
-    HB_INTERNAL void compile(hb_aat_map_t &m);
+    RB_INTERNAL void compile(rb_aat_map_t &m);
 
 public:
     struct feature_info_t
     {
-        hb_aat_layout_feature_type_t type;
-        hb_aat_layout_feature_selector_t setting;
+        rb_aat_layout_feature_type_t type;
+        rb_aat_layout_feature_selector_t setting;
         bool is_exclusive;
         unsigned seq; /* For stable sorting only. */
 
-        HB_INTERNAL static int cmp(const void *pa, const void *pb)
+        RB_INTERNAL static int cmp(const void *pa, const void *pb)
         {
             const feature_info_t *a = (const feature_info_t *)pa;
             const feature_info_t *b = (const feature_info_t *)pb;
@@ -88,10 +88,10 @@ public:
     };
 
 public:
-    hb_face_t *face;
+    rb_face_t *face;
 
 public:
-    hb_sorted_vector_t<feature_info_t> features;
+    rb_sorted_vector_t<feature_info_t> features;
 };
 
-#endif /* HB_AAT_MAP_HH */
+#endif /* RB_AAT_MAP_HH */

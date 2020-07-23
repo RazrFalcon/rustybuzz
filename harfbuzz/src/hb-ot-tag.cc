@@ -28,41 +28,41 @@
 
 #include "hb.hh"
 
-/* hb_script_t */
+/* rb_script_t */
 
-static hb_tag_t hb_ot_old_tag_from_script(hb_script_t script)
+static rb_tag_t rb_ot_old_tag_from_script(rb_script_t script)
 {
     /* This seems to be accurate as of end of 2012. */
 
-    switch ((hb_tag_t)script) {
-    case HB_SCRIPT_INVALID:
-        return HB_OT_TAG_DEFAULT_SCRIPT;
+    switch ((rb_tag_t)script) {
+    case RB_SCRIPT_INVALID:
+        return RB_OT_TAG_DEFAULT_SCRIPT;
 
     /* KATAKANA and HIRAGANA both map to 'kana' */
-    case HB_SCRIPT_HIRAGANA:
-        return HB_TAG('k', 'a', 'n', 'a');
+    case RB_SCRIPT_HIRAGANA:
+        return RB_TAG('k', 'a', 'n', 'a');
 
     /* Spaces at the end are preserved, unlike ISO 15924 */
-    case HB_SCRIPT_LAO:
-        return HB_TAG('l', 'a', 'o', ' ');
-    case HB_SCRIPT_YI:
-        return HB_TAG('y', 'i', ' ', ' ');
+    case RB_SCRIPT_LAO:
+        return RB_TAG('l', 'a', 'o', ' ');
+    case RB_SCRIPT_YI:
+        return RB_TAG('y', 'i', ' ', ' ');
     /* Unicode-5.0 additions */
-    case HB_SCRIPT_NKO:
-        return HB_TAG('n', 'k', 'o', ' ');
+    case RB_SCRIPT_NKO:
+        return RB_TAG('n', 'k', 'o', ' ');
     /* Unicode-5.1 additions */
-    case HB_SCRIPT_VAI:
-        return HB_TAG('v', 'a', 'i', ' ');
+    case RB_SCRIPT_VAI:
+        return RB_TAG('v', 'a', 'i', ' ');
     }
 
     /* Else, just change first char to lowercase and return */
-    return ((hb_tag_t)script) | 0x20000000u;
+    return ((rb_tag_t)script) | 0x20000000u;
 }
 
-static hb_script_t hb_ot_old_tag_to_script(hb_tag_t tag)
+static rb_script_t rb_ot_old_tag_to_script(rb_tag_t tag)
 {
-    if (unlikely(tag == HB_OT_TAG_DEFAULT_SCRIPT))
-        return HB_SCRIPT_INVALID;
+    if (unlikely(tag == RB_OT_TAG_DEFAULT_SCRIPT))
+        return RB_SCRIPT_INVALID;
 
     /* This side of the conversion is fully algorithmic. */
 
@@ -74,63 +74,63 @@ static hb_script_t hb_ot_old_tag_to_script(hb_tag_t tag)
         tag |= (tag >> 8) & 0x000000FFu; /* Copy third letter to fourth */
 
     /* Change first char to uppercase and return */
-    return (hb_script_t)(tag & ~0x20000000u);
+    return (rb_script_t)(tag & ~0x20000000u);
 }
 
-static hb_tag_t hb_ot_new_tag_from_script(hb_script_t script)
+static rb_tag_t rb_ot_new_tag_from_script(rb_script_t script)
 {
-    switch ((hb_tag_t)script) {
-    case HB_SCRIPT_BENGALI:
-        return HB_TAG('b', 'n', 'g', '2');
-    case HB_SCRIPT_DEVANAGARI:
-        return HB_TAG('d', 'e', 'v', '2');
-    case HB_SCRIPT_GUJARATI:
-        return HB_TAG('g', 'j', 'r', '2');
-    case HB_SCRIPT_GURMUKHI:
-        return HB_TAG('g', 'u', 'r', '2');
-    case HB_SCRIPT_KANNADA:
-        return HB_TAG('k', 'n', 'd', '2');
-    case HB_SCRIPT_MALAYALAM:
-        return HB_TAG('m', 'l', 'm', '2');
-    case HB_SCRIPT_ORIYA:
-        return HB_TAG('o', 'r', 'y', '2');
-    case HB_SCRIPT_TAMIL:
-        return HB_TAG('t', 'm', 'l', '2');
-    case HB_SCRIPT_TELUGU:
-        return HB_TAG('t', 'e', 'l', '2');
-    case HB_SCRIPT_MYANMAR:
-        return HB_TAG('m', 'y', 'm', '2');
+    switch ((rb_tag_t)script) {
+    case RB_SCRIPT_BENGALI:
+        return RB_TAG('b', 'n', 'g', '2');
+    case RB_SCRIPT_DEVANAGARI:
+        return RB_TAG('d', 'e', 'v', '2');
+    case RB_SCRIPT_GUJARATI:
+        return RB_TAG('g', 'j', 'r', '2');
+    case RB_SCRIPT_GURMUKHI:
+        return RB_TAG('g', 'u', 'r', '2');
+    case RB_SCRIPT_KANNADA:
+        return RB_TAG('k', 'n', 'd', '2');
+    case RB_SCRIPT_MALAYALAM:
+        return RB_TAG('m', 'l', 'm', '2');
+    case RB_SCRIPT_ORIYA:
+        return RB_TAG('o', 'r', 'y', '2');
+    case RB_SCRIPT_TAMIL:
+        return RB_TAG('t', 'm', 'l', '2');
+    case RB_SCRIPT_TELUGU:
+        return RB_TAG('t', 'e', 'l', '2');
+    case RB_SCRIPT_MYANMAR:
+        return RB_TAG('m', 'y', 'm', '2');
     }
 
-    return HB_OT_TAG_DEFAULT_SCRIPT;
+    return RB_OT_TAG_DEFAULT_SCRIPT;
 }
 
-static hb_script_t hb_ot_new_tag_to_script(hb_tag_t tag)
+static rb_script_t rb_ot_new_tag_to_script(rb_tag_t tag)
 {
     switch (tag) {
-    case HB_TAG('b', 'n', 'g', '2'):
-        return HB_SCRIPT_BENGALI;
-    case HB_TAG('d', 'e', 'v', '2'):
-        return HB_SCRIPT_DEVANAGARI;
-    case HB_TAG('g', 'j', 'r', '2'):
-        return HB_SCRIPT_GUJARATI;
-    case HB_TAG('g', 'u', 'r', '2'):
-        return HB_SCRIPT_GURMUKHI;
-    case HB_TAG('k', 'n', 'd', '2'):
-        return HB_SCRIPT_KANNADA;
-    case HB_TAG('m', 'l', 'm', '2'):
-        return HB_SCRIPT_MALAYALAM;
-    case HB_TAG('o', 'r', 'y', '2'):
-        return HB_SCRIPT_ORIYA;
-    case HB_TAG('t', 'm', 'l', '2'):
-        return HB_SCRIPT_TAMIL;
-    case HB_TAG('t', 'e', 'l', '2'):
-        return HB_SCRIPT_TELUGU;
-    case HB_TAG('m', 'y', 'm', '2'):
-        return HB_SCRIPT_MYANMAR;
+    case RB_TAG('b', 'n', 'g', '2'):
+        return RB_SCRIPT_BENGALI;
+    case RB_TAG('d', 'e', 'v', '2'):
+        return RB_SCRIPT_DEVANAGARI;
+    case RB_TAG('g', 'j', 'r', '2'):
+        return RB_SCRIPT_GUJARATI;
+    case RB_TAG('g', 'u', 'r', '2'):
+        return RB_SCRIPT_GURMUKHI;
+    case RB_TAG('k', 'n', 'd', '2'):
+        return RB_SCRIPT_KANNADA;
+    case RB_TAG('m', 'l', 'm', '2'):
+        return RB_SCRIPT_MALAYALAM;
+    case RB_TAG('o', 'r', 'y', '2'):
+        return RB_SCRIPT_ORIYA;
+    case RB_TAG('t', 'm', 'l', '2'):
+        return RB_SCRIPT_TAMIL;
+    case RB_TAG('t', 'e', 'l', '2'):
+        return RB_SCRIPT_TELUGU;
+    case RB_TAG('m', 'y', 'm', '2'):
+        return RB_SCRIPT_MYANMAR;
     }
 
-    return HB_SCRIPT_UNKNOWN;
+    return RB_SCRIPT_UNKNOWN;
 }
 
 /*
@@ -141,38 +141,38 @@ static hb_script_t hb_ot_new_tag_to_script(hb_tag_t tag)
  * So we just do that, and handle the exceptional cases in a switch.
  */
 
-static void hb_ot_all_tags_from_script(hb_script_t script, unsigned int *count /* IN/OUT */, hb_tag_t *tags /* OUT */)
+static void rb_ot_all_tags_from_script(rb_script_t script, unsigned int *count /* IN/OUT */, rb_tag_t *tags /* OUT */)
 {
     unsigned int i = 0;
 
-    hb_tag_t new_tag = hb_ot_new_tag_from_script(script);
-    if (unlikely(new_tag != HB_OT_TAG_DEFAULT_SCRIPT)) {
-        /* HB_SCRIPT_MYANMAR maps to 'mym2', but there is no 'mym3'. */
-        if (new_tag != HB_TAG('m', 'y', 'm', '2'))
+    rb_tag_t new_tag = rb_ot_new_tag_from_script(script);
+    if (unlikely(new_tag != RB_OT_TAG_DEFAULT_SCRIPT)) {
+        /* RB_SCRIPT_MYANMAR maps to 'mym2', but there is no 'mym3'. */
+        if (new_tag != RB_TAG('m', 'y', 'm', '2'))
             tags[i++] = new_tag | '3';
         if (*count > i)
             tags[i++] = new_tag;
     }
 
     if (*count > i) {
-        hb_tag_t old_tag = hb_ot_old_tag_from_script(script);
-        if (old_tag != HB_OT_TAG_DEFAULT_SCRIPT)
+        rb_tag_t old_tag = rb_ot_old_tag_from_script(script);
+        if (old_tag != RB_OT_TAG_DEFAULT_SCRIPT)
             tags[i++] = old_tag;
     }
 
     *count = i;
 }
 
-hb_script_t hb_ot_tag_to_script(hb_tag_t tag)
+rb_script_t rb_ot_tag_to_script(rb_tag_t tag)
 {
     unsigned char digit = tag & 0x000000FFu;
     if (unlikely(digit == '2' || digit == '3'))
-        return hb_ot_new_tag_to_script(tag & 0xFFFFFF32);
+        return rb_ot_new_tag_to_script(tag & 0xFFFFFF32);
 
-    return hb_ot_old_tag_to_script(tag);
+    return rb_ot_old_tag_to_script(tag);
 }
 
-/* hb_language_t */
+/* rb_language_t */
 
 static bool subtag_matches(const char *lang_str, const char *limit, const char *subtag)
 {
@@ -186,14 +186,14 @@ static bool subtag_matches(const char *lang_str, const char *limit, const char *
     } while (true);
 }
 
-static hb_bool_t lang_matches(const char *lang_str, const char *spec)
+static rb_bool_t lang_matches(const char *lang_str, const char *spec)
 {
     unsigned int len = strlen(spec);
 
     return strncmp(lang_str, spec, len) == 0 && (lang_str[len] == '\0' || lang_str[len] == '-');
 }
 
-static const char *hb_language_from_string(const char *s, size_t len)
+static const char *rb_language_from_string(const char *s, size_t len)
 {
     return s;
 }
@@ -201,7 +201,7 @@ static const char *hb_language_from_string(const char *s, size_t len)
 struct LangTag
 {
     char language[4];
-    hb_tag_t tag;
+    rb_tag_t tag;
 
     int cmp(const char *a) const
     {
@@ -215,7 +215,7 @@ struct LangTag
         p = strchr(b, '-');
         db = p ? (unsigned int)(p - b) : strlen(b);
 
-        return strncmp(a, b, hb_max(da, db));
+        return strncmp(a, b, rb_max(da, db));
     }
     int cmp(const LangTag *that) const
     {
@@ -228,20 +228,20 @@ struct LangTag
 /* The corresponding languages IDs for the following IDs are unclear,
  * overlap, or are architecturally weird. Needs more research. */
 
-/*{"??",	{HB_TAG('B','C','R',' ')}},*/ /* Bible Cree */
-/*{"zh?",	{HB_TAG('C','H','N',' ')}},*/ /* Chinese (seen in Microsoft fonts) */
-/*{"ar-Syrc?",	{HB_TAG('G','A','R',' ')}},*/ /* Garshuni */
-/*{"??",	{HB_TAG('N','G','R',' ')}},*/ /* Nagari */
-/*{"??",	{HB_TAG('Y','I','C',' ')}},*/ /* Yi Classic */
-/*{"zh?",	{HB_TAG('Z','H','P',' ')}},*/ /* Chinese Phonetic */
+/*{"??",	{RB_TAG('B','C','R',' ')}},*/ /* Bible Cree */
+/*{"zh?",	{RB_TAG('C','H','N',' ')}},*/ /* Chinese (seen in Microsoft fonts) */
+/*{"ar-Syrc?",	{RB_TAG('G','A','R',' ')}},*/ /* Garshuni */
+/*{"??",	{RB_TAG('N','G','R',' ')}},*/ /* Nagari */
+/*{"??",	{RB_TAG('Y','I','C',' ')}},*/ /* Yi Classic */
+/*{"zh?",	{RB_TAG('Z','H','P',' ')}},*/ /* Chinese Phonetic */
 
-static void hb_ot_tags_from_language(const char *lang_str, const char *limit, unsigned int *count, hb_tag_t *tags)
+static void rb_ot_tags_from_language(const char *lang_str, const char *limit, unsigned int *count, rb_tag_t *tags)
 {
     const char *s;
     unsigned int tag_idx;
 
     /* Check for matches of multiple subtags. */
-    if (hb_ot_tags_from_complex_language(lang_str, limit, count, tags))
+    if (rb_ot_tags_from_complex_language(lang_str, limit, count, tags))
         return;
 
     /* Find a language matching in the first component. */
@@ -253,7 +253,7 @@ static void hb_ot_tags_from_language(const char *lang_str, const char *limit, un
             if (3 == (extlang_end ? extlang_end - s - 1 : strlen(s + 1)) && ISALPHA(s[1]))
                 lang_str = s + 1;
         }
-        if (hb_sorted_array(ot_languages).bfind(lang_str, &tag_idx)) {
+        if (rb_sorted_array(ot_languages).bfind(lang_str, &tag_idx)) {
             unsigned int i;
             while (tag_idx != 0 && 0 == strcmp(ot_languages[tag_idx].language, ot_languages[tag_idx - 1].language))
                 tag_idx--;
@@ -270,7 +270,7 @@ static void hb_ot_tags_from_language(const char *lang_str, const char *limit, un
         s = lang_str + strlen(lang_str);
     if (s - lang_str == 3) {
         /* Assume it's ISO-639-3 and upper-case and use it. */
-        tags[0] = hb_tag_from_string(lang_str, s - lang_str) & ~0x20202000u;
+        tags[0] = rb_tag_from_string(lang_str, s - lang_str) & ~0x20202000u;
         *count = 1;
         return;
     }
@@ -280,11 +280,11 @@ static void hb_ot_tags_from_language(const char *lang_str, const char *limit, un
 
 static bool parse_private_use_subtag(const char *private_use_subtag,
                                      unsigned int *count,
-                                     hb_tag_t *tags,
+                                     rb_tag_t *tags,
                                      const char *prefix,
                                      unsigned char (*normalize)(unsigned char))
 {
-#ifdef HB_NO_LANGUAGE_PRIVATE_SUBTAG
+#ifdef RB_NO_LANGUAGE_PRIVATE_SUBTAG
     return false;
 #endif
 
@@ -319,17 +319,17 @@ static bool parse_private_use_subtag(const char *private_use_subtag,
         for (; i < 4; i++)
             tag[i] = ' ';
     }
-    tags[0] = HB_TAG(tag[0], tag[1], tag[2], tag[3]);
-    if ((tags[0] & 0xDFDFDFDF) == HB_OT_TAG_DEFAULT_SCRIPT)
+    tags[0] = RB_TAG(tag[0], tag[1], tag[2], tag[3]);
+    if ((tags[0] & 0xDFDFDFDF) == RB_OT_TAG_DEFAULT_SCRIPT)
         tags[0] ^= ~0xDFDFDFDF;
     *count = 1;
     return true;
 }
 
 /**
- * hb_ot_tags_from_script_and_language:
- * @script: an #hb_script_t to convert.
- * @language: an #hb_language_t to convert.
+ * rb_ot_tags_from_script_and_language:
+ * @script: an #rb_script_t to convert.
+ * @language: an #rb_language_t to convert.
  * @script_count: (allow-none): maximum number of script tags to retrieve (IN)
  * and actual number of script tags retrieved (OUT)
  * @script_tags: (out) (allow-none): array of size at least @script_count to store the
@@ -339,16 +339,16 @@ static bool parse_private_use_subtag(const char *private_use_subtag,
  * @language_tags: (out) (allow-none): array of size at least @language_count to store
  * the language tag results
  *
- * Converts an #hb_script_t and an #hb_language_t to script and language tags.
+ * Converts an #rb_script_t and an #rb_language_t to script and language tags.
  *
  * Since: 2.0.0
  **/
-void hb_ot_tags_from_script_and_language(hb_script_t script,
+void rb_ot_tags_from_script_and_language(rb_script_t script,
                                          const char *language,
                                          unsigned int *script_count /* IN/OUT */,
-                                         hb_tag_t *script_tags /* OUT */,
+                                         rb_tag_t *script_tags /* OUT */,
                                          unsigned int *language_count /* IN/OUT */,
-                                         hb_tag_t *language_tags /* OUT */)
+                                         rb_tag_t *language_tags /* OUT */)
 {
     bool needs_script = true;
 
@@ -385,15 +385,15 @@ void hb_ot_tags_from_script_and_language(hb_script_t script,
         needs_language = !parse_private_use_subtag(private_use_subtag, language_count, language_tags, "-hbot", TOUPPER);
 
         if (needs_language && language_count && language_tags && *language_count)
-            hb_ot_tags_from_language(lang_str, limit, language_count, language_tags);
+            rb_ot_tags_from_language(lang_str, limit, language_count, language_tags);
     }
 
     if (needs_script && script_count && script_tags && *script_count)
-        hb_ot_all_tags_from_script(script, script_count, script_tags);
+        rb_ot_all_tags_from_script(script, script_count, script_tags);
 }
 
 /**
- * hb_ot_tag_to_language:
+ * rb_ot_tag_to_language:
  *
  *
  *
@@ -401,27 +401,27 @@ void hb_ot_tags_from_script_and_language(hb_script_t script,
  *
  * Since: 0.9.2
  **/
-const char *hb_ot_tag_to_language(hb_tag_t tag)
+const char *rb_ot_tag_to_language(rb_tag_t tag)
 {
     unsigned int i;
 
-    if (tag == HB_OT_TAG_DEFAULT_LANGUAGE)
+    if (tag == RB_OT_TAG_DEFAULT_LANGUAGE)
         return nullptr;
 
     {
-        const char *disambiguated_tag = hb_ot_ambiguous_tag_to_language(tag);
+        const char *disambiguated_tag = rb_ot_ambiguous_tag_to_language(tag);
         if (disambiguated_tag != NULL)
             return disambiguated_tag;
     }
 
     for (i = 0; i < ARRAY_LENGTH(ot_languages); i++)
         if (ot_languages[i].tag == tag)
-            return hb_language_from_string(ot_languages[i].language, -1);
+            return rb_language_from_string(ot_languages[i].language, -1);
 
     /* Return a custom language in the form of "x-hbot-AABBCCDD".
      * If it's three letters long, also guess it's ISO 639-3 and lower-case and
      * prepend it (if it's not a registered tag, the private use subtags will
-     * ensure that calling hb_ot_tag_from_language on the result will still return
+     * ensure that calling rb_ot_tag_from_language on the result will still return
      * the same tag as the original tag).
      */
     {
@@ -435,36 +435,36 @@ const char *hb_ot_tag_to_language(hb_tag_t tag)
             str += 4;
         }
         snprintf(str, 16, "x-hbot-%08x", tag);
-        return hb_language_from_string(&*buf, -1);
+        return rb_language_from_string(&*buf, -1);
     }
 }
 
 /**
- * hb_ot_tags_to_script_and_language:
+ * rb_ot_tags_to_script_and_language:
  * @script_tag: a script tag
  * @language_tag: a language tag
- * @script: (allow-none): the #hb_script_t corresponding to @script_tag (OUT).
- * @language: (allow-none): the #hb_language_t corresponding to @script_tag and
+ * @script: (allow-none): the #rb_script_t corresponding to @script_tag (OUT).
+ * @language: (allow-none): the #rb_language_t corresponding to @script_tag and
  * @language_tag (OUT).
  *
- * Converts a script tag and a language tag to an #hb_script_t and an
- * #hb_language_t.
+ * Converts a script tag and a language tag to an #rb_script_t and an
+ * #rb_language_t.
  *
  * Since: 2.0.0
  **/
-void hb_ot_tags_to_script_and_language(hb_tag_t script_tag,
-                                       hb_tag_t language_tag,
-                                       hb_script_t *script /* OUT */,
+void rb_ot_tags_to_script_and_language(rb_tag_t script_tag,
+                                       rb_tag_t language_tag,
+                                       rb_script_t *script /* OUT */,
                                        const char **language /* OUT */)
 {
-    hb_script_t script_out = hb_ot_tag_to_script(script_tag);
+    rb_script_t script_out = rb_ot_tag_to_script(script_tag);
     if (script)
         *script = script_out;
     if (language) {
         unsigned int script_count = 1;
-        hb_tag_t primary_script_tag[1];
-        hb_ot_tags_from_script_and_language(script_out, NULL, &script_count, primary_script_tag, nullptr, nullptr);
-        *language = hb_ot_tag_to_language(language_tag);
+        rb_tag_t primary_script_tag[1];
+        rb_ot_tags_from_script_and_language(script_out, NULL, &script_count, primary_script_tag, nullptr, nullptr);
+        *language = rb_ot_tag_to_language(language_tag);
         if (script_count == 0 || primary_script_tag[0] != script_tag) {
             unsigned char *buf;
             const char *lang_str = *language;
@@ -487,7 +487,7 @@ void hb_ot_tags_to_script_and_language(hb_tag_t script_tag,
                 buf[len++] = '-';
                 for (shift = 28; shift >= 0; shift -= 4)
                     buf[len++] = TOHEX(script_tag >> shift);
-                *language = hb_language_from_string((char *)buf, len);
+                *language = rb_language_from_string((char *)buf, len);
                 free(buf);
             }
         }

@@ -26,8 +26,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_HEAD_TABLE_HH
-#define HB_OT_HEAD_TABLE_HH
+#ifndef RB_OT_HEAD_TABLE_HH
+#define RB_OT_HEAD_TABLE_HH
 
 #include "hb-open-type.hh"
 
@@ -35,7 +35,7 @@
  * head -- Font Header
  * https://docs.microsoft.com/en-us/typography/opentype/spec/head
  */
-#define HB_OT_TAG_head HB_TAG('h', 'e', 'a', 'd')
+#define RB_OT_TAG_head RB_TAG('h', 'e', 'a', 'd')
 
 namespace OT {
 
@@ -43,7 +43,7 @@ struct head
 {
     friend struct OffsetTable;
 
-    static constexpr hb_tag_t tableTag = HB_OT_TAG_head;
+    static constexpr rb_tag_t tableTag = RB_OT_TAG_head;
 
     unsigned int get_upem() const
     {
@@ -74,7 +74,7 @@ struct head
         return macStyle & CONDENSED;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && version.major == 1 && magicNumber == 0x5F0F3CF5u);
@@ -167,4 +167,4 @@ public:
 
 } /* namespace OT */
 
-#endif /* HB_OT_HEAD_TABLE_HH */
+#endif /* RB_OT_HEAD_TABLE_HH */

@@ -24,24 +24,24 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_FALLBACK_HH
-#define HB_OT_SHAPE_FALLBACK_HH
+#ifndef RB_OT_SHAPE_FALLBACK_HH
+#define RB_OT_SHAPE_FALLBACK_HH
 
 #include "hb.hh"
 
 #include "hb-ot-shape.hh"
 
-HB_INTERNAL void _hb_ot_shape_fallback_mark_position(const hb_ot_shape_plan_t *plan,
-                                                     hb_font_t *font,
-                                                     hb_buffer_t *buffer,
+RB_INTERNAL void _rb_ot_shape_fallback_mark_position(const rb_ot_shape_plan_t *plan,
+                                                     rb_font_t *font,
+                                                     rb_buffer_t *buffer,
                                                      bool adjust_offsets_when_zeroing);
 
-HB_INTERNAL void _hb_ot_shape_fallback_mark_position_recategorize_marks(const hb_ot_shape_plan_t *plan,
-                                                                        hb_font_t *font,
-                                                                        hb_buffer_t *buffer);
+RB_INTERNAL void _rb_ot_shape_fallback_mark_position_recategorize_marks(const rb_ot_shape_plan_t *plan,
+                                                                        rb_font_t *font,
+                                                                        rb_buffer_t *buffer);
 
-HB_INTERNAL void _hb_ot_shape_fallback_kern(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+RB_INTERNAL void _rb_ot_shape_fallback_kern(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
 
-HB_INTERNAL void _hb_ot_shape_fallback_spaces(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+RB_INTERNAL void _rb_ot_shape_fallback_spaces(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
 
-#endif /* HB_OT_SHAPE_FALLBACK_HH */
+#endif /* RB_OT_SHAPE_FALLBACK_HH */

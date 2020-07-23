@@ -25,8 +25,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_AAT_LAYOUT_TRAK_TABLE_HH
-#define HB_AAT_LAYOUT_TRAK_TABLE_HH
+#ifndef RB_AAT_LAYOUT_TRAK_TABLE_HH
+#define RB_AAT_LAYOUT_TRAK_TABLE_HH
 
 #include "hb-aat-layout-common.hh"
 #include "hb-ot-layout.hh"
@@ -36,7 +36,7 @@
  * trak -- Tracking
  * https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6trak.html
  */
-#define HB_AAT_TAG_trak HB_TAG('t', 'r', 'a', 'k')
+#define RB_AAT_TAG_trak RB_TAG('t', 'r', 'a', 'k')
 
 namespace AAT {
 
@@ -55,7 +55,7 @@ struct TrackTableEntry
     }
 
 public:
-    bool sanitize(hb_sanitize_context_t *c, const void *base, unsigned int table_size) const
+    bool sanitize(rb_sanitize_context_t *c, const void *base, unsigned int table_size) const
     {
         TRACE_SANITIZE(this);
         return_trace(likely(c->check_struct(this) && (valuesZ.sanitize(c, base, table_size))));
@@ -79,7 +79,7 @@ struct TrackData
     interpolate_at(unsigned int idx, float target_size, const TrackTableEntry &trackTableEntry, const void *base) const
     {
         unsigned int sizes = nSizes;
-        hb_array_t<const HBFixed> size_table((base + sizeTable).arrayZ, sizes);
+        rb_array_t<const HBFixed> size_table((base + sizeTable).arrayZ, sizes);
 
         float s0 = size_table[idx].to_float();
         float s1 = size_table[idx + 1].to_float();
@@ -118,7 +118,7 @@ struct TrackData
         if (sizes == 1)
             return trackTableEntry->get_value(base, 0, sizes);
 
-        hb_array_t<const HBFixed> size_table((base + sizeTable).arrayZ, sizes);
+        rb_array_t<const HBFixed> size_table((base + sizeTable).arrayZ, sizes);
         unsigned int size_index;
         for (size_index = 0; size_index < sizes - 1; size_index++)
             if (size_table[size_index].to_float() >= ptem)
@@ -127,7 +127,7 @@ struct TrackData
         return roundf(interpolate_at(size_index ? size_index - 1 : 0, ptem, *trackTableEntry, base));
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const void *base) const
+    bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
         TRACE_SANITIZE(this);
         return_trace(likely(c->check_struct(this) && sizeTable.sanitize(c, base, nSizes) &&
@@ -147,54 +147,54 @@ public:
 
 struct trak
 {
-    static constexpr hb_tag_t tableTag = HB_AAT_TAG_trak;
+    static constexpr rb_tag_t tableTag = RB_AAT_TAG_trak;
 
     bool has_data() const
     {
         return version.to_int();
     }
 
-    bool apply(hb_aat_apply_context_t *c) const
+    bool apply(rb_aat_apply_context_t *c) const
     {
         TRACE_APPLY(this);
 
-        hb_mask_t trak_mask = c->plan->trak_mask;
+        rb_mask_t trak_mask = c->plan->trak_mask;
 
-        const float ptem = hb_font_get_ptem(c->font);
+        const float ptem = rb_font_get_ptem(c->font);
         if (unlikely(ptem <= 0.f))
             return_trace(false);
 
-        hb_buffer_t *buffer = c->buffer;
-        if (HB_DIRECTION_IS_HORIZONTAL(hb_buffer_get_direction(buffer))) {
+        rb_buffer_t *buffer = c->buffer;
+        if (RB_DIRECTION_IS_HORIZONTAL(rb_buffer_get_direction(buffer))) {
             const TrackData &trackData = this + horizData;
             int tracking = trackData.get_tracking(this, ptem);
-            hb_position_t offset_to_add = (hb_position_t)roundf(tracking / 2);
-            hb_position_t advance_to_add = (hb_position_t)roundf(tracking);
+            rb_position_t offset_to_add = (rb_position_t)roundf(tracking / 2);
+            rb_position_t advance_to_add = (rb_position_t)roundf(tracking);
             foreach_grapheme(buffer, start, end)
             {
-                if (!(hb_buffer_get_glyph_infos(buffer)[start].mask & trak_mask))
+                if (!(rb_buffer_get_glyph_infos(buffer)[start].mask & trak_mask))
                     continue;
-                hb_buffer_get_glyph_positions(buffer)[start].x_advance += advance_to_add;
-                hb_buffer_get_glyph_positions(buffer)[start].x_offset += offset_to_add;
+                rb_buffer_get_glyph_positions(buffer)[start].x_advance += advance_to_add;
+                rb_buffer_get_glyph_positions(buffer)[start].x_offset += offset_to_add;
             }
         } else {
             const TrackData &trackData = this + vertData;
             int tracking = trackData.get_tracking(this, ptem);
-            hb_position_t offset_to_add = (hb_position_t)roundf(tracking / 2);
-            hb_position_t advance_to_add = (hb_position_t)roundf(tracking);
+            rb_position_t offset_to_add = (rb_position_t)roundf(tracking / 2);
+            rb_position_t advance_to_add = (rb_position_t)roundf(tracking);
             foreach_grapheme(buffer, start, end)
             {
-                if (!(hb_buffer_get_glyph_infos(buffer)[start].mask & trak_mask))
+                if (!(rb_buffer_get_glyph_infos(buffer)[start].mask & trak_mask))
                     continue;
-                hb_buffer_get_glyph_positions(buffer)[start].y_advance += advance_to_add;
-                hb_buffer_get_glyph_positions(buffer)[start].y_offset += offset_to_add;
+                rb_buffer_get_glyph_positions(buffer)[start].y_advance += advance_to_add;
+                rb_buffer_get_glyph_positions(buffer)[start].y_offset += offset_to_add;
             }
         }
 
         return_trace(true);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
 
@@ -218,4 +218,4 @@ public:
 
 } /* namespace AAT */
 
-#endif /* HB_AAT_LAYOUT_TRAK_TABLE_HH */
+#endif /* RB_AAT_LAYOUT_TRAK_TABLE_HH */

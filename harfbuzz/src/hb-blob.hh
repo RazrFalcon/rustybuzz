@@ -26,16 +26,16 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_BLOB_HH
-#define HB_BLOB_HH
+#ifndef RB_BLOB_HH
+#define RB_BLOB_HH
 
 #include "hb.hh"
 
 /*
- * hb_blob_t
+ * rb_blob_t
  */
 
-struct hb_blob_t
+struct rb_blob_t
 {
     void fini_shallow()
     {
@@ -51,9 +51,9 @@ struct hb_blob_t
         }
     }
 
-    hb_bytes_t as_bytes() const
+    rb_bytes_t as_bytes() const
     {
-        return hb_bytes_t(data, length);
+        return rb_bytes_t(data, length);
     }
     template <typename Type> const Type *as() const
     {
@@ -61,29 +61,28 @@ struct hb_blob_t
     }
 
 public:
-    hb_object_header_t header;
+    rb_object_header_t header;
 
     const char *data;
     unsigned int length;
-    hb_memory_mode_t mode;
 
     void *user_data;
-    hb_destroy_func_t destroy;
+    rb_destroy_func_t destroy;
 };
 
 /*
- * hb_blob_ptr_t
+ * rb_blob_ptr_t
  */
 
-template <typename P> struct hb_blob_ptr_t
+template <typename P> struct rb_blob_ptr_t
 {
-    typedef hb_remove_pointer<P> T;
+    typedef rb_remove_pointer<P> T;
 
-    hb_blob_ptr_t(hb_blob_t *b_ = nullptr)
+    rb_blob_ptr_t(rb_blob_t *b_ = nullptr)
         : b(b_)
     {
     }
-    hb_blob_t *operator=(hb_blob_t *b_)
+    rb_blob_t *operator=(rb_blob_t *b_)
     {
         return b = b_;
     }
@@ -107,7 +106,7 @@ template <typename P> struct hb_blob_ptr_t
     {
         return b->as<T>();
     }
-    hb_blob_t *get_blob() const
+    rb_blob_t *get_blob() const
     {
         return b.get_raw();
     }
@@ -117,11 +116,11 @@ template <typename P> struct hb_blob_ptr_t
     }
     void destroy()
     {
-        hb_blob_destroy(b.get());
+        rb_blob_destroy(b.get());
         b = nullptr;
     }
 
-    hb_nonnull_ptr_t<hb_blob_t> b;
+    rb_nonnull_ptr_t<rb_blob_t> b;
 };
 
-#endif /* HB_BLOB_HH */
+#endif /* RB_BLOB_HH */

@@ -27,63 +27,63 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_BUFFER_HH
-#define HB_BUFFER_HH
+#ifndef RB_BUFFER_HH
+#define RB_BUFFER_HH
 
 #include "hb.hh"
 
-#ifndef HB_BUFFER_MAX_LEN_FACTOR
-#define HB_BUFFER_MAX_LEN_FACTOR 32
+#ifndef RB_BUFFER_MAX_LEN_FACTOR
+#define RB_BUFFER_MAX_LEN_FACTOR 32
 #endif
-#ifndef HB_BUFFER_MAX_LEN_MIN
-#define HB_BUFFER_MAX_LEN_MIN 8192
+#ifndef RB_BUFFER_MAX_LEN_MIN
+#define RB_BUFFER_MAX_LEN_MIN 8192
 #endif
-#ifndef HB_BUFFER_MAX_LEN_DEFAULT
-#define HB_BUFFER_MAX_LEN_DEFAULT 0x3FFFFFFF /* Shaping more than a billion chars? Let us know! */
-#endif
-
-#ifndef HB_BUFFER_MAX_OPS_FACTOR
-#define HB_BUFFER_MAX_OPS_FACTOR 64
-#endif
-#ifndef HB_BUFFER_MAX_OPS_MIN
-#define HB_BUFFER_MAX_OPS_MIN 1024
-#endif
-#ifndef HB_BUFFER_MAX_OPS_DEFAULT
-#define HB_BUFFER_MAX_OPS_DEFAULT 0x1FFFFFFF /* Shaping more than a billion operations? Let us know! */
+#ifndef RB_BUFFER_MAX_LEN_DEFAULT
+#define RB_BUFFER_MAX_LEN_DEFAULT 0x3FFFFFFF /* Shaping more than a billion chars? Let us know! */
 #endif
 
-static_assert((sizeof(hb_glyph_info_t) == 20), "");
-static_assert((sizeof(hb_glyph_info_t) == sizeof(hb_glyph_position_t)), "");
+#ifndef RB_BUFFER_MAX_OPS_FACTOR
+#define RB_BUFFER_MAX_OPS_FACTOR 64
+#endif
+#ifndef RB_BUFFER_MAX_OPS_MIN
+#define RB_BUFFER_MAX_OPS_MIN 1024
+#endif
+#ifndef RB_BUFFER_MAX_OPS_DEFAULT
+#define RB_BUFFER_MAX_OPS_DEFAULT 0x1FFFFFFF /* Shaping more than a billion operations? Let us know! */
+#endif
 
-HB_MARK_AS_FLAG_T(hb_buffer_flags_t);
+static_assert((sizeof(rb_glyph_info_t) == 20), "");
+static_assert((sizeof(rb_glyph_info_t) == sizeof(rb_glyph_position_t)), "");
 
-enum hb_buffer_scratch_flags_t {
-    HB_BUFFER_SCRATCH_FLAG_DEFAULT = 0x00000000u,
-    HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII = 0x00000001u,
-    HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES = 0x00000002u,
-    HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK = 0x00000004u,
-    HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT = 0x00000008u,
-    HB_BUFFER_SCRATCH_FLAG_HAS_UNSAFE_TO_BREAK = 0x00000010u,
-    HB_BUFFER_SCRATCH_FLAG_HAS_CGJ = 0x00000020u,
+RB_MARK_AS_FLAG_T(rb_buffer_flags_t);
+
+enum rb_buffer_scratch_flags_t {
+    RB_BUFFER_SCRATCH_FLAG_DEFAULT = 0x00000000u,
+    RB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII = 0x00000001u,
+    RB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES = 0x00000002u,
+    RB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK = 0x00000004u,
+    RB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT = 0x00000008u,
+    RB_BUFFER_SCRATCH_FLAG_HAS_UNSAFE_TO_BREAK = 0x00000010u,
+    RB_BUFFER_SCRATCH_FLAG_HAS_CGJ = 0x00000020u,
 
     /* Reserved for complex shapers' internal use. */
-    HB_BUFFER_SCRATCH_FLAG_COMPLEX0 = 0x01000000u,
-    HB_BUFFER_SCRATCH_FLAG_COMPLEX1 = 0x02000000u,
-    HB_BUFFER_SCRATCH_FLAG_COMPLEX2 = 0x04000000u,
-    HB_BUFFER_SCRATCH_FLAG_COMPLEX3 = 0x08000000u,
+    RB_BUFFER_SCRATCH_FLAG_COMPLEX0 = 0x01000000u,
+    RB_BUFFER_SCRATCH_FLAG_COMPLEX1 = 0x02000000u,
+    RB_BUFFER_SCRATCH_FLAG_COMPLEX2 = 0x04000000u,
+    RB_BUFFER_SCRATCH_FLAG_COMPLEX3 = 0x08000000u,
 };
-HB_MARK_AS_FLAG_T(hb_buffer_scratch_flags_t);
+RB_MARK_AS_FLAG_T(rb_buffer_scratch_flags_t);
 
 /* Loop over clusters. Duplicated in foreach_syllable(). */
 #define foreach_cluster(buffer, start, end)                                                                            \
-    for (unsigned int _count = hb_buffer_get_length(buffer), start = 0, end = _count ? _next_cluster(buffer, 0) : 0;   \
+    for (unsigned int _count = rb_buffer_get_length(buffer), start = 0, end = _count ? _next_cluster(buffer, 0) : 0;   \
          start < _count;                                                                                               \
          start = end, end = _next_cluster(buffer, start))
 
-static inline unsigned int _next_cluster(hb_buffer_t *buffer, unsigned int start)
+static inline unsigned int _next_cluster(rb_buffer_t *buffer, unsigned int start)
 {
-    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
-    unsigned int count = hb_buffer_get_length(buffer);
+    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
 
     unsigned int cluster = info[start].cluster;
     while (++start < count && cluster == info[start].cluster)
@@ -92,4 +92,4 @@ static inline unsigned int _next_cluster(hb_buffer_t *buffer, unsigned int start
     return start;
 }
 
-#endif /* HB_BUFFER_HH */
+#endif /* RB_BUFFER_HH */

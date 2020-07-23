@@ -4,7 +4,7 @@ use crate::{ffi, script, Tag, Font, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::*;
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class};
-use super::{hb_flag, hb_flag_unsafe};
+use super::{rb_flag, rb_flag_unsafe};
 
 const ARABIC_HAS_STCH: BufferScratchFlags = BufferScratchFlags::COMPLEX0;
 
@@ -114,14 +114,14 @@ pub enum JoiningType {
 impl GlyphInfo {
     fn arabic_shaping_action(&self) -> Action {
         unsafe {
-            let v: &ffi::hb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
             std::mem::transmute(v.var_u8[2])
         }
     }
 
     fn set_arabic_shaping_action(&mut self, action: Action) {
         unsafe {
-            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
             v.var_u8[2] = action as u8;
         }
     }
@@ -146,7 +146,7 @@ impl ArabicShapePlan {
 
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_collect_features_arabic(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_collect_features_arabic(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     collect_features(&mut planner)
 }
@@ -221,9 +221,9 @@ fn collect_features(planner: &mut ShapePlanner) {
 }
 
 extern "C" fn fallback_shape_raw(
-    _: *const ffi::hb_ot_shape_plan_t,
-    _: *mut ffi::hb_font_t,
-    _: *mut ffi::hb_buffer_t,
+    _: *const ffi::rb_ot_shape_plan_t,
+    _: *mut ffi::rb_font_t,
+    _: *mut ffi::rb_buffer_t,
 ) {
 }
 
@@ -233,9 +233,9 @@ extern "C" fn fallback_shape_raw(
 // We implement this in a generic way, such that the Arabic subtending
 // marks can use it as well.
 extern "C" fn record_stch_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -276,10 +276,10 @@ fn record_stch(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_postprocess_glyphs_arabic(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_postprocess_glyphs_arabic(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);
@@ -420,29 +420,29 @@ fn apply_stch(font: &Font, buffer: &mut Buffer) {
 // See:
 // https://github.com/harfbuzz/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516
 fn is_word_category(gc: GeneralCategory) -> bool {
-    (hb_flag_unsafe(gc.to_hb()) &
-        (   hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_UNASSIGNED) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_SPACING_MARK) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL)
+    (rb_flag_unsafe(gc.to_rb()) &
+        (   rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_SPACING_MARK) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL)
         )) != 0
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_setup_masks_arabic(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    _: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_setup_masks_arabic(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    _: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let arabic_plan = ArabicShapePlan::from_ptr(plan.data() as _);
@@ -451,10 +451,10 @@ pub extern "C" fn hb_ot_complex_setup_masks_arabic(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_setup_masks_arabic_plan(
+pub extern "C" fn rb_ot_complex_setup_masks_arabic_plan(
     arabic_plan: *const c_void,
-    buffer: *mut ffi::hb_buffer_t,
-    script: ffi::hb_script_t,
+    buffer: *mut ffi::rb_buffer_t,
+    script: ffi::rb_script_t,
 ) {
     let arabic_plan = ArabicShapePlan::from_ptr(arabic_plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);
@@ -543,8 +543,8 @@ fn mongolian_variation_selectors(buffer: &mut Buffer) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_create_arabic(
-    plan: *const ffi::hb_ot_shape_plan_t,
+pub extern "C" fn rb_ot_complex_data_create_arabic(
+    plan: *const ffi::rb_ot_shape_plan_t,
 ) -> *mut c_void {
     let plan = ShapePlan::from_ptr(plan);
     Box::into_raw(Box::new(data_create(&plan))) as _
@@ -565,7 +565,7 @@ pub fn data_create(plan: &ShapePlan) -> ArabicShapePlan {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_destroy_arabic(data: *mut c_void) {
+pub extern "C" fn rb_ot_complex_data_destroy_arabic(data: *mut c_void) {
     unsafe { Box::from_raw(data) };
 }
 
@@ -575,18 +575,18 @@ fn get_joining_type(u: char, gc: GeneralCategory) -> JoiningType {
         return j_type;
     }
 
-    let ok = hb_flag_unsafe(gc.to_hb()) &
-        (hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
-            hb_flag(ffi::HB_UNICODE_GENERAL_CATEGORY_FORMAT));
+    let ok = rb_flag_unsafe(gc.to_rb()) &
+        (   rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
+            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_FORMAT));
 
     if ok != 0 { JoiningType::T } else { JoiningType::U }
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_reorder_marks_arabic(
-    _: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
+pub extern "C" fn rb_ot_complex_reorder_marks_arabic(
+    _: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
     start: u32,
     end: u32,
 ) {

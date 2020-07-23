@@ -35,17 +35,17 @@
 #include "hb-aat-layout-trak-table.hh"
 
 /*
- * hb_aat_apply_context_t
+ * rb_aat_apply_context_t
  */
 
 /* Note: This context is used for kerning, even without AAT, hence the condition. */
-AAT::hb_aat_apply_context_t::hb_aat_apply_context_t(const hb_ot_shape_plan_t *plan_,
-                                                    hb_font_t *font_,
-                                                    hb_buffer_t *buffer_,
-                                                    hb_blob_t *blob)
+AAT::rb_aat_apply_context_t::rb_aat_apply_context_t(const rb_ot_shape_plan_t *plan_,
+                                                    rb_font_t *font_,
+                                                    rb_buffer_t *buffer_,
+                                                    rb_blob_t *blob)
     : plan(plan_)
     , font(font_)
-    , face(hb_font_get_face(font))
+    , face(rb_font_get_face(font))
     , buffer(buffer_)
     , sanitizer()
     , ankr_table(&Null(AAT::ankr))
@@ -54,15 +54,15 @@ AAT::hb_aat_apply_context_t::hb_aat_apply_context_t(const hb_ot_shape_plan_t *pl
     sanitizer.init(blob);
     sanitizer.set_num_glyphs(face->get_num_glyphs());
     sanitizer.start_processing();
-    sanitizer.set_max_ops(HB_SANITIZE_MAX_OPS_MAX);
+    sanitizer.set_max_ops(RB_SANITIZE_MAX_OPS_MAX);
 }
 
-AAT::hb_aat_apply_context_t::~hb_aat_apply_context_t()
+AAT::rb_aat_apply_context_t::~rb_aat_apply_context_t()
 {
     sanitizer.end_processing();
 }
 
-void AAT::hb_aat_apply_context_t::set_ankr_table(const AAT::ankr *ankr_table_)
+void AAT::rb_aat_apply_context_t::set_ankr_table(const AAT::ankr *ankr_table_)
 {
     ankr_table = ankr_table_;
 }
@@ -78,323 +78,323 @@ void AAT::hb_aat_apply_context_t::set_ankr_table(const AAT::ankr *ankr_table_)
 
 /* Table data courtesy of Apple.  Converted from mnemonics to integers
  * when moving to this file. */
-static const hb_aat_feature_mapping_t feature_mappings[] = {
-    {HB_TAG('a', 'f', 'r', 'c'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_FRACTIONS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_VERTICAL_FRACTIONS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_NO_FRACTIONS},
-    {HB_TAG('c', '2', 'p', 'c'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_UPPER_CASE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_UPPER_CASE_PETITE_CAPS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_DEFAULT_UPPER_CASE},
-    {HB_TAG('c', '2', 's', 'c'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_UPPER_CASE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_UPPER_CASE_SMALL_CAPS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_DEFAULT_UPPER_CASE},
-    {HB_TAG('c', 'a', 'l', 't'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CONTEXTUAL_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_ALTERNATES_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_ALTERNATES_OFF},
-    {HB_TAG('c', 'a', 's', 'e'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CASE_SENSITIVE_LAYOUT,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CASE_SENSITIVE_LAYOUT_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CASE_SENSITIVE_LAYOUT_OFF},
-    {HB_TAG('c', 'l', 'i', 'g'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_LIGATURES_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_LIGATURES_OFF},
-    {HB_TAG('c', 'p', 's', 'p'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CASE_SENSITIVE_LAYOUT,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CASE_SENSITIVE_SPACING_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CASE_SENSITIVE_SPACING_OFF},
-    {HB_TAG('c', 's', 'w', 'h'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CONTEXTUAL_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_SWASH_ALTERNATES_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_SWASH_ALTERNATES_OFF},
-    {HB_TAG('d', 'l', 'i', 'g'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_RARE_LIGATURES_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_RARE_LIGATURES_OFF},
-    {HB_TAG('e', 'x', 'p', 't'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_EXPERT_CHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('f', 'r', 'a', 'c'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_FRACTIONS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_DIAGONAL_FRACTIONS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_NO_FRACTIONS},
-    {HB_TAG('f', 'w', 'i', 'd'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_MONOSPACED_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('h', 'a', 'l', 't'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_HALF_WIDTH_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('h', 'i', 's', 't'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_OFF},
-    {HB_TAG('h', 'k', 'n', 'a'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_ALTERNATE_KANA,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_HORIZ_KANA_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_HORIZ_KANA_OFF},
-    {HB_TAG('h', 'l', 'i', 'g'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_OFF},
-    {HB_TAG('h', 'n', 'g', 'l'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TRANSLITERATION,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_HANJA_TO_HANGUL,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_NO_TRANSLITERATION},
-    {HB_TAG('h', 'o', 'j', 'o'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_HOJO_CHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('h', 'w', 'i', 'd'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_HALF_WIDTH_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('i', 't', 'a', 'l'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_ITALIC_CJK_ROMAN,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CJK_ITALIC_ROMAN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_CJK_ITALIC_ROMAN_OFF},
-    {HB_TAG('j', 'p', '0', '4'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_JIS2004_CHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('j', 'p', '7', '8'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_JIS1978_CHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('j', 'p', '8', '3'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_JIS1983_CHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('j', 'p', '9', '0'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_JIS1990_CHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('l', 'i', 'g', 'a'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_COMMON_LIGATURES_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_COMMON_LIGATURES_OFF},
-    {HB_TAG('l', 'n', 'u', 'm'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_CASE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_UPPER_CASE_NUMBERS,
-     (hb_aat_layout_feature_selector_t)2},
-    {HB_TAG('m', 'g', 'r', 'k'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_MATHEMATICAL_EXTRAS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_MATHEMATICAL_GREEK_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_MATHEMATICAL_GREEK_OFF},
-    {HB_TAG('n', 'l', 'c', 'k'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_NLCCHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('o', 'n', 'u', 'm'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_CASE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_NUMBERS,
-     (hb_aat_layout_feature_selector_t)2},
-    {HB_TAG('o', 'r', 'd', 'n'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ORDINALS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_NORMAL_POSITION},
-    {HB_TAG('p', 'a', 'l', 't'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_PROPORTIONAL_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('p', 'c', 'a', 'p'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_PETITE_CAPS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_DEFAULT_LOWER_CASE},
-    {HB_TAG('p', 'k', 'n', 'a'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_PROPORTIONAL_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('p', 'n', 'u', 'm'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_PROPORTIONAL_NUMBERS,
-     (hb_aat_layout_feature_selector_t)4},
-    {HB_TAG('p', 'w', 'i', 'd'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_PROPORTIONAL_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('q', 'w', 'i', 'd'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_QUARTER_WIDTH_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('r', 'u', 'b', 'y'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_RUBY_KANA,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_RUBY_KANA_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_RUBY_KANA_OFF},
-    {HB_TAG('s', 'i', 'n', 'f'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SCIENTIFIC_INFERIORS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_NORMAL_POSITION},
-    {HB_TAG('s', 'm', 'c', 'p'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_DEFAULT_LOWER_CASE},
-    {HB_TAG('s', 'm', 'p', 'l'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SIMPLIFIED_CHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('s', 's', '0', '1'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_ONE_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_ONE_OFF},
-    {HB_TAG('s', 's', '0', '2'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWO_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWO_OFF},
-    {HB_TAG('s', 's', '0', '3'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_THREE_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_THREE_OFF},
-    {HB_TAG('s', 's', '0', '4'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FOUR_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FOUR_OFF},
-    {HB_TAG('s', 's', '0', '5'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FIVE_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FIVE_OFF},
-    {HB_TAG('s', 's', '0', '6'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SIX_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SIX_OFF},
-    {HB_TAG('s', 's', '0', '7'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SEVEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SEVEN_OFF},
-    {HB_TAG('s', 's', '0', '8'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_EIGHT_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_EIGHT_OFF},
-    {HB_TAG('s', 's', '0', '9'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_NINE_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_NINE_OFF},
-    {HB_TAG('s', 's', '1', '0'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TEN_OFF},
-    {HB_TAG('s', 's', '1', '1'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_ELEVEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_ELEVEN_OFF},
-    {HB_TAG('s', 's', '1', '2'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWELVE_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWELVE_OFF},
-    {HB_TAG('s', 's', '1', '3'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_THIRTEEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_THIRTEEN_OFF},
-    {HB_TAG('s', 's', '1', '4'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FOURTEEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FOURTEEN_OFF},
-    {HB_TAG('s', 's', '1', '5'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FIFTEEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FIFTEEN_OFF},
-    {HB_TAG('s', 's', '1', '6'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SIXTEEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SIXTEEN_OFF},
-    {HB_TAG('s', 's', '1', '7'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SEVENTEEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SEVENTEEN_OFF},
-    {HB_TAG('s', 's', '1', '8'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_EIGHTEEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_EIGHTEEN_OFF},
-    {HB_TAG('s', 's', '1', '9'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_NINETEEN_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_NINETEEN_OFF},
-    {HB_TAG('s', 's', '2', '0'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWENTY_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWENTY_OFF},
-    {HB_TAG('s', 'u', 'b', 's'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_INFERIORS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_NORMAL_POSITION},
-    {HB_TAG('s', 'u', 'p', 's'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SUPERIORS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_NORMAL_POSITION},
-    {HB_TAG('s', 'w', 's', 'h'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CONTEXTUAL_ALTERNATIVES,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SWASH_ALTERNATES_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SWASH_ALTERNATES_OFF},
-    {HB_TAG('t', 'i', 't', 'l'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_STYLE_OPTIONS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_TITLING_CAPS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_NO_STYLE_OPTIONS},
-    {HB_TAG('t', 'n', 'a', 'm'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_TRADITIONAL_NAMES_CHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('t', 'n', 'u', 'm'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_MONOSPACED_NUMBERS,
-     (hb_aat_layout_feature_selector_t)4},
-    {HB_TAG('t', 'r', 'a', 'd'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_TRADITIONAL_CHARACTERS,
-     (hb_aat_layout_feature_selector_t)16},
-    {HB_TAG('t', 'w', 'i', 'd'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_THIRD_WIDTH_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('u', 'n', 'i', 'c'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE,
-     (hb_aat_layout_feature_selector_t)14,
-     (hb_aat_layout_feature_selector_t)15},
-    {HB_TAG('v', 'a', 'l', 't'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_PROPORTIONAL_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('v', 'e', 'r', 't'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_OFF},
-    {HB_TAG('v', 'h', 'a', 'l'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_HALF_WIDTH_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('v', 'k', 'n', 'a'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_ALTERNATE_KANA,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_VERT_KANA_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_VERT_KANA_OFF},
-    {HB_TAG('v', 'p', 'a', 'l'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_PROPORTIONAL_TEXT,
-     (hb_aat_layout_feature_selector_t)7},
-    {HB_TAG('v', 'r', 't', '2'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_OFF},
-    {HB_TAG('z', 'e', 'r', 'o'),
-     HB_AAT_LAYOUT_FEATURE_TYPE_TYPOGRAPHIC_EXTRAS,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_ON,
-     HB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_OFF},
+static const rb_aat_feature_mapping_t feature_mappings[] = {
+    {RB_TAG('a', 'f', 'r', 'c'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_FRACTIONS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_VERTICAL_FRACTIONS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_NO_FRACTIONS},
+    {RB_TAG('c', '2', 'p', 'c'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_UPPER_CASE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_UPPER_CASE_PETITE_CAPS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_DEFAULT_UPPER_CASE},
+    {RB_TAG('c', '2', 's', 'c'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_UPPER_CASE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_UPPER_CASE_SMALL_CAPS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_DEFAULT_UPPER_CASE},
+    {RB_TAG('c', 'a', 'l', 't'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CONTEXTUAL_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_ALTERNATES_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_ALTERNATES_OFF},
+    {RB_TAG('c', 'a', 's', 'e'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CASE_SENSITIVE_LAYOUT,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CASE_SENSITIVE_LAYOUT_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CASE_SENSITIVE_LAYOUT_OFF},
+    {RB_TAG('c', 'l', 'i', 'g'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_LIGATURES_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_LIGATURES_OFF},
+    {RB_TAG('c', 'p', 's', 'p'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CASE_SENSITIVE_LAYOUT,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CASE_SENSITIVE_SPACING_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CASE_SENSITIVE_SPACING_OFF},
+    {RB_TAG('c', 's', 'w', 'h'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CONTEXTUAL_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_SWASH_ALTERNATES_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CONTEXTUAL_SWASH_ALTERNATES_OFF},
+    {RB_TAG('d', 'l', 'i', 'g'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_RARE_LIGATURES_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_RARE_LIGATURES_OFF},
+    {RB_TAG('e', 'x', 'p', 't'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_EXPERT_CHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('f', 'r', 'a', 'c'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_FRACTIONS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_DIAGONAL_FRACTIONS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_NO_FRACTIONS},
+    {RB_TAG('f', 'w', 'i', 'd'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_MONOSPACED_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('h', 'a', 'l', 't'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_HALF_WIDTH_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('h', 'i', 's', 't'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_OFF},
+    {RB_TAG('h', 'k', 'n', 'a'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_ALTERNATE_KANA,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_HORIZ_KANA_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_HORIZ_KANA_OFF},
+    {RB_TAG('h', 'l', 'i', 'g'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_OFF},
+    {RB_TAG('h', 'n', 'g', 'l'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TRANSLITERATION,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_HANJA_TO_HANGUL,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_NO_TRANSLITERATION},
+    {RB_TAG('h', 'o', 'j', 'o'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_HOJO_CHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('h', 'w', 'i', 'd'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_HALF_WIDTH_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('i', 't', 'a', 'l'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_ITALIC_CJK_ROMAN,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CJK_ITALIC_ROMAN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_CJK_ITALIC_ROMAN_OFF},
+    {RB_TAG('j', 'p', '0', '4'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_JIS2004_CHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('j', 'p', '7', '8'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_JIS1978_CHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('j', 'p', '8', '3'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_JIS1983_CHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('j', 'p', '9', '0'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_JIS1990_CHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('l', 'i', 'g', 'a'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_COMMON_LIGATURES_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_COMMON_LIGATURES_OFF},
+    {RB_TAG('l', 'n', 'u', 'm'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_CASE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_UPPER_CASE_NUMBERS,
+     (rb_aat_layout_feature_selector_t)2},
+    {RB_TAG('m', 'g', 'r', 'k'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_MATHEMATICAL_EXTRAS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_MATHEMATICAL_GREEK_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_MATHEMATICAL_GREEK_OFF},
+    {RB_TAG('n', 'l', 'c', 'k'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_NLCCHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('o', 'n', 'u', 'm'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_CASE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_NUMBERS,
+     (rb_aat_layout_feature_selector_t)2},
+    {RB_TAG('o', 'r', 'd', 'n'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ORDINALS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_NORMAL_POSITION},
+    {RB_TAG('p', 'a', 'l', 't'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_PROPORTIONAL_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('p', 'c', 'a', 'p'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_PETITE_CAPS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_DEFAULT_LOWER_CASE},
+    {RB_TAG('p', 'k', 'n', 'a'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_PROPORTIONAL_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('p', 'n', 'u', 'm'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_PROPORTIONAL_NUMBERS,
+     (rb_aat_layout_feature_selector_t)4},
+    {RB_TAG('p', 'w', 'i', 'd'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_PROPORTIONAL_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('q', 'w', 'i', 'd'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_QUARTER_WIDTH_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('r', 'u', 'b', 'y'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_RUBY_KANA,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_RUBY_KANA_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_RUBY_KANA_OFF},
+    {RB_TAG('s', 'i', 'n', 'f'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SCIENTIFIC_INFERIORS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_NORMAL_POSITION},
+    {RB_TAG('s', 'm', 'c', 'p'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_DEFAULT_LOWER_CASE},
+    {RB_TAG('s', 'm', 'p', 'l'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SIMPLIFIED_CHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('s', 's', '0', '1'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_ONE_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_ONE_OFF},
+    {RB_TAG('s', 's', '0', '2'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWO_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWO_OFF},
+    {RB_TAG('s', 's', '0', '3'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_THREE_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_THREE_OFF},
+    {RB_TAG('s', 's', '0', '4'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FOUR_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FOUR_OFF},
+    {RB_TAG('s', 's', '0', '5'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FIVE_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FIVE_OFF},
+    {RB_TAG('s', 's', '0', '6'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SIX_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SIX_OFF},
+    {RB_TAG('s', 's', '0', '7'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SEVEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SEVEN_OFF},
+    {RB_TAG('s', 's', '0', '8'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_EIGHT_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_EIGHT_OFF},
+    {RB_TAG('s', 's', '0', '9'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_NINE_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_NINE_OFF},
+    {RB_TAG('s', 's', '1', '0'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TEN_OFF},
+    {RB_TAG('s', 's', '1', '1'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_ELEVEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_ELEVEN_OFF},
+    {RB_TAG('s', 's', '1', '2'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWELVE_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWELVE_OFF},
+    {RB_TAG('s', 's', '1', '3'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_THIRTEEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_THIRTEEN_OFF},
+    {RB_TAG('s', 's', '1', '4'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FOURTEEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FOURTEEN_OFF},
+    {RB_TAG('s', 's', '1', '5'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FIFTEEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_FIFTEEN_OFF},
+    {RB_TAG('s', 's', '1', '6'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SIXTEEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SIXTEEN_OFF},
+    {RB_TAG('s', 's', '1', '7'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SEVENTEEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_SEVENTEEN_OFF},
+    {RB_TAG('s', 's', '1', '8'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_EIGHTEEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_EIGHTEEN_OFF},
+    {RB_TAG('s', 's', '1', '9'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_NINETEEN_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_NINETEEN_OFF},
+    {RB_TAG('s', 's', '2', '0'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWENTY_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_STYLISTIC_ALT_TWENTY_OFF},
+    {RB_TAG('s', 'u', 'b', 's'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_INFERIORS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_NORMAL_POSITION},
+    {RB_TAG('s', 'u', 'p', 's'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SUPERIORS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_NORMAL_POSITION},
+    {RB_TAG('s', 'w', 's', 'h'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CONTEXTUAL_ALTERNATIVES,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SWASH_ALTERNATES_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SWASH_ALTERNATES_OFF},
+    {RB_TAG('t', 'i', 't', 'l'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_STYLE_OPTIONS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_TITLING_CAPS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_NO_STYLE_OPTIONS},
+    {RB_TAG('t', 'n', 'a', 'm'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_TRADITIONAL_NAMES_CHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('t', 'n', 'u', 'm'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_MONOSPACED_NUMBERS,
+     (rb_aat_layout_feature_selector_t)4},
+    {RB_TAG('t', 'r', 'a', 'd'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_TRADITIONAL_CHARACTERS,
+     (rb_aat_layout_feature_selector_t)16},
+    {RB_TAG('t', 'w', 'i', 'd'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_THIRD_WIDTH_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('u', 'n', 'i', 'c'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE,
+     (rb_aat_layout_feature_selector_t)14,
+     (rb_aat_layout_feature_selector_t)15},
+    {RB_TAG('v', 'a', 'l', 't'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_PROPORTIONAL_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('v', 'e', 'r', 't'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_OFF},
+    {RB_TAG('v', 'h', 'a', 'l'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_HALF_WIDTH_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('v', 'k', 'n', 'a'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_ALTERNATE_KANA,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_VERT_KANA_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_VERT_KANA_OFF},
+    {RB_TAG('v', 'p', 'a', 'l'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_PROPORTIONAL_TEXT,
+     (rb_aat_layout_feature_selector_t)7},
+    {RB_TAG('v', 'r', 't', '2'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_OFF},
+    {RB_TAG('z', 'e', 'r', 'o'),
+     RB_AAT_LAYOUT_FEATURE_TYPE_TYPOGRAPHIC_EXTRAS,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_ON,
+     RB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_OFF},
 };
 
-const hb_aat_feature_mapping_t *hb_aat_layout_find_feature_mapping(hb_tag_t tag)
+const rb_aat_feature_mapping_t *rb_aat_layout_find_feature_mapping(rb_tag_t tag)
 {
-    return hb_sorted_array(feature_mappings).bsearch(tag);
+    return rb_sorted_array(feature_mappings).bsearch(tag);
 }
 
 /*
  * mort/morx/kerx/trak
  */
 
-void hb_aat_layout_compile_map(const hb_aat_map_builder_t *mapper, hb_aat_map_t *map)
+void rb_aat_layout_compile_map(const rb_aat_map_builder_t *mapper, rb_aat_map_t *map)
 {
     const AAT::morx &morx = *mapper->face->table.morx;
     if (morx.has_data()) {
@@ -410,100 +410,100 @@ void hb_aat_layout_compile_map(const hb_aat_map_builder_t *mapper, hb_aat_map_t 
 }
 
 /*
- * hb_aat_layout_has_substitution:
+ * rb_aat_layout_has_substitution:
  * @face:
  *
  * Returns:
  * Since: 2.3.0
  */
-hb_bool_t hb_aat_layout_has_substitution(hb_face_t *face)
+rb_bool_t rb_aat_layout_has_substitution(rb_face_t *face)
 {
     return face->table.morx->has_data() || face->table.mort->has_data();
 }
 
-void hb_aat_layout_substitute(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+void rb_aat_layout_substitute(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer)
 {
-    hb_blob_t *morx_blob = hb_font_get_face(font)->table.morx.get_blob();
+    rb_blob_t *morx_blob = rb_font_get_face(font)->table.morx.get_blob();
     const AAT::morx &morx = *morx_blob->as<AAT::morx>();
     if (morx.has_data()) {
-        AAT::hb_aat_apply_context_t c(plan, font, buffer, morx_blob);
+        AAT::rb_aat_apply_context_t c(plan, font, buffer, morx_blob);
         morx.apply(&c);
         return;
     }
 
-    hb_blob_t *mort_blob = hb_font_get_face(font)->table.mort.get_blob();
+    rb_blob_t *mort_blob = rb_font_get_face(font)->table.mort.get_blob();
     const AAT::mort &mort = *mort_blob->as<AAT::mort>();
     if (mort.has_data()) {
-        AAT::hb_aat_apply_context_t c(plan, font, buffer, mort_blob);
+        AAT::rb_aat_apply_context_t c(plan, font, buffer, mort_blob);
         mort.apply(&c);
         return;
     }
 }
 
-void hb_aat_layout_zero_width_deleted_glyphs(hb_buffer_t *buffer)
+void rb_aat_layout_zero_width_deleted_glyphs(rb_buffer_t *buffer)
 {
-    unsigned int count = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
-    hb_glyph_position_t *pos = hb_buffer_get_glyph_positions(buffer);
+    unsigned int count = rb_buffer_get_length(buffer);
+    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
+    rb_glyph_position_t *pos = rb_buffer_get_glyph_positions(buffer);
     for (unsigned int i = 0; i < count; i++)
         if (unlikely(info[i].codepoint == AAT::DELETED_GLYPH))
             pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
 }
 
-static bool is_deleted_glyph(const hb_glyph_info_t *info)
+static bool is_deleted_glyph(const rb_glyph_info_t *info)
 {
     return info->codepoint == AAT::DELETED_GLYPH;
 }
 
-void hb_aat_layout_remove_deleted_glyphs(hb_buffer_t *buffer)
+void rb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer)
 {
-    hb_ot_layout_delete_glyphs_inplace(buffer, is_deleted_glyph);
+    rb_ot_layout_delete_glyphs_inplace(buffer, is_deleted_glyph);
 }
 
 /*
- * hb_aat_layout_has_positioning:
+ * rb_aat_layout_has_positioning:
  * @face:
  *
  * Returns:
  * Since: 2.3.0
  */
-hb_bool_t hb_aat_layout_has_positioning(hb_face_t *face)
+rb_bool_t rb_aat_layout_has_positioning(rb_face_t *face)
 {
     return face->table.kerx->has_data();
 }
 
-void hb_aat_layout_position(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+void rb_aat_layout_position(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer)
 {
-    hb_blob_t *kerx_blob = hb_font_get_face(font)->table.kerx.get_blob();
+    rb_blob_t *kerx_blob = rb_font_get_face(font)->table.kerx.get_blob();
     const AAT::kerx &kerx = *kerx_blob->as<AAT::kerx>();
 
-    AAT::hb_aat_apply_context_t c(plan, font, buffer, kerx_blob);
-    c.set_ankr_table(hb_font_get_face(font)->table.ankr.get());
+    AAT::rb_aat_apply_context_t c(plan, font, buffer, kerx_blob);
+    c.set_ankr_table(rb_font_get_face(font)->table.ankr.get());
     kerx.apply(&c);
 }
 
 /*
- * hb_aat_layout_has_tracking:
+ * rb_aat_layout_has_tracking:
  * @face:
  *
  * Returns:
  * Since: 2.3.0
  */
-hb_bool_t hb_aat_layout_has_tracking(hb_face_t *face)
+rb_bool_t rb_aat_layout_has_tracking(rb_face_t *face)
 {
     return face->table.trak->has_data();
 }
 
-void hb_aat_layout_track(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer)
+void rb_aat_layout_track(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer)
 {
-    const AAT::trak &trak = *hb_font_get_face(font)->table.trak;
+    const AAT::trak &trak = *rb_font_get_face(font)->table.trak;
 
-    AAT::hb_aat_apply_context_t c(plan, font, buffer);
+    AAT::rb_aat_apply_context_t c(plan, font, buffer);
     trak.apply(&c);
 }
 
 /**
- * hb_aat_layout_get_feature_types:
+ * rb_aat_layout_get_feature_types:
  * @face: a face object
  * @start_offset: iteration's start offset
  * @feature_count:(inout) (allow-none): buffer size as input, filled size as output
@@ -513,16 +513,16 @@ void hb_aat_layout_track(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buf
  *
  * Since: 2.2.0
  */
-unsigned int hb_aat_layout_get_feature_types(hb_face_t *face,
+unsigned int rb_aat_layout_get_feature_types(rb_face_t *face,
                                              unsigned int start_offset,
                                              unsigned int *feature_count, /* IN/OUT.  May be NULL. */
-                                             hb_aat_layout_feature_type_t *features /* OUT.     May be NULL. */)
+                                             rb_aat_layout_feature_type_t *features /* OUT.     May be NULL. */)
 {
     return face->table.feat->get_feature_types(start_offset, feature_count, features);
 }
 
 /**
- * hb_aat_layout_feature_type_get_name_id:
+ * rb_aat_layout_feature_type_get_name_id:
  * @face: a face object
  * @feature_type: feature id
  *
@@ -530,13 +530,13 @@ unsigned int hb_aat_layout_get_feature_types(hb_face_t *face,
  *
  * Since: 2.2.0
  */
-hb_ot_name_id_t hb_aat_layout_feature_type_get_name_id(hb_face_t *face, hb_aat_layout_feature_type_t feature_type)
+rb_ot_name_id_t rb_aat_layout_feature_type_get_name_id(rb_face_t *face, rb_aat_layout_feature_type_t feature_type)
 {
     return face->table.feat->get_feature_name_id(feature_type);
 }
 
 /**
- * hb_aat_layout_feature_type_get_selectors:
+ * rb_aat_layout_feature_type_get_selectors:
  * @face:    a face object
  * @feature_type: feature id
  * @start_offset:    iteration's start offset
@@ -544,7 +544,7 @@ hb_ot_name_id_t hb_aat_layout_feature_type_get_name_id(hb_face_t *face, hb_aat_l
  * @selectors: (out caller-allocates) (array length=selector_count): settings buffer
  * @default_index: (out) (allow-none): index of default selector if any
  *
- * If upon return, @default_index is set to #HB_AAT_LAYOUT_NO_SELECTOR_INDEX, then
+ * If upon return, @default_index is set to #RB_AAT_LAYOUT_NO_SELECTOR_INDEX, then
  * the feature type is non-exclusive.  Otherwise, @default_index is the index of
  * the selector that is selected by default.
  *
@@ -552,12 +552,12 @@ hb_ot_name_id_t hb_aat_layout_feature_type_get_name_id(hb_face_t *face, hb_aat_l
  *
  * Since: 2.2.0
  */
-unsigned int hb_aat_layout_feature_type_get_selector_infos(
-    hb_face_t *face,
-    hb_aat_layout_feature_type_t feature_type,
+unsigned int rb_aat_layout_feature_type_get_selector_infos(
+    rb_face_t *face,
+    rb_aat_layout_feature_type_t feature_type,
     unsigned int start_offset,
     unsigned int *selector_count,                     /* IN/OUT.  May be NULL. */
-    hb_aat_layout_feature_selector_info_t *selectors, /* OUT.     May be NULL. */
+    rb_aat_layout_feature_selector_info_t *selectors, /* OUT.     May be NULL. */
     unsigned int *default_index /* OUT.     May be NULL. */)
 {
     return face->table.feat->get_selector_infos(feature_type, start_offset, selector_count, selectors, default_index);

@@ -26,8 +26,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_SANITIZE_HH
-#define HB_SANITIZE_HH
+#ifndef RB_SANITIZE_HH
+#define RB_SANITIZE_HH
 
 #include "hb.hh"
 #include "hb-blob.hh"
@@ -46,13 +46,13 @@
  * not happen.  The toplevel sanitize API use is like, eg. to load the 'head'
  * table:
  *
- *   hb_blob_t *head_blob = hb_sanitize_context_t ().reference_table<OT::head> (face);
+ *   rb_blob_t *head_blob = rb_sanitize_context_t ().reference_table<OT::head> (face);
  *
  * The blob then can be converted to a head table struct with:
  *
  *   const head *head_table = head_blob->as<head> ();
  *
- * What the reference_table does is, to call hb_face_reference_table() to load
+ * What the reference_table does is, to call rb_face_reference_table() to load
  * the table blob, sanitize it and return either the sanitized blob, or empty
  * blob if sanitization failed.  The blob->as() function returns the null
  * object of its template type argument if the blob is empty.  Otherwise, it
@@ -100,25 +100,25 @@
  */
 
 /* This limits sanitizing time on really broken fonts. */
-#ifndef HB_SANITIZE_MAX_EDITS
-#define HB_SANITIZE_MAX_EDITS 32
+#ifndef RB_SANITIZE_MAX_EDITS
+#define RB_SANITIZE_MAX_EDITS 32
 #endif
-#ifndef HB_SANITIZE_MAX_OPS_FACTOR
-#define HB_SANITIZE_MAX_OPS_FACTOR 8
+#ifndef RB_SANITIZE_MAX_OPS_FACTOR
+#define RB_SANITIZE_MAX_OPS_FACTOR 8
 #endif
-#ifndef HB_SANITIZE_MAX_OPS_MIN
-#define HB_SANITIZE_MAX_OPS_MIN 16384
+#ifndef RB_SANITIZE_MAX_OPS_MIN
+#define RB_SANITIZE_MAX_OPS_MIN 16384
 #endif
-#ifndef HB_SANITIZE_MAX_OPS_MAX
-#define HB_SANITIZE_MAX_OPS_MAX 0x3FFFFFFF
+#ifndef RB_SANITIZE_MAX_OPS_MAX
+#define RB_SANITIZE_MAX_OPS_MAX 0x3FFFFFFF
 #endif
-#ifndef HB_SANITIZE_MAX_SUTABLES
-#define HB_SANITIZE_MAX_SUTABLES 0x4000
+#ifndef RB_SANITIZE_MAX_SUTABLES
+#define RB_SANITIZE_MAX_SUTABLES 0x4000
 #endif
 
-struct hb_sanitize_context_t : hb_dispatch_context_t<hb_sanitize_context_t, bool, HB_DEBUG_SANITIZE>
+struct rb_sanitize_context_t : rb_dispatch_context_t<rb_sanitize_context_t, bool, RB_DEBUG_SANITIZE>
 {
-    hb_sanitize_context_t()
+    rb_sanitize_context_t()
         : start(nullptr)
         , end(nullptr)
         , max_ops(0)
@@ -135,7 +135,7 @@ struct hb_sanitize_context_t : hb_dispatch_context_t<hb_sanitize_context_t, bool
     {
         return "SANITIZE";
     }
-    template <typename T, typename F> bool may_dispatch(const T *obj HB_UNUSED, const F *format)
+    template <typename T, typename F> bool may_dispatch(const T *obj RB_UNUSED, const F *format)
     {
         return format->sanitize(this);
     }
@@ -155,21 +155,21 @@ struct hb_sanitize_context_t : hb_dispatch_context_t<hb_sanitize_context_t, bool
     bool visit_subtables(unsigned count)
     {
         max_subtables += count;
-        return max_subtables < HB_SANITIZE_MAX_SUTABLES;
+        return max_subtables < RB_SANITIZE_MAX_SUTABLES;
     }
 
 private:
     template <typename T, typename... Ts>
-    auto _dispatch(const T &obj, hb_priority<1>, Ts &&... ds)
-        HB_AUTO_RETURN(obj.sanitize(this, hb_forward<Ts>(ds)...)) template <typename T, typename... Ts>
-        auto _dispatch(const T &obj, hb_priority<0>, Ts &&... ds)
-            HB_AUTO_RETURN(obj.dispatch(this, hb_forward<Ts>(ds)...)) public
+    auto _dispatch(const T &obj, rb_priority<1>, Ts &&... ds)
+        RB_AUTO_RETURN(obj.sanitize(this, rb_forward<Ts>(ds)...)) template <typename T, typename... Ts>
+        auto _dispatch(const T &obj, rb_priority<0>, Ts &&... ds)
+            RB_AUTO_RETURN(obj.dispatch(this, rb_forward<Ts>(ds)...)) public
         : template <typename T, typename... Ts>
-          auto dispatch(const T &obj, Ts &&... ds) HB_AUTO_RETURN(_dispatch(obj, hb_prioritize, hb_forward<Ts>(ds)...))
+          auto dispatch(const T &obj, Ts &&... ds) RB_AUTO_RETURN(_dispatch(obj, rb_prioritize, rb_forward<Ts>(ds)...))
 
-              void init(hb_blob_t *b)
+              void init(rb_blob_t *b)
     {
-        this->blob = hb_blob_reference(b);
+        this->blob = rb_blob_reference(b);
         this->writable = false;
     }
 
@@ -200,7 +200,7 @@ private:
             this->start = this->end = nullptr;
         else {
             this->start = obj_start;
-            this->end = obj_start + hb_min(size_t(this->end - obj_start), obj->get_size());
+            this->end = obj_start + rb_min(size_t(this->end - obj_start), obj->get_size());
         }
     }
 
@@ -214,12 +214,12 @@ private:
     void start_processing()
     {
         reset_object();
-        if (unlikely(hb_unsigned_mul_overflows(this->end - this->start, HB_SANITIZE_MAX_OPS_FACTOR)))
-            this->max_ops = HB_SANITIZE_MAX_OPS_MAX;
+        if (unlikely(rb_unsigned_mul_overflows(this->end - this->start, RB_SANITIZE_MAX_OPS_FACTOR)))
+            this->max_ops = RB_SANITIZE_MAX_OPS_MAX;
         else
-            this->max_ops = hb_clamp((unsigned)(this->end - this->start) * HB_SANITIZE_MAX_OPS_FACTOR,
-                                     (unsigned)HB_SANITIZE_MAX_OPS_MIN,
-                                     (unsigned)HB_SANITIZE_MAX_OPS_MAX);
+            this->max_ops = rb_clamp((unsigned)(this->end - this->start) * RB_SANITIZE_MAX_OPS_FACTOR,
+                                     (unsigned)RB_SANITIZE_MAX_OPS_MIN,
+                                     (unsigned)RB_SANITIZE_MAX_OPS_MAX);
         this->edit_count = 0;
         this->debug_depth = 0;
 
@@ -238,7 +238,7 @@ private:
         DEBUG_MSG_LEVEL(
             SANITIZE, this->start, 0, -1, "end [%p..%p] %u edit requests", this->start, this->end, this->edit_count);
 
-        hb_blob_destroy(this->blob);
+        rb_blob_destroy(this->blob);
         this->blob = nullptr;
         this->start = this->end = nullptr;
     }
@@ -272,22 +272,22 @@ private:
 
     template <typename T> bool check_range(const T *base, unsigned int a, unsigned int b) const
     {
-        return !hb_unsigned_mul_overflows(a, b) && this->check_range(base, a * b);
+        return !rb_unsigned_mul_overflows(a, b) && this->check_range(base, a * b);
     }
 
     template <typename T> bool check_range(const T *base, unsigned int a, unsigned int b, unsigned int c) const
     {
-        return !hb_unsigned_mul_overflows(a, b) && this->check_range(base, a * b, c);
+        return !rb_unsigned_mul_overflows(a, b) && this->check_range(base, a * b, c);
     }
 
     template <typename T> bool check_array(const T *base, unsigned int len) const
     {
-        return this->check_range(base, len, hb_static_size(T));
+        return this->check_range(base, len, rb_static_size(T));
     }
 
     template <typename T> bool check_array(const T *base, unsigned int a, unsigned int b) const
     {
-        return this->check_range(base, a, b, hb_static_size(T));
+        return this->check_range(base, a, b, rb_static_size(T));
     }
 
     template <typename Type> bool check_struct(const Type *obj) const
@@ -297,7 +297,7 @@ private:
 
     bool may_edit(const void *base, unsigned int len)
     {
-        if (this->edit_count >= HB_SANITIZE_MAX_EDITS)
+        if (this->edit_count >= RB_SANITIZE_MAX_EDITS)
             return false;
 
         const char *p = (const char *)base;
@@ -321,14 +321,14 @@ private:
 
     template <typename Type, typename ValueType> bool try_set(const Type *obj, const ValueType &v)
     {
-        if (this->may_edit(obj, hb_static_size(Type))) {
+        if (this->may_edit(obj, rb_static_size(Type))) {
             *const_cast<Type *>(obj) = v;
             return true;
         }
         return false;
     }
 
-    template <typename Type> hb_blob_t *sanitize_blob(hb_blob_t *blob)
+    template <typename Type> rb_blob_t *sanitize_blob(rb_blob_t *blob)
     {
         bool sane;
 
@@ -364,19 +364,19 @@ private:
 
         DEBUG_MSG_FUNC(SANITIZE, start, sane ? "PASSED" : "FAILED");
         if (sane) {
-            hb_blob_make_immutable(blob);
+            rb_blob_make_immutable(blob);
             return blob;
         } else {
-            hb_blob_destroy(blob);
-            return hb_blob_get_empty();
+            rb_blob_destroy(blob);
+            return rb_blob_get_empty();
         }
     }
 
-    template <typename Type> hb_blob_t *reference_table(const hb_face_t *face, hb_tag_t tableTag = Type::tableTag)
+    template <typename Type> rb_blob_t *reference_table(const rb_face_t *face, rb_tag_t tableTag = Type::tableTag)
     {
         if (!num_glyphs_set)
-            set_num_glyphs(hb_face_get_glyph_count(face));
-        return sanitize_blob<Type>(hb_face_reference_table(face, tableTag));
+            set_num_glyphs(rb_face_get_glyph_count(face));
+        return sanitize_blob<Type>(rb_face_reference_table(face, tableTag));
     }
 
     const char *start, *end;
@@ -385,26 +385,26 @@ private:
 private:
     bool writable;
     unsigned int edit_count;
-    hb_blob_t *blob;
+    rb_blob_t *blob;
     unsigned int num_glyphs;
     bool num_glyphs_set;
 };
 
-struct hb_sanitize_with_object_t
+struct rb_sanitize_with_object_t
 {
     template <typename T>
-    hb_sanitize_with_object_t(hb_sanitize_context_t *c, const T &obj)
+    rb_sanitize_with_object_t(rb_sanitize_context_t *c, const T &obj)
         : c(c)
     {
         c->set_object(obj);
     }
-    ~hb_sanitize_with_object_t()
+    ~rb_sanitize_with_object_t()
     {
         c->reset_object();
     }
 
 private:
-    hb_sanitize_context_t *c;
+    rb_sanitize_context_t *c;
 };
 
-#endif /* HB_SANITIZE_HH */
+#endif /* RB_SANITIZE_HH */

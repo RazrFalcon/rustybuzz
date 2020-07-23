@@ -26,8 +26,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_FACE_HH
-#define HB_FACE_HH
+#ifndef RB_FACE_HH
+#define RB_FACE_HH
 
 #include "hb.hh"
 
@@ -35,38 +35,38 @@
 #include "hb-ot-face.hh"
 
 /*
- * hb_face_t
+ * rb_face_t
  */
 
-struct hb_face_t
+struct rb_face_t
 {
-    hb_object_header_t header;
+    rb_object_header_t header;
 
-    hb_reference_table_func_t reference_table_func;
+    rb_reference_table_func_t reference_table_func;
     void *user_data;
-    hb_destroy_func_t destroy;
+    rb_destroy_func_t destroy;
 
     unsigned int index;                 /* Face index in a collection, zero-based. */
-    mutable hb_atomic_int_t upem;       /* Units-per-EM. */
-    mutable hb_atomic_int_t num_glyphs; /* Number of glyphs. */
+    mutable rb_atomic_int_t upem;       /* Units-per-EM. */
+    mutable rb_atomic_int_t num_glyphs; /* Number of glyphs. */
 
-    hb_ot_face_t table; /* All the face's tables. */
+    rb_ot_face_t table; /* All the face's tables. */
 
-    hb_blob_t *reference_table(hb_tag_t tag) const
+    rb_blob_t *reference_table(rb_tag_t tag) const
     {
-        hb_blob_t *blob;
+        rb_blob_t *blob;
 
         if (unlikely(!reference_table_func))
-            return hb_blob_get_empty();
+            return rb_blob_get_empty();
 
-        blob = reference_table_func(/*XXX*/ const_cast<hb_face_t *>(this), tag, user_data);
+        blob = reference_table_func(/*XXX*/ const_cast<rb_face_t *>(this), tag, user_data);
         if (unlikely(!blob))
-            return hb_blob_get_empty();
+            return rb_blob_get_empty();
 
         return blob;
     }
 
-    HB_PURE_FUNC unsigned int get_upem() const
+    RB_PURE_FUNC unsigned int get_upem() const
     {
         unsigned int ret = upem.get_relaxed();
         if (unlikely(!ret)) {
@@ -84,9 +84,9 @@ struct hb_face_t
     }
 
 private:
-    HB_INTERNAL unsigned int load_upem() const;
-    HB_INTERNAL unsigned int load_num_glyphs() const;
+    RB_INTERNAL unsigned int load_upem() const;
+    RB_INTERNAL unsigned int load_num_glyphs() const;
 };
-DECLARE_NULL_INSTANCE(hb_face_t);
+DECLARE_NULL_INSTANCE(rb_face_t);
 
-#endif /* HB_FACE_HH */
+#endif /* RB_FACE_HH */

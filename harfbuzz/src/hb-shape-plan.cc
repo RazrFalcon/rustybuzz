@@ -41,35 +41,35 @@
  **/
 
 /*
- * hb_shape_plan_t
+ * rb_shape_plan_t
  */
 
-hb_shape_plan_t *hb_shape_plan_create(hb_face_t *face,
-                                      const hb_segment_properties_t *props,
-                                      const hb_feature_t *user_features,
+rb_shape_plan_t *rb_shape_plan_create(rb_face_t *face,
+                                      const rb_segment_properties_t *props,
+                                      const rb_feature_t *user_features,
                                       unsigned int num_user_features,
                                       const int *coords,
                                       unsigned int num_coords)
 {
     DEBUG_MSG_FUNC(SHAPE_PLAN, nullptr, "face=%p num_features=%d num_coords=%d", face, num_user_features, num_coords);
 
-    assert(props->direction != HB_DIRECTION_INVALID);
+    assert(props->direction != RB_DIRECTION_INVALID);
 
-    hb_shape_plan_t *shape_plan;
+    rb_shape_plan_t *shape_plan;
 
     unsigned int variations_index[2] = {0};
     for (unsigned int table_index = 0; table_index < 2; table_index++)
-        hb_ot_layout_table_find_feature_variations(
+        rb_ot_layout_table_find_feature_variations(
             face, table_tags[table_index], coords, num_coords, &variations_index[table_index]);
 
     if (unlikely(!props))
         goto bail;
-    if (!(shape_plan = hb_object_create<hb_shape_plan_t>()))
+    if (!(shape_plan = rb_object_create<rb_shape_plan_t>()))
         goto bail;
 
     if (unlikely(!face))
-        face = hb_face_get_empty();
-    hb_face_make_immutable(face);
+        face = rb_face_get_empty();
+    rb_face_make_immutable(face);
     shape_plan->face_unsafe = face;
 
     if (unlikely(!shape_plan->ot.init0(face, props, user_features, num_user_features, variations_index)))
@@ -80,11 +80,11 @@ hb_shape_plan_t *hb_shape_plan_create(hb_face_t *face,
 bail3:
     free(shape_plan);
 bail:
-    return hb_shape_plan_get_empty();
+    return rb_shape_plan_get_empty();
 }
 
 /**
- * hb_shape_plan_get_empty:
+ * rb_shape_plan_get_empty:
  *
  *
  *
@@ -92,13 +92,13 @@ bail:
  *
  * Since: 0.9.7
  **/
-hb_shape_plan_t *hb_shape_plan_get_empty()
+rb_shape_plan_t *rb_shape_plan_get_empty()
 {
-    return const_cast<hb_shape_plan_t *>(&Null(hb_shape_plan_t));
+    return const_cast<rb_shape_plan_t *>(&Null(rb_shape_plan_t));
 }
 
 /**
- * hb_shape_plan_reference: (skip)
+ * rb_shape_plan_reference: (skip)
  * @shape_plan: a shape plan.
  *
  *
@@ -107,22 +107,22 @@ hb_shape_plan_t *hb_shape_plan_get_empty()
  *
  * Since: 0.9.7
  **/
-hb_shape_plan_t *hb_shape_plan_reference(hb_shape_plan_t *shape_plan)
+rb_shape_plan_t *rb_shape_plan_reference(rb_shape_plan_t *shape_plan)
 {
-    return hb_object_reference(shape_plan);
+    return rb_object_reference(shape_plan);
 }
 
 /**
- * hb_shape_plan_destroy: (skip)
+ * rb_shape_plan_destroy: (skip)
  * @shape_plan: a shape plan.
  *
  *
  *
  * Since: 0.9.7
  **/
-void hb_shape_plan_destroy(hb_shape_plan_t *shape_plan)
+void rb_shape_plan_destroy(rb_shape_plan_t *shape_plan)
 {
-    if (!hb_object_destroy(shape_plan))
+    if (!rb_object_destroy(shape_plan))
         return;
 
     shape_plan->ot.fini();
@@ -130,7 +130,7 @@ void hb_shape_plan_destroy(hb_shape_plan_t *shape_plan)
 }
 
 /**
- * hb_shape_plan_execute:
+ * rb_shape_plan_execute:
  * @shape_plan: a shape plan.
  * @font: a font.
  * @buffer: a buffer.
@@ -143,22 +143,22 @@ void hb_shape_plan_destroy(hb_shape_plan_t *shape_plan)
  *
  * Since: 0.9.7
  **/
-hb_bool_t hb_shape_plan_execute(hb_shape_plan_t *shape_plan,
-                                hb_font_t *font,
-                                hb_buffer_t *buffer,
-                                const hb_feature_t *features,
+rb_bool_t rb_shape_plan_execute(rb_shape_plan_t *shape_plan,
+                                rb_font_t *font,
+                                rb_buffer_t *buffer,
+                                const rb_feature_t *features,
                                 unsigned int num_features)
 {
     DEBUG_MSG_FUNC(SHAPE_PLAN, shape_plan, "num_features=%d", num_features);
 
-    if (unlikely(!hb_buffer_get_length(buffer)))
+    if (unlikely(!rb_buffer_get_length(buffer)))
         return true;
 
-    if (unlikely(hb_object_is_inert(shape_plan)))
+    if (unlikely(rb_object_is_inert(shape_plan)))
         return false;
 
-    assert(shape_plan->face_unsafe == hb_font_get_face(font));
+    assert(shape_plan->face_unsafe == rb_font_get_face(font));
 
-    _hb_ot_shape(shape_plan, font, buffer, features, num_features);
+    _rb_ot_shape(shape_plan, font, buffer, features, num_features);
     return true;
 }

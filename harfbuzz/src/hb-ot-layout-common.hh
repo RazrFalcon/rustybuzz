@@ -26,8 +26,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_LAYOUT_COMMON_HH
-#define HB_OT_LAYOUT_COMMON_HH
+#ifndef RB_OT_LAYOUT_COMMON_HH
+#define RB_OT_LAYOUT_COMMON_HH
 
 #include "hb.hh"
 #include "hb-ot-layout.hh"
@@ -35,65 +35,65 @@
 #include "hb-set.hh"
 #include "hb-map.hh"
 
-#ifndef HB_MAX_NESTING_LEVEL
-#define HB_MAX_NESTING_LEVEL 6
+#ifndef RB_MAX_NESTING_LEVEL
+#define RB_MAX_NESTING_LEVEL 6
 #endif
-#ifndef HB_MAX_CONTEXT_LENGTH
-#define HB_MAX_CONTEXT_LENGTH 64
+#ifndef RB_MAX_CONTEXT_LENGTH
+#define RB_MAX_CONTEXT_LENGTH 64
 #endif
-#ifndef HB_CLOSURE_MAX_STAGES
+#ifndef RB_CLOSURE_MAX_STAGES
 /*
  * The maximum number of times a lookup can be applied during shaping.
  * Used to limit the number of iterations of the closure algorithm.
  * This must be larger than the number of times add_pause() is
  * called in a collect_features call of any shaper.
  */
-#define HB_CLOSURE_MAX_STAGES 32
+#define RB_CLOSURE_MAX_STAGES 32
 #endif
 
-#ifndef HB_MAX_SCRIPTS
-#define HB_MAX_SCRIPTS 500
+#ifndef RB_MAX_SCRIPTS
+#define RB_MAX_SCRIPTS 500
 #endif
 
-#ifndef HB_MAX_LANGSYS
-#define HB_MAX_LANGSYS 2000
+#ifndef RB_MAX_LANGSYS
+#define RB_MAX_LANGSYS 2000
 #endif
 
-#ifndef HB_MAX_FEATURES
-#define HB_MAX_FEATURES 750
+#ifndef RB_MAX_FEATURES
+#define RB_MAX_FEATURES 750
 #endif
 
-#ifndef HB_MAX_FEATURE_INDICES
-#define HB_MAX_FEATURE_INDICES 1500
+#ifndef RB_MAX_FEATURE_INDICES
+#define RB_MAX_FEATURE_INDICES 1500
 #endif
 
-#ifndef HB_MAX_LOOKUP_INDICES
-#define HB_MAX_LOOKUP_INDICES 20000
+#ifndef RB_MAX_LOOKUP_INDICES
+#define RB_MAX_LOOKUP_INDICES 20000
 #endif
 
 namespace OT {
 
 #define NOT_COVERED ((unsigned int)-1)
 
-struct hb_collect_variation_indices_context_t : hb_dispatch_context_t<hb_collect_variation_indices_context_t>
+struct rb_collect_variation_indices_context_t : rb_dispatch_context_t<rb_collect_variation_indices_context_t>
 {
     template <typename T> return_t dispatch(const T &obj)
     {
         obj.collect_variation_indices(this);
-        return hb_empty_t();
+        return rb_empty_t();
     }
     static return_t default_return_value()
     {
-        return hb_empty_t();
+        return rb_empty_t();
     }
 
-    hb_set_t *layout_variation_indices;
-    const hb_set_t *glyph_set;
-    const hb_map_t *gpos_lookups;
+    rb_set_t *layout_variation_indices;
+    const rb_set_t *glyph_set;
+    const rb_map_t *gpos_lookups;
 
-    hb_collect_variation_indices_context_t(hb_set_t *layout_variation_indices_,
-                                           const hb_set_t *glyph_set_,
-                                           const hb_map_t *gpos_lookups_)
+    rb_collect_variation_indices_context_t(rb_set_t *layout_variation_indices_,
+                                           const rb_set_t *glyph_set_,
+                                           const rb_map_t *gpos_lookups_)
         : layout_variation_indices(layout_variation_indices_)
         , glyph_set(glyph_set_)
         , gpos_lookups(gpos_lookups_)
@@ -113,18 +113,18 @@ struct hb_collect_variation_indices_context_t : hb_dispatch_context_t<hb_collect
 
 struct Record_sanitize_closure_t
 {
-    hb_tag_t tag;
+    rb_tag_t tag;
     const void *list_base;
 };
 
 template <typename Type> struct Record
 {
-    int cmp(hb_tag_t a) const
+    int cmp(rb_tag_t a) const
     {
         return tag.cmp(a);
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const void *base) const
+    bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
         TRACE_SANITIZE(this);
         const Record_sanitize_closure_t closure = {tag, base};
@@ -153,17 +153,17 @@ template <typename Type> struct RecordArrayOf : SortedArrayOf<Record<Type>>
         return (*this)[i].tag;
     }
     unsigned int
-    get_tags(unsigned int start_offset, unsigned int *record_count /* IN/OUT */, hb_tag_t *record_tags /* OUT */) const
+    get_tags(unsigned int start_offset, unsigned int *record_count /* IN/OUT */, rb_tag_t *record_tags /* OUT */) const
     {
         if (record_count) {
-            +this->sub_array(start_offset, record_count) | hb_map(&Record<Type>::tag) |
-                hb_sink(hb_array(record_tags, *record_count));
+            +this->sub_array(start_offset, record_count) | rb_map(&Record<Type>::tag) |
+                rb_sink(rb_array(record_tags, *record_count));
         }
         return this->len;
     }
-    bool find_index(hb_tag_t tag, unsigned int *index) const
+    bool find_index(rb_tag_t tag, unsigned int *index) const
     {
-        return this->bfind(tag, index, HB_BFIND_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
+        return this->bfind(tag, index, RB_BFIND_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
     }
 };
 
@@ -174,7 +174,7 @@ template <typename Type> struct RecordListOf : RecordArrayOf<Type>
         return this + this->get_offset(i);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(RecordArrayOf<Type>::sanitize(c, this));
@@ -189,18 +189,18 @@ struct RecordListOfFeature : RecordListOf<Feature>
 
 struct RangeRecord
 {
-    int cmp(hb_codepoint_t g) const
+    int cmp(rb_codepoint_t g) const
     {
         return g < first ? -1 : g <= last ? 0 : +1;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
     }
 
-    bool intersects(const hb_set_t *glyphs) const
+    bool intersects(const rb_set_t *glyphs) const
     {
         return glyphs->intersects(first, last);
     }
@@ -220,21 +220,21 @@ DECLARE_NULL_NAMESPACE_BYTES(OT, RangeRecord);
 
 struct IndexArray : ArrayOf<Index>
 {
-    bool intersects(const hb_map_t *indexes) const
+    bool intersects(const rb_map_t *indexes) const
     {
-        return hb_any(*this, indexes);
+        return rb_any(*this, indexes);
     }
 
     unsigned int
     get_indexes(unsigned int start_offset, unsigned int *_count /* IN/OUT */, unsigned int *_indexes /* OUT */) const
     {
         if (_count) {
-            +this->sub_array(start_offset, _count) | hb_sink(hb_array(_indexes, *_count));
+            +this->sub_array(start_offset, _count) | rb_sink(rb_array(_indexes, *_count));
         }
         return this->len;
     }
 
-    void add_indexes_to(hb_set_t *output /* OUT */) const
+    void add_indexes_to(rb_set_t *output /* OUT */) const
     {
         output->add_array(arrayZ, len);
     }
@@ -246,7 +246,7 @@ struct LangSys
     {
         return featureIndex.len;
     }
-    hb_tag_t get_feature_index(unsigned int i) const
+    rb_tag_t get_feature_index(unsigned int i) const
     {
         return featureIndex[i];
     }
@@ -256,7 +256,7 @@ struct LangSys
     {
         return featureIndex.get_indexes(start_offset, feature_count, feature_indexes);
     }
-    void add_feature_indexes_to(hb_set_t *feature_indexes) const
+    void add_feature_indexes_to(rb_set_t *feature_indexes) const
     {
         featureIndex.add_indexes_to(feature_indexes);
     }
@@ -277,14 +277,14 @@ struct LangSys
         if (featureIndex.len != o.featureIndex.len || reqFeatureIndex != o.reqFeatureIndex)
             return false;
 
-        for (const auto _ : +hb_zip(featureIndex, o.featureIndex))
+        for (const auto _ : +rb_zip(featureIndex, o.featureIndex))
             if (_.first != _.second)
                 return false;
 
         return true;
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const Record_sanitize_closure_t * = nullptr) const
+    bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t * = nullptr) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && featureIndex.sanitize(c));
@@ -313,7 +313,7 @@ struct Script
     }
     unsigned int get_lang_sys_tags(unsigned int start_offset,
                                    unsigned int *lang_sys_count /* IN/OUT */,
-                                   hb_tag_t *lang_sys_tags /* OUT */) const
+                                   rb_tag_t *lang_sys_tags /* OUT */) const
     {
         return langSys.get_tags(start_offset, lang_sys_count, lang_sys_tags);
     }
@@ -323,7 +323,7 @@ struct Script
             return get_default_lang_sys();
         return this + langSys[i].offset;
     }
-    bool find_lang_sys_index(hb_tag_t tag, unsigned int *index) const
+    bool find_lang_sys_index(rb_tag_t tag, unsigned int *index) const
     {
         return langSys.find_index(tag, index);
     }
@@ -337,7 +337,7 @@ struct Script
         return this + defaultLangSys;
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const Record_sanitize_closure_t * = nullptr) const
+    bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t * = nullptr) const
     {
         TRACE_SANITIZE(this);
         return_trace(defaultLangSys.sanitize(c, this) && langSys.sanitize(c, this));
@@ -357,7 +357,7 @@ typedef RecordListOf<Script> ScriptList;
 /* https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#size */
 struct FeatureParamsSize
 {
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!c->check_struct(this)))
@@ -464,7 +464,7 @@ public:
 /* https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#ssxx */
 struct FeatureParamsStylisticSet
 {
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         /* Right now minorVersion is at zero.  Which means, any table supports
@@ -498,10 +498,10 @@ public:
 /* https://docs.microsoft.com/en-us/typography/opentype/spec/features_ae#cv01-cv99 */
 struct FeatureParamsCharacterVariants
 {
-    unsigned get_characters(unsigned start_offset, unsigned *char_count, hb_codepoint_t *chars) const
+    unsigned get_characters(unsigned start_offset, unsigned *char_count, rb_codepoint_t *chars) const
     {
         if (char_count) {
-            +characters.sub_array(start_offset, char_count) | hb_sink(hb_array(chars, *char_count));
+            +characters.sub_array(start_offset, char_count) | rb_sink(rb_array(chars, *char_count));
         }
         return characters.len;
     }
@@ -511,7 +511,7 @@ struct FeatureParamsCharacterVariants
         return min_size + characters.len * HBUINT24::static_size;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && characters.sanitize(c));
@@ -550,37 +550,37 @@ public:
 
 struct FeatureParams
 {
-    bool sanitize(hb_sanitize_context_t *c, hb_tag_t tag) const
+    bool sanitize(rb_sanitize_context_t *c, rb_tag_t tag) const
     {
-#ifdef HB_NO_LAYOUT_FEATURE_PARAMS
+#ifdef RB_NO_LAYOUT_FEATURE_PARAMS
         return true;
 #endif
         TRACE_SANITIZE(this);
-        if (tag == HB_TAG('s', 'i', 'z', 'e'))
+        if (tag == RB_TAG('s', 'i', 'z', 'e'))
             return_trace(u.size.sanitize(c));
-        if ((tag & 0xFFFF0000u) == HB_TAG('s', 's', '\0', '\0')) /* ssXX */
+        if ((tag & 0xFFFF0000u) == RB_TAG('s', 's', '\0', '\0')) /* ssXX */
             return_trace(u.stylisticSet.sanitize(c));
-        if ((tag & 0xFFFF0000u) == HB_TAG('c', 'v', '\0', '\0')) /* cvXX */
+        if ((tag & 0xFFFF0000u) == RB_TAG('c', 'v', '\0', '\0')) /* cvXX */
             return_trace(u.characterVariants.sanitize(c));
         return_trace(true);
     }
 
-#ifndef HB_NO_LAYOUT_FEATURE_PARAMS
-    const FeatureParamsSize &get_size_params(hb_tag_t tag) const
+#ifndef RB_NO_LAYOUT_FEATURE_PARAMS
+    const FeatureParamsSize &get_size_params(rb_tag_t tag) const
     {
-        if (tag == HB_TAG('s', 'i', 'z', 'e'))
+        if (tag == RB_TAG('s', 'i', 'z', 'e'))
             return u.size;
         return Null(FeatureParamsSize);
     }
-    const FeatureParamsStylisticSet &get_stylistic_set_params(hb_tag_t tag) const
+    const FeatureParamsStylisticSet &get_stylistic_set_params(rb_tag_t tag) const
     {
-        if ((tag & 0xFFFF0000u) == HB_TAG('s', 's', '\0', '\0')) /* ssXX */
+        if ((tag & 0xFFFF0000u) == RB_TAG('s', 's', '\0', '\0')) /* ssXX */
             return u.stylisticSet;
         return Null(FeatureParamsStylisticSet);
     }
-    const FeatureParamsCharacterVariants &get_character_variants_params(hb_tag_t tag) const
+    const FeatureParamsCharacterVariants &get_character_variants_params(rb_tag_t tag) const
     {
-        if ((tag & 0xFFFF0000u) == HB_TAG('c', 'v', '\0', '\0')) /* cvXX */
+        if ((tag & 0xFFFF0000u) == RB_TAG('c', 'v', '\0', '\0')) /* cvXX */
             return u.characterVariants;
         return Null(FeatureParamsCharacterVariants);
     }
@@ -603,7 +603,7 @@ struct Feature
     {
         return lookupIndex.len;
     }
-    hb_tag_t get_lookup_index(unsigned int i) const
+    rb_tag_t get_lookup_index(unsigned int i) const
     {
         return lookupIndex[i];
     }
@@ -613,7 +613,7 @@ struct Feature
     {
         return lookupIndex.get_indexes(start_index, lookup_count, lookup_tags);
     }
-    void add_lookup_indexes_to(hb_set_t *lookup_indexes) const
+    void add_lookup_indexes_to(rb_set_t *lookup_indexes) const
     {
         lookupIndex.add_indexes_to(lookup_indexes);
     }
@@ -623,12 +623,12 @@ struct Feature
         return this + featureParams;
     }
 
-    bool intersects_lookup_indexes(const hb_map_t *lookup_indexes) const
+    bool intersects_lookup_indexes(const rb_map_t *lookup_indexes) const
     {
         return lookupIndex.intersects(lookup_indexes);
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const Record_sanitize_closure_t *closure = nullptr) const
+    bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t *closure = nullptr) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!(c->check_struct(this) && lookupIndex.sanitize(c))))
@@ -649,10 +649,10 @@ struct Feature
             return_trace(true);
 
         unsigned int orig_offset = featureParams;
-        if (unlikely(!featureParams.sanitize(c, this, closure ? closure->tag : HB_TAG_NONE)))
+        if (unlikely(!featureParams.sanitize(c, this, closure ? closure->tag : RB_TAG_NONE)))
             return_trace(false);
 
-        if (featureParams == 0 && closure && closure->tag == HB_TAG('s', 'i', 'z', 'e') && closure->list_base &&
+        if (featureParams == 0 && closure && closure->tag == RB_TAG('s', 'i', 'z', 'e') && closure->list_base &&
             closure->list_base < this) {
             unsigned int new_offset_int = orig_offset - (((char *)this) - ((char *)closure->list_base));
 
@@ -660,7 +660,7 @@ struct Feature
             /* Check that it would not overflow. */
             new_offset = new_offset_int;
             if (new_offset == new_offset_int && c->try_set(&featureParams, new_offset_int) &&
-                !featureParams.sanitize(c, this, closure ? closure->tag : HB_TAG_NONE))
+                !featureParams.sanitize(c, this, closure ? closure->tag : RB_TAG_NONE))
                 return_trace(false);
         }
 
@@ -697,7 +697,7 @@ public:
 
 } /* namespace OT */
 /* This has to be outside the namespace. */
-HB_MARK_AS_FLAG_T(OT::LookupFlag::Flags);
+RB_MARK_AS_FLAG_T(OT::LookupFlag::Flags);
 namespace OT {
 
 struct Lookup
@@ -758,14 +758,14 @@ struct Lookup
         TRACE_DISPATCH(this, lookup_type);
         unsigned int count = get_subtable_count();
         for (unsigned int i = 0; i < count; i++) {
-            typename context_t::return_t r = get_subtable<TSubTable>(i).dispatch(c, lookup_type, hb_forward<Ts>(ds)...);
+            typename context_t::return_t r = get_subtable<TSubTable>(i).dispatch(c, lookup_type, rb_forward<Ts>(ds)...);
             if (c->stop_sublookup_iteration(r))
                 return_trace(r);
         }
         return_trace(c->default_return_value());
     }
 
-    template <typename TSubTable> bool sanitize(hb_sanitize_context_t *c) const
+    template <typename TSubTable> bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (!(c->check_struct(this) && subTable.sanitize(c)))
@@ -807,7 +807,7 @@ private:
     HBUINT16 lookupType;                           /* Different enumerations for GSUB and GPOS */
     HBUINT16 lookupFlag;                           /* Lookup qualifiers */
     ArrayOf<Offset16> subTable;                    /* Array of SubTables */
-    /*HBUINT16	markFilteringSetX[HB_VAR_ARRAY];*/ /* Index (base 0) into GDEF mark glyph sets
+    /*HBUINT16	markFilteringSetX[RB_VAR_ARRAY];*/ /* Index (base 0) into GDEF mark glyph sets
                                                     * structure. This field is only present if bit
                                                     * UseMarkFilteringSet of lookup flags is set. */
 public:
@@ -818,7 +818,7 @@ typedef OffsetListOf<Lookup> LookupList;
 
 template <typename TLookup> struct LookupOffsetList : OffsetListOf<TLookup>
 {
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(OffsetListOf<TLookup>::sanitize(c, this));
@@ -834,29 +834,29 @@ struct CoverageFormat1
     friend struct Coverage;
 
 private:
-    unsigned int get_coverage(hb_codepoint_t glyph_id) const
+    unsigned int get_coverage(rb_codepoint_t glyph_id) const
     {
         unsigned int i;
-        glyphArray.bfind(glyph_id, &i, HB_BFIND_NOT_FOUND_STORE, NOT_COVERED);
+        glyphArray.bfind(glyph_id, &i, RB_BFIND_NOT_FOUND_STORE, NOT_COVERED);
         return i;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(glyphArray.sanitize(c));
     }
 
-    bool intersects(const hb_set_t *glyphs) const
+    bool intersects(const rb_set_t *glyphs) const
     {
-        /* TODO Speed up, using hb_set_next() and bsearch()? */
+        /* TODO Speed up, using rb_set_next() and bsearch()? */
         unsigned int count = glyphArray.len;
         for (unsigned int i = 0; i < count; i++)
             if (glyphs->has(glyphArray[i]))
                 return true;
         return false;
     }
-    bool intersects_coverage(const hb_set_t *glyphs, unsigned int index) const
+    bool intersects_coverage(const rb_set_t *glyphs, unsigned int index) const
     {
         return glyphs->has(glyphArray[index]);
     }
@@ -884,7 +884,7 @@ public:
         {
             i++;
         }
-        hb_codepoint_t get_glyph() const
+        rb_codepoint_t get_glyph() const
         {
             return c->glyphArray[i];
         }
@@ -911,28 +911,28 @@ struct CoverageFormat2
     friend struct Coverage;
 
 private:
-    unsigned int get_coverage(hb_codepoint_t glyph_id) const
+    unsigned int get_coverage(rb_codepoint_t glyph_id) const
     {
         const RangeRecord &range = rangeRecord.bsearch(glyph_id);
         return likely(range.first <= range.last) ? (unsigned int)range.value + (glyph_id - range.first) : NOT_COVERED;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(rangeRecord.sanitize(c));
     }
 
-    bool intersects(const hb_set_t *glyphs) const
+    bool intersects(const rb_set_t *glyphs) const
     {
-        /* TODO Speed up, using hb_set_next() and bsearch()? */
+        /* TODO Speed up, using rb_set_next() and bsearch()? */
         unsigned int count = rangeRecord.len;
         for (unsigned int i = 0; i < count; i++)
             if (rangeRecord[i].intersects(glyphs))
                 return true;
         return false;
     }
-    bool intersects_coverage(const hb_set_t *glyphs, unsigned int index) const
+    bool intersects_coverage(const rb_set_t *glyphs, unsigned int index) const
     {
         unsigned int i;
         unsigned int count = rangeRecord.len;
@@ -998,7 +998,7 @@ public:
             coverage++;
             j++;
         }
-        hb_codepoint_t get_glyph() const
+        rb_codepoint_t get_glyph() const
         {
             return j;
         }
@@ -1010,7 +1010,7 @@ public:
     private:
         const struct CoverageFormat2 *c;
         unsigned int i, coverage;
-        hb_codepoint_t j;
+        rb_codepoint_t j;
     };
 
 private:
@@ -1028,25 +1028,25 @@ struct Coverage
     /* Has interface. */
     static constexpr unsigned SENTINEL = NOT_COVERED;
     typedef unsigned int value_t;
-    value_t operator[](hb_codepoint_t k) const
+    value_t operator[](rb_codepoint_t k) const
     {
         return get(k);
     }
-    bool has(hb_codepoint_t k) const
+    bool has(rb_codepoint_t k) const
     {
         return (*this)[k] != SENTINEL;
     }
     /* Predicate. */
-    bool operator()(hb_codepoint_t k) const
+    bool operator()(rb_codepoint_t k) const
     {
         return has(k);
     }
 
-    unsigned int get(hb_codepoint_t k) const
+    unsigned int get(rb_codepoint_t k) const
     {
         return get_coverage(k);
     }
-    unsigned int get_coverage(hb_codepoint_t glyph_id) const
+    unsigned int get_coverage(rb_codepoint_t glyph_id) const
     {
         switch (u.format) {
         case 1:
@@ -1058,7 +1058,7 @@ struct Coverage
         }
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
@@ -1073,7 +1073,7 @@ struct Coverage
         }
     }
 
-    bool intersects(const hb_set_t *glyphs) const
+    bool intersects(const rb_set_t *glyphs) const
     {
         switch (u.format) {
         case 1:
@@ -1084,7 +1084,7 @@ struct Coverage
             return false;
         }
     }
-    bool intersects_coverage(const hb_set_t *glyphs, unsigned int index) const
+    bool intersects_coverage(const rb_set_t *glyphs, unsigned int index) const
     {
         switch (u.format) {
         case 1:
@@ -1110,7 +1110,7 @@ struct Coverage
         }
     }
 
-    struct iter_t : hb_iter_with_fallback_t<iter_t, hb_codepoint_t>
+    struct iter_t : rb_iter_with_fallback_t<iter_t, rb_codepoint_t>
     {
         static constexpr bool is_sorted_iterator = true;
         iter_t(const Coverage &c_ = Null(Coverage))
@@ -1152,13 +1152,13 @@ struct Coverage
                 break;
             }
         }
-        typedef hb_codepoint_t __item_t__;
+        typedef rb_codepoint_t __item_t__;
         __item_t__ __item__() const
         {
             return get_glyph();
         }
 
-        hb_codepoint_t get_glyph() const
+        rb_codepoint_t get_glyph() const
         {
             switch (format) {
             case 1:
@@ -1215,12 +1215,12 @@ struct ClassDefFormat1
     friend struct ClassDef;
 
 private:
-    unsigned int get_class(hb_codepoint_t glyph_id) const
+    unsigned int get_class(rb_codepoint_t glyph_id) const
     {
         return classValue[(unsigned int)(glyph_id - startGlyph)];
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && classValue.sanitize(c));
@@ -1256,28 +1256,28 @@ private:
         return true;
     }
 
-    bool intersects(const hb_set_t *glyphs) const
+    bool intersects(const rb_set_t *glyphs) const
     {
-        /* TODO Speed up, using hb_set_next()? */
-        hb_codepoint_t start = startGlyph;
-        hb_codepoint_t end = startGlyph + classValue.len;
-        for (hb_codepoint_t iter = startGlyph - 1; hb_set_next(glyphs, &iter) && iter < end;)
+        /* TODO Speed up, using rb_set_next()? */
+        rb_codepoint_t start = startGlyph;
+        rb_codepoint_t end = startGlyph + classValue.len;
+        for (rb_codepoint_t iter = startGlyph - 1; rb_set_next(glyphs, &iter) && iter < end;)
             if (classValue[iter - start])
                 return true;
         return false;
     }
-    bool intersects_class(const hb_set_t *glyphs, unsigned int klass) const
+    bool intersects_class(const rb_set_t *glyphs, unsigned int klass) const
     {
         unsigned int count = classValue.len;
         if (klass == 0) {
             /* Match if there's any glyph that is not listed! */
-            hb_codepoint_t g = HB_SET_VALUE_INVALID;
-            if (!hb_set_next(glyphs, &g))
+            rb_codepoint_t g = RB_SET_VALUE_INVALID;
+            if (!rb_set_next(glyphs, &g))
                 return false;
             if (g < startGlyph)
                 return true;
             g = startGlyph + count - 1;
-            if (hb_set_next(glyphs, &g))
+            if (rb_set_next(glyphs, &g))
                 return true;
             /* Fall through. */
         }
@@ -1300,12 +1300,12 @@ struct ClassDefFormat2
     friend struct ClassDef;
 
 private:
-    unsigned int get_class(hb_codepoint_t glyph_id) const
+    unsigned int get_class(rb_codepoint_t glyph_id) const
     {
         return rangeRecord.bsearch(glyph_id).value;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(rangeRecord.sanitize(c));
@@ -1332,29 +1332,29 @@ private:
         return true;
     }
 
-    bool intersects(const hb_set_t *glyphs) const
+    bool intersects(const rb_set_t *glyphs) const
     {
-        /* TODO Speed up, using hb_set_next() and bsearch()? */
+        /* TODO Speed up, using rb_set_next() and bsearch()? */
         unsigned int count = rangeRecord.len;
         for (unsigned int i = 0; i < count; i++)
             if (rangeRecord[i].intersects(glyphs))
                 return true;
         return false;
     }
-    bool intersects_class(const hb_set_t *glyphs, unsigned int klass) const
+    bool intersects_class(const rb_set_t *glyphs, unsigned int klass) const
     {
         unsigned int count = rangeRecord.len;
         if (klass == 0) {
             /* Match if there's any glyph that is not listed! */
-            hb_codepoint_t g = HB_SET_VALUE_INVALID;
+            rb_codepoint_t g = RB_SET_VALUE_INVALID;
             for (unsigned int i = 0; i < count; i++) {
-                if (!hb_set_next(glyphs, &g))
+                if (!rb_set_next(glyphs, &g))
                     break;
                 if (g < rangeRecord[i].first)
                     return true;
                 g = rangeRecord[i].last;
             }
-            if (g != HB_SET_VALUE_INVALID && hb_set_next(glyphs, &g))
+            if (g != RB_SET_VALUE_INVALID && rb_set_next(glyphs, &g))
                 return true;
             /* Fall through. */
         }
@@ -1377,25 +1377,25 @@ struct ClassDef
     /* Has interface. */
     static constexpr unsigned SENTINEL = 0;
     typedef unsigned int value_t;
-    value_t operator[](hb_codepoint_t k) const
+    value_t operator[](rb_codepoint_t k) const
     {
         return get(k);
     }
-    bool has(hb_codepoint_t k) const
+    bool has(rb_codepoint_t k) const
     {
         return (*this)[k] != SENTINEL;
     }
     /* Projection. */
-    hb_codepoint_t operator()(hb_codepoint_t k) const
+    rb_codepoint_t operator()(rb_codepoint_t k) const
     {
         return get(k);
     }
 
-    unsigned int get(hb_codepoint_t k) const
+    unsigned int get(rb_codepoint_t k) const
     {
         return get_class(k);
     }
-    unsigned int get_class(hb_codepoint_t glyph_id) const
+    unsigned int get_class(rb_codepoint_t glyph_id) const
     {
         switch (u.format) {
         case 1:
@@ -1407,7 +1407,7 @@ struct ClassDef
         }
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
@@ -1450,7 +1450,7 @@ struct ClassDef
         }
     }
 
-    bool intersects(const hb_set_t *glyphs) const
+    bool intersects(const rb_set_t *glyphs) const
     {
         switch (u.format) {
         case 1:
@@ -1461,7 +1461,7 @@ struct ClassDef
             return false;
         }
     }
-    bool intersects_class(const hb_set_t *glyphs, unsigned int klass) const
+    bool intersects_class(const rb_set_t *glyphs, unsigned int klass) const
     {
         switch (u.format) {
         case 1:
@@ -1513,7 +1513,7 @@ struct VarRegionAxis
             return float(end - coord) / (end - peak);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -1551,7 +1551,7 @@ struct VarRegionList
         return v;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && axesZ.sanitize(c, (unsigned int)axisCount * (unsigned int)regionCount));
@@ -1626,14 +1626,14 @@ struct VarData
                      float *scalars /*OUT */,
                      unsigned int num_scalars) const
     {
-        unsigned count = hb_min(num_scalars, regionIndices.len);
+        unsigned count = rb_min(num_scalars, regionIndices.len);
         for (unsigned int i = 0; i < count; i++)
             scalars[i] = regions.evaluate(regionIndices.arrayZ[i], coords, coord_count);
         for (unsigned int i = count; i < num_scalars; i++)
             scalars[i] = 0.f;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && regionIndices.sanitize(c) && shortCount <= regionIndices.len &&
@@ -1697,7 +1697,7 @@ struct VariationStore
         return get_delta(outer, inner, coords, coord_count);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && format == 1 && regions.sanitize(c, this) && dataSets.sanitize(c, this));
@@ -1746,7 +1746,7 @@ private:
         return filterRangeMinValue <= coord && coord <= filterRangeMaxValue;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -1781,13 +1781,13 @@ struct Condition
             return_trace(c->no_dispatch_return_value());
         switch (u.format) {
         case 1:
-            return_trace(c->dispatch(u.format1, hb_forward<Ts>(ds)...));
+            return_trace(c->dispatch(u.format1, rb_forward<Ts>(ds)...));
         default:
             return_trace(c->default_return_value());
         }
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
@@ -1821,7 +1821,7 @@ struct ConditionSet
         return true;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(conditions.sanitize(c, this));
@@ -1838,18 +1838,18 @@ struct FeatureTableSubstitutionRecord
 {
     friend struct FeatureTableSubstitution;
 
-    void collect_lookups(const void *base, hb_set_t *lookup_indexes /* OUT */) const
+    void collect_lookups(const void *base, rb_set_t *lookup_indexes /* OUT */) const
     {
         return (base + feature).add_lookup_indexes_to(lookup_indexes);
     }
 
-    void closure_features(const void *base, const hb_map_t *lookup_indexes, hb_set_t *feature_indexes /* OUT */) const
+    void closure_features(const void *base, const rb_map_t *lookup_indexes, rb_set_t *feature_indexes /* OUT */) const
     {
         if ((base + feature).intersects_lookup_indexes(lookup_indexes))
             feature_indexes->add(featureIndex);
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const void *base) const
+    bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && feature.sanitize(c, base));
@@ -1876,21 +1876,21 @@ struct FeatureTableSubstitution
         return nullptr;
     }
 
-    void collect_lookups(const hb_set_t *feature_indexes, hb_set_t *lookup_indexes /* OUT */) const
+    void collect_lookups(const rb_set_t *feature_indexes, rb_set_t *lookup_indexes /* OUT */) const
     {
-        +hb_iter(substitutions) | hb_filter(feature_indexes, &FeatureTableSubstitutionRecord::featureIndex) |
-            hb_apply([this, lookup_indexes](const FeatureTableSubstitutionRecord &r) {
+        +rb_iter(substitutions) | rb_filter(feature_indexes, &FeatureTableSubstitutionRecord::featureIndex) |
+            rb_apply([this, lookup_indexes](const FeatureTableSubstitutionRecord &r) {
                 r.collect_lookups(this, lookup_indexes);
             });
     }
 
-    void closure_features(const hb_map_t *lookup_indexes, hb_set_t *feature_indexes /* OUT */) const
+    void closure_features(const rb_map_t *lookup_indexes, rb_set_t *feature_indexes /* OUT */) const
     {
         for (const FeatureTableSubstitutionRecord &record : substitutions)
             record.closure_features(this, lookup_indexes, feature_indexes);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(version.sanitize(c) && likely(version.major == 1) && substitutions.sanitize(c, this));
@@ -1908,17 +1908,17 @@ struct FeatureVariationRecord
 {
     friend struct FeatureVariations;
 
-    void collect_lookups(const void *base, const hb_set_t *feature_indexes, hb_set_t *lookup_indexes /* OUT */) const
+    void collect_lookups(const void *base, const rb_set_t *feature_indexes, rb_set_t *lookup_indexes /* OUT */) const
     {
         return (base + substitutions).collect_lookups(feature_indexes, lookup_indexes);
     }
 
-    void closure_features(const void *base, const hb_map_t *lookup_indexes, hb_set_t *feature_indexes /* OUT */) const
+    void closure_features(const void *base, const rb_map_t *lookup_indexes, rb_set_t *feature_indexes /* OUT */) const
     {
         (base + substitutions).closure_features(lookup_indexes, feature_indexes);
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const void *base) const
+    bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
         TRACE_SANITIZE(this);
         return_trace(conditions.sanitize(c, base) && substitutions.sanitize(c, base));
@@ -1956,19 +1956,19 @@ struct FeatureVariations
         return (this + record.substitutions).find_substitute(feature_index);
     }
 
-    void collect_lookups(const hb_set_t *feature_indexes, hb_set_t *lookup_indexes /* OUT */) const
+    void collect_lookups(const rb_set_t *feature_indexes, rb_set_t *lookup_indexes /* OUT */) const
     {
         for (const FeatureVariationRecord &r : varRecords)
             r.collect_lookups(this, feature_indexes, lookup_indexes);
     }
 
-    void closure_features(const hb_map_t *lookup_indexes, hb_set_t *feature_indexes /* OUT */) const
+    void closure_features(const rb_map_t *lookup_indexes, rb_set_t *feature_indexes /* OUT */) const
     {
         for (const FeatureVariationRecord &record : varRecords)
             record.closure_features(this, lookup_indexes, feature_indexes);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(version.sanitize(c) && likely(version.major == 1) && varRecords.sanitize(c, this));
@@ -1991,14 +1991,14 @@ struct HintingDevice
     friend struct Device;
 
 private:
-    hb_position_t get_x_delta(hb_font_t *font) const
+    rb_position_t get_x_delta(rb_font_t *font) const
     {
-        return get_delta(hb_font_get_ppem_x(font), hb_font_get_upem(font));
+        return get_delta(rb_font_get_ppem_x(font), rb_font_get_upem(font));
     }
 
-    hb_position_t get_y_delta(hb_font_t *font) const
+    rb_position_t get_y_delta(rb_font_t *font) const
     {
-        return get_delta(hb_font_get_ppem_y(font), hb_font_get_upem(font));
+        return get_delta(rb_font_get_ppem_y(font), rb_font_get_upem(font));
     }
 
 public:
@@ -2010,7 +2010,7 @@ public:
         return HBUINT16::static_size * (4 + ((endSize - startSize) >> (4 - f)));
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && c->check_range(this, this->get_size()));
@@ -2070,32 +2070,32 @@ struct VariationDevice
     friend struct Device;
 
 private:
-    hb_position_t get_x_delta(hb_font_t *font, const VariationStore &store) const
+    rb_position_t get_x_delta(rb_font_t *font, const VariationStore &store) const
     {
-        return (hb_position_t)roundf(get_delta(font, store));
+        return (rb_position_t)roundf(get_delta(font, store));
     }
 
-    hb_position_t get_y_delta(hb_font_t *font, const VariationStore &store) const
+    rb_position_t get_y_delta(rb_font_t *font, const VariationStore &store) const
     {
-        return (hb_position_t)roundf(get_delta(font, store));
+        return (rb_position_t)roundf(get_delta(font, store));
     }
 
-    void record_variation_index(hb_set_t *layout_variation_indices) const
+    void record_variation_index(rb_set_t *layout_variation_indices) const
     {
         unsigned var_idx = (outerIndex << 16) + innerIndex;
         layout_variation_indices->add(var_idx);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
     }
 
 private:
-    float get_delta(hb_font_t *font, const VariationStore &store) const
+    float get_delta(rb_font_t *font, const VariationStore &store) const
     {
-        return store.get_delta(outerIndex, innerIndex, hb_font_get_coords(font), hb_font_get_num_coords(font));
+        return store.get_delta(outerIndex, innerIndex, rb_font_get_coords(font), rb_font_get_num_coords(font));
     }
 
 protected:
@@ -2120,10 +2120,10 @@ public:
 
 struct Device
 {
-    hb_position_t get_x_delta(hb_font_t *font, const VariationStore &store = Null(VariationStore)) const
+    rb_position_t get_x_delta(rb_font_t *font, const VariationStore &store = Null(VariationStore)) const
     {
         switch (u.b.format) {
-#ifndef HB_NO_HINTING
+#ifndef RB_NO_HINTING
         case 1:
         case 2:
         case 3:
@@ -2135,13 +2135,13 @@ struct Device
             return 0;
         }
     }
-    hb_position_t get_y_delta(hb_font_t *font, const VariationStore &store = Null(VariationStore)) const
+    rb_position_t get_y_delta(rb_font_t *font, const VariationStore &store = Null(VariationStore)) const
     {
         switch (u.b.format) {
         case 1:
         case 2:
         case 3:
-#ifndef HB_NO_HINTING
+#ifndef RB_NO_HINTING
             return u.hinting.get_y_delta(font);
 #endif
         case 0x8000:
@@ -2151,13 +2151,13 @@ struct Device
         }
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (!u.b.format.sanitize(c))
             return_trace(false);
         switch (u.b.format) {
-#ifndef HB_NO_HINTING
+#ifndef RB_NO_HINTING
         case 1:
         case 2:
         case 3:
@@ -2170,10 +2170,10 @@ struct Device
         }
     }
 
-    void collect_variation_indices(hb_set_t *layout_variation_indices) const
+    void collect_variation_indices(rb_set_t *layout_variation_indices) const
     {
         switch (u.b.format) {
-#ifndef HB_NO_HINTING
+#ifndef RB_NO_HINTING
         case 1:
         case 2:
         case 3:
@@ -2200,4 +2200,4 @@ public:
 
 } /* namespace OT */
 
-#endif /* HB_OT_LAYOUT_COMMON_HH */
+#endif /* RB_OT_LAYOUT_COMMON_HH */

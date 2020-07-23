@@ -24,50 +24,50 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_ARRAY_HH
-#define HB_ARRAY_HH
+#ifndef RB_ARRAY_HH
+#define RB_ARRAY_HH
 
 #include "hb.hh"
 #include "hb-algs.hh"
 #include "hb-iter.hh"
 #include "hb-null.hh"
 
-template <typename Type> struct hb_sorted_array_t;
+template <typename Type> struct rb_sorted_array_t;
 
-template <typename Type> struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type &>
+template <typename Type> struct rb_array_t : rb_iter_with_fallback_t<rb_array_t<Type>, Type &>
 {
     /*
      * Constructors.
      */
-    hb_array_t()
+    rb_array_t()
         : arrayZ(nullptr)
         , length(0)
         , backwards_length(0)
     {
     }
-    hb_array_t(Type *array_, unsigned int length_)
+    rb_array_t(Type *array_, unsigned int length_)
         : arrayZ(array_)
         , length(length_)
         , backwards_length(0)
     {
     }
     template <unsigned int length_>
-    hb_array_t(Type (&array_)[length_])
+    rb_array_t(Type (&array_)[length_])
         : arrayZ(array_)
         , length(length_)
         , backwards_length(0)
     {
     }
 
-    template <typename U, hb_enable_if(hb_is_cr_convertible(U, Type))>
-    hb_array_t(const hb_array_t<U> &o)
-        : hb_iter_with_fallback_t<hb_array_t, Type &>()
+    template <typename U, rb_enable_if(rb_is_cr_convertible(U, Type))>
+    rb_array_t(const rb_array_t<U> &o)
+        : rb_iter_with_fallback_t<rb_array_t, Type &>()
         , arrayZ(o.arrayZ)
         , length(o.length)
         , backwards_length(o.backwards_length)
     {
     }
-    template <typename U, hb_enable_if(hb_is_cr_convertible(U, Type))> hb_array_t &operator=(const hb_array_t<U> &o)
+    template <typename U, rb_enable_if(rb_is_cr_convertible(U, Type))> rb_array_t &operator=(const rb_array_t<U> &o)
     {
         arrayZ = o.arrayZ;
         length = o.length;
@@ -111,7 +111,7 @@ template <typename Type> struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<
      * but also would require that Type has operator==.  As such, we optimize this operator
      * for range-based for loop and just compare arrayZ.  No need to compare length, as we
      * assume we're only compared to .end(). */
-    bool operator!=(const hb_array_t &o) const
+    bool operator!=(const rb_array_t &o) const
     {
         return arrayZ != o.arrayZ;
     }
@@ -122,22 +122,22 @@ template <typename Type> struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<
     {
         return arrayZ;
     }
-    operator hb_array_t<const Type>()
+    operator rb_array_t<const Type>()
     {
-        return hb_array_t<const Type>(arrayZ, length);
+        return rb_array_t<const Type>(arrayZ, length);
     }
     template <typename T> operator T *() const
     {
         return arrayZ;
     }
 
-    HB_INTERNAL bool operator==(const hb_array_t &o) const;
+    RB_INTERNAL bool operator==(const rb_array_t &o) const;
 
     uint32_t hash() const
     {
         uint32_t current = 0;
         for (unsigned int i = 0; i < this->length; i++) {
-            current = current * 31 + hb_hash(this->arrayZ[i]);
+            current = current * 31 + rb_hash(this->arrayZ[i]);
         }
         return current;
     }
@@ -147,16 +147,16 @@ template <typename Type> struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<
      */
 
     /* Note: our compare is NOT lexicographic; it also does NOT call Type::cmp. */
-    int cmp(const hb_array_t &a) const
+    int cmp(const rb_array_t &a) const
     {
         if (length != a.length)
             return (int)a.length - (int)length;
-        return hb_memcmp(a.arrayZ, arrayZ, get_size());
+        return rb_memcmp(a.arrayZ, arrayZ, get_size());
     }
-    HB_INTERNAL static int cmp(const void *pa, const void *pb)
+    RB_INTERNAL static int cmp(const void *pa, const void *pb)
     {
-        hb_array_t *a = (hb_array_t *)pa;
-        hb_array_t *b = (hb_array_t *)pb;
+        rb_array_t *a = (rb_array_t *)pa;
+        rb_array_t *b = (rb_array_t *)pb;
         return b->cmp(*a);
     }
 
@@ -177,24 +177,24 @@ template <typename Type> struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<
         return not_found;
     }
 
-    hb_sorted_array_t<Type> qsort(int (*cmp_)(const void *, const void *))
+    rb_sorted_array_t<Type> qsort(int (*cmp_)(const void *, const void *))
     {
         if (likely(length))
-            hb_qsort(arrayZ, length, this->get_item_size(), cmp_);
-        return hb_sorted_array_t<Type>(*this);
+            rb_qsort(arrayZ, length, this->get_item_size(), cmp_);
+        return rb_sorted_array_t<Type>(*this);
     }
-    hb_sorted_array_t<Type> qsort()
+    rb_sorted_array_t<Type> qsort()
     {
         if (likely(length))
-            hb_qsort(arrayZ, length, this->get_item_size(), Type::cmp);
-        return hb_sorted_array_t<Type>(*this);
+            rb_qsort(arrayZ, length, this->get_item_size(), Type::cmp);
+        return rb_sorted_array_t<Type>(*this);
     }
     void qsort(unsigned int start, unsigned int end)
     {
-        end = hb_min(end, length);
+        end = rb_min(end, length);
         assert(start <= end);
         if (likely(start < end))
-            hb_qsort(arrayZ + start, end - start, this->get_item_size(), Type::cmp);
+            rb_qsort(arrayZ + start, end - start, this->get_item_size(), Type::cmp);
     }
 
     /*
@@ -211,8 +211,8 @@ template <typename Type> struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<
      */
     void reverse(unsigned start = 0, unsigned end = -1)
     {
-        start = hb_min(start, length);
-        end = hb_min(end, length);
+        start = rb_min(start, length);
+        end = rb_min(end, length);
 
         if (end < start + 2)
             return;
@@ -224,7 +224,7 @@ template <typename Type> struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<
         }
     }
 
-    hb_array_t sub_array(unsigned int start_offset = 0, unsigned int *seg_count = nullptr /* IN/OUT */) const
+    rb_array_t sub_array(unsigned int start_offset = 0, unsigned int *seg_count = nullptr /* IN/OUT */) const
     {
         if (!start_offset && !seg_count)
             return *this;
@@ -235,25 +235,25 @@ template <typename Type> struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<
         else
             count -= start_offset;
         if (seg_count)
-            count = *seg_count = hb_min(count, *seg_count);
-        return hb_array_t(arrayZ + start_offset, count);
+            count = *seg_count = rb_min(count, *seg_count);
+        return rb_array_t(arrayZ + start_offset, count);
     }
-    hb_array_t sub_array(unsigned int start_offset, unsigned int seg_count) const
+    rb_array_t sub_array(unsigned int start_offset, unsigned int seg_count) const
     {
         return sub_array(start_offset, &seg_count);
     }
 
-    hb_array_t truncate(unsigned length) const
+    rb_array_t truncate(unsigned length) const
     {
         return sub_array(0, length);
     }
 
-    template <typename T, unsigned P = sizeof(Type), hb_enable_if(P == 1)> const T *as() const
+    template <typename T, unsigned P = sizeof(Type), rb_enable_if(P == 1)> const T *as() const
     {
-        return length < hb_null_size(T) ? &Null(T) : reinterpret_cast<const T *>(arrayZ);
+        return length < rb_null_size(T) ? &Null(T) : reinterpret_cast<const T *>(arrayZ);
     }
 
-    template <typename T, unsigned P = sizeof(Type), hb_enable_if(P == 1)>
+    template <typename T, unsigned P = sizeof(Type), rb_enable_if(P == 1)>
     bool check_range(const T *p, unsigned int size = T::static_size) const
     {
         return arrayZ <= ((const char *)p) && ((const char *)p) <= arrayZ + length &&
@@ -268,7 +268,7 @@ template <typename Type> struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<
         length = 0;
     }
 
-    template <typename hb_sanitize_context_t> bool sanitize(hb_sanitize_context_t *c) const
+    template <typename rb_sanitize_context_t> bool sanitize(rb_sanitize_context_t *c) const
     {
         return c->check_array(arrayZ, length);
     }
@@ -282,71 +282,71 @@ public:
     unsigned int length;
     unsigned int backwards_length;
 };
-template <typename T> inline hb_array_t<T> hb_array(T *array, unsigned int length)
+template <typename T> inline rb_array_t<T> rb_array(T *array, unsigned int length)
 {
-    return hb_array_t<T>(array, length);
+    return rb_array_t<T>(array, length);
 }
-template <typename T, unsigned int length_> inline hb_array_t<T> hb_array(T (&array_)[length_])
+template <typename T, unsigned int length_> inline rb_array_t<T> rb_array(T (&array_)[length_])
 {
-    return hb_array_t<T>(array_);
+    return rb_array_t<T>(array_);
 }
 
-enum hb_bfind_not_found_t {
-    HB_BFIND_NOT_FOUND_DONT_STORE,
-    HB_BFIND_NOT_FOUND_STORE,
-    HB_BFIND_NOT_FOUND_STORE_CLOSEST,
+enum rb_bfind_not_found_t {
+    RB_BFIND_NOT_FOUND_DONT_STORE,
+    RB_BFIND_NOT_FOUND_STORE,
+    RB_BFIND_NOT_FOUND_STORE_CLOSEST,
 };
 
-template <typename Type> struct hb_sorted_array_t : hb_iter_t<hb_sorted_array_t<Type>, Type &>, hb_array_t<Type>
+template <typename Type> struct rb_sorted_array_t : rb_iter_t<rb_sorted_array_t<Type>, Type &>, rb_array_t<Type>
 {
-    typedef hb_iter_t<hb_sorted_array_t, Type &> iter_base_t;
-    HB_ITER_USING(iter_base_t);
+    typedef rb_iter_t<rb_sorted_array_t, Type &> iter_base_t;
+    RB_ITER_USING(iter_base_t);
     static constexpr bool is_random_access_iterator = true;
     static constexpr bool is_sorted_iterator = true;
 
-    hb_sorted_array_t()
-        : hb_array_t<Type>()
+    rb_sorted_array_t()
+        : rb_array_t<Type>()
     {
     }
-    hb_sorted_array_t(Type *array_, unsigned int length_)
-        : hb_array_t<Type>(array_, length_)
+    rb_sorted_array_t(Type *array_, unsigned int length_)
+        : rb_array_t<Type>(array_, length_)
     {
     }
     template <unsigned int length_>
-    hb_sorted_array_t(Type (&array_)[length_])
-        : hb_array_t<Type>(array_)
+    rb_sorted_array_t(Type (&array_)[length_])
+        : rb_array_t<Type>(array_)
     {
     }
 
-    template <typename U, hb_enable_if(hb_is_cr_convertible(U, Type))>
-    hb_sorted_array_t(const hb_array_t<U> &o)
-        : hb_iter_t<hb_sorted_array_t, Type &>()
-        , hb_array_t<Type>(o)
+    template <typename U, rb_enable_if(rb_is_cr_convertible(U, Type))>
+    rb_sorted_array_t(const rb_array_t<U> &o)
+        : rb_iter_t<rb_sorted_array_t, Type &>()
+        , rb_array_t<Type>(o)
     {
     }
-    template <typename U, hb_enable_if(hb_is_cr_convertible(U, Type))>
-    hb_sorted_array_t &operator=(const hb_array_t<U> &o)
+    template <typename U, rb_enable_if(rb_is_cr_convertible(U, Type))>
+    rb_sorted_array_t &operator=(const rb_array_t<U> &o)
     {
-        hb_array_t<Type>(*this) = o;
+        rb_array_t<Type>(*this) = o;
         return *this;
     }
 
     /* Iterator implementation. */
-    bool operator!=(const hb_sorted_array_t &o) const
+    bool operator!=(const rb_sorted_array_t &o) const
     {
         return this->arrayZ != o.arrayZ || this->length != o.length;
     }
 
-    hb_sorted_array_t sub_array(unsigned int start_offset, unsigned int *seg_count /* IN/OUT */) const
+    rb_sorted_array_t sub_array(unsigned int start_offset, unsigned int *seg_count /* IN/OUT */) const
     {
-        return hb_sorted_array_t(((const hb_array_t<Type> *)(this))->sub_array(start_offset, seg_count));
+        return rb_sorted_array_t(((const rb_array_t<Type> *)(this))->sub_array(start_offset, seg_count));
     }
-    hb_sorted_array_t sub_array(unsigned int start_offset, unsigned int seg_count) const
+    rb_sorted_array_t sub_array(unsigned int start_offset, unsigned int seg_count) const
     {
         return sub_array(start_offset, &seg_count);
     }
 
-    hb_sorted_array_t truncate(unsigned length) const
+    rb_sorted_array_t truncate(unsigned length) const
     {
         return sub_array(0, length);
     }
@@ -364,7 +364,7 @@ template <typename Type> struct hb_sorted_array_t : hb_iter_t<hb_sorted_array_t<
     template <typename T>
     bool bfind(const T &x,
                unsigned int *i = nullptr,
-               hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+               rb_bfind_not_found_t not_found = RB_BFIND_NOT_FOUND_DONT_STORE,
                unsigned int to_store = (unsigned int)-1) const
     {
         unsigned pos;
@@ -377,14 +377,14 @@ template <typename Type> struct hb_sorted_array_t : hb_iter_t<hb_sorted_array_t<
 
         if (i) {
             switch (not_found) {
-            case HB_BFIND_NOT_FOUND_DONT_STORE:
+            case RB_BFIND_NOT_FOUND_DONT_STORE:
                 break;
 
-            case HB_BFIND_NOT_FOUND_STORE:
+            case RB_BFIND_NOT_FOUND_STORE:
                 *i = to_store;
                 break;
 
-            case HB_BFIND_NOT_FOUND_STORE_CLOSEST:
+            case RB_BFIND_NOT_FOUND_STORE_CLOSEST:
                 *i = pos;
                 break;
             }
@@ -393,19 +393,19 @@ template <typename Type> struct hb_sorted_array_t : hb_iter_t<hb_sorted_array_t<
     }
     template <typename T> bool bsearch_impl(const T &x, unsigned *pos) const
     {
-        return hb_bsearch_impl(pos, x, this->arrayZ, this->length, sizeof(Type), _hb_cmp_method<T, Type>);
+        return rb_bsearch_impl(pos, x, this->arrayZ, this->length, sizeof(Type), _rb_cmp_method<T, Type>);
     }
 };
-template <typename T> inline hb_sorted_array_t<T> hb_sorted_array(T *array, unsigned int length)
+template <typename T> inline rb_sorted_array_t<T> rb_sorted_array(T *array, unsigned int length)
 {
-    return hb_sorted_array_t<T>(array, length);
+    return rb_sorted_array_t<T>(array, length);
 }
-template <typename T, unsigned int length_> inline hb_sorted_array_t<T> hb_sorted_array(T (&array_)[length_])
+template <typename T, unsigned int length_> inline rb_sorted_array_t<T> rb_sorted_array(T (&array_)[length_])
 {
-    return hb_sorted_array_t<T>(array_);
+    return rb_sorted_array_t<T>(array_);
 }
 
-template <typename T> bool hb_array_t<T>::operator==(const hb_array_t<T> &o) const
+template <typename T> bool rb_array_t<T>::operator==(const rb_array_t<T> &o) const
 {
     if (o.length != this->length)
         return false;
@@ -416,9 +416,9 @@ template <typename T> bool hb_array_t<T>::operator==(const hb_array_t<T> &o) con
     return true;
 }
 
-/* TODO Specialize opeator== for hb_bytes_t and hb_ubytes_t. */
+/* TODO Specialize opeator== for rb_bytes_t and rb_ubytes_t. */
 
-template <> inline uint32_t hb_array_t<const char>::hash() const
+template <> inline uint32_t rb_array_t<const char>::hash() const
 {
     uint32_t current = 0;
     for (unsigned int i = 0; i < this->length; i++)
@@ -426,7 +426,7 @@ template <> inline uint32_t hb_array_t<const char>::hash() const
     return current;
 }
 
-template <> inline uint32_t hb_array_t<const unsigned char>::hash() const
+template <> inline uint32_t rb_array_t<const unsigned char>::hash() const
 {
     uint32_t current = 0;
     for (unsigned int i = 0; i < this->length; i++)
@@ -434,7 +434,7 @@ template <> inline uint32_t hb_array_t<const unsigned char>::hash() const
     return current;
 }
 
-typedef hb_array_t<const char> hb_bytes_t;
-typedef hb_array_t<const unsigned char> hb_ubytes_t;
+typedef rb_array_t<const char> rb_bytes_t;
+typedef rb_array_t<const unsigned char> rb_ubytes_t;
 
-#endif /* HB_ARRAY_HH */
+#endif /* RB_ARRAY_HH */

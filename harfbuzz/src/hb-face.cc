@@ -45,51 +45,26 @@
  * Font faces are used to create fonts.
  **/
 
-/**
- * hb_face_count:
- * @blob: a blob.
- *
- * Get number of faces in a blob.
- *
- * Return value: Number of faces in @blob
- *
- * Since: 1.7.7
- **/
-unsigned int hb_face_count(hb_blob_t *blob)
-{
-    if (unlikely(!blob))
-        return 0;
-
-    /* TODO We shouldn't be sanitizing blob.  Port to run sanitizer and return if not sane. */
-    /* Make API signature const after. */
-    hb_blob_t *sanitized = hb_sanitize_context_t().sanitize_blob<OT::OpenTypeFontFile>(hb_blob_reference(blob));
-    const OT::OpenTypeFontFile &ot = *sanitized->as<OT::OpenTypeFontFile>();
-    unsigned int ret = ot.get_face_count();
-    hb_blob_destroy(sanitized);
-
-    return ret;
-}
-
 /*
- * hb_face_t
+ * rb_face_t
  */
 
-DEFINE_NULL_INSTANCE(hb_face_t) = {
-    HB_OBJECT_HEADER_STATIC,
+DEFINE_NULL_INSTANCE(rb_face_t) = {
+    RB_OBJECT_HEADER_STATIC,
 
     nullptr, /* reference_table_func */
     nullptr, /* user_data */
     nullptr, /* destroy */
 
     0,                        /* index */
-    HB_ATOMIC_INT_INIT(1000), /* upem */
-    HB_ATOMIC_INT_INIT(0),    /* num_glyphs */
+    RB_ATOMIC_INT_INIT(1000), /* upem */
+    RB_ATOMIC_INT_INIT(0),    /* num_glyphs */
 
     /* Zero for the rest is fine. */
 };
 
 /**
- * hb_face_create_for_tables:
+ * rb_face_create_for_tables:
  * @reference_table_func: (closure user_data) (destroy destroy) (scope notified):
  * @user_data:
  * @destroy:
@@ -100,15 +75,15 @@ DEFINE_NULL_INSTANCE(hb_face_t) = {
  *
  * Since: 0.9.2
  **/
-hb_face_t *
-hb_face_create_for_tables(hb_reference_table_func_t reference_table_func, void *user_data, hb_destroy_func_t destroy)
+rb_face_t *
+rb_face_create_for_tables(rb_reference_table_func_t reference_table_func, void *user_data, rb_destroy_func_t destroy)
 {
-    hb_face_t *face;
+    rb_face_t *face;
 
-    if (!reference_table_func || !(face = hb_object_create<hb_face_t>())) {
+    if (!reference_table_func || !(face = rb_object_create<rb_face_t>())) {
         if (destroy)
             destroy(user_data);
-        return hb_face_get_empty();
+        return rb_face_get_empty();
     }
 
     face->reference_table_func = reference_table_func;
@@ -122,17 +97,17 @@ hb_face_create_for_tables(hb_reference_table_func_t reference_table_func, void *
     return face;
 }
 
-typedef struct hb_face_for_data_closure_t
+typedef struct rb_face_for_data_closure_t
 {
-    hb_blob_t *blob;
+    rb_blob_t *blob;
     unsigned int index;
-} hb_face_for_data_closure_t;
+} rb_face_for_data_closure_t;
 
-static hb_face_for_data_closure_t *_hb_face_for_data_closure_create(hb_blob_t *blob, unsigned int index)
+static rb_face_for_data_closure_t *_rb_face_for_data_closure_create(rb_blob_t *blob, unsigned int index)
 {
-    hb_face_for_data_closure_t *closure;
+    rb_face_for_data_closure_t *closure;
 
-    closure = (hb_face_for_data_closure_t *)calloc(1, sizeof(hb_face_for_data_closure_t));
+    closure = (rb_face_for_data_closure_t *)calloc(1, sizeof(rb_face_for_data_closure_t));
     if (unlikely(!closure))
         return nullptr;
 
@@ -142,20 +117,20 @@ static hb_face_for_data_closure_t *_hb_face_for_data_closure_create(hb_blob_t *b
     return closure;
 }
 
-static void _hb_face_for_data_closure_destroy(void *data)
+static void _rb_face_for_data_closure_destroy(void *data)
 {
-    hb_face_for_data_closure_t *closure = (hb_face_for_data_closure_t *)data;
+    rb_face_for_data_closure_t *closure = (rb_face_for_data_closure_t *)data;
 
-    hb_blob_destroy(closure->blob);
+    rb_blob_destroy(closure->blob);
     free(closure);
 }
 
-static hb_blob_t *_hb_face_for_data_reference_table(hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
+static rb_blob_t *_rb_face_for_data_reference_table(rb_face_t *face RB_UNUSED, rb_tag_t tag, void *user_data)
 {
-    hb_face_for_data_closure_t *data = (hb_face_for_data_closure_t *)user_data;
+    rb_face_for_data_closure_t *data = (rb_face_for_data_closure_t *)user_data;
 
-    if (tag == HB_TAG_NONE)
-        return hb_blob_reference(data->blob);
+    if (tag == RB_TAG_NONE)
+        return rb_blob_reference(data->blob);
 
     const OT::OpenTypeFontFile &ot_file = *data->blob->as<OT::OpenTypeFontFile>();
     unsigned int base_offset;
@@ -163,13 +138,13 @@ static hb_blob_t *_hb_face_for_data_reference_table(hb_face_t *face HB_UNUSED, h
 
     const OT::OpenTypeTable &table = ot_face.get_table_by_tag(tag);
 
-    hb_blob_t *blob = hb_blob_create_sub_blob(data->blob, base_offset + table.offset, table.length);
+    rb_blob_t *blob = rb_blob_create_sub_blob(data->blob, base_offset + table.offset, table.length);
 
     return blob;
 }
 
 /**
- * hb_face_create: (Xconstructor)
+ * rb_face_create: (Xconstructor)
  * @blob:
  * @index:
  *
@@ -179,20 +154,20 @@ static hb_blob_t *_hb_face_for_data_reference_table(hb_face_t *face HB_UNUSED, h
  *
  * Since: 0.9.2
  **/
-hb_face_t *hb_face_create(hb_blob_t *blob, unsigned int index)
+rb_face_t *rb_face_create(rb_blob_t *blob, unsigned int index)
 {
-    hb_face_t *face;
+    rb_face_t *face;
 
     if (unlikely(!blob))
-        blob = hb_blob_get_empty();
+        blob = rb_blob_get_empty();
 
-    hb_face_for_data_closure_t *closure = _hb_face_for_data_closure_create(
-        hb_sanitize_context_t().sanitize_blob<OT::OpenTypeFontFile>(hb_blob_reference(blob)), index);
+    rb_face_for_data_closure_t *closure = _rb_face_for_data_closure_create(
+        rb_sanitize_context_t().sanitize_blob<OT::OpenTypeFontFile>(rb_blob_reference(blob)), index);
 
     if (unlikely(!closure))
-        return hb_face_get_empty();
+        return rb_face_get_empty();
 
-    face = hb_face_create_for_tables(_hb_face_for_data_reference_table, closure, _hb_face_for_data_closure_destroy);
+    face = rb_face_create_for_tables(_rb_face_for_data_reference_table, closure, _rb_face_for_data_closure_destroy);
 
     face->index = index;
 
@@ -200,7 +175,7 @@ hb_face_t *hb_face_create(hb_blob_t *blob, unsigned int index)
 }
 
 /**
- * hb_face_get_empty:
+ * rb_face_get_empty:
  *
  *
  *
@@ -208,13 +183,13 @@ hb_face_t *hb_face_create(hb_blob_t *blob, unsigned int index)
  *
  * Since: 0.9.2
  **/
-hb_face_t *hb_face_get_empty()
+rb_face_t *rb_face_get_empty()
 {
-    return const_cast<hb_face_t *>(&Null(hb_face_t));
+    return const_cast<rb_face_t *>(&Null(rb_face_t));
 }
 
 /**
- * hb_face_reference: (skip)
+ * rb_face_reference: (skip)
  * @face: a face.
  *
  *
@@ -223,22 +198,22 @@ hb_face_t *hb_face_get_empty()
  *
  * Since: 0.9.2
  **/
-hb_face_t *hb_face_reference(hb_face_t *face)
+rb_face_t *rb_face_reference(rb_face_t *face)
 {
-    return hb_object_reference(face);
+    return rb_object_reference(face);
 }
 
 /**
- * hb_face_destroy: (skip)
+ * rb_face_destroy: (skip)
  * @face: a face.
  *
  *
  *
  * Since: 0.9.2
  **/
-void hb_face_destroy(hb_face_t *face)
+void rb_face_destroy(rb_face_t *face)
 {
-    if (!hb_object_destroy(face))
+    if (!rb_object_destroy(face))
         return;
 
     face->table.fini();
@@ -250,23 +225,23 @@ void hb_face_destroy(hb_face_t *face)
 }
 
 /**
- * hb_face_make_immutable:
+ * rb_face_make_immutable:
  * @face: a face.
  *
  *
  *
  * Since: 0.9.2
  **/
-void hb_face_make_immutable(hb_face_t *face)
+void rb_face_make_immutable(rb_face_t *face)
 {
-    if (hb_object_is_immutable(face))
+    if (rb_object_is_immutable(face))
         return;
 
-    hb_object_make_immutable(face);
+    rb_object_make_immutable(face);
 }
 
 /**
- * hb_face_is_immutable:
+ * rb_face_is_immutable:
  * @face: a face.
  *
  *
@@ -275,13 +250,13 @@ void hb_face_make_immutable(hb_face_t *face)
  *
  * Since: 0.9.2
  **/
-hb_bool_t hb_face_is_immutable(const hb_face_t *face)
+rb_bool_t rb_face_is_immutable(const rb_face_t *face)
 {
-    return hb_object_is_immutable(face);
+    return rb_object_is_immutable(face);
 }
 
 /**
- * hb_face_reference_table:
+ * rb_face_reference_table:
  * @face: a face.
  * @tag:
  *
@@ -291,16 +266,16 @@ hb_bool_t hb_face_is_immutable(const hb_face_t *face)
  *
  * Since: 0.9.2
  **/
-hb_blob_t *hb_face_reference_table(const hb_face_t *face, hb_tag_t tag)
+rb_blob_t *rb_face_reference_table(const rb_face_t *face, rb_tag_t tag)
 {
-    if (unlikely(tag == HB_TAG_NONE))
-        return hb_blob_get_empty();
+    if (unlikely(tag == RB_TAG_NONE))
+        return rb_blob_get_empty();
 
     return face->reference_table(tag);
 }
 
 /**
- * hb_face_reference_blob:
+ * rb_face_reference_blob:
  * @face: a face.
  *
  *
@@ -309,28 +284,13 @@ hb_blob_t *hb_face_reference_table(const hb_face_t *face, hb_tag_t tag)
  *
  * Since: 0.9.2
  **/
-hb_blob_t *hb_face_reference_blob(hb_face_t *face)
+rb_blob_t *rb_face_reference_blob(rb_face_t *face)
 {
-    return face->reference_table(HB_TAG_NONE);
+    return face->reference_table(RB_TAG_NONE);
 }
 
 /**
- * hb_face_get_upem:
- * @face: a face.
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-unsigned int hb_face_get_upem(const hb_face_t *face)
-{
-    return face->get_upem();
-}
-
-/**
- * hb_face_get_glyph_count:
+ * rb_face_get_glyph_count:
  * @face: a face.
  *
  *
@@ -339,7 +299,7 @@ unsigned int hb_face_get_upem(const hb_face_t *face)
  *
  * Since: 0.9.7
  **/
-unsigned int hb_face_get_glyph_count(const hb_face_t *face)
+unsigned int rb_face_get_glyph_count(const rb_face_t *face)
 {
     return face->get_num_glyphs();
 }

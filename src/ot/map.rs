@@ -16,42 +16,42 @@ pub struct MapLookup {
 }
 
 
-pub struct Map(NonNull<ffi::hb_ot_map_t>);
+pub struct Map(NonNull<ffi::rb_ot_map_t>);
 
 impl Map {
     #[inline]
-    pub fn from_ptr(ptr: *const ffi::hb_ot_map_t) -> Self {
+    pub fn from_ptr(ptr: *const ffi::rb_ot_map_t) -> Self {
         Map(NonNull::new(ptr as _).unwrap())
     }
 
     #[inline]
-    pub fn as_ptr(&self) -> *const ffi::hb_ot_map_t {
+    pub fn as_ptr(&self) -> *const ffi::rb_ot_map_t {
         self.0.as_ptr()
     }
 
     #[inline]
     pub fn global_mask(&self) -> Mask {
-        unsafe { ffi::hb_ot_map_global_mask(self.0.as_ptr()) }
+        unsafe { ffi::rb_ot_map_global_mask(self.0.as_ptr()) }
     }
 
     #[inline]
     pub fn get_1_mask(&self, feature_tag: Tag) -> Mask {
-        unsafe { ffi::hb_ot_map_get_1_mask(self.0.as_ptr(), feature_tag) }
+        unsafe { ffi::rb_ot_map_get_1_mask(self.0.as_ptr(), feature_tag) }
     }
 
     #[inline]
     pub fn found_script(&self, table_index: TableIndex) -> bool {
-        unsafe { ffi::hb_ot_map_get_found_script(self.0.as_ptr(), table_index as u32) }
+        unsafe { ffi::rb_ot_map_get_found_script(self.0.as_ptr(), table_index as u32) }
     }
 
     #[inline]
     pub fn chosen_script(&self, table_index: TableIndex) -> Tag {
-        unsafe { ffi::hb_ot_map_get_chosen_script(self.0.as_ptr(), table_index as u32) }
+        unsafe { ffi::rb_ot_map_get_chosen_script(self.0.as_ptr(), table_index as u32) }
     }
 
     pub fn feature_stage(&self, table_index: TableIndex, feature_tag: Tag) -> usize {
         unsafe {
-            ffi::hb_ot_map_get_feature_stage(self.as_ptr(), table_index as u32, feature_tag) as usize
+            ffi::rb_ot_map_get_feature_stage(self.as_ptr(), table_index as u32, feature_tag) as usize
         }
     }
 
@@ -59,12 +59,12 @@ impl Map {
         &self,
         table_index: TableIndex,
         stage: usize,
-    ) -> &'static [ffi::hb_ot_map_lookup_map_t] {
+    ) -> &'static [ffi::rb_ot_map_lookup_map_t] {
         unsafe {
-            let mut plookups: *const ffi::hb_ot_map_lookup_map_t = std::ptr::null();
+            let mut plookups: *const ffi::rb_ot_map_lookup_map_t = std::ptr::null();
             let mut lookup_count: u32 = 0;
 
-            ffi::hb_ot_map_get_stage_lookups(
+            ffi::rb_ot_map_get_stage_lookups(
                 self.as_ptr(),
                 table_index as u32,
                 stage as u32,

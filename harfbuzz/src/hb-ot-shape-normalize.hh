@@ -24,44 +24,44 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_SHAPE_NORMALIZE_HH
-#define HB_OT_SHAPE_NORMALIZE_HH
+#ifndef RB_OT_SHAPE_NORMALIZE_HH
+#define RB_OT_SHAPE_NORMALIZE_HH
 
 #include "hb.hh"
 
 /* buffer var allocations, used during the normalization process */
 #define glyph_index() var1.u32
 
-struct hb_ot_shape_plan_t;
+struct rb_ot_shape_plan_t;
 
-enum hb_ot_shape_normalization_mode_t {
-    HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
-    HB_OT_SHAPE_NORMALIZATION_MODE_DECOMPOSED,
-    HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS,                  /* Never composes base-to-base */
-    HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT, /* Always fully decomposes and then recompose
+enum rb_ot_shape_normalization_mode_t {
+    RB_OT_SHAPE_NORMALIZATION_MODE_NONE,
+    RB_OT_SHAPE_NORMALIZATION_MODE_DECOMPOSED,
+    RB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS,                  /* Never composes base-to-base */
+    RB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT, /* Always fully decomposes and then recompose
                                                                             back */
 
-    HB_OT_SHAPE_NORMALIZATION_MODE_AUTO, /* See hb-ot-shape-normalize.cc for logic. */
-    HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT = HB_OT_SHAPE_NORMALIZATION_MODE_AUTO
+    RB_OT_SHAPE_NORMALIZATION_MODE_AUTO, /* See hb-ot-shape-normalize.cc for logic. */
+    RB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT = RB_OT_SHAPE_NORMALIZATION_MODE_AUTO
 };
 
-HB_INTERNAL void _hb_ot_shape_normalize(const hb_ot_shape_plan_t *shaper, hb_buffer_t *buffer, hb_font_t *font);
+RB_INTERNAL void _rb_ot_shape_normalize(const rb_ot_shape_plan_t *shaper, rb_buffer_t *buffer, rb_font_t *font);
 
-struct hb_ot_shape_normalize_context_t
+struct rb_ot_shape_normalize_context_t
 {
-    const hb_ot_shape_plan_t *plan;
-    hb_buffer_t *buffer;
-    hb_font_t *font;
-    bool (*decompose)(const hb_ot_shape_normalize_context_t *c,
-                      hb_codepoint_t ab,
-                      hb_codepoint_t *a,
-                      hb_codepoint_t *b);
-    bool (*compose)(const hb_ot_shape_normalize_context_t *c, hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab);
+    const rb_ot_shape_plan_t *plan;
+    rb_buffer_t *buffer;
+    rb_font_t *font;
+    bool (*decompose)(const rb_ot_shape_normalize_context_t *c,
+                      rb_codepoint_t ab,
+                      rb_codepoint_t *a,
+                      rb_codepoint_t *b);
+    bool (*compose)(const rb_ot_shape_normalize_context_t *c, rb_codepoint_t a, rb_codepoint_t b, rb_codepoint_t *ab);
 };
 
 extern "C" {
-HB_EXTERN const hb_ot_shape_plan_t *hb_ot_shape_normalize_context_get_plan(const hb_ot_shape_normalize_context_t *c);
-HB_EXTERN const hb_font_t *hb_ot_shape_normalize_context_get_font(const hb_ot_shape_normalize_context_t *c);
+RB_EXTERN const rb_ot_shape_plan_t *rb_ot_shape_normalize_context_get_plan(const rb_ot_shape_normalize_context_t *c);
+RB_EXTERN const rb_font_t *rb_ot_shape_normalize_context_get_font(const rb_ot_shape_normalize_context_t *c);
 }
 
-#endif /* HB_OT_SHAPE_NORMALIZE_HH */
+#endif /* RB_OT_SHAPE_NORMALIZE_HH */

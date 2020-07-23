@@ -32,17 +32,17 @@ bitflags::bitflags! {
 }
 
 
-pub struct MapBuilder(NonNull<ffi::hb_ot_map_builder_t>);
+pub struct MapBuilder(NonNull<ffi::rb_ot_map_builder_t>);
 
 impl MapBuilder {
     #[inline]
-    pub fn from_ptr_mut(ptr: *mut ffi::hb_ot_map_builder_t) -> Self {
+    pub fn from_ptr_mut(ptr: *mut ffi::rb_ot_map_builder_t) -> Self {
         MapBuilder(NonNull::new(ptr).unwrap())
     }
 
     #[inline]
     pub fn add_feature(&mut self, tag: Tag, flags: FeatureFlags, value: u32) {
-        unsafe { ffi::hb_ot_map_builder_add_feature(self.0.as_ptr(), tag, flags.bits, value) };
+        unsafe { ffi::rb_ot_map_builder_add_feature(self.0.as_ptr(), tag, flags.bits, value) };
     }
 
     #[inline]
@@ -56,7 +56,7 @@ impl MapBuilder {
     }
 
     #[inline]
-    pub fn add_gsub_pause(&mut self, pause: ffi::hb_ot_pause_func_t) {
-        unsafe { ffi::hb_ot_map_builder_add_gsub_pause(self.0.as_ptr(), pause) }
+    pub fn add_gsub_pause(&mut self, pause: ffi::rb_ot_pause_func_t) {
+        unsafe { ffi::rb_ot_map_builder_add_gsub_pause(self.0.as_ptr(), pause) }
     }
 }

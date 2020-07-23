@@ -24,83 +24,83 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#ifndef RB_H_IN
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_SET_H
-#define HB_SET_H
+#ifndef RB_SET_H
+#define RB_SET_H
 
 #include "hb-common.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
 /*
  * Since: 0.9.21
  */
-#define HB_SET_VALUE_INVALID ((hb_codepoint_t)-1)
+#define RB_SET_VALUE_INVALID ((rb_codepoint_t)-1)
 
-typedef struct hb_set_t hb_set_t;
+typedef struct rb_set_t rb_set_t;
 
-HB_EXTERN hb_set_t *hb_set_create(void);
+RB_EXTERN rb_set_t *rb_set_create(void);
 
-HB_EXTERN hb_set_t *hb_set_get_empty(void);
+RB_EXTERN rb_set_t *rb_set_get_empty(void);
 
-HB_EXTERN hb_set_t *hb_set_reference(hb_set_t *set);
+RB_EXTERN rb_set_t *rb_set_reference(rb_set_t *set);
 
-HB_EXTERN void hb_set_destroy(hb_set_t *set);
+RB_EXTERN void rb_set_destroy(rb_set_t *set);
 
 /* Returns false if allocation has failed before */
-HB_EXTERN hb_bool_t hb_set_allocation_successful(const hb_set_t *set);
+RB_EXTERN rb_bool_t rb_set_allocation_successful(const rb_set_t *set);
 
-HB_EXTERN void hb_set_clear(hb_set_t *set);
+RB_EXTERN void rb_set_clear(rb_set_t *set);
 
-HB_EXTERN hb_bool_t hb_set_is_empty(const hb_set_t *set);
+RB_EXTERN rb_bool_t rb_set_is_empty(const rb_set_t *set);
 
-HB_EXTERN hb_bool_t hb_set_has(const hb_set_t *set, hb_codepoint_t codepoint);
+RB_EXTERN rb_bool_t rb_set_has(const rb_set_t *set, rb_codepoint_t codepoint);
 
-HB_EXTERN void hb_set_add(hb_set_t *set, hb_codepoint_t codepoint);
+RB_EXTERN void rb_set_add(rb_set_t *set, rb_codepoint_t codepoint);
 
-HB_EXTERN void hb_set_add_range(hb_set_t *set, hb_codepoint_t first, hb_codepoint_t last);
+RB_EXTERN void rb_set_add_range(rb_set_t *set, rb_codepoint_t first, rb_codepoint_t last);
 
-HB_EXTERN void hb_set_del(hb_set_t *set, hb_codepoint_t codepoint);
+RB_EXTERN void rb_set_del(rb_set_t *set, rb_codepoint_t codepoint);
 
-HB_EXTERN void hb_set_del_range(hb_set_t *set, hb_codepoint_t first, hb_codepoint_t last);
+RB_EXTERN void rb_set_del_range(rb_set_t *set, rb_codepoint_t first, rb_codepoint_t last);
 
-HB_EXTERN hb_bool_t hb_set_is_equal(const hb_set_t *set, const hb_set_t *other);
+RB_EXTERN rb_bool_t rb_set_is_equal(const rb_set_t *set, const rb_set_t *other);
 
-HB_EXTERN hb_bool_t hb_set_is_subset(const hb_set_t *set, const hb_set_t *larger_set);
+RB_EXTERN rb_bool_t rb_set_is_subset(const rb_set_t *set, const rb_set_t *larger_set);
 
-HB_EXTERN void hb_set_set(hb_set_t *set, const hb_set_t *other);
+RB_EXTERN void rb_set_set(rb_set_t *set, const rb_set_t *other);
 
-HB_EXTERN void hb_set_union(hb_set_t *set, const hb_set_t *other);
+RB_EXTERN void rb_set_union(rb_set_t *set, const rb_set_t *other);
 
-HB_EXTERN void hb_set_intersect(hb_set_t *set, const hb_set_t *other);
+RB_EXTERN void rb_set_intersect(rb_set_t *set, const rb_set_t *other);
 
-HB_EXTERN void hb_set_subtract(hb_set_t *set, const hb_set_t *other);
+RB_EXTERN void rb_set_subtract(rb_set_t *set, const rb_set_t *other);
 
-HB_EXTERN void hb_set_symmetric_difference(hb_set_t *set, const hb_set_t *other);
+RB_EXTERN void rb_set_symmetric_difference(rb_set_t *set, const rb_set_t *other);
 
-HB_EXTERN unsigned int hb_set_get_population(const hb_set_t *set);
+RB_EXTERN unsigned int rb_set_get_population(const rb_set_t *set);
 
-/* Returns HB_SET_VALUE_INVALID if set empty. */
-HB_EXTERN hb_codepoint_t hb_set_get_min(const hb_set_t *set);
+/* Returns RB_SET_VALUE_INVALID if set empty. */
+RB_EXTERN rb_codepoint_t rb_set_get_min(const rb_set_t *set);
 
-/* Returns HB_SET_VALUE_INVALID if set empty. */
-HB_EXTERN hb_codepoint_t hb_set_get_max(const hb_set_t *set);
+/* Returns RB_SET_VALUE_INVALID if set empty. */
+RB_EXTERN rb_codepoint_t rb_set_get_max(const rb_set_t *set);
 
-/* Pass HB_SET_VALUE_INVALID in to get started. */
-HB_EXTERN hb_bool_t hb_set_next(const hb_set_t *set, hb_codepoint_t *codepoint);
+/* Pass RB_SET_VALUE_INVALID in to get started. */
+RB_EXTERN rb_bool_t rb_set_next(const rb_set_t *set, rb_codepoint_t *codepoint);
 
-/* Pass HB_SET_VALUE_INVALID in to get started. */
-HB_EXTERN hb_bool_t hb_set_previous(const hb_set_t *set, hb_codepoint_t *codepoint);
+/* Pass RB_SET_VALUE_INVALID in to get started. */
+RB_EXTERN rb_bool_t rb_set_previous(const rb_set_t *set, rb_codepoint_t *codepoint);
 
-/* Pass HB_SET_VALUE_INVALID for first and last to get started. */
-HB_EXTERN hb_bool_t hb_set_next_range(const hb_set_t *set, hb_codepoint_t *first, hb_codepoint_t *last);
+/* Pass RB_SET_VALUE_INVALID for first and last to get started. */
+RB_EXTERN rb_bool_t rb_set_next_range(const rb_set_t *set, rb_codepoint_t *first, rb_codepoint_t *last);
 
-/* Pass HB_SET_VALUE_INVALID for first and last to get started. */
-HB_EXTERN hb_bool_t hb_set_previous_range(const hb_set_t *set, hb_codepoint_t *first, hb_codepoint_t *last);
+/* Pass RB_SET_VALUE_INVALID for first and last to get started. */
+RB_EXTERN rb_bool_t rb_set_previous_range(const rb_set_t *set, rb_codepoint_t *first, rb_codepoint_t *last);
 
-HB_END_DECLS
+RB_END_DECLS
 
-#endif /* HB_SET_H */
+#endif /* RB_SET_H */

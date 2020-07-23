@@ -28,40 +28,40 @@
  * Facebook Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_FACE_TABLE_LIST_HH
-#define HB_OT_FACE_TABLE_LIST_HH
-#endif /* HB_OT_FACE_TABLE_LIST_HH */ /* Dummy header guards */
+#ifndef RB_OT_FACE_TABLE_LIST_HH
+#define RB_OT_FACE_TABLE_LIST_HH
+#endif /* RB_OT_FACE_TABLE_LIST_HH */ /* Dummy header guards */
 
-#ifndef HB_OT_ACCELERATOR
-#define HB_OT_ACCELERATOR(Namespace, Type) HB_OT_TABLE(Namespace, Type)
-#define _HB_OT_ACCELERATOR_UNDEF
+#ifndef RB_OT_ACCELERATOR
+#define RB_OT_ACCELERATOR(Namespace, Type) RB_OT_TABLE(Namespace, Type)
+#define _RB_OT_ACCELERATOR_UNDEF
 #endif
 
-/* This lists font tables that the hb_face_t will contain and lazily
+/* This lists font tables that the rb_face_t will contain and lazily
  * load.  Don't add a table unless it's used though.  This is not
  * exactly free. */
 
 /* v--- Add new tables in the right place here. */
 
 /* OpenType fundamentals. */
-HB_OT_TABLE(OT, head)
+RB_OT_TABLE(OT, head)
 
 /* Legacy kern. */
-HB_OT_TABLE(OT, kern)
+RB_OT_TABLE(OT, kern)
 
 /* OpenType shaping. */
-HB_OT_ACCELERATOR(OT, GDEF)
-HB_OT_ACCELERATOR(OT, GSUB)
-HB_OT_ACCELERATOR(OT, GPOS)
+RB_OT_ACCELERATOR(OT, GDEF)
+RB_OT_ACCELERATOR(OT, GSUB)
+RB_OT_ACCELERATOR(OT, GPOS)
 
 /* AAT shaping. */
-HB_OT_TABLE(AAT, morx)
-HB_OT_TABLE(AAT, mort)
-HB_OT_TABLE(AAT, kerx)
-HB_OT_TABLE(AAT, ankr)
-HB_OT_TABLE(AAT, trak)
-HB_OT_TABLE(AAT, feat)
+RB_OT_TABLE(AAT, morx)
+RB_OT_TABLE(AAT, mort)
+RB_OT_TABLE(AAT, kerx)
+RB_OT_TABLE(AAT, ankr)
+RB_OT_TABLE(AAT, trak)
+RB_OT_TABLE(AAT, feat)
 
-#ifdef _HB_OT_ACCELERATOR_UNDEF
-#undef HB_OT_ACCELERATOR
+#ifdef _RB_OT_ACCELERATOR_UNDEF
+#undef RB_OT_ACCELERATOR
 #endif

@@ -26,10 +26,10 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_HH
-#define HB_HH
+#ifndef RB_HH
+#define RB_HH
 
-#ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC
+#ifndef RB_NO_PRAGMA_GCC_DIAGNOSTIC
 #ifdef _MSC_VER
 #pragma warning(disable : 4068) /* Unknown pragma */
 #endif
@@ -46,21 +46,21 @@
  */
 
 /* Setup.  Don't sort order within this category. */
-#ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_WARNING
+#ifndef RB_NO_PRAGMA_GCC_DIAGNOSTIC_WARNING
 #pragma GCC diagnostic warning "-Wall"
 #pragma GCC diagnostic warning "-Wextra"
 #endif
-#ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
+#ifndef RB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #endif
-#ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_WARNING
+#ifndef RB_NO_PRAGMA_GCC_DIAGNOSTIC_WARNING
 //#pragma GCC diagnostic warning "-Weverything"
 #endif
 
 /* Error.  Should never happen. */
-#ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_ERROR
+#ifndef RB_NO_PRAGMA_GCC_DIAGNOSTIC_ERROR
 #pragma GCC diagnostic error "-Wc++11-narrowing"
 #pragma GCC diagnostic error "-Wcast-align"
 #pragma GCC diagnostic error "-Wcast-function-type"
@@ -94,7 +94,7 @@
 #endif
 
 /* Warning.  To be investigated if happens. */
-#ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_WARNING
+#ifndef RB_NO_PRAGMA_GCC_DIAGNOSTIC_WARNING
 #pragma GCC diagnostic warning "-Wbuiltin-macro-redefined"
 #pragma GCC diagnostic warning "-Wdeprecated"
 #pragma GCC diagnostic warning "-Wdeprecated-declarations"
@@ -109,7 +109,7 @@
 #endif
 
 /* Ignored currently, but should be fixed at some point. */
-#ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
+#ifndef RB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wconversion"                // TODO fix
 #pragma GCC diagnostic ignored "-Wformat-signedness"         // TODO fix
 #pragma GCC diagnostic ignored "-Wshadow"                    // TODO fix
@@ -118,7 +118,7 @@
 #endif
 
 /* Ignored intentionally. */
-#ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
+#ifndef RB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wclass-memaccess"
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
@@ -158,16 +158,16 @@
 #define __EXTENSIONS__ 1
 #endif
 
-#if defined(_MSC_VER) && defined(HB_DLL_EXPORT)
-#define HB_EXTERN __declspec(dllexport) extern
+#if defined(_MSC_VER) && defined(RB_DLL_EXPORT)
+#define RB_EXTERN __declspec(dllexport) extern
 #endif
 
 #include "hb.h"
-#define HB_H_IN
+#define RB_H_IN
 #include "hb-ot.h"
-#define HB_OT_H_IN
+#define RB_OT_H_IN
 #include "hb-aat.h"
-#define HB_AAT_H_IN
+#define RB_AAT_H_IN
 
 #include <limits.h>
 #include <math.h>
@@ -190,20 +190,20 @@
 #endif
 #endif
 
-#define HB_PASTE1(a, b) a##b
-#define HB_PASTE(a, b) HB_PASTE1(a, b)
+#define RB_PASTE1(a, b) a##b
+#define RB_PASTE(a, b) RB_PASTE1(a, b)
 
 /* Compile-time custom allocator support. */
 
-#if defined(hb_malloc_impl) && defined(hb_calloc_impl) && defined(hb_realloc_impl) && defined(hb_free_impl)
-extern "C" void *hb_malloc_impl(size_t size);
-extern "C" void *hb_calloc_impl(size_t nmemb, size_t size);
-extern "C" void *hb_realloc_impl(void *ptr, size_t size);
-extern "C" void hb_free_impl(void *ptr);
-#define malloc hb_malloc_impl
-#define calloc hb_calloc_impl
-#define realloc hb_realloc_impl
-#define free hb_free_impl
+#if defined(rb_malloc_impl) && defined(rb_calloc_impl) && defined(rb_realloc_impl) && defined(rb_free_impl)
+extern "C" void *rb_malloc_impl(size_t size);
+extern "C" void *rb_calloc_impl(size_t nmemb, size_t size);
+extern "C" void *rb_realloc_impl(void *ptr, size_t size);
+extern "C" void rb_free_impl(void *ptr);
+#define malloc rb_malloc_impl
+#define calloc rb_calloc_impl
+#define realloc rb_realloc_impl
+#define free rb_free_impl
 #endif
 
 /*
@@ -224,35 +224,35 @@ extern "C" void hb_free_impl(void *ptr);
 #endif
 
 #if defined(__GNUC__) && (__GNUC__ >= 3)
-#define HB_PURE_FUNC __attribute__((pure))
-#define HB_CONST_FUNC __attribute__((const))
-#define HB_PRINTF_FUNC(format_idx, arg_idx) __attribute__((__format__(__printf__, format_idx, arg_idx)))
+#define RB_PURE_FUNC __attribute__((pure))
+#define RB_CONST_FUNC __attribute__((const))
+#define RB_PRINTF_FUNC(format_idx, arg_idx) __attribute__((__format__(__printf__, format_idx, arg_idx)))
 #else
-#define HB_PURE_FUNC
-#define HB_CONST_FUNC
-#define HB_PRINTF_FUNC(format_idx, arg_idx)
+#define RB_PURE_FUNC
+#define RB_CONST_FUNC
+#define RB_PRINTF_FUNC(format_idx, arg_idx)
 #endif
 #if defined(__GNUC__) && (__GNUC__ >= 4) || (__clang__)
-#define HB_UNUSED __attribute__((unused))
+#define RB_UNUSED __attribute__((unused))
 #elif defined(_MSC_VER) /* https://github.com/harfbuzz/harfbuzz/issues/635 */
-#define HB_UNUSED __pragma(warning(suppress : 4100 4101))
+#define RB_UNUSED __pragma(warning(suppress : 4100 4101))
 #else
-#define HB_UNUSED
+#define RB_UNUSED
 #endif
 
-#ifndef HB_INTERNAL
-#if !defined(HB_NO_VISIBILITY) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(_MSC_VER) &&               \
+#ifndef RB_INTERNAL
+#if !defined(RB_NO_VISIBILITY) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(_MSC_VER) &&               \
     !defined(__SUNPRO_CC)
-#define HB_INTERNAL __attribute__((__visibility__("hidden")))
+#define RB_INTERNAL __attribute__((__visibility__("hidden")))
 #elif defined(__MINGW32__)
 /* We use -export-symbols on mingw32, since it does not support visibility attributes. */
-#define HB_INTERNAL
-#elif defined(_MSC_VER) && defined(HB_DLL_EXPORT)
+#define RB_INTERNAL
+#elif defined(_MSC_VER) && defined(RB_DLL_EXPORT)
 /* We do not try to export internal symbols on Visual Studio */
-#define HB_INTERNAL
+#define RB_INTERNAL
 #else
-#define HB_INTERNAL
-#define HB_NO_VISIBILITY 1
+#define RB_INTERNAL
+#define RB_NO_VISIBILITY 1
 #endif
 #endif
 
@@ -264,11 +264,11 @@ extern "C" void hb_free_impl(void *ptr);
 #endif
 
 #if defined(__GNUC__) && (__GNUC__ >= 3)
-#define HB_FUNC __PRETTY_FUNCTION__
+#define RB_FUNC __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
-#define HB_FUNC __FUNCSIG__
+#define RB_FUNC __FUNCSIG__
 #else
-#define HB_FUNC __func__
+#define RB_FUNC __func__
 #endif
 
 #if defined(__SUNPRO_CC) && (__SUNPRO_CC < 0x5140)
@@ -278,8 +278,8 @@ extern "C" void hb_free_impl(void *ptr);
 
 /*
  * Borrowed from https://bugzilla.mozilla.org/show_bug.cgi?id=1215411
- * HB_FALLTHROUGH is an annotation to suppress compiler warnings about switch
- * cases that fall through without a break or return statement. HB_FALLTHROUGH
+ * RB_FALLTHROUGH is an annotation to suppress compiler warnings about switch
+ * cases that fall through without a break or return statement. RB_FALLTHROUGH
  * is only needed on cases that have code:
  *
  * switch (foo) {
@@ -287,47 +287,47 @@ extern "C" void hb_free_impl(void *ptr);
  *   case 2:
  *   case 3:
  *     foo = 4; // This case has code, so a fallthrough annotation is needed:
- *     HB_FALLTHROUGH;
+ *     RB_FALLTHROUGH;
  *   default:
  *     return foo;
  * }
  */
 #if defined(__clang__) && __cplusplus >= 201103L
 /* clang's fallthrough annotations are only available starting in C++11. */
-#define HB_FALLTHROUGH [[clang::fallthrough]]
+#define RB_FALLTHROUGH [[clang::fallthrough]]
 #elif defined(__GNUC__) && (__GNUC__ >= 7)
 /* GNU fallthrough attribute is available from GCC7 */
-#define HB_FALLTHROUGH __attribute__((fallthrough))
+#define RB_FALLTHROUGH __attribute__((fallthrough))
 #elif defined(_MSC_VER)
 /*
  * MSVC's __fallthrough annotations are checked by /analyze (Code Analysis):
  * https://msdn.microsoft.com/en-us/library/ms235402%28VS.80%29.aspx
  */
 #include <sal.h>
-#define HB_FALLTHROUGH __fallthrough
+#define RB_FALLTHROUGH __fallthrough
 #else
-#define HB_FALLTHROUGH /* FALLTHROUGH */
+#define RB_FALLTHROUGH /* FALLTHROUGH */
 #endif
 
 /* A tag to enforce use of return value for a function */
 #if __cplusplus >= 201703L
-#define HB_NODISCARD [[nodiscard]]
+#define RB_NODISCARD [[nodiscard]]
 #elif defined(__GNUC__) || defined(__clang__)
-#define HB_NODISCARD __attribute__((warn_unused_result))
+#define RB_NODISCARD __attribute__((warn_unused_result))
 #elif defined(_MSC_VER)
-#define HB_NODISCARD _Check_return_
+#define RB_NODISCARD _Check_return_
 #else
-#define HB_NODISCARD
+#define RB_NODISCARD
 #endif
-#define hb_success_t HB_NODISCARD bool
+#define rb_success_t RB_NODISCARD bool
 
 /* https://github.com/harfbuzz/harfbuzz/issues/1852 */
 #if defined(__clang__) && !(defined(_AIX) && (defined(__IBMCPP__) || defined(__ibmxl__)))
 /* Disable certain sanitizer errors. */
 /* https://github.com/harfbuzz/harfbuzz/issues/1247 */
-#define HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("signed-integer-overflow")))
+#define RB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("signed-integer-overflow")))
 #else
-#define HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
+#define RB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
 #endif
 
 #ifdef _WIN32
@@ -352,16 +352,16 @@ extern "C" void hb_free_impl(void *ptr);
 #if defined(_WIN32_WCE)
 /* Some things not defined on Windows CE. */
 #define vsnprintf _vsnprintf
-#ifndef HB_NO_GETENV
-#define HB_NO_GETENV
+#ifndef RB_NO_GETENV
+#define RB_NO_GETENV
 #endif
 #if _WIN32_WCE < 0x800
-#define HB_NO_SETLOCALE
-#define HB_NO_ERRNO
+#define RB_NO_SETLOCALE
+#define RB_NO_ERRNO
 #endif
 #elif defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-#ifndef HB_NO_GETENV
-#define HB_NO_GETENV
+#ifndef RB_NO_GETENV
+#define RB_NO_GETENV
 #endif
 #endif
 #if defined(_MSC_VER) && _MSC_VER < 1900
@@ -369,26 +369,26 @@ extern "C" void hb_free_impl(void *ptr);
 #endif
 #endif
 
-#ifdef HB_NO_GETENV
+#ifdef RB_NO_GETENV
 #define getenv(Name) nullptr
 #endif
 
-#ifndef HB_NO_ERRNO
+#ifndef RB_NO_ERRNO
 #include <errno.h>
 #else
-static int HB_UNUSED _hb_errno = 0;
+static int RB_UNUSED _rb_errno = 0;
 #undef errno
-#define errno _hb_errno
+#define errno _rb_errno
 #endif
 
-#if defined(HAVE_ATEXIT) && !defined(HB_USE_ATEXIT)
+#if defined(HAVE_ATEXIT) && !defined(RB_USE_ATEXIT)
 /* atexit() is only safe to be called from shared libraries on certain
  * platforms.  Whitelist.
  * https://bugs.freedesktop.org/show_bug.cgi?id=82246 */
 #if defined(__linux) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 3)
 /* From atexit() manpage, it's safe with glibc 2.2.3 on Linux. */
-#define HB_USE_ATEXIT 1
+#define RB_USE_ATEXIT 1
 #endif
 #elif defined(_MSC_VER) || defined(__MINGW32__)
 /* For MSVC:
@@ -396,36 +396,36 @@ static int HB_UNUSED _hb_errno = 0;
  * https://msdn.microsoft.com/en-us/library/zk17ww08.aspx
  * mingw32 headers say atexit is safe to use in shared libraries.
  */
-#define HB_USE_ATEXIT 1
+#define RB_USE_ATEXIT 1
 #elif defined(__ANDROID__)
 /* This is available since Android NKD r8 or r8b:
  * https://issuetracker.google.com/code/p/android/issues/detail?id=6455
  */
-#define HB_USE_ATEXIT 1
+#define RB_USE_ATEXIT 1
 #elif defined(__APPLE__)
 /* For macOS and related platforms, the atexit man page indicates
  * that it will be invoked when the library is unloaded, not only
  * at application exit.
  */
-#define HB_USE_ATEXIT 1
+#define RB_USE_ATEXIT 1
 #endif
 #endif
-#ifdef HB_NO_ATEXIT
-#undef HB_USE_ATEXIT
+#ifdef RB_NO_ATEXIT
+#undef RB_USE_ATEXIT
 #endif
-#ifndef HB_USE_ATEXIT
-#define HB_USE_ATEXIT 0
+#ifndef RB_USE_ATEXIT
+#define RB_USE_ATEXIT 0
 #endif
 
-#define HB_STMT_START do
-#define HB_STMT_END while (0)
+#define RB_STMT_START do
+#define RB_STMT_END while (0)
 
 /* Static-assert as expression. */
-template <unsigned int cond> class hb_assert_constant_t;
-template <> class hb_assert_constant_t<1>
+template <unsigned int cond> class rb_assert_constant_t;
+template <> class rb_assert_constant_t<1>
 {
 };
-#define ASSERT_STATIC_EXPR_ZERO(_cond) (0 * (unsigned int)sizeof(hb_assert_constant_t<_cond>))
+#define ASSERT_STATIC_EXPR_ZERO(_cond) (0 * (unsigned int)sizeof(rb_assert_constant_t<_cond>))
 
 /* Lets assert int types.  Saves trouble down the road. */
 static_assert((sizeof(int8_t) == 1), "");
@@ -436,15 +436,15 @@ static_assert((sizeof(int32_t) == 4), "");
 static_assert((sizeof(uint32_t) == 4), "");
 static_assert((sizeof(int64_t) == 8), "");
 static_assert((sizeof(uint64_t) == 8), "");
-static_assert((sizeof(hb_codepoint_t) == 4), "");
-static_assert((sizeof(hb_position_t) == 4), "");
-static_assert((sizeof(hb_mask_t) == 4), "");
-static_assert((sizeof(hb_var_int_t) == 4), "");
+static_assert((sizeof(rb_codepoint_t) == 4), "");
+static_assert((sizeof(rb_position_t) == 4), "");
+static_assert((sizeof(rb_mask_t) == 4), "");
+static_assert((sizeof(rb_var_int_t) == 4), "");
 
-#define HB_DELETE_COPY_ASSIGN(TypeName)                                                                                \
+#define RB_DELETE_COPY_ASSIGN(TypeName)                                                                                \
     TypeName(const TypeName &) = delete;                                                                               \
     void operator=(const TypeName &) = delete
-#define HB_DELETE_CREATE_COPY_ASSIGN(TypeName)                                                                         \
+#define RB_DELETE_CREATE_COPY_ASSIGN(TypeName)                                                                         \
     TypeName() = delete;                                                                                               \
     TypeName(const TypeName &) = delete;                                                                               \
     void operator=(const TypeName &) = delete
@@ -462,7 +462,7 @@ static_assert((sizeof(hb_var_int_t) == 4), "");
 #pragma warning(disable : 4200)
 #pragma warning(disable : 4800)
 #endif
-#define HB_MARK_AS_FLAG_T(T)                                                                                           \
+#define RB_MARK_AS_FLAG_T(T)                                                                                           \
     extern "C++" {                                                                                                     \
     static inline T operator|(T l, T r)                                                                                \
     {                                                                                                                  \
@@ -509,26 +509,26 @@ static_assert((sizeof(hb_var_int_t) == 4), "");
 #define FLAG64_UNSAFE(x) ((unsigned)(x) < 64 ? (((uint64_t)1ULL) << (unsigned)(x)) : 0)
 
 /* Size signifying variable-sized array */
-#ifndef HB_VAR_ARRAY
-#define HB_VAR_ARRAY 1
+#ifndef RB_VAR_ARRAY
+#define RB_VAR_ARRAY 1
 #endif
 
-static inline double _hb_roundf(float x)
+static inline double _rb_roundf(float x)
 {
     return x >= 0 ? floor((double)x + .5) : ceil((double)x - .5);
 }
 #ifndef HAVE_ROUNDF
-#define roundf(x) _hb_roundf(x)
+#define roundf(x) _rb_roundf(x)
 #endif
 
 /* Endian swap, used in Windows related backends */
-static inline uint16_t hb_uint16_swap(const uint16_t v)
+static inline uint16_t rb_uint16_swap(const uint16_t v)
 {
     return (v >> 8) | (v << 8);
 }
-static inline uint32_t hb_uint32_swap(const uint32_t v)
+static inline uint32_t rb_uint32_swap(const uint32_t v)
 {
-    return (hb_uint16_swap(v) << 16) | hb_uint16_swap(v >> 16);
+    return (rb_uint16_swap(v) << 16) | rb_uint16_swap(v >> 16);
 }
 
 /*
@@ -627,7 +627,7 @@ private:
  * https://github.com/harfbuzz/harfbuzz/issues/1162
  */
 
-#define HB_SCRIPT_MYANMAR_ZAWGYI ((hb_script_t)HB_TAG('Q', 'a', 'a', 'g'))
+#define RB_SCRIPT_MYANMAR_ZAWGYI ((rb_script_t)RB_TAG('Q', 'a', 'a', 'g'))
 
 /* Headers we include for everyone.  Keep topologically sorted by dependency.
  * They express dependency amongst themselves, but no other file should include
@@ -642,4 +642,4 @@ private:
 #include "hb-vector.hh" // Requires: hb-array hb-null
 #include "hb-object.hh" // Requires: hb-atomic hb-mutex hb-vector
 
-#endif /* HB_HH */
+#endif /* RB_HH */

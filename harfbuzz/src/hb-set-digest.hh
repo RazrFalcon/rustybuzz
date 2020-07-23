@@ -24,8 +24,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_SET_DIGEST_HH
-#define HB_SET_DIGEST_HH
+#ifndef RB_SET_DIGEST_HH
+#define RB_SET_DIGEST_HH
 
 #include "hb.hh"
 
@@ -45,7 +45,7 @@
  * an attractive trade-off.
  */
 
-template <typename mask_t, unsigned int shift> struct hb_set_digest_lowest_bits_t
+template <typename mask_t, unsigned int shift> struct rb_set_digest_lowest_bits_t
 {
     static constexpr unsigned mask_bytes = sizeof(mask_t);
     static constexpr unsigned mask_bits = sizeof(mask_t) * 8;
@@ -53,20 +53,20 @@ template <typename mask_t, unsigned int shift> struct hb_set_digest_lowest_bits_
                                          (mask_bytes >= 4 ? 1 : 0) + (mask_bytes >= 8 ? 1 : 0) +
                                          (mask_bytes >= 16 ? 1 : 0) + 0;
 
-    static_assert((shift < sizeof(hb_codepoint_t) * 8), "");
-    static_assert((shift + num_bits <= sizeof(hb_codepoint_t) * 8), "");
+    static_assert((shift < sizeof(rb_codepoint_t) * 8), "");
+    static_assert((shift + num_bits <= sizeof(rb_codepoint_t) * 8), "");
 
     void init()
     {
         mask = 0;
     }
 
-    void add(hb_codepoint_t g)
+    void add(rb_codepoint_t g)
     {
         mask |= mask_for(g);
     }
 
-    bool add_range(hb_codepoint_t a, hb_codepoint_t b)
+    bool add_range(rb_codepoint_t a, rb_codepoint_t b)
     {
         if ((b >> shift) - (a >> shift) >= mask_bits - 1)
             mask = (mask_t)-1;
@@ -94,20 +94,20 @@ template <typename mask_t, unsigned int shift> struct hb_set_digest_lowest_bits_
         return true;
     }
 
-    bool may_have(hb_codepoint_t g) const
+    bool may_have(rb_codepoint_t g) const
     {
         return !!(mask & mask_for(g));
     }
 
 private:
-    static mask_t mask_for(hb_codepoint_t g)
+    static mask_t mask_for(rb_codepoint_t g)
     {
         return ((mask_t)1) << ((g >> shift) & (mask_bits - 1));
     }
     mask_t mask;
 };
 
-template <typename head_t, typename tail_t> struct hb_set_digest_combiner_t
+template <typename head_t, typename tail_t> struct rb_set_digest_combiner_t
 {
     void init()
     {
@@ -115,13 +115,13 @@ template <typename head_t, typename tail_t> struct hb_set_digest_combiner_t
         tail.init();
     }
 
-    void add(hb_codepoint_t g)
+    void add(rb_codepoint_t g)
     {
         head.add(g);
         tail.add(g);
     }
 
-    bool add_range(hb_codepoint_t a, hb_codepoint_t b)
+    bool add_range(rb_codepoint_t a, rb_codepoint_t b)
     {
         head.add_range(a, b);
         tail.add_range(a, b);
@@ -139,7 +139,7 @@ template <typename head_t, typename tail_t> struct hb_set_digest_combiner_t
         return true;
     }
 
-    bool may_have(hb_codepoint_t g) const
+    bool may_have(rb_codepoint_t g) const
     {
         return head.may_have(g) && tail.may_have(g);
     }
@@ -150,15 +150,15 @@ private:
 };
 
 /*
- * hb_set_digest_t
+ * rb_set_digest_t
  *
  * This is a combination of digests that performs "best".
  * There is not much science to this: it's a result of intuition
  * and testing.
  */
-typedef hb_set_digest_combiner_t<hb_set_digest_lowest_bits_t<unsigned long, 4>,
-                                 hb_set_digest_combiner_t<hb_set_digest_lowest_bits_t<unsigned long, 0>,
-                                                          hb_set_digest_lowest_bits_t<unsigned long, 9>>>
-    hb_set_digest_t;
+typedef rb_set_digest_combiner_t<rb_set_digest_lowest_bits_t<unsigned long, 4>,
+                                 rb_set_digest_combiner_t<rb_set_digest_lowest_bits_t<unsigned long, 0>,
+                                                          rb_set_digest_lowest_bits_t<unsigned long, 9>>>
+    rb_set_digest_t;
 
-#endif /* HB_SET_DIGEST_HH */
+#endif /* RB_SET_DIGEST_HH */

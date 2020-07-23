@@ -24,33 +24,33 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_MAP_HH
-#define HB_MAP_HH
+#ifndef RB_MAP_HH
+#define RB_MAP_HH
 
 #include "hb.hh"
 
 /*
- * hb_hashmap_t
+ * rb_hashmap_t
  */
 
 template <typename K,
           typename V,
-          K kINVALID = hb_is_pointer(K) ? 0 : hb_is_signed(K) ? hb_int_min(K) : (K)-1,
-          V vINVALID = hb_is_pointer(V) ? 0 : hb_is_signed(V) ? hb_int_min(V) : (V)-1>
-struct hb_hashmap_t
+          K kINVALID = rb_is_pointer(K) ? 0 : rb_is_signed(K) ? rb_int_min(K) : (K)-1,
+          V vINVALID = rb_is_pointer(V) ? 0 : rb_is_signed(V) ? rb_int_min(V) : (V)-1>
+struct rb_hashmap_t
 {
-    HB_DELETE_COPY_ASSIGN(hb_hashmap_t);
-    hb_hashmap_t()
+    RB_DELETE_COPY_ASSIGN(rb_hashmap_t);
+    rb_hashmap_t()
     {
         init();
     }
-    ~hb_hashmap_t()
+    ~rb_hashmap_t()
     {
         fini();
     }
 
-    static_assert(hb_is_integral(K) || hb_is_pointer(K), "");
-    static_assert(hb_is_integral(V) || hb_is_pointer(V), "");
+    static_assert(rb_is_integral(K) || rb_is_pointer(K), "");
+    static_assert(rb_is_integral(V) || rb_is_pointer(V), "");
 
     struct item_t
     {
@@ -67,7 +67,7 @@ struct hb_hashmap_t
 
         bool operator==(K o)
         {
-            return hb_deref(key) == hb_deref(o);
+            return rb_deref(key) == rb_deref(o);
         }
         bool operator==(const item_t &o)
         {
@@ -85,13 +85,13 @@ struct hb_hashmap_t
         {
             return key != kINVALID && value != vINVALID;
         }
-        hb_pair_t<K, V> get_pair() const
+        rb_pair_t<K, V> get_pair() const
         {
-            return hb_pair_t<K, V>(key, value);
+            return rb_pair_t<K, V>(key, value);
         }
     };
 
-    hb_object_header_t header;
+    rb_object_header_t header;
     bool successful;         /* Allocations successful */
     unsigned int population; /* Not including tombstones. */
     unsigned int occupancy;  /* Including tombstones. */
@@ -109,7 +109,7 @@ struct hb_hashmap_t
     }
     void init()
     {
-        hb_object_init(this);
+        rb_object_init(this);
         init_shallow();
     }
     void fini_shallow()
@@ -120,13 +120,13 @@ struct hb_hashmap_t
     }
     void fini()
     {
-        hb_object_fini(this);
+        rb_object_fini(this);
         fini_shallow();
     }
 
     void reset()
     {
-        if (unlikely(hb_object_is_immutable(this)))
+        if (unlikely(rb_object_is_immutable(this)))
             return;
         successful = true;
         clear();
@@ -142,14 +142,14 @@ struct hb_hashmap_t
         if (unlikely(!successful))
             return false;
 
-        unsigned int power = hb_bit_storage(population * 2 + 8);
+        unsigned int power = rb_bit_storage(population * 2 + 8);
         unsigned int new_size = 1u << power;
         item_t *new_items = (item_t *)malloc((size_t)new_size * sizeof(item_t));
         if (unlikely(!new_items)) {
             successful = false;
             return false;
         }
-        for (auto &_ : hb_iter(new_items, new_size))
+        for (auto &_ : rb_iter(new_items, new_size))
             _.clear();
 
         unsigned int old_size = mask + 1;
@@ -174,7 +174,7 @@ struct hb_hashmap_t
 
     void set(K key, V value)
     {
-        set_with_hash(key, hb_hash(key), value);
+        set_with_hash(key, rb_hash(key), value);
     }
 
     V get(K key) const
@@ -212,10 +212,10 @@ struct hb_hashmap_t
 
     void clear()
     {
-        if (unlikely(hb_object_is_immutable(this)))
+        if (unlikely(rb_object_is_immutable(this)))
             return;
         if (items)
-            for (auto &_ : hb_iter(items, mask + 1))
+            for (auto &_ : rb_iter(items, mask + 1))
                 _.clear();
 
         population = occupancy = 0;
@@ -234,16 +234,16 @@ struct hb_hashmap_t
     /*
      * Iterator
      */
-    auto iter() const HB_AUTO_RETURN(+hb_array(items, mask ? mask + 1 : 0) | hb_filter(&item_t::is_real) |
-                                     hb_map(&item_t::get_pair)) auto keys() const
-        HB_AUTO_RETURN(+hb_array(items, mask ? mask + 1 : 0) | hb_filter(&item_t::is_real) | hb_map(&item_t::key) |
-                       hb_map(hb_ridentity)) auto values() const
-        HB_AUTO_RETURN(+hb_array(items, mask ? mask + 1 : 0) | hb_filter(&item_t::is_real) | hb_map(&item_t::value) |
-                       hb_map(hb_ridentity))
+    auto iter() const RB_AUTO_RETURN(+rb_array(items, mask ? mask + 1 : 0) | rb_filter(&item_t::is_real) |
+                                     rb_map(&item_t::get_pair)) auto keys() const
+        RB_AUTO_RETURN(+rb_array(items, mask ? mask + 1 : 0) | rb_filter(&item_t::is_real) | rb_map(&item_t::key) |
+                       rb_map(rb_ridentity)) auto values() const
+        RB_AUTO_RETURN(+rb_array(items, mask ? mask + 1 : 0) | rb_filter(&item_t::is_real) | rb_map(&item_t::value) |
+                       rb_map(rb_ridentity))
 
         /* Sink interface. */
-        hb_hashmap_t &
-        operator<<(const hb_pair_t<K, V> &v)
+        rb_hashmap_t &
+        operator<<(const rb_pair_t<K, V> &v)
     {
         set(v.first, v.second);
         return *this;
@@ -280,7 +280,7 @@ protected:
 
     unsigned int bucket_for(K key) const
     {
-        return bucket_for_hash(key, hb_hash(key));
+        return bucket_for_hash(key, rb_hash(key));
     }
 
     unsigned int bucket_for_hash(K key, uint32_t hash) const
@@ -323,11 +323,11 @@ protected:
 };
 
 /*
- * hb_map_t
+ * rb_map_t
  */
 
-struct hb_map_t : hb_hashmap_t<hb_codepoint_t, hb_codepoint_t, HB_MAP_VALUE_INVALID, HB_MAP_VALUE_INVALID>
+struct rb_map_t : rb_hashmap_t<rb_codepoint_t, rb_codepoint_t, RB_MAP_VALUE_INVALID, RB_MAP_VALUE_INVALID>
 {
 };
 
-#endif /* HB_MAP_HH */
+#endif /* RB_MAP_HH */

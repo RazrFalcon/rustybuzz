@@ -32,7 +32,7 @@
 #include "hb-ot-face.hh"
 
 extern "C" {
-HB_EXTERN hb_bool_t hb_ot_metrics_get_position_common(hb_font_t *font, hb_tag_t tag, int *position);
+RB_EXTERN rb_bool_t rb_ot_metrics_get_position_common(rb_font_t *font, rb_tag_t tag, int *position);
 }
 
 /**
@@ -41,81 +41,81 @@ HB_EXTERN hb_bool_t hb_ot_metrics_get_position_common(hb_font_t *font, hb_tag_t 
  * @short_description: OpenType font implementation
  * @include: hb-ot.h
  *
- * Functions for using OpenType fonts with hb_shape().  Note that fonts returned
- * by hb_font_create() default to using these functions, so most clients would
+ * Functions for using OpenType fonts with rb_shape().  Note that fonts returned
+ * by rb_font_create() default to using these functions, so most clients would
  * never need to call these functions directly.
  **/
 
-unsigned int hb_ot_get_nominal_glyphs(hb_font_t *font,
+unsigned int rb_ot_get_nominal_glyphs(rb_font_t *font,
                                       unsigned int count,
-                                      const hb_codepoint_t *first_unicode,
+                                      const rb_codepoint_t *first_unicode,
                                       unsigned int unicode_stride,
-                                      hb_codepoint_t *first_glyph,
+                                      rb_codepoint_t *first_glyph,
                                       unsigned int glyph_stride)
 {
     unsigned int done;
-    for (done = 0; done < count && hb_ot_get_nominal_glyph(font, *first_unicode, first_glyph); done++) {
-        first_unicode = &StructAtOffsetUnaligned<hb_codepoint_t>(first_unicode, unicode_stride);
-        first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
+    for (done = 0; done < count && rb_ot_get_nominal_glyph(font, *first_unicode, first_glyph); done++) {
+        first_unicode = &StructAtOffsetUnaligned<rb_codepoint_t>(first_unicode, unicode_stride);
+        first_glyph = &StructAtOffsetUnaligned<rb_codepoint_t>(first_glyph, glyph_stride);
     }
     return done;
 }
 
-void hb_ot_get_glyph_h_advances(hb_font_t *font,
+void rb_ot_get_glyph_h_advances(rb_font_t *font,
                                 unsigned count,
-                                const hb_codepoint_t *first_glyph,
+                                const rb_codepoint_t *first_glyph,
                                 unsigned glyph_stride,
-                                hb_position_t *first_advance,
+                                rb_position_t *first_advance,
                                 unsigned advance_stride)
 {
     for (unsigned int i = 0; i < count; i++) {
-        *first_advance = hb_font_get_advance(font, *first_glyph, 0);
-        first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
-        first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
+        *first_advance = rb_font_get_advance(font, *first_glyph, 0);
+        first_glyph = &StructAtOffsetUnaligned<rb_codepoint_t>(first_glyph, glyph_stride);
+        first_advance = &StructAtOffsetUnaligned<rb_position_t>(first_advance, advance_stride);
     }
 }
 
-void hb_ot_get_glyph_v_advances(hb_font_t *font,
+void rb_ot_get_glyph_v_advances(rb_font_t *font,
                                 unsigned count,
-                                const hb_codepoint_t *first_glyph,
+                                const rb_codepoint_t *first_glyph,
                                 unsigned glyph_stride,
-                                hb_position_t *first_advance,
+                                rb_position_t *first_advance,
                                 unsigned advance_stride)
 {
     for (unsigned int i = 0; i < count; i++) {
-        *first_advance = -hb_font_get_advance(font, *first_glyph, 1);
-        first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t>(first_glyph, glyph_stride);
-        first_advance = &StructAtOffsetUnaligned<hb_position_t>(first_advance, advance_stride);
+        *first_advance = -rb_font_get_advance(font, *first_glyph, 1);
+        first_glyph = &StructAtOffsetUnaligned<rb_codepoint_t>(first_glyph, glyph_stride);
+        first_advance = &StructAtOffsetUnaligned<rb_position_t>(first_advance, advance_stride);
     }
 }
 
-hb_bool_t hb_ot_get_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y)
+rb_bool_t rb_ot_get_glyph_v_origin(rb_font_t *font, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y)
 {
-    *x = hb_font_get_glyph_h_advance(font, glyph) / 2;
+    *x = rb_font_get_glyph_h_advance(font, glyph) / 2;
 
-    if (hb_font_has_vorg_data(font)) {
-        *y = hb_font_get_y_origin(font, glyph);
+    if (rb_font_has_vorg_data(font)) {
+        *y = rb_font_get_y_origin(font, glyph);
         return true;
     }
 
-    hb_glyph_extents_t extents = {0};
-    hb_ot_get_glyph_extents(font, glyph, &extents);
+    rb_glyph_extents_t extents = {0};
+    rb_ot_get_glyph_extents(font, glyph, &extents);
 
-    hb_position_t tsb = hb_font_get_side_bearing(font, glyph, true);
+    rb_position_t tsb = rb_font_get_side_bearing(font, glyph, true);
     *y = extents.y_bearing + tsb;
     return true;
 }
 
-hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t *metrics)
+rb_bool_t rb_ot_get_font_h_extents(rb_font_t *font, rb_font_extents_t *metrics)
 {
-    return hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER, &metrics->ascender) &&
-           hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER, &metrics->descender) &&
-           hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP, &metrics->line_gap);
+    return rb_ot_metrics_get_position_common(font, RB_OT_METRICS_TAG_HORIZONTAL_ASCENDER, &metrics->ascender) &&
+           rb_ot_metrics_get_position_common(font, RB_OT_METRICS_TAG_HORIZONTAL_DESCENDER, &metrics->descender) &&
+           rb_ot_metrics_get_position_common(font, RB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP, &metrics->line_gap);
 }
 
-hb_bool_t hb_ot_get_font_v_extents(hb_font_t *font, hb_font_extents_t *metrics)
+rb_bool_t rb_ot_get_font_v_extents(rb_font_t *font, rb_font_extents_t *metrics)
 {
-    return hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_ASCENDER, &metrics->ascender) &&
-           hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_DESCENDER, &metrics->descender) &&
-           hb_ot_metrics_get_position_common(font, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
+    return rb_ot_metrics_get_position_common(font, RB_OT_METRICS_TAG_VERTICAL_ASCENDER, &metrics->ascender) &&
+           rb_ot_metrics_get_position_common(font, RB_OT_METRICS_TAG_VERTICAL_DESCENDER, &metrics->descender) &&
+           rb_ot_metrics_get_position_common(font, RB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
 }

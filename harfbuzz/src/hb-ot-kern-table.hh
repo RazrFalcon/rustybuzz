@@ -24,8 +24,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_KERN_TABLE_HH
-#define HB_OT_KERN_TABLE_HH
+#ifndef RB_OT_KERN_TABLE_HH
+#define RB_OT_KERN_TABLE_HH
 
 #include "hb-aat-layout-kerx-table.hh"
 
@@ -34,20 +34,20 @@
  * https://docs.microsoft.com/en-us/typography/opentype/spec/kern
  * https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6kern.html
  */
-#define HB_OT_TAG_kern HB_TAG('k', 'e', 'r', 'n')
+#define RB_OT_TAG_kern RB_TAG('k', 'e', 'r', 'n')
 
 namespace OT {
 
 template <typename KernSubTableHeader> struct KernSubTableFormat3
 {
-    int get_kerning(hb_codepoint_t left, hb_codepoint_t right) const
+    int get_kerning(rb_codepoint_t left, rb_codepoint_t right) const
     {
-        hb_array_t<const FWORD> kernValue = kernValueZ.as_array(kernValueCount);
-        hb_array_t<const HBUINT8> leftClass =
+        rb_array_t<const FWORD> kernValue = kernValueZ.as_array(kernValueCount);
+        rb_array_t<const HBUINT8> leftClass =
             StructAfter<const UnsizedArrayOf<HBUINT8>>(kernValue).as_array(glyphCount);
-        hb_array_t<const HBUINT8> rightClass =
+        rb_array_t<const HBUINT8> rightClass =
             StructAfter<const UnsizedArrayOf<HBUINT8>>(leftClass).as_array(glyphCount);
-        hb_array_t<const HBUINT8> kernIndex =
+        rb_array_t<const HBUINT8> kernIndex =
             StructAfter<const UnsizedArrayOf<HBUINT8>>(rightClass).as_array(leftClassCount * rightClassCount);
 
         unsigned int leftC = leftClass[left];
@@ -58,7 +58,7 @@ template <typename KernSubTableHeader> struct KernSubTableFormat3
         return kernValue[kernIndex[i]];
     }
 
-    bool apply(AAT::hb_aat_apply_context_t *c) const
+    bool apply(AAT::rb_aat_apply_context_t *c) const
     {
         TRACE_APPLY(this);
 
@@ -68,13 +68,13 @@ template <typename KernSubTableHeader> struct KernSubTableFormat3
         if (header.coverage & header.Backwards)
             return false;
 
-        hb_kern_machine_t<KernSubTableFormat3> machine(*this, header.coverage & header.CrossStream);
+        rb_kern_machine_t<KernSubTableFormat3> machine(*this, header.coverage & header.CrossStream);
         machine.kern(c->font, c->buffer, c->plan->kern_mask);
 
         return_trace(true);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && c->check_range(kernValueZ,
@@ -117,10 +117,10 @@ template <typename KernSubTableHeader> struct KernSubTable
         return u.header.format;
     }
 
-    int get_kerning(hb_codepoint_t left, hb_codepoint_t right) const
+    int get_kerning(rb_codepoint_t left, rb_codepoint_t right) const
     {
         switch (get_type()) {
-        /* This method hooks up to hb_font_t's get_h_kerning.  Only support Format0. */
+        /* This method hooks up to rb_font_t's get_h_kerning.  Only support Format0. */
         case 0:
             return u.format0.get_kerning(left, right);
         default:
@@ -136,17 +136,17 @@ template <typename KernSubTableHeader> struct KernSubTable
         case 0:
             return_trace(c->dispatch(u.format0));
         case 1:
-            return_trace(u.header.apple ? c->dispatch(u.format1, hb_forward<Ts>(ds)...) : c->default_return_value());
+            return_trace(u.header.apple ? c->dispatch(u.format1, rb_forward<Ts>(ds)...) : c->default_return_value());
         case 2:
             return_trace(c->dispatch(u.format2));
         case 3:
-            return_trace(u.header.apple ? c->dispatch(u.format3, hb_forward<Ts>(ds)...) : c->default_return_value());
+            return_trace(u.header.apple ? c->dispatch(u.format3, rb_forward<Ts>(ds)...) : c->default_return_value());
         default:
             return_trace(c->default_return_value());
         }
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!u.header.sanitize(c) || u.header.length < u.header.min_size ||
@@ -194,7 +194,7 @@ struct KernOTSubTableHeader
         Variation = 0x00u,
     };
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -213,7 +213,7 @@ struct KernOT : AAT::KerxTable<KernOT>
 {
     friend struct AAT::KerxTable<KernOT>;
 
-    static constexpr hb_tag_t tableTag = HB_OT_TAG_kern;
+    static constexpr rb_tag_t tableTag = RB_OT_TAG_kern;
     static constexpr unsigned minVersion = 0u;
 
     typedef KernOTSubTableHeader SubTableHeader;
@@ -251,7 +251,7 @@ struct KernAATSubTableHeader
         Backwards = 0x00u,
     };
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -272,7 +272,7 @@ struct KernAAT : AAT::KerxTable<KernAAT>
 {
     friend struct AAT::KerxTable<KernAAT>;
 
-    static constexpr hb_tag_t tableTag = HB_OT_TAG_kern;
+    static constexpr rb_tag_t tableTag = RB_OT_TAG_kern;
     static constexpr unsigned minVersion = 0x00010000u;
 
     typedef KernAATSubTableHeader SubTableHeader;
@@ -289,7 +289,7 @@ public:
 
 struct kern
 {
-    static constexpr hb_tag_t tableTag = HB_OT_TAG_kern;
+    static constexpr rb_tag_t tableTag = RB_OT_TAG_kern;
 
     bool has_data() const
     {
@@ -324,7 +324,7 @@ struct kern
         }
     }
 
-    int get_h_kerning(hb_codepoint_t left, hb_codepoint_t right) const
+    int get_h_kerning(rb_codepoint_t left, rb_codepoint_t right) const
     {
         switch (get_type()) {
         case 0:
@@ -336,7 +336,7 @@ struct kern
         }
     }
 
-    bool apply(AAT::hb_aat_apply_context_t *c) const
+    bool apply(AAT::rb_aat_apply_context_t *c) const
     {
         return dispatch(c);
     }
@@ -347,15 +347,15 @@ struct kern
         TRACE_DISPATCH(this, subtable_type);
         switch (subtable_type) {
         case 0:
-            return_trace(c->dispatch(u.ot, hb_forward<Ts>(ds)...));
+            return_trace(c->dispatch(u.ot, rb_forward<Ts>(ds)...));
         case 1:
-            return_trace(c->dispatch(u.aat, hb_forward<Ts>(ds)...));
+            return_trace(c->dispatch(u.aat, rb_forward<Ts>(ds)...));
         default:
             return_trace(c->default_return_value());
         }
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (!u.version32.sanitize(c))
@@ -377,4 +377,4 @@ public:
 
 } /* namespace OT */
 
-#endif /* HB_OT_KERN_TABLE_HH */
+#endif /* RB_OT_KERN_TABLE_HH */

@@ -22,17 +22,17 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_AAT_H
-#define HB_AAT_H
-#define HB_AAT_H_IN
+#ifndef RB_AAT_H
+#define RB_AAT_H
+#define RB_AAT_H_IN
 
 #include "hb.h"
 
 #include "hb-aat-layout.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
-HB_END_DECLS
+RB_END_DECLS
 
-#undef HB_AAT_H_IN
-#endif /* HB_AAT_H */
+#undef RB_AAT_H_IN
+#endif /* RB_AAT_H */

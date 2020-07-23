@@ -23,23 +23,23 @@ pub enum Direction {
 
 impl Direction {
     #[inline]
-    pub(crate) fn to_raw(self) -> ffi::hb_direction_t {
+    pub(crate) fn to_raw(self) -> ffi::rb_direction_t {
         match self {
-            Direction::Invalid => ffi::HB_DIRECTION_INVALID,
-            Direction::LeftToRight => ffi::HB_DIRECTION_LTR,
-            Direction::RightToLeft => ffi::HB_DIRECTION_RTL,
-            Direction::TopToBottom => ffi::HB_DIRECTION_TTB,
-            Direction::BottomToTop => ffi::HB_DIRECTION_BTT,
+            Direction::Invalid => ffi::RB_DIRECTION_INVALID,
+            Direction::LeftToRight => ffi::RB_DIRECTION_LTR,
+            Direction::RightToLeft => ffi::RB_DIRECTION_RTL,
+            Direction::TopToBottom => ffi::RB_DIRECTION_TTB,
+            Direction::BottomToTop => ffi::RB_DIRECTION_BTT,
         }
     }
 
     #[inline]
-    pub(crate) fn from_raw(dir: ffi::hb_direction_t) -> Self {
+    pub(crate) fn from_raw(dir: ffi::rb_direction_t) -> Self {
         match dir {
-            ffi::HB_DIRECTION_LTR => Direction::LeftToRight,
-            ffi::HB_DIRECTION_RTL => Direction::RightToLeft,
-            ffi::HB_DIRECTION_TTB => Direction::TopToBottom,
-            ffi::HB_DIRECTION_BTT => Direction::BottomToTop,
+            ffi::RB_DIRECTION_LTR => Direction::LeftToRight,
+            ffi::RB_DIRECTION_RTL => Direction::RightToLeft,
+            ffi::RB_DIRECTION_TTB => Direction::TopToBottom,
+            ffi::RB_DIRECTION_BTT => Direction::BottomToTop,
             _ => Direction::Invalid,
         }
     }
@@ -152,7 +152,7 @@ impl std::str::FromStr for Direction {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_script_get_horizontal_direction(script: ffi::hb_script_t) -> ffi::hb_direction_t {
+pub extern "C" fn rb_script_get_horizontal_direction(script: ffi::rb_script_t) -> ffi::rb_direction_t {
     Direction::from_script(Script(Tag(script))).unwrap_or_default().to_raw()
 }
 
@@ -193,7 +193,7 @@ pub struct Script(pub(crate) Tag);
 
 impl Script {
     #[inline]
-    pub(crate) const fn from_raw(script: ffi::hb_script_t) -> Self {
+    pub(crate) const fn from_raw(script: ffi::rb_script_t) -> Self {
         Script(Tag(script))
     }
 

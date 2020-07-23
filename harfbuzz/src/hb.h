@@ -24,9 +24,9 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H
-#define HB_H
-#define HB_H_IN
+#ifndef RB_H
+#define RB_H
+#define RB_H_IN
 
 #include "hb-blob.h"
 #include "hb-buffer.h"
@@ -39,8 +39,8 @@
 #include "hb-shape-plan.h"
 #include "hb-unicode.h"
 
-HB_BEGIN_DECLS
-HB_END_DECLS
+RB_BEGIN_DECLS
+RB_END_DECLS
 
-#undef HB_H_IN
-#endif /* HB_H */
+#undef RB_H_IN
+#endif /* RB_H */

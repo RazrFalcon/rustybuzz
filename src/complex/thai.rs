@@ -361,10 +361,10 @@ fn preprocess_text(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_preprocess_text_thai(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_preprocess_text_thai(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);

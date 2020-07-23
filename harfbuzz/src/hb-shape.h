@@ -26,24 +26,24 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#ifndef RB_H_IN
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_SHAPE_H
-#define HB_SHAPE_H
+#ifndef RB_SHAPE_H
+#define RB_SHAPE_H
 
 #include "hb-common.h"
 #include "hb-buffer.h"
 #include "hb-font.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
-HB_EXTERN hb_bool_t hb_shape(const hb_font_t *font,
-                             hb_buffer_t *buffer,
-                             const hb_feature_t *features,
+RB_EXTERN rb_bool_t rb_shape(const rb_font_t *font,
+                             rb_buffer_t *buffer,
+                             const rb_feature_t *features,
                              unsigned int num_features);
 
-HB_END_DECLS
+RB_END_DECLS
 
-#endif /* HB_SHAPE_H */
+#endif /* RB_SHAPE_H */

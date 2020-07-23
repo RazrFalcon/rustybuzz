@@ -26,8 +26,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OPEN_TYPE_HH
-#define HB_OPEN_TYPE_HH
+#ifndef RB_OPEN_TYPE_HH
+#define RB_OPEN_TYPE_HH
 
 #include "hb.hh"
 #include "hb-blob.hh"
@@ -52,7 +52,7 @@ namespace OT {
 template <typename Type, unsigned int Size> struct IntType
 {
     typedef Type type;
-    typedef hb_conditional<hb_is_signed(Type), signed, unsigned> wide_type;
+    typedef rb_conditional<rb_is_signed(Type), signed, unsigned> wide_type;
 
     IntType &operator=(wide_type i)
     {
@@ -105,11 +105,11 @@ template <typename Type, unsigned int Size> struct IntType
         return c;
     }
 
-    HB_INTERNAL static int cmp(const IntType *a, const IntType *b)
+    RB_INTERNAL static int cmp(const IntType *a, const IntType *b)
     {
         return b->cmp(*a);
     }
-    HB_INTERNAL static int cmp(const void *a, const void *b)
+    RB_INTERNAL static int cmp(const void *a, const void *b)
     {
         IntType *pa = (IntType *)a;
         IntType *pb = (IntType *)b;
@@ -124,7 +124,7 @@ template <typename Type, unsigned int Size> struct IntType
         else
             return a < b ? -1 : a == b ? 0 : +1;
     }
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(likely(c->check_struct(this)));
@@ -204,7 +204,7 @@ public:
  * 1904. The value is represented as a signed 64-bit integer. */
 struct LONGDATETIME
 {
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(likely(c->check_struct(this)));
@@ -222,7 +222,7 @@ public:
  * system, feature, or baseline */
 struct Tag : HBUINT32
 {
-    Tag &operator=(hb_tag_t i)
+    Tag &operator=(rb_tag_t i)
     {
         HBUINT32::operator=(i);
         return *this;
@@ -330,7 +330,7 @@ template <typename FixedType = HBUINT16> struct FixedVersion
         return (major << (sizeof(FixedType) * 8)) + minor;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -348,7 +348,7 @@ public:
  * Use: (base+offset)
  */
 
-template <typename Type, bool has_null> struct _hb_has_null
+template <typename Type, bool has_null> struct _rb_has_null
 {
     static const Type *get_null()
     {
@@ -359,7 +359,7 @@ template <typename Type, bool has_null> struct _hb_has_null
         return nullptr;
     }
 };
-template <typename Type> struct _hb_has_null<Type, true>
+template <typename Type> struct _rb_has_null<Type, true>
 {
     static const Type *get_null()
     {
@@ -374,7 +374,7 @@ template <typename Type> struct _hb_has_null<Type, true>
 template <typename Type, typename OffsetType = HBUINT16, bool has_null = true>
 struct OffsetTo : Offset<OffsetType, has_null>
 {
-    HB_DELETE_COPY_ASSIGN(OffsetTo);
+    RB_DELETE_COPY_ASSIGN(OffsetTo);
     OffsetTo() = default;
 
     OffsetTo &operator=(typename OffsetType::type i)
@@ -386,38 +386,38 @@ struct OffsetTo : Offset<OffsetType, has_null>
     const Type &operator()(const void *base) const
     {
         if (unlikely(this->is_null()))
-            return *_hb_has_null<Type, has_null>::get_null();
+            return *_rb_has_null<Type, has_null>::get_null();
         return StructAtOffset<const Type>(base, *this);
     }
     Type &operator()(void *base) const
     {
         if (unlikely(this->is_null()))
-            return *_hb_has_null<Type, has_null>::get_crap();
+            return *_rb_has_null<Type, has_null>::get_crap();
         return StructAtOffset<Type>(base, *this);
     }
 
-    template <typename Base, hb_enable_if(hb_is_convertible(const Base, const void *))>
+    template <typename Base, rb_enable_if(rb_is_convertible(const Base, const void *))>
     friend const Type &operator+(const Base &base, const OffsetTo &offset)
     {
         return offset((const void *)base);
     }
-    template <typename Base, hb_enable_if(hb_is_convertible(const Base, const void *))>
+    template <typename Base, rb_enable_if(rb_is_convertible(const Base, const void *))>
     friend const Type &operator+(const OffsetTo &offset, const Base &base)
     {
         return offset((const void *)base);
     }
-    template <typename Base, hb_enable_if(hb_is_convertible(Base, void *))>
+    template <typename Base, rb_enable_if(rb_is_convertible(Base, void *))>
     friend Type &operator+(Base &&base, OffsetTo &offset)
     {
         return offset((void *)base);
     }
-    template <typename Base, hb_enable_if(hb_is_convertible(Base, void *))>
+    template <typename Base, rb_enable_if(rb_is_convertible(Base, void *))>
     friend Type &operator+(OffsetTo &offset, Base &&base)
     {
         return offset((void *)base);
     }
 
-    bool sanitize_shallow(hb_sanitize_context_t *c, const void *base) const
+    bool sanitize_shallow(rb_sanitize_context_t *c, const void *base) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!c->check_struct(this)))
@@ -429,16 +429,16 @@ struct OffsetTo : Offset<OffsetType, has_null>
         return_trace(true);
     }
 
-    template <typename... Ts> bool sanitize(hb_sanitize_context_t *c, const void *base, Ts &&... ds) const
+    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, const void *base, Ts &&... ds) const
     {
         TRACE_SANITIZE(this);
         return_trace(
             sanitize_shallow(c, base) &&
-            (this->is_null() || c->dispatch(StructAtOffset<Type>(base, *this), hb_forward<Ts>(ds)...) || neuter(c)));
+            (this->is_null() || c->dispatch(StructAtOffset<Type>(base, *this), rb_forward<Ts>(ds)...) || neuter(c)));
     }
 
     /* Set the offset to Null */
-    bool neuter(hb_sanitize_context_t *c) const
+    bool neuter(rb_sanitize_context_t *c) const
     {
         if (!has_null)
             return false;
@@ -458,9 +458,9 @@ template <typename Type> using LNNOffsetTo = LOffsetTo<Type, false>;
 template <typename Type> struct UnsizedArrayOf
 {
     typedef Type item_t;
-    static constexpr unsigned item_size = hb_static_size(Type);
+    static constexpr unsigned item_size = rb_static_size(Type);
 
-    HB_DELETE_CREATE_COPY_ASSIGN(UnsizedArrayOf);
+    RB_DELETE_CREATE_COPY_ASSIGN(UnsizedArrayOf);
 
     const Type &operator[](int i_) const
     {
@@ -492,19 +492,19 @@ template <typename Type> struct UnsizedArrayOf
     {
         return arrayZ;
     }
-    hb_array_t<Type> as_array(unsigned int len)
+    rb_array_t<Type> as_array(unsigned int len)
     {
-        return hb_array(arrayZ, len);
+        return rb_array(arrayZ, len);
     }
-    hb_array_t<const Type> as_array(unsigned int len) const
+    rb_array_t<const Type> as_array(unsigned int len) const
     {
-        return hb_array(arrayZ, len);
+        return rb_array(arrayZ, len);
     }
-    operator hb_array_t<Type>()
+    operator rb_array_t<Type>()
     {
         return as_array();
     }
-    operator hb_array_t<const Type>() const
+    operator rb_array_t<const Type>() const
     {
         return as_array();
     }
@@ -523,27 +523,27 @@ template <typename Type> struct UnsizedArrayOf
         as_array(len).qsort(start, end);
     }
 
-    template <typename... Ts> bool sanitize(hb_sanitize_context_t *c, unsigned int count, Ts &&... ds) const
+    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, unsigned int count, Ts &&... ds) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c, count)))
             return_trace(false);
-        if (!sizeof...(Ts) && hb_is_trivially_copyable(Type))
+        if (!sizeof...(Ts) && rb_is_trivially_copyable(Type))
             return_trace(true);
         for (unsigned int i = 0; i < count; i++)
-            if (unlikely(!c->dispatch(arrayZ[i], hb_forward<Ts>(ds)...)))
+            if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
                 return_trace(false);
         return_trace(true);
     }
 
-    bool sanitize_shallow(hb_sanitize_context_t *c, unsigned int count) const
+    bool sanitize_shallow(rb_sanitize_context_t *c, unsigned int count) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_array(arrayZ, count));
     }
 
 public:
-    Type arrayZ[HB_VAR_ARRAY];
+    Type arrayZ[RB_VAR_ARRAY];
 
 public:
     DEFINE_SIZE_UNBOUNDED(0);
@@ -574,30 +574,30 @@ struct UnsizedOffsetListOf : UnsizedOffsetArrayOf<Type, OffsetType, has_null>
         return this + *p;
     }
 
-    template <typename... Ts> bool sanitize(hb_sanitize_context_t *c, unsigned int count, Ts &&... ds) const
+    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, unsigned int count, Ts &&... ds) const
     {
         TRACE_SANITIZE(this);
         return_trace(
-            (UnsizedOffsetArrayOf<Type, OffsetType, has_null>::sanitize(c, count, this, hb_forward<Ts>(ds)...)));
+            (UnsizedOffsetArrayOf<Type, OffsetType, has_null>::sanitize(c, count, this, rb_forward<Ts>(ds)...)));
     }
 };
 
 /* An array with sorted elements.  Supports binary searching. */
 template <typename Type> struct SortedUnsizedArrayOf : UnsizedArrayOf<Type>
 {
-    hb_sorted_array_t<Type> as_array(unsigned int len)
+    rb_sorted_array_t<Type> as_array(unsigned int len)
     {
-        return hb_sorted_array(this->arrayZ, len);
+        return rb_sorted_array(this->arrayZ, len);
     }
-    hb_sorted_array_t<const Type> as_array(unsigned int len) const
+    rb_sorted_array_t<const Type> as_array(unsigned int len) const
     {
-        return hb_sorted_array(this->arrayZ, len);
+        return rb_sorted_array(this->arrayZ, len);
     }
-    operator hb_sorted_array_t<Type>()
+    operator rb_sorted_array_t<Type>()
     {
         return as_array();
     }
-    operator hb_sorted_array_t<const Type>() const
+    operator rb_sorted_array_t<const Type>() const
     {
         return as_array();
     }
@@ -614,7 +614,7 @@ template <typename Type> struct SortedUnsizedArrayOf : UnsizedArrayOf<Type>
     bool bfind(unsigned int len,
                const T &x,
                unsigned int *i = nullptr,
-               hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+               rb_bfind_not_found_t not_found = RB_BFIND_NOT_FOUND_DONT_STORE,
                unsigned int to_store = (unsigned int)-1) const
     {
         return as_array(len).bfind(x, i, not_found, to_store);
@@ -625,9 +625,9 @@ template <typename Type> struct SortedUnsizedArrayOf : UnsizedArrayOf<Type>
 template <typename Type, typename LenType = HBUINT16> struct ArrayOf
 {
     typedef Type item_t;
-    static constexpr unsigned item_size = hb_static_size(Type);
+    static constexpr unsigned item_size = rb_static_size(Type);
 
-    HB_DELETE_CREATE_COPY_ASSIGN(ArrayOf);
+    RB_DELETE_CREATE_COPY_ASSIGN(ArrayOf);
 
     const Type &operator[](int i_) const
     {
@@ -659,18 +659,18 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOf
         len--;
     }
 
-    hb_array_t<Type> as_array()
+    rb_array_t<Type> as_array()
     {
-        return hb_array(arrayZ, len);
+        return rb_array(arrayZ, len);
     }
-    hb_array_t<const Type> as_array() const
+    rb_array_t<const Type> as_array() const
     {
-        return hb_array(arrayZ, len);
+        return rb_array(arrayZ, len);
     }
 
     /* Iterator. */
-    typedef hb_array_t<const Type> iter_t;
-    typedef hb_array_t<Type> writer_t;
+    typedef rb_array_t<const Type> iter_t;
+    typedef rb_array_t<Type> writer_t;
     iter_t iter() const
     {
         return as_array();
@@ -688,33 +688,33 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOf
         return writer();
     }
 
-    hb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int count) const
+    rb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int count) const
     {
         return as_array().sub_array(start_offset, count);
     }
-    hb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) const
+    rb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) const
     {
         return as_array().sub_array(start_offset, count);
     }
-    hb_array_t<Type> sub_array(unsigned int start_offset, unsigned int count)
+    rb_array_t<Type> sub_array(unsigned int start_offset, unsigned int count)
     {
         return as_array().sub_array(start_offset, count);
     }
-    hb_array_t<Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */)
+    rb_array_t<Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */)
     {
         return as_array().sub_array(start_offset, count);
     }
 
-    template <typename... Ts> bool sanitize(hb_sanitize_context_t *c, Ts &&... ds) const
+    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c)))
             return_trace(false);
-        if (!sizeof...(Ts) && hb_is_trivially_copyable(Type))
+        if (!sizeof...(Ts) && rb_is_trivially_copyable(Type))
             return_trace(true);
         unsigned int count = len;
         for (unsigned int i = 0; i < count; i++)
-            if (unlikely(!c->dispatch(arrayZ[i], hb_forward<Ts>(ds)...)))
+            if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
                 return_trace(false);
         return_trace(true);
     }
@@ -733,7 +733,7 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOf
         as_array().qsort(start, end);
     }
 
-    bool sanitize_shallow(hb_sanitize_context_t *c) const
+    bool sanitize_shallow(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(len.sanitize(c) && c->check_array(arrayZ, len));
@@ -741,7 +741,7 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOf
 
 public:
     LenType len;
-    Type arrayZ[HB_VAR_ARRAY];
+    Type arrayZ[RB_VAR_ARRAY];
 
 public:
     DEFINE_SIZE_ARRAY(sizeof(LenType), arrayZ);
@@ -772,10 +772,10 @@ template <typename Type> struct OffsetListOf : OffsetArrayOf<Type>
         return this + this->arrayZ[i];
     }
 
-    template <typename... Ts> bool sanitize(hb_sanitize_context_t *c, Ts &&... ds) const
+    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
         TRACE_SANITIZE(this);
-        return_trace(OffsetArrayOf<Type>::sanitize(c, this, hb_forward<Ts>(ds)...));
+        return_trace(OffsetArrayOf<Type>::sanitize(c, this, rb_forward<Ts>(ds)...));
     }
 };
 
@@ -784,7 +784,7 @@ template <typename Type, typename LenType = HBUINT16> struct HeadlessArrayOf
 {
     static constexpr unsigned item_size = Type::static_size;
 
-    HB_DELETE_CREATE_COPY_ASSIGN(HeadlessArrayOf);
+    RB_DELETE_CREATE_COPY_ASSIGN(HeadlessArrayOf);
 
     const Type &operator[](int i_) const
     {
@@ -810,18 +810,18 @@ template <typename Type, typename LenType = HBUINT16> struct HeadlessArrayOf
         return lenP1 ? lenP1 - 1 : 0;
     }
 
-    hb_array_t<Type> as_array()
+    rb_array_t<Type> as_array()
     {
-        return hb_array(arrayZ, get_length());
+        return rb_array(arrayZ, get_length());
     }
-    hb_array_t<const Type> as_array() const
+    rb_array_t<const Type> as_array() const
     {
-        return hb_array(arrayZ, get_length());
+        return rb_array(arrayZ, get_length());
     }
 
     /* Iterator. */
-    typedef hb_array_t<const Type> iter_t;
-    typedef hb_array_t<Type> writer_t;
+    typedef rb_array_t<const Type> iter_t;
+    typedef rb_array_t<Type> writer_t;
     iter_t iter() const
     {
         return as_array();
@@ -839,22 +839,22 @@ template <typename Type, typename LenType = HBUINT16> struct HeadlessArrayOf
         return writer();
     }
 
-    template <typename... Ts> bool sanitize(hb_sanitize_context_t *c, Ts &&... ds) const
+    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c)))
             return_trace(false);
-        if (!sizeof...(Ts) && hb_is_trivially_copyable(Type))
+        if (!sizeof...(Ts) && rb_is_trivially_copyable(Type))
             return_trace(true);
         unsigned int count = get_length();
         for (unsigned int i = 0; i < count; i++)
-            if (unlikely(!c->dispatch(arrayZ[i], hb_forward<Ts>(ds)...)))
+            if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
                 return_trace(false);
         return_trace(true);
     }
 
 private:
-    bool sanitize_shallow(hb_sanitize_context_t *c) const
+    bool sanitize_shallow(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(lenP1.sanitize(c) && (!lenP1 || c->check_array(arrayZ, lenP1 - 1)));
@@ -862,7 +862,7 @@ private:
 
 public:
     LenType lenP1;
-    Type arrayZ[HB_VAR_ARRAY];
+    Type arrayZ[RB_VAR_ARRAY];
 
 public:
     DEFINE_SIZE_ARRAY(sizeof(LenType), arrayZ);
@@ -871,7 +871,7 @@ public:
 /* An array storing length-1. */
 template <typename Type, typename LenType = HBUINT16> struct ArrayOfM1
 {
-    HB_DELETE_CREATE_COPY_ASSIGN(ArrayOfM1);
+    RB_DELETE_CREATE_COPY_ASSIGN(ArrayOfM1);
 
     const Type &operator[](int i_) const
     {
@@ -892,20 +892,20 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOfM1
         return lenM1.static_size + (lenM1 + 1) * Type::static_size;
     }
 
-    template <typename... Ts> bool sanitize(hb_sanitize_context_t *c, Ts &&... ds) const
+    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c)))
             return_trace(false);
         unsigned int count = lenM1 + 1;
         for (unsigned int i = 0; i < count; i++)
-            if (unlikely(!c->dispatch(arrayZ[i], hb_forward<Ts>(ds)...)))
+            if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
                 return_trace(false);
         return_trace(true);
     }
 
 private:
-    bool sanitize_shallow(hb_sanitize_context_t *c) const
+    bool sanitize_shallow(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(lenM1.sanitize(c) && (c->check_array(arrayZ, lenM1 + 1)));
@@ -913,7 +913,7 @@ private:
 
 public:
     LenType lenM1;
-    Type arrayZ[HB_VAR_ARRAY];
+    Type arrayZ[RB_VAR_ARRAY];
 
 public:
     DEFINE_SIZE_ARRAY(sizeof(LenType), arrayZ);
@@ -922,18 +922,18 @@ public:
 /* An array with sorted elements.  Supports binary searching. */
 template <typename Type, typename LenType = HBUINT16> struct SortedArrayOf : ArrayOf<Type, LenType>
 {
-    hb_sorted_array_t<Type> as_array()
+    rb_sorted_array_t<Type> as_array()
     {
-        return hb_sorted_array(this->arrayZ, this->len);
+        return rb_sorted_array(this->arrayZ, this->len);
     }
-    hb_sorted_array_t<const Type> as_array() const
+    rb_sorted_array_t<const Type> as_array() const
     {
-        return hb_sorted_array(this->arrayZ, this->len);
+        return rb_sorted_array(this->arrayZ, this->len);
     }
 
     /* Iterator. */
-    typedef hb_sorted_array_t<const Type> iter_t;
-    typedef hb_sorted_array_t<Type> writer_t;
+    typedef rb_sorted_array_t<const Type> iter_t;
+    typedef rb_sorted_array_t<Type> writer_t;
     iter_t iter() const
     {
         return as_array();
@@ -951,19 +951,19 @@ template <typename Type, typename LenType = HBUINT16> struct SortedArrayOf : Arr
         return writer();
     }
 
-    hb_sorted_array_t<const Type> sub_array(unsigned int start_offset, unsigned int count) const
+    rb_sorted_array_t<const Type> sub_array(unsigned int start_offset, unsigned int count) const
     {
         return as_array().sub_array(start_offset, count);
     }
-    hb_sorted_array_t<const Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) const
+    rb_sorted_array_t<const Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) const
     {
         return as_array().sub_array(start_offset, count);
     }
-    hb_sorted_array_t<Type> sub_array(unsigned int start_offset, unsigned int count)
+    rb_sorted_array_t<Type> sub_array(unsigned int start_offset, unsigned int count)
     {
         return as_array().sub_array(start_offset, count);
     }
-    hb_sorted_array_t<Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */)
+    rb_sorted_array_t<Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */)
     {
         return as_array().sub_array(start_offset, count);
     }
@@ -979,7 +979,7 @@ template <typename Type, typename LenType = HBUINT16> struct SortedArrayOf : Arr
     template <typename T>
     bool bfind(const T &x,
                unsigned int *i = nullptr,
-               hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+               rb_bfind_not_found_t not_found = RB_BFIND_NOT_FOUND_DONT_STORE,
                unsigned int to_store = (unsigned int)-1) const
     {
         return as_array().bfind(x, i, not_found, to_store);
@@ -997,7 +997,7 @@ template <typename LenType = HBUINT16> struct BinSearchHeader
         return len;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -1007,7 +1007,7 @@ template <typename LenType = HBUINT16> struct BinSearchHeader
     {
         len = v;
         assert(len == v);
-        entrySelector = hb_max(1u, hb_bit_storage(v)) - 1;
+        entrySelector = rb_max(1u, rb_bit_storage(v)) - 1;
         searchRange = 16 * (1u << entrySelector);
         rangeShift = v * 16 > searchRange ? 16 * v - searchRange : 0;
         return *this;
@@ -1029,7 +1029,7 @@ using BinSearchArrayOf = SortedArrayOf<Type, BinSearchHeader<LenType>>;
 struct VarSizedBinSearchHeader
 {
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -1052,7 +1052,7 @@ template <typename Type> struct VarSizedBinSearchArrayOf
 {
     static constexpr unsigned item_size = Type::static_size;
 
-    HB_DELETE_CREATE_COPY_ASSIGN(VarSizedBinSearchArrayOf);
+    RB_DELETE_CREATE_COPY_ASSIGN(VarSizedBinSearchArrayOf);
 
     bool last_is_terminator() const
     {
@@ -1094,16 +1094,16 @@ template <typename Type> struct VarSizedBinSearchArrayOf
         return header.static_size + header.nUnits * header.unitSize;
     }
 
-    template <typename... Ts> bool sanitize(hb_sanitize_context_t *c, Ts &&... ds) const
+    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c)))
             return_trace(false);
-        if (!sizeof...(Ts) && hb_is_trivially_copyable(Type))
+        if (!sizeof...(Ts) && rb_is_trivially_copyable(Type))
             return_trace(true);
         unsigned int count = get_length();
         for (unsigned int i = 0; i < count; i++)
-            if (unlikely(!(*this)[i].sanitize(c, hb_forward<Ts>(ds)...)))
+            if (unlikely(!(*this)[i].sanitize(c, rb_forward<Ts>(ds)...)))
                 return_trace(false);
         return_trace(true);
     }
@@ -1111,13 +1111,13 @@ template <typename Type> struct VarSizedBinSearchArrayOf
     template <typename T> const Type *bsearch(const T &key) const
     {
         unsigned pos;
-        return hb_bsearch_impl(&pos, key, (const void *)bytesZ, get_length(), header.unitSize, _hb_cmp_method<T, Type>)
+        return rb_bsearch_impl(&pos, key, (const void *)bytesZ, get_length(), header.unitSize, _rb_cmp_method<T, Type>)
                    ? (const Type *)(((const char *)&bytesZ) + (pos * header.unitSize))
                    : nullptr;
     }
 
 private:
-    bool sanitize_shallow(hb_sanitize_context_t *c) const
+    bool sanitize_shallow(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(header.sanitize(c) && Type::static_size <= header.unitSize &&
@@ -1134,4 +1134,4 @@ public:
 
 } /* namespace OT */
 
-#endif /* HB_OPEN_TYPE_HH */
+#endif /* RB_OPEN_TYPE_HH */

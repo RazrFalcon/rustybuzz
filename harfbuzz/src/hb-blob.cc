@@ -44,7 +44,7 @@
  **/
 
 /**
- * hb_blob_create: (skip)
+ * rb_blob_create: (skip)
  * @data: Pointer to blob data.
  * @length: Length of @data in bytes.
  * @mode: Memory mode for @data.
@@ -55,24 +55,23 @@
  * to negotiate ownership and lifecycle of @data.
  *
  * Return value: New blob, or the empty blob if something failed or if @length is
- * zero.  Destroy with hb_blob_destroy().
+ * zero.  Destroy with rb_blob_destroy().
  *
  * Since: 0.9.2
  **/
-hb_blob_t *
-hb_blob_create(const char *data, unsigned int length, hb_memory_mode_t mode, void *user_data, hb_destroy_func_t destroy)
+rb_blob_t *
+rb_blob_create(const char *data, unsigned int length, void *user_data, rb_destroy_func_t destroy)
 {
-    hb_blob_t *blob;
+    rb_blob_t *blob;
 
-    if (!length || length >= 1u << 31 || !(blob = hb_object_create<hb_blob_t>())) {
+    if (!length || length >= 1u << 31 || !(blob = rb_object_create<rb_blob_t>())) {
         if (destroy)
             destroy(user_data);
-        return hb_blob_get_empty();
+        return rb_blob_get_empty();
     }
 
     blob->data = data;
     blob->length = length;
-    blob->mode = mode;
 
     blob->user_data = user_data;
     blob->destroy = destroy;
@@ -80,19 +79,19 @@ hb_blob_create(const char *data, unsigned int length, hb_memory_mode_t mode, voi
     return blob;
 }
 
-static void _hb_blob_destroy(void *data)
+static void _rb_blob_destroy(void *data)
 {
-    hb_blob_destroy((hb_blob_t *)data);
+    rb_blob_destroy((rb_blob_t *)data);
 }
 
 /**
- * hb_blob_create_sub_blob:
+ * rb_blob_create_sub_blob:
  * @parent: Parent blob.
  * @offset: Start offset of sub-blob within @parent, in bytes.
  * @length: Length of sub-blob.
  *
  * Returns a blob that represents a range of bytes in @parent.  The new
- * blob is always created with %HB_MEMORY_MODE_READONLY, meaning that it
+ * blob is always created with %RB_MEMORY_MODE_READONLY, meaning that it
  * will never modify data in the parent blob.  The parent data is not
  * expected to be modified, and will result in undefined behavior if it
  * is.
@@ -101,30 +100,29 @@ static void _hb_blob_destroy(void *data)
  *
  * Return value: New blob, or the empty blob if something failed or if
  * @length is zero or @offset is beyond the end of @parent's data.  Destroy
- * with hb_blob_destroy().
+ * with rb_blob_destroy().
  *
  * Since: 0.9.2
  **/
-hb_blob_t *hb_blob_create_sub_blob(hb_blob_t *parent, unsigned int offset, unsigned int length)
+rb_blob_t *rb_blob_create_sub_blob(rb_blob_t *parent, unsigned int offset, unsigned int length)
 {
-    hb_blob_t *blob;
+    rb_blob_t *blob;
 
     if (!length || !parent || offset >= parent->length)
-        return hb_blob_get_empty();
+        return rb_blob_get_empty();
 
-    hb_blob_make_immutable(parent);
+    rb_blob_make_immutable(parent);
 
-    blob = hb_blob_create(parent->data + offset,
-                          hb_min(length, parent->length - offset),
-                          HB_MEMORY_MODE_READONLY,
-                          hb_blob_reference(parent),
-                          _hb_blob_destroy);
+    blob = rb_blob_create(parent->data + offset,
+                          rb_min(length, parent->length - offset),
+                          rb_blob_reference(parent),
+                          _rb_blob_destroy);
 
     return blob;
 }
 
 /**
- * hb_blob_get_empty:
+ * rb_blob_get_empty:
  *
  * Returns the singleton empty blob.
  *
@@ -134,13 +132,13 @@ hb_blob_t *hb_blob_create_sub_blob(hb_blob_t *parent, unsigned int offset, unsig
  *
  * Since: 0.9.2
  **/
-hb_blob_t *hb_blob_get_empty()
+rb_blob_t *rb_blob_get_empty()
 {
-    return const_cast<hb_blob_t *>(&Null(hb_blob_t));
+    return const_cast<rb_blob_t *>(&Null(rb_blob_t));
 }
 
 /**
- * hb_blob_reference: (skip)
+ * rb_blob_reference: (skip)
  * @blob: a blob.
  *
  * Increases the reference count on @blob.
@@ -151,13 +149,13 @@ hb_blob_t *hb_blob_get_empty()
  *
  * Since: 0.9.2
  **/
-hb_blob_t *hb_blob_reference(hb_blob_t *blob)
+rb_blob_t *rb_blob_reference(rb_blob_t *blob)
 {
-    return hb_object_reference(blob);
+    return rb_object_reference(blob);
 }
 
 /**
- * hb_blob_destroy: (skip)
+ * rb_blob_destroy: (skip)
  * @blob: a blob.
  *
  * Decreases the reference count on @blob, and if it reaches zero, destroys
@@ -168,9 +166,9 @@ hb_blob_t *hb_blob_reference(hb_blob_t *blob)
  *
  * Since: 0.9.2
  **/
-void hb_blob_destroy(hb_blob_t *blob)
+void rb_blob_destroy(rb_blob_t *blob)
 {
-    if (!hb_object_destroy(blob))
+    if (!rb_object_destroy(blob))
         return;
 
     blob->fini_shallow();
@@ -179,23 +177,23 @@ void hb_blob_destroy(hb_blob_t *blob)
 }
 
 /**
- * hb_blob_make_immutable:
+ * rb_blob_make_immutable:
  * @blob: a blob.
  *
  *
  *
  * Since: 0.9.2
  **/
-void hb_blob_make_immutable(hb_blob_t *blob)
+void rb_blob_make_immutable(rb_blob_t *blob)
 {
-    if (hb_object_is_immutable(blob))
+    if (rb_object_is_immutable(blob))
         return;
 
-    hb_object_make_immutable(blob);
+    rb_object_make_immutable(blob);
 }
 
 /**
- * hb_blob_is_immutable:
+ * rb_blob_is_immutable:
  * @blob: a blob.
  *
  *
@@ -204,13 +202,13 @@ void hb_blob_make_immutable(hb_blob_t *blob)
  *
  * Since: 0.9.2
  **/
-hb_bool_t hb_blob_is_immutable(hb_blob_t *blob)
+rb_bool_t rb_blob_is_immutable(rb_blob_t *blob)
 {
-    return hb_object_is_immutable(blob);
+    return rb_object_is_immutable(blob);
 }
 
 /**
- * hb_blob_get_length:
+ * rb_blob_get_length:
  * @blob: a blob.
  *
  *
@@ -219,13 +217,13 @@ hb_bool_t hb_blob_is_immutable(hb_blob_t *blob)
  *
  * Since: 0.9.2
  **/
-unsigned int hb_blob_get_length(hb_blob_t *blob)
+unsigned int rb_blob_get_length(rb_blob_t *blob)
 {
     return blob->length;
 }
 
 /**
- * hb_blob_get_data:
+ * rb_blob_get_data:
  * @blob: a blob.
  * @length: (out):
  *
@@ -235,7 +233,7 @@ unsigned int hb_blob_get_length(hb_blob_t *blob)
  *
  * Since: 0.9.2
  **/
-const char *hb_blob_get_data(hb_blob_t *blob, unsigned int *length)
+const char *rb_blob_get_data(rb_blob_t *blob, unsigned int *length)
 {
     if (length)
         *length = blob->length;

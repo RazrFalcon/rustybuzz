@@ -26,8 +26,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_MACHINERY_HH
-#define HB_MACHINERY_HH
+#ifndef RB_MACHINERY_HH
+#define RB_MACHINERY_HH
 
 #include "hb.hh"
 #include "hb-blob.hh"
@@ -124,7 +124,7 @@ template <typename Type, typename TObject> static inline Type &StructAfter(TObje
 
 #define DEFINE_SIZE_ARRAY(size, array)                                                                                 \
     DEFINE_COMPILES_ASSERTION((void)(array)[0].static_size)                                                            \
-    DEFINE_INSTANCE_ASSERTION(sizeof(*this) == (size) + (HB_VAR_ARRAY + 0) * sizeof((array)[0]))                       \
+    DEFINE_INSTANCE_ASSERTION(sizeof(*this) == (size) + (RB_VAR_ARRAY + 0) * sizeof((array)[0]))                       \
     static constexpr unsigned null_size = (size);                                                                      \
     static constexpr unsigned min_size = (size)
 
@@ -139,7 +139,7 @@ template <typename Type, typename TObject> static inline Type &StructAfter(TObje
  * Lazy loaders.
  */
 
-template <typename Data, unsigned int WheresData> struct hb_data_wrapper_t
+template <typename Data, unsigned int WheresData> struct rb_data_wrapper_t
 {
     static_assert(WheresData > 0, "");
 
@@ -158,7 +158,7 @@ template <typename Data, unsigned int WheresData> struct hb_data_wrapper_t
         return Subclass::create(get_data());
     }
 };
-template <> struct hb_data_wrapper_t<void, 0>
+template <> struct rb_data_wrapper_t<void, 0>
 {
     bool is_inert() const
     {
@@ -171,11 +171,11 @@ template <> struct hb_data_wrapper_t<void, 0>
     }
 };
 
-template <typename T1, typename T2> struct hb_non_void_t
+template <typename T1, typename T2> struct rb_non_void_t
 {
     typedef T1 value;
 };
-template <typename T2> struct hb_non_void_t<void, T2>
+template <typename T2> struct rb_non_void_t<void, T2>
 {
     typedef T2 value;
 };
@@ -185,10 +185,10 @@ template <typename Returned,
           typename Data = void,
           unsigned int WheresData = 0,
           typename Stored = Returned>
-struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
+struct rb_lazy_loader_t : rb_data_wrapper_t<Data, WheresData>
 {
     typedef
-        typename hb_non_void_t<Subclass, hb_lazy_loader_t<Returned, Subclass, Data, WheresData, Stored>>::value Funcs;
+        typename rb_non_void_t<Subclass, rb_lazy_loader_t<Returned, Subclass, Data, WheresData, Stored>>::value Funcs;
 
     void init0() {} /* Init, when memory is already set to 0. No-op for us. */
     void init()
@@ -308,43 +308,43 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 
     //  private:
     /* Must only have one pointer. */
-    hb_atomic_ptr_t<Stored *> instance;
+    rb_atomic_ptr_t<Stored *> instance;
 };
 
 /* Specializations. */
 
 template <typename T, unsigned int WheresFace>
-struct hb_face_lazy_loader_t : hb_lazy_loader_t<T, hb_face_lazy_loader_t<T, WheresFace>, hb_face_t, WheresFace>
+struct rb_face_lazy_loader_t : rb_lazy_loader_t<T, rb_face_lazy_loader_t<T, WheresFace>, rb_face_t, WheresFace>
 {
 };
 
 template <typename T, unsigned int WheresFace>
-struct hb_table_lazy_loader_t
-    : hb_lazy_loader_t<T, hb_table_lazy_loader_t<T, WheresFace>, hb_face_t, WheresFace, hb_blob_t>
+struct rb_table_lazy_loader_t
+    : rb_lazy_loader_t<T, rb_table_lazy_loader_t<T, WheresFace>, rb_face_t, WheresFace, rb_blob_t>
 {
-    static hb_blob_t *create(hb_face_t *face)
+    static rb_blob_t *create(rb_face_t *face)
     {
-        return hb_sanitize_context_t().reference_table<T>(face);
+        return rb_sanitize_context_t().reference_table<T>(face);
     }
-    static void destroy(hb_blob_t *p)
+    static void destroy(rb_blob_t *p)
     {
-        hb_blob_destroy(p);
-    }
-
-    static const hb_blob_t *get_null()
-    {
-        return hb_blob_get_empty();
+        rb_blob_destroy(p);
     }
 
-    static const T *convert(const hb_blob_t *blob)
+    static const rb_blob_t *get_null()
+    {
+        return rb_blob_get_empty();
+    }
+
+    static const T *convert(const rb_blob_t *blob)
     {
         return blob->as<T>();
     }
 
-    hb_blob_t *get_blob() const
+    rb_blob_t *get_blob() const
     {
         return this->get_stored();
     }
 };
 
-#endif /* HB_MACHINERY_HH */
+#endif /* RB_MACHINERY_HH */

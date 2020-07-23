@@ -26,8 +26,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OPEN_FILE_HH
-#define HB_OPEN_FILE_HH
+#ifndef RB_OPEN_FILE_HH
+#define RB_OPEN_FILE_HH
 
 #include "hb-open-type.hh"
 #include "hb-ot-head-table.hh"
@@ -55,14 +55,14 @@ typedef struct TableRecord
         return -t.cmp(tag);
     }
 
-    HB_INTERNAL static int cmp(const void *pa, const void *pb)
+    RB_INTERNAL static int cmp(const void *pa, const void *pb)
     {
         const TableRecord *a = (const TableRecord *)pa;
         const TableRecord *b = (const TableRecord *)pb;
         return b->cmp(a->tag);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -91,21 +91,21 @@ typedef struct OffsetTable
     }
     unsigned int get_table_tags(unsigned int start_offset,
                                 unsigned int *table_count, /* IN/OUT */
-                                hb_tag_t *table_tags /* OUT */) const
+                                rb_tag_t *table_tags /* OUT */) const
     {
         if (table_count) {
-            +tables.sub_array(start_offset, table_count) | hb_map(&TableRecord::tag) |
-                hb_sink(hb_array(table_tags, *table_count));
+            +tables.sub_array(start_offset, table_count) | rb_map(&TableRecord::tag) |
+                rb_sink(rb_array(table_tags, *table_count));
         }
         return tables.len;
     }
-    bool find_table_index(hb_tag_t tag, unsigned int *table_index) const
+    bool find_table_index(rb_tag_t tag, unsigned int *table_index) const
     {
         Tag t;
         t = tag;
-        return tables.bfind(t, table_index, HB_BFIND_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
+        return tables.bfind(t, table_index, RB_BFIND_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
     }
-    const TableRecord &get_table_by_tag(hb_tag_t tag) const
+    const TableRecord &get_table_by_tag(rb_tag_t tag) const
     {
         unsigned int table_index;
         find_table_index(tag, &table_index);
@@ -113,7 +113,7 @@ typedef struct OffsetTable
     }
 
 public:
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && tables.sanitize(c));
@@ -144,7 +144,7 @@ struct TTCHeaderVersion1
         return this + table[i];
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(table.sanitize(c, this));
@@ -186,7 +186,7 @@ private:
         }
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!u.header.version.sanitize(c)))
@@ -225,7 +225,7 @@ struct ResourceRecord
         return *reinterpret_cast<const OpenTypeFontFace *>((data_base + offset).arrayZ);
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const void *data_base) const
+    bool sanitize(rb_sanitize_context_t *c, const void *data_base) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && offset.sanitize(c, data_base) && get_face(data_base).sanitize(c));
@@ -243,18 +243,18 @@ public:
     DEFINE_SIZE_STATIC(12);
 };
 
-#define HB_TAG_sfnt HB_TAG('s', 'f', 'n', 't')
+#define RB_TAG_sfnt RB_TAG('s', 'f', 'n', 't')
 
 struct ResourceTypeRecord
 {
     unsigned int get_resource_count() const
     {
-        return tag == HB_TAG_sfnt ? resCountM1 + 1 : 0;
+        return tag == RB_TAG_sfnt ? resCountM1 + 1 : 0;
     }
 
     bool is_sfnt() const
     {
-        return tag == HB_TAG_sfnt;
+        return tag == RB_TAG_sfnt;
     }
 
     const ResourceRecord &get_resource_record(unsigned int i, const void *type_base) const
@@ -262,7 +262,7 @@ struct ResourceTypeRecord
         return (type_base + resourcesZ).as_array(get_resource_count())[i];
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const void *type_base, const void *data_base) const
+    bool sanitize(rb_sanitize_context_t *c, const void *type_base, const void *data_base) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && resourcesZ.sanitize(c, type_base, get_resource_count(), data_base));
@@ -303,7 +303,7 @@ struct ResourceMap
         return Null(OpenTypeFontFace);
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const void *data_base) const
+    bool sanitize(rb_sanitize_context_t *c, const void *data_base) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && typeList.sanitize(c, this, &(this + typeList), data_base));
@@ -348,7 +348,7 @@ struct ResourceForkHeader
         return face;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this) && data.sanitize(c, this, dataLen) && map.sanitize(c, this, &(this + data)));
@@ -372,15 +372,15 @@ public:
 struct OpenTypeFontFile
 {
     enum {
-        CFFTag = HB_TAG('O', 'T', 'T', 'O'),  /* OpenType with Postscript outlines */
-        TrueTypeTag = HB_TAG(0, 1, 0, 0),     /* OpenType with TrueType outlines */
-        TTCTag = HB_TAG('t', 't', 'c', 'f'),  /* TrueType Collection */
-        DFontTag = HB_TAG(0, 0, 1, 0),        /* DFont Mac Resource Fork */
-        TrueTag = HB_TAG('t', 'r', 'u', 'e'), /* Obsolete Apple TrueType */
-        Typ1Tag = HB_TAG('t', 'y', 'p', '1')  /* Obsolete Apple Type1 font in SFNT container */
+        CFFTag = RB_TAG('O', 'T', 'T', 'O'),  /* OpenType with Postscript outlines */
+        TrueTypeTag = RB_TAG(0, 1, 0, 0),     /* OpenType with TrueType outlines */
+        TTCTag = RB_TAG('t', 't', 'c', 'f'),  /* TrueType Collection */
+        DFontTag = RB_TAG(0, 0, 1, 0),        /* DFont Mac Resource Fork */
+        TrueTag = RB_TAG('t', 'r', 'u', 'e'), /* Obsolete Apple TrueType */
+        Typ1Tag = RB_TAG('t', 'y', 'p', '1')  /* Obsolete Apple Type1 font in SFNT container */
     };
 
-    hb_tag_t get_tag() const
+    rb_tag_t get_tag() const
     {
         return u.tag;
     }
@@ -423,7 +423,7 @@ struct OpenTypeFontFile
         }
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!u.tag.sanitize(c)))
@@ -457,4 +457,4 @@ public:
 
 } /* namespace OT */
 
-#endif /* HB_OPEN_FILE_HH */
+#endif /* RB_OPEN_FILE_HH */

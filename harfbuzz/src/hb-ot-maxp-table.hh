@@ -24,8 +24,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_MAXP_TABLE_HH
-#define HB_OT_MAXP_TABLE_HH
+#ifndef RB_OT_MAXP_TABLE_HH
+#define RB_OT_MAXP_TABLE_HH
 
 #include "hb-open-type.hh"
 
@@ -36,11 +36,11 @@ namespace OT {
  * https://docs.microsoft.com/en-us/typography/opentype/spec/maxp
  */
 
-#define HB_OT_TAG_maxp HB_TAG('m', 'a', 'x', 'p')
+#define RB_OT_TAG_maxp RB_TAG('m', 'a', 'x', 'p')
 
 struct maxpV1Tail
 {
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -69,7 +69,7 @@ public:
 
 struct maxp
 {
-    static constexpr hb_tag_t tableTag = HB_OT_TAG_maxp;
+    static constexpr rb_tag_t tableTag = RB_OT_TAG_maxp;
 
     unsigned int get_num_glyphs() const
     {
@@ -81,7 +81,7 @@ struct maxp
         numGlyphs = count;
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         if (unlikely(!c->check_struct(this)))
@@ -110,11 +110,11 @@ protected:
                              * 0x00005000u or 0x00010000u. */
     HBUINT16 numGlyphs;
     /* The number of glyphs in the font. */
-    /*maxpV1Tail	v1Tail[HB_VAR_ARRAY]; */
+    /*maxpV1Tail	v1Tail[RB_VAR_ARRAY]; */
 public:
     DEFINE_SIZE_STATIC(6);
 };
 
 } /* namespace OT */
 
-#endif /* HB_OT_MAXP_TABLE_HH */
+#endif /* RB_OT_MAXP_TABLE_HH */

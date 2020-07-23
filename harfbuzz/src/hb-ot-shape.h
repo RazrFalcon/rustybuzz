@@ -24,38 +24,38 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_H_IN
+#ifndef RB_OT_H_IN
 #error "Include <hb-ot.h> instead."
 #endif
 
-#ifndef HB_OT_SHAPE_H
-#define HB_OT_SHAPE_H
+#ifndef RB_OT_SHAPE_H
+#define RB_OT_SHAPE_H
 
 #include "hb.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
-HB_EXTERN void
-hb_ot_shape_plan_collect_lookups(hb_shape_plan_t *shape_plan, hb_tag_t table_tag, hb_set_t *lookup_indexes /* OUT */);
+RB_EXTERN void
+rb_ot_shape_plan_collect_lookups(rb_shape_plan_t *shape_plan, rb_tag_t table_tag, rb_set_t *lookup_indexes /* OUT */);
 
-HB_EXTERN void _hb_ot_shape(hb_shape_plan_t *shape_plan,
-                            hb_font_t *font,
-                            hb_buffer_t *buffer,
-                            const hb_feature_t *features,
+RB_EXTERN void _rb_ot_shape(rb_shape_plan_t *shape_plan,
+                            rb_font_t *font,
+                            rb_buffer_t *buffer,
+                            const rb_feature_t *features,
                             unsigned int num_features);
 
-typedef struct hb_ot_shape_plan_t hb_ot_shape_plan_t;
-typedef struct hb_ot_map_t hb_ot_map_t;
-HB_EXTERN const hb_ot_map_t *hb_ot_shape_plan_get_ot_map(const hb_ot_shape_plan_t *plan);
-HB_EXTERN const void *hb_ot_shape_plan_get_data(const hb_ot_shape_plan_t *plan);
-HB_EXTERN hb_script_t hb_ot_shape_plan_get_script(const hb_ot_shape_plan_t *plan);
-HB_EXTERN bool hb_ot_shape_plan_has_gpos_mark(const hb_ot_shape_plan_t *plan);
+typedef struct rb_ot_shape_plan_t rb_ot_shape_plan_t;
+typedef struct rb_ot_map_t rb_ot_map_t;
+RB_EXTERN const rb_ot_map_t *rb_ot_shape_plan_get_ot_map(const rb_ot_shape_plan_t *plan);
+RB_EXTERN const void *rb_ot_shape_plan_get_data(const rb_ot_shape_plan_t *plan);
+RB_EXTERN rb_script_t rb_ot_shape_plan_get_script(const rb_ot_shape_plan_t *plan);
+RB_EXTERN bool rb_ot_shape_plan_has_gpos_mark(const rb_ot_shape_plan_t *plan);
 
-typedef struct hb_ot_shape_planner_t hb_ot_shape_planner_t;
-typedef struct hb_ot_map_builder_t hb_ot_map_builder_t;
-HB_EXTERN hb_ot_map_builder_t *hb_ot_shape_planner_get_ot_map(hb_ot_shape_planner_t *planner);
-HB_EXTERN hb_script_t hb_ot_shape_planner_get_script(hb_ot_shape_planner_t *planner);
+typedef struct rb_ot_shape_planner_t rb_ot_shape_planner_t;
+typedef struct rb_ot_map_builder_t rb_ot_map_builder_t;
+RB_EXTERN rb_ot_map_builder_t *rb_ot_shape_planner_get_ot_map(rb_ot_shape_planner_t *planner);
+RB_EXTERN rb_script_t rb_ot_shape_planner_get_script(rb_ot_shape_planner_t *planner);
 
-HB_END_DECLS
+RB_END_DECLS
 
-#endif /* HB_OT_SHAPE_H */
+#endif /* RB_OT_SHAPE_H */

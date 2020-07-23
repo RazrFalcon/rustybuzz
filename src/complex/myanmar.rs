@@ -148,7 +148,7 @@ impl GlyphInfo {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_collect_features_myanmar(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_collect_features_myanmar(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     collect_features(&mut planner)
 }
@@ -169,7 +169,7 @@ fn collect_features(planner: &mut ShapePlanner) {
         planner.ot_map.add_gsub_pause(None);
     }
 
-    planner.ot_map.add_gsub_pause(Some(ffi::hb_layout_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(ffi::rb_layout_clear_syllables));
 
     for feature in MYANMAR_FEATURES.iter().skip(4) {
         planner.ot_map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
@@ -177,9 +177,9 @@ fn collect_features(planner: &mut ShapePlanner) {
 }
 
 extern "C" fn setup_syllables_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -200,9 +200,9 @@ fn setup_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 }
 
 extern "C" fn reorder_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -395,7 +395,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_override_features_myanmar(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_override_features_myanmar(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     override_features(&mut planner)
 }
@@ -405,10 +405,10 @@ fn override_features(planner: &mut ShapePlanner) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_setup_masks_myanmar(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_setup_masks_myanmar(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);

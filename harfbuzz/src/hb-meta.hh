@@ -24,8 +24,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_META_HH
-#define HB_META_HH
+#ifndef RB_META_HH
+#define RB_META_HH
 
 #include "hb.hh"
 
@@ -34,85 +34,85 @@
  */
 
 /* Void!  For when we need a expression-type of void. */
-struct hb_empty_t
+struct rb_empty_t
 {
 };
 
 /* https://en.cppreference.com/w/cpp/types/void_t */
-template <typename... Ts> struct _hb_void_t
+template <typename... Ts> struct _rb_void_t
 {
     typedef void type;
 };
-template <typename... Ts> using hb_void_t = typename _hb_void_t<Ts...>::type;
+template <typename... Ts> using rb_void_t = typename _rb_void_t<Ts...>::type;
 
-template <typename Head, typename... Ts> struct _hb_head_t
+template <typename Head, typename... Ts> struct _rb_head_t
 {
     typedef Head type;
 };
-template <typename... Ts> using hb_head_t = typename _hb_head_t<Ts...>::type;
+template <typename... Ts> using rb_head_t = typename _rb_head_t<Ts...>::type;
 
-template <typename T, T v> struct hb_integral_constant
+template <typename T, T v> struct rb_integral_constant
 {
     static constexpr T value = v;
 };
-template <bool b> using hb_bool_constant = hb_integral_constant<bool, b>;
-using hb_true_type = hb_bool_constant<true>;
-using hb_false_type = hb_bool_constant<false>;
+template <bool b> using rb_bool_constant = rb_integral_constant<bool, b>;
+using rb_true_type = rb_bool_constant<true>;
+using rb_false_type = rb_bool_constant<false>;
 
 /* Basic type SFINAE. */
 
-template <bool B, typename T = void> struct hb_enable_if
+template <bool B, typename T = void> struct rb_enable_if
 {
 };
-template <typename T> struct hb_enable_if<true, T>
+template <typename T> struct rb_enable_if<true, T>
 {
     typedef T type;
 };
-#define hb_enable_if(Cond) typename hb_enable_if<(Cond)>::type * = nullptr
+#define rb_enable_if(Cond) typename rb_enable_if<(Cond)>::type * = nullptr
 /* Concepts/Requires alias: */
-#define hb_requires(Cond) hb_enable_if((Cond))
+#define rb_requires(Cond) rb_enable_if((Cond))
 
-template <typename T, typename T2> struct hb_is_same : hb_false_type
+template <typename T, typename T2> struct rb_is_same : rb_false_type
 {
 };
-template <typename T> struct hb_is_same<T, T> : hb_true_type
+template <typename T> struct rb_is_same<T, T> : rb_true_type
 {
 };
-#define hb_is_same(T, T2) hb_is_same<T, T2>::value
+#define rb_is_same(T, T2) rb_is_same<T, T2>::value
 
 /* Function overloading SFINAE and priority. */
 
-#define HB_RETURN(Ret, E)                                                                                              \
-    ->hb_head_t<Ret, decltype((E))>                                                                                    \
+#define RB_RETURN(Ret, E)                                                                                              \
+    ->rb_head_t<Ret, decltype((E))>                                                                                    \
     {                                                                                                                  \
         return (E);                                                                                                    \
     }
-#define HB_AUTO_RETURN(E)                                                                                              \
+#define RB_AUTO_RETURN(E)                                                                                              \
     ->decltype((E))                                                                                                    \
     {                                                                                                                  \
         return (E);                                                                                                    \
     }
-#define HB_VOID_RETURN(E)                                                                                              \
-    ->hb_void_t<decltype((E))>                                                                                         \
+#define RB_VOID_RETURN(E)                                                                                              \
+    ->rb_void_t<decltype((E))>                                                                                         \
     {                                                                                                                  \
         (E);                                                                                                           \
     }
 
-template <unsigned Pri> struct hb_priority : hb_priority<Pri - 1>
+template <unsigned Pri> struct rb_priority : rb_priority<Pri - 1>
 {
 };
-template <> struct hb_priority<0>
+template <> struct rb_priority<0>
 {
 };
-#define hb_prioritize hb_priority<16>()
+#define rb_prioritize rb_priority<16>()
 
-#define HB_FUNCOBJ(x) static_const x HB_UNUSED
+#define RB_FUNCOBJ(x) static_const x RB_UNUSED
 
-template <typename T> struct hb_type_identity_t
+template <typename T> struct rb_type_identity_t
 {
     typedef T type;
 };
-template <typename T> using hb_type_identity = typename hb_type_identity_t<T>::type;
+template <typename T> using rb_type_identity = typename rb_type_identity_t<T>::type;
 
 struct
 {
@@ -124,103 +124,103 @@ struct
         return reinterpret_cast<T *>(&const_cast<char &>(reinterpret_cast<const volatile char &>(arg)));
 #pragma GCC diagnostic pop
     }
-} HB_FUNCOBJ(hb_addressof);
+} RB_FUNCOBJ(rb_addressof);
 
-template <typename T> static inline T hb_declval();
-#define hb_declval(T) (hb_declval<T>())
+template <typename T> static inline T rb_declval();
+#define rb_declval(T) (rb_declval<T>())
 
-template <typename T> struct hb_match_const : hb_type_identity_t<T>, hb_bool_constant<false>
+template <typename T> struct rb_match_const : rb_type_identity_t<T>, rb_bool_constant<false>
 {
 };
-template <typename T> struct hb_match_const<const T> : hb_type_identity_t<T>, hb_bool_constant<true>
+template <typename T> struct rb_match_const<const T> : rb_type_identity_t<T>, rb_bool_constant<true>
 {
 };
-template <typename T> using hb_remove_const = typename hb_match_const<T>::type;
-template <typename T> using hb_add_const = const T;
-#define hb_is_const(T) hb_match_const<T>::value
-template <typename T> struct hb_match_reference : hb_type_identity_t<T>, hb_bool_constant<false>
+template <typename T> using rb_remove_const = typename rb_match_const<T>::type;
+template <typename T> using rb_add_const = const T;
+#define rb_is_const(T) rb_match_const<T>::value
+template <typename T> struct rb_match_reference : rb_type_identity_t<T>, rb_bool_constant<false>
 {
 };
-template <typename T> struct hb_match_reference<T &> : hb_type_identity_t<T>, hb_bool_constant<true>
+template <typename T> struct rb_match_reference<T &> : rb_type_identity_t<T>, rb_bool_constant<true>
 {
 };
-template <typename T> struct hb_match_reference<T &&> : hb_type_identity_t<T>, hb_bool_constant<true>
+template <typename T> struct rb_match_reference<T &&> : rb_type_identity_t<T>, rb_bool_constant<true>
 {
 };
-template <typename T> using hb_remove_reference = typename hb_match_reference<T>::type;
-template <typename T> auto _hb_try_add_lvalue_reference(hb_priority<1>) -> hb_type_identity<T &>;
-template <typename T> auto _hb_try_add_lvalue_reference(hb_priority<0>) -> hb_type_identity<T>;
-template <typename T> using hb_add_lvalue_reference = decltype(_hb_try_add_lvalue_reference<T>(hb_prioritize));
-template <typename T> auto _hb_try_add_rvalue_reference(hb_priority<1>) -> hb_type_identity<T &&>;
-template <typename T> auto _hb_try_add_rvalue_reference(hb_priority<0>) -> hb_type_identity<T>;
-template <typename T> using hb_add_rvalue_reference = decltype(_hb_try_add_rvalue_reference<T>(hb_prioritize));
-#define hb_is_reference(T) hb_match_reference<T>::value
-template <typename T> struct hb_match_pointer : hb_type_identity_t<T>, hb_bool_constant<false>
+template <typename T> using rb_remove_reference = typename rb_match_reference<T>::type;
+template <typename T> auto _rb_try_add_lvalue_reference(rb_priority<1>) -> rb_type_identity<T &>;
+template <typename T> auto _rb_try_add_lvalue_reference(rb_priority<0>) -> rb_type_identity<T>;
+template <typename T> using rb_add_lvalue_reference = decltype(_rb_try_add_lvalue_reference<T>(rb_prioritize));
+template <typename T> auto _rb_try_add_rvalue_reference(rb_priority<1>) -> rb_type_identity<T &&>;
+template <typename T> auto _rb_try_add_rvalue_reference(rb_priority<0>) -> rb_type_identity<T>;
+template <typename T> using rb_add_rvalue_reference = decltype(_rb_try_add_rvalue_reference<T>(rb_prioritize));
+#define rb_is_reference(T) rb_match_reference<T>::value
+template <typename T> struct rb_match_pointer : rb_type_identity_t<T>, rb_bool_constant<false>
 {
 };
-template <typename T> struct hb_match_pointer<T *> : hb_type_identity_t<T>, hb_bool_constant<true>
+template <typename T> struct rb_match_pointer<T *> : rb_type_identity_t<T>, rb_bool_constant<true>
 {
 };
-template <typename T> using hb_remove_pointer = typename hb_match_pointer<T>::type;
-template <typename T> auto _hb_try_add_pointer(hb_priority<1>) -> hb_type_identity<hb_remove_reference<T> *>;
-template <typename T> auto _hb_try_add_pointer(hb_priority<1>) -> hb_type_identity<T>;
-template <typename T> using hb_add_pointer = decltype(_hb_try_add_pointer<T>(hb_prioritize));
-#define hb_is_pointer(T) hb_match_pointer<T>::value
+template <typename T> using rb_remove_pointer = typename rb_match_pointer<T>::type;
+template <typename T> auto _rb_try_add_pointer(rb_priority<1>) -> rb_type_identity<rb_remove_reference<T> *>;
+template <typename T> auto _rb_try_add_pointer(rb_priority<1>) -> rb_type_identity<T>;
+template <typename T> using rb_add_pointer = decltype(_rb_try_add_pointer<T>(rb_prioritize));
+#define rb_is_pointer(T) rb_match_pointer<T>::value
 
 /* TODO Add feature-parity to std::decay. */
-template <typename T> using hb_decay = hb_remove_const<hb_remove_reference<T>>;
+template <typename T> using rb_decay = rb_remove_const<rb_remove_reference<T>>;
 
-template <bool B, class T, class F> struct _hb_conditional
+template <bool B, class T, class F> struct _rb_conditional
 {
     typedef T type;
 };
-template <class T, class F> struct _hb_conditional<false, T, F>
+template <class T, class F> struct _rb_conditional<false, T, F>
 {
     typedef F type;
 };
-template <bool B, class T, class F> using hb_conditional = typename _hb_conditional<B, T, F>::type;
+template <bool B, class T, class F> using rb_conditional = typename _rb_conditional<B, T, F>::type;
 
-template <typename From, typename To> struct hb_is_convertible
+template <typename From, typename To> struct rb_is_convertible
 {
 private:
-    static constexpr bool from_void = hb_is_same(void, hb_decay<From>);
-    static constexpr bool to_void = hb_is_same(void, hb_decay<To>);
+    static constexpr bool from_void = rb_is_same(void, rb_decay<From>);
+    static constexpr bool to_void = rb_is_same(void, rb_decay<To>);
     static constexpr bool either_void = from_void || to_void;
     static constexpr bool both_void = from_void && to_void;
 
-    static hb_true_type impl2(hb_conditional<to_void, int, To>);
+    static rb_true_type impl2(rb_conditional<to_void, int, To>);
 
-    template <typename T> static auto impl(hb_priority<1>) -> decltype(impl2(hb_declval(T)));
-    template <typename T> static hb_false_type impl(hb_priority<0>);
+    template <typename T> static auto impl(rb_priority<1>) -> decltype(impl2(rb_declval(T)));
+    template <typename T> static rb_false_type impl(rb_priority<0>);
 
 public:
     static constexpr bool value =
-        both_void || (!either_void && decltype(impl<hb_conditional<from_void, int, From>>(hb_prioritize))::value);
+        both_void || (!either_void && decltype(impl<rb_conditional<from_void, int, From>>(rb_prioritize))::value);
 };
-#define hb_is_convertible(From, To) hb_is_convertible<From, To>::value
+#define rb_is_convertible(From, To) rb_is_convertible<From, To>::value
 
 template <typename Base, typename Derived>
-using hb_is_base_of = hb_is_convertible<hb_decay<Derived> *, hb_decay<Base> *>;
-#define hb_is_base_of(Base, Derived) hb_is_base_of<Base, Derived>::value
+using rb_is_base_of = rb_is_convertible<rb_decay<Derived> *, rb_decay<Base> *>;
+#define rb_is_base_of(Base, Derived) rb_is_base_of<Base, Derived>::value
 
 template <typename From, typename To>
-using hb_is_cr_convertible =
-    hb_bool_constant<hb_is_same(hb_decay<From>, hb_decay<To>) && (!hb_is_const(From) || hb_is_const(To)) &&
-                     (!hb_is_reference(To) || hb_is_const(To) || hb_is_reference(To))>;
-#define hb_is_cr_convertible(From, To) hb_is_cr_convertible<From, To>::value
+using rb_is_cr_convertible =
+    rb_bool_constant<rb_is_same(rb_decay<From>, rb_decay<To>) && (!rb_is_const(From) || rb_is_const(To)) &&
+                     (!rb_is_reference(To) || rb_is_const(To) || rb_is_reference(To))>;
+#define rb_is_cr_convertible(From, To) rb_is_cr_convertible<From, To>::value
 
 /* std::move and std::forward */
 
-template <typename T> static constexpr hb_remove_reference<T> &&hb_move(T &&t)
+template <typename T> static constexpr rb_remove_reference<T> &&rb_move(T &&t)
 {
-    return (hb_remove_reference<T> &&)(t);
+    return (rb_remove_reference<T> &&)(t);
 }
 
-template <typename T> static constexpr T &&hb_forward(hb_remove_reference<T> &t)
+template <typename T> static constexpr T &&rb_forward(rb_remove_reference<T> &t)
 {
     return (T &&) t;
 }
-template <typename T> static constexpr T &&hb_forward(hb_remove_reference<T> &&t)
+template <typename T> static constexpr T &&rb_forward(rb_remove_reference<T> &&t)
 {
     return (T &&) t;
 }
@@ -228,32 +228,32 @@ template <typename T> static constexpr T &&hb_forward(hb_remove_reference<T> &&t
 struct
 {
     template <typename T>
-    constexpr auto operator()(T &&v) const HB_AUTO_RETURN(hb_forward<T>(v))
+    constexpr auto operator()(T &&v) const RB_AUTO_RETURN(rb_forward<T>(v))
 
         template <typename T>
-        constexpr auto operator()(T *v) const HB_AUTO_RETURN(*v)
-} HB_FUNCOBJ(hb_deref);
+        constexpr auto operator()(T *v) const RB_AUTO_RETURN(*v)
+} RB_FUNCOBJ(rb_deref);
 
 struct
 {
     template <typename T>
-    constexpr auto operator()(T &&v) const HB_AUTO_RETURN(hb_forward<T>(v))
+    constexpr auto operator()(T &&v) const RB_AUTO_RETURN(rb_forward<T>(v))
 
         template <typename T>
-        constexpr auto operator()(T &v) const HB_AUTO_RETURN(hb_addressof(v))
-} HB_FUNCOBJ(hb_ref);
+        constexpr auto operator()(T &v) const RB_AUTO_RETURN(rb_addressof(v))
+} RB_FUNCOBJ(rb_ref);
 
-template <typename T> struct hb_reference_wrapper
+template <typename T> struct rb_reference_wrapper
 {
-    hb_reference_wrapper(T v)
+    rb_reference_wrapper(T v)
         : v(v)
     {
     }
-    bool operator==(const hb_reference_wrapper &o) const
+    bool operator==(const rb_reference_wrapper &o) const
     {
         return v == o.v;
     }
-    bool operator!=(const hb_reference_wrapper &o) const
+    bool operator!=(const rb_reference_wrapper &o) const
     {
         return v != o.v;
     }
@@ -267,17 +267,17 @@ template <typename T> struct hb_reference_wrapper
     }
     T v;
 };
-template <typename T> struct hb_reference_wrapper<T &>
+template <typename T> struct rb_reference_wrapper<T &>
 {
-    hb_reference_wrapper(T &v)
-        : v(hb_addressof(v))
+    rb_reference_wrapper(T &v)
+        : v(rb_addressof(v))
     {
     }
-    bool operator==(const hb_reference_wrapper &o) const
+    bool operator==(const rb_reference_wrapper &o) const
     {
         return v == o.v;
     }
-    bool operator!=(const hb_reference_wrapper &o) const
+    bool operator!=(const rb_reference_wrapper &o) const
     {
         return v != o.v;
     }
@@ -293,204 +293,204 @@ template <typename T> struct hb_reference_wrapper<T &>
 };
 
 template <typename T>
-using hb_is_integral =
-    hb_bool_constant<hb_is_same(hb_decay<T>, char) || hb_is_same(hb_decay<T>, signed char) ||
-                     hb_is_same(hb_decay<T>, unsigned char) || hb_is_same(hb_decay<T>, signed int) ||
-                     hb_is_same(hb_decay<T>, unsigned int) || hb_is_same(hb_decay<T>, signed short) ||
-                     hb_is_same(hb_decay<T>, unsigned short) || hb_is_same(hb_decay<T>, signed long) ||
-                     hb_is_same(hb_decay<T>, unsigned long) || hb_is_same(hb_decay<T>, signed long long) ||
-                     hb_is_same(hb_decay<T>, unsigned long long) || false>;
-#define hb_is_integral(T) hb_is_integral<T>::value
+using rb_is_integral =
+    rb_bool_constant<rb_is_same(rb_decay<T>, char) || rb_is_same(rb_decay<T>, signed char) ||
+                     rb_is_same(rb_decay<T>, unsigned char) || rb_is_same(rb_decay<T>, signed int) ||
+                     rb_is_same(rb_decay<T>, unsigned int) || rb_is_same(rb_decay<T>, signed short) ||
+                     rb_is_same(rb_decay<T>, unsigned short) || rb_is_same(rb_decay<T>, signed long) ||
+                     rb_is_same(rb_decay<T>, unsigned long) || rb_is_same(rb_decay<T>, signed long long) ||
+                     rb_is_same(rb_decay<T>, unsigned long long) || false>;
+#define rb_is_integral(T) rb_is_integral<T>::value
 template <typename T>
-using hb_is_floating_point = hb_bool_constant<hb_is_same(hb_decay<T>, float) || hb_is_same(hb_decay<T>, double) ||
-                                              hb_is_same(hb_decay<T>, long double) || false>;
-#define hb_is_floating_point(T) hb_is_floating_point<T>::value
-template <typename T> using hb_is_arithmetic = hb_bool_constant<hb_is_integral(T) || hb_is_floating_point(T) || false>;
-#define hb_is_arithmetic(T) hb_is_arithmetic<T>::value
+using rb_is_floating_point = rb_bool_constant<rb_is_same(rb_decay<T>, float) || rb_is_same(rb_decay<T>, double) ||
+                                              rb_is_same(rb_decay<T>, long double) || false>;
+#define rb_is_floating_point(T) rb_is_floating_point<T>::value
+template <typename T> using rb_is_arithmetic = rb_bool_constant<rb_is_integral(T) || rb_is_floating_point(T) || false>;
+#define rb_is_arithmetic(T) rb_is_arithmetic<T>::value
 
 template <typename T>
-using hb_is_signed = hb_conditional<hb_is_arithmetic(T), hb_bool_constant<(T)-1 < (T)0>, hb_false_type>;
-#define hb_is_signed(T) hb_is_signed<T>::value
+using rb_is_signed = rb_conditional<rb_is_arithmetic(T), rb_bool_constant<(T)-1 < (T)0>, rb_false_type>;
+#define rb_is_signed(T) rb_is_signed<T>::value
 template <typename T>
-using hb_is_unsigned = hb_conditional<hb_is_arithmetic(T), hb_bool_constant<(T)0 < (T)-1>, hb_false_type>;
-#define hb_is_unsigned(T) hb_is_unsigned<T>::value
+using rb_is_unsigned = rb_conditional<rb_is_arithmetic(T), rb_bool_constant<(T)0 < (T)-1>, rb_false_type>;
+#define rb_is_unsigned(T) rb_is_unsigned<T>::value
 
-template <typename T> struct hb_int_min;
-template <> struct hb_int_min<char> : hb_integral_constant<char, CHAR_MIN>
+template <typename T> struct rb_int_min;
+template <> struct rb_int_min<char> : rb_integral_constant<char, CHAR_MIN>
 {
 };
-template <> struct hb_int_min<signed char> : hb_integral_constant<signed char, SCHAR_MIN>
+template <> struct rb_int_min<signed char> : rb_integral_constant<signed char, SCHAR_MIN>
 {
 };
-template <> struct hb_int_min<unsigned char> : hb_integral_constant<unsigned char, 0>
+template <> struct rb_int_min<unsigned char> : rb_integral_constant<unsigned char, 0>
 {
 };
-template <> struct hb_int_min<signed short> : hb_integral_constant<signed short, SHRT_MIN>
+template <> struct rb_int_min<signed short> : rb_integral_constant<signed short, SHRT_MIN>
 {
 };
-template <> struct hb_int_min<unsigned short> : hb_integral_constant<unsigned short, 0>
+template <> struct rb_int_min<unsigned short> : rb_integral_constant<unsigned short, 0>
 {
 };
-template <> struct hb_int_min<signed int> : hb_integral_constant<signed int, INT_MIN>
+template <> struct rb_int_min<signed int> : rb_integral_constant<signed int, INT_MIN>
 {
 };
-template <> struct hb_int_min<unsigned int> : hb_integral_constant<unsigned int, 0>
+template <> struct rb_int_min<unsigned int> : rb_integral_constant<unsigned int, 0>
 {
 };
-template <> struct hb_int_min<signed long> : hb_integral_constant<signed long, LONG_MIN>
+template <> struct rb_int_min<signed long> : rb_integral_constant<signed long, LONG_MIN>
 {
 };
-template <> struct hb_int_min<unsigned long> : hb_integral_constant<unsigned long, 0>
+template <> struct rb_int_min<unsigned long> : rb_integral_constant<unsigned long, 0>
 {
 };
-template <> struct hb_int_min<signed long long> : hb_integral_constant<signed long long, LLONG_MIN>
+template <> struct rb_int_min<signed long long> : rb_integral_constant<signed long long, LLONG_MIN>
 {
 };
-template <> struct hb_int_min<unsigned long long> : hb_integral_constant<unsigned long long, 0>
+template <> struct rb_int_min<unsigned long long> : rb_integral_constant<unsigned long long, 0>
 {
 };
-#define hb_int_min(T) hb_int_min<T>::value
-template <typename T> struct hb_int_max;
-template <> struct hb_int_max<char> : hb_integral_constant<char, CHAR_MAX>
+#define rb_int_min(T) rb_int_min<T>::value
+template <typename T> struct rb_int_max;
+template <> struct rb_int_max<char> : rb_integral_constant<char, CHAR_MAX>
 {
 };
-template <> struct hb_int_max<signed char> : hb_integral_constant<signed char, SCHAR_MAX>
+template <> struct rb_int_max<signed char> : rb_integral_constant<signed char, SCHAR_MAX>
 {
 };
-template <> struct hb_int_max<unsigned char> : hb_integral_constant<unsigned char, UCHAR_MAX>
+template <> struct rb_int_max<unsigned char> : rb_integral_constant<unsigned char, UCHAR_MAX>
 {
 };
-template <> struct hb_int_max<signed short> : hb_integral_constant<signed short, SHRT_MAX>
+template <> struct rb_int_max<signed short> : rb_integral_constant<signed short, SHRT_MAX>
 {
 };
-template <> struct hb_int_max<unsigned short> : hb_integral_constant<unsigned short, USHRT_MAX>
+template <> struct rb_int_max<unsigned short> : rb_integral_constant<unsigned short, USHRT_MAX>
 {
 };
-template <> struct hb_int_max<signed int> : hb_integral_constant<signed int, INT_MAX>
+template <> struct rb_int_max<signed int> : rb_integral_constant<signed int, INT_MAX>
 {
 };
-template <> struct hb_int_max<unsigned int> : hb_integral_constant<unsigned int, UINT_MAX>
+template <> struct rb_int_max<unsigned int> : rb_integral_constant<unsigned int, UINT_MAX>
 {
 };
-template <> struct hb_int_max<signed long> : hb_integral_constant<signed long, LONG_MAX>
+template <> struct rb_int_max<signed long> : rb_integral_constant<signed long, LONG_MAX>
 {
 };
-template <> struct hb_int_max<unsigned long> : hb_integral_constant<unsigned long, ULONG_MAX>
+template <> struct rb_int_max<unsigned long> : rb_integral_constant<unsigned long, ULONG_MAX>
 {
 };
-template <> struct hb_int_max<signed long long> : hb_integral_constant<signed long long, LLONG_MAX>
+template <> struct rb_int_max<signed long long> : rb_integral_constant<signed long long, LLONG_MAX>
 {
 };
-template <> struct hb_int_max<unsigned long long> : hb_integral_constant<unsigned long long, ULLONG_MAX>
+template <> struct rb_int_max<unsigned long long> : rb_integral_constant<unsigned long long, ULLONG_MAX>
 {
 };
-#define hb_int_max(T) hb_int_max<T>::value
+#define rb_int_max(T) rb_int_max<T>::value
 
-template <typename T, typename> struct _hb_is_destructible : hb_false_type
+template <typename T, typename> struct _rb_is_destructible : rb_false_type
 {
 };
-template <typename T> struct _hb_is_destructible<T, hb_void_t<decltype(hb_declval(T).~T())>> : hb_true_type
+template <typename T> struct _rb_is_destructible<T, rb_void_t<decltype(rb_declval(T).~T())>> : rb_true_type
 {
 };
-template <typename T> using hb_is_destructible = _hb_is_destructible<T, void>;
-#define hb_is_destructible(T) hb_is_destructible<T>::value
+template <typename T> using rb_is_destructible = _rb_is_destructible<T, void>;
+#define rb_is_destructible(T) rb_is_destructible<T>::value
 
-template <typename T, typename, typename... Ts> struct _hb_is_constructible : hb_false_type
+template <typename T, typename, typename... Ts> struct _rb_is_constructible : rb_false_type
 {
 };
 template <typename T, typename... Ts>
-struct _hb_is_constructible<T, hb_void_t<decltype(T(hb_declval(Ts)...))>, Ts...> : hb_true_type
+struct _rb_is_constructible<T, rb_void_t<decltype(T(rb_declval(Ts)...))>, Ts...> : rb_true_type
 {
 };
-template <typename T, typename... Ts> using hb_is_constructible = _hb_is_constructible<T, void, Ts...>;
-#define hb_is_constructible(...) hb_is_constructible<__VA_ARGS__>::value
+template <typename T, typename... Ts> using rb_is_constructible = _rb_is_constructible<T, void, Ts...>;
+#define rb_is_constructible(...) rb_is_constructible<__VA_ARGS__>::value
 
-template <typename T> using hb_is_default_constructible = hb_is_constructible<T>;
-#define hb_is_default_constructible(T) hb_is_default_constructible<T>::value
+template <typename T> using rb_is_default_constructible = rb_is_constructible<T>;
+#define rb_is_default_constructible(T) rb_is_default_constructible<T>::value
 
-template <typename T> using hb_is_copy_constructible = hb_is_constructible<T, hb_add_lvalue_reference<hb_add_const<T>>>;
-#define hb_is_copy_constructible(T) hb_is_copy_constructible<T>::value
+template <typename T> using rb_is_copy_constructible = rb_is_constructible<T, rb_add_lvalue_reference<rb_add_const<T>>>;
+#define rb_is_copy_constructible(T) rb_is_copy_constructible<T>::value
 
-template <typename T> using hb_is_move_constructible = hb_is_constructible<T, hb_add_rvalue_reference<hb_add_const<T>>>;
-#define hb_is_move_constructible(T) hb_is_move_constructible<T>::value
+template <typename T> using rb_is_move_constructible = rb_is_constructible<T, rb_add_rvalue_reference<rb_add_const<T>>>;
+#define rb_is_move_constructible(T) rb_is_move_constructible<T>::value
 
-template <typename T, typename U, typename> struct _hb_is_assignable : hb_false_type
+template <typename T, typename U, typename> struct _rb_is_assignable : rb_false_type
 {
 };
 template <typename T, typename U>
-struct _hb_is_assignable<T, U, hb_void_t<decltype(hb_declval(T) = hb_declval(U))>> : hb_true_type
+struct _rb_is_assignable<T, U, rb_void_t<decltype(rb_declval(T) = rb_declval(U))>> : rb_true_type
 {
 };
-template <typename T, typename U> using hb_is_assignable = _hb_is_assignable<T, U, void>;
-#define hb_is_assignable(T, U) hb_is_assignable<T, U>::value
+template <typename T, typename U> using rb_is_assignable = _rb_is_assignable<T, U, void>;
+#define rb_is_assignable(T, U) rb_is_assignable<T, U>::value
 
 template <typename T>
-using hb_is_copy_assignable = hb_is_assignable<hb_add_lvalue_reference<T>, hb_add_lvalue_reference<hb_add_const<T>>>;
-#define hb_is_copy_assignable(T) hb_is_copy_assignable<T>::value
+using rb_is_copy_assignable = rb_is_assignable<rb_add_lvalue_reference<T>, rb_add_lvalue_reference<rb_add_const<T>>>;
+#define rb_is_copy_assignable(T) rb_is_copy_assignable<T>::value
 
 template <typename T>
-using hb_is_move_assignable = hb_is_assignable<hb_add_lvalue_reference<T>, hb_add_rvalue_reference<T>>;
-#define hb_is_move_assignable(T) hb_is_move_assignable<T>::value
+using rb_is_move_assignable = rb_is_assignable<rb_add_lvalue_reference<T>, rb_add_rvalue_reference<T>>;
+#define rb_is_move_assignable(T) rb_is_move_assignable<T>::value
 
 /* Trivial versions. */
 
-template <typename T> union hb_trivial {
+template <typename T> union rb_trivial {
     T value;
 };
 
 /* Don't know how to do the following. */
-template <typename T> using hb_is_trivially_destructible = hb_is_destructible<hb_trivial<T>>;
-#define hb_is_trivially_destructible(T) hb_is_trivially_destructible<T>::value
+template <typename T> using rb_is_trivially_destructible = rb_is_destructible<rb_trivial<T>>;
+#define rb_is_trivially_destructible(T) rb_is_trivially_destructible<T>::value
 
 /* Don't know how to do the following. */
 // template <typename T, typename ...Ts>
-// using hb_is_trivially_constructible= hb_is_constructible<hb_trivial<T>, hb_trivial<Ts>...>;
-//#define hb_is_trivially_constructible(...) hb_is_trivially_constructible<__VA_ARGS__>::value
+// using rb_is_trivially_constructible= rb_is_constructible<rb_trivial<T>, rb_trivial<Ts>...>;
+//#define rb_is_trivially_constructible(...) rb_is_trivially_constructible<__VA_ARGS__>::value
 
-template <typename T> using hb_is_trivially_default_constructible = hb_is_default_constructible<hb_trivial<T>>;
-#define hb_is_trivially_default_constructible(T) hb_is_trivially_default_constructible<T>::value
+template <typename T> using rb_is_trivially_default_constructible = rb_is_default_constructible<rb_trivial<T>>;
+#define rb_is_trivially_default_constructible(T) rb_is_trivially_default_constructible<T>::value
 
-template <typename T> using hb_is_trivially_copy_constructible = hb_is_copy_constructible<hb_trivial<T>>;
-#define hb_is_trivially_copy_constructible(T) hb_is_trivially_copy_constructible<T>::value
+template <typename T> using rb_is_trivially_copy_constructible = rb_is_copy_constructible<rb_trivial<T>>;
+#define rb_is_trivially_copy_constructible(T) rb_is_trivially_copy_constructible<T>::value
 
-template <typename T> using hb_is_trivially_move_constructible = hb_is_move_constructible<hb_trivial<T>>;
-#define hb_is_trivially_move_constructible(T) hb_is_trivially_move_constructible<T>::value
+template <typename T> using rb_is_trivially_move_constructible = rb_is_move_constructible<rb_trivial<T>>;
+#define rb_is_trivially_move_constructible(T) rb_is_trivially_move_constructible<T>::value
 
 /* Don't know how to do the following. */
 // template <typename T, typename U>
-// using hb_is_trivially_assignable= hb_is_assignable<hb_trivial<T>, hb_trivial<U>>;
-//#define hb_is_trivially_assignable(T,U) hb_is_trivially_assignable<T, U>::value
+// using rb_is_trivially_assignable= rb_is_assignable<rb_trivial<T>, rb_trivial<U>>;
+//#define rb_is_trivially_assignable(T,U) rb_is_trivially_assignable<T, U>::value
 
-template <typename T> using hb_is_trivially_copy_assignable = hb_is_copy_assignable<hb_trivial<T>>;
-#define hb_is_trivially_copy_assignable(T) hb_is_trivially_copy_assignable<T>::value
+template <typename T> using rb_is_trivially_copy_assignable = rb_is_copy_assignable<rb_trivial<T>>;
+#define rb_is_trivially_copy_assignable(T) rb_is_trivially_copy_assignable<T>::value
 
-template <typename T> using hb_is_trivially_move_assignable = hb_is_move_assignable<hb_trivial<T>>;
-#define hb_is_trivially_move_assignable(T) hb_is_trivially_move_assignable<T>::value
-
-template <typename T>
-using hb_is_trivially_copyable =
-    hb_bool_constant<hb_is_trivially_destructible(T) &&
-                     (!hb_is_move_assignable(T) || hb_is_trivially_move_assignable(T)) &&
-                     (!hb_is_move_constructible(T) || hb_is_trivially_move_constructible(T)) &&
-                     (!hb_is_copy_assignable(T) || hb_is_trivially_copy_assignable(T)) &&
-                     (!hb_is_copy_constructible(T) || hb_is_trivially_copy_constructible(T)) && true>;
-#define hb_is_trivially_copyable(T) hb_is_trivially_copyable<T>::value
+template <typename T> using rb_is_trivially_move_assignable = rb_is_move_assignable<rb_trivial<T>>;
+#define rb_is_trivially_move_assignable(T) rb_is_trivially_move_assignable<T>::value
 
 template <typename T>
-using hb_is_trivial = hb_bool_constant<hb_is_trivially_copyable(T) && hb_is_trivially_default_constructible(T)>;
-#define hb_is_trivial(T) hb_is_trivial<T>::value
+using rb_is_trivially_copyable =
+    rb_bool_constant<rb_is_trivially_destructible(T) &&
+                     (!rb_is_move_assignable(T) || rb_is_trivially_move_assignable(T)) &&
+                     (!rb_is_move_constructible(T) || rb_is_trivially_move_constructible(T)) &&
+                     (!rb_is_copy_assignable(T) || rb_is_trivially_copy_assignable(T)) &&
+                     (!rb_is_copy_constructible(T) || rb_is_trivially_copy_constructible(T)) && true>;
+#define rb_is_trivially_copyable(T) rb_is_trivially_copyable<T>::value
 
-/* hb_unwrap_type (T)
+template <typename T>
+using rb_is_trivial = rb_bool_constant<rb_is_trivially_copyable(T) && rb_is_trivially_default_constructible(T)>;
+#define rb_is_trivial(T) rb_is_trivial<T>::value
+
+/* rb_unwrap_type (T)
  * If T has no T::type, returns T. Otherwise calls itself on T::type recursively.
  */
 
-template <typename T, typename> struct _hb_unwrap_type : hb_type_identity_t<T>
+template <typename T, typename> struct _rb_unwrap_type : rb_type_identity_t<T>
 {
 };
-template <typename T> struct _hb_unwrap_type<T, hb_void_t<typename T::type>> : _hb_unwrap_type<typename T::type, void>
+template <typename T> struct _rb_unwrap_type<T, rb_void_t<typename T::type>> : _rb_unwrap_type<typename T::type, void>
 {
 };
-template <typename T> using hb_unwrap_type = _hb_unwrap_type<T, void>;
-#define hb_unwrap_type(T) typename hb_unwrap_type<T>::type
+template <typename T> using rb_unwrap_type = _rb_unwrap_type<T, void>;
+#define rb_unwrap_type(T) typename rb_unwrap_type<T>::type
 
-#endif /* HB_META_HH */
+#endif /* RB_META_HH */

@@ -24,36 +24,36 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_VECTOR_HH
-#define HB_VECTOR_HH
+#ifndef RB_VECTOR_HH
+#define RB_VECTOR_HH
 
 #include "hb.hh"
 #include "hb-array.hh"
 #include "hb-null.hh"
 
-template <typename Type> struct hb_vector_t
+template <typename Type> struct rb_vector_t
 {
     typedef Type item_t;
-    static constexpr unsigned item_size = hb_static_size(Type);
+    static constexpr unsigned item_size = rb_static_size(Type);
 
-    hb_vector_t()
+    rb_vector_t()
     {
         init();
     }
-    hb_vector_t(const hb_vector_t &o)
+    rb_vector_t(const rb_vector_t &o)
     {
         init();
         alloc(o.length);
-        hb_copy(o, *this);
+        rb_copy(o, *this);
     }
-    hb_vector_t(hb_vector_t &&o)
+    rb_vector_t(rb_vector_t &&o)
     {
         allocated = o.allocated;
         length = o.length;
         arrayZ = o.arrayZ;
         o.init();
     }
-    ~hb_vector_t()
+    ~rb_vector_t()
     {
         fini();
     }
@@ -90,14 +90,14 @@ public:
         resize(0);
     }
 
-    hb_vector_t &operator=(const hb_vector_t &o)
+    rb_vector_t &operator=(const rb_vector_t &o)
     {
         reset();
         alloc(o.length);
-        hb_copy(o, *this);
+        rb_copy(o, *this);
         return *this;
     }
-    hb_vector_t &operator=(hb_vector_t &&o)
+    rb_vector_t &operator=(rb_vector_t &&o)
     {
         fini();
         allocated = o.allocated;
@@ -107,16 +107,16 @@ public:
         return *this;
     }
 
-    hb_bytes_t as_bytes() const
+    rb_bytes_t as_bytes() const
     {
-        return hb_bytes_t((const char *)arrayZ, length * item_size);
+        return rb_bytes_t((const char *)arrayZ, length * item_size);
     }
 
-    bool operator==(const hb_vector_t &o) const
+    bool operator==(const rb_vector_t &o) const
     {
         return as_array() == o.as_array();
     }
-    bool operator!=(const hb_vector_t &o) const
+    bool operator!=(const rb_vector_t &o) const
     {
         return !(*this == o);
     }
@@ -159,24 +159,24 @@ public:
     }
 
     /* Sink interface. */
-    template <typename T> hb_vector_t &operator<<(T &&v)
+    template <typename T> rb_vector_t &operator<<(T &&v)
     {
-        push(hb_forward<T>(v));
+        push(rb_forward<T>(v));
         return *this;
     }
 
-    hb_array_t<Type> as_array()
+    rb_array_t<Type> as_array()
     {
-        return hb_array(arrayZ, length);
+        return rb_array(arrayZ, length);
     }
-    hb_array_t<const Type> as_array() const
+    rb_array_t<const Type> as_array() const
     {
-        return hb_array(arrayZ, length);
+        return rb_array(arrayZ, length);
     }
 
     /* Iterator. */
-    typedef hb_array_t<const Type> iter_t;
-    typedef hb_array_t<Type> writer_t;
+    typedef rb_array_t<const Type> iter_t;
+    typedef rb_array_t<Type> writer_t;
     iter_t iter() const
     {
         return as_array();
@@ -194,30 +194,30 @@ public:
         return writer();
     }
 
-    hb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int count) const
+    rb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int count) const
     {
         return as_array().sub_array(start_offset, count);
     }
-    hb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) const
+    rb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) const
     {
         return as_array().sub_array(start_offset, count);
     }
-    hb_array_t<Type> sub_array(unsigned int start_offset, unsigned int count)
+    rb_array_t<Type> sub_array(unsigned int start_offset, unsigned int count)
     {
         return as_array().sub_array(start_offset, count);
     }
-    hb_array_t<Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */)
+    rb_array_t<Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */)
     {
         return as_array().sub_array(start_offset, count);
     }
 
-    hb_sorted_array_t<Type> as_sorted_array()
+    rb_sorted_array_t<Type> as_sorted_array()
     {
-        return hb_sorted_array(arrayZ, length);
+        return rb_sorted_array(arrayZ, length);
     }
-    hb_sorted_array_t<const Type> as_sorted_array() const
+    rb_sorted_array_t<const Type> as_sorted_array() const
     {
-        return hb_sorted_array(arrayZ, length);
+        return rb_sorted_array(arrayZ, length);
     }
 
     template <typename T> explicit operator T *()
@@ -247,7 +247,7 @@ public:
     template <typename T> Type *push(T &&v)
     {
         Type *p = push();
-        *p = hb_forward<T>(v);
+        *p = rb_forward<T>(v);
         return p;
     }
 
@@ -273,7 +273,7 @@ public:
 
         Type *new_array = nullptr;
         bool overflows = (int)new_allocated < 0 || (new_allocated < (unsigned)allocated) ||
-                         hb_unsigned_mul_overflows(new_allocated, sizeof(Type));
+                         rb_unsigned_mul_overflows(new_allocated, sizeof(Type));
         if (likely(!overflows))
             new_array = (Type *)realloc(arrayZ, new_allocated * sizeof(Type));
 
@@ -305,7 +305,7 @@ public:
     {
         if (!length)
             return Null(Type);
-        return hb_move(arrayZ[--length]); /* Does this move actually work? */
+        return rb_move(arrayZ[--length]); /* Does this move actually work? */
     }
 
     void remove(unsigned int i)
@@ -357,20 +357,20 @@ public:
     }
 };
 
-template <typename Type> struct hb_sorted_vector_t : hb_vector_t<Type>
+template <typename Type> struct rb_sorted_vector_t : rb_vector_t<Type>
 {
-    hb_sorted_array_t<Type> as_array()
+    rb_sorted_array_t<Type> as_array()
     {
-        return hb_sorted_array(this->arrayZ, this->length);
+        return rb_sorted_array(this->arrayZ, this->length);
     }
-    hb_sorted_array_t<const Type> as_array() const
+    rb_sorted_array_t<const Type> as_array() const
     {
-        return hb_sorted_array(this->arrayZ, this->length);
+        return rb_sorted_array(this->arrayZ, this->length);
     }
 
     /* Iterator. */
-    typedef hb_sorted_array_t<const Type> const_iter_t;
-    typedef hb_sorted_array_t<Type> iter_t;
+    typedef rb_sorted_array_t<const Type> const_iter_t;
+    typedef rb_sorted_array_t<Type> iter_t;
     const_iter_t iter() const
     {
         return as_array();
@@ -403,11 +403,11 @@ template <typename Type> struct hb_sorted_vector_t : hb_vector_t<Type>
     template <typename T>
     bool bfind(const T &x,
                unsigned int *i = nullptr,
-               hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+               rb_bfind_not_found_t not_found = RB_BFIND_NOT_FOUND_DONT_STORE,
                unsigned int to_store = (unsigned int)-1) const
     {
         return as_array().bfind(x, i, not_found, to_store);
     }
 };
 
-#endif /* HB_VECTOR_HH */
+#endif /* RB_VECTOR_HH */

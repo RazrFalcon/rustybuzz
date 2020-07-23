@@ -34,11 +34,11 @@ const S_DAGESH_FORMS: &[char] = &[
 ];
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_compose_hebrew(
-    ctx: *const ffi::hb_ot_shape_normalize_context_t,
-    a: ffi::hb_codepoint_t,
-    b: ffi::hb_codepoint_t,
-    ab: *mut ffi::hb_codepoint_t,
+pub extern "C" fn rb_ot_complex_compose_hebrew(
+    ctx: *const ffi::rb_ot_shape_normalize_context_t,
+    a: ffi::rb_codepoint_t,
+    b: ffi::rb_codepoint_t,
+    ab: *mut ffi::rb_codepoint_t,
 ) -> bool {
     let ctx = ShapeNormalizeContext::from_ptr(ctx);
     let a = char::try_from(a).unwrap();

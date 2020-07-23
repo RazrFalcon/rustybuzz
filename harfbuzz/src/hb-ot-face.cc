@@ -31,16 +31,16 @@
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
 
-void hb_ot_face_t::init0(hb_face_t *face)
+void rb_ot_face_t::init0(rb_face_t *face)
 {
     this->face = face;
-#define HB_OT_TABLE(Namespace, Type) Type.init0();
+#define RB_OT_TABLE(Namespace, Type) Type.init0();
 #include "hb-ot-face-table-list.hh"
-#undef HB_OT_TABLE
+#undef RB_OT_TABLE
 }
-void hb_ot_face_t::fini()
+void rb_ot_face_t::fini()
 {
-#define HB_OT_TABLE(Namespace, Type) Type.fini();
+#define RB_OT_TABLE(Namespace, Type) Type.fini();
 #include "hb-ot-face-table-list.hh"
-#undef HB_OT_TABLE
+#undef RB_OT_TABLE
 }

@@ -26,8 +26,8 @@
  * Facebook Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_ALGS_HH
-#define HB_ALGS_HH
+#ifndef RB_ALGS_HH
+#define RB_ALGS_HH
 
 #include "hb.hh"
 #include "hb-meta.hh"
@@ -35,23 +35,23 @@
 
 /* Encodes three unsigned integers in one 64-bit number.  If the inputs have more than 21 bits,
  * values will be truncated / overlap, and might not decode exactly. */
-#define HB_CODEPOINT_ENCODE3(x, y, z) (((uint64_t)(x) << 42) | ((uint64_t)(y) << 21) | (uint64_t)(z))
-#define HB_CODEPOINT_DECODE3_1(v) ((hb_codepoint_t)((v) >> 42))
-#define HB_CODEPOINT_DECODE3_2(v) ((hb_codepoint_t)((v) >> 21) & 0x1FFFFFu)
-#define HB_CODEPOINT_DECODE3_3(v) ((hb_codepoint_t)(v)&0x1FFFFFu)
+#define RB_CODEPOINT_ENCODE3(x, y, z) (((uint64_t)(x) << 42) | ((uint64_t)(y) << 21) | (uint64_t)(z))
+#define RB_CODEPOINT_DECODE3_1(v) ((rb_codepoint_t)((v) >> 42))
+#define RB_CODEPOINT_DECODE3_2(v) ((rb_codepoint_t)((v) >> 21) & 0x1FFFFFu)
+#define RB_CODEPOINT_DECODE3_3(v) ((rb_codepoint_t)(v)&0x1FFFFFu)
 
 /* Custom encoding used by hb-ucd. */
-#define HB_CODEPOINT_ENCODE3_11_7_14(x, y, z)                                                                          \
+#define RB_CODEPOINT_ENCODE3_11_7_14(x, y, z)                                                                          \
     (((uint32_t)((x)&0x07FFu) << 21) | (((uint32_t)(y)&0x007Fu) << 14) | (uint32_t)((z)&0x3FFFu))
-#define HB_CODEPOINT_DECODE3_11_7_14_1(v) ((hb_codepoint_t)((v) >> 21))
-#define HB_CODEPOINT_DECODE3_11_7_14_2(v) ((hb_codepoint_t)(((v) >> 14) & 0x007Fu) | 0x0300)
-#define HB_CODEPOINT_DECODE3_11_7_14_3(v) ((hb_codepoint_t)(v)&0x3FFFu)
+#define RB_CODEPOINT_DECODE3_11_7_14_1(v) ((rb_codepoint_t)((v) >> 21))
+#define RB_CODEPOINT_DECODE3_11_7_14_2(v) ((rb_codepoint_t)(((v) >> 14) & 0x007Fu) | 0x0300)
+#define RB_CODEPOINT_DECODE3_11_7_14_3(v) ((rb_codepoint_t)(v)&0x3FFFu)
 
 struct
 {
     /* Note.  This is dangerous in that if it's passed an rvalue, it returns rvalue-reference. */
-    template <typename T> constexpr auto operator()(T &&v) const HB_AUTO_RETURN(hb_forward<T>(v))
-} HB_FUNCOBJ(hb_identity);
+    template <typename T> constexpr auto operator()(T &&v) const RB_AUTO_RETURN(rb_forward<T>(v))
+} RB_FUNCOBJ(rb_identity);
 struct
 {
     /* Like identity(), but only retains lvalue-references.  Rvalues are returned as rvalues. */
@@ -60,36 +60,36 @@ struct
         return v;
     }
 
-    template <typename T> constexpr hb_remove_reference<T> operator()(T &&v) const
+    template <typename T> constexpr rb_remove_reference<T> operator()(T &&v) const
     {
         return v;
     }
-} HB_FUNCOBJ(hb_lidentity);
+} RB_FUNCOBJ(rb_lidentity);
 struct
 {
     /* Like identity(), but always returns rvalue. */
-    template <typename T> constexpr hb_remove_reference<T> operator()(T &&v) const
+    template <typename T> constexpr rb_remove_reference<T> operator()(T &&v) const
     {
         return v;
     }
-} HB_FUNCOBJ(hb_ridentity);
+} RB_FUNCOBJ(rb_ridentity);
 
 struct
 {
     template <typename T> constexpr bool operator()(T &&v) const
     {
-        return bool(hb_forward<T>(v));
+        return bool(rb_forward<T>(v));
     }
-} HB_FUNCOBJ(hb_bool);
+} RB_FUNCOBJ(rb_bool);
 
 struct
 {
 private:
     template <typename T>
-    constexpr auto impl(const T &v, hb_priority<1>) const HB_RETURN(uint32_t, hb_deref(v).hash())
+    constexpr auto impl(const T &v, rb_priority<1>) const RB_RETURN(uint32_t, rb_deref(v).hash())
 
-        template <typename T, hb_enable_if(hb_is_integral(T))>
-        constexpr auto impl(const T &v, hb_priority<0>) const HB_AUTO_RETURN(
+        template <typename T, rb_enable_if(rb_is_integral(T))>
+        constexpr auto impl(const T &v, rb_priority<0>) const RB_AUTO_RETURN(
             /* Knuth's multiplicative method: */
             (uint32_t)v * 2654435761u)
 
@@ -97,38 +97,38 @@ private:
 
         template <typename T>
         constexpr auto
-        operator()(const T &v) const HB_RETURN(uint32_t, impl(v, hb_prioritize))
-} HB_FUNCOBJ(hb_hash);
+        operator()(const T &v) const RB_RETURN(uint32_t, impl(v, rb_prioritize))
+} RB_FUNCOBJ(rb_hash);
 
 struct
 {
 private:
     /* Pointer-to-member-function. */
     template <typename Appl, typename T, typename... Ts>
-    auto impl(Appl &&a, hb_priority<2>, T &&v, Ts &&... ds) const
-        HB_AUTO_RETURN((hb_deref(hb_forward<T>(v)).*hb_forward<Appl>(a))(hb_forward<Ts>(ds)...))
+    auto impl(Appl &&a, rb_priority<2>, T &&v, Ts &&... ds) const
+        RB_AUTO_RETURN((rb_deref(rb_forward<T>(v)).*rb_forward<Appl>(a))(rb_forward<Ts>(ds)...))
 
         /* Pointer-to-member. */
         template <typename Appl, typename T>
-        auto impl(Appl &&a, hb_priority<1>, T &&v) const
-        HB_AUTO_RETURN((hb_deref(hb_forward<T>(v))).*hb_forward<Appl>(a))
+        auto impl(Appl &&a, rb_priority<1>, T &&v) const
+        RB_AUTO_RETURN((rb_deref(rb_forward<T>(v))).*rb_forward<Appl>(a))
 
         /* Operator(). */
         template <typename Appl, typename... Ts>
-        auto impl(Appl &&a, hb_priority<0>, Ts &&... ds) const
-        HB_AUTO_RETURN(hb_deref(hb_forward<Appl>(a))(hb_forward<Ts>(ds)...))
+        auto impl(Appl &&a, rb_priority<0>, Ts &&... ds) const
+        RB_AUTO_RETURN(rb_deref(rb_forward<Appl>(a))(rb_forward<Ts>(ds)...))
 
             public :
 
         template <typename Appl, typename... Ts>
         auto
         operator()(Appl &&a, Ts &&... ds) const
-        HB_AUTO_RETURN(impl(hb_forward<Appl>(a), hb_prioritize, hb_forward<Ts>(ds)...))
-} HB_FUNCOBJ(hb_invoke);
+        RB_AUTO_RETURN(impl(rb_forward<Appl>(a), rb_prioritize, rb_forward<Ts>(ds)...))
+} RB_FUNCOBJ(rb_invoke);
 
-template <unsigned Pos, typename Appl, typename V> struct hb_partial_t
+template <unsigned Pos, typename Appl, typename V> struct rb_partial_t
 {
-    hb_partial_t(Appl a, V v)
+    rb_partial_t(Appl a, V v)
         : a(a)
         , v(v)
     {
@@ -136,26 +136,26 @@ template <unsigned Pos, typename Appl, typename V> struct hb_partial_t
 
     static_assert(Pos > 0, "");
 
-    template <typename... Ts, unsigned P = Pos, hb_enable_if(P == 1)>
-    auto operator()(Ts &&... ds) -> decltype(hb_invoke(hb_declval(Appl), hb_declval(V), hb_declval(Ts)...))
+    template <typename... Ts, unsigned P = Pos, rb_enable_if(P == 1)>
+    auto operator()(Ts &&... ds) -> decltype(rb_invoke(rb_declval(Appl), rb_declval(V), rb_declval(Ts)...))
     {
-        return hb_invoke(hb_forward<Appl>(a), hb_forward<V>(v), hb_forward<Ts>(ds)...);
+        return rb_invoke(rb_forward<Appl>(a), rb_forward<V>(v), rb_forward<Ts>(ds)...);
     }
-    template <typename T0, typename... Ts, unsigned P = Pos, hb_enable_if(P == 2)>
+    template <typename T0, typename... Ts, unsigned P = Pos, rb_enable_if(P == 2)>
     auto operator()(T0 &&d0, Ts &&... ds)
-        -> decltype(hb_invoke(hb_declval(Appl), hb_declval(T0), hb_declval(V), hb_declval(Ts)...))
+        -> decltype(rb_invoke(rb_declval(Appl), rb_declval(T0), rb_declval(V), rb_declval(Ts)...))
     {
-        return hb_invoke(hb_forward<Appl>(a), hb_forward<T0>(d0), hb_forward<V>(v), hb_forward<Ts>(ds)...);
+        return rb_invoke(rb_forward<Appl>(a), rb_forward<T0>(d0), rb_forward<V>(v), rb_forward<Ts>(ds)...);
     }
 
 private:
-    hb_reference_wrapper<Appl> a;
+    rb_reference_wrapper<Appl> a;
     V v;
 };
 template <unsigned Pos = 1, typename Appl, typename V>
-auto hb_partial(Appl &&a, V &&v) HB_AUTO_RETURN((hb_partial_t<Pos, Appl, V>(a, v)))
+auto rb_partial(Appl &&a, V &&v) RB_AUTO_RETURN((rb_partial_t<Pos, Appl, V>(a, v)))
 
-/* The following, HB_PARTIALIZE, macro uses a particular corner-case
+/* The following, RB_PARTIALIZE, macro uses a particular corner-case
  * of C++11 that is not particularly well-supported by all compilers.
  * What's happening is that it's using "this" in a trailing return-type
  * via decltype().  Broken compilers deduce the type of "this" pointer
@@ -176,17 +176,17 @@ auto hb_partial(Appl &&a, V &&v) HB_AUTO_RETURN((hb_partial_t<Pos, Appl, V>(a, v
 // clang-format off
 #ifdef _MSC_VER
 /* https://github.com/harfbuzz/harfbuzz/issues/1730 */ \
-#define HB_PARTIALIZE(Pos) \
+#define RB_PARTIALIZE(Pos) \
   template <typename _T> \
   decltype(auto) operator () (_T&& _v) const \
-  { return hb_partial<Pos> (this, hb_forward<_T> (_v)); } \
+  { return rb_partial<Pos> (this, rb_forward<_T> (_v)); } \
   static_assert (true, "")
 #else
 /* https://github.com/harfbuzz/harfbuzz/issues/1724 */
-#define HB_PARTIALIZE(Pos) \
+#define RB_PARTIALIZE(Pos) \
   template <typename _T> \
-  auto operator () (_T&& _v) const HB_AUTO_RETURN \
-  (hb_partial<Pos> (+this, hb_forward<_T> (_v))) \
+  auto operator () (_T&& _v) const RB_AUTO_RETURN \
+  (rb_partial<Pos> (+this, rb_forward<_T> (_v))) \
   static_assert (true, "")
 #endif
     // clang-format on
@@ -195,80 +195,80 @@ auto hb_partial(Appl &&a, V &&v) HB_AUTO_RETURN((hb_partial_t<Pos, Appl, V>(a, v
 {
 private:
     template <typename Pred, typename Val>
-    auto impl(Pred &&p, Val &&v, hb_priority<1>) const
-        HB_AUTO_RETURN(hb_deref(hb_forward<Pred>(p)).has(hb_forward<Val>(v)))
+    auto impl(Pred &&p, Val &&v, rb_priority<1>) const
+        RB_AUTO_RETURN(rb_deref(rb_forward<Pred>(p)).has(rb_forward<Val>(v)))
 
             template <typename Pred, typename Val>
-            auto impl(Pred &&p, Val &&v, hb_priority<0>) const
-        HB_AUTO_RETURN(hb_invoke(hb_forward<Pred>(p), hb_forward<Val>(v)))
+            auto impl(Pred &&p, Val &&v, rb_priority<0>) const
+        RB_AUTO_RETURN(rb_invoke(rb_forward<Pred>(p), rb_forward<Val>(v)))
 
             public :
 
         template <typename Pred, typename Val>
         auto
         operator()(Pred &&p, Val &&v) const
-        HB_RETURN(bool, impl(hb_forward<Pred>(p), hb_forward<Val>(v), hb_prioritize))
-} HB_FUNCOBJ(hb_has);
+        RB_RETURN(bool, impl(rb_forward<Pred>(p), rb_forward<Val>(v), rb_prioritize))
+} RB_FUNCOBJ(rb_has);
 
 struct
 {
 private:
     template <typename Pred, typename Val>
-    auto impl(Pred &&p, Val &&v, hb_priority<1>) const HB_AUTO_RETURN(hb_has(hb_forward<Pred>(p), hb_forward<Val>(v)))
+    auto impl(Pred &&p, Val &&v, rb_priority<1>) const RB_AUTO_RETURN(rb_has(rb_forward<Pred>(p), rb_forward<Val>(v)))
 
         template <typename Pred, typename Val>
-        auto impl(Pred &&p, Val &&v, hb_priority<0>) const HB_AUTO_RETURN(hb_forward<Pred>(p) == hb_forward<Val>(v))
+        auto impl(Pred &&p, Val &&v, rb_priority<0>) const RB_AUTO_RETURN(rb_forward<Pred>(p) == rb_forward<Val>(v))
 
             public :
 
         template <typename Pred, typename Val>
         auto
         operator()(Pred &&p, Val &&v) const
-        HB_RETURN(bool, impl(hb_forward<Pred>(p), hb_forward<Val>(v), hb_prioritize))
-} HB_FUNCOBJ(hb_match);
+        RB_RETURN(bool, impl(rb_forward<Pred>(p), rb_forward<Val>(v), rb_prioritize))
+} RB_FUNCOBJ(rb_match);
 
 struct
 {
 private:
     template <typename Proj, typename Val>
-    auto impl(Proj &&f, Val &&v, hb_priority<2>) const
-        HB_AUTO_RETURN(hb_deref(hb_forward<Proj>(f)).get(hb_forward<Val>(v)))
+    auto impl(Proj &&f, Val &&v, rb_priority<2>) const
+        RB_AUTO_RETURN(rb_deref(rb_forward<Proj>(f)).get(rb_forward<Val>(v)))
 
             template <typename Proj, typename Val>
-            auto impl(Proj &&f, Val &&v, hb_priority<1>) const
-        HB_AUTO_RETURN(hb_invoke(hb_forward<Proj>(f), hb_forward<Val>(v)))
+            auto impl(Proj &&f, Val &&v, rb_priority<1>) const
+        RB_AUTO_RETURN(rb_invoke(rb_forward<Proj>(f), rb_forward<Val>(v)))
 
             template <typename Proj, typename Val>
-            auto impl(Proj &&f, Val &&v, hb_priority<0>) const HB_AUTO_RETURN(hb_forward<Proj>(f)[hb_forward<Val>(v)])
+            auto impl(Proj &&f, Val &&v, rb_priority<0>) const RB_AUTO_RETURN(rb_forward<Proj>(f)[rb_forward<Val>(v)])
 
                 public :
 
         template <typename Proj, typename Val>
         auto
-        operator()(Proj &&f, Val &&v) const HB_AUTO_RETURN(impl(hb_forward<Proj>(f), hb_forward<Val>(v), hb_prioritize))
-} HB_FUNCOBJ(hb_get);
+        operator()(Proj &&f, Val &&v) const RB_AUTO_RETURN(impl(rb_forward<Proj>(f), rb_forward<Val>(v), rb_prioritize))
+} RB_FUNCOBJ(rb_get);
 
-template <typename T1, typename T2> struct hb_pair_t
+template <typename T1, typename T2> struct rb_pair_t
 {
     typedef T1 first_t;
     typedef T2 second_t;
-    typedef hb_pair_t<T1, T2> pair_t;
+    typedef rb_pair_t<T1, T2> pair_t;
 
-    hb_pair_t(T1 a, T2 b)
+    rb_pair_t(T1 a, T2 b)
         : first(a)
         , second(b)
     {
     }
 
-    template <typename Q1, typename Q2, hb_enable_if(hb_is_convertible(T1, Q1) && hb_is_convertible(T2, T2))>
-    operator hb_pair_t<Q1, Q2>()
+    template <typename Q1, typename Q2, rb_enable_if(rb_is_convertible(T1, Q1) && rb_is_convertible(T2, T2))>
+    operator rb_pair_t<Q1, Q2>()
     {
-        return hb_pair_t<Q1, Q2>(first, second);
+        return rb_pair_t<Q1, Q2>(first, second);
     }
 
-    hb_pair_t<T1, T2> reverse() const
+    rb_pair_t<T1, T2> reverse() const
     {
-        return hb_pair_t<T1, T2>(second, first);
+        return rb_pair_t<T1, T2>(second, first);
     }
 
     bool operator==(const pair_t &o) const
@@ -299,10 +299,10 @@ template <typename T1, typename T2> struct hb_pair_t
     T1 first;
     T2 second;
 };
-#define hb_pair_t(T1, T2) hb_pair_t<T1, T2>
-template <typename T1, typename T2> static inline hb_pair_t<T1, T2> hb_pair(T1 &&a, T2 &&b)
+#define rb_pair_t(T1, T2) rb_pair_t<T1, T2>
+template <typename T1, typename T2> static inline rb_pair_t<T1, T2> rb_pair(T1 &&a, T2 &&b)
 {
-    return hb_pair_t<T1, T2>(a, b);
+    return rb_pair_t<T1, T2>(a, b);
 }
 
 struct
@@ -311,7 +311,7 @@ struct
     {
         return pair.first;
     }
-} HB_FUNCOBJ(hb_first);
+} RB_FUNCOBJ(rb_first);
 
 struct
 {
@@ -319,9 +319,9 @@ struct
     {
         return pair.second;
     }
-} HB_FUNCOBJ(hb_second);
+} RB_FUNCOBJ(rb_second);
 
-/* Note.  In min/max impl, we can use hb_type_identity<T> for second argument.
+/* Note.  In min/max impl, we can use rb_type_identity<T> for second argument.
  * However, that would silently convert between different-signedness integers.
  * Instead we accept two different types, such that compiler can err if
  * comparing integers of different signedness. */
@@ -329,27 +329,27 @@ struct
 {
     template <typename T, typename T2>
     constexpr auto operator()(T &&a, T2 &&b) const
-        HB_AUTO_RETURN(hb_forward<T>(a) <= hb_forward<T2>(b) ? hb_forward<T>(a) : hb_forward<T2>(b))
-} HB_FUNCOBJ(hb_min);
+        RB_AUTO_RETURN(rb_forward<T>(a) <= rb_forward<T2>(b) ? rb_forward<T>(a) : rb_forward<T2>(b))
+} RB_FUNCOBJ(rb_min);
 struct
 {
     template <typename T, typename T2>
     constexpr auto operator()(T &&a, T2 &&b) const
-        HB_AUTO_RETURN(hb_forward<T>(a) >= hb_forward<T2>(b) ? hb_forward<T>(a) : hb_forward<T2>(b))
-} HB_FUNCOBJ(hb_max);
+        RB_AUTO_RETURN(rb_forward<T>(a) >= rb_forward<T2>(b) ? rb_forward<T>(a) : rb_forward<T2>(b))
+} RB_FUNCOBJ(rb_max);
 struct
 {
     template <typename T, typename T2, typename T3>
     constexpr auto operator()(T &&x, T2 &&min, T3 &&max) const
-        HB_AUTO_RETURN(hb_min(hb_max(hb_forward<T>(x), hb_forward<T2>(min)), hb_forward<T3>(max)))
-} HB_FUNCOBJ(hb_clamp);
+        RB_AUTO_RETURN(rb_min(rb_max(rb_forward<T>(x), rb_forward<T2>(min)), rb_forward<T3>(max)))
+} RB_FUNCOBJ(rb_clamp);
 
 /*
  * Bithacks.
  */
 
 /* Return the number of 1 bits in v. */
-template <typename T> static inline HB_CONST_FUNC unsigned int hb_popcount(T v)
+template <typename T> static inline RB_CONST_FUNC unsigned int rb_popcount(T v)
 {
 #if (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)
     if (sizeof(T) <= sizeof(unsigned int))
@@ -372,12 +372,12 @@ template <typename T> static inline HB_CONST_FUNC unsigned int hb_popcount(T v)
 
     if (sizeof(T) == 8) {
         unsigned int shift = 32;
-        return hb_popcount<uint32_t>((uint32_t)v) + hb_popcount((uint32_t)(v >> shift));
+        return rb_popcount<uint32_t>((uint32_t)v) + rb_popcount((uint32_t)(v >> shift));
     }
 
     if (sizeof(T) == 16) {
         unsigned int shift = 64;
-        return hb_popcount<uint64_t>((uint64_t)v) + hb_popcount((uint64_t)(v >> shift));
+        return rb_popcount<uint64_t>((uint64_t)v) + rb_popcount((uint64_t)(v >> shift));
     }
 
     assert(0);
@@ -385,7 +385,7 @@ template <typename T> static inline HB_CONST_FUNC unsigned int hb_popcount(T v)
 }
 
 /* Returns the number of bits needed to store number */
-template <typename T> static inline HB_CONST_FUNC unsigned int hb_bit_storage(T v)
+template <typename T> static inline RB_CONST_FUNC unsigned int rb_bit_storage(T v)
 {
     if (unlikely(!v))
         return 0;
@@ -442,8 +442,8 @@ template <typename T> static inline HB_CONST_FUNC unsigned int hb_bit_storage(T 
     }
     if (sizeof(T) == 16) {
         unsigned int shift = 64;
-        return (v >> shift) ? hb_bit_storage<uint64_t>((uint64_t)(v >> shift)) + shift
-                            : hb_bit_storage<uint64_t>((uint64_t)v);
+        return (v >> shift) ? rb_bit_storage<uint64_t>((uint64_t)(v >> shift)) + shift
+                            : rb_bit_storage<uint64_t>((uint64_t)v);
     }
 
     assert(0);
@@ -451,7 +451,7 @@ template <typename T> static inline HB_CONST_FUNC unsigned int hb_bit_storage(T 
 }
 
 /* Returns the number of zero bits in the least significant side of v */
-template <typename T> static inline HB_CONST_FUNC unsigned int hb_ctz(T v)
+template <typename T> static inline RB_CONST_FUNC unsigned int rb_ctz(T v)
 {
     if (unlikely(!v))
         return 8 * sizeof(T);
@@ -522,8 +522,8 @@ template <typename T> static inline HB_CONST_FUNC unsigned int hb_ctz(T v)
     }
     if (sizeof(T) == 16) {
         unsigned int shift = 64;
-        return (uint64_t)v ? hb_bit_storage<uint64_t>((uint64_t)v)
-                           : hb_bit_storage<uint64_t>((uint64_t)(v >> shift)) + shift;
+        return (uint64_t)v ? rb_bit_storage<uint64_t>((uint64_t)v)
+                           : rb_bit_storage<uint64_t>((uint64_t)(v >> shift)) + shift;
     }
 
     assert(0);
@@ -581,7 +581,7 @@ template <typename Type, unsigned int n> static inline unsigned int ARRAY_LENGTH
 /* A const version, but does not detect erratically being called on pointers. */
 #define ARRAY_LENGTH_CONST(__array) ((signed int)(sizeof(__array) / sizeof(__array[0])))
 
-static inline int hb_memcmp(const void *a, const void *b, unsigned int len)
+static inline int rb_memcmp(const void *a, const void *b, unsigned int len)
 {
     /* It's illegal to pass NULL to memcmp(), even if len is zero.
      * So, wrap it.
@@ -591,7 +591,7 @@ static inline int hb_memcmp(const void *a, const void *b, unsigned int len)
     return memcmp(a, b, len);
 }
 
-static inline void *hb_memset(void *s, int c, unsigned int n)
+static inline void *rb_memset(void *s, int c, unsigned int n)
 {
     /* It's illegal to pass NULL to memset(), even if n is zero. */
     if (unlikely(!n))
@@ -599,26 +599,26 @@ static inline void *hb_memset(void *s, int c, unsigned int n)
     return memset(s, c, n);
 }
 
-static inline unsigned int hb_ceil_to_4(unsigned int v)
+static inline unsigned int rb_ceil_to_4(unsigned int v)
 {
     return ((v - 1) | 3) + 1;
 }
 
-template <typename T> static inline bool hb_in_range(T u, T lo, T hi)
+template <typename T> static inline bool rb_in_range(T u, T lo, T hi)
 {
-    static_assert(!hb_is_signed<T>::value, "");
+    static_assert(!rb_is_signed<T>::value, "");
 
     /* The casts below are important as if T is smaller than int,
      * the subtract results will become a signed int! */
     return (T)(u - lo) <= (T)(hi - lo);
 }
-template <typename T> static inline bool hb_in_ranges(T u, T lo1, T hi1, T lo2, T hi2)
+template <typename T> static inline bool rb_in_ranges(T u, T lo1, T hi1, T lo2, T hi2)
 {
-    return hb_in_range(u, lo1, hi1) || hb_in_range(u, lo2, hi2);
+    return rb_in_range(u, lo1, hi1) || rb_in_range(u, lo2, hi2);
 }
-template <typename T> static inline bool hb_in_ranges(T u, T lo1, T hi1, T lo2, T hi2, T lo3, T hi3)
+template <typename T> static inline bool rb_in_ranges(T u, T lo1, T hi1, T lo2, T hi2, T lo3, T hi3)
 {
-    return hb_in_range(u, lo1, hi1) || hb_in_range(u, lo2, hi2) || hb_in_range(u, lo3, hi3);
+    return rb_in_range(u, lo1, hi1) || rb_in_range(u, lo2, hi2) || rb_in_range(u, lo3, hi3);
 }
 
 /*
@@ -626,7 +626,7 @@ template <typename T> static inline bool hb_in_ranges(T u, T lo1, T hi1, T lo2, 
  */
 
 /* Consider __builtin_mul_overflow use here also */
-static inline bool hb_unsigned_mul_overflows(unsigned int count, unsigned int size)
+static inline bool rb_unsigned_mul_overflows(unsigned int count, unsigned int size)
 {
     return (size > 0) && (count >= ((unsigned int)-1) / size);
 }
@@ -636,7 +636,7 @@ static inline bool hb_unsigned_mul_overflows(unsigned int count, unsigned int si
  */
 
 template <typename K, typename V, typename... Ts>
-static int _hb_cmp_method(const void *pkey, const void *pval, Ts... ds)
+static int _rb_cmp_method(const void *pkey, const void *pval, Ts... ds)
 {
     const K &key = *(const K *)pkey;
     const V &val = *(const V *)pval;
@@ -645,7 +645,7 @@ static int _hb_cmp_method(const void *pkey, const void *pval, Ts... ds)
 }
 
 template <typename V, typename K, typename... Ts>
-static inline bool hb_bsearch_impl(unsigned *pos, /* Out */
+static inline bool rb_bsearch_impl(unsigned *pos, /* Out */
                                    const K &key,
                                    V *base,
                                    size_t nmemb,
@@ -662,7 +662,7 @@ static inline bool hb_bsearch_impl(unsigned *pos, /* Out */
 #pragma GCC diagnostic ignored "-Wcast-align"
         V *p = (V *)(((const char *)base) + (mid * stride));
 #pragma GCC diagnostic pop
-        int c = compar((const void *)hb_addressof(key), (const void *)p, ds...);
+        int c = compar((const void *)rb_addressof(key), (const void *)p, ds...);
         if (c < 0)
             max = mid - 1;
         else if (c > 0)
@@ -677,21 +677,21 @@ static inline bool hb_bsearch_impl(unsigned *pos, /* Out */
 }
 
 template <typename V, typename K>
-static inline V *hb_bsearch(const K &key,
+static inline V *rb_bsearch(const K &key,
                             V *base,
                             size_t nmemb,
                             size_t stride = sizeof(V),
-                            int (*compar)(const void *_key, const void *_item) = _hb_cmp_method<K, V>)
+                            int (*compar)(const void *_key, const void *_item) = _rb_cmp_method<K, V>)
 {
     unsigned pos;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
-    return hb_bsearch_impl(&pos, key, base, nmemb, stride, compar) ? (V *)(((const char *)base) + (pos * stride))
+    return rb_bsearch_impl(&pos, key, base, nmemb, stride, compar) ? (V *)(((const char *)base) + (pos * stride))
                                                                    : nullptr;
 #pragma GCC diagnostic pop
 }
 template <typename V, typename K, typename... Ts>
-static inline V *hb_bsearch(const K &key,
+static inline V *rb_bsearch(const K &key,
                             V *base,
                             size_t nmemb,
                             size_t stride,
@@ -701,7 +701,7 @@ static inline V *hb_bsearch(const K &key,
     unsigned pos;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
-    return hb_bsearch_impl(&pos, key, base, nmemb, stride, compar, ds...) ? (V *)(((const char *)base) + (pos * stride))
+    return rb_bsearch_impl(&pos, key, base, nmemb, stride, compar, ds...) ? (V *)(((const char *)base) + (pos * stride))
                                                                           : nullptr;
 #pragma GCC diagnostic pop
 }
@@ -713,7 +713,7 @@ static inline V *hb_bsearch(const K &key,
 /* Isaac Turner 29 April 2014 Public Domain */
 
 /*
-hb_qsort function to be exported.
+rb_qsort function to be exported.
 Parameters:
   base is the array to be sorted
   nel is the number of elements in the array
@@ -721,7 +721,7 @@ Parameters:
   compar is the comparison function
   arg (optional) is a pointer to be passed to the comparison function
 
-void hb_qsort(void *base, size_t nel, size_t width,
+void rb_qsort(void *base, size_t nel, size_t width,
               int (*compar)(const void *_a, const void *_b, [void *_arg]),
               [void *arg]);
 */
@@ -906,9 +906,9 @@ sort_r_simple(void *base, size_t nel, size_t w, int (*compar)(const void *_a, co
     }
 }
 
-static inline void hb_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *_a, const void *_b))
+static inline void rb_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *_a, const void *_b))
 {
-#if defined(__OPTIMIZE_SIZE__) && !defined(HB_USE_INTERNAL_QSORT)
+#if defined(__OPTIMIZE_SIZE__) && !defined(RB_USE_INTERNAL_QSORT)
     qsort(base, nel, width, compar);
 #else
     sort_r_simple(base, nel, width, compar);
@@ -916,7 +916,7 @@ static inline void hb_qsort(void *base, size_t nel, size_t width, int (*compar)(
 }
 
 static inline void
-hb_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *_a, const void *_b, void *_arg), void *arg)
+rb_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *_a, const void *_b, void *_arg), void *arg)
 {
 #ifdef HAVE_GNU_QSORT_R
     qsort_r(base, nel, width, compar, arg);
@@ -926,7 +926,7 @@ hb_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *_a, con
 }
 
 template <typename T, typename T2, typename T3>
-static inline void hb_stable_sort(T *array, unsigned int len, int (*compar)(const T2 *, const T2 *), T3 *array2)
+static inline void rb_stable_sort(T *array, unsigned int len, int (*compar)(const T2 *, const T2 *), T3 *array2)
 {
     for (unsigned int i = 1; i < len; i++) {
         unsigned int j = i;
@@ -948,93 +948,93 @@ static inline void hb_stable_sort(T *array, unsigned int len, int (*compar)(cons
     }
 }
 
-template <typename T> static inline void hb_stable_sort(T *array, unsigned int len, int (*compar)(const T *, const T *))
+template <typename T> static inline void rb_stable_sort(T *array, unsigned int len, int (*compar)(const T *, const T *))
 {
-    hb_stable_sort(array, len, compar, (int *)nullptr);
+    rb_stable_sort(array, len, compar, (int *)nullptr);
 }
 
 /* Operators. */
 
-struct hb_bitwise_and
+struct rb_bitwise_and
 {
-    HB_PARTIALIZE(2);
+    RB_PARTIALIZE(2);
     static constexpr bool passthru_left = false;
     static constexpr bool passthru_right = false;
-    template <typename T> constexpr auto operator()(const T &a, const T &b) const HB_AUTO_RETURN(a &b)
-} HB_FUNCOBJ(hb_bitwise_and);
-struct hb_bitwise_or
+    template <typename T> constexpr auto operator()(const T &a, const T &b) const RB_AUTO_RETURN(a &b)
+} RB_FUNCOBJ(rb_bitwise_and);
+struct rb_bitwise_or
 {
-    HB_PARTIALIZE(2);
+    RB_PARTIALIZE(2);
     static constexpr bool passthru_left = true;
     static constexpr bool passthru_right = true;
-    template <typename T> constexpr auto operator()(const T &a, const T &b) const HB_AUTO_RETURN(a | b)
-} HB_FUNCOBJ(hb_bitwise_or);
-struct hb_bitwise_xor
+    template <typename T> constexpr auto operator()(const T &a, const T &b) const RB_AUTO_RETURN(a | b)
+} RB_FUNCOBJ(rb_bitwise_or);
+struct rb_bitwise_xor
 {
-    HB_PARTIALIZE(2);
+    RB_PARTIALIZE(2);
     static constexpr bool passthru_left = true;
     static constexpr bool passthru_right = true;
-    template <typename T> constexpr auto operator()(const T &a, const T &b) const HB_AUTO_RETURN(a ^ b)
-} HB_FUNCOBJ(hb_bitwise_xor);
-struct hb_bitwise_sub
+    template <typename T> constexpr auto operator()(const T &a, const T &b) const RB_AUTO_RETURN(a ^ b)
+} RB_FUNCOBJ(rb_bitwise_xor);
+struct rb_bitwise_sub
 {
-    HB_PARTIALIZE(2);
+    RB_PARTIALIZE(2);
     static constexpr bool passthru_left = true;
     static constexpr bool passthru_right = false;
-    template <typename T> constexpr auto operator()(const T &a, const T &b) const HB_AUTO_RETURN(a & ~b)
-} HB_FUNCOBJ(hb_bitwise_sub);
+    template <typename T> constexpr auto operator()(const T &a, const T &b) const RB_AUTO_RETURN(a & ~b)
+} RB_FUNCOBJ(rb_bitwise_sub);
 struct
 {
-    template <typename T> constexpr auto operator()(const T &a) const HB_AUTO_RETURN(~a)
-} HB_FUNCOBJ(hb_bitwise_neg);
+    template <typename T> constexpr auto operator()(const T &a) const RB_AUTO_RETURN(~a)
+} RB_FUNCOBJ(rb_bitwise_neg);
 
 struct
 {
-    HB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const HB_AUTO_RETURN(a + b)
-} HB_FUNCOBJ(hb_add);
+    RB_PARTIALIZE(2);
+    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a + b)
+} RB_FUNCOBJ(rb_add);
 struct
 {
-    HB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const HB_AUTO_RETURN(a - b)
-} HB_FUNCOBJ(hb_sub);
+    RB_PARTIALIZE(2);
+    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a - b)
+} RB_FUNCOBJ(rb_sub);
 struct
 {
-    HB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const HB_AUTO_RETURN(a *b)
-} HB_FUNCOBJ(hb_mul);
+    RB_PARTIALIZE(2);
+    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a *b)
+} RB_FUNCOBJ(rb_mul);
 struct
 {
-    HB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const HB_AUTO_RETURN(a / b)
-} HB_FUNCOBJ(hb_div);
+    RB_PARTIALIZE(2);
+    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a / b)
+} RB_FUNCOBJ(rb_div);
 struct
 {
-    HB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const HB_AUTO_RETURN(a % b)
-} HB_FUNCOBJ(hb_mod);
+    RB_PARTIALIZE(2);
+    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a % b)
+} RB_FUNCOBJ(rb_mod);
 struct
 {
-    template <typename T> constexpr auto operator()(const T &a) const HB_AUTO_RETURN(+a)
-} HB_FUNCOBJ(hb_pos);
+    template <typename T> constexpr auto operator()(const T &a) const RB_AUTO_RETURN(+a)
+} RB_FUNCOBJ(rb_pos);
 struct
 {
-    template <typename T> constexpr auto operator()(const T &a) const HB_AUTO_RETURN(-a)
-} HB_FUNCOBJ(hb_neg);
+    template <typename T> constexpr auto operator()(const T &a) const RB_AUTO_RETURN(-a)
+} RB_FUNCOBJ(rb_neg);
 struct
 {
-    template <typename T> constexpr auto operator()(T &a) const HB_AUTO_RETURN(++a)
-} HB_FUNCOBJ(hb_inc);
+    template <typename T> constexpr auto operator()(T &a) const RB_AUTO_RETURN(++a)
+} RB_FUNCOBJ(rb_inc);
 struct
 {
-    template <typename T> constexpr auto operator()(T &a) const HB_AUTO_RETURN(--a)
-} HB_FUNCOBJ(hb_dec);
+    template <typename T> constexpr auto operator()(T &a) const RB_AUTO_RETURN(--a)
+} RB_FUNCOBJ(rb_dec);
 
 /* Compiler-assisted vectorization. */
 
 /* Type behaving similar to vectorized vars defined using __attribute__((vector_size(...))),
  * basically a fixed-size bitset. */
-template <typename elt_t, unsigned int byte_size> struct hb_vector_size_t
+template <typename elt_t, unsigned int byte_size> struct rb_vector_size_t
 {
     elt_t &operator[](unsigned int i)
     {
@@ -1050,35 +1050,35 @@ template <typename elt_t, unsigned int byte_size> struct hb_vector_size_t
         memset(this, v, sizeof(*this));
     }
 
-    template <typename Op> hb_vector_size_t process(const Op &op) const
+    template <typename Op> rb_vector_size_t process(const Op &op) const
     {
-        hb_vector_size_t r;
+        rb_vector_size_t r;
         for (unsigned int i = 0; i < ARRAY_LENGTH(v); i++)
             r.v[i] = op(v[i]);
         return r;
     }
-    template <typename Op> hb_vector_size_t process(const Op &op, const hb_vector_size_t &o) const
+    template <typename Op> rb_vector_size_t process(const Op &op, const rb_vector_size_t &o) const
     {
-        hb_vector_size_t r;
+        rb_vector_size_t r;
         for (unsigned int i = 0; i < ARRAY_LENGTH(v); i++)
             r.v[i] = op(v[i], o.v[i]);
         return r;
     }
-    hb_vector_size_t operator|(const hb_vector_size_t &o) const
+    rb_vector_size_t operator|(const rb_vector_size_t &o) const
     {
-        return process(hb_bitwise_or, o);
+        return process(rb_bitwise_or, o);
     }
-    hb_vector_size_t operator&(const hb_vector_size_t &o) const
+    rb_vector_size_t operator&(const rb_vector_size_t &o) const
     {
-        return process(hb_bitwise_and, o);
+        return process(rb_bitwise_and, o);
     }
-    hb_vector_size_t operator^(const hb_vector_size_t &o) const
+    rb_vector_size_t operator^(const rb_vector_size_t &o) const
     {
-        return process(hb_bitwise_xor, o);
+        return process(rb_bitwise_xor, o);
     }
-    hb_vector_size_t operator~() const
+    rb_vector_size_t operator~() const
     {
-        return process(hb_bitwise_neg);
+        return process(rb_bitwise_neg);
     }
 
 private:
@@ -1086,4 +1086,4 @@ private:
     elt_t v[byte_size / sizeof(elt_t)];
 };
 
-#endif /* HB_ALGS_HH */
+#endif /* RB_ALGS_HH */

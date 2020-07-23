@@ -24,58 +24,58 @@
  * Google Author(s): Behdad Esfahbod, Roozbeh Pournader
  */
 
-#ifndef HB_OT_H_IN
+#ifndef RB_OT_H_IN
 #error "Include <hb-ot.h> instead."
 #endif
 
-#ifndef HB_OT_FONT_H
-#define HB_OT_FONT_H
+#ifndef RB_OT_FONT_H
+#define RB_OT_FONT_H
 
 #include "hb.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
-HB_EXTERN hb_bool_t hb_ot_get_nominal_glyph(hb_font_t *font, hb_codepoint_t unicode, hb_codepoint_t *glyph);
+RB_EXTERN rb_bool_t rb_ot_get_nominal_glyph(rb_font_t *font, rb_codepoint_t unicode, rb_codepoint_t *glyph);
 
-HB_EXTERN unsigned int hb_ot_get_nominal_glyphs(hb_font_t *font,
+RB_EXTERN unsigned int rb_ot_get_nominal_glyphs(rb_font_t *font,
                                                 unsigned int count,
-                                                const hb_codepoint_t *first_unicode,
+                                                const rb_codepoint_t *first_unicode,
                                                 unsigned int unicode_stride,
-                                                hb_codepoint_t *first_glyph,
+                                                rb_codepoint_t *first_glyph,
                                                 unsigned int glyph_stride);
 
-HB_EXTERN hb_bool_t hb_ot_get_variation_glyph(hb_font_t *font,
-                                              hb_codepoint_t unicode,
-                                              hb_codepoint_t variation_selector,
-                                              hb_codepoint_t *glyph);
+RB_EXTERN rb_bool_t rb_ot_get_variation_glyph(rb_font_t *font,
+                                              rb_codepoint_t unicode,
+                                              rb_codepoint_t variation_selector,
+                                              rb_codepoint_t *glyph);
 
-HB_EXTERN void hb_ot_get_glyph_h_advances(hb_font_t *font,
+RB_EXTERN void rb_ot_get_glyph_h_advances(rb_font_t *font,
                                           unsigned count,
-                                          const hb_codepoint_t *first_glyph,
+                                          const rb_codepoint_t *first_glyph,
                                           unsigned glyph_stride,
-                                          hb_position_t *first_advance,
+                                          rb_position_t *first_advance,
                                           unsigned advance_stride);
 
-HB_EXTERN void hb_ot_get_glyph_v_advances(hb_font_t *font,
+RB_EXTERN void rb_ot_get_glyph_v_advances(rb_font_t *font,
                                           unsigned count,
-                                          const hb_codepoint_t *first_glyph,
+                                          const rb_codepoint_t *first_glyph,
                                           unsigned glyph_stride,
-                                          hb_position_t *first_advance,
+                                          rb_position_t *first_advance,
                                           unsigned advance_stride);
 
-HB_EXTERN hb_bool_t hb_ot_get_glyph_v_origin(hb_font_t *font, hb_codepoint_t glyph, hb_position_t *x, hb_position_t *y);
+RB_EXTERN rb_bool_t rb_ot_get_glyph_v_origin(rb_font_t *font, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y);
 
-HB_EXTERN hb_bool_t hb_ot_get_glyph_extents(hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents);
+RB_EXTERN rb_bool_t rb_ot_get_glyph_extents(rb_font_t *font, rb_codepoint_t glyph, rb_glyph_extents_t *extents);
 
-HB_EXTERN hb_bool_t hb_ot_get_glyph_name(hb_font_t *font, hb_codepoint_t glyph, char *name, unsigned int size);
+RB_EXTERN rb_bool_t rb_ot_get_glyph_name(rb_font_t *font, rb_codepoint_t glyph, char *name, unsigned int size);
 
-HB_EXTERN hb_bool_t hb_ot_get_font_h_extents(hb_font_t *font, hb_font_extents_t *metrics);
+RB_EXTERN rb_bool_t rb_ot_get_font_h_extents(rb_font_t *font, rb_font_extents_t *metrics);
 
-HB_EXTERN hb_bool_t hb_ot_get_font_v_extents(hb_font_t *font, hb_font_extents_t *metrics);
+RB_EXTERN rb_bool_t rb_ot_get_font_v_extents(rb_font_t *font, rb_font_extents_t *metrics);
 
-HB_EXTERN unsigned int hb_font_get_advance(hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical);
-HB_EXTERN int hb_font_get_side_bearing(hb_font_t *font, hb_codepoint_t glyph, hb_bool_t is_vertical);
+RB_EXTERN unsigned int rb_font_get_advance(rb_font_t *font, rb_codepoint_t glyph, rb_bool_t is_vertical);
+RB_EXTERN int rb_font_get_side_bearing(rb_font_t *font, rb_codepoint_t glyph, rb_bool_t is_vertical);
 
-HB_END_DECLS
+RB_END_DECLS
 
-#endif /* HB_OT_FONT_H */
+#endif /* RB_OT_FONT_H */

@@ -35,34 +35,34 @@
 #include "hb-ot-head-table.hh"
 #include "hb-ot-maxp-table.hh"
 
-#ifndef HB_NO_VISIBILITY
+#ifndef RB_NO_VISIBILITY
 
-uint64_t const _hb_NullPool[(HB_NULL_POOL_SIZE + sizeof(uint64_t) - 1) / sizeof(uint64_t)] = {};
-/*thread_local*/ uint64_t _hb_CrapPool[(HB_NULL_POOL_SIZE + sizeof(uint64_t) - 1) / sizeof(uint64_t)] = {};
+uint64_t const _rb_NullPool[(RB_NULL_POOL_SIZE + sizeof(uint64_t) - 1) / sizeof(uint64_t)] = {};
+/*thread_local*/ uint64_t _rb_CrapPool[(RB_NULL_POOL_SIZE + sizeof(uint64_t) - 1) / sizeof(uint64_t)] = {};
 
 DEFINE_NULL_NAMESPACE_BYTES(OT, Index) = {0xFF, 0xFF};
 DEFINE_NULL_NAMESPACE_BYTES(OT, LangSys) = {0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00};
 DEFINE_NULL_NAMESPACE_BYTES(OT, RangeRecord) = {0x00, 0x01, 0x00, 0x00, 0x00, 0x00};
 DEFINE_NULL_NAMESPACE_BYTES(AAT, SettingName) = {0xFF, 0xFF, 0xFF, 0xFF};
 /* Hand-coded because Lookup is a template.  Sad. */
-const unsigned char _hb_Null_AAT_Lookup[2] = {0xFF, 0xFF};
+const unsigned char _rb_Null_AAT_Lookup[2] = {0xFF, 0xFF};
 
-/* hb_face_t */
+/* rb_face_t */
 
-unsigned int hb_face_t::load_num_glyphs() const
+unsigned int rb_face_t::load_num_glyphs() const
 {
-    hb_sanitize_context_t c = hb_sanitize_context_t();
+    rb_sanitize_context_t c = rb_sanitize_context_t();
     c.set_num_glyphs(0); /* So we don't recurse ad infinitum. */
-    hb_blob_t *maxp_blob = c.reference_table<OT::maxp>(this);
+    rb_blob_t *maxp_blob = c.reference_table<OT::maxp>(this);
     const OT::maxp *maxp_table = maxp_blob->as<OT::maxp>();
 
     unsigned int ret = maxp_table->get_num_glyphs();
     num_glyphs.set_relaxed(ret);
-    hb_blob_destroy(maxp_blob);
+    rb_blob_destroy(maxp_blob);
     return ret;
 }
 
-unsigned int hb_face_t::load_upem() const
+unsigned int rb_face_t::load_upem() const
 {
     unsigned int ret = table.head->get_upem();
     upem.set_relaxed(ret);

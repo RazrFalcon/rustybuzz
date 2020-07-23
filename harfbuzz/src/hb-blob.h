@@ -24,67 +24,38 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#ifndef RB_H_IN
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_BLOB_H
-#define HB_BLOB_H
+#ifndef RB_BLOB_H
+#define RB_BLOB_H
 
 #include "hb-common.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
-/*
- * Note re various memory-modes:
- *
- * - In no case shall the HarfBuzz client modify memory
- *   that is passed to HarfBuzz in a blob.  If there is
- *   any such possibility, MODE_DUPLICATE should be used
- *   such that HarfBuzz makes a copy immediately,
- *
- * - Use MODE_READONLY otherwise, unless you really really
- *   really know what you are doing,
- *
- * - MODE_WRITABLE is appropriate if you really made a
- *   copy of data solely for the purpose of passing to
- *   HarfBuzz and doing that just once (no reuse!),
- *
- * - If the font is mmap()ed, it's ok to use
- *   READONLY_MAY_MAKE_WRITABLE, however, using that mode
- *   correctly is very tricky.  Use MODE_READONLY instead.
- */
-typedef enum {
-    HB_MEMORY_MODE_READONLY,
-} hb_memory_mode_t;
+typedef struct rb_blob_t rb_blob_t;
 
-typedef struct hb_blob_t hb_blob_t;
+RB_EXTERN rb_blob_t *rb_blob_create(
+    const char *data, unsigned int length, void *user_data, rb_destroy_func_t destroy);
 
-HB_EXTERN hb_blob_t *hb_blob_create(
-    const char *data, unsigned int length, hb_memory_mode_t mode, void *user_data, hb_destroy_func_t destroy);
+RB_EXTERN rb_blob_t *rb_blob_create_sub_blob(rb_blob_t *parent, unsigned int offset, unsigned int length);
 
-/* Always creates with MEMORY_MODE_READONLY.
- * Even if the parent blob is writable, we don't
- * want the user of the sub-blob to be able to
- * modify the parent data as that data may be
- * shared among multiple sub-blobs.
- */
-HB_EXTERN hb_blob_t *hb_blob_create_sub_blob(hb_blob_t *parent, unsigned int offset, unsigned int length);
+RB_EXTERN rb_blob_t *rb_blob_get_empty(void);
 
-HB_EXTERN hb_blob_t *hb_blob_get_empty(void);
+RB_EXTERN rb_blob_t *rb_blob_reference(rb_blob_t *blob);
 
-HB_EXTERN hb_blob_t *hb_blob_reference(hb_blob_t *blob);
+RB_EXTERN void rb_blob_destroy(rb_blob_t *blob);
 
-HB_EXTERN void hb_blob_destroy(hb_blob_t *blob);
+RB_EXTERN void rb_blob_make_immutable(rb_blob_t *blob);
 
-HB_EXTERN void hb_blob_make_immutable(hb_blob_t *blob);
+RB_EXTERN rb_bool_t rb_blob_is_immutable(rb_blob_t *blob);
 
-HB_EXTERN hb_bool_t hb_blob_is_immutable(hb_blob_t *blob);
+RB_EXTERN unsigned int rb_blob_get_length(rb_blob_t *blob);
 
-HB_EXTERN unsigned int hb_blob_get_length(hb_blob_t *blob);
+RB_EXTERN const char *rb_blob_get_data(rb_blob_t *blob, unsigned int *length);
 
-HB_EXTERN const char *hb_blob_get_data(hb_blob_t *blob, unsigned int *length);
+RB_END_DECLS
 
-HB_END_DECLS
-
-#endif /* HB_BLOB_H */
+#endif /* RB_BLOB_H */

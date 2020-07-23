@@ -29,8 +29,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_ATOMIC_HH
-#define HB_ATOMIC_HH
+#ifndef RB_ATOMIC_HH
+#define RB_ATOMIC_HH
 
 #include "hb.hh"
 #include "hb-meta.hh"
@@ -41,69 +41,69 @@
 
 /* We need external help for these */
 
-#if defined(hb_atomic_int_impl_add) && defined(hb_atomic_ptr_impl_get) && defined(hb_atomic_ptr_impl_cmpexch)
+#if defined(rb_atomic_int_impl_add) && defined(rb_atomic_ptr_impl_get) && defined(rb_atomic_ptr_impl_cmpexch)
 
 /* Defined externally, i.e. in config.h. */
 
-#elif !defined(HB_NO_MT) && defined(__ATOMIC_ACQUIRE)
+#elif !defined(RB_NO_MT) && defined(__ATOMIC_ACQUIRE)
 
 /* C++11-style GCC primitives. */
 
-#define _hb_memory_barrier() __sync_synchronize()
+#define _rb_memory_barrier() __sync_synchronize()
 
-#define hb_atomic_int_impl_add(AI, V) __atomic_fetch_add((AI), (V), __ATOMIC_ACQ_REL)
-#define hb_atomic_int_impl_set_relaxed(AI, V) __atomic_store_n((AI), (V), __ATOMIC_RELAXED)
-#define hb_atomic_int_impl_set(AI, V) __atomic_store_n((AI), (V), __ATOMIC_RELEASE)
-#define hb_atomic_int_impl_get_relaxed(AI) __atomic_load_n((AI), __ATOMIC_RELAXED)
-#define hb_atomic_int_impl_get(AI) __atomic_load_n((AI), __ATOMIC_ACQUIRE)
+#define rb_atomic_int_impl_add(AI, V) __atomic_fetch_add((AI), (V), __ATOMIC_ACQ_REL)
+#define rb_atomic_int_impl_set_relaxed(AI, V) __atomic_store_n((AI), (V), __ATOMIC_RELAXED)
+#define rb_atomic_int_impl_set(AI, V) __atomic_store_n((AI), (V), __ATOMIC_RELEASE)
+#define rb_atomic_int_impl_get_relaxed(AI) __atomic_load_n((AI), __ATOMIC_RELAXED)
+#define rb_atomic_int_impl_get(AI) __atomic_load_n((AI), __ATOMIC_ACQUIRE)
 
-#define hb_atomic_ptr_impl_set_relaxed(P, V) __atomic_store_n((P), (V), __ATOMIC_RELAXED)
-#define hb_atomic_ptr_impl_get_relaxed(P) __atomic_load_n((P), __ATOMIC_RELAXED)
-#define hb_atomic_ptr_impl_get(P) __atomic_load_n((P), __ATOMIC_ACQUIRE)
-static inline bool _hb_atomic_ptr_impl_cmplexch(const void **P, const void *O_, const void *N)
+#define rb_atomic_ptr_impl_set_relaxed(P, V) __atomic_store_n((P), (V), __ATOMIC_RELAXED)
+#define rb_atomic_ptr_impl_get_relaxed(P) __atomic_load_n((P), __ATOMIC_RELAXED)
+#define rb_atomic_ptr_impl_get(P) __atomic_load_n((P), __ATOMIC_ACQUIRE)
+static inline bool _rb_atomic_ptr_impl_cmplexch(const void **P, const void *O_, const void *N)
 {
     const void *O = O_; // Need lvalue
     return __atomic_compare_exchange_n((void **)P, (void **)&O, (void *)N, true, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
 }
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) _hb_atomic_ptr_impl_cmplexch((const void **)(P), (O), (N))
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) _rb_atomic_ptr_impl_cmplexch((const void **)(P), (O), (N))
 
-#elif !defined(HB_NO_MT) && __cplusplus >= 201103L
+#elif !defined(RB_NO_MT) && __cplusplus >= 201103L
 
 /* C++11 atomics. */
 
 #include <atomic>
 
-#define _hb_memory_barrier() std::atomic_thread_fence(std::memory_order_ack_rel)
-#define _hb_memory_r_barrier() std::atomic_thread_fence(std::memory_order_acquire)
-#define _hb_memory_w_barrier() std::atomic_thread_fence(std::memory_order_release)
+#define _rb_memory_barrier() std::atomic_thread_fence(std::memory_order_ack_rel)
+#define _rb_memory_r_barrier() std::atomic_thread_fence(std::memory_order_acquire)
+#define _rb_memory_w_barrier() std::atomic_thread_fence(std::memory_order_release)
 
-#define hb_atomic_int_impl_add(AI, V)                                                                                  \
+#define rb_atomic_int_impl_add(AI, V)                                                                                  \
     (reinterpret_cast<std::atomic<int> *>(AI)->fetch_add((V), std::memory_order_acq_rel))
-#define hb_atomic_int_impl_set_relaxed(AI, V)                                                                          \
+#define rb_atomic_int_impl_set_relaxed(AI, V)                                                                          \
     (reinterpret_cast<std::atomic<int> *>(AI)->store((V), std::memory_order_relaxed))
-#define hb_atomic_int_impl_set(AI, V) (reinterpret_cast<std::atomic<int> *>(AI)->store((V), std::memory_order_release))
-#define hb_atomic_int_impl_get_relaxed(AI)                                                                             \
+#define rb_atomic_int_impl_set(AI, V) (reinterpret_cast<std::atomic<int> *>(AI)->store((V), std::memory_order_release))
+#define rb_atomic_int_impl_get_relaxed(AI)                                                                             \
     (reinterpret_cast<std::atomic<int> const *>(AI)->load(std::memory_order_relaxed))
-#define hb_atomic_int_impl_get(AI) (reinterpret_cast<std::atomic<int> const *>(AI)->load(std::memory_order_acquire))
+#define rb_atomic_int_impl_get(AI) (reinterpret_cast<std::atomic<int> const *>(AI)->load(std::memory_order_acquire))
 
-#define hb_atomic_ptr_impl_set_relaxed(P, V)                                                                           \
+#define rb_atomic_ptr_impl_set_relaxed(P, V)                                                                           \
     (reinterpret_cast<std::atomic<void *> *>(P)->store((V), std::memory_order_relaxed))
-#define hb_atomic_ptr_impl_get_relaxed(P)                                                                              \
+#define rb_atomic_ptr_impl_get_relaxed(P)                                                                              \
     (reinterpret_cast<std::atomic<void *> const *>(P)->load(std::memory_order_relaxed))
-#define hb_atomic_ptr_impl_get(P) (reinterpret_cast<std::atomic<void *> *>(P)->load(std::memory_order_acquire))
-static inline bool _hb_atomic_ptr_impl_cmplexch(const void **P, const void *O_, const void *N)
+#define rb_atomic_ptr_impl_get(P) (reinterpret_cast<std::atomic<void *> *>(P)->load(std::memory_order_acquire))
+static inline bool _rb_atomic_ptr_impl_cmplexch(const void **P, const void *O_, const void *N)
 {
     const void *O = O_; // Need lvalue
     return reinterpret_cast<std::atomic<const void *> *>(P)->compare_exchange_weak(
         O, N, std::memory_order_acq_rel, std::memory_order_relaxed);
 }
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) _hb_atomic_ptr_impl_cmplexch((const void **)(P), (O), (N))
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) _rb_atomic_ptr_impl_cmplexch((const void **)(P), (O), (N))
 
-#elif !defined(HB_NO_MT) && defined(_WIN32)
+#elif !defined(RB_NO_MT) && defined(_WIN32)
 
 #include <windows.h>
 
-static inline void _hb_memory_barrier()
+static inline void _rb_memory_barrier()
 {
 #if !defined(MemoryBarrier) && !defined(__MINGW32_VERSION)
     /* MinGW has a convoluted history of supporting MemoryBarrier. */
@@ -113,50 +113,50 @@ static inline void _hb_memory_barrier()
     MemoryBarrier();
 #endif
 }
-#define _hb_memory_barrier() _hb_memory_barrier()
+#define _rb_memory_barrier() _rb_memory_barrier()
 
-#define hb_atomic_int_impl_add(AI, V) InterlockedExchangeAdd((LONG *)(AI), (V))
+#define rb_atomic_int_impl_add(AI, V) InterlockedExchangeAdd((LONG *)(AI), (V))
 static_assert((sizeof(LONG) == sizeof(int)), "");
 
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) (InterlockedCompareExchangePointer((P), (N), (O)) == (O))
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) (InterlockedCompareExchangePointer((P), (N), (O)) == (O))
 
-#elif !defined(HB_NO_MT) && defined(HAVE_INTEL_ATOMIC_PRIMITIVES)
+#elif !defined(RB_NO_MT) && defined(HAVE_INTEL_ATOMIC_PRIMITIVES)
 
-#define _hb_memory_barrier() __sync_synchronize()
+#define _rb_memory_barrier() __sync_synchronize()
 
-#define hb_atomic_int_impl_add(AI, V) __sync_fetch_and_add((AI), (V))
+#define rb_atomic_int_impl_add(AI, V) __sync_fetch_and_add((AI), (V))
 
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) __sync_bool_compare_and_swap((P), (O), (N))
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) __sync_bool_compare_and_swap((P), (O), (N))
 
-#elif !defined(HB_NO_MT) && defined(HAVE_SOLARIS_ATOMIC_OPS)
+#elif !defined(RB_NO_MT) && defined(HAVE_SOLARIS_ATOMIC_OPS)
 
 #include <atomic.h>
 #include <mbarrier.h>
 
-#define _hb_memory_r_barrier() __machine_r_barrier()
-#define _hb_memory_w_barrier() __machine_w_barrier()
-#define _hb_memory_barrier() __machine_rw_barrier()
+#define _rb_memory_r_barrier() __machine_r_barrier()
+#define _rb_memory_w_barrier() __machine_w_barrier()
+#define _rb_memory_barrier() __machine_rw_barrier()
 
-static inline int _hb_fetch_and_add(int *AI, int V)
+static inline int _rb_fetch_and_add(int *AI, int V)
 {
-    _hb_memory_w_barrier();
+    _rb_memory_w_barrier();
     int result = atomic_add_int_nv((uint_t *)AI, V) - V;
-    _hb_memory_r_barrier();
+    _rb_memory_r_barrier();
     return result;
 }
-static inline bool _hb_compare_and_swap_ptr(void **P, void *O, void *N)
+static inline bool _rb_compare_and_swap_ptr(void **P, void *O, void *N)
 {
-    _hb_memory_w_barrier();
+    _rb_memory_w_barrier();
     bool result = atomic_cas_ptr(P, O, N) == O;
-    _hb_memory_r_barrier();
+    _rb_memory_r_barrier();
     return result;
 }
 
-#define hb_atomic_int_impl_add(AI, V) _hb_fetch_and_add((AI), (V))
+#define rb_atomic_int_impl_add(AI, V) _rb_fetch_and_add((AI), (V))
 
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) _hb_compare_and_swap_ptr((P), (O), (N))
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) _rb_compare_and_swap_ptr((P), (O), (N))
 
-#elif !defined(HB_NO_MT) && defined(__APPLE__)
+#elif !defined(RB_NO_MT) && defined(__APPLE__)
 
 #include <libkern/OSAtomic.h>
 #ifdef __MAC_OS_X_MIN_REQUIRED
@@ -165,55 +165,55 @@ static inline bool _hb_compare_and_swap_ptr(void **P, void *O, void *N)
 #include <Availability.h>
 #endif
 
-#define _hb_memory_barrier() OSMemoryBarrier()
+#define _rb_memory_barrier() OSMemoryBarrier()
 
-#define hb_atomic_int_impl_add(AI, V) (OSAtomicAdd32Barrier((V), (AI)) - (V))
+#define rb_atomic_int_impl_add(AI, V) (OSAtomicAdd32Barrier((V), (AI)) - (V))
 
 #if (MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4 || __IPHONE_VERSION_MIN_REQUIRED >= 20100)
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) OSAtomicCompareAndSwapPtrBarrier((O), (N), (P))
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) OSAtomicCompareAndSwapPtrBarrier((O), (N), (P))
 #else
 #if __ppc64__ || __x86_64__ || __aarch64__
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) OSAtomicCompareAndSwap64Barrier((int64_t)(O), (int64_t)(N), (int64_t *)(P))
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) OSAtomicCompareAndSwap64Barrier((int64_t)(O), (int64_t)(N), (int64_t *)(P))
 #else
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) OSAtomicCompareAndSwap32Barrier((int32_t)(O), (int32_t)(N), (int32_t *)(P))
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) OSAtomicCompareAndSwap32Barrier((int32_t)(O), (int32_t)(N), (int32_t *)(P))
 #endif
 #endif
 
-#elif !defined(HB_NO_MT) && defined(_AIX) && (defined(__IBMCPP__) || defined(__ibmxl__))
+#elif !defined(RB_NO_MT) && defined(_AIX) && (defined(__IBMCPP__) || defined(__ibmxl__))
 
 #include <builtins.h>
 
-#define _hb_memory_barrier() __lwsync()
+#define _rb_memory_barrier() __lwsync()
 
-static inline int _hb_fetch_and_add(int *AI, int V)
+static inline int _rb_fetch_and_add(int *AI, int V)
 {
-    _hb_memory_barrier();
+    _rb_memory_barrier();
     int result = __fetch_and_add(AI, V);
-    _hb_memory_barrier();
+    _rb_memory_barrier();
     return result;
 }
-static inline bool _hb_compare_and_swaplp(long *P, long O, long N)
+static inline bool _rb_compare_and_swaplp(long *P, long O, long N)
 {
-    _hb_memory_barrier();
+    _rb_memory_barrier();
     bool result = __compare_and_swaplp(P, &O, N);
-    _hb_memory_barrier();
+    _rb_memory_barrier();
     return result;
 }
 
-#define hb_atomic_int_impl_add(AI, V) _hb_fetch_and_add((AI), (V))
+#define rb_atomic_int_impl_add(AI, V) _rb_fetch_and_add((AI), (V))
 
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) _hb_compare_and_swaplp((long *)(P), (long)(O), (long)(N))
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) _rb_compare_and_swaplp((long *)(P), (long)(O), (long)(N))
 static_assert((sizeof(long) == sizeof(void *)), "");
 
-#elif defined(HB_NO_MT)
+#elif defined(RB_NO_MT)
 
-#define hb_atomic_int_impl_add(AI, V) ((*(AI) += (V)) - (V))
+#define rb_atomic_int_impl_add(AI, V) ((*(AI) += (V)) - (V))
 
-#define _hb_memory_barrier()                                                                                           \
+#define _rb_memory_barrier()                                                                                           \
     do {                                                                                                               \
     } while (0)
 
-#define hb_atomic_ptr_impl_cmpexch(P, O, N) (*(void **)(P) == (void *)(O) ? (*(void **)(P) = (void *)(N), true) : false)
+#define rb_atomic_ptr_impl_cmpexch(P, O, N) (*(void **)(P) == (void *)(O) ? (*(void **)(P) = (void *)(N), true) : false)
 
 #else
 
@@ -222,90 +222,90 @@ static_assert((sizeof(long) == sizeof(void *)), "");
 
 #endif
 
-#ifndef _hb_memory_r_barrier
-#define _hb_memory_r_barrier() _hb_memory_barrier()
+#ifndef _rb_memory_r_barrier
+#define _rb_memory_r_barrier() _rb_memory_barrier()
 #endif
-#ifndef _hb_memory_w_barrier
-#define _hb_memory_w_barrier() _hb_memory_barrier()
+#ifndef _rb_memory_w_barrier
+#define _rb_memory_w_barrier() _rb_memory_barrier()
 #endif
-#ifndef hb_atomic_int_impl_set_relaxed
-#define hb_atomic_int_impl_set_relaxed(AI, V) (*(AI) = (V))
+#ifndef rb_atomic_int_impl_set_relaxed
+#define rb_atomic_int_impl_set_relaxed(AI, V) (*(AI) = (V))
 #endif
-#ifndef hb_atomic_int_impl_get_relaxed
-#define hb_atomic_int_impl_get_relaxed(AI) (*(AI))
+#ifndef rb_atomic_int_impl_get_relaxed
+#define rb_atomic_int_impl_get_relaxed(AI) (*(AI))
 #endif
 
-#ifndef hb_atomic_ptr_impl_set_relaxed
-#define hb_atomic_ptr_impl_set_relaxed(P, V) (*(P) = (V))
+#ifndef rb_atomic_ptr_impl_set_relaxed
+#define rb_atomic_ptr_impl_set_relaxed(P, V) (*(P) = (V))
 #endif
-#ifndef hb_atomic_ptr_impl_get_relaxed
-#define hb_atomic_ptr_impl_get_relaxed(P) (*(P))
+#ifndef rb_atomic_ptr_impl_get_relaxed
+#define rb_atomic_ptr_impl_get_relaxed(P) (*(P))
 #endif
-#ifndef hb_atomic_int_impl_set
-inline void hb_atomic_int_impl_set(int *AI, int v)
+#ifndef rb_atomic_int_impl_set
+inline void rb_atomic_int_impl_set(int *AI, int v)
 {
-    _hb_memory_w_barrier();
+    _rb_memory_w_barrier();
     *AI = v;
 }
 #endif
-#ifndef hb_atomic_int_impl_get
-inline int hb_atomic_int_impl_get(const int *AI)
+#ifndef rb_atomic_int_impl_get
+inline int rb_atomic_int_impl_get(const int *AI)
 {
     int v = *AI;
-    _hb_memory_r_barrier();
+    _rb_memory_r_barrier();
     return v;
 }
 #endif
-#ifndef hb_atomic_ptr_impl_get
-inline void *hb_atomic_ptr_impl_get(void **const P)
+#ifndef rb_atomic_ptr_impl_get
+inline void *rb_atomic_ptr_impl_get(void **const P)
 {
     void *v = *P;
-    _hb_memory_r_barrier();
+    _rb_memory_r_barrier();
     return v;
 }
 #endif
 
-#define HB_ATOMIC_INT_INIT(V)                                                                                          \
+#define RB_ATOMIC_INT_INIT(V)                                                                                          \
     {                                                                                                                  \
         V                                                                                                              \
     }
-struct hb_atomic_int_t
+struct rb_atomic_int_t
 {
     void set_relaxed(int v_)
     {
-        hb_atomic_int_impl_set_relaxed(&v, v_);
+        rb_atomic_int_impl_set_relaxed(&v, v_);
     }
     void set(int v_)
     {
-        hb_atomic_int_impl_set(&v, v_);
+        rb_atomic_int_impl_set(&v, v_);
     }
     int get_relaxed() const
     {
-        return hb_atomic_int_impl_get_relaxed(&v);
+        return rb_atomic_int_impl_get_relaxed(&v);
     }
     int get() const
     {
-        return hb_atomic_int_impl_get(&v);
+        return rb_atomic_int_impl_get(&v);
     }
     int inc()
     {
-        return hb_atomic_int_impl_add(&v, 1);
+        return rb_atomic_int_impl_add(&v, 1);
     }
     int dec()
     {
-        return hb_atomic_int_impl_add(&v, -1);
+        return rb_atomic_int_impl_add(&v, -1);
     }
 
     int v;
 };
 
-#define HB_ATOMIC_PTR_INIT(V)                                                                                          \
+#define RB_ATOMIC_PTR_INIT(V)                                                                                          \
     {                                                                                                                  \
         V                                                                                                              \
     }
-template <typename P> struct hb_atomic_ptr_t
+template <typename P> struct rb_atomic_ptr_t
 {
-    typedef hb_remove_pointer<P> T;
+    typedef rb_remove_pointer<P> T;
 
     void init(T *v_ = nullptr)
     {
@@ -313,19 +313,19 @@ template <typename P> struct hb_atomic_ptr_t
     }
     void set_relaxed(T *v_)
     {
-        hb_atomic_ptr_impl_set_relaxed(&v, v_);
+        rb_atomic_ptr_impl_set_relaxed(&v, v_);
     }
     T *get_relaxed() const
     {
-        return (T *)hb_atomic_ptr_impl_get_relaxed(&v);
+        return (T *)rb_atomic_ptr_impl_get_relaxed(&v);
     }
     T *get() const
     {
-        return (T *)hb_atomic_ptr_impl_get((void **)&v);
+        return (T *)rb_atomic_ptr_impl_get((void **)&v);
     }
     bool cmpexch(const T *old, T *new_) const
     {
-        return hb_atomic_ptr_impl_cmpexch((void **)&v, (void *)old, (void *)new_);
+        return rb_atomic_ptr_impl_cmpexch((void **)&v, (void *)old, (void *)new_);
     }
 
     T *operator->() const
@@ -340,4 +340,4 @@ template <typename P> struct hb_atomic_ptr_t
     T *v;
 };
 
-#endif /* HB_ATOMIC_HH */
+#endif /* RB_ATOMIC_HH */

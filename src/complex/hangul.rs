@@ -23,14 +23,14 @@ const TJMO: u8 = 3;
 impl GlyphInfo {
     fn hangul_shaping_feature(&self) -> u8 {
         unsafe {
-            let v: &ffi::hb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
             v.var_u8[2]
         }
     }
 
     fn set_hangul_shaping_feature(&mut self, feature: u8) {
         unsafe {
-            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
             v.var_u8[2] = feature;
         }
     }
@@ -60,7 +60,7 @@ impl HangulShapePlan {
 
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_collect_features_hangul(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_collect_features_hangul(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     collect_features(&mut planner)
 }
@@ -72,7 +72,7 @@ fn collect_features(planner: &mut ShapePlanner) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_override_features_hangul(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_override_features_hangul(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     override_features(&mut planner)
 }
@@ -85,8 +85,8 @@ fn override_features(planner: &mut ShapePlanner) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_create_hangul(
-    plan: *const ffi::hb_ot_shape_plan_t,
+pub extern "C" fn rb_ot_complex_data_create_hangul(
+    plan: *const ffi::rb_ot_shape_plan_t,
 ) -> *mut c_void {
     let plan = ShapePlan::from_ptr(plan);
     let hangul_plan = HangulShapePlan::new(&plan.ot_map);
@@ -94,15 +94,15 @@ pub extern "C" fn hb_ot_complex_data_create_hangul(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_destroy_hangul(data: *mut c_void) {
+pub extern "C" fn rb_ot_complex_data_destroy_hangul(data: *mut c_void) {
     unsafe { Box::from_raw(data) };
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_preprocess_text_hangul(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_preprocess_text_hangul(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -392,10 +392,10 @@ fn font_has_glyph(font: &Font, u: u32) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_setup_masks_hangul(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_setup_masks_hangul(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);

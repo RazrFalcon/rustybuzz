@@ -92,7 +92,7 @@ impl KhmerShapePlan {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_collect_features_khmer(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_collect_features_khmer(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     collect_features(&mut planner)
 }
@@ -118,7 +118,7 @@ fn collect_features(planner: &mut ShapePlanner) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 
-    planner.ot_map.add_gsub_pause(Some(ffi::hb_layout_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(ffi::rb_layout_clear_syllables));
 
     for feature in KHMER_FEATURES.iter().skip(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
@@ -126,9 +126,9 @@ fn collect_features(planner: &mut ShapePlanner) {
 }
 
 extern "C" fn setup_syllables_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -149,9 +149,9 @@ fn setup_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 }
 
 extern "C" fn reorder_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -333,7 +333,7 @@ fn reorder_consonant_syllable(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_override_features_khmer(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_override_features_khmer(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     override_features(&mut planner)
 }
@@ -348,8 +348,8 @@ fn override_features(planner: &mut ShapePlanner) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_create_khmer(
-    plan: *const ffi::hb_ot_shape_plan_t,
+pub extern "C" fn rb_ot_complex_data_create_khmer(
+    plan: *const ffi::rb_ot_shape_plan_t,
 ) -> *mut c_void {
     let plan = ShapePlan::from_ptr(plan);
     let indic_plan = KhmerShapePlan::new(&plan);
@@ -357,16 +357,16 @@ pub extern "C" fn hb_ot_complex_data_create_khmer(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_destroy_khmer(data: *mut c_void) {
+pub extern "C" fn rb_ot_complex_data_destroy_khmer(data: *mut c_void) {
     unsafe { Box::from_raw(data) };
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_decompose_khmer(
-    _: *const ffi::hb_ot_shape_normalize_context_t,
-    ab: ffi::hb_codepoint_t,
-    a: *mut ffi::hb_codepoint_t,
-    b: *mut ffi::hb_codepoint_t,
+pub extern "C" fn rb_ot_complex_decompose_khmer(
+    _: *const ffi::rb_ot_shape_normalize_context_t,
+    ab: ffi::rb_codepoint_t,
+    a: *mut ffi::rb_codepoint_t,
+    b: *mut ffi::rb_codepoint_t,
 ) -> bool {
     // Decompose split matras that don't have Unicode decompositions.
 
@@ -399,12 +399,12 @@ pub extern "C" fn hb_ot_complex_decompose_khmer(
         _ => {}
     }
 
-    crate::unicode::hb_ucd_decompose(ab, a, b) != 0
+    crate::unicode::rb_ucd_decompose(ab, a, b) != 0
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_compose_khmer(
-    ctx: *const ffi::hb_ot_shape_normalize_context_t,
+pub extern "C" fn rb_ot_complex_compose_khmer(
+    ctx: *const ffi::rb_ot_shape_normalize_context_t,
     a: u32,
     b: u32,
     ab: *mut u32,
@@ -431,10 +431,10 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_setup_masks_khmer(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_setup_masks_khmer(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);

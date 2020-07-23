@@ -22,8 +22,8 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_AAT_LAYOUT_FEAT_TABLE_HH
-#define HB_AAT_LAYOUT_FEAT_TABLE_HH
+#ifndef RB_AAT_LAYOUT_FEAT_TABLE_HH
+#define RB_AAT_LAYOUT_FEAT_TABLE_HH
 
 #include "hb-aat-layout-common.hh"
 
@@ -31,7 +31,7 @@
  * feat -- Feature Name
  * https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6feat.html
  */
-#define HB_AAT_TAG_feat HB_TAG('f', 'e', 'a', 't')
+#define RB_AAT_TAG_feat RB_TAG('f', 'e', 'a', 't')
 
 namespace AAT {
 
@@ -39,27 +39,27 @@ struct SettingName
 {
     friend struct FeatureName;
 
-    int cmp(hb_aat_layout_feature_selector_t key) const
+    int cmp(rb_aat_layout_feature_selector_t key) const
     {
         return (int)key - (int)setting;
     }
 
-    hb_aat_layout_feature_selector_t get_selector() const
+    rb_aat_layout_feature_selector_t get_selector() const
     {
-        return (hb_aat_layout_feature_selector_t)(unsigned)setting;
+        return (rb_aat_layout_feature_selector_t)(unsigned)setting;
     }
 
-    hb_aat_layout_feature_selector_info_t get_info(hb_aat_layout_feature_selector_t default_selector) const
+    rb_aat_layout_feature_selector_info_t get_info(rb_aat_layout_feature_selector_t default_selector) const
     {
         return {nameIndex,
-                (hb_aat_layout_feature_selector_t)(unsigned int)setting,
-                default_selector == HB_AAT_LAYOUT_FEATURE_SELECTOR_INVALID
-                    ? (hb_aat_layout_feature_selector_t)(setting + 1)
+                (rb_aat_layout_feature_selector_t)(unsigned int)setting,
+                default_selector == RB_AAT_LAYOUT_FEATURE_SELECTOR_INVALID
+                    ? (rb_aat_layout_feature_selector_t)(setting + 1)
                     : default_selector,
                 0};
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(likely(c->check_struct(this)));
@@ -77,7 +77,7 @@ struct feat;
 
 struct FeatureName
 {
-    int cmp(hb_aat_layout_feature_type_t key) const
+    int cmp(rb_aat_layout_feature_type_t key) const
     {
         return (int)key - (int)feature;
     }
@@ -98,15 +98,15 @@ struct FeatureName
 
     unsigned int get_selector_infos(unsigned int start_offset,
                                     unsigned int *selectors_count,                    /* IN/OUT.  May be NULL. */
-                                    hb_aat_layout_feature_selector_info_t *selectors, /* OUT.     May be NULL. */
+                                    rb_aat_layout_feature_selector_info_t *selectors, /* OUT.     May be NULL. */
                                     unsigned int *pdefault_index,                     /* OUT.     May be NULL. */
                                     const void *base) const
     {
-        hb_array_t<const SettingName> settings_table = (base + settingTableZ).as_array(nSettings);
+        rb_array_t<const SettingName> settings_table = (base + settingTableZ).as_array(nSettings);
 
-        static_assert(Index::NOT_FOUND_INDEX == HB_AAT_LAYOUT_NO_SELECTOR_INDEX, "");
+        static_assert(Index::NOT_FOUND_INDEX == RB_AAT_LAYOUT_NO_SELECTOR_INDEX, "");
 
-        hb_aat_layout_feature_selector_t default_selector = HB_AAT_LAYOUT_FEATURE_SELECTOR_INVALID;
+        rb_aat_layout_feature_selector_t default_selector = RB_AAT_LAYOUT_FEATURE_SELECTOR_INVALID;
         unsigned int default_index = Index::NOT_FOUND_INDEX;
         if (featureFlags & Exclusive) {
             default_index = (featureFlags & NotDefault) ? featureFlags & IndexMask : 0;
@@ -117,18 +117,18 @@ struct FeatureName
 
         if (selectors_count) {
             +settings_table.sub_array(start_offset, selectors_count) |
-                hb_map([=](const SettingName &setting) { return setting.get_info(default_selector); }) |
-                hb_sink(hb_array(selectors, *selectors_count));
+                rb_map([=](const SettingName &setting) { return setting.get_info(default_selector); }) |
+                rb_sink(rb_array(selectors, *selectors_count));
         }
         return settings_table.length;
     }
 
-    hb_aat_layout_feature_type_t get_feature_type() const
+    rb_aat_layout_feature_type_t get_feature_type() const
     {
-        return (hb_aat_layout_feature_type_t)(unsigned int)feature;
+        return (rb_aat_layout_feature_type_t)(unsigned int)feature;
     }
 
-    hb_ot_name_id_t get_feature_name_id() const
+    rb_ot_name_id_t get_feature_name_id() const
     {
         return nameIndex;
     }
@@ -144,7 +144,7 @@ struct FeatureName
         return nSettings;
     }
 
-    bool sanitize(hb_sanitize_context_t *c, const void *base) const
+    bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
         TRACE_SANITIZE(this);
         return_trace(likely(c->check_struct(this) && (base + settingTableZ).sanitize(c, nSettings)));
@@ -167,7 +167,7 @@ public:
 
 struct feat
 {
-    static constexpr hb_tag_t tableTag = HB_AAT_TAG_feat;
+    static constexpr rb_tag_t tableTag = RB_AAT_TAG_feat;
 
     bool has_data() const
     {
@@ -175,41 +175,41 @@ struct feat
     }
 
     unsigned int
-    get_feature_types(unsigned int start_offset, unsigned int *count, hb_aat_layout_feature_type_t *features) const
+    get_feature_types(unsigned int start_offset, unsigned int *count, rb_aat_layout_feature_type_t *features) const
     {
         if (count) {
-            +namesZ.as_array(featureNameCount).sub_array(start_offset, count) | hb_map(&FeatureName::get_feature_type) |
-                hb_sink(hb_array(features, *count));
+            +namesZ.as_array(featureNameCount).sub_array(start_offset, count) | rb_map(&FeatureName::get_feature_type) |
+                rb_sink(rb_array(features, *count));
         }
         return featureNameCount;
     }
 
-    bool exposes_feature(hb_aat_layout_feature_type_t feature_type) const
+    bool exposes_feature(rb_aat_layout_feature_type_t feature_type) const
     {
         return get_feature(feature_type).has_data();
     }
 
-    const FeatureName &get_feature(hb_aat_layout_feature_type_t feature_type) const
+    const FeatureName &get_feature(rb_aat_layout_feature_type_t feature_type) const
     {
         return namesZ.bsearch(featureNameCount, feature_type);
     }
 
-    hb_ot_name_id_t get_feature_name_id(hb_aat_layout_feature_type_t feature) const
+    rb_ot_name_id_t get_feature_name_id(rb_aat_layout_feature_type_t feature) const
     {
         return get_feature(feature).get_feature_name_id();
     }
 
-    unsigned int get_selector_infos(hb_aat_layout_feature_type_t feature_type,
+    unsigned int get_selector_infos(rb_aat_layout_feature_type_t feature_type,
                                     unsigned int start_offset,
                                     unsigned int *selectors_count,                    /* IN/OUT.  May be NULL. */
-                                    hb_aat_layout_feature_selector_info_t *selectors, /* OUT.     May be NULL. */
+                                    rb_aat_layout_feature_selector_info_t *selectors, /* OUT.     May be NULL. */
                                     unsigned int *default_index /* OUT.     May be NULL. */) const
     {
         return get_feature(feature_type)
             .get_selector_infos(start_offset, selectors_count, selectors, default_index, this);
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(likely(c->check_struct(this) && version.major == 1 && namesZ.sanitize(c, featureNameCount, this)));
@@ -229,4 +229,4 @@ public:
 
 } /* namespace AAT */
 
-#endif /* HB_AAT_LAYOUT_FEAT_TABLE_HH */
+#endif /* RB_AAT_LAYOUT_FEAT_TABLE_HH */

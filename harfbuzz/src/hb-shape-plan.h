@@ -24,40 +24,40 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#ifndef RB_H_IN
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_SHAPE_PLAN_H
-#define HB_SHAPE_PLAN_H
+#ifndef RB_SHAPE_PLAN_H
+#define RB_SHAPE_PLAN_H
 
 #include "hb-common.h"
 #include "hb-font.h"
 #include "hb-buffer.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
-typedef struct hb_shape_plan_t hb_shape_plan_t;
+typedef struct rb_shape_plan_t rb_shape_plan_t;
 
-HB_EXTERN hb_shape_plan_t *hb_shape_plan_create(hb_face_t *face,
-                                                const hb_segment_properties_t *props,
-                                                const hb_feature_t *user_features,
+RB_EXTERN rb_shape_plan_t *rb_shape_plan_create(rb_face_t *face,
+                                                const rb_segment_properties_t *props,
+                                                const rb_feature_t *user_features,
                                                 unsigned int num_user_features,
                                                 const int *coords,
                                                 unsigned int num_coords);
 
-HB_EXTERN hb_shape_plan_t *hb_shape_plan_get_empty(void);
+RB_EXTERN rb_shape_plan_t *rb_shape_plan_get_empty(void);
 
-HB_EXTERN hb_shape_plan_t *hb_shape_plan_reference(hb_shape_plan_t *shape_plan);
+RB_EXTERN rb_shape_plan_t *rb_shape_plan_reference(rb_shape_plan_t *shape_plan);
 
-HB_EXTERN void hb_shape_plan_destroy(hb_shape_plan_t *shape_plan);
+RB_EXTERN void rb_shape_plan_destroy(rb_shape_plan_t *shape_plan);
 
-HB_EXTERN hb_bool_t hb_shape_plan_execute(hb_shape_plan_t *shape_plan,
-                                          hb_font_t *font,
-                                          hb_buffer_t *buffer,
-                                          const hb_feature_t *features,
+RB_EXTERN rb_bool_t rb_shape_plan_execute(rb_shape_plan_t *shape_plan,
+                                          rb_font_t *font,
+                                          rb_buffer_t *buffer,
+                                          const rb_feature_t *features,
                                           unsigned int num_features);
 
-HB_END_DECLS
+RB_END_DECLS
 
-#endif /* HB_SHAPE_PLAN_H */
+#endif /* RB_SHAPE_PLAN_H */

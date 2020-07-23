@@ -6,7 +6,7 @@ use crate::{ffi, script, Tag, Script, Mask, Font, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use crate::ot::*;
-use super::{hb_flag, hb_flag_unsafe, hb_flag_range};
+use super::{rb_flag, rb_flag_unsafe, rb_flag_range};
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, PartialEq)]
@@ -179,7 +179,7 @@ mod indic_feature {
 }
 
 const fn category_flag(c: Category) -> u32 {
-    hb_flag(c as u32)
+    rb_flag(c as u32)
 }
 
 const MEDIAL_FLAGS: u32 = category_flag(Category::CM);
@@ -190,12 +190,12 @@ const MEDIAL_FLAGS: u32 = category_flag(Category::CM);
 // consonant syllable logic from the vowel syllable function and get it all right!
 const CONSONANT_FLAGS: u32 =
     category_flag(Category::C) |
-        category_flag(Category::CS) |
-        category_flag(Category::Ra) |
-        MEDIAL_FLAGS |
-        category_flag(Category::V) |
-        category_flag(Category::Placeholder) |
-        category_flag(Category::DottedCircle)
+    category_flag(Category::CS) |
+    category_flag(Category::Ra) |
+    MEDIAL_FLAGS |
+    category_flag(Category::V) |
+    category_flag(Category::Placeholder) |
+    category_flag(Category::DottedCircle)
 ;
 const JOINER_FLAGS: u32 = category_flag(Category::ZWJ) | category_flag(Category::ZWNJ);
 
@@ -333,7 +333,7 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
 
 
 struct IndicWouldSubstituteFeature {
-    lookups: &'static [ffi::hb_ot_map_lookup_map_t],
+    lookups: &'static [ffi::rb_ot_map_lookup_map_t],
     zero_context: bool,
 }
 
@@ -351,7 +351,7 @@ impl IndicWouldSubstituteFeature {
     pub fn would_substitute(&self, glyphs: &[u32], font: &Font) -> bool {
         for lookup in self.lookups {
             unsafe {
-                let ok = ffi::hb_ot_layout_lookup_would_substitute(
+                let ok = ffi::rb_ot_layout_lookup_would_substitute(
                     font.face_ptr(),
                     lookup.index as u32,
                     glyphs.as_ptr() as *const _,
@@ -441,35 +441,35 @@ impl IndicShapePlan {
 impl GlyphInfo {
     pub(crate) fn indic_category(&self) -> Category {
         unsafe {
-            let v: &ffi::hb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
             std::mem::transmute(v.var_u8[2])
         }
     }
 
     pub(crate) fn set_indic_category(&mut self, c: Category) {
         unsafe {
-            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
             v.var_u8[2] = c as u8;
         }
     }
 
     pub(crate) fn indic_position(&self) -> Position {
         unsafe {
-            let v: &ffi::hb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
             std::mem::transmute(v.var_u8[3])
         }
     }
 
     pub(crate) fn set_indic_position(&mut self, c: Position) {
         unsafe {
-            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
             v.var_u8[3] = c as u8;
         }
     }
 
     fn set_indic_position_raw(&mut self, c: u8) {
         unsafe {
-            let v: &mut ffi::hb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
             v.var_u8[3] = c;
         }
     }
@@ -480,7 +480,7 @@ impl GlyphInfo {
             return false;
         }
 
-        hb_flag_unsafe(self.indic_category() as u32) & flags != 0
+        rb_flag_unsafe(self.indic_category() as u32) & flags != 0
     }
 
     fn is_joiner(&self) -> bool {
@@ -492,7 +492,7 @@ impl GlyphInfo {
     }
 
     fn is_halant(&self) -> bool {
-        self.is_one_of(hb_flag(Category::H as u32))
+        self.is_one_of(rb_flag(Category::H as u32))
     }
 
     fn set_indic_properties(&mut self) {
@@ -536,14 +536,14 @@ impl GlyphInfo {
 
         // Re-assign position.
 
-        if (hb_flag_unsafe(cat as u32) & CONSONANT_FLAGS) != 0 {
+        if (rb_flag_unsafe(cat as u32) & CONSONANT_FLAGS) != 0 {
             pos = Position::BaseC;
             if RA_CHARS.contains(&u) {
                 cat = Category::Ra;
             }
         } else if cat == Category::M {
             pos = matra_position_indic(u, pos);
-        } else if (hb_flag_unsafe(cat as u32) &
+        } else if (rb_flag_unsafe(cat as u32) &
             (category_flag(Category::SM) |
                 category_flag(Category::A) |
                 category_flag(Category::Symbol))) != 0
@@ -563,7 +563,7 @@ impl GlyphInfo {
 
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_collect_features_indic(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_collect_features_indic(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     collect_features(&mut planner)
 }
@@ -593,11 +593,11 @@ fn collect_features(planner: &mut ShapePlanner) {
     planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::NONE, 1);
     planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
 
-    planner.ot_map.add_gsub_pause(Some(ffi::hb_layout_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(ffi::rb_layout_clear_syllables));
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_override_features_indic(planner: *mut ffi::hb_ot_shape_planner_t) {
+pub extern "C" fn rb_ot_complex_override_features_indic(planner: *mut ffi::rb_ot_shape_planner_t) {
     let mut planner = ShapePlanner::from_ptr_mut(planner);
     override_features(&mut planner)
 }
@@ -607,8 +607,8 @@ fn override_features(planner: &mut ShapePlanner) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_create_indic(
-    plan: *const ffi::hb_ot_shape_plan_t,
+pub extern "C" fn rb_ot_complex_data_create_indic(
+    plan: *const ffi::rb_ot_shape_plan_t,
 ) -> *mut c_void {
     let plan = ShapePlan::from_ptr(plan);
     let indic_plan = IndicShapePlan::new(&plan);
@@ -616,15 +616,15 @@ pub extern "C" fn hb_ot_complex_data_create_indic(
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_data_destroy_indic(data: *mut c_void) {
+pub extern "C" fn rb_ot_complex_data_destroy_indic(data: *mut c_void) {
     unsafe { Box::from_raw(data) };
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_preprocess_text_indic(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_preprocess_text_indic(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -637,11 +637,11 @@ fn preprocess_text(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_decompose_indic(
-    ctx: *const ffi::hb_ot_shape_normalize_context_t,
-    ab: ffi::hb_codepoint_t,
-    a: *mut ffi::hb_codepoint_t,
-    b: *mut ffi::hb_codepoint_t,
+pub extern "C" fn rb_ot_complex_decompose_indic(
+    ctx: *const ffi::rb_ot_shape_normalize_context_t,
+    ab: ffi::rb_codepoint_t,
+    a: *mut ffi::rb_codepoint_t,
+    b: *mut ffi::rb_codepoint_t,
 ) -> bool {
     let ctx = ShapeNormalizeContext::from_ptr(ctx);
 
@@ -697,12 +697,12 @@ pub extern "C" fn hb_ot_complex_decompose_indic(
         }
     }
 
-    crate::unicode::hb_ucd_decompose(ab, a, b) != 0
+    crate::unicode::rb_ucd_decompose(ab, a, b) != 0
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_compose_indic(
-    ctx: *const ffi::hb_ot_shape_normalize_context_t,
+pub extern "C" fn rb_ot_complex_compose_indic(
+    ctx: *const ffi::rb_ot_shape_normalize_context_t,
     a: u32,
     b: u32,
     ab: *mut u32,
@@ -734,10 +734,10 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ot_complex_setup_masks_indic(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    buffer: *mut ffi::hb_buffer_t,
-    font: *mut ffi::hb_font_t,
+pub extern "C" fn rb_ot_complex_setup_masks_indic(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    buffer: *mut ffi::rb_buffer_t,
+    font: *mut ffi::rb_font_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);
@@ -754,9 +754,9 @@ fn setup_masks(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 }
 
 extern "C" fn setup_syllables_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -777,9 +777,9 @@ fn setup_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 }
 
 extern "C" fn initial_reordering_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -1246,7 +1246,7 @@ fn initial_reordering_consonant_syllable(
     {
         let mut last_pos = Position::Start;
         for i in start..end {
-            let ok = hb_flag_unsafe(buffer.info[i].indic_category() as u32) &
+            let ok = rb_flag_unsafe(buffer.info[i].indic_category() as u32) &
                 (category_flag(Category::ZWJ) | category_flag(Category::ZWNJ) |
                     category_flag(Category::N) | category_flag(Category::RS) |
                     category_flag(Category::CM) | category_flag(Category::H)
@@ -1473,9 +1473,9 @@ fn initial_reordering_standalone_cluster(
 }
 
 extern "C" fn final_reordering_raw(
-    plan: *const ffi::hb_ot_shape_plan_t,
-    font: *mut ffi::hb_font_t,
-    buffer: *mut ffi::hb_buffer_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
@@ -1599,12 +1599,12 @@ fn final_reordering_impl(
         base += 1;
     }
 
-    if base == end && start < base && buffer.info[base - 1].is_one_of(hb_flag(Category::ZWJ as u32)) {
+    if base == end && start < base && buffer.info[base - 1].is_one_of(rb_flag(Category::ZWJ as u32)) {
         base -= 1;
     }
 
     if base < end {
-        while start < base && buffer.info[base].is_one_of(hb_flag(Category::N as u32) | hb_flag(Category::H as u32)) {
+        while start < base && buffer.info[base].is_one_of(rb_flag(Category::N as u32) | rb_flag(Category::H as u32)) {
             base -= 1;
         }
     }
@@ -1646,7 +1646,7 @@ fn final_reordering_impl(
         // We want to position matra after them.
         if buffer.script != Some(script::MALAYALAM) && buffer.script != Some(script::TAMIL) {
             loop {
-                while new_pos > start && !buffer.info[new_pos].is_one_of(hb_flag(Category::M as u32) | hb_flag(Category::H as u32)) {
+                while new_pos > start && !buffer.info[new_pos].is_one_of(rb_flag(Category::M as u32) | rb_flag(Category::H as u32)) {
                     new_pos -= 1;
                 }
 
@@ -1789,8 +1789,8 @@ fn final_reordering_impl(
                 if reph_pos == RephPosition::AfterSub {
                     new_reph_pos = base;
                     while new_reph_pos + 1 < end &&
-                        (hb_flag_unsafe(buffer.info[new_reph_pos + 1].indic_position() as u32)
-                            & (hb_flag(Position::PostC as u32) | hb_flag(Position::AfterPost as u32) | hb_flag(Position::Smvd as u32))) == 0
+                        (rb_flag_unsafe(buffer.info[new_reph_pos + 1].indic_position() as u32)
+                            & (rb_flag(Position::PostC as u32) | rb_flag(Position::AfterPost as u32) | rb_flag(Position::Smvd as u32))) == 0
                     {
                         new_reph_pos += 1;
                     }
@@ -1891,8 +1891,8 @@ fn final_reordering_impl(
                     // The glyphs formed by 'half' are Chillus or ligated explicit viramas.
                     // We want to position matra after them.
                     if buffer.script != Some(script::MALAYALAM) && buffer.script != Some(script::TAMIL) {
-                        while new_pos > start && !buffer.info[new_pos - 1].is_one_of(hb_flag(Category::M as u32) |
-                            hb_flag(Category::H as u32))
+                        while new_pos > start && !buffer.info[new_pos - 1].is_one_of(rb_flag(Category::M as u32) |
+                            rb_flag(Category::H as u32))
                         {
                             new_pos -= 1;
                         }
@@ -1932,8 +1932,8 @@ fn final_reordering_impl(
 
     // Apply 'init' to the Left Matra if it's a word start.
     if buffer.info[start].indic_position() == Position::PreM {
-        if start == 0 || (hb_flag_unsafe(buffer.info[start - 1].general_category().to_hb()) &
-            hb_flag_range(ffi::HB_UNICODE_GENERAL_CATEGORY_FORMAT, ffi::HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)) == 0
+        if start == 0 || (rb_flag_unsafe(buffer.info[start - 1].general_category().to_rb()) &
+            rb_flag_range(ffi::RB_UNICODE_GENERAL_CATEGORY_FORMAT, ffi::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)) == 0
         {
             buffer.info[start].mask |= plan.mask_array[indic_feature::INIT];
         } else {

@@ -24,49 +24,49 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#ifndef RB_H_IN
 #error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_MAP_H
-#define HB_MAP_H
+#ifndef RB_MAP_H
+#define RB_MAP_H
 
 #include "hb-common.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
 /*
  * Since: 1.7.7
  */
-#define HB_MAP_VALUE_INVALID ((hb_codepoint_t)-1)
+#define RB_MAP_VALUE_INVALID ((rb_codepoint_t)-1)
 
-typedef struct hb_map_t hb_map_t;
+typedef struct rb_map_t rb_map_t;
 
-HB_EXTERN hb_map_t *hb_map_create(void);
+RB_EXTERN rb_map_t *rb_map_create(void);
 
-HB_EXTERN hb_map_t *hb_map_get_empty(void);
+RB_EXTERN rb_map_t *rb_map_get_empty(void);
 
-HB_EXTERN hb_map_t *hb_map_reference(hb_map_t *map);
+RB_EXTERN rb_map_t *rb_map_reference(rb_map_t *map);
 
-HB_EXTERN void hb_map_destroy(hb_map_t *map);
+RB_EXTERN void rb_map_destroy(rb_map_t *map);
 
 /* Returns false if allocation has failed before */
-HB_EXTERN hb_bool_t hb_map_allocation_successful(const hb_map_t *map);
+RB_EXTERN rb_bool_t rb_map_allocation_successful(const rb_map_t *map);
 
-HB_EXTERN void hb_map_clear(hb_map_t *map);
+RB_EXTERN void rb_map_clear(rb_map_t *map);
 
-HB_EXTERN hb_bool_t hb_map_is_empty(const hb_map_t *map);
+RB_EXTERN rb_bool_t rb_map_is_empty(const rb_map_t *map);
 
-HB_EXTERN unsigned int hb_map_get_population(const hb_map_t *map);
+RB_EXTERN unsigned int rb_map_get_population(const rb_map_t *map);
 
-HB_EXTERN void hb_map_set(hb_map_t *map, hb_codepoint_t key, hb_codepoint_t value);
+RB_EXTERN void rb_map_set(rb_map_t *map, rb_codepoint_t key, rb_codepoint_t value);
 
-HB_EXTERN hb_codepoint_t hb_map_get(const hb_map_t *map, hb_codepoint_t key);
+RB_EXTERN rb_codepoint_t rb_map_get(const rb_map_t *map, rb_codepoint_t key);
 
-HB_EXTERN void hb_map_del(hb_map_t *map, hb_codepoint_t key);
+RB_EXTERN void rb_map_del(rb_map_t *map, rb_codepoint_t key);
 
-HB_EXTERN hb_bool_t hb_map_has(const hb_map_t *map, hb_codepoint_t key);
+RB_EXTERN rb_bool_t rb_map_has(const rb_map_t *map, rb_codepoint_t key);
 
-HB_END_DECLS
+RB_END_DECLS
 
-#endif /* HB_MAP_H */
+#endif /* RB_MAP_H */

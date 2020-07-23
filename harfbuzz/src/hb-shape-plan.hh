@@ -24,17 +24,17 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_SHAPE_PLAN_HH
-#define HB_SHAPE_PLAN_HH
+#ifndef RB_SHAPE_PLAN_HH
+#define RB_SHAPE_PLAN_HH
 
 #include "hb.hh"
 #include "hb-ot-shape.hh"
 
-struct hb_shape_plan_t
+struct rb_shape_plan_t
 {
-    hb_object_header_t header;
-    hb_face_t *face_unsafe; /* We don't carry a reference to face. */
-    hb_ot_shape_plan_t ot;
+    rb_object_header_t header;
+    rb_face_t *face_unsafe; /* We don't carry a reference to face. */
+    rb_ot_shape_plan_t ot;
 };
 
-#endif /* HB_SHAPE_PLAN_HH */
+#endif /* RB_SHAPE_PLAN_HH */

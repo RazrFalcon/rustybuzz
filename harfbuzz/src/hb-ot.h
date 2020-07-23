@@ -24,9 +24,9 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_H
-#define HB_OT_H
-#define HB_OT_H_IN
+#ifndef RB_OT_H
+#define RB_OT_H
+#define RB_OT_H_IN
 
 #include "hb.h"
 
@@ -36,9 +36,9 @@
 #include "hb-ot-name.h"
 #include "hb-ot-shape.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
-HB_END_DECLS
+RB_END_DECLS
 
-#undef HB_OT_H_IN
-#endif /* HB_OT_H */
+#undef RB_OT_H_IN
+#endif /* RB_OT_H */

@@ -4,7 +4,7 @@ pub use unicode_general_category::GeneralCategory;
 pub use unicode_ccc::CanonicalCombiningClass; // TODO: prefer unic-ucd-normal::CanonicalCombiningClass
 
 use crate::Script;
-use crate::ffi::{self, hb_codepoint_t};
+use crate::ffi::{self, rb_codepoint_t};
 
 // Space estimates based on:
 // https://unicode.org/charts/PDF/U2000.pdf
@@ -212,83 +212,83 @@ const MODIFIED_COMBINING_CLASS: &[u8; 256] = &[
     235, 236, 237, 238, 239,
     CanonicalCombiningClass::IotaSubscript as u8,
     241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254,
-    255, /* HB_UNICODE_COMBINING_CLASS_INVALID */
+    255, // RB_UNICODE_COMBINING_CLASS_INVALID
 ];
 
 pub trait GeneralCategoryExt {
-    fn to_hb(&self) -> u32;
-    fn from_hb(gc: u32) -> Self;
+    fn to_rb(&self) -> u32;
+    fn from_rb(gc: u32) -> Self;
     fn is_mark(&self) -> bool;
 }
 
 impl GeneralCategoryExt for GeneralCategory {
-    fn to_hb(&self) -> u32 {
+    fn to_rb(&self) -> u32 {
         match *self {
-            GeneralCategory::ClosePunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_CLOSE_PUNCTUATION,
-            GeneralCategory::ConnectorPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_CONNECT_PUNCTUATION,
-            GeneralCategory::Control => ffi::HB_UNICODE_GENERAL_CATEGORY_CONTROL,
-            GeneralCategory::CurrencySymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL,
-            GeneralCategory::DashPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_DASH_PUNCTUATION,
-            GeneralCategory::DecimalNumber => ffi::HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER,
-            GeneralCategory::EnclosingMark => ffi::HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK,
-            GeneralCategory::FinalPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_FINAL_PUNCTUATION,
-            GeneralCategory::Format => ffi::HB_UNICODE_GENERAL_CATEGORY_FORMAT,
-            GeneralCategory::InitialPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_INITIAL_PUNCTUATION,
-            GeneralCategory::LetterNumber => ffi::HB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER,
-            GeneralCategory::LineSeparator => ffi::HB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR,
-            GeneralCategory::LowercaseLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER,
-            GeneralCategory::MathSymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL,
-            GeneralCategory::ModifierLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER,
-            GeneralCategory::ModifierSymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL,
-            GeneralCategory::NonspacingMark => ffi::HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK,
-            GeneralCategory::OpenPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_OPEN_PUNCTUATION,
-            GeneralCategory::OtherLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER,
-            GeneralCategory::OtherNumber => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER,
-            GeneralCategory::OtherPunctuation => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_PUNCTUATION,
-            GeneralCategory::OtherSymbol => ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL,
-            GeneralCategory::ParagraphSeparator => ffi::HB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR,
-            GeneralCategory::PrivateUse => ffi::HB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE,
-            GeneralCategory::SpaceSeparator => ffi::HB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR,
-            GeneralCategory::SpacingMark => ffi::HB_UNICODE_GENERAL_CATEGORY_SPACING_MARK,
-            GeneralCategory::Surrogate => ffi::HB_UNICODE_GENERAL_CATEGORY_SURROGATE,
-            GeneralCategory::TitlecaseLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER,
-            GeneralCategory::Unassigned => ffi::HB_UNICODE_GENERAL_CATEGORY_UNASSIGNED,
-            GeneralCategory::UppercaseLetter => ffi::HB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
+            GeneralCategory::ClosePunctuation => ffi::RB_UNICODE_GENERAL_CATEGORY_CLOSE_PUNCTUATION,
+            GeneralCategory::ConnectorPunctuation => ffi::RB_UNICODE_GENERAL_CATEGORY_CONNECT_PUNCTUATION,
+            GeneralCategory::Control => ffi::RB_UNICODE_GENERAL_CATEGORY_CONTROL,
+            GeneralCategory::CurrencySymbol => ffi::RB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL,
+            GeneralCategory::DashPunctuation => ffi::RB_UNICODE_GENERAL_CATEGORY_DASH_PUNCTUATION,
+            GeneralCategory::DecimalNumber => ffi::RB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER,
+            GeneralCategory::EnclosingMark => ffi::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK,
+            GeneralCategory::FinalPunctuation => ffi::RB_UNICODE_GENERAL_CATEGORY_FINAL_PUNCTUATION,
+            GeneralCategory::Format => ffi::RB_UNICODE_GENERAL_CATEGORY_FORMAT,
+            GeneralCategory::InitialPunctuation => ffi::RB_UNICODE_GENERAL_CATEGORY_INITIAL_PUNCTUATION,
+            GeneralCategory::LetterNumber => ffi::RB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER,
+            GeneralCategory::LineSeparator => ffi::RB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR,
+            GeneralCategory::LowercaseLetter => ffi::RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER,
+            GeneralCategory::MathSymbol => ffi::RB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL,
+            GeneralCategory::ModifierLetter => ffi::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER,
+            GeneralCategory::ModifierSymbol => ffi::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL,
+            GeneralCategory::NonspacingMark => ffi::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK,
+            GeneralCategory::OpenPunctuation => ffi::RB_UNICODE_GENERAL_CATEGORY_OPEN_PUNCTUATION,
+            GeneralCategory::OtherLetter => ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER,
+            GeneralCategory::OtherNumber => ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER,
+            GeneralCategory::OtherPunctuation => ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_PUNCTUATION,
+            GeneralCategory::OtherSymbol => ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL,
+            GeneralCategory::ParagraphSeparator => ffi::RB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR,
+            GeneralCategory::PrivateUse => ffi::RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE,
+            GeneralCategory::SpaceSeparator => ffi::RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR,
+            GeneralCategory::SpacingMark => ffi::RB_UNICODE_GENERAL_CATEGORY_SPACING_MARK,
+            GeneralCategory::Surrogate => ffi::RB_UNICODE_GENERAL_CATEGORY_SURROGATE,
+            GeneralCategory::TitlecaseLetter => ffi::RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER,
+            GeneralCategory::Unassigned => ffi::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED,
+            GeneralCategory::UppercaseLetter => ffi::RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
         }
     }
 
-    fn from_hb(gc: u32) -> Self {
+    fn from_rb(gc: u32) -> Self {
         match gc {
-            ffi::HB_UNICODE_GENERAL_CATEGORY_CLOSE_PUNCTUATION => GeneralCategory::ClosePunctuation,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_CONNECT_PUNCTUATION => GeneralCategory::ConnectorPunctuation,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_CONTROL => GeneralCategory::Control,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL => GeneralCategory::CurrencySymbol,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_DASH_PUNCTUATION => GeneralCategory::DashPunctuation,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER => GeneralCategory::DecimalNumber,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK => GeneralCategory::EnclosingMark,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_FINAL_PUNCTUATION => GeneralCategory::FinalPunctuation,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_FORMAT => GeneralCategory::Format,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_INITIAL_PUNCTUATION => GeneralCategory::InitialPunctuation,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER => GeneralCategory::LetterNumber,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR => GeneralCategory::LineSeparator,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER => GeneralCategory::LowercaseLetter,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL => GeneralCategory::MathSymbol,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER => GeneralCategory::ModifierLetter,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL => GeneralCategory::ModifierSymbol,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK => GeneralCategory::NonspacingMark,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_OPEN_PUNCTUATION => GeneralCategory::OpenPunctuation,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER => GeneralCategory::OtherLetter,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER => GeneralCategory::OtherNumber,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_PUNCTUATION => GeneralCategory::OtherPunctuation,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL => GeneralCategory::OtherSymbol,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR => GeneralCategory::ParagraphSeparator,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE => GeneralCategory::PrivateUse,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR => GeneralCategory::SpaceSeparator,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_SPACING_MARK => GeneralCategory::SpacingMark,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_SURROGATE => GeneralCategory::Surrogate,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER => GeneralCategory::TitlecaseLetter,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_UNASSIGNED => GeneralCategory::Unassigned,
-            ffi::HB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER => GeneralCategory::UppercaseLetter,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_CLOSE_PUNCTUATION => GeneralCategory::ClosePunctuation,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_CONNECT_PUNCTUATION => GeneralCategory::ConnectorPunctuation,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_CONTROL => GeneralCategory::Control,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL => GeneralCategory::CurrencySymbol,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_DASH_PUNCTUATION => GeneralCategory::DashPunctuation,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER => GeneralCategory::DecimalNumber,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK => GeneralCategory::EnclosingMark,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_FINAL_PUNCTUATION => GeneralCategory::FinalPunctuation,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_FORMAT => GeneralCategory::Format,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_INITIAL_PUNCTUATION => GeneralCategory::InitialPunctuation,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER => GeneralCategory::LetterNumber,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR => GeneralCategory::LineSeparator,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER => GeneralCategory::LowercaseLetter,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL => GeneralCategory::MathSymbol,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER => GeneralCategory::ModifierLetter,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL => GeneralCategory::ModifierSymbol,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK => GeneralCategory::NonspacingMark,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_OPEN_PUNCTUATION => GeneralCategory::OpenPunctuation,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER => GeneralCategory::OtherLetter,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER => GeneralCategory::OtherNumber,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_PUNCTUATION => GeneralCategory::OtherPunctuation,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL => GeneralCategory::OtherSymbol,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR => GeneralCategory::ParagraphSeparator,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE => GeneralCategory::PrivateUse,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR => GeneralCategory::SpaceSeparator,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_SPACING_MARK => GeneralCategory::SpacingMark,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_SURROGATE => GeneralCategory::Surrogate,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER => GeneralCategory::TitlecaseLetter,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED => GeneralCategory::Unassigned,
+            ffi::RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER => GeneralCategory::UppercaseLetter,
             _ => unreachable!(),
         }
     }
@@ -704,48 +704,48 @@ impl CharExt for char {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_combining_class(u: hb_codepoint_t) -> i32 {
+pub extern "C" fn rb_ucd_combining_class(u: rb_codepoint_t) -> i32 {
     char::try_from(u).unwrap().combining_class() as i32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_modified_combining_class(u: hb_codepoint_t) -> u32 {
+pub extern "C" fn rb_ucd_modified_combining_class(u: rb_codepoint_t) -> u32 {
     char::try_from(u).unwrap().modified_combining_class() as u32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_general_category(u: hb_codepoint_t) -> u32 {
-    char::try_from(u).unwrap().general_category().to_hb()
+pub extern "C" fn rb_ucd_general_category(u: rb_codepoint_t) -> u32 {
+    char::try_from(u).unwrap().general_category().to_rb()
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_script(u: hb_codepoint_t) -> ffi::hb_script_t {
+pub extern "C" fn rb_ucd_script(u: rb_codepoint_t) -> ffi::rb_script_t {
     let c = char::try_from(u).unwrap();
     c.script().tag().as_u32()
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_is_default_ignorable(u: hb_codepoint_t) -> ffi::hb_bool_t {
+pub extern "C" fn rb_ucd_is_default_ignorable(u: rb_codepoint_t) -> ffi::rb_bool_t {
     char::try_from(u).unwrap().is_default_ignorable() as i32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_mirroring(u: hb_codepoint_t) -> hb_codepoint_t {
+pub extern "C" fn rb_ucd_mirroring(u: rb_codepoint_t) -> rb_codepoint_t {
     char::try_from(u).unwrap().mirrored().map(u32::from).unwrap_or(0)
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_is_emoji_extended_pictographic(u: hb_codepoint_t) -> ffi::hb_bool_t {
+pub extern "C" fn rb_ucd_is_emoji_extended_pictographic(u: rb_codepoint_t) -> ffi::rb_bool_t {
     char::try_from(u).unwrap().is_emoji_extended_pictographic() as i32
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_space_fallback_type(u: hb_codepoint_t) -> i32 {
+pub extern "C" fn rb_ucd_space_fallback_type(u: rb_codepoint_t) -> i32 {
     char::try_from(u).unwrap().space_fallback().map(|s| s as i32).unwrap_or(0)
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_is_variation_selector(u: hb_codepoint_t) -> ffi::hb_bool_t {
+pub extern "C" fn rb_ucd_is_variation_selector(u: rb_codepoint_t) -> ffi::rb_bool_t {
     char::try_from(u).unwrap().is_variation_selector() as i32
 }
 
@@ -754,7 +754,7 @@ pub fn compose(a: char, b: char) -> Option<char> {
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_compose(a: hb_codepoint_t, b: hb_codepoint_t, ab: *mut hb_codepoint_t) -> ffi::hb_bool_t {
+pub extern "C" fn rb_ucd_compose(a: rb_codepoint_t, b: rb_codepoint_t, ab: *mut rb_codepoint_t) -> ffi::rb_bool_t {
     unsafe {
         let new = unic_ucd_normal::compose(
             char::try_from(a).unwrap(),
@@ -770,7 +770,7 @@ pub extern "C" fn hb_ucd_compose(a: hb_codepoint_t, b: hb_codepoint_t, ab: *mut 
     }
 }
 
-fn hb_ucd_decompose_hangul(ab: hb_codepoint_t, a: *mut hb_codepoint_t, b: *mut hb_codepoint_t) -> bool {
+fn rb_ucd_decompose_hangul(ab: rb_codepoint_t, a: *mut rb_codepoint_t, b: *mut rb_codepoint_t) -> bool {
     const S_BASE: u32 = 0xAC00;
     const L_BASE: u32 = 0x1100;
     const V_BASE: u32 = 0x1161;
@@ -802,17 +802,17 @@ fn hb_ucd_decompose_hangul(ab: hb_codepoint_t, a: *mut hb_codepoint_t, b: *mut h
 }
 
 #[no_mangle]
-pub extern "C" fn hb_ucd_decompose(
-    ab: hb_codepoint_t,
-    a: *mut hb_codepoint_t,
-    b: *mut hb_codepoint_t,
-) -> ffi::hb_bool_t {
+pub extern "C" fn rb_ucd_decompose(
+    ab: rb_codepoint_t,
+    a: *mut rb_codepoint_t,
+    b: *mut rb_codepoint_t,
+) -> ffi::rb_bool_t {
     unsafe {
         *a = ab as u32;
         *b = 0;
     }
 
-    if hb_ucd_decompose_hangul(ab, a, b) {
+    if rb_ucd_decompose_hangul(ab, a, b) {
         return 1;
     }
 

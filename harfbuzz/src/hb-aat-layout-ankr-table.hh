@@ -22,8 +22,8 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_AAT_LAYOUT_ANKR_TABLE_HH
-#define HB_AAT_LAYOUT_ANKR_TABLE_HH
+#ifndef RB_AAT_LAYOUT_ANKR_TABLE_HH
+#define RB_AAT_LAYOUT_ANKR_TABLE_HH
 
 #include "hb-aat-layout-common.hh"
 
@@ -31,7 +31,7 @@
  * ankr -- Anchor Point
  * https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6ankr.html
  */
-#define HB_AAT_TAG_ankr HB_TAG('a', 'n', 'k', 'r')
+#define RB_AAT_TAG_ankr RB_TAG('a', 'n', 'k', 'r')
 
 namespace AAT {
 
@@ -39,7 +39,7 @@ using namespace OT;
 
 struct Anchor
 {
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(c->check_struct(this));
@@ -57,9 +57,9 @@ typedef LArrayOf<Anchor> GlyphAnchors;
 
 struct ankr
 {
-    static constexpr hb_tag_t tableTag = HB_AAT_TAG_ankr;
+    static constexpr rb_tag_t tableTag = RB_AAT_TAG_ankr;
 
-    const Anchor &get_anchor(hb_codepoint_t glyph_id, unsigned int i, unsigned int num_glyphs) const
+    const Anchor &get_anchor(rb_codepoint_t glyph_id, unsigned int i, unsigned int num_glyphs) const
     {
         const NNOffsetTo<GlyphAnchors> *offset = (this + lookupTable).get_value(glyph_id, num_glyphs);
         if (!offset)
@@ -68,7 +68,7 @@ struct ankr
         return anchors[i];
     }
 
-    bool sanitize(hb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         TRACE_SANITIZE(this);
         return_trace(likely(c->check_struct(this) && version == 0 && c->check_range(this, anchorData) &&
@@ -87,4 +87,4 @@ public:
 
 } /* namespace AAT */
 
-#endif /* HB_AAT_LAYOUT_ANKR_TABLE_HH */
+#endif /* RB_AAT_LAYOUT_ANKR_TABLE_HH */

@@ -22,27 +22,27 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_OT_H_IN
+#ifndef RB_OT_H_IN
 #error "Include <hb-ot.h> instead."
 #endif
 
-#ifndef HB_OT_METRICS_H
-#define HB_OT_METRICS_H
+#ifndef RB_OT_METRICS_H
+#define RB_OT_METRICS_H
 
 #include "hb.h"
 #include "hb-ot-name.h"
 
-HB_BEGIN_DECLS
+RB_BEGIN_DECLS
 
 typedef enum {
-    HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER = HB_TAG('h', 'a', 's', 'c'),
-    HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER = HB_TAG('h', 'd', 's', 'c'),
-    HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP = HB_TAG('h', 'l', 'g', 'p'),
-    HB_OT_METRICS_TAG_VERTICAL_ASCENDER = HB_TAG('v', 'a', 's', 'c'),
-    HB_OT_METRICS_TAG_VERTICAL_DESCENDER = HB_TAG('v', 'd', 's', 'c'),
-    HB_OT_METRICS_TAG_VERTICAL_LINE_GAP = HB_TAG('v', 'l', 'g', 'p'),
-} hb_ot_metrics_tag_t;
+    RB_OT_METRICS_TAG_HORIZONTAL_ASCENDER = RB_TAG('h', 'a', 's', 'c'),
+    RB_OT_METRICS_TAG_HORIZONTAL_DESCENDER = RB_TAG('h', 'd', 's', 'c'),
+    RB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP = RB_TAG('h', 'l', 'g', 'p'),
+    RB_OT_METRICS_TAG_VERTICAL_ASCENDER = RB_TAG('v', 'a', 's', 'c'),
+    RB_OT_METRICS_TAG_VERTICAL_DESCENDER = RB_TAG('v', 'd', 's', 'c'),
+    RB_OT_METRICS_TAG_VERTICAL_LINE_GAP = RB_TAG('v', 'l', 'g', 'p'),
+} rb_ot_metrics_tag_t;
 
-HB_END_DECLS
+RB_END_DECLS
 
-#endif /* HB_OT_METRICS_H */
+#endif /* RB_OT_METRICS_H */
