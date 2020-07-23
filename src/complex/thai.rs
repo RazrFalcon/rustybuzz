@@ -217,7 +217,7 @@ fn do_pua_shaping(font: &Font, buffer: &mut Buffer) {
     let mut below_state = BELOW_START_STATE[Consonant::NotConsonant as usize];
     let mut base = 0;
 
-    for i in 0..buffer.len() {
+    for i in 0..buffer.len {
         let mt = get_mark_type(buffer.info[i].codepoint);
 
         if mt == Mark::NotMark {
@@ -310,7 +310,7 @@ fn preprocess_text(
 
     buffer.clear_output();
     buffer.idx = 0;
-    while buffer.idx < buffer.len() {
+    while buffer.idx < buffer.len {
         let u = buffer.cur(0).codepoint;
         if !is_sara_am(u) {
             buffer.next_glyph();
@@ -320,13 +320,13 @@ fn preprocess_text(
         // Is SARA AM. Decompose and reorder.
         buffer.output_glyph(nikhahit_from_sara_am(u));
         {
-            let out_idx = buffer.out_len() - 1;
+            let out_idx = buffer.out_len - 1;
             buffer.out_info_mut()[out_idx].set_continuation();
         }
         buffer.replace_glyph(sara_aa_from_sara_am(u));
 
         // Make Nikhahit be recognized as a ccc=0 mark when zeroing widths.
-        let end = buffer.out_len();
+        let end = buffer.out_len;
         buffer.out_info_mut()[end - 2].set_general_category(GeneralCategory::NonspacingMark);
 
         // Ok, let's see...

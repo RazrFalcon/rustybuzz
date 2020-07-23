@@ -75,7 +75,7 @@ impl GlyphInfo {
     }
 
     #[inline]
-    pub(crate) fn glyph_props(&self) -> u16 {
+    fn glyph_props(&self) -> u16 {
         unsafe {
             let v: ffi::hb_var_int_t = std::mem::transmute(self.var1);
             v.var_u16[0]
@@ -107,7 +107,7 @@ impl GlyphInfo {
     }
 
     #[inline]
-    fn lig_props(&self) -> u8 {
+    pub(crate) fn lig_props(&self) -> u8 {
         unsafe {
             let v: ffi::hb_var_int_t = std::mem::transmute(self.var1);
             v.var_u8[2]
@@ -241,6 +241,7 @@ pub enum BufferClusterLevel {
 }
 
 impl Default for BufferClusterLevel {
+    #[inline]
     fn default() -> Self {
         BufferClusterLevel::MonotoneGraphemes
     }
@@ -272,8 +273,8 @@ pub(crate) struct Buffer {
     have_positions: bool,
 
     pub(crate) idx: usize,
-    len: usize,
-    out_len: usize,
+    pub(crate) len: usize,
+    pub(crate) out_len: usize,
 
     pub(crate) info: Vec<GlyphInfo>,
     pub(crate) pos: Vec<GlyphPosition>,
@@ -315,26 +316,32 @@ impl Buffer {
         }
     }
 
-    pub(crate) fn from_ptr(buffer: *const ffi::hb_buffer_t) -> &'static Buffer {
+    #[inline]
+    fn from_ptr(buffer: *const ffi::hb_buffer_t) -> &'static Buffer {
         unsafe { &*(buffer as *const Buffer) }
     }
 
+    #[inline]
     pub(crate) fn from_ptr_mut(buffer: *mut ffi::hb_buffer_t) -> &'static mut Buffer {
         unsafe { &mut *(buffer as *mut Buffer) }
     }
 
+    #[inline]
     pub(crate) fn as_ptr(&mut self) -> *mut ffi::hb_buffer_t {
         self as *mut _ as *mut ffi::hb_buffer_t
     }
 
+    #[inline]
     pub fn info_slice(&self) -> &[GlyphInfo] {
         &self.info[..self.len]
     }
 
+    #[inline]
     pub fn info_slice_mut(&mut self) -> &mut [GlyphInfo] {
         &mut self.info[..self.len]
     }
 
+    #[inline]
     pub(crate) fn out_info(&self) -> &[GlyphInfo] {
         if self.have_separate_output {
             unsafe { mem::transmute(self.pos.as_slice()) }
@@ -343,6 +350,7 @@ impl Buffer {
         }
     }
 
+    #[inline]
     pub(crate) fn out_info_mut(&mut self) -> &mut [GlyphInfo] {
         if self.have_separate_output {
             unsafe { mem::transmute(self.pos.as_mut_slice()) }
@@ -351,24 +359,29 @@ impl Buffer {
         }
     }
 
+    #[inline]
     fn set_out_info(&mut self, i: usize, info: GlyphInfo) {
         self.out_info_mut()[i] = info;
     }
 
+    #[inline]
     pub(crate) fn cur(&self, i: usize) -> &GlyphInfo {
         &self.info[self.idx + i]
     }
 
+    #[inline]
     pub(crate) fn cur_mut(&mut self, i: usize) -> &mut GlyphInfo {
         let idx = self.idx + i;
         &mut self.info[idx]
     }
 
+    #[inline]
     fn cur_pos_mut(&mut self) -> &mut GlyphPosition {
         let i = self.idx;
         &mut self.pos[i]
     }
 
+    #[inline]
     fn prev_mut(&mut self) -> &mut GlyphInfo {
         let idx = if self.out_len != 0 { self.out_len - 1 } else { 0 };
         &mut self.out_info_mut()[idx]
@@ -397,14 +410,17 @@ impl Buffer {
         self.context_len = [0, 0];
     }
 
-    pub(crate) fn backtrack_len(&self) -> usize {
+    #[inline]
+    fn backtrack_len(&self) -> usize {
         if self.have_output { self.out_len } else { self.idx }
     }
 
+    #[inline]
     fn lookahead_len(&self) -> usize {
         self.len - self.idx
     }
 
+    #[inline]
     fn next_serial(&mut self) -> u32 {
         self.serial += 1;
         self.serial
@@ -425,7 +441,8 @@ impl Buffer {
         self.len += 1;
     }
 
-    pub(crate) fn reverse(&mut self) {
+    #[inline]
+    fn reverse(&mut self) {
         if self.is_empty() {
             return;
         }
@@ -457,13 +474,14 @@ impl Buffer {
         }
     }
 
-    pub fn reset_clusters(&mut self) {
+    #[inline]
+    fn reset_clusters(&mut self) {
         for (i, info) in self.info.iter_mut().enumerate() {
             info.cluster = i as u32;
         }
     }
 
-    pub(crate) fn guess_segment_properties(&mut self) {
+    fn guess_segment_properties(&mut self) {
         if self.script.is_none() {
             for info in &self.info {
                 let c = char::try_from(info.codepoint).unwrap();
@@ -1021,21 +1039,9 @@ impl Buffer {
         unsafe_to_break
     }
 
-    /// Returns the length of the data of the buffer.
-    ///
-    /// This corresponds to the number of unicode codepoints contained in the
-    /// buffer.
-    pub fn len(&self) -> usize {
-        self.len
-    }
-
     /// Checks that buffer contains no elements.
-    pub fn is_empty(&self) -> bool {
+    pub(crate) fn is_empty(&self) -> bool {
         self.len == 0
-    }
-
-    pub(crate) fn out_len(&self) -> usize {
-        self.out_len
     }
 
     fn push_str(&mut self, text: &str) {
@@ -1179,7 +1185,7 @@ impl UnicodeBuffer {
     /// buffer.
     #[inline]
     pub fn len(&self) -> usize {
-        self.0.len()
+        self.0.len
     }
 
     /// Returns `true` if the buffer contains no elements.
@@ -1189,21 +1195,25 @@ impl UnicodeBuffer {
     }
 
     /// Pushes a string to a buffer.
+    #[inline]
     pub fn push_str(&mut self, str: &str) {
         self.0.push_str(str);
     }
 
     /// Set the text direction of the `Buffer`'s contents.
+    #[inline]
     pub fn set_direction(&mut self, direction: Direction) {
         self.0.direction = direction;
     }
 
     /// Returns the `Buffer`'s text direction.
+    #[inline]
     pub fn direction(&self) -> Direction {
         self.0.direction
     }
 
     /// Set the script from an ISO15924 tag.
+    #[inline]
     pub fn set_script(&mut self, script: Script) {
         self.0.script = Some(script);
     }
@@ -1214,37 +1224,44 @@ impl UnicodeBuffer {
     }
 
     /// Set the buffer language.
+    #[inline]
     pub fn set_language(&mut self, lang: Language) {
         self.0.language = Some(lang);
     }
 
     /// Get the buffer language.
+    #[inline]
     pub fn language(&self) -> Option<Language> {
         self.0.language.clone()
     }
 
     /// Guess the segment properties (direction, language, script) for the
     /// current buffer.
+    #[inline]
     pub fn guess_segment_properties(&mut self) {
         self.0.guess_segment_properties()
     }
 
     /// Set the cluster level of the buffer.
+    #[inline]
     pub fn set_cluster_level(&mut self, cluster_level: BufferClusterLevel) {
         self.0.cluster_level = cluster_level
     }
 
     /// Retrieve the cluster level of the buffer.
+    #[inline]
     pub fn cluster_level(&self) -> BufferClusterLevel {
         self.0.cluster_level
     }
 
     /// Resets clusters.
+    #[inline]
     pub fn reset_clusters(&mut self) {
         self.0.reset_clusters();
     }
 
     /// Clear the contents of the buffer.
+    #[inline]
     pub fn clear(&mut self) {
         self.0.clear()
     }
@@ -1277,27 +1294,32 @@ impl GlyphBuffer {
     /// When called before shaping this is the number of unicode codepoints
     /// contained in the buffer. When called after shaping it returns the number
     /// of glyphs stored.
+    #[inline]
     pub fn len(&self) -> usize {
-        self.0.len()
+        self.0.len
     }
 
     /// Returns `true` if the buffer contains no elements.
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
     /// Get the glyph infos.
+    #[inline]
     pub fn glyph_infos(&self) -> &[GlyphInfo] {
         &self.0.info[0..self.0.len]
     }
 
     /// Get the glyph positions.
+    #[inline]
     pub fn glyph_positions(&self) -> &[GlyphPosition] {
         &self.0.pos[0..self.0.len]
     }
 
     /// Clears the content of the glyph buffer and returns an empty
     /// `UnicodeBuffer` reusing the existing allocation.
+    #[inline]
     pub fn clear(mut self) -> UnicodeBuffer {
         self.0.clear();
         UnicodeBuffer(self.0)
@@ -1409,7 +1431,7 @@ pub extern "C" fn hb_buffer_reverse_range(buffer: *mut ffi::hb_buffer_t, start: 
 
 #[no_mangle]
 pub extern "C" fn hb_buffer_get_length(buffer: *const ffi::hb_buffer_t) -> u32 {
-    Buffer::from_ptr(buffer).len() as u32
+    Buffer::from_ptr(buffer).len as u32
 }
 
 #[no_mangle]

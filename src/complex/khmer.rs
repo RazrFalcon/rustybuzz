@@ -141,7 +141,7 @@ fn setup_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
-    while start < buffer.len() {
+    while start < buffer.len {
         buffer.unsafe_to_break(start, end);
         start = end;
         end = buffer.next_syllable(start);
@@ -166,7 +166,7 @@ fn reorder(plan: &ShapePlan, font: &Font, buffer: &mut Buffer) {
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
-    while start < buffer.len() {
+    while start < buffer.len {
         reorder_syllable(khmer_plan, start, end, buffer);
         start = end;
         end = buffer.next_syllable(start);
@@ -205,7 +205,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
 
     buffer.idx = 0;
     let mut last_syllable = 0;
-    while buffer.idx < buffer.len() {
+    while buffer.idx < buffer.len {
         let syllable = buffer.cur(0).syllable();
         let syllable_type = syllable & 0x0F;
         if last_syllable != syllable && syllable_type == SyllableType::BrokenCluster as u8 {
@@ -217,7 +217,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
             ginfo.set_syllable(buffer.cur(0).syllable());
 
             // Insert dottedcircle after possible Repha.
-            while buffer.idx < buffer.len() &&
+            while buffer.idx < buffer.len &&
                 last_syllable == buffer.cur(0).syllable() &&
                 buffer.cur(0).indic_category() == Category::Repha
             {

@@ -197,7 +197,7 @@ fn setup_syllables(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
     {
         let mut start = 0;
         let mut end = buffer.next_syllable(0);
-        while start < buffer.len() {
+        while start < buffer.len {
             buffer.unsafe_to_break(start, end);
             start = end;
             end = buffer.next_syllable(start);
@@ -218,7 +218,7 @@ fn setup_rphf_mask(plan: &ShapePlan, buffer: &mut Buffer) {
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
-    while start < buffer.len() {
+    while start < buffer.len {
         let limit = if buffer.info[start].use_category() == Category::R {
             1
         } else {
@@ -258,7 +258,7 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
     let mut last_form = None;
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
-    while start < buffer.len() {
+    while start < buffer.len {
         let syllable = buffer.info[start].syllable() & 0x0F;
         if syllable == SyllableType::IndependentCluster as u8 ||
             syllable == SyllableType::SymbolCluster as u8 ||
@@ -316,7 +316,7 @@ fn record_rphf(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
-    while start < buffer.len() {
+    while start < buffer.len {
         // Mark a substituted repha as USE_R.
         for i in start..end {
             if buffer.info[i].mask & mask == 0 {
@@ -350,7 +350,7 @@ fn reorder(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
-    while start < buffer.len() {
+    while start < buffer.len {
         reorder_syllable(start, end, buffer);
         start = end;
         end = buffer.next_syllable(start);
@@ -388,7 +388,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
 
     buffer.idx = 0;
     let mut last_syllable = 0;
-    while buffer.idx < buffer.len() {
+    while buffer.idx < buffer.len {
         let syllable = buffer.cur(0).syllable();
         let syllable_type = syllable & 0x0F;
         if last_syllable != syllable && syllable_type == SyllableType::BrokenCluster as u8 {
@@ -400,7 +400,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
             ginfo.set_syllable(buffer.cur(0).syllable());
 
             // Insert dottedcircle after possible Repha.
-            while buffer.idx < buffer.len() &&
+            while buffer.idx < buffer.len &&
                 last_syllable == buffer.cur(0).syllable() &&
                 buffer.cur(0).use_category() == Category::R
             {
@@ -522,7 +522,7 @@ extern "C" fn record_pref_raw(
 fn record_pref(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
-    while start < buffer.len() {
+    while start < buffer.len {
         // Mark a substituted pref as VPre, as they behave the same way.
         for i in start..end {
             if buffer.info[i].is_substituted() {

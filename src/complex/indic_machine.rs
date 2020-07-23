@@ -360,8 +360,8 @@ pub(crate) fn find_syllables_indic(buffer: &mut Buffer) {
     let mut te = 0;
     let mut act = 0;
     let mut p = 0;
-    let pe = buffer.len();
-    let eof = buffer.len();
+    let pe = buffer.len;
+    let eof = buffer.len;
     let mut syllable_serial = 1u8;
     let mut reset = true;
     let mut slen;

@@ -254,7 +254,7 @@ fn record_stch(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
     // are applied before stch, but we assume that they didn't result in
     // anything multiplying into 5 pieces, so it's safe-ish...
 
-    let len = buffer.len();
+    let len = buffer.len;
     let info = &mut buffer.info;
     let mut has_stch = false;
     for i in 0..len {
@@ -309,8 +309,8 @@ fn apply_stch(font: &Font, buffer: &mut Buffer) {
     const CUT: usize = 1;
 
     for step in 0..2 {
-        let new_len = buffer.len() + extra_glyphs_needed; // write head during CUT
-        let mut i = buffer.len();
+        let new_len = buffer.len + extra_glyphs_needed; // write head during CUT
+        let mut i = buffer.len;
         let mut j = new_len;
         while i != 0 {
             if !buffer.info[i - 1].arabic_shaping_action().is_stch() {
@@ -409,7 +409,7 @@ fn apply_stch(font: &Font, buffer: &mut Buffer) {
         }
 
         if step == MEASURE {
-            buffer.ensure(buffer.len() + extra_glyphs_needed);
+            buffer.ensure(buffer.len + extra_glyphs_needed);
         } else {
             debug_assert_eq!(j, 0);
             buffer.set_len(new_len);
@@ -488,7 +488,7 @@ fn arabic_joining(buffer: &mut Buffer) {
         break;
     }
 
-    for i in 0..buffer.len() {
+    for i in 0..buffer.len {
         let this_type = get_joining_type(
             buffer.info[i].as_char(),
             buffer.info[i].general_category(),
@@ -532,7 +532,7 @@ fn arabic_joining(buffer: &mut Buffer) {
 
 fn mongolian_variation_selectors(buffer: &mut Buffer) {
    // Copy arabic_shaping_action() from base to Mongolian variation selectors.
-    let len = buffer.len();
+    let len = buffer.len;
     let info = &mut buffer.info;
     for i in 1..len {
         if (0x180B..=0x180D).contains(&info[i].codepoint) {

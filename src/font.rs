@@ -117,14 +117,17 @@ impl<'a> Font<'a> {
         })
     }
 
+    #[inline]
     pub(crate) fn from_ptr(font: *const ffi::hb_font_t) -> &'static Font<'static> {
         unsafe { &*(font as *const Font) }
     }
 
+    #[inline]
     pub(crate) fn as_ptr(&self) -> *const ffi::hb_font_t {
         self as *const _ as *const ffi::hb_font_t
     }
 
+    #[inline]
     pub(crate) fn face_ptr(&self) -> *mut ffi::hb_face_t {
         self.hb_face.as_ptr()
     }
@@ -134,6 +137,7 @@ impl<'a> Font<'a> {
     /// Used during raster glyphs processing and hinting.
     ///
     /// `None` by default.
+    #[inline]
     pub fn set_pixels_per_em(&mut self, ppem: Option<(u16, u16)>) {
         self.pixels_per_em = ppem;
     }
@@ -143,6 +147,7 @@ impl<'a> Font<'a> {
     /// Used for optical-sizing in Apple fonts.
     ///
     /// `None` by default.
+    #[inline]
     pub fn set_points_per_em(&mut self, ptem: Option<f32>) {
         self.points_per_em = ptem;
     }

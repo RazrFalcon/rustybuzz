@@ -266,8 +266,8 @@ pub(crate) fn find_syllables_myanmar(buffer: &mut Buffer) {
     let mut ts = 0;
     let mut te;
     let mut p = 0;
-    let pe = buffer.len();
-    let eof = buffer.len();
+    let pe = buffer.len;
+    let eof = buffer.len;
     let mut syllable_serial = 1u8;
     let mut reset = true;
     let mut slen;

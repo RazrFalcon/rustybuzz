@@ -22,6 +22,7 @@ pub enum Direction {
 }
 
 impl Direction {
+    #[inline]
     pub(crate) fn to_raw(self) -> ffi::hb_direction_t {
         match self {
             Direction::Invalid => ffi::HB_DIRECTION_INVALID,
@@ -32,6 +33,7 @@ impl Direction {
         }
     }
 
+    #[inline]
     pub(crate) fn from_raw(dir: ffi::hb_direction_t) -> Self {
         match dir {
             ffi::HB_DIRECTION_LTR => Direction::LeftToRight,
@@ -124,6 +126,7 @@ impl Direction {
 }
 
 impl Default for Direction {
+    #[inline]
     fn default() -> Self {
         Direction::Invalid
     }
@@ -160,6 +163,7 @@ pub struct Language(pub(crate) std::ffi::CString);
 
 impl Language {
     /// Returns the language as a string.
+    #[inline]
     pub fn as_str(&self) -> &str {
         self.0.to_str().unwrap()
     }
@@ -188,10 +192,12 @@ impl std::str::FromStr for Language {
 pub struct Script(pub(crate) Tag);
 
 impl Script {
+    #[inline]
     pub(crate) const fn from_raw(script: ffi::hb_script_t) -> Self {
         Script(Tag(script))
     }
 
+    #[inline]
     pub(crate) const fn from_bytes(bytes: &[u8; 4]) -> Self {
         Script(Tag::from_bytes(bytes))
     }
@@ -228,6 +234,7 @@ impl Script {
     }
 
     /// Returns script's tag.
+    #[inline]
     pub fn tag(&self) -> Tag {
         self.0
     }
