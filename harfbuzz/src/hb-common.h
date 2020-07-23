@@ -116,9 +116,6 @@ typedef uint32_t rb_tag_t;
 #define RB_TAG_MAX RB_TAG(0xff, 0xff, 0xff, 0xff)
 #define RB_TAG_MAX_SIGNED RB_TAG(0x7f, 0xff, 0xff, 0xff)
 
-/* len=-1 means str is NUL-terminated. */
-RB_EXTERN rb_tag_t rb_tag_from_string(const char *str, int len);
-
 /**
  * rb_direction_t:
  * @RB_DIRECTION_INVALID: Initial, unset direction.

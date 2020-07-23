@@ -429,15 +429,6 @@ typedef enum {
     _RB_AAT_LAYOUT_FEATURE_SELECTOR_MAX_VALUE = RB_TAG_MAX_SIGNED /*< skip >*/
 } rb_aat_layout_feature_selector_t;
 
-RB_EXTERN unsigned int
-rb_aat_layout_get_feature_types(rb_face_t *face,
-                                unsigned int start_offset,
-                                unsigned int *feature_count, /* IN/OUT.  May be NULL. */
-                                rb_aat_layout_feature_type_t *features /* OUT.     May be NULL. */);
-
-RB_EXTERN rb_ot_name_id_t rb_aat_layout_feature_type_get_name_id(rb_face_t *face,
-                                                                 rb_aat_layout_feature_type_t feature_type);
-
 typedef struct rb_aat_layout_feature_selector_info_t
 {
     rb_ot_name_id_t name_id;
@@ -448,14 +439,6 @@ typedef struct rb_aat_layout_feature_selector_info_t
 } rb_aat_layout_feature_selector_info_t;
 
 #define RB_AAT_LAYOUT_NO_SELECTOR_INDEX 0xFFFFu
-
-RB_EXTERN unsigned int rb_aat_layout_feature_type_get_selector_infos(
-    rb_face_t *face,
-    rb_aat_layout_feature_type_t feature_type,
-    unsigned int start_offset,
-    unsigned int *selector_count,                     /* IN/OUT.  May be NULL. */
-    rb_aat_layout_feature_selector_info_t *selectors, /* OUT.     May be NULL. */
-    unsigned int *default_index /* OUT.     May be NULL. */);
 
 /*
  * morx/mort

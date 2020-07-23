@@ -37,4 +37,23 @@ struct rb_shape_plan_t
     rb_ot_shape_plan_t ot;
 };
 
+RB_EXTERN rb_shape_plan_t *rb_shape_plan_create(rb_face_t *face,
+                                                const rb_segment_properties_t *props,
+                                                const rb_feature_t *user_features,
+                                                unsigned int num_user_features,
+                                                const int *coords,
+                                                unsigned int num_coords);
+
+RB_EXTERN rb_shape_plan_t *rb_shape_plan_get_empty(void);
+
+RB_EXTERN rb_shape_plan_t *rb_shape_plan_reference(rb_shape_plan_t *shape_plan);
+
+RB_EXTERN void rb_shape_plan_destroy(rb_shape_plan_t *shape_plan);
+
+RB_EXTERN rb_bool_t rb_shape_plan_execute(rb_shape_plan_t *shape_plan,
+                                          rb_font_t *font,
+                                          rb_buffer_t *buffer,
+                                          const rb_feature_t *features,
+                                          unsigned int num_features);
+
 #endif /* RB_SHAPE_PLAN_HH */

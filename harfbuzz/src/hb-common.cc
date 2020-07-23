@@ -35,46 +35,6 @@
 #define setlocale(Category, Locale) "C"
 #endif
 
-/**
- * SECTION:hb-common
- * @title: hb-common
- * @short_description: Common data types
- * @include: hb.h
- *
- * Common data types used across HarfBuzz are defined here.
- **/
-
-/* rb_tag_t */
-
-/**
- * rb_tag_from_string:
- * @str: (array length=len) (element-type uint8_t):
- * @len:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-rb_tag_t rb_tag_from_string(const char *str, int len)
-{
-    char tag[4];
-    unsigned int i;
-
-    if (!str || !len || !*str)
-        return RB_TAG_NONE;
-
-    if (len < 0 || len > 4)
-        len = 4;
-    for (i = 0; i < (unsigned)len && str[i]; i++)
-        tag[i] = str[i];
-    for (; i < 4; i++)
-        tag[i] = ' ';
-
-    return RB_TAG(tag[0], tag[1], tag[2], tag[3]);
-}
-
 /* If there is no visibility control, then hb-static.cc will NOT
  * define anything.  Instead, we get it to define one set in here
  * only, so only libharfbuzz.so defines them, not other libs. */

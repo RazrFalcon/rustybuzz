@@ -95,19 +95,6 @@ typedef enum {
     RB_OT_LAYOUT_GLYPH_CLASS_COMPONENT = 4
 } rb_ot_layout_glyph_class_t;
 
-RB_EXTERN rb_ot_layout_glyph_class_t rb_ot_layout_get_glyph_class(rb_face_t *face, rb_codepoint_t glyph);
-
-RB_EXTERN void
-rb_ot_layout_get_glyphs_in_class(rb_face_t *face, rb_ot_layout_glyph_class_t klass, rb_set_t *glyphs /* OUT */);
-
-/* Not that useful.  Provides list of attach points for a glyph that a
- * client may want to cache */
-RB_EXTERN unsigned int rb_ot_layout_get_attach_points(rb_face_t *face,
-                                                      rb_codepoint_t glyph,
-                                                      unsigned int start_offset,
-                                                      unsigned int *point_count /* IN/OUT */,
-                                                      unsigned int *point_array /* OUT */);
-
 /*
  * GSUB/GPOS feature query and enumeration interface
  */
@@ -117,36 +104,12 @@ RB_EXTERN unsigned int rb_ot_layout_get_attach_points(rb_face_t *face,
 #define RB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX 0xFFFFu
 #define RB_OT_LAYOUT_NO_VARIATIONS_INDEX 0xFFFFFFFFu
 
-RB_EXTERN unsigned int rb_ot_layout_table_get_script_tags(rb_face_t *face,
-                                                          rb_tag_t table_tag,
-                                                          unsigned int start_offset,
-                                                          unsigned int *script_count /* IN/OUT */,
-                                                          rb_tag_t *script_tags /* OUT */);
-
-RB_EXTERN rb_bool_t rb_ot_layout_table_find_script(rb_face_t *face,
-                                                   rb_tag_t table_tag,
-                                                   rb_tag_t script_tag,
-                                                   unsigned int *script_index /* OUT */);
-
 RB_EXTERN rb_bool_t rb_ot_layout_table_select_script(rb_face_t *face,
                                                      rb_tag_t table_tag,
                                                      unsigned int script_count,
                                                      const rb_tag_t *script_tags,
                                                      unsigned int *script_index /* OUT */,
                                                      rb_tag_t *chosen_script /* OUT */);
-
-RB_EXTERN unsigned int rb_ot_layout_table_get_feature_tags(rb_face_t *face,
-                                                           rb_tag_t table_tag,
-                                                           unsigned int start_offset,
-                                                           unsigned int *feature_count /* IN/OUT */,
-                                                           rb_tag_t *feature_tags /* OUT */);
-
-RB_EXTERN unsigned int rb_ot_layout_script_get_language_tags(rb_face_t *face,
-                                                             rb_tag_t table_tag,
-                                                             unsigned int script_index,
-                                                             unsigned int start_offset,
-                                                             unsigned int *language_count /* IN/OUT */,
-                                                             rb_tag_t *language_tags /* OUT */);
 
 RB_EXTERN rb_bool_t rb_ot_layout_script_select_language(rb_face_t *face,
                                                         rb_tag_t table_tag,
@@ -155,34 +118,12 @@ RB_EXTERN rb_bool_t rb_ot_layout_script_select_language(rb_face_t *face,
                                                         const rb_tag_t *language_tags,
                                                         unsigned int *language_index /* OUT */);
 
-RB_EXTERN rb_bool_t rb_ot_layout_language_get_required_feature_index(rb_face_t *face,
-                                                                     rb_tag_t table_tag,
-                                                                     unsigned int script_index,
-                                                                     unsigned int language_index,
-                                                                     unsigned int *feature_index /* OUT */);
-
 RB_EXTERN rb_bool_t rb_ot_layout_language_get_required_feature(rb_face_t *face,
                                                                rb_tag_t table_tag,
                                                                unsigned int script_index,
                                                                unsigned int language_index,
                                                                unsigned int *feature_index /* OUT */,
                                                                rb_tag_t *feature_tag /* OUT */);
-
-RB_EXTERN unsigned int rb_ot_layout_language_get_feature_indexes(rb_face_t *face,
-                                                                 rb_tag_t table_tag,
-                                                                 unsigned int script_index,
-                                                                 unsigned int language_index,
-                                                                 unsigned int start_offset,
-                                                                 unsigned int *feature_count /* IN/OUT */,
-                                                                 unsigned int *feature_indexes /* OUT */);
-
-RB_EXTERN unsigned int rb_ot_layout_language_get_feature_tags(rb_face_t *face,
-                                                              rb_tag_t table_tag,
-                                                              unsigned int script_index,
-                                                              unsigned int language_index,
-                                                              unsigned int start_offset,
-                                                              unsigned int *feature_count /* IN/OUT */,
-                                                              rb_tag_t *feature_tags /* OUT */);
 
 RB_EXTERN rb_bool_t rb_ot_layout_language_find_feature(rb_face_t *face,
                                                        rb_tag_t table_tag,
@@ -191,56 +132,7 @@ RB_EXTERN rb_bool_t rb_ot_layout_language_find_feature(rb_face_t *face,
                                                        rb_tag_t feature_tag,
                                                        unsigned int *feature_index /* OUT */);
 
-RB_EXTERN unsigned int rb_ot_layout_feature_get_lookups(rb_face_t *face,
-                                                        rb_tag_t table_tag,
-                                                        unsigned int feature_index,
-                                                        unsigned int start_offset,
-                                                        unsigned int *lookup_count /* IN/OUT */,
-                                                        unsigned int *lookup_indexes /* OUT */);
-
 RB_EXTERN unsigned int rb_ot_layout_table_get_lookup_count(rb_face_t *face, rb_tag_t table_tag);
-
-RB_EXTERN void rb_ot_layout_collect_features(rb_face_t *face,
-                                             rb_tag_t table_tag,
-                                             const rb_tag_t *scripts,
-                                             const rb_tag_t *languages,
-                                             const rb_tag_t *features,
-                                             rb_set_t *feature_indexes /* OUT */);
-
-RB_EXTERN void rb_ot_layout_collect_lookups(rb_face_t *face,
-                                            rb_tag_t table_tag,
-                                            const rb_tag_t *scripts,
-                                            const rb_tag_t *languages,
-                                            const rb_tag_t *features,
-                                            rb_set_t *lookup_indexes /* OUT */);
-
-RB_EXTERN void rb_ot_layout_lookup_collect_glyphs(rb_face_t *face,
-                                                  rb_tag_t table_tag,
-                                                  unsigned int lookup_index,
-                                                  rb_set_t *glyphs_before, /* OUT.  May be NULL */
-                                                  rb_set_t *glyphs_input,  /* OUT.  May be NULL */
-                                                  rb_set_t *glyphs_after,  /* OUT.  May be NULL */
-                                                  rb_set_t *glyphs_output /* OUT.  May be NULL */);
-
-#ifdef RB_NOT_IMPLEMENTED
-typedef struct
-{
-    const rb_codepoint_t *before, unsigned int before_length, const rb_codepoint_t *input, unsigned int input_length,
-        const rb_codepoint_t *after, unsigned int after_length,
-} rb_ot_layout_glyph_sequence_t;
-
-typedef rb_bool_t (*rb_ot_layout_glyph_sequence_func_t)(rb_font_t *font,
-                                                        rb_tag_t table_tag,
-                                                        unsigned int lookup_index,
-                                                        const rb_ot_layout_glyph_sequence_t *sequence,
-                                                        void *user_data);
-
-RB_EXTERN void Xrb_ot_layout_lookup_enumerate_sequences(rb_face_t *face,
-                                                        rb_tag_t table_tag,
-                                                        unsigned int lookup_index,
-                                                        rb_ot_layout_glyph_sequence_func_t callback,
-                                                        void *user_data);
-#endif
 
 /* Variations support */
 
@@ -264,73 +156,17 @@ RB_EXTERN unsigned int rb_ot_layout_feature_with_variations_get_lookups(rb_face_
 
 RB_EXTERN rb_bool_t rb_ot_layout_has_substitution(rb_face_t *face);
 
-RB_EXTERN unsigned rb_ot_layout_lookup_get_glyph_alternates(rb_face_t *face,
-                                                            unsigned lookup_index,
-                                                            rb_codepoint_t glyph,
-                                                            unsigned start_offset,
-                                                            unsigned *alternate_count /* IN/OUT */,
-                                                            rb_codepoint_t *alternate_glyphs /* OUT */);
-
 RB_EXTERN rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
                                                          unsigned int lookup_index,
                                                          const rb_codepoint_t *glyphs,
                                                          unsigned int glyphs_length,
                                                          rb_bool_t zero_context);
 
-RB_EXTERN void rb_ot_layout_lookup_substitute_closure(rb_face_t *face, unsigned int lookup_index, rb_set_t *glyphs
-                                                      /*TODO , rb_bool_t  inclusive */);
-
-RB_EXTERN void rb_ot_layout_lookups_substitute_closure(rb_face_t *face, const rb_set_t *lookups, rb_set_t *glyphs);
-
-#ifdef RB_NOT_IMPLEMENTED
-/* Note: You better have GDEF when using this API, or marks won't do much. */
-RB_EXTERN rb_bool_t Xrb_ot_layout_lookup_substitute(rb_font_t *font,
-                                                    unsigned int lookup_index,
-                                                    const rb_ot_layout_glyph_sequence_t *sequence,
-                                                    unsigned int out_size,
-                                                    rb_codepoint_t *glyphs_out, /* OUT */
-                                                    unsigned int *clusters_out, /* OUT */
-                                                    unsigned int *out_length /* OUT */);
-#endif
-
 /*
  * GPOS
  */
 
 RB_EXTERN rb_bool_t rb_ot_layout_has_positioning(rb_face_t *face);
-
-#ifdef RB_NOT_IMPLEMENTED
-/* Note: You better have GDEF when using this API, or marks won't do much. */
-RB_EXTERN rb_bool_t Xrb_ot_layout_lookup_position(rb_font_t *font,
-                                                  unsigned int lookup_index,
-                                                  const rb_ot_layout_glyph_sequence_t *sequence,
-                                                  rb_glyph_position_t *positions /* IN / OUT */);
-#endif
-
-/* Optical 'size' feature info.  Returns true if found.
- * https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#size */
-RB_EXTERN rb_bool_t rb_ot_layout_get_size_params(rb_face_t *face,
-                                                 unsigned int *design_size,          /* OUT.  May be NULL */
-                                                 unsigned int *subfamily_id,         /* OUT.  May be NULL */
-                                                 rb_ot_name_id_t *subfamily_name_id, /* OUT.  May be NULL */
-                                                 unsigned int *range_start,          /* OUT.  May be NULL */
-                                                 unsigned int *range_end /* OUT.  May be NULL */);
-
-RB_EXTERN rb_bool_t rb_ot_layout_feature_get_name_ids(rb_face_t *face,
-                                                      rb_tag_t table_tag,
-                                                      unsigned int feature_index,
-                                                      rb_ot_name_id_t *label_id /* OUT.  May be NULL */,
-                                                      rb_ot_name_id_t *tooltip_id /* OUT.  May be NULL */,
-                                                      rb_ot_name_id_t *sample_id /* OUT.  May be NULL */,
-                                                      unsigned int *num_named_parameters /* OUT.  May be NULL */,
-                                                      rb_ot_name_id_t *first_param_id /* OUT.  May be NULL */);
-
-RB_EXTERN unsigned int rb_ot_layout_feature_get_characters(rb_face_t *face,
-                                                           rb_tag_t table_tag,
-                                                           unsigned int feature_index,
-                                                           unsigned int start_offset,
-                                                           unsigned int *char_count /* IN/OUT.  May be NULL */,
-                                                           rb_codepoint_t *characters /* OUT.     May be NULL */);
 
 RB_END_DECLS
 
