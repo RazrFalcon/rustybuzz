@@ -70,15 +70,6 @@ RB_EXTERN void rb_ot_tags_from_script_and_language(rb_script_t script,
                                                    unsigned int *language_count /* IN/OUT */,
                                                    rb_tag_t *language_tags /* OUT */);
 
-RB_EXTERN rb_script_t rb_ot_tag_to_script(rb_tag_t tag);
-
-RB_EXTERN const char *rb_ot_tag_to_language(rb_tag_t tag);
-
-RB_EXTERN void rb_ot_tags_to_script_and_language(rb_tag_t script_tag,
-                                                 rb_tag_t language_tag,
-                                                 rb_script_t *script /* OUT */,
-                                                 const char **language /* OUT */);
-
 /*
  * GDEF
  */

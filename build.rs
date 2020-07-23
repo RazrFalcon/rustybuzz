@@ -34,7 +34,6 @@ fn main() {
     build.file("harfbuzz/src/hb-ot-shape-complex-default.cc");
     build.file("harfbuzz/src/hb-ot-shape-fallback.cc");
     build.file("harfbuzz/src/hb-ot-shape-normalize.cc");
-    build.file("harfbuzz/src/hb-ot-tag.cc");
     build.file("harfbuzz/src/hb-set.cc");
     build.file("harfbuzz/src/hb-shape.cc");
     build.file("harfbuzz/src/hb-shape-plan.cc");

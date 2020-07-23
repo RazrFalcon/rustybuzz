@@ -660,3 +660,21 @@ impl std::str::FromStr for Variation {
         parse(s).ok_or("invalid variation")
     }
 }
+
+
+pub trait TagExt {
+    fn default_script() -> Self;
+    fn default_language() -> Self;
+}
+
+impl TagExt for Tag {
+    #[inline]
+    fn default_script() -> Self {
+        Tag::from_bytes(b"DFLT")
+    }
+
+    #[inline]
+    fn default_language() -> Self {
+        Tag::from_bytes(b"dflt")
+    }
+}
