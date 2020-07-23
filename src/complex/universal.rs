@@ -69,38 +69,38 @@ pub enum Category {
 
 // These features are applied all at once, before reordering.
 const BASIC_FEATURES: &[Tag] = &[
-    Tag::from_bytes(b"rkrf"),
-    Tag::from_bytes(b"abvf"),
-    Tag::from_bytes(b"blwf"),
-    Tag::from_bytes(b"half"),
-    Tag::from_bytes(b"pstf"),
-    Tag::from_bytes(b"vatu"),
-    Tag::from_bytes(b"cjct"),
+    feature::RAKAR_FORMS,
+    feature::ABOVE_BASE_FORMS,
+    feature::BELOW_BASE_FORMS,
+    feature::HALF_FORMS,
+    feature::POST_BASE_FORMS,
+    feature::VATTU_VARIANTS,
+    feature::CONJUNCT_FORMS,
 ];
 
 const TOPOGRAPHICAL_FEATURES: &[Tag] = &[
-    Tag::from_bytes(b"isol"),
-    Tag::from_bytes(b"init"),
-    Tag::from_bytes(b"medi"),
-    Tag::from_bytes(b"fina"),
+    feature::ISOLATED_FORMS,
+    feature::INITIAL_FORMS,
+    feature::MEDIAL_FORMS_1,
+    feature::TERMINAL_FORMS_1,
 ];
 
 // Same order as use_topographical_features.
 #[derive(Clone, Copy, PartialEq)]
 enum JoiningForm {
-    ISOL = 0,
-    INIT,
-    MEDI,
-    FINA,
+    Isolated = 0,
+    Initial,
+    Medial,
+    Terminal,
 }
 
 // These features are applied all at once, after reordering and clearing syllables.
 const OTHER_FEATURES: &[Tag] = &[
-    Tag::from_bytes(b"abvs"),
-    Tag::from_bytes(b"blws"),
-    Tag::from_bytes(b"haln"),
-    Tag::from_bytes(b"pres"),
-    Tag::from_bytes(b"psts"),
+    feature::ABOVE_BASE_SUBSTITUTIONS,
+    feature::BELOW_BASE_SUBSTITUTIONS,
+    feature::HALANT_FORMS,
+    feature::PRE_BASE_SUBSTITUTIONS,
+    feature::POST_BASE_SUBSTITUTIONS,
 ];
 
 impl GlyphInfo {
@@ -145,17 +145,17 @@ fn collect_features(planner: &mut ShapePlanner) {
     planner.ot_map.add_gsub_pause(Some(setup_syllables_raw));
 
     // Default glyph pre-processing group
-    planner.ot_map.enable_feature(Tag::from_bytes(b"locl"), FeatureFlags::default(), 1);
-    planner.ot_map.enable_feature(Tag::from_bytes(b"ccmp"), FeatureFlags::default(), 1);
-    planner.ot_map.enable_feature(Tag::from_bytes(b"nukt"), FeatureFlags::default(), 1);
-    planner.ot_map.enable_feature(Tag::from_bytes(b"akhn"), FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::NUKTA_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::AKHANDS, FeatureFlags::MANUAL_ZWJ, 1);
 
     // Reordering group
     planner.ot_map.add_gsub_pause(Some(ffi::hb_clear_substitution_flags));
-    planner.ot_map.add_feature(Tag::from_bytes(b"rphf"), FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.add_feature(feature::REPH_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_rphf_raw));
     planner.ot_map.add_gsub_pause(Some(ffi::hb_clear_substitution_flags));
-    planner.ot_map.enable_feature(Tag::from_bytes(b"pref"), FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.enable_feature(feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_pref_raw));
 
     // Orthographic unit shaping group
@@ -168,13 +168,13 @@ fn collect_features(planner: &mut ShapePlanner) {
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {
-        planner.ot_map.add_feature(*feature, FeatureFlags::default(), 1);
+        planner.ot_map.add_feature(*feature, FeatureFlags::NONE, 1);
     }
     planner.ot_map.add_gsub_pause(None);
 
     // Standard typographic presentation
     for feature in OTHER_FEATURES {
-        planner.ot_map.enable_feature(*feature, FeatureFlags::default(), 1);
+        planner.ot_map.enable_feature(*feature, FeatureFlags::NONE, 1);
     }
 }
 
@@ -219,14 +219,14 @@ fn setup_rphf_mask(plan: &ShapePlan, buffer: &mut Buffer) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len() {
-        let limit = if buffer.info()[start].use_category() == Category::R {
+        let limit = if buffer.info[start].use_category() == Category::R {
             1
         } else {
             std::cmp::min(3, end - start)
         };
 
         for i in start..start+limit {
-            buffer.info_mut()[i].mask |= mask;
+            buffer.info[i].mask |= mask;
         }
 
         start = end;
@@ -259,33 +259,33 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len() {
-        let syllable = buffer.info()[start].syllable() & 0x0F;
+        let syllable = buffer.info[start].syllable() & 0x0F;
         if syllable == SyllableType::IndependentCluster as u8 ||
             syllable == SyllableType::SymbolCluster as u8 ||
             syllable == SyllableType::NonCluster as u8
         {
             last_form = None;
         } else {
-            let join = last_form == Some(JoiningForm::FINA) || last_form == Some(JoiningForm::ISOL);
+            let join = last_form == Some(JoiningForm::Terminal) || last_form == Some(JoiningForm::Isolated);
 
             if join {
                 // Fixup previous syllable's form.
-                let form = if last_form == Some(JoiningForm::FINA) {
-                    JoiningForm::MEDI
+                let form = if last_form == Some(JoiningForm::Terminal) {
+                    JoiningForm::Medial
                 } else {
-                    JoiningForm::INIT
+                    JoiningForm::Initial
                 };
 
                 for i in last_start..start {
-                    buffer.info_mut()[i].mask = (buffer.info()[i].mask & other_masks) | masks[form as usize];
+                    buffer.info[i].mask = (buffer.info[i].mask & other_masks) | masks[form as usize];
                 }
             }
 
             // Form for this syllable.
-            let form = if join { JoiningForm::FINA } else { JoiningForm::ISOL };
+            let form = if join { JoiningForm::Terminal } else { JoiningForm::Isolated };
             last_form = Some(form);
             for i in start..end {
-                buffer.info_mut()[i].mask = (buffer.info()[i].mask & other_masks) | masks[form as usize];
+                buffer.info[i].mask = (buffer.info[i].mask & other_masks) | masks[form as usize];
             }
         }
 
@@ -319,12 +319,12 @@ fn record_rphf(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
     while start < buffer.len() {
         // Mark a substituted repha as USE_R.
         for i in start..end {
-            if buffer.info()[i].mask & mask == 0 {
+            if buffer.info[i].mask & mask == 0 {
                 break;
             }
 
-            if buffer.info()[i].is_substituted() {
-                buffer.info_mut()[i].set_use_category(Category::R);
+            if buffer.info[i].is_substituted() {
+                buffer.info[i].set_use_category(Category::R);
                 break;
             }
         }
@@ -360,7 +360,7 @@ fn reorder(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
 fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
     use super::universal_machine::SyllableType;
 
-    if buffer.flags().contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
+    if buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
         return;
     }
 
@@ -386,9 +386,9 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
 
     buffer.clear_output();
 
-    buffer.set_idx(0);
+    buffer.idx = 0;
     let mut last_syllable = 0;
-    while buffer.idx() < buffer.len() {
+    while buffer.idx < buffer.len() {
         let syllable = buffer.cur(0).syllable();
         let syllable_type = syllable & 0x0F;
         if last_syllable != syllable && syllable_type == SyllableType::BrokenCluster as u8 {
@@ -400,7 +400,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
             ginfo.set_syllable(buffer.cur(0).syllable());
 
             // Insert dottedcircle after possible Repha.
-            while buffer.idx() < buffer.len() &&
+            while buffer.idx < buffer.len() &&
                 last_syllable == buffer.cur(0).syllable() &&
                 buffer.cur(0).use_category() == Category::R
             {
@@ -445,7 +445,7 @@ const BASE_FLAGS: u64 =
 fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
     use super::universal_machine::SyllableType;
 
-    let syllable_type = (buffer.info()[start].syllable() & 0x0F) as u32;
+    let syllable_type = (buffer.info[start].syllable() & 0x0F) as u32;
     // Only a few syllable types need reordering.
     if (hb_flag_unsafe(syllable_type) &
         (hb_flag(SyllableType::ViramaTerminatedCluster as u32) |
@@ -458,12 +458,12 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
     }
 
     // Move things forward.
-    if buffer.info()[start].use_category() == Category::R && end - start > 1 {
+    if buffer.info[start].use_category() == Category::R && end - start > 1 {
         // Got a repha.  Reorder it towards the end, but before the first post-base glyph.
         for i in start+1..end {
             let is_post_base_glyph =
-                (hb_flag64_unsafe(buffer.info()[i].use_category() as u32) & BASE_FLAGS) != 0 ||
-                    buffer.info()[i].is_halant_use();
+                (hb_flag64_unsafe(buffer.info[i].use_category() as u32) & BASE_FLAGS) != 0 ||
+                    buffer.info[i].is_halant_use();
 
             if is_post_base_glyph || i == end - 1 {
                 // If we hit a post-base glyph, move before it; otherwise move to the
@@ -475,11 +475,11 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
                 }
 
                 buffer.merge_clusters(start, i + 1);
-                let t = buffer.info()[start];
+                let t = buffer.info[start];
                 for k in 0..i-start {
-                    buffer.info_mut()[k + start] = buffer.info()[k + start + 1];
+                    buffer.info[k + start] = buffer.info[k + start + 1];
                 }
-                buffer.info_mut()[i] = t;
+                buffer.info[i] = t;
 
                 break;
             }
@@ -489,21 +489,21 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
     // Move things back.
     let mut j = start;
     for i in start..end {
-        let flag = hb_flag_unsafe(buffer.info()[i].use_category() as u32);
-        if buffer.info()[i].is_halant_use() {
+        let flag = hb_flag_unsafe(buffer.info[i].use_category() as u32);
+        if buffer.info[i].is_halant_use() {
             // If we hit a halant, move after it; otherwise move to the beginning, and
             // shift things in between forward.
             j = i + 1;
         } else if (flag & (category_flag(Category::VPre) | category_flag(Category::VMPre))) != 0 &&
-            buffer.info()[i].lig_comp() == 0 && j < i
+            buffer.info[i].lig_comp() == 0 && j < i
         {
             // Only move the first component of a MultipleSubst.
             buffer.merge_clusters(j, i + 1);
-            let t = buffer.info()[i];
+            let t = buffer.info[i];
             for k in (0..i-j).rev() {
-                buffer.info_mut()[k + j + 1] = buffer.info()[k + j];
+                buffer.info[k + j + 1] = buffer.info[k + j];
             }
-            buffer.info_mut()[j] = t;
+            buffer.info[j] = t;
         }
     }
 }
@@ -525,8 +525,8 @@ fn record_pref(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
     while start < buffer.len() {
         // Mark a substituted pref as VPre, as they behave the same way.
         for i in start..end {
-            if buffer.info()[i].is_substituted() {
-                buffer.info_mut()[i].set_use_category(Category::VPre);
+            if buffer.info[i].is_substituted() {
+                buffer.info[i].set_use_category(Category::VPre);
                 break;
             }
         }

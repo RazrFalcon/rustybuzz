@@ -189,9 +189,9 @@ auto hb_partial(Appl &&a, V &&v) HB_AUTO_RETURN((hb_partial_t<Pos, Appl, V>(a, v
   (hb_partial<Pos> (+this, hb_forward<_T> (_v))) \
   static_assert (true, "")
 #endif
-// clang-format on
+    // clang-format on
 
-struct
+    struct
 {
 private:
     template <typename Pred, typename Val>

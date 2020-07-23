@@ -17,7 +17,7 @@ fn output_with_dotted_circle(buffer: &mut Buffer) {
 }
 
 pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
-    if buffer.flags().contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
+    if buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
     {
         return;
     }
@@ -29,10 +29,10 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
     // https://github.com/harfbuzz/harfbuzz/issues/1019
     let mut processed = false;
     buffer.clear_output();
-    match buffer.script() {
-        script::DEVANAGARI => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+    match buffer.script {
+        Some(script::DEVANAGARI) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x0905 => match buffer.cur(1).codepoint {
@@ -59,7 +59,7 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     },
                     0x0930 => {
                         if 0x094D == buffer.cur(1).codepoint
-                            && buffer.idx() + 2 < buffer.len()
+                            && buffer.idx + 2 < buffer.len()
                             && 0x0907 == buffer.cur(2).codepoint
                         {
                             buffer.next_glyph();
@@ -77,9 +77,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::BENGALI => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::BENGALI) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x0985 => {
@@ -101,9 +101,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::GURMUKHI => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::GURMUKHI) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x0A05 => match buffer.cur(1).codepoint {
@@ -134,9 +134,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::GUJARATI => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::GUJARATI) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x0A85 => match buffer.cur(1).codepoint {
@@ -158,9 +158,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::ORIYA => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::ORIYA) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x0B05 => {
@@ -179,9 +179,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::TAMIL => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::TAMIL) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let matched = false;
                 if 0x0B85 == buffer.cur(0).codepoint && 0x0BC2 == buffer.cur(1).codepoint {
                     buffer.next_glyph();
@@ -195,9 +195,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::TELUGU => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::TELUGU) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x0C12 => match buffer.cur(1).codepoint {
@@ -219,9 +219,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::KANNADA => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::KANNADA) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x0C89 | 0x0C8B => {
@@ -240,9 +240,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::MALAYALAM => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::MALAYALAM) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x0D07 | 0x0D09 => {
@@ -267,9 +267,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::SINHALA => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::SINHALA) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x0D85 => match buffer.cur(1).codepoint {
@@ -300,9 +300,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::BRAHMI => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::BRAHMI) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x11005 => {
@@ -324,9 +324,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::KHUDAWADI => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::KHUDAWADI) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x112B0 => match buffer.cur(1).codepoint {
@@ -345,9 +345,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::TIRHUTA => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::TIRHUTA) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x11481 => {
@@ -372,9 +372,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::MODI => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::MODI) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x11600 | 0x11601 => match buffer.cur(1).codepoint {
@@ -393,9 +393,9 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
             processed = true;
         }
 
-        script::TAKRI => {
-            buffer.set_idx(0);
-            while buffer.idx() + 1 < buffer.len() {
+        Some(script::TAKRI) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len() {
                 let mut matched = false;
                 match buffer.cur(0).codepoint {
                     0x11680 => match buffer.cur(1).codepoint {
@@ -420,7 +420,7 @@ pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
         _ => {}
     }
     if processed {
-        if buffer.idx() < buffer.len() {
+        if buffer.idx < buffer.len() {
             buffer.next_glyph();
         }
         buffer.swap_buffers();

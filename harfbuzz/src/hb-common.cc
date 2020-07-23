@@ -92,11 +92,6 @@ void hb_tag_to_string(hb_tag_t tag, char *buf)
     buf[3] = (char)(uint8_t)(tag >> 0);
 }
 
-const char* hb_language_get_default()
-{
-    return setlocale(LC_CTYPE, nullptr);
-}
-
 /* If there is no visibility control, then hb-static.cc will NOT
  * define anything.  Instead, we get it to define one set in here
  * only, so only libharfbuzz.so defines them, not other libs. */

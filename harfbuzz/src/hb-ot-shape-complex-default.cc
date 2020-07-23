@@ -28,10 +28,12 @@
 
 #include "hb-ot-shape-complex.hh"
 
-void hb_clear_substitution_flags(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+void hb_clear_substitution_flags(const hb_ot_shape_plan_t *plan HB_UNUSED,
+                                 hb_font_t *font HB_UNUSED,
+                                 hb_buffer_t *buffer)
 {
-    hb_glyph_info_t *info = buffer->info;
-    unsigned int count = buffer->len;
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
+    unsigned int count = hb_buffer_get_length(buffer);
     for (unsigned int i = 0; i < count; i++)
         _hb_glyph_info_clear_substituted(&info[i]);
 }
@@ -158,7 +160,6 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_myanmar_zawgyi = {
     false, /* fallback_position */
 };
 
-
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_thai = {
     nullptr, /* collect_features */
     nullptr, /* override_features */
@@ -192,7 +193,6 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_use = {
     HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
     false, /* fallback_position */
 };
-
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_default = {
     nullptr, /* collect_features */

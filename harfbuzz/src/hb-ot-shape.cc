@@ -39,12 +39,12 @@
 
 #include "hb-aat-layout.hh"
 
-const hb_ot_map_t* hb_ot_shape_plan_get_ot_map(const hb_ot_shape_plan_t *plan)
+const hb_ot_map_t *hb_ot_shape_plan_get_ot_map(const hb_ot_shape_plan_t *plan)
 {
     return &plan->map;
 }
 
-const void* hb_ot_shape_plan_get_data(const hb_ot_shape_plan_t *plan)
+const void *hb_ot_shape_plan_get_data(const hb_ot_shape_plan_t *plan)
 {
     return plan->data;
 }
@@ -59,7 +59,7 @@ bool hb_ot_shape_plan_has_gpos_mark(const hb_ot_shape_plan_t *plan)
     return plan->has_gpos_mark;
 }
 
-hb_ot_map_builder_t* hb_ot_shape_planner_get_ot_map(hb_ot_shape_planner_t *planner)
+hb_ot_map_builder_t *hb_ot_shape_planner_get_ot_map(hb_ot_shape_planner_t *planner)
 {
     return &planner->map;
 }
@@ -363,8 +363,8 @@ static void hb_set_unicode_props(hb_buffer_t *buffer)
      *
      * https://www.unicode.org/reports/tr29/#Regex_Definitions
      */
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
     for (unsigned int i = 0; i < count; i++) {
         _hb_glyph_info_set_unicode_props(&info[i], buffer);
 
@@ -403,11 +403,11 @@ static void hb_set_unicode_props(hb_buffer_t *buffer)
 
 static void hb_insert_dotted_circle(hb_buffer_t *buffer, hb_font_t *font)
 {
-    if (unlikely(buffer->flags & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
+    if (unlikely(hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
         return;
 
-    if (!(buffer->flags & HB_BUFFER_FLAG_BOT) || buffer->context_len[0] ||
-        !_hb_glyph_info_is_unicode_mark(&buffer->info[0]))
+    if (!(hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_BOT) || hb_buffer_get_context_len(buffer, 0) ||
+        !_hb_glyph_info_is_unicode_mark(&hb_buffer_get_glyph_infos(buffer)[0]))
         return;
 
     if (!hb_font_has_glyph(font, 0x25CCu))
@@ -417,33 +417,33 @@ static void hb_insert_dotted_circle(hb_buffer_t *buffer, hb_font_t *font)
     dottedcircle.codepoint = 0x25CCu;
     _hb_glyph_info_set_unicode_props(&dottedcircle, buffer);
 
-    buffer->clear_output();
+    hb_buffer_clear_output(buffer);
 
-    buffer->idx = 0;
+    hb_buffer_set_index(buffer, 0);
     hb_glyph_info_t info = dottedcircle;
-    info.cluster = buffer->cur().cluster;
-    info.mask = buffer->cur().mask;
-    buffer->output_info(info);
-    while (buffer->idx < buffer->len && buffer->successful)
-        buffer->next_glyph();
-    buffer->swap_buffers();
+    info.cluster = hb_buffer_get_cur(buffer, 0)->cluster;
+    info.mask = hb_buffer_get_cur(buffer, 0)->mask;
+    hb_buffer_output_info(buffer, info);
+    while (hb_buffer_get_index(buffer) < hb_buffer_get_length(buffer) && hb_buffer_is_allocation_successful(buffer))
+        hb_buffer_next_glyph(buffer);
+    hb_buffer_swap_buffers(buffer);
 }
 
 static void hb_form_clusters(hb_buffer_t *buffer)
 {
-    if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII))
+    if (!(hb_buffer_get_scratch_flags(buffer) & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII))
         return;
 
-    if (buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
-        foreach_grapheme(buffer, start, end) buffer->merge_clusters(start, end);
+    if (hb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
+        foreach_grapheme(buffer, start, end) hb_buffer_merge_clusters(buffer, start, end);
     else
-        foreach_grapheme(buffer, start, end) buffer->unsafe_to_break(start, end);
+        foreach_grapheme(buffer, start, end) hb_buffer_unsafe_to_break(buffer, start, end);
 }
 
 static void hb_ensure_native_direction(hb_buffer_t *buffer)
 {
-    hb_direction_t direction = buffer->props.direction;
-    hb_direction_t horiz_dir = rb_script_get_horizontal_direction(buffer->props.script);
+    hb_direction_t direction = hb_buffer_get_direction(buffer);
+    hb_direction_t horiz_dir = hb_script_get_horizontal_direction(hb_buffer_get_script(buffer));
 
     /* TODO vertical:
      * The only BTT vertical script is Ogham, but it's not clear to me whether OpenType
@@ -452,20 +452,20 @@ static void hb_ensure_native_direction(hb_buffer_t *buffer)
     if ((HB_DIRECTION_IS_HORIZONTAL(direction) && direction != horiz_dir && horiz_dir != HB_DIRECTION_INVALID) ||
         (HB_DIRECTION_IS_VERTICAL(direction) && direction != HB_DIRECTION_TTB)) {
 
-        if (buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS)
+        if (hb_buffer_get_cluster_level(buffer) == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS)
             foreach_grapheme(buffer, start, end)
             {
-                buffer->merge_clusters(start, end);
-                buffer->reverse_range(start, end);
+                hb_buffer_merge_clusters(buffer, start, end);
+                hb_buffer_reverse_range(buffer, start, end);
             }
         else
             foreach_grapheme(buffer, start, end)
                 /* form_clusters() merged clusters already, we don't merge. */
-                buffer->reverse_range(start, end);
+                hb_buffer_reverse_range(buffer, start, end);
 
-        buffer->reverse();
+        hb_buffer_reverse(buffer);
 
-        buffer->props.direction = HB_DIRECTION_REVERSE(buffer->props.direction);
+        hb_buffer_set_direction(buffer, HB_DIRECTION_REVERSE(hb_buffer_get_direction(buffer)));
     }
 }
 
@@ -566,8 +566,8 @@ static hb_codepoint_t hb_vert_char_for(hb_codepoint_t u)
 static inline void hb_ot_rotate_chars(const hb_ot_shape_context_t *c)
 {
     hb_buffer_t *buffer = c->buffer;
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
 
     if (HB_DIRECTION_IS_BACKWARD(c->target_direction)) {
         hb_mask_t rtlm_mask = c->plan->rtlm_mask;
@@ -592,13 +592,13 @@ static inline void hb_ot_rotate_chars(const hb_ot_shape_context_t *c)
 
 static inline void hb_ot_shape_setup_masks_fraction(const hb_ot_shape_context_t *c)
 {
-    if (!(c->buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII) || !c->plan->has_frac)
+    if (!(hb_buffer_get_scratch_flags(c->buffer) & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII) || !c->plan->has_frac)
         return;
 
     hb_buffer_t *buffer = c->buffer;
 
     hb_mask_t pre_mask, post_mask;
-    if (HB_DIRECTION_IS_FORWARD(buffer->props.direction)) {
+    if (HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(c->buffer))) {
         pre_mask = c->plan->numr_mask | c->plan->frac_mask;
         post_mask = c->plan->frac_mask | c->plan->dnom_mask;
     } else {
@@ -606,8 +606,8 @@ static inline void hb_ot_shape_setup_masks_fraction(const hb_ot_shape_context_t 
         post_mask = c->plan->numr_mask | c->plan->frac_mask;
     }
 
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
     for (unsigned int i = 0; i < count; i++) {
         if (info[i].codepoint == 0x2044u) /* FRACTION SLASH */
         {
@@ -619,7 +619,7 @@ static inline void hb_ot_shape_setup_masks_fraction(const hb_ot_shape_context_t 
                    _hb_glyph_info_get_general_category(&info[end]) == HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER)
                 end++;
 
-            buffer->unsafe_to_break(start, end);
+            hb_buffer_unsafe_to_break(buffer, start, end);
 
             for (unsigned int j = start; j < i; j++)
                 info[j].mask |= pre_mask;
@@ -635,10 +635,9 @@ static inline void hb_ot_shape_setup_masks_fraction(const hb_ot_shape_context_t 
 static inline void hb_ot_shape_initialize_masks(const hb_ot_shape_context_t *c)
 {
     hb_ot_map_t *map = &c->plan->map;
-    hb_buffer_t *buffer = c->buffer;
 
     hb_mask_t global_mask = map->get_global_mask();
-    buffer->reset_masks(global_mask);
+    hb_buffer_reset_masks(c->buffer, global_mask);
 }
 
 static inline void hb_ot_shape_setup_masks(const hb_ot_shape_context_t *c)
@@ -656,21 +655,21 @@ static inline void hb_ot_shape_setup_masks(const hb_ot_shape_context_t *c)
         if (!(feature->start == HB_FEATURE_GLOBAL_START && feature->end == HB_FEATURE_GLOBAL_END)) {
             unsigned int shift;
             hb_mask_t mask = map->get_mask(feature->tag, &shift);
-            buffer->set_masks(feature->value << shift, mask, feature->start, feature->end);
+            hb_buffer_set_masks(buffer, feature->value << shift, mask, feature->start, feature->end);
         }
     }
 }
 
 static void hb_ot_zero_width_default_ignorables(const hb_buffer_t *buffer)
 {
-    if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES) ||
-        (buffer->flags & HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES) ||
-        (buffer->flags & HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES))
+    if (!(hb_buffer_get_scratch_flags(buffer) & HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES) ||
+        (hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES) ||
+        (hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES))
         return;
 
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
-    hb_glyph_position_t *pos = buffer->pos;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos((hb_buffer_t *)buffer);
+    hb_glyph_position_t *pos = hb_buffer_get_glyph_positions((hb_buffer_t *)buffer);
     unsigned int i = 0;
     for (i = 0; i < count; i++)
         if (unlikely(_hb_glyph_info_is_default_ignorable(&info[i])))
@@ -679,15 +678,15 @@ static void hb_ot_zero_width_default_ignorables(const hb_buffer_t *buffer)
 
 static void hb_ot_hide_default_ignorables(hb_buffer_t *buffer, hb_font_t *font)
 {
-    if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES) ||
-        (buffer->flags & HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES))
+    if (!(hb_buffer_get_scratch_flags(buffer) & HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES) ||
+        (hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES))
         return;
 
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
 
-    hb_codepoint_t invisible = buffer->invisible;
-    if (!(buffer->flags & HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES) &&
+    hb_codepoint_t invisible = hb_buffer_get_invisible_glyph(buffer);
+    if (!(hb_buffer_get_flags(buffer) & HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES) &&
         (invisible || hb_font_get_nominal_glyph(font, ' ', &invisible))) {
         /* Replace default-ignorables with a zero-advance invisible glyph. */
         for (unsigned int i = 0; i < count; i++) {
@@ -701,18 +700,16 @@ static void hb_ot_hide_default_ignorables(hb_buffer_t *buffer, hb_font_t *font)
 static inline void hb_ot_map_glyphs_fast(hb_buffer_t *buffer)
 {
     /* Normalization process sets up glyph_index(), we just copy it. */
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
     for (unsigned int i = 0; i < count; i++)
         info[i].codepoint = info[i].glyph_index();
-
-    buffer->content_type = HB_BUFFER_CONTENT_TYPE_GLYPHS;
 }
 
 static inline void hb_synthesize_glyph_classes(hb_buffer_t *buffer)
 {
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
     for (unsigned int i = 0; i < count; i++) {
         hb_ot_layout_glyph_props_flags_t klass;
 
@@ -795,22 +792,22 @@ static inline void zero_mark_width(hb_glyph_position_t *pos)
 
 static inline void zero_mark_widths_by_gdef(hb_buffer_t *buffer, bool adjust_offsets)
 {
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
     for (unsigned int i = 0; i < count; i++)
         if (_hb_glyph_info_is_mark(&info[i])) {
             if (adjust_offsets)
-                adjust_mark_offsets(&buffer->pos[i]);
-            zero_mark_width(&buffer->pos[i]);
+                adjust_mark_offsets(&hb_buffer_get_glyph_positions(buffer)[i]);
+            zero_mark_width(&hb_buffer_get_glyph_positions(buffer)[i]);
         }
 }
 
 static inline void hb_ot_position_default(const hb_ot_shape_context_t *c)
 {
-    hb_direction_t direction = c->buffer->props.direction;
-    unsigned int count = c->buffer->len;
-    hb_glyph_info_t *info = c->buffer->info;
-    hb_glyph_position_t *pos = c->buffer->pos;
+    hb_direction_t direction = hb_buffer_get_direction(c->buffer);
+    unsigned int count = hb_buffer_get_length(c->buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(c->buffer);
+    hb_glyph_position_t *pos = hb_buffer_get_glyph_positions(c->buffer);
 
     if (HB_DIRECTION_IS_HORIZONTAL(direction)) {
         hb_font_get_glyph_h_advances(
@@ -822,7 +819,7 @@ static inline void hb_ot_position_default(const hb_ot_shape_context_t *c)
             hb_font_subtract_glyph_v_origin(c->font, info[i].codepoint, &pos[i].x_offset, &pos[i].y_offset);
         }
     }
-    if (c->buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK)
+    if (hb_buffer_get_scratch_flags(c->buffer) & HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK)
         _hb_ot_shape_fallback_spaces(c->plan, c->font, c->buffer);
 }
 
@@ -838,7 +835,7 @@ static inline void hb_ot_position_complex(const hb_ot_shape_context_t *c)
      * this as it will be overriden.
      */
     bool adjust_offsets_when_zeroing =
-        c->plan->adjust_mark_positioning_when_zeroing && HB_DIRECTION_IS_FORWARD(c->buffer->props.direction);
+        c->plan->adjust_mark_positioning_when_zeroing && HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(c->buffer));
 
     /* We change glyph origin to what GPOS expects (horizontal), apply GPOS, change it back. */
 
@@ -883,13 +880,13 @@ static inline void hb_ot_position_complex(const hb_ot_shape_context_t *c)
 
 static inline void hb_ot_position(const hb_ot_shape_context_t *c)
 {
-    c->buffer->clear_positions();
+    hb_buffer_clear_positions(c->buffer);
 
     hb_ot_position_default(c);
 
     hb_ot_position_complex(c);
 
-    if (HB_DIRECTION_IS_BACKWARD(c->buffer->props.direction))
+    if (HB_DIRECTION_IS_BACKWARD(hb_buffer_get_direction(c->buffer)))
         hb_buffer_reverse(c->buffer);
 }
 
@@ -898,10 +895,10 @@ static inline void hb_propagate_flags(hb_buffer_t *buffer)
     /* Propagate cluster-level glyph flags to be the same on all cluster glyphs.
      * Simplifies using them. */
 
-    if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_UNSAFE_TO_BREAK))
+    if (!(hb_buffer_get_scratch_flags(buffer) & HB_BUFFER_SCRATCH_FLAG_HAS_UNSAFE_TO_BREAK))
         return;
 
-    hb_glyph_info_t *info = buffer->info;
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
 
     foreach_cluster(buffer, start, end)
     {
@@ -921,18 +918,22 @@ static inline void hb_propagate_flags(hb_buffer_t *buffer)
 
 static void hb_ot_shape_internal(hb_ot_shape_context_t *c)
 {
-    c->buffer->scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
-    if (likely(!hb_unsigned_mul_overflows(c->buffer->len, HB_BUFFER_MAX_LEN_FACTOR))) {
-        c->buffer->max_len = hb_max(c->buffer->len * HB_BUFFER_MAX_LEN_FACTOR, (unsigned)HB_BUFFER_MAX_LEN_MIN);
+    hb_buffer_set_scratch_flags(c->buffer, HB_BUFFER_SCRATCH_FLAG_DEFAULT);
+    if (likely(!hb_unsigned_mul_overflows(hb_buffer_get_length(c->buffer), HB_BUFFER_MAX_LEN_FACTOR))) {
+        hb_buffer_set_max_len(
+            c->buffer,
+            hb_max(hb_buffer_get_length(c->buffer) * HB_BUFFER_MAX_LEN_FACTOR, (unsigned)HB_BUFFER_MAX_LEN_MIN));
     }
-    if (likely(!hb_unsigned_mul_overflows(c->buffer->len, HB_BUFFER_MAX_OPS_FACTOR))) {
-        c->buffer->max_ops = hb_max(c->buffer->len * HB_BUFFER_MAX_OPS_FACTOR, (unsigned)HB_BUFFER_MAX_OPS_MIN);
+    if (likely(!hb_unsigned_mul_overflows(hb_buffer_get_length(c->buffer), HB_BUFFER_MAX_OPS_FACTOR))) {
+        hb_buffer_set_max_ops(
+            c->buffer,
+            hb_max(hb_buffer_get_length(c->buffer) * HB_BUFFER_MAX_OPS_FACTOR, (unsigned)HB_BUFFER_MAX_OPS_MIN));
     }
 
     /* Save the original direction, we use it later. */
-    c->target_direction = c->buffer->props.direction;
+    c->target_direction = hb_buffer_get_direction(c->buffer);
 
-    c->buffer->clear_output();
+    hb_buffer_clear_output(c->buffer);
 
     hb_ot_shape_initialize_masks(c);
     hb_set_unicode_props(c->buffer);
@@ -951,10 +952,10 @@ static void hb_ot_shape_internal(hb_ot_shape_context_t *c)
 
     hb_propagate_flags(c->buffer);
 
-    c->buffer->props.direction = c->target_direction;
+    hb_buffer_set_direction(c->buffer, c->target_direction);
 
-    c->buffer->max_len = HB_BUFFER_MAX_LEN_DEFAULT;
-    c->buffer->max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
+    hb_buffer_set_max_len(c->buffer, HB_BUFFER_MAX_LEN_DEFAULT);
+    hb_buffer_set_max_ops(c->buffer, HB_BUFFER_MAX_OPS_DEFAULT);
 }
 
 void _hb_ot_shape(hb_shape_plan_t *shape_plan,

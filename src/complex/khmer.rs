@@ -111,8 +111,8 @@ fn collect_features(planner: &mut ShapePlanner) {
     //   U+1789,U+17D2,U+1789,U+17BC
     //
     // https://github.com/harfbuzz/harfbuzz/issues/974
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::default(), 1);
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::default(), 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
 
     for feature in KHMER_FEATURES.iter().take(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
@@ -176,7 +176,7 @@ fn reorder(plan: &ShapePlan, font: &Font, buffer: &mut Buffer) {
 fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
     use super::khmer_machine::SyllableType;
 
-    if buffer.flags().contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
+    if buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
         return;
     }
 
@@ -203,9 +203,9 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
 
     buffer.clear_output();
 
-    buffer.set_idx(0);
+    buffer.idx = 0;
     let mut last_syllable = 0;
-    while buffer.idx() < buffer.len() {
+    while buffer.idx < buffer.len() {
         let syllable = buffer.cur(0).syllable();
         let syllable_type = syllable & 0x0F;
         if last_syllable != syllable && syllable_type == SyllableType::BrokenCluster as u8 {
@@ -217,7 +217,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
             ginfo.set_syllable(buffer.cur(0).syllable());
 
             // Insert dottedcircle after possible Repha.
-            while buffer.idx() < buffer.len() &&
+            while buffer.idx < buffer.len() &&
                 last_syllable == buffer.cur(0).syllable() &&
                 buffer.cur(0).indic_category() == Category::Repha
             {
@@ -241,7 +241,7 @@ fn reorder_syllable(
 ) {
     use super::khmer_machine::SyllableType;
 
-    let syllable_type = match buffer.info()[start].syllable() & 0x0F {
+    let syllable_type = match buffer.info[start].syllable() & 0x0F {
         0 => SyllableType::ConsonantSyllable,
         1 => SyllableType::BrokenCluster,
         2 => SyllableType::NonKhmerCluster,
@@ -270,7 +270,7 @@ fn reorder_consonant_syllable(
         let mask = plan.mask_array[khmer_feature::BLWF] |
             plan.mask_array[khmer_feature::ABVF] |
             plan.mask_array[khmer_feature::PSTF];
-        for info in &mut buffer.info_mut()[start+1..end] {
+        for info in &mut buffer.info[start+1..end] {
             info.mask |= mask;
         }
     }
@@ -286,24 +286,24 @@ fn reorder_consonant_syllable(
         // Subscript Type 2 - The COENG + RO characters are reordered to immediately
         // before the base glyph. Then the COENG + RO characters are assigned to have
         // the 'pref' OpenType feature applied to them.
-        if buffer.info()[i].indic_category() == Category::Coeng && num_coengs <= 2 && i + 1 < end {
+        if buffer.info[i].indic_category() == Category::Coeng && num_coengs <= 2 && i + 1 < end {
             num_coengs += 1;
 
-            if buffer.info()[i + 1].indic_category() == Category::Ra {
+            if buffer.info[i + 1].indic_category() == Category::Ra {
                 for j in 0..2 {
-                    buffer.info_mut()[i + j].mask |= plan.mask_array[khmer_feature::PREF];
+                    buffer.info[i + j].mask |= plan.mask_array[khmer_feature::PREF];
                 }
 
                 // Move the Coeng,Ro sequence to the start.
                 buffer.merge_clusters(start, i + 2);
-                let t0 = buffer.info()[i];
-                let t1 = buffer.info()[i + 1];
+                let t0 = buffer.info[i];
+                let t1 = buffer.info[i + 1];
                 for k in (0..i-start).rev() {
-                    buffer.info_mut()[k + start + 2] = buffer.info()[k + start];
+                    buffer.info[k + start + 2] = buffer.info[k + start];
                 }
 
-                buffer.info_mut()[start] = t0;
-                buffer.info_mut()[start + 1] = t1;
+                buffer.info[start] = t0;
+                buffer.info[start + 1] = t1;
 
                 // Mark the subsequent stuff with 'cfar'.  Used in Khmer.
                 // Read the feature spec.
@@ -312,22 +312,22 @@ fn reorder_consonant_syllable(
                 // U+1784,U+17D2,U+1782,U+17D2,U+179A
                 if plan.mask_array[khmer_feature::CFAR] != 0 {
                     for j in i+2..end {
-                        buffer.info_mut()[j].mask |= plan.mask_array[khmer_feature::CFAR];
+                        buffer.info[j].mask |= plan.mask_array[khmer_feature::CFAR];
                     }
                 }
 
                 num_coengs = 2; // Done.
             }
-        } else if buffer.info()[i].indic_category() == Category::VPre {
+        } else if buffer.info[i].indic_category() == Category::VPre {
             // Reorder left matra piece.
 
             // Move to the start.
             buffer.merge_clusters(start, i + 1);
-            let t = buffer.info()[i];
+            let t = buffer.info[i];
             for k in (0..i-start).rev() {
-                buffer.info_mut()[k + start + 1] = buffer.info()[k + start];
+                buffer.info[k + start + 1] = buffer.info[k + start];
             }
-            buffer.info_mut()[start] = t;
+            buffer.info[start] = t;
         }
     }
 }
@@ -342,7 +342,7 @@ fn override_features(planner: &mut ShapePlanner) {
     // Khmer spec has 'clig' as part of required shaping features:
     // "Apply feature 'clig' to form ligatures that are desired for
     // typographical correctness.", hence in overrides...
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::default(), 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
 
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }

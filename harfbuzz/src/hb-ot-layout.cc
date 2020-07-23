@@ -220,11 +220,12 @@ bool OT::GDEF::is_blocklisted(hb_blob_t *blob, hb_face_t *face) const
 static void _hb_ot_layout_set_glyph_props(hb_font_t *font, hb_buffer_t *buffer)
 {
     const OT::GDEF &gdef = *hb_font_get_face(font)->table.GDEF->table;
-    unsigned int count = buffer->len;
+    unsigned int count = hb_buffer_get_length(buffer);
     for (unsigned int i = 0; i < count; i++) {
-        _hb_glyph_info_set_glyph_props(&buffer->info[i], gdef.get_glyph_props(buffer->info[i].codepoint));
-        _hb_glyph_info_clear_lig_props(&buffer->info[i]);
-        buffer->info[i].syllable() = 0;
+        _hb_glyph_info_set_glyph_props(&hb_buffer_get_glyph_infos(buffer)[i],
+                                       gdef.get_glyph_props(hb_buffer_get_glyph_infos(buffer)[i].codepoint));
+        _hb_glyph_info_clear_lig_props(&hb_buffer_get_glyph_infos(buffer)[i]);
+        hb_buffer_get_glyph_infos(buffer)[i].syllable() = 0;
     }
 }
 
@@ -1150,9 +1151,9 @@ void hb_ot_layout_delete_glyphs_inplace(hb_buffer_t *buffer, bool (*filter)(cons
     /* Merge clusters and delete filtered glyphs.
      * NOTE! We can't use out-buffer as we have positioning data. */
     unsigned int j = 0;
-    unsigned int count = buffer->len;
-    hb_glyph_info_t *info = buffer->info;
-    hb_glyph_position_t *pos = buffer->pos;
+    unsigned int count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
+    hb_glyph_position_t *pos = hb_buffer_get_glyph_positions(buffer);
     for (unsigned int i = 0; i < count; i++) {
         if (filter(&info[i])) {
             /* Merge clusters.
@@ -1168,13 +1169,13 @@ void hb_ot_layout_delete_glyphs_inplace(hb_buffer_t *buffer, bool (*filter)(cons
                     unsigned int mask = info[i].mask;
                     unsigned int old_cluster = info[j - 1].cluster;
                     for (unsigned k = j; k && info[k - 1].cluster == old_cluster; k--)
-                        buffer->set_cluster(info[k - 1], cluster, mask);
+                        hb_buffer_set_cluster(buffer, &info[k - 1], cluster, mask);
                 }
                 continue;
             }
 
             if (i + 1 < count)
-                buffer->merge_clusters(i, i + 2); /* Merge cluster forward. */
+                hb_buffer_merge_clusters(buffer, i, i + 2); /* Merge cluster forward. */
 
             continue;
         }
@@ -1185,7 +1186,7 @@ void hb_ot_layout_delete_glyphs_inplace(hb_buffer_t *buffer, bool (*filter)(cons
         }
         j++;
     }
-    buffer->len = j;
+    hb_buffer_set_length(buffer, j);
 }
 
 /**
@@ -1525,17 +1526,18 @@ static inline bool apply_forward(OT::hb_ot_apply_context_t *c, const OT::hb_ot_l
 {
     bool ret = false;
     hb_buffer_t *buffer = c->buffer;
-    while (buffer->idx < buffer->len && buffer->successful) {
+    while (hb_buffer_get_index(buffer) < hb_buffer_get_length(buffer) && hb_buffer_is_allocation_successful(buffer)) {
         bool applied = false;
-        if (accel.may_have(buffer->cur().codepoint) && (buffer->cur().mask & c->lookup_mask) &&
-            c->check_glyph_property(&buffer->cur(), c->lookup_props)) {
+        if (accel.may_have(hb_buffer_get_cur(buffer, 0)->codepoint) &&
+            (hb_buffer_get_cur(buffer, 0)->mask & c->lookup_mask) &&
+            c->check_glyph_property(hb_buffer_get_cur(buffer, 0), c->lookup_props)) {
             applied = accel.apply(c);
         }
 
         if (applied)
             ret = true;
         else
-            buffer->next_glyph();
+            hb_buffer_next_glyph(buffer);
     }
     return ret;
 }
@@ -1545,14 +1547,14 @@ static inline bool apply_backward(OT::hb_ot_apply_context_t *c, const OT::hb_ot_
     bool ret = false;
     hb_buffer_t *buffer = c->buffer;
     do {
-        if (accel.may_have(buffer->cur().codepoint) && (buffer->cur().mask & c->lookup_mask) &&
-            c->check_glyph_property(&buffer->cur(), c->lookup_props))
+        if (accel.may_have(hb_buffer_get_cur(buffer, 0)->codepoint) &&
+            (hb_buffer_get_cur(buffer, 0)->mask & c->lookup_mask) &&
+            c->check_glyph_property(hb_buffer_get_cur(buffer, 0), c->lookup_props))
             ret |= accel.apply(c);
 
         /* The reverse lookup doesn't "advance" cursor (for good reason). */
-        buffer->idx--;
-
-    } while ((int)buffer->idx >= 0);
+        hb_buffer_set_index(buffer, hb_buffer_get_index(buffer) - 1);
+    } while ((int)hb_buffer_get_index(buffer) >= 0);
     return ret;
 }
 
@@ -1563,7 +1565,7 @@ static inline void apply_string(OT::hb_ot_apply_context_t *c,
 {
     hb_buffer_t *buffer = c->buffer;
 
-    if (unlikely(!buffer->len || !c->lookup_mask))
+    if (unlikely(!hb_buffer_get_length(buffer) || !c->lookup_mask))
         return;
 
     c->set_lookup_props(lookup.get_props());
@@ -1571,22 +1573,22 @@ static inline void apply_string(OT::hb_ot_apply_context_t *c,
     if (likely(!lookup.is_reverse())) {
         /* in/out forward substitution/positioning */
         if (Proxy::table_index == 0u)
-            buffer->clear_output();
-        buffer->idx = 0;
+            hb_buffer_clear_output(buffer);
+        hb_buffer_set_index(buffer, 0);
 
         bool ret;
         ret = apply_forward(c, accel);
         if (ret) {
             if (!Proxy::inplace)
-                buffer->swap_buffers();
+                hb_buffer_swap_buffers(buffer);
             else
-                assert(!buffer->has_separate_output());
+                assert(!hb_buffer_has_separate_output(buffer));
         }
     } else {
         /* in-place backward substitution/positioning */
         if (Proxy::table_index == 0u)
-            buffer->remove_output();
-        buffer->idx = buffer->len - 1;
+            hb_buffer_remove_output(buffer);
+        hb_buffer_set_index(buffer, hb_buffer_get_length(buffer) - 1);
 
         apply_backward(c, accel);
     }
@@ -1611,13 +1613,13 @@ hb_ot_map_t::apply(const Proxy &proxy, const hb_ot_shape_plan_t *plan, hb_font_t
             c.set_auto_zwnj(lookups[table_index][i].auto_zwnj);
             if (lookups[table_index][i].random) {
                 c.set_random(true);
-                buffer->unsafe_to_break_all();
+                hb_buffer_unsafe_to_break_all(buffer);
             }
             apply_string<Proxy>(&c, proxy.table.get_lookup(lookup_index), proxy.accels[lookup_index]);
         }
 
         if (stage->pause_func) {
-            buffer->clear_output();
+            hb_buffer_clear_output(buffer);
             stage->pause_func(plan, font, buffer);
         }
     }
@@ -1704,8 +1706,8 @@ hb_ot_layout_lookup_get_glyph_alternates(hb_face_t *face,
 
 unsigned int hb_layout_next_syllable(hb_buffer_t *buffer, unsigned int start)
 {
-    hb_glyph_info_t *info = buffer->info;
-    unsigned int count = buffer->len;
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
+    unsigned int count = hb_buffer_get_length(buffer);
 
     unsigned int syllable = info[start].syllable();
     while (++start < count && syllable == info[start].syllable())
@@ -1716,8 +1718,8 @@ unsigned int hb_layout_next_syllable(hb_buffer_t *buffer, unsigned int start)
 
 void hb_layout_clear_syllables(const hb_ot_shape_plan_t *plan HB_UNUSED, hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 {
-    hb_glyph_info_t *info = buffer->info;
-    unsigned int count = buffer->len;
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
+    unsigned int count = hb_buffer_get_length(buffer);
     for (unsigned int i = 0; i < count; i++)
         info[i].syllable() = 0;
 }

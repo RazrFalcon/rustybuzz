@@ -286,7 +286,7 @@ HB_EXTERN hb_unicode_combining_class_t hb_ucd_combining_class(hb_codepoint_t cp)
 HB_EXTERN hb_unicode_general_category_t hb_ucd_general_category(hb_codepoint_t cp);
 HB_EXTERN hb_codepoint_t hb_ucd_mirroring(hb_codepoint_t cp);
 HB_EXTERN unsigned int hb_ucd_modified_combining_class(hb_codepoint_t u);
-HB_EXTERN hb_bool_t hb_ucd_compose(hb_codepoint_t a, hb_codepoint_t b,hb_codepoint_t *ab);
+HB_EXTERN hb_bool_t hb_ucd_compose(hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab);
 HB_EXTERN hb_bool_t hb_ucd_decompose(hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b);
 HB_EXTERN hb_space_t hb_ucd_space_fallback_type(hb_codepoint_t cp);
 HB_EXTERN hb_bool_t hb_ucd_is_variation_selector(hb_codepoint_t cp);

@@ -367,10 +367,10 @@ pub(crate) fn find_syllables(buffer: &mut Buffer) {
             slen = MACHINE_KEY_SPANS[cs] as usize;
             let cs_idx = ((cs as i32) << 1) as usize;
             let i = if slen > 0 &&
-                MACHINE_TRANS_KEYS[cs_idx] <= buffer.info()[p].indic_category() as u8 &&
-                buffer.info()[p].indic_category() as u8 <= MACHINE_TRANS_KEYS[cs_idx + 1]
+                MACHINE_TRANS_KEYS[cs_idx] <= buffer.info[p].indic_category() as u8 &&
+                buffer.info[p].indic_category() as u8 <= MACHINE_TRANS_KEYS[cs_idx + 1]
             {
-                (buffer.info()[p].indic_category() as u8 - MACHINE_TRANS_KEYS[cs_idx]) as usize
+                (buffer.info[p].indic_category() as u8 - MACHINE_TRANS_KEYS[cs_idx]) as usize
             } else {
                 slen
             };
@@ -500,7 +500,7 @@ fn found_syllable(
     buffer: &mut Buffer,
 ) {
     for i in start..end {
-        buffer.info_mut()[i].set_syllable((*syllable_serial << 4) | kind as u8);
+        buffer.info[i].set_syllable((*syllable_serial << 4) | kind as u8);
     }
 
     *syllable_serial += 1;

@@ -165,17 +165,17 @@ struct trak
             return_trace(false);
 
         hb_buffer_t *buffer = c->buffer;
-        if (HB_DIRECTION_IS_HORIZONTAL(buffer->props.direction)) {
+        if (HB_DIRECTION_IS_HORIZONTAL(hb_buffer_get_direction(buffer))) {
             const TrackData &trackData = this + horizData;
             int tracking = trackData.get_tracking(this, ptem);
-            hb_position_t offset_to_add =(hb_position_t)roundf(tracking / 2);
+            hb_position_t offset_to_add = (hb_position_t)roundf(tracking / 2);
             hb_position_t advance_to_add = (hb_position_t)roundf(tracking);
             foreach_grapheme(buffer, start, end)
             {
-                if (!(buffer->info[start].mask & trak_mask))
+                if (!(hb_buffer_get_glyph_infos(buffer)[start].mask & trak_mask))
                     continue;
-                buffer->pos[start].x_advance += advance_to_add;
-                buffer->pos[start].x_offset += offset_to_add;
+                hb_buffer_get_glyph_positions(buffer)[start].x_advance += advance_to_add;
+                hb_buffer_get_glyph_positions(buffer)[start].x_offset += offset_to_add;
             }
         } else {
             const TrackData &trackData = this + vertData;
@@ -184,10 +184,10 @@ struct trak
             hb_position_t advance_to_add = (hb_position_t)roundf(tracking);
             foreach_grapheme(buffer, start, end)
             {
-                if (!(buffer->info[start].mask & trak_mask))
+                if (!(hb_buffer_get_glyph_infos(buffer)[start].mask & trak_mask))
                     continue;
-                buffer->pos[start].y_advance += advance_to_add;
-                buffer->pos[start].y_offset += offset_to_add;
+                hb_buffer_get_glyph_positions(buffer)[start].y_advance += advance_to_add;
+                hb_buffer_get_glyph_positions(buffer)[start].y_offset += offset_to_add;
             }
         }
 

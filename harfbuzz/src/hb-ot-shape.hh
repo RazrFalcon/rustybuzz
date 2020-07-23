@@ -79,7 +79,8 @@ struct hb_ot_shape_plan_t
     HB_INTERNAL bool init0(hb_face_t *face,
                            const hb_segment_properties_t *props,
                            const hb_feature_t *user_features,
-                           unsigned int num_user_features, unsigned int *variations_index);
+                           unsigned int num_user_features,
+                           unsigned int *variations_index);
     HB_INTERNAL void fini();
 
     HB_INTERNAL void substitute(hb_font_t *font, hb_buffer_t *buffer) const;

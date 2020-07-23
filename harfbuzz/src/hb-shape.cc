@@ -64,16 +64,16 @@
  **/
 hb_bool_t hb_shape(const hb_font_t *font, hb_buffer_t *buffer, const hb_feature_t *features, unsigned int num_features)
 {
+    hb_segment_properties_t props;
+    hb_buffer_get_segment_properties(buffer, &props);
+
     hb_shape_plan_t *shape_plan = hb_shape_plan_create(hb_font_get_face((hb_font_t *)font),
-                                                       &buffer->props,
+                                                       &props,
                                                        features,
                                                        num_features,
                                                        hb_font_get_coords((hb_font_t *)font),
                                                        hb_font_get_num_coords((hb_font_t *)font));
     hb_bool_t res = hb_shape_plan_execute(shape_plan, (hb_font_t *)font, buffer, features, num_features);
     hb_shape_plan_destroy(shape_plan);
-
-    if (res)
-        buffer->content_type = HB_BUFFER_CONTENT_TYPE_GLYPHS;
     return res;
 }

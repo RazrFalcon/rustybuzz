@@ -146,10 +146,6 @@ typedef enum {
 #define HB_DIRECTION_IS_BACKWARD(dir) ((((unsigned int)(dir)) & ~2U) == 5)
 #define HB_DIRECTION_REVERSE(dir) ((hb_direction_t)(((unsigned int)(dir)) ^ 1))
 
-/* hb_language_t */
-
-HB_EXTERN const char* hb_language_get_default(void);
-
 /* hb_script_t */
 
 /* https://unicode.org/iso15924/ */
@@ -371,7 +367,7 @@ typedef enum {
 /* Script functions */
 
 extern "C" {
-    hb_direction_t rb_script_get_horizontal_direction(hb_script_t script);
+hb_direction_t hb_script_get_horizontal_direction(hb_script_t script);
 }
 
 typedef void (*hb_destroy_func_t)(void *user_data);

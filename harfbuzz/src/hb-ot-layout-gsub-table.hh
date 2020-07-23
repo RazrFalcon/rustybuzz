@@ -72,7 +72,8 @@ struct SingleSubstFormat1
     bool apply(hb_ot_apply_context_t *c) const
     {
         TRACE_APPLY(this);
-        hb_codepoint_t glyph_id = c->buffer->cur().codepoint;
+
+        hb_codepoint_t glyph_id = hb_buffer_get_cur(c->buffer, 0)->codepoint;
         unsigned int index = (this + coverage).get_coverage(glyph_id);
         if (likely(index == NOT_COVERED))
             return_trace(false);
@@ -135,7 +136,7 @@ struct SingleSubstFormat2
     bool apply(hb_ot_apply_context_t *c) const
     {
         TRACE_APPLY(this);
-        unsigned int index = (this + coverage).get_coverage(c->buffer->cur().codepoint);
+        unsigned int index = (this + coverage).get_coverage(hb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
             return_trace(false);
 
@@ -219,17 +220,18 @@ struct Sequence
         /* Spec disallows this, but Uniscribe allows it.
          * https://github.com/harfbuzz/harfbuzz/issues/253 */
         else if (unlikely(count == 0)) {
-            c->buffer->delete_glyph();
+            hb_buffer_delete_glyph(c->buffer);
             return_trace(true);
         }
 
-        unsigned int klass = _hb_glyph_info_is_ligature(&c->buffer->cur()) ? HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH : 0;
+        unsigned int klass =
+            _hb_glyph_info_is_ligature(hb_buffer_get_cur(c->buffer, 0)) ? HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH : 0;
 
         for (unsigned int i = 0; i < count; i++) {
-            _hb_glyph_info_set_lig_props_for_component(&c->buffer->cur(), i);
+            _hb_glyph_info_set_lig_props_for_component(hb_buffer_get_cur(c->buffer, 0), i);
             c->output_glyph_for_component(substitute.arrayZ[i], klass);
         }
-        c->buffer->skip_glyph();
+        hb_buffer_skip_glyph(c->buffer);
 
         return_trace(true);
     }
@@ -283,7 +285,7 @@ struct MultipleSubstFormat1
     {
         TRACE_APPLY(this);
 
-        unsigned int index = (this + coverage).get_coverage(c->buffer->cur().codepoint);
+        unsigned int index = (this + coverage).get_coverage(hb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
             return_trace(false);
 
@@ -353,7 +355,7 @@ struct AlternateSet
         if (unlikely(!count))
             return_trace(false);
 
-        hb_mask_t glyph_mask = c->buffer->cur().mask;
+        hb_mask_t glyph_mask = hb_buffer_get_cur(c->buffer, 0)->mask;
         hb_mask_t lookup_mask = c->lookup_mask;
 
         /* Note: This breaks badly if two features enabled this lookup together. */
@@ -442,7 +444,7 @@ struct AlternateSubstFormat1
     {
         TRACE_APPLY(this);
 
-        unsigned int index = (this + coverage).get_coverage(c->buffer->cur().codepoint);
+        unsigned int index = (this + coverage).get_coverage(hb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
             return_trace(false);
 
@@ -659,7 +661,7 @@ struct LigatureSubstFormat1
     {
         TRACE_APPLY(this);
 
-        unsigned int index = (this + coverage).get_coverage(c->buffer->cur().codepoint);
+        unsigned int index = (this + coverage).get_coverage(hb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
             return_trace(false);
 
@@ -795,7 +797,7 @@ struct ReverseChainSingleSubstFormat1
         if (unlikely(c->nesting_level_left != HB_MAX_NESTING_LEVEL))
             return_trace(false); /* No chaining to this type */
 
-        unsigned int index = (this + coverage).get_coverage(c->buffer->cur().codepoint);
+        unsigned int index = (this + coverage).get_coverage(hb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
             return_trace(false);
 
@@ -808,7 +810,7 @@ struct ReverseChainSingleSubstFormat1
         unsigned int start_index = 0, end_index = 0;
         if (match_backtrack(c, backtrack.len, (HBUINT16 *)backtrack.arrayZ, match_coverage, this, &start_index) &&
             match_lookahead(c, lookahead.len, (HBUINT16 *)lookahead.arrayZ, match_coverage, this, 1, &end_index)) {
-            c->buffer->unsafe_to_break_from_outbuffer(start_index, end_index);
+            hb_buffer_unsafe_to_break_from_outbuffer(c->buffer, start_index, end_index);
             c->replace_glyph_inplace(substitute[index]);
             /* Note: We DON'T decrease buffer->idx.  The main loop does it
              * for us.  This is useful for preventing surprises if someone

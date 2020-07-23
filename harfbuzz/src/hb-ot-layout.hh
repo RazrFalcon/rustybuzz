@@ -117,15 +117,16 @@ HB_INTERNAL void hb_ot_layout_position_finish_offsets(hb_font_t *font, hb_buffer
 
 /* Loop over syllables. Based on foreach_cluster(). */
 #define foreach_syllable(buffer, start, end)                                                                           \
-    for (unsigned int _count = buffer->len, start = 0, end = _count ? hb_layout_next_syllable(buffer, 0) : 0;                \
+    for (unsigned int _count = hb_buffer_get_length(buffer),                                                           \
+                      start = 0,                                                                                       \
+                      end = _count ? hb_layout_next_syllable(buffer, 0) : 0;                                           \
          start < _count;                                                                                               \
          start = end, end = hb_layout_next_syllable(buffer, start))
 
 extern "C" {
 HB_EXTERN unsigned int hb_layout_next_syllable(hb_buffer_t *buffer, unsigned int start);
 
-HB_EXTERN void
-hb_layout_clear_syllables(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
+HB_EXTERN void hb_layout_clear_syllables(const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer);
 }
 
 /* unicode_props */
@@ -165,11 +166,12 @@ static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, hb_bu
     unsigned int gen_cat = (unsigned int)hb_ucd_general_category(u);
     unsigned int props = gen_cat;
 
+    auto scratch_flags = hb_buffer_get_scratch_flags(buffer);
     if (u >= 0x80u) {
-        buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
+        scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
 
         if (unlikely(hb_ucd_is_default_ignorable(u))) {
-            buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
+            scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
             props |= UPROPS_MASK_IGNORABLE;
             if (u == 0x200Cu)
                 props |= UPROPS_MASK_Cf_ZWNJ;
@@ -191,7 +193,7 @@ static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, hb_bu
             /* COMBINING GRAPHEME JOINER should not be skipped; at least some times.
              * https://github.com/harfbuzz/harfbuzz/issues/554 */
             else if (unlikely(u == 0x034Fu)) {
-                buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_CGJ;
+                scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_CGJ;
                 props |= UPROPS_MASK_HIDDEN;
             }
         }
@@ -202,6 +204,7 @@ static inline void _hb_glyph_info_set_unicode_props(hb_glyph_info_t *info, hb_bu
         }
     }
 
+    hb_buffer_set_scratch_flags(buffer, scratch_flags);
     info->unicode_props() = props;
 }
 
@@ -278,14 +281,16 @@ static inline bool _hb_glyph_info_is_continuation(const hb_glyph_info_t *info)
 }
 /* Loop over grapheme. Based on foreach_cluster(). */
 #define foreach_grapheme(buffer, start, end)                                                                           \
-    for (unsigned int _count = buffer->len, start = 0, end = _count ? _hb_next_grapheme(buffer, 0) : 0;                \
+    for (unsigned int _count = hb_buffer_get_length(buffer),                                                           \
+                      start = 0,                                                                                       \
+                      end = _count ? hb_buffer_next_grapheme(buffer, 0) : 0;                                           \
          start < _count;                                                                                               \
-         start = end, end = _hb_next_grapheme(buffer, start))
+         start = end, end = hb_buffer_next_grapheme(buffer, start))
 
-static inline unsigned int _hb_next_grapheme(hb_buffer_t *buffer, unsigned int start)
+static inline unsigned int hb_buffer_next_grapheme(hb_buffer_t *buffer, unsigned int start)
 {
-    hb_glyph_info_t *info = buffer->info;
-    unsigned int count = buffer->len;
+    hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
+    unsigned int count = hb_buffer_get_length(buffer);
 
     while (++start < count && _hb_glyph_info_is_continuation(&info[start]))
         ;
@@ -394,7 +399,7 @@ static inline unsigned int _hb_glyph_info_get_lig_num_comps(const hb_glyph_info_
 
 static inline uint8_t _hb_allocate_lig_id(hb_buffer_t *buffer)
 {
-    uint8_t lig_id = buffer->next_serial() & 0x07;
+    uint8_t lig_id = hb_buffer_next_serial(buffer) & 0x07;
     if (unlikely(!lig_id))
         lig_id = _hb_allocate_lig_id(buffer); /* in case of overflow */
     return lig_id;

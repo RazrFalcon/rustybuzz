@@ -193,7 +193,7 @@ static hb_bool_t lang_matches(const char *lang_str, const char *spec)
     return strncmp(lang_str, spec, len) == 0 && (lang_str[len] == '\0' || lang_str[len] == '-');
 }
 
-static const char* hb_language_from_string(const char *s, size_t len)
+static const char *hb_language_from_string(const char *s, size_t len)
 {
     return s;
 }
@@ -344,7 +344,7 @@ static bool parse_private_use_subtag(const char *private_use_subtag,
  * Since: 2.0.0
  **/
 void hb_ot_tags_from_script_and_language(hb_script_t script,
-                                         const char* language,
+                                         const char *language,
                                          unsigned int *script_count /* IN/OUT */,
                                          hb_tag_t *script_tags /* OUT */,
                                          unsigned int *language_count /* IN/OUT */,
@@ -401,7 +401,7 @@ void hb_ot_tags_from_script_and_language(hb_script_t script,
  *
  * Since: 0.9.2
  **/
-const char* hb_ot_tag_to_language(hb_tag_t tag)
+const char *hb_ot_tag_to_language(hb_tag_t tag)
 {
     unsigned int i;
 
@@ -409,7 +409,7 @@ const char* hb_ot_tag_to_language(hb_tag_t tag)
         return nullptr;
 
     {
-        const char* disambiguated_tag = hb_ot_ambiguous_tag_to_language(tag);
+        const char *disambiguated_tag = hb_ot_ambiguous_tag_to_language(tag);
         if (disambiguated_tag != NULL)
             return disambiguated_tag;
     }
@@ -455,7 +455,7 @@ const char* hb_ot_tag_to_language(hb_tag_t tag)
 void hb_ot_tags_to_script_and_language(hb_tag_t script_tag,
                                        hb_tag_t language_tag,
                                        hb_script_t *script /* OUT */,
-                                       const char** language /* OUT */)
+                                       const char **language /* OUT */)
 {
     hb_script_t script_out = hb_ot_tag_to_script(script_tag);
     if (script)
@@ -463,8 +463,7 @@ void hb_ot_tags_to_script_and_language(hb_tag_t script_tag,
     if (language) {
         unsigned int script_count = 1;
         hb_tag_t primary_script_tag[1];
-        hb_ot_tags_from_script_and_language(
-            script_out, NULL, &script_count, primary_script_tag, nullptr, nullptr);
+        hb_ot_tags_from_script_and_language(script_out, NULL, &script_count, primary_script_tag, nullptr, nullptr);
         *language = hb_ot_tag_to_language(language_tag);
         if (script_count == 0 || primary_script_tag[0] != script_tag) {
             unsigned char *buf;

@@ -1874,7 +1874,7 @@ static bool hb_ot_tags_from_complex_language(const char *lang_str,
  * Return value: The #hb_language_t corresponding to the BCP 47 language tag,
  * or #HB_LANGUAGE_INVALID if @tag is not ambiguous.
  **/
-static const char* hb_ot_ambiguous_tag_to_language(hb_tag_t tag)
+static const char *hb_ot_ambiguous_tag_to_language(hb_tag_t tag)
 {
     switch (tag) {
     case HB_TAG('A', 'L', 'T', ' '):                       /* Altai */

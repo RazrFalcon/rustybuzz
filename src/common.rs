@@ -149,7 +149,7 @@ impl std::str::FromStr for Direction {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_script_get_horizontal_direction(script: ffi::hb_script_t) -> ffi::hb_direction_t {
+pub extern "C" fn hb_script_get_horizontal_direction(script: ffi::hb_script_t) -> ffi::hb_direction_t {
     Direction::from_script(Script(Tag(script))).unwrap_or_default().to_raw()
 }
 

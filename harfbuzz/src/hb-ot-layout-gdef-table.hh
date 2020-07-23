@@ -111,7 +111,6 @@ struct CaretValueFormat2
 {
     friend struct CaretValue;
 
-
 private:
     hb_position_t get_caret_value(hb_font_t *font, hb_direction_t direction, hb_codepoint_t glyph_id) const
     {
@@ -139,9 +138,8 @@ struct CaretValueFormat3
 
     hb_position_t get_caret_value(hb_font_t *font, hb_direction_t direction, const VariationStore &var_store) const
     {
-        return HB_DIRECTION_IS_HORIZONTAL(direction)
-                   ? coordinate + (this + deviceTable).get_x_delta(font, var_store)
-                   : coordinate + (this + deviceTable).get_y_delta(font, var_store);
+        return HB_DIRECTION_IS_HORIZONTAL(direction) ? coordinate + (this + deviceTable).get_x_delta(font, var_store)
+                                                     : coordinate + (this + deviceTable).get_y_delta(font, var_store);
     }
 
     void collect_variation_indices(hb_set_t *layout_variation_indices) const

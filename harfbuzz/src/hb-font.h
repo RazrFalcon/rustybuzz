@@ -125,7 +125,7 @@ HB_EXTERN unsigned int hb_font_get_ppem_x(hb_font_t *font);
 HB_EXTERN unsigned int hb_font_get_ppem_y(hb_font_t *font);
 HB_EXTERN float hb_font_get_ptem(hb_font_t *font);
 
-HB_EXTERN const int* hb_font_get_coords(hb_font_t *font);
+HB_EXTERN const int *hb_font_get_coords(hb_font_t *font);
 HB_EXTERN unsigned int hb_font_get_num_coords(hb_font_t *font);
 
 HB_EXTERN hb_bool_t hb_font_has_glyph(hb_font_t *font, hb_codepoint_t unicode);

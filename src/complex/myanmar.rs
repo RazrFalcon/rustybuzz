@@ -157,10 +157,10 @@ fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
     planner.ot_map.add_gsub_pause(Some(setup_syllables_raw));
 
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::default(), 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::default(), 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
 
     planner.ot_map.add_gsub_pause(Some(reorder_raw));
 
@@ -225,7 +225,7 @@ fn reorder(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
 fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
     use super::myanmar_machine::SyllableType;
 
-    if buffer.flags().contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
+    if buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
         return;
     }
 
@@ -252,9 +252,9 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
 
     buffer.clear_output();
 
-    buffer.set_idx(0);
+    buffer.idx = 0;
     let mut last_syllable = 0;
-    while buffer.idx() < buffer.len() {
+    while buffer.idx < buffer.len() {
         let syllable = buffer.cur(0).syllable();
         let syllable_type = syllable & 0x0F;
         if last_syllable != syllable && syllable_type == SyllableType::BrokenCluster as u8 {
@@ -277,7 +277,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
 fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
     use super::myanmar_machine::SyllableType;
 
-    let syllable_type = match buffer.info()[start].syllable() & 0x0F {
+    let syllable_type = match buffer.info[start].syllable() & 0x0F {
         0 => SyllableType::ConsonantSyllable,
         1 => SyllableType::PunctuationCluster,
         2 => SyllableType::BrokenCluster,
@@ -303,9 +303,9 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut limit = start;
         if start + 3 <= end &&
-            buffer.info()[start + 0].indic_category() == Category::Ra &&
-            buffer.info()[start + 1].indic_category() == Category::Symbol &&
-            buffer.info()[start + 2].indic_category() == Category::H
+            buffer.info[start + 0].indic_category() == Category::Ra &&
+            buffer.info[start + 1].indic_category() == Category::Symbol &&
+            buffer.info[start + 2].indic_category() == Category::H
         {
             limit += 3;
             base = start;
@@ -318,7 +318,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
             }
 
             for i in limit..end {
-                if buffer.info()[i].is_consonant() {
+                if buffer.info[i].is_consonant() {
                     base = i;
                     break;
                 }
@@ -330,17 +330,17 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut i = start;
         while i < start + if has_reph { 3 } else { 0 } {
-            buffer.info_mut()[i].set_indic_position(Position::AfterMain);
+            buffer.info[i].set_indic_position(Position::AfterMain);
             i += 1;
         }
 
         while i < base {
-            buffer.info_mut()[i].set_indic_position(Position::PreC);
+            buffer.info[i].set_indic_position(Position::PreC);
             i += 1;
         }
 
         if i < end {
-            buffer.info_mut()[i].set_indic_position(Position::BaseC);
+            buffer.info[i].set_indic_position(Position::BaseC);
             i += 1;
         }
 
@@ -349,58 +349,49 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
         // Myanmar reordering!
         for i in i..end {
             // Pre-base reordering
-            if buffer.info()[i].indic_category() == Category::Ygroup {
-                buffer.info_mut()[i].set_indic_position(Position::PreC);
+            if buffer.info[i].indic_category() == Category::Ygroup {
+                buffer.info[i].set_indic_position(Position::PreC);
                 continue;
             }
 
             // Left matra
-            if buffer.info()[i].indic_position() < Position::BaseC {
+            if buffer.info[i].indic_position() < Position::BaseC {
                 continue;
             }
 
-            if buffer.info()[i].indic_category() == Category::VS {
-                let t = buffer.info()[i - 1].indic_position();
-                buffer.info_mut()[i].set_indic_position(t);
+            if buffer.info[i].indic_category() == Category::VS {
+                let t = buffer.info[i - 1].indic_position();
+                buffer.info[i].set_indic_position(t);
                 continue;
             }
 
-            if pos == Position::AfterMain && buffer.info()[i].indic_category() == Category::VBlw {
+            if pos == Position::AfterMain && buffer.info[i].indic_category() == Category::VBlw {
                 pos = Position::BelowC;
-                buffer.info_mut()[i].set_indic_position(pos);
+                buffer.info[i].set_indic_position(pos);
                 continue;
             }
 
-            if pos == Position::BelowC && buffer.info()[i].indic_category() == Category::A {
-                buffer.info_mut()[i].set_indic_position(Position::BeforeSub);
+            if pos == Position::BelowC && buffer.info[i].indic_category() == Category::A {
+                buffer.info[i].set_indic_position(Position::BeforeSub);
                 continue;
             }
 
-            if pos == Position::BelowC && buffer.info()[i].indic_category() == Category::VBlw {
-                buffer.info_mut()[i].set_indic_position(pos);
+            if pos == Position::BelowC && buffer.info[i].indic_category() == Category::VBlw {
+                buffer.info[i].set_indic_position(pos);
                 continue;
             }
 
-            if pos == Position::BelowC && buffer.info()[i].indic_category() != Category::A {
+            if pos == Position::BelowC && buffer.info[i].indic_category() != Category::A {
                 pos = Position::AfterSub;
-                buffer.info_mut()[i].set_indic_position(pos);
+                buffer.info[i].set_indic_position(pos);
                 continue;
             }
 
-            buffer.info_mut()[i].set_indic_position(pos);
+            buffer.info[i].set_indic_position(pos);
         }
     }
 
-    buffer.sort(start, end, compare_myanmar_order);
-}
-
-unsafe extern "C" fn compare_myanmar_order(
-    pa: *const ffi::hb_glyph_info_t,
-    pb: *const ffi::hb_glyph_info_t,
-) -> i32 {
-    let a = std::mem::transmute::<ffi::hb_glyph_info_t, GlyphInfo>(*pa).indic_position();
-    let b = std::mem::transmute::<ffi::hb_glyph_info_t, GlyphInfo>(*pb).indic_position();
-    a.cmp(&b) as i32
+    buffer.sort(start, end, |a, b| a.indic_position().cmp(&b.indic_position()) == std::cmp::Ordering::Greater);
 }
 
 #[no_mangle]

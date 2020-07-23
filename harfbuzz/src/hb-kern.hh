@@ -49,10 +49,10 @@ template <typename Driver> struct hb_kern_machine_t
         c.set_lookup_props(OT::LookupFlag::IgnoreMarks);
         auto &skippy_iter = c.iter_input;
 
-        bool horizontal = HB_DIRECTION_IS_HORIZONTAL(buffer->props.direction);
-        unsigned int count = buffer->len;
-        hb_glyph_info_t *info = buffer->info;
-        hb_glyph_position_t *pos = buffer->pos;
+        bool horizontal = HB_DIRECTION_IS_HORIZONTAL(hb_buffer_get_direction(buffer));
+        unsigned int count = hb_buffer_get_length(buffer);
+        hb_glyph_info_t *info = hb_buffer_get_glyph_infos(buffer);
+        hb_glyph_position_t *pos = hb_buffer_get_glyph_positions(buffer);
         for (unsigned int idx = 0; idx < count;) {
             if (!(info[idx].mask & kern_mask)) {
                 idx++;
@@ -76,7 +76,8 @@ template <typename Driver> struct hb_kern_machine_t
             if (horizontal) {
                 if (crossStream) {
                     pos[j].y_offset = kern;
-                    buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+                    hb_buffer_set_scratch_flags(
+                        buffer, hb_buffer_get_scratch_flags(buffer) | HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT);
                 } else {
                     hb_position_t kern1 = kern >> 1;
                     hb_position_t kern2 = kern - kern1;
@@ -87,7 +88,8 @@ template <typename Driver> struct hb_kern_machine_t
             } else {
                 if (crossStream) {
                     pos[j].x_offset = kern;
-                    buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+                    hb_buffer_set_scratch_flags(
+                        buffer, hb_buffer_get_scratch_flags(buffer) | HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT);
                 } else {
                     hb_position_t kern1 = kern >> 1;
                     hb_position_t kern2 = kern - kern1;
@@ -97,7 +99,7 @@ template <typename Driver> struct hb_kern_machine_t
                 }
             }
 
-            buffer->unsafe_to_break(i, j + 1);
+            hb_buffer_unsafe_to_break(buffer, i, j + 1);
 
         skip:
             idx = skippy_iter.idx;

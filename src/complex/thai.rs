@@ -218,10 +218,10 @@ fn do_pua_shaping(font: &Font, buffer: &mut Buffer) {
     let mut base = 0;
 
     for i in 0..buffer.len() {
-        let mt = get_mark_type(buffer.info()[i].codepoint);
+        let mt = get_mark_type(buffer.info[i].codepoint);
 
         if mt == Mark::NotMark {
-            let ct = get_consonant_type(buffer.info()[i].codepoint);
+            let ct = get_consonant_type(buffer.info[i].codepoint);
             above_state = ABOVE_START_STATE[ct as usize];
             below_state = BELOW_START_STATE[ct as usize];
             base = i;
@@ -242,9 +242,9 @@ fn do_pua_shaping(font: &Font, buffer: &mut Buffer) {
 
         buffer.unsafe_to_break(base, i);
         if action == Action::RD {
-            buffer.info_mut()[base].codepoint = pua_shape(buffer.info()[base].codepoint, action, font);
+            buffer.info[base].codepoint = pua_shape(buffer.info[base].codepoint, action, font);
         } else {
-            buffer.info_mut()[i].codepoint = pua_shape(buffer.info()[i].codepoint, action, font);
+            buffer.info[i].codepoint = pua_shape(buffer.info[i].codepoint, action, font);
         }
     }
 }
@@ -309,8 +309,8 @@ fn preprocess_text(
     }
 
     buffer.clear_output();
-    buffer.set_idx(0);
-    while buffer.idx() < buffer.len() {
+    buffer.idx = 0;
+    while buffer.idx < buffer.len() {
         let u = buffer.cur(0).codepoint;
         if !is_sara_am(u) {
             buffer.next_glyph();
@@ -346,7 +346,7 @@ fn preprocess_text(
         } else {
             // Since we decomposed, and NIKHAHIT is combining, merge clusters with the
             // previous cluster.
-            if start != 0 && buffer.cluster_level() == BufferClusterLevel::MonotoneGraphemes {
+            if start != 0 && buffer.cluster_level == BufferClusterLevel::MonotoneGraphemes {
                 buffer.merge_out_clusters(start - 1, end);
             }
         }

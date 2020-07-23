@@ -162,8 +162,8 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
     // Extent of most recently seen syllable; valid only if start < end
     let mut start = 0;
     let mut end = 0;
-    buffer.set_idx(0);
-    while buffer.idx() < buffer.len() {
+    buffer.idx = 0;
+    while buffer.idx < buffer.len() {
         let u = buffer.cur(0).codepoint;
         let c = buffer.cur(0).as_char();
 
@@ -173,7 +173,7 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
             // I didn't bother for now.
             if start < end && end == buffer.out_len() {
                 // Tone mark follows a valid syllable; move it in front, unless it's zero width.
-                buffer.unsafe_to_break_from_outbuffer(start, buffer.idx());
+                buffer.unsafe_to_break_from_outbuffer(start, buffer.idx);
                 buffer.next_glyph();
                 if !is_zero_width_char(font, c) {
                     buffer.merge_out_clusters(start, end + 1);
@@ -186,7 +186,7 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
                 }
             } else {
                 // No valid syllable as base for tone mark; try to insert dotted circle.
-                if !buffer.flags().contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) && font_has_glyph(font, 0x25CC) {
+                if !buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) && font_has_glyph(font, 0x25CC) {
                     let mut chars = [0; 2];
                     if !is_zero_width_char(font, c) {
                         chars[0] = u;
@@ -212,14 +212,14 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
         // will only be used if we set end to a later position.
         start = buffer.out_len();
 
-        if is_l(u) && buffer.idx() + 1 < buffer.len() {
+        if is_l(u) && buffer.idx + 1 < buffer.len() {
             let l = u;
             let v = buffer.cur(1).codepoint;
             if is_v(v) {
                 // Have <L,V> or <L,V,T>.
                 let mut t = 0;
                 let mut tindex = 0;
-                if buffer.idx() + 2 < buffer.len() {
+                if buffer.idx + 2 < buffer.len() {
                     t = buffer.cur(2).codepoint;
                     if is_t(t) {
                         // Only used if isCombiningT (t); otherwise invalid.
@@ -231,7 +231,7 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
                 }
 
                 let offset = if t != 0 { 3 } else { 2 };
-                buffer.unsafe_to_break(buffer.idx(), buffer.idx() + offset);
+                buffer.unsafe_to_break(buffer.idx, buffer.idx + offset);
 
                 // We've got a syllable <L,V,T?>; see if it can potentially be composed.
                 if is_combining_l(l) && is_combining_v(v) && (t == 0 || is_combining_t(t)) {
@@ -261,7 +261,7 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
                     end = start + 2;
                 }
 
-                if buffer.cluster_level() == BufferClusterLevel::MonotoneGraphemes {
+                if buffer.cluster_level == BufferClusterLevel::MonotoneGraphemes {
                     buffer.merge_out_clusters(start, end);
                 }
 
@@ -277,7 +277,7 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
             let vindex = nindex / T_COUNT;
             let tindex = nindex % T_COUNT;
 
-            if tindex == 0 && buffer.idx() + 1 < buffer.len() && is_combining_t(buffer.cur(1).codepoint) {
+            if tindex == 0 && buffer.idx + 1 < buffer.len() && is_combining_t(buffer.cur(1).codepoint) {
                 // <LV,T>, try to combine.
                 let new_tindex = buffer.cur(1).codepoint - T_BASE;
                 let new_s = s + new_tindex;
@@ -288,14 +288,14 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
                     continue;
                 } else {
                     // Mark unsafe between LV and T.
-                    buffer.unsafe_to_break(buffer.idx(), buffer.idx() + 2);
+                    buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
                 }
             }
 
             // Otherwise, decompose if font doesn't support <LV> or <LVT>,
             // or if having non-combining <LV,T>.  Note that we already handled
             // combining <LV,T> above.
-            if !has_glyph || (tindex == 0 && buffer.idx() + 1 < buffer.len() && is_t(buffer.cur(1).codepoint)) {
+            if !has_glyph || (tindex == 0 && buffer.idx + 1 < buffer.len() && is_t(buffer.cur(1).codepoint)) {
                 let decomposed = [L_BASE + lindex, V_BASE + vindex, T_BASE + tindex];
                 if font_has_glyph(font, decomposed[0]) && font_has_glyph(font, decomposed[1]) &&
                     (tindex == 0 || font_has_glyph(font, decomposed[2]))
@@ -320,14 +320,14 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
                         buffer.out_info_mut()[start + 2].set_hangul_shaping_feature(TJMO);
                     }
 
-                    if buffer.cluster_level() == BufferClusterLevel::MonotoneGraphemes {
+                    if buffer.cluster_level == BufferClusterLevel::MonotoneGraphemes {
                         buffer.merge_out_clusters(start, end);
                     }
 
                     continue;
-                } else if tindex == 0 && buffer.idx() + 1 > buffer.len() && is_t(buffer.cur(1).codepoint) {
+                } else if tindex == 0 && buffer.idx + 1 > buffer.len() && is_t(buffer.cur(1).codepoint) {
                     // Mark unsafe between LV and T.
-                    buffer.unsafe_to_break(buffer.idx(), buffer.idx() + 2);
+                    buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
                 }
             }
 
