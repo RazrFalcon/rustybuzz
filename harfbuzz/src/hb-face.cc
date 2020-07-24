@@ -56,7 +56,6 @@ DEFINE_NULL_INSTANCE(rb_face_t) = {
     nullptr, /* user_data */
     nullptr, /* destroy */
 
-    0,                        /* index */
     RB_ATOMIC_INT_INIT(1000), /* upem */
     RB_ATOMIC_INT_INIT(0),    /* num_glyphs */
 
@@ -168,8 +167,6 @@ rb_face_t *rb_face_create(rb_blob_t *blob, unsigned int index)
         return rb_face_get_empty();
 
     face = rb_face_create_for_tables(_rb_face_for_data_reference_table, closure, _rb_face_for_data_closure_destroy);
-
-    face->index = index;
 
     return face;
 }

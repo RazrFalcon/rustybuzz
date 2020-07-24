@@ -200,15 +200,6 @@ struct rb_lazy_loader_t : rb_data_wrapper_t<Data, WheresData>
         do_destroy(instance.get());
     }
 
-    void free_instance()
-    {
-    retry:
-        Stored *p = instance.get();
-        if (unlikely(p && !cmpexch(p, nullptr)))
-            goto retry;
-        do_destroy(p);
-    }
-
     static void do_destroy(Stored *p)
     {
         if (p && p != const_cast<Stored *>(Funcs::get_null()))

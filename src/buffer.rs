@@ -1715,7 +1715,7 @@ pub extern "C" fn rb_buffer_is_allocation_successful(buffer: *const ffi::rb_buff
 
 #[no_mangle]
 pub extern "C" fn rb_buffer_sort(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32,
-                                 cmp: fn(*const GlyphInfo, *const GlyphInfo) -> i32
+                                 cmp: extern "C" fn(*const GlyphInfo, *const GlyphInfo) -> i32
 ) {
     let buffer = Buffer::from_ptr_mut(buffer);
     let start = start as usize;

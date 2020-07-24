@@ -46,7 +46,6 @@ struct rb_face_t
     void *user_data;
     rb_destroy_func_t destroy;
 
-    unsigned int index;                 /* Face index in a collection, zero-based. */
     mutable rb_atomic_int_t upem;       /* Units-per-EM. */
     mutable rb_atomic_int_t num_glyphs; /* Number of glyphs. */
 
