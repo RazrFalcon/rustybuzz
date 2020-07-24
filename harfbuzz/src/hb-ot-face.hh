@@ -38,35 +38,56 @@
  */
 
 /* Declare tables. */
-#define RB_OT_TABLE(Namespace, Type)                                                                                   \
-    namespace Namespace {                                                                                              \
-    struct Type;                                                                                                       \
-    }
-#define RB_OT_ACCELERATOR(Namespace, Type) RB_OT_TABLE(Namespace, Type##_accelerator_t)
-#include "hb-ot-face-table-list.hh"
-#undef RB_OT_ACCELERATOR
-#undef RB_OT_TABLE
+namespace OT { struct head; }
+
+namespace OT { struct kern; }
+
+namespace OT { struct GDEF_accelerator_t; }
+namespace OT { struct GSUB_accelerator_t; }
+namespace OT { struct GPOS_accelerator_t; }
+
+namespace AAT { struct morx; }
+namespace AAT { struct mort; }
+namespace AAT { struct kerx; }
+namespace AAT { struct ankr; }
+namespace AAT { struct trak; }
+namespace AAT { struct feat; }
 
 struct rb_ot_face_t
 {
-    RB_INTERNAL void init0(rb_face_t *face);
-    RB_INTERNAL void fini();
+    void init0(rb_face_t *face);
+    void fini();
 
-#define RB_OT_TABLE_ORDER(Namespace, Type) RB_PASTE(ORDER_, RB_PASTE(Namespace, RB_PASTE(_, Type)))
     enum order_t {
         ORDER_ZERO,
-#define RB_OT_TABLE(Namespace, Type) RB_OT_TABLE_ORDER(Namespace, Type),
-#include "hb-ot-face-table-list.hh"
-#undef RB_OT_TABLE
+        ORDER_OT_head,
+        ORDER_OT_kern,
+        ORDER_OT_GDEF,
+        ORDER_OT_GSUB,
+        ORDER_OT_GPOS,
+        ORDER_AAT_morx,
+        ORDER_AAT_mort,
+        ORDER_AAT_kerx,
+        ORDER_AAT_ankr,
+        ORDER_AAT_trak,
+        ORDER_AAT_feat,
     };
 
-    rb_face_t *face; /* MUST be JUST before the lazy loaders. */
-#define RB_OT_TABLE(Namespace, Type) rb_table_lazy_loader_t<Namespace::Type, RB_OT_TABLE_ORDER(Namespace, Type)> Type;
-#define RB_OT_ACCELERATOR(Namespace, Type)                                                                             \
-    rb_face_lazy_loader_t<Namespace::Type##_accelerator_t, RB_OT_TABLE_ORDER(Namespace, Type)> Type;
-#include "hb-ot-face-table-list.hh"
-#undef RB_OT_ACCELERATOR
-#undef RB_OT_TABLE
+    rb_face_t *face;
+
+    rb_table_lazy_loader_t<OT::head, ORDER_OT_head> head;
+    rb_table_lazy_loader_t<OT::kern, ORDER_OT_kern> kern;
+
+    rb_face_lazy_loader_t<OT::GDEF_accelerator_t, ORDER_OT_GDEF> GDEF;
+    rb_face_lazy_loader_t<OT::GSUB_accelerator_t, ORDER_OT_GSUB> GSUB;
+    rb_face_lazy_loader_t<OT::GPOS_accelerator_t, ORDER_OT_GPOS> GPOS;
+
+    rb_table_lazy_loader_t<AAT::morx, ORDER_AAT_morx> morx;
+    rb_table_lazy_loader_t<AAT::mort, ORDER_AAT_mort> mort;
+    rb_table_lazy_loader_t<AAT::kerx, ORDER_AAT_kerx> kerx;
+    rb_table_lazy_loader_t<AAT::ankr, ORDER_AAT_ankr> ankr;
+    rb_table_lazy_loader_t<AAT::trak, ORDER_AAT_trak> trak;
+    rb_table_lazy_loader_t<AAT::feat, ORDER_AAT_feat> feat;
 };
 
 #endif /* RB_OT_FACE_HH */

@@ -34,13 +34,30 @@
 void rb_ot_face_t::init0(rb_face_t *face)
 {
     this->face = face;
-#define RB_OT_TABLE(Namespace, Type) Type.init0();
-#include "hb-ot-face-table-list.hh"
-#undef RB_OT_TABLE
+    head.init0();
+    kern.init0();
+    GDEF.init0();
+    GSUB.init0();
+    GPOS.init0();
+    morx.init0();
+    mort.init0();
+    kerx.init0();
+    ankr.init0();
+    trak.init0();
+    feat.init0();
 }
+
 void rb_ot_face_t::fini()
 {
-#define RB_OT_TABLE(Namespace, Type) Type.fini();
-#include "hb-ot-face-table-list.hh"
-#undef RB_OT_TABLE
+    head.fini();
+    kern.fini();
+    GDEF.fini();
+    GSUB.fini();
+    GPOS.fini();
+    morx.fini();
+    mort.fini();
+    kerx.fini();
+    ankr.fini();
+    trak.fini();
+    feat.fini();
 }
