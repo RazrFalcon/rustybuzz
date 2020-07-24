@@ -749,14 +749,47 @@ pub extern "C" fn rb_ucd_is_variation_selector(u: rb_codepoint_t) -> ffi::rb_boo
     char::try_from(u).unwrap().is_variation_selector() as i32
 }
 
+const S_BASE: u32 = 0xAC00;
+const L_BASE: u32 = 0x1100;
+const V_BASE: u32 = 0x1161;
+const T_BASE: u32 = 0x11A7;
+const L_COUNT: u32 = 19;
+const V_COUNT: u32 = 21;
+const T_COUNT: u32 = 28;
+const N_COUNT: u32 = V_COUNT * T_COUNT;
+const S_COUNT: u32 = L_COUNT * N_COUNT;
+
+fn compose_hangul(a: char, b: char) -> Option<char> {
+    let l = a as u32;
+    let v = b as u32;
+    if L_BASE <= l && l < (L_BASE + L_COUNT) && V_BASE <= v && v < (V_BASE + V_COUNT) {
+        let r = S_BASE + (l - L_BASE) * N_COUNT + (v - V_BASE) * T_COUNT;
+        Some(char::try_from(r).unwrap())
+    } else if S_BASE <= l && l <= (S_BASE + S_COUNT - T_COUNT)
+        && T_BASE <= v && v < (T_BASE + T_COUNT)
+        && (l - S_BASE) % T_COUNT == 0
+    {
+        let r = l + (v - T_BASE);
+        Some(char::try_from(r).unwrap())
+    } else {
+        None
+    }
+}
+
 pub fn compose(a: char, b: char) -> Option<char> {
-    unic_ucd_normal::compose(a, b)
+    if let Some(ab) = compose_hangul(a, b) {
+        return Some(ab);
+    }
+
+    let needle = (a as u64) << 32 | (b as u64);
+    crate::unicode_norm::COMPOSITION_TABLE.binary_search_by(|item| item.0.cmp(&needle)).ok()
+        .map(|idx| crate::unicode_norm::COMPOSITION_TABLE[idx].1)
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ucd_compose(a: rb_codepoint_t, b: rb_codepoint_t, ab: *mut rb_codepoint_t) -> ffi::rb_bool_t {
     unsafe {
-        let new = unic_ucd_normal::compose(
+        let new = compose(
             char::try_from(a).unwrap(),
             char::try_from(b).unwrap(),
         );
@@ -771,16 +804,6 @@ pub extern "C" fn rb_ucd_compose(a: rb_codepoint_t, b: rb_codepoint_t, ab: *mut 
 }
 
 fn rb_ucd_decompose_hangul(ab: rb_codepoint_t, a: *mut rb_codepoint_t, b: *mut rb_codepoint_t) -> bool {
-    const S_BASE: u32 = 0xAC00;
-    const L_BASE: u32 = 0x1100;
-    const V_BASE: u32 = 0x1161;
-    const T_BASE: u32 = 0x11A7;
-    const L_COUNT: u32 = 19;
-    const V_COUNT: u32 = 21;
-    const T_COUNT: u32 = 28;
-    const N_COUNT: u32 = V_COUNT * T_COUNT;
-    const S_COUNT: u32 = L_COUNT * N_COUNT;
-
     let si = ab.wrapping_sub(S_BASE);
     if si >= S_COUNT {
         return false;
@@ -817,25 +840,21 @@ pub extern "C" fn rb_ucd_decompose(
     }
 
     let ab = char::try_from(ab).unwrap();
-    let chars = match unic_ucd_normal::canonical_decomposition(ab) {
-        Some(chars) => chars,
-        None => return 0,
-    };
+    match crate::unicode_norm::DECOMPOSITION_TABLE.binary_search_by(|item| item.0.cmp(&ab)) {
+        Ok(idx) => {
+            let chars = &crate::unicode_norm::DECOMPOSITION_TABLE[idx];
+            unsafe {
+                if let Some(rb) = chars.2 {
+                    *a = chars.1 as u32;
+                    *b = rb as u32;
+                } else {
+                    *a = chars.1 as u32;
+                }
+            }
 
-    unsafe {
-        match chars.len() {
-            1 => {
-                *a = chars[0] as u32;
-                *b = 0;
-                1
-            }
-            2 => {
-                *a = chars[0] as u32;
-                *b = chars[1] as u32;
-                1
-            }
-            _ => 0,
+            1
         }
+        Err(_) => 0,
     }
 }
 
@@ -847,6 +866,6 @@ mod tests {
         assert_eq!(unicode_ccc::UNICODE_VERSION,                (13, 0, 0));
         assert_eq!(unicode_general_category::UNICODE_VERSION,   (12, 1, 0)); // TODO: update
         assert_eq!(unicode_script::UNICODE_VERSION,             (13, 0, 0));
-        assert_eq!(unic_ucd_normal::UNICODE_VERSION.major,      10); // TODO: update
+        assert_eq!(crate::unicode_norm::UNICODE_VERSION,        (13, 0, 0));
     }
 }

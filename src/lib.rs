@@ -13,6 +13,7 @@ mod tag;
 mod tag_table;
 mod text_parser;
 mod unicode;
+mod unicode_norm;
 mod complex;
 mod ot;
 
