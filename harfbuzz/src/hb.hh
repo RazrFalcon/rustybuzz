@@ -348,77 +348,7 @@ extern "C" void rb_free_impl(void *ptr);
 #ifndef STRICT
 #define STRICT 1
 #endif
-
-#if defined(_WIN32_WCE)
-/* Some things not defined on Windows CE. */
-#define vsnprintf _vsnprintf
-#ifndef RB_NO_GETENV
-#define RB_NO_GETENV
 #endif
-#if _WIN32_WCE < 0x800
-#define RB_NO_SETLOCALE
-#define RB_NO_ERRNO
-#endif
-#elif defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-#ifndef RB_NO_GETENV
-#define RB_NO_GETENV
-#endif
-#endif
-#if defined(_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
-#endif
-
-#ifdef RB_NO_GETENV
-#define getenv(Name) nullptr
-#endif
-
-#ifndef RB_NO_ERRNO
-#include <errno.h>
-#else
-static int RB_UNUSED _rb_errno = 0;
-#undef errno
-#define errno _rb_errno
-#endif
-
-#if defined(HAVE_ATEXIT) && !defined(RB_USE_ATEXIT)
-/* atexit() is only safe to be called from shared libraries on certain
- * platforms.  Whitelist.
- * https://bugs.freedesktop.org/show_bug.cgi?id=82246 */
-#if defined(__linux) && defined(__GLIBC_PREREQ)
-#if __GLIBC_PREREQ(2, 3)
-/* From atexit() manpage, it's safe with glibc 2.2.3 on Linux. */
-#define RB_USE_ATEXIT 1
-#endif
-#elif defined(_MSC_VER) || defined(__MINGW32__)
-/* For MSVC:
- * https://msdn.microsoft.com/en-us/library/tze57ck3.aspx
- * https://msdn.microsoft.com/en-us/library/zk17ww08.aspx
- * mingw32 headers say atexit is safe to use in shared libraries.
- */
-#define RB_USE_ATEXIT 1
-#elif defined(__ANDROID__)
-/* This is available since Android NKD r8 or r8b:
- * https://issuetracker.google.com/code/p/android/issues/detail?id=6455
- */
-#define RB_USE_ATEXIT 1
-#elif defined(__APPLE__)
-/* For macOS and related platforms, the atexit man page indicates
- * that it will be invoked when the library is unloaded, not only
- * at application exit.
- */
-#define RB_USE_ATEXIT 1
-#endif
-#endif
-#ifdef RB_NO_ATEXIT
-#undef RB_USE_ATEXIT
-#endif
-#ifndef RB_USE_ATEXIT
-#define RB_USE_ATEXIT 0
-#endif
-
-#define RB_STMT_START do
-#define RB_STMT_END while (0)
 
 /* Static-assert as expression. */
 template <unsigned int cond> class rb_assert_constant_t;

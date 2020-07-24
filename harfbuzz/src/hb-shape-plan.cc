@@ -96,21 +96,6 @@ rb_shape_plan_t *rb_shape_plan_get_empty()
 }
 
 /**
- * rb_shape_plan_reference: (skip)
- * @shape_plan: a shape plan.
- *
- *
- *
- * Return value: (transfer full):
- *
- * Since: 0.9.7
- **/
-rb_shape_plan_t *rb_shape_plan_reference(rb_shape_plan_t *shape_plan)
-{
-    return rb_object_reference(shape_plan);
-}
-
-/**
  * rb_shape_plan_destroy: (skip)
  * @shape_plan: a shape plan.
  *
