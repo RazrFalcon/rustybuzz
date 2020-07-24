@@ -1,0 +1,8 @@
+[package]
+name = "benchmarks"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+harfbuzz_rs = "1.1.2"
+rustybuzz = { path = "../" }

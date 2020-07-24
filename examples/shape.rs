@@ -3,29 +3,26 @@ use std::str::FromStr;
 
 const HELP: &str = "\
 USAGE:
-    shape [OPTIONS] [FONT-FILE] [TEXT]
+    shape [OPTIONS] <FONT-FILE> [TEXT]
 
 OPTIONS:
     -h, --help                          Show help options
         --version                       Show version number
-        --font-file FILENAME            Set font file-name
+        --font-file PATH                Set font file-name
         --face-index INDEX              Set face index [default: 0]
         --font-ptem NUMBER              Set font point-size
         --variations LIST               Set comma-separated list of font variations
         --text TEXT                     Set input text
+        --text-file PATH                Set input text file
     -u, --unicodes LIST                 Set comma-separated list of input Unicode codepoints
                                         Examples: 'U+0056,U+0057'
-        --text-before TEXT              Set text context before each line
-        --text-after TEXT               Set text context after each line
         --direction DIRECTION           Set text direction
                                         [possible values: ltr, rtl, ttb, btt]
         --language LANG                 Set text language [default: LC_CTYPE]
         --script TAG                    Set text script as ISO-15924 tag
-        --invisible-glyph CHAR          Glyph value to replace Default-Ignorables with
         --utf8-clusters                 Use UTF-8 byte indices, not char indices
         --cluster-level N               Cluster merging level [default: 0]
                                         [possible values: 0, 1, 2]
-        --normalize-glyphs              Rearrange glyph clusters in nominal order
         --features LIST                 Set comma-separated list of font features
         --no-glyph-names                Output glyph indices instead of names
         --no-positions                  Do not output glyph positions
@@ -36,7 +33,7 @@ OPTIONS:
         --ned                           No Extra Data; Do not output clusters or advances
 
 ARGS:
-    [FONT-FILE]                         An optional path to font file
+    <FONT-FILE>                         A font file
     [TEXT]                              An optional text
 ";
 
@@ -48,6 +45,7 @@ struct Args {
     font_ptem: Option<f32>,
     variations: Vec<rustybuzz::Variation>,
     text: Option<String>,
+    text_file: Option<PathBuf>,
     unicodes: Option<String>,
     direction: Option<rustybuzz::Direction>,
     language: rustybuzz::Language,
@@ -75,6 +73,7 @@ fn parse_args() -> Result<Args, pico_args::Error> {
         font_ptem: args.opt_value_from_str("--font-ptem")?,
         variations: args.opt_value_from_fn("--variations", parse_variations)?.unwrap_or_default(),
         text: args.opt_value_from_str("--text")?,
+        text_file: args.opt_value_from_str("--text-file")?,
         unicodes: args.opt_value_from_fn(["-u", "--unicodes"], parse_unicodes)?,
         direction: args.opt_value_from_str("--direction")?,
         language: args.opt_value_from_str("--language")?.unwrap_or(system_language()),
@@ -139,21 +138,23 @@ fn main() {
         font.set_variations(&args.variations);
     }
 
-    let text = if args.free.len() == 2 && font_set_as_free_arg {
-        &args.free[1]
+    let text = if let Some(path) = args.text_file {
+        std::fs::read_to_string(path).unwrap()
+    } else if args.free.len() == 2 && font_set_as_free_arg {
+        args.free[1].clone()
     } else if args.free.len() == 1 && !font_set_as_free_arg {
-        &args.free[0]
+        args.free[0].clone()
     } else if let Some(ref text) = args.unicodes {
-        text
+        text.clone()
     } else if let Some(ref text) = args.text {
-        text
+        text.clone()
     } else {
         eprintln!("Error: text is not set.");
         std::process::exit(1);
     };
 
     let mut buffer = rustybuzz::UnicodeBuffer::new();
-    buffer.push_str(text);
+    buffer.push_str(&text);
 
     if let Some(d) = args.direction {
         buffer.set_direction(d);

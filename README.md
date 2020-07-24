@@ -25,6 +25,15 @@ Embedded `harfbuzz` version: 2.6.8
 - rustybuzz doesn't interact with any system libraries and must produce exactly the same
   results on all OS'es and targets.
 
+## Performance
+
+At the moment, performance itsn't that great. We're 1.5-2x slower than harfbuzz.
+Mainly because we have a lot of FFI glue code, which doesn't work well with inlining.
+And we have to constanly convert between C++ and Rust types (like `char` for example).
+And also, because rustybuzz doesn't support shaping plan caching at the moment.
+
+See [benches/README.md](./benches/README.md) for details.
+
 ## Prior work
 
 This is mine yet another attempt to port harfbuzz to Rust.
