@@ -158,20 +158,17 @@ template <typename Types> struct RearrangementSubtable
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         driver_context_t dc(this);
 
         StateTableDriver<Types, EntryData> driver(machine, c->buffer, c->face);
         driver.drive(&dc);
 
-        return_trace(dc.ret);
+        return dc.ret;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(machine.sanitize(c));
+        return machine.sanitize(c);
     }
 
 protected:
@@ -295,26 +292,22 @@ template <typename Types> struct ContextualSubtable
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         driver_context_t dc(this, c);
 
         StateTableDriver<Types, EntryData> driver(machine, c->buffer, c->face);
         driver.drive(&dc);
 
-        return_trace(dc.ret);
+        return dc.ret;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-
         unsigned int num_entries = 0;
         if (unlikely(!machine.sanitize(c, &num_entries)))
-            return_trace(false);
+            return false;
 
         if (!Types::extended)
-            return_trace(substitutionTables.sanitize(c, this, 0));
+            return substitutionTables.sanitize(c, this, 0);
 
         unsigned int num_lookups = 0;
 
@@ -328,7 +321,7 @@ template <typename Types> struct ContextualSubtable
                 num_lookups = rb_max(num_lookups, 1 + data.currentIndex);
         }
 
-        return_trace(substitutionTables.sanitize(c, this, num_lookups));
+        return substitutionTables.sanitize(c, this, num_lookups);
     }
 
 protected:
@@ -440,7 +433,7 @@ template <typename Types> struct LigatureSubtable
         {
             rb_buffer_t *buffer = driver->buffer;
 
-            DEBUG_MSG(APPLY, nullptr, "Ligature transition at %u", rb_buffer_get_index(buffer));
+            //            DEBUG_MSG(APPLY, nullptr, "Ligature transition at %u", rb_buffer_get_index(buffer));
             if (entry.flags & LigatureEntryT::SetComponent) {
                 /* Never mark same index twice, in case DontAdvance was used... */
                 if (match_length && match_positions[(match_length - 1u) % ARRAY_LENGTH(match_positions)] ==
@@ -448,11 +441,11 @@ template <typename Types> struct LigatureSubtable
                     match_length--;
 
                 match_positions[match_length++ % ARRAY_LENGTH(match_positions)] = rb_buffer_get_out_len(buffer);
-                DEBUG_MSG(APPLY, nullptr, "Set component at %u", rb_buffer_get_out_len(buffer));
+                //                DEBUG_MSG(APPLY, nullptr, "Set component at %u", rb_buffer_get_out_len(buffer));
             }
 
             if (LigatureEntryT::performAction(entry)) {
-                DEBUG_MSG(APPLY, nullptr, "Perform action with %u", match_length);
+                //                DEBUG_MSG(APPLY, nullptr, "Perform action with %u", match_length);
                 unsigned int end = rb_buffer_get_out_len(buffer);
 
                 if (unlikely(!match_length))
@@ -472,12 +465,12 @@ template <typename Types> struct LigatureSubtable
                 do {
                     if (unlikely(!cursor)) {
                         /* Stack underflow.  Clear the stack. */
-                        DEBUG_MSG(APPLY, nullptr, "Stack underflow");
+                        //                        DEBUG_MSG(APPLY, nullptr, "Stack underflow");
                         match_length = 0;
                         break;
                     }
 
-                    DEBUG_MSG(APPLY, nullptr, "Moving to stack position %u", cursor - 1);
+                    //                    DEBUG_MSG(APPLY, nullptr, "Moving to stack position %u", cursor - 1);
                     rb_buffer_move_to(buffer, match_positions[--cursor % ARRAY_LENGTH(match_positions)]);
 
                     if (unlikely(!actionData->sanitize(&c->sanitizer)))
@@ -495,11 +488,11 @@ template <typename Types> struct LigatureSubtable
                         break;
                     ligature_idx += componentData;
 
-                    DEBUG_MSG(APPLY,
-                              nullptr,
-                              "Action store %u last %u",
-                              bool(action & LigActionStore),
-                              bool(action & LigActionLast));
+                    //                    DEBUG_MSG(APPLY,
+                    //                              nullptr,
+                    //                              "Action store %u last %u",
+                    //                              bool(action & LigActionStore),
+                    //                              bool(action & LigActionLast));
                     if (action & (LigActionStore | LigActionLast)) {
                         ligature_idx = Types::offsetToIndex(ligature_idx, table, ligature.arrayZ);
                         const HBGlyphID &ligatureData = ligature[ligature_idx];
@@ -507,14 +500,14 @@ template <typename Types> struct LigatureSubtable
                             break;
                         rb_codepoint_t lig = ligatureData;
 
-                        DEBUG_MSG(APPLY, nullptr, "Produced ligature %u", lig);
+                        //                        DEBUG_MSG(APPLY, nullptr, "Produced ligature %u", lig);
                         rb_buffer_replace_glyph(buffer, lig);
 
                         unsigned int lig_end =
                             match_positions[(match_length - 1u) % ARRAY_LENGTH(match_positions)] + 1u;
                         /* Now go and delete all subsequent components. */
                         while (match_length - 1u > cursor) {
-                            DEBUG_MSG(APPLY, nullptr, "Skipping ligature component");
+                            //                            DEBUG_MSG(APPLY, nullptr, "Skipping ligature component");
                             rb_buffer_move_to(buffer, match_positions[--match_length % ARRAY_LENGTH(match_positions)]);
                             rb_buffer_replace_glyph(buffer, DELETED_GLYPH);
                         }
@@ -546,21 +539,18 @@ template <typename Types> struct LigatureSubtable
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         driver_context_t dc(this, c);
 
         StateTableDriver<Types, EntryData> driver(machine, c->buffer, c->face);
         driver.drive(&dc);
 
-        return_trace(dc.ret);
+        return dc.ret;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         /* The rest of array sanitizations are done at run-time. */
-        return_trace(c->check_struct(this) && machine.sanitize(c) && ligAction && component && ligature);
+        return c->check_struct(this) && machine.sanitize(c) && ligAction && component && ligature;
     }
 
 protected:
@@ -576,8 +566,6 @@ template <typename Types> struct NoncontextualSubtable
 {
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         bool ret = false;
         unsigned int num_glyphs = c->face->get_num_glyphs();
 
@@ -591,13 +579,12 @@ template <typename Types> struct NoncontextualSubtable
             }
         }
 
-        return_trace(ret);
+        return ret;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(substitute.sanitize(c));
+        return substitute.sanitize(c);
     }
 
 protected:
@@ -776,21 +763,18 @@ template <typename Types> struct InsertionSubtable
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         driver_context_t dc(this, c);
 
         StateTableDriver<Types, EntryData> driver(machine, c->buffer, c->face);
         driver.drive(&dc);
 
-        return_trace(dc.ret);
+        return dc.ret;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         /* The rest of array sanitizations are done at run-time. */
-        return_trace(c->check_struct(this) && machine.sanitize(c) && insertionAction);
+        return c->check_struct(this) && machine.sanitize(c) && insertionAction;
     }
 
 protected:
@@ -805,8 +789,7 @@ struct Feature
 {
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 public:
@@ -859,38 +842,35 @@ template <typename Types> struct ChainSubtable
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
         unsigned int subtable_type = get_type();
-        TRACE_DISPATCH(this, subtable_type);
         switch (subtable_type) {
         case Rearrangement:
-            return_trace(c->dispatch(u.rearrangement, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.rearrangement, rb_forward<Ts>(ds)...);
         case Contextual:
-            return_trace(c->dispatch(u.contextual, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.contextual, rb_forward<Ts>(ds)...);
         case Ligature:
-            return_trace(c->dispatch(u.ligature, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.ligature, rb_forward<Ts>(ds)...);
         case Noncontextual:
-            return_trace(c->dispatch(u.noncontextual, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.noncontextual, rb_forward<Ts>(ds)...);
         case Insertion:
-            return_trace(c->dispatch(u.insertion, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.insertion, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
         rb_sanitize_with_object_t with(&c->sanitizer, this);
-        return_trace(dispatch(c));
+        return dispatch(c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!length.sanitize(c) || length <= min_size || !c->check_range(this, length))
-            return_trace(false);
+            return false;
 
         rb_sanitize_with_object_t with(c, this);
-        return_trace(dispatch(c));
+        return dispatch(c);
     }
 
 protected:
@@ -1013,22 +993,21 @@ template <typename Types> struct Chain
 
     bool sanitize(rb_sanitize_context_t *c, unsigned int version RB_UNUSED) const
     {
-        TRACE_SANITIZE(this);
         if (!length.sanitize(c) || length < min_size || !c->check_range(this, length))
-            return_trace(false);
+            return false;
 
         if (!c->check_array(featureZ.arrayZ, featureCount))
-            return_trace(false);
+            return false;
 
         const ChainSubtable<Types> *subtable = &StructAfter<ChainSubtable<Types>>(featureZ.as_array(featureCount));
         unsigned int count = subtableCount;
         for (unsigned int i = 0; i < count; i++) {
             if (!subtable->sanitize(c))
-                return_trace(false);
+                return false;
             subtable = &StructAfter<ChainSubtable<Types>>(*subtable);
         }
 
-        return_trace(true);
+        return true;
     }
 
 protected:
@@ -1085,19 +1064,18 @@ template <typename Types, rb_tag_t TAG> struct mortmorx
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!version.sanitize(c) || !version || !chainCount.sanitize(c))
-            return_trace(false);
+            return false;
 
         const Chain<Types> *chain = &firstChain;
         unsigned int count = chainCount;
         for (unsigned int i = 0; i < count; i++) {
             if (!chain->sanitize(c, version))
-                return_trace(false);
+                return false;
             chain = &StructAfter<Chain<Types>>(*chain);
         }
 
-        return_trace(true);
+        return true;
     }
 
 protected:

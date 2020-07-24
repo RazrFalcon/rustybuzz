@@ -116,7 +116,7 @@
 #define RB_SANITIZE_MAX_SUTABLES 0x4000
 #endif
 
-struct rb_sanitize_context_t : rb_dispatch_context_t<rb_sanitize_context_t, bool, RB_DEBUG_SANITIZE>
+struct rb_sanitize_context_t : rb_dispatch_context_t<rb_sanitize_context_t, bool>
 {
     rb_sanitize_context_t()
         : start(nullptr)
@@ -131,10 +131,6 @@ struct rb_sanitize_context_t : rb_dispatch_context_t<rb_sanitize_context_t, bool
     {
     }
 
-    const char *get_name()
-    {
-        return "SANITIZE";
-    }
     template <typename T, typename F> bool may_dispatch(const T *obj RB_UNUSED, const F *format)
     {
         return format->sanitize(this);
@@ -222,22 +218,10 @@ private:
                                      (unsigned)RB_SANITIZE_MAX_OPS_MAX);
         this->edit_count = 0;
         this->debug_depth = 0;
-
-        DEBUG_MSG_LEVEL(SANITIZE,
-                        start,
-                        0,
-                        +1,
-                        "start [%p..%p] (%lu bytes)",
-                        this->start,
-                        this->end,
-                        (unsigned long)(this->end - this->start));
     }
 
     void end_processing()
     {
-        DEBUG_MSG_LEVEL(
-            SANITIZE, this->start, 0, -1, "end [%p..%p] %u edit requests", this->start, this->end, this->edit_count);
-
         rb_blob_destroy(this->blob);
         this->blob = nullptr;
         this->start = this->end = nullptr;
@@ -253,20 +237,6 @@ private:
         const char *p = (const char *)base;
         bool ok =
             !len || (this->start <= p && p <= this->end && (unsigned int)(this->end - p) >= len && this->max_ops-- > 0);
-
-        DEBUG_MSG_LEVEL(SANITIZE,
-                        p,
-                        this->debug_depth + 1,
-                        0,
-                        "check_range [%p..%p]"
-                        " (%d bytes) in [%p..%p] -> %s",
-                        p,
-                        p + len,
-                        len,
-                        this->start,
-                        this->end,
-                        ok ? "OK" : "OUT-OF-RANGE");
-
         return likely(ok);
     }
 
@@ -300,22 +270,7 @@ private:
         if (this->edit_count >= RB_SANITIZE_MAX_EDITS)
             return false;
 
-        const char *p = (const char *)base;
         this->edit_count++;
-
-        DEBUG_MSG_LEVEL(SANITIZE,
-                        p,
-                        this->debug_depth + 1,
-                        0,
-                        "may_edit(%u) [%p..%p] (%d bytes) in [%p..%p] -> %s",
-                        this->edit_count,
-                        p,
-                        p + len,
-                        len,
-                        this->start,
-                        this->end,
-                        this->writable ? "GRANTED" : "DENIED");
-
         return this->writable;
     }
 
@@ -334,8 +289,6 @@ private:
 
         init(blob);
 
-        DEBUG_MSG_FUNC(SANITIZE, start, "start");
-
         start_processing();
 
         if (unlikely(!start)) {
@@ -348,13 +301,10 @@ private:
         sane = t->sanitize(this);
         if (sane) {
             if (edit_count) {
-                DEBUG_MSG_FUNC(SANITIZE, start, "passed first round with %d edits; going for second round", edit_count);
-
                 /* sanitize again to ensure no toe-stepping */
                 edit_count = 0;
                 sane = t->sanitize(this);
                 if (edit_count) {
-                    DEBUG_MSG_FUNC(SANITIZE, start, "requested %d edits in second round; FAILLING", edit_count);
                     sane = false;
                 }
             }
@@ -362,7 +312,6 @@ private:
 
         end_processing();
 
-        DEBUG_MSG_FUNC(SANITIZE, start, sane ? "PASSED" : "FAILED");
         if (sane) {
             rb_blob_make_immutable(blob);
             return blob;

@@ -41,8 +41,7 @@ struct Anchor
 {
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 public:
@@ -70,9 +69,8 @@ struct ankr
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this) && version == 0 && c->check_range(this, anchorData) &&
-                            lookupTable.sanitize(c, this, &(this + anchorData))));
+        return likely(c->check_struct(this) && version == 0 && c->check_range(this, anchorData) &&
+                      lookupTable.sanitize(c, this, &(this + anchorData)));
     }
 
 protected:

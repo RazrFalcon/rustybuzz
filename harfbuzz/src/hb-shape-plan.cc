@@ -51,8 +51,6 @@ rb_shape_plan_t *rb_shape_plan_create(rb_face_t *face,
                                       const int *coords,
                                       unsigned int num_coords)
 {
-    DEBUG_MSG_FUNC(SHAPE_PLAN, nullptr, "face=%p num_features=%d num_coords=%d", face, num_user_features, num_coords);
-
     assert(props->direction != RB_DIRECTION_INVALID);
 
     rb_shape_plan_t *shape_plan;
@@ -149,8 +147,6 @@ rb_bool_t rb_shape_plan_execute(rb_shape_plan_t *shape_plan,
                                 const rb_feature_t *features,
                                 unsigned int num_features)
 {
-    DEBUG_MSG_FUNC(SHAPE_PLAN, shape_plan, "num_features=%d", num_features);
-
     if (unlikely(!rb_buffer_get_length(buffer)))
         return true;
 

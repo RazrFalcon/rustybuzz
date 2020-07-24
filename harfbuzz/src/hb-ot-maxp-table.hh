@@ -42,8 +42,7 @@ struct maxpV1Tail
 {
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
     HBUINT16 maxPoints;             /* Maximum points in a non-composite glyph. */
@@ -83,15 +82,14 @@ struct maxp
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!c->check_struct(this)))
-            return_trace(false);
+            return false;
 
         if (version.major == 1) {
             const maxpV1Tail &v1 = StructAfter<maxpV1Tail>(*this);
-            return_trace(v1.sanitize(c));
+            return v1.sanitize(c);
         }
-        return_trace(likely(version.major == 0 && version.minor == 0x5000u));
+        return likely(version.major == 0 && version.minor == 0x5000u);
     }
 
     static void drop_hint_fields(maxpV1Tail *dest_v1)

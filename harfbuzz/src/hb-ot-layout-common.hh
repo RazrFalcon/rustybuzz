@@ -126,9 +126,8 @@ template <typename Type> struct Record
 
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
         const Record_sanitize_closure_t closure = {tag, base};
-        return_trace(c->check_struct(this) && offset.sanitize(c, base, &closure));
+        return c->check_struct(this) && offset.sanitize(c, base, &closure);
     }
 
     Tag tag;               /* 4-byte Tag identifier */
@@ -176,8 +175,7 @@ template <typename Type> struct RecordListOf : RecordArrayOf<Type>
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(RecordArrayOf<Type>::sanitize(c, this));
+        return RecordArrayOf<Type>::sanitize(c, this);
     }
 };
 
@@ -196,8 +194,7 @@ struct RangeRecord
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
     bool intersects(const rb_set_t *glyphs) const
@@ -286,8 +283,7 @@ struct LangSys
 
     bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t * = nullptr) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && featureIndex.sanitize(c));
+        return c->check_struct(this) && featureIndex.sanitize(c);
     }
 
     Offset16 lookupOrderZ;    /* = Null (reserved for an offset to a
@@ -339,8 +335,7 @@ struct Script
 
     bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t * = nullptr) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(defaultLangSys.sanitize(c, this) && langSys.sanitize(c, this));
+        return defaultLangSys.sanitize(c, this) && langSys.sanitize(c, this);
     }
 
 protected:
@@ -359,9 +354,8 @@ struct FeatureParamsSize
 {
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!c->check_struct(this)))
-            return_trace(false);
+            return false;
 
         /* This subtable has some "history", if you will.  Some earlier versions of
          * Adobe tools calculated the offset of the FeatureParams sutable from the
@@ -413,13 +407,13 @@ struct FeatureParamsSize
          */
 
         if (!designSize)
-            return_trace(false);
+            return false;
         else if (subfamilyID == 0 && subfamilyNameID == 0 && rangeStart == 0 && rangeEnd == 0)
-            return_trace(true);
+            return true;
         else if (designSize < rangeStart || designSize > rangeEnd || subfamilyNameID < 256 || subfamilyNameID > 32767)
-            return_trace(false);
+            return false;
         else
-            return_trace(true);
+            return true;
     }
 
     HBUINT16 designSize;    /* Represents the design size in 720/inch
@@ -466,10 +460,9 @@ struct FeatureParamsStylisticSet
 {
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         /* Right now minorVersion is at zero.  Which means, any table supports
          * the uiNameID field. */
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
     HBUINT16 version; /* (set to 0): This corresponds to a “minor”
@@ -513,8 +506,7 @@ struct FeatureParamsCharacterVariants
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && characters.sanitize(c));
+        return c->check_struct(this) && characters.sanitize(c);
     }
 
     HBUINT16 format;                /* Format number is set to 0. */
@@ -555,14 +547,13 @@ struct FeatureParams
 #ifdef RB_NO_LAYOUT_FEATURE_PARAMS
         return true;
 #endif
-        TRACE_SANITIZE(this);
         if (tag == RB_TAG('s', 'i', 'z', 'e'))
-            return_trace(u.size.sanitize(c));
+            return u.size.sanitize(c);
         if ((tag & 0xFFFF0000u) == RB_TAG('s', 's', '\0', '\0')) /* ssXX */
-            return_trace(u.stylisticSet.sanitize(c));
+            return u.stylisticSet.sanitize(c);
         if ((tag & 0xFFFF0000u) == RB_TAG('c', 'v', '\0', '\0')) /* cvXX */
-            return_trace(u.characterVariants.sanitize(c));
-        return_trace(true);
+            return u.characterVariants.sanitize(c);
+        return true;
     }
 
 #ifndef RB_NO_LAYOUT_FEATURE_PARAMS
@@ -630,9 +621,8 @@ struct Feature
 
     bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t *closure = nullptr) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!(c->check_struct(this) && lookupIndex.sanitize(c))))
-            return_trace(false);
+            return false;
 
         /* Some earlier versions of Adobe tools calculated the offset of the
          * FeatureParams subtable from the beginning of the FeatureList table!
@@ -646,11 +636,11 @@ struct Feature
          */
 
         if (likely(featureParams.is_null()))
-            return_trace(true);
+            return true;
 
         unsigned int orig_offset = featureParams;
         if (unlikely(!featureParams.sanitize(c, this, closure ? closure->tag : RB_TAG_NONE)))
-            return_trace(false);
+            return false;
 
         if (featureParams == 0 && closure && closure->tag == RB_TAG('s', 'i', 'z', 'e') && closure->list_base &&
             closure->list_base < this) {
@@ -661,10 +651,10 @@ struct Feature
             new_offset = new_offset_int;
             if (new_offset == new_offset_int && c->try_set(&featureParams, new_offset_int) &&
                 !featureParams.sanitize(c, this, closure ? closure->tag : RB_TAG_NONE))
-                return_trace(false);
+                return false;
         }
 
-        return_trace(true);
+        return true;
     }
 
     OffsetTo<FeatureParams> featureParams; /* Offset to Feature Parameters table (if one
@@ -755,34 +745,32 @@ struct Lookup
     typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
         unsigned int lookup_type = get_type();
-        TRACE_DISPATCH(this, lookup_type);
         unsigned int count = get_subtable_count();
         for (unsigned int i = 0; i < count; i++) {
             typename context_t::return_t r = get_subtable<TSubTable>(i).dispatch(c, lookup_type, rb_forward<Ts>(ds)...);
             if (c->stop_sublookup_iteration(r))
-                return_trace(r);
+                return r;
         }
-        return_trace(c->default_return_value());
+        return c->default_return_value();
     }
 
     template <typename TSubTable> bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!(c->check_struct(this) && subTable.sanitize(c)))
-            return_trace(false);
+            return false;
 
         unsigned subtables = get_subtable_count();
         if (unlikely(!c->visit_subtables(subtables)))
-            return_trace(false);
+            return false;
 
         if (lookupFlag & LookupFlag::UseMarkFilteringSet) {
             const HBUINT16 &markFilteringSet = StructAfter<HBUINT16>(subTable);
             if (!markFilteringSet.sanitize(c))
-                return_trace(false);
+                return false;
         }
 
         if (unlikely(!get_subtables<TSubTable>().sanitize(c, this, get_type())))
-            return_trace(false);
+            return false;
 
         if (unlikely(get_type() == TSubTable::Extension && !c->get_edit_count())) {
             /* The spec says all subtables of an Extension lookup should
@@ -798,9 +786,9 @@ struct Lookup
             unsigned int type = get_subtable<TSubTable>(0).u.extension.get_type();
             for (unsigned int i = 1; i < subtables; i++)
                 if (get_subtable<TSubTable>(i).u.extension.get_type() != type)
-                    return_trace(false);
+                    return false;
         }
-        return_trace(true);
+        return true;
     }
 
 private:
@@ -820,8 +808,7 @@ template <typename TLookup> struct LookupOffsetList : OffsetListOf<TLookup>
 {
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(OffsetListOf<TLookup>::sanitize(c, this));
+        return OffsetListOf<TLookup>::sanitize(c, this);
     }
 };
 
@@ -843,8 +830,7 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(glyphArray.sanitize(c));
+        return glyphArray.sanitize(c);
     }
 
     bool intersects(const rb_set_t *glyphs) const
@@ -919,8 +905,7 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(rangeRecord.sanitize(c));
+        return rangeRecord.sanitize(c);
     }
 
     bool intersects(const rb_set_t *glyphs) const
@@ -1060,16 +1045,15 @@ struct Coverage
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
-            return_trace(false);
+            return false;
         switch (u.format) {
         case 1:
-            return_trace(u.format1.sanitize(c));
+            return u.format1.sanitize(c);
         case 2:
-            return_trace(u.format2.sanitize(c));
+            return u.format2.sanitize(c);
         default:
-            return_trace(true);
+            return true;
         }
     }
 
@@ -1222,8 +1206,7 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && classValue.sanitize(c));
+        return c->check_struct(this) && classValue.sanitize(c);
     }
 
     template <typename set_t> bool collect_coverage(set_t *glyphs) const
@@ -1307,8 +1290,7 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(rangeRecord.sanitize(c));
+        return rangeRecord.sanitize(c);
     }
 
     template <typename set_t> bool collect_coverage(set_t *glyphs) const
@@ -1409,16 +1391,15 @@ struct ClassDef
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
-            return_trace(false);
+            return false;
         switch (u.format) {
         case 1:
-            return_trace(u.format1.sanitize(c));
+            return u.format1.sanitize(c);
         case 2:
-            return_trace(u.format2.sanitize(c));
+            return u.format2.sanitize(c);
         default:
-            return_trace(true);
+            return true;
         }
     }
 
@@ -1515,8 +1496,7 @@ struct VarRegionAxis
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
         /* TODO Handle invalid start/peak/end configs, so we don't
          * have to do that at runtime. */
     }
@@ -1553,8 +1533,7 @@ struct VarRegionList
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && axesZ.sanitize(c, (unsigned int)axisCount * (unsigned int)regionCount));
+        return c->check_struct(this) && axesZ.sanitize(c, (unsigned int)axisCount * (unsigned int)regionCount);
     }
 
     unsigned int get_size() const
@@ -1635,9 +1614,8 @@ struct VarData
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && regionIndices.sanitize(c) && shortCount <= regionIndices.len &&
-                     c->check_range(get_delta_bytes(), itemCount, get_row_size()));
+        return c->check_struct(this) && regionIndices.sanitize(c) && shortCount <= regionIndices.len &&
+               c->check_range(get_delta_bytes(), itemCount, get_row_size());
     }
 
 protected:
@@ -1699,8 +1677,7 @@ struct VariationStore
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && format == 1 && regions.sanitize(c, this) && dataSets.sanitize(c, this));
+        return c->check_struct(this) && format == 1 && regions.sanitize(c, this) && dataSets.sanitize(c, this);
     }
 
     unsigned int get_region_index_count(unsigned int ivs) const
@@ -1748,8 +1725,7 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 protected:
@@ -1776,7 +1752,6 @@ struct Condition
 
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
-        TRACE_DISPATCH(this, u.format);
         if (unlikely(!c->may_dispatch(this, &u.format)))
             return_trace(c->no_dispatch_return_value());
         switch (u.format) {
@@ -1789,14 +1764,13 @@ struct Condition
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
-            return_trace(false);
+            return false;
         switch (u.format) {
         case 1:
-            return_trace(u.format1.sanitize(c));
+            return u.format1.sanitize(c);
         default:
-            return_trace(true);
+            return true;
         }
     }
 
@@ -1823,8 +1797,7 @@ struct ConditionSet
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(conditions.sanitize(c, this));
+        return conditions.sanitize(c, this);
     }
 
 protected:
@@ -1851,8 +1824,7 @@ struct FeatureTableSubstitutionRecord
 
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && feature.sanitize(c, base));
+        return c->check_struct(this) && feature.sanitize(c, base);
     }
 
 protected:
@@ -1892,8 +1864,7 @@ struct FeatureTableSubstitution
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(version.sanitize(c) && likely(version.major == 1) && substitutions.sanitize(c, this));
+        return version.sanitize(c) && likely(version.major == 1) && substitutions.sanitize(c, this);
     }
 
 protected:
@@ -1920,8 +1891,7 @@ struct FeatureVariationRecord
 
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(conditions.sanitize(c, base) && substitutions.sanitize(c, base));
+        return conditions.sanitize(c, base) && substitutions.sanitize(c, base);
     }
 
 protected:
@@ -1970,8 +1940,7 @@ struct FeatureVariations
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(version.sanitize(c) && likely(version.major == 1) && varRecords.sanitize(c, this));
+        return version.sanitize(c) && likely(version.major == 1) && varRecords.sanitize(c, this);
     }
 
 protected:
@@ -2012,8 +1981,7 @@ public:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && c->check_range(this, this->get_size()));
+        return c->check_struct(this) && c->check_range(this, this->get_size());
     }
 
 private:
@@ -2088,8 +2056,7 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 private:
@@ -2153,20 +2120,19 @@ struct Device
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!u.b.format.sanitize(c))
-            return_trace(false);
+            return false;
         switch (u.b.format) {
 #ifndef RB_NO_HINTING
         case 1:
         case 2:
         case 3:
-            return_trace(u.hinting.sanitize(c));
+            return u.hinting.sanitize(c);
 #endif
         case 0x8000:
-            return_trace(u.variation.sanitize(c));
+            return u.variation.sanitize(c);
         default:
-            return_trace(true);
+            return true;
         }
     }
 

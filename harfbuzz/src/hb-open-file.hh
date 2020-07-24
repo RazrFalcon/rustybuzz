@@ -64,8 +64,7 @@ typedef struct TableRecord
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
     Tag tag;           /* 4-byte identifier. */
@@ -115,8 +114,7 @@ typedef struct OffsetTable
 public:
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && tables.sanitize(c));
+        return c->check_struct(this) && tables.sanitize(c);
     }
 
 protected:
@@ -146,8 +144,7 @@ struct TTCHeaderVersion1
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(table.sanitize(c, this));
+        return table.sanitize(c, this);
     }
 
 protected:
@@ -188,15 +185,14 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!u.header.version.sanitize(c)))
-            return_trace(false);
+            return false;
         switch (u.header.version.major) {
         case 2: /* version 2 is compatible with version 1 */
         case 1:
-            return_trace(u.version1.sanitize(c));
+            return u.version1.sanitize(c);
         default:
-            return_trace(true);
+            return true;
         }
     }
 
@@ -227,8 +223,7 @@ struct ResourceRecord
 
     bool sanitize(rb_sanitize_context_t *c, const void *data_base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && offset.sanitize(c, data_base) && get_face(data_base).sanitize(c));
+        return c->check_struct(this) && offset.sanitize(c, data_base) && get_face(data_base).sanitize(c);
     }
 
 protected:
@@ -264,8 +259,7 @@ struct ResourceTypeRecord
 
     bool sanitize(rb_sanitize_context_t *c, const void *type_base, const void *data_base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && resourcesZ.sanitize(c, type_base, get_resource_count(), data_base));
+        return c->check_struct(this) && resourcesZ.sanitize(c, type_base, get_resource_count(), data_base);
     }
 
 protected:
@@ -305,8 +299,7 @@ struct ResourceMap
 
     bool sanitize(rb_sanitize_context_t *c, const void *data_base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && typeList.sanitize(c, this, &(this + typeList), data_base));
+        return c->check_struct(this) && typeList.sanitize(c, this, &(this + typeList), data_base);
     }
 
 private:
@@ -350,8 +343,7 @@ struct ResourceForkHeader
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && data.sanitize(c, this, dataLen) && map.sanitize(c, this, &(this + data)));
+        return c->check_struct(this) && data.sanitize(c, this, dataLen) && map.sanitize(c, this, &(this + data));
     }
 
 protected:
@@ -425,21 +417,20 @@ struct OpenTypeFontFile
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!u.tag.sanitize(c)))
-            return_trace(false);
+            return false;
         switch (u.tag) {
         case CFFTag: /* All the non-collection tags */
         case TrueTag:
         case Typ1Tag:
         case TrueTypeTag:
-            return_trace(u.fontFace.sanitize(c));
+            return u.fontFace.sanitize(c);
         case TTCTag:
-            return_trace(u.ttcHeader.sanitize(c));
+            return u.ttcHeader.sanitize(c);
         case DFontTag:
-            return_trace(u.rfHeader.sanitize(c));
+            return u.rfHeader.sanitize(c);
         default:
-            return_trace(true);
+            return true;
         }
     }
 

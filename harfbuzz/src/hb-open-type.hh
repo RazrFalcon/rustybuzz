@@ -126,8 +126,7 @@ template <typename Type, unsigned int Size> struct IntType
     }
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this)));
+        return likely(c->check_struct(this));
     }
 
 protected:
@@ -206,8 +205,7 @@ struct LONGDATETIME
 {
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this)));
+        return likely(c->check_struct(this));
     }
 
 protected:
@@ -332,8 +330,7 @@ template <typename FixedType = HBUINT16> struct FixedVersion
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
     FixedType major;
@@ -419,22 +416,19 @@ struct OffsetTo : Offset<OffsetType, has_null>
 
     bool sanitize_shallow(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!c->check_struct(this)))
-            return_trace(false);
+            return false;
         if (unlikely(this->is_null()))
-            return_trace(true);
+            return true;
         if (unlikely(!c->check_range(base, *this)))
-            return_trace(false);
-        return_trace(true);
+            return false;
+        return true;
     }
 
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, const void *base, Ts &&... ds) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(
-            sanitize_shallow(c, base) &&
-            (this->is_null() || c->dispatch(StructAtOffset<Type>(base, *this), rb_forward<Ts>(ds)...) || neuter(c)));
+        return sanitize_shallow(c, base) &&
+               (this->is_null() || c->dispatch(StructAtOffset<Type>(base, *this), rb_forward<Ts>(ds)...) || neuter(c));
     }
 
     /* Set the offset to Null */
@@ -525,21 +519,19 @@ template <typename Type> struct UnsizedArrayOf
 
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, unsigned int count, Ts &&... ds) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c, count)))
-            return_trace(false);
+            return false;
         if (!sizeof...(Ts) && rb_is_trivially_copyable(Type))
-            return_trace(true);
+            return true;
         for (unsigned int i = 0; i < count; i++)
             if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
-                return_trace(false);
-        return_trace(true);
+                return false;
+        return true;
     }
 
     bool sanitize_shallow(rb_sanitize_context_t *c, unsigned int count) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_array(arrayZ, count));
+        return c->check_array(arrayZ, count);
     }
 
 public:
@@ -576,9 +568,7 @@ struct UnsizedOffsetListOf : UnsizedOffsetArrayOf<Type, OffsetType, has_null>
 
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, unsigned int count, Ts &&... ds) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(
-            (UnsizedOffsetArrayOf<Type, OffsetType, has_null>::sanitize(c, count, this, rb_forward<Ts>(ds)...)));
+        return (UnsizedOffsetArrayOf<Type, OffsetType, has_null>::sanitize(c, count, this, rb_forward<Ts>(ds)...));
     }
 };
 
@@ -707,16 +697,15 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOf
 
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c)))
-            return_trace(false);
+            return false;
         if (!sizeof...(Ts) && rb_is_trivially_copyable(Type))
-            return_trace(true);
+            return true;
         unsigned int count = len;
         for (unsigned int i = 0; i < count; i++)
             if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
-                return_trace(false);
-        return_trace(true);
+                return false;
+        return true;
     }
 
     template <typename T> Type &lsearch(const T &x, Type &not_found = Crap(Type))
@@ -735,8 +724,7 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOf
 
     bool sanitize_shallow(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(len.sanitize(c) && c->check_array(arrayZ, len));
+        return len.sanitize(c) && c->check_array(arrayZ, len);
     }
 
 public:
@@ -774,8 +762,7 @@ template <typename Type> struct OffsetListOf : OffsetArrayOf<Type>
 
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(OffsetArrayOf<Type>::sanitize(c, this, rb_forward<Ts>(ds)...));
+        return OffsetArrayOf<Type>::sanitize(c, this, rb_forward<Ts>(ds)...);
     }
 };
 
@@ -841,23 +828,21 @@ template <typename Type, typename LenType = HBUINT16> struct HeadlessArrayOf
 
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c)))
-            return_trace(false);
+            return false;
         if (!sizeof...(Ts) && rb_is_trivially_copyable(Type))
-            return_trace(true);
+            return true;
         unsigned int count = get_length();
         for (unsigned int i = 0; i < count; i++)
             if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
-                return_trace(false);
-        return_trace(true);
+                return false;
+        return true;
     }
 
 private:
     bool sanitize_shallow(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(lenP1.sanitize(c) && (!lenP1 || c->check_array(arrayZ, lenP1 - 1)));
+        return lenP1.sanitize(c) && (!lenP1 || c->check_array(arrayZ, lenP1 - 1));
     }
 
 public:
@@ -894,21 +879,19 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOfM1
 
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c)))
-            return_trace(false);
+            return false;
         unsigned int count = lenM1 + 1;
         for (unsigned int i = 0; i < count; i++)
             if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
-                return_trace(false);
-        return_trace(true);
+                return false;
+        return true;
     }
 
 private:
     bool sanitize_shallow(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(lenM1.sanitize(c) && (c->check_array(arrayZ, lenM1 + 1)));
+        return lenM1.sanitize(c) && (c->check_array(arrayZ, lenM1 + 1));
     }
 
 public:
@@ -999,8 +982,7 @@ template <typename LenType = HBUINT16> struct BinSearchHeader
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
     BinSearchHeader &operator=(unsigned int v)
@@ -1031,8 +1013,7 @@ struct VarSizedBinSearchHeader
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
     HBUINT16 unitSize;      /* Size of a lookup unit for this search in bytes. */
@@ -1096,16 +1077,15 @@ template <typename Type> struct VarSizedBinSearchArrayOf
 
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!sanitize_shallow(c)))
-            return_trace(false);
+            return false;
         if (!sizeof...(Ts) && rb_is_trivially_copyable(Type))
-            return_trace(true);
+            return true;
         unsigned int count = get_length();
         for (unsigned int i = 0; i < count; i++)
             if (unlikely(!(*this)[i].sanitize(c, rb_forward<Ts>(ds)...)))
-                return_trace(false);
-        return_trace(true);
+                return false;
+        return true;
     }
 
     template <typename T> const Type *bsearch(const T &key) const
@@ -1119,9 +1099,8 @@ template <typename Type> struct VarSizedBinSearchArrayOf
 private:
     bool sanitize_shallow(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(header.sanitize(c) && Type::static_size <= header.unitSize &&
-                     c->check_range(bytesZ.arrayZ, header.nUnits, header.unitSize));
+        return header.sanitize(c) && Type::static_size <= header.unitSize &&
+               c->check_range(bytesZ.arrayZ, header.nUnits, header.unitSize);
     }
 
 protected:

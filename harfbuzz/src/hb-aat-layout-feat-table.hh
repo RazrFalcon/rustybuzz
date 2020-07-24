@@ -61,8 +61,7 @@ struct SettingName
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this)));
+        return likely(c->check_struct(this));
     }
 
 protected:
@@ -146,8 +145,7 @@ struct FeatureName
 
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this) && (base + settingTableZ).sanitize(c, nSettings)));
+        return likely(c->check_struct(this) && (base + settingTableZ).sanitize(c, nSettings));
     }
 
 protected:
@@ -211,8 +209,7 @@ struct feat
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this) && version.major == 1 && namesZ.sanitize(c, featureNameCount, this)));
+        return likely(c->check_struct(this) && version.major == 1 && namesZ.sanitize(c, featureNameCount, this));
     }
 
 protected:

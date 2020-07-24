@@ -35,7 +35,7 @@
  * Dispatch
  */
 
-template <typename Context, typename Return = rb_empty_t, unsigned int MaxDebugDepth = 0> struct rb_dispatch_context_t
+template <typename Context, typename Return = rb_empty_t> struct rb_dispatch_context_t
 {
     rb_dispatch_context_t()
         : debug_depth(0)
@@ -54,11 +54,7 @@ private:
     }
 
 public:
-    const char *get_name()
-    {
-        return "UNKNOWN";
-    }
-    static constexpr unsigned max_debug_depth = MaxDebugDepth;
+    static constexpr unsigned max_debug_depth = 0;
     typedef Return return_t;
     template <typename T, typename F> bool may_dispatch(const T *obj RB_UNUSED, const F *format RB_UNUSED)
     {

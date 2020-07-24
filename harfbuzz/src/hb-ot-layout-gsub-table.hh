@@ -71,25 +71,22 @@ struct SingleSubstFormat1
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         rb_codepoint_t glyph_id = rb_buffer_get_cur(c->buffer, 0)->codepoint;
         unsigned int index = (this + coverage).get_coverage(glyph_id);
         if (likely(index == NOT_COVERED))
-            return_trace(false);
+            return false;
 
         /* According to the Adobe Annotated OpenType Suite, result is always
          * limited to 16bit. */
         glyph_id = (glyph_id + deltaGlyphID) & 0xFFFFu;
         c->replace_glyph(glyph_id);
 
-        return_trace(true);
+        return true;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(coverage.sanitize(c, this) && deltaGlyphID.sanitize(c));
+        return coverage.sanitize(c, this) && deltaGlyphID.sanitize(c);
     }
 
 protected:
@@ -135,23 +132,21 @@ struct SingleSubstFormat2
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
         unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
-            return_trace(false);
+            return false;
 
         if (unlikely(index >= substitute.len))
-            return_trace(false);
+            return false;
 
         c->replace_glyph(substitute[index]);
 
-        return_trace(true);
+        return true;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(coverage.sanitize(c, this) && substitute.sanitize(c));
+        return coverage.sanitize(c, this) && substitute.sanitize(c);
     }
 
 protected:
@@ -168,16 +163,15 @@ struct SingleSubst
 {
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
-        TRACE_DISPATCH(this, u.format);
         if (unlikely(!c->may_dispatch(this, &u.format)))
-            return_trace(c->no_dispatch_return_value());
+            return c->no_dispatch_return_value();
         switch (u.format) {
         case 1:
-            return_trace(c->dispatch(u.format1, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
         case 2:
-            return_trace(c->dispatch(u.format2, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format2, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
@@ -208,20 +202,19 @@ struct Sequence
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
         unsigned int count = substitute.len;
 
         /* Special-case to make it in-place and not consider this
          * as a "multiplied" substitution. */
         if (unlikely(count == 1)) {
             c->replace_glyph(substitute.arrayZ[0]);
-            return_trace(true);
+            return true;
         }
         /* Spec disallows this, but Uniscribe allows it.
          * https://github.com/harfbuzz/harfbuzz/issues/253 */
         else if (unlikely(count == 0)) {
             rb_buffer_delete_glyph(c->buffer);
-            return_trace(true);
+            return true;
         }
 
         unsigned int klass =
@@ -233,13 +226,12 @@ struct Sequence
         }
         rb_buffer_skip_glyph(c->buffer);
 
-        return_trace(true);
+        return true;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(substitute.sanitize(c));
+        return substitute.sanitize(c);
     }
 
 protected:
@@ -283,19 +275,16 @@ struct MultipleSubstFormat1
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
-            return_trace(false);
+            return false;
 
-        return_trace((this + sequence[index]).apply(c));
+        return (this + sequence[index]).apply(c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(coverage.sanitize(c, this) && sequence.sanitize(c, this));
+        return coverage.sanitize(c, this) && sequence.sanitize(c, this);
     }
 
 protected:
@@ -312,14 +301,13 @@ struct MultipleSubst
 {
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
-        TRACE_DISPATCH(this, u.format);
         if (unlikely(!c->may_dispatch(this, &u.format)))
-            return_trace(c->no_dispatch_return_value());
+            return c->no_dispatch_return_value();
         switch (u.format) {
         case 1:
-            return_trace(c->dispatch(u.format1, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
@@ -349,11 +337,10 @@ struct AlternateSet
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
         unsigned int count = alternates.len;
 
         if (unlikely(!count))
-            return_trace(false);
+            return false;
 
         rb_mask_t glyph_mask = rb_buffer_get_cur(c->buffer, 0)->mask;
         rb_mask_t lookup_mask = c->lookup_mask;
@@ -367,11 +354,11 @@ struct AlternateSet
             alt_index = c->random_number() % count + 1;
 
         if (unlikely(alt_index > count || alt_index == 0))
-            return_trace(false);
+            return false;
 
         c->replace_glyph(alternates[alt_index - 1]);
 
-        return_trace(true);
+        return true;
     }
 
     unsigned get_alternates(unsigned start_offset,
@@ -387,8 +374,7 @@ struct AlternateSet
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(alternates.sanitize(c));
+        return alternates.sanitize(c);
     }
 
 protected:
@@ -442,19 +428,16 @@ struct AlternateSubstFormat1
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
-            return_trace(false);
+            return false;
 
-        return_trace((this + alternateSet[index]).apply(c));
+        return (this + alternateSet[index]).apply(c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(coverage.sanitize(c, this) && alternateSet.sanitize(c, this));
+        return coverage.sanitize(c, this) && alternateSet.sanitize(c, this);
     }
 
 protected:
@@ -471,14 +454,13 @@ struct AlternateSubst
 {
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
-        TRACE_DISPATCH(this, u.format);
         if (unlikely(!c->may_dispatch(this, &u.format)))
-            return_trace(c->no_dispatch_return_value());
+            return c->no_dispatch_return_value();
         switch (u.format) {
         case 1:
-            return_trace(c->dispatch(u.format1, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
@@ -523,17 +505,16 @@ struct Ligature
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
         unsigned int count = component.lenP1;
 
         if (unlikely(!count))
-            return_trace(false);
+            return false;
 
         /* Special-case to make it in-place and not consider this
          * as a "ligated" substitution. */
         if (unlikely(count == 1)) {
             c->replace_glyph(ligGlyph);
-            return_trace(true);
+            return true;
         }
 
         unsigned int total_component_count = 0;
@@ -543,18 +524,17 @@ struct Ligature
 
         if (likely(!match_input(
                 c, count, &component[1], match_glyph, nullptr, &match_length, match_positions, &total_component_count)))
-            return_trace(false);
+            return false;
 
         ligate_input(c, count, match_positions, match_length, ligGlyph, total_component_count);
 
-        return_trace(true);
+        return true;
     }
 
 public:
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(ligGlyph.sanitize(c) && component.sanitize(c));
+        return ligGlyph.sanitize(c) && component.sanitize(c);
     }
 
 protected:
@@ -592,21 +572,19 @@ struct LigatureSet
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
         unsigned int num_ligs = ligature.len;
         for (unsigned int i = 0; i < num_ligs; i++) {
             const Ligature &lig = this + ligature[i];
             if (lig.apply(c))
-                return_trace(true);
+                return true;
         }
 
-        return_trace(false);
+        return false;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(ligature.sanitize(c, this));
+        return ligature.sanitize(c, this);
     }
 
 protected:
@@ -659,20 +637,17 @@ struct LigatureSubstFormat1
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
-            return_trace(false);
+            return false;
 
         const LigatureSet &lig_set = this + ligatureSet[index];
-        return_trace(lig_set.apply(c));
+        return lig_set.apply(c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(coverage.sanitize(c, this) && ligatureSet.sanitize(c, this));
+        return coverage.sanitize(c, this) && ligatureSet.sanitize(c, this);
     }
 
 protected:
@@ -689,14 +664,13 @@ struct LigatureSubst
 {
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
-        TRACE_DISPATCH(this, u.format);
         if (unlikely(!c->may_dispatch(this, &u.format)))
-            return_trace(c->no_dispatch_return_value());
+            return c->no_dispatch_return_value();
         switch (u.format) {
         case 1:
-            return_trace(c->dispatch(u.format1, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
@@ -793,19 +767,18 @@ struct ReverseChainSingleSubstFormat1
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
         if (unlikely(c->nesting_level_left != RB_MAX_NESTING_LEVEL))
-            return_trace(false); /* No chaining to this type */
+            return false; /* No chaining to this type */
 
         unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
         if (likely(index == NOT_COVERED))
-            return_trace(false);
+            return false;
 
         const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
         const ArrayOf<HBGlyphID> &substitute = StructAfter<ArrayOf<HBGlyphID>>(lookahead);
 
         if (unlikely(index >= substitute.len))
-            return_trace(false);
+            return false;
 
         unsigned int start_index = 0, end_index = 0;
         if (match_backtrack(c, backtrack.len, (HBUINT16 *)backtrack.arrayZ, match_coverage, this, &start_index) &&
@@ -815,22 +788,21 @@ struct ReverseChainSingleSubstFormat1
             /* Note: We DON'T decrease buffer->idx.  The main loop does it
              * for us.  This is useful for preventing surprises if someone
              * calls us through a Context lookup. */
-            return_trace(true);
+            return true;
         }
 
-        return_trace(false);
+        return false;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!(coverage.sanitize(c, this) && backtrack.sanitize(c, this)))
-            return_trace(false);
+            return false;
         const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
         if (!lookahead.sanitize(c, this))
-            return_trace(false);
+            return false;
         const ArrayOf<HBGlyphID> &substitute = StructAfter<ArrayOf<HBGlyphID>>(lookahead);
-        return_trace(substitute.sanitize(c));
+        return substitute.sanitize(c);
     }
 
 protected:
@@ -853,14 +825,13 @@ struct ReverseChainSingleSubst
 {
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
-        TRACE_DISPATCH(this, u.format);
         if (unlikely(!c->may_dispatch(this, &u.format)))
-            return_trace(c->no_dispatch_return_value());
+            return c->no_dispatch_return_value();
         switch (u.format) {
         case 1:
-            return_trace(c->dispatch(u.format1, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
@@ -894,26 +865,25 @@ struct SubstLookupSubTable
     template <typename context_t, typename... Ts>
     typename context_t::return_t dispatch(context_t *c, unsigned int lookup_type, Ts &&... ds) const
     {
-        TRACE_DISPATCH(this, lookup_type);
         switch (lookup_type) {
         case Single:
-            return_trace(u.single.dispatch(c, rb_forward<Ts>(ds)...));
+            return u.single.dispatch(c, rb_forward<Ts>(ds)...);
         case Multiple:
-            return_trace(u.multiple.dispatch(c, rb_forward<Ts>(ds)...));
+            return u.multiple.dispatch(c, rb_forward<Ts>(ds)...);
         case Alternate:
-            return_trace(u.alternate.dispatch(c, rb_forward<Ts>(ds)...));
+            return u.alternate.dispatch(c, rb_forward<Ts>(ds)...);
         case Ligature:
-            return_trace(u.ligature.dispatch(c, rb_forward<Ts>(ds)...));
+            return u.ligature.dispatch(c, rb_forward<Ts>(ds)...);
         case Context:
-            return_trace(u.context.dispatch(c, rb_forward<Ts>(ds)...));
+            return u.context.dispatch(c, rb_forward<Ts>(ds)...);
         case ChainContext:
-            return_trace(u.chainContext.dispatch(c, rb_forward<Ts>(ds)...));
+            return u.chainContext.dispatch(c, rb_forward<Ts>(ds)...);
         case Extension:
-            return_trace(u.extension.dispatch(c, rb_forward<Ts>(ds)...));
+            return u.extension.dispatch(c, rb_forward<Ts>(ds)...);
         case ReverseChainSingle:
-            return_trace(u.reverseChainContextSingle.dispatch(c, rb_forward<Ts>(ds)...));
+            return u.reverseChainContextSingle.dispatch(c, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
@@ -963,8 +933,7 @@ struct SubstLookup : Lookup
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-        return_trace(dispatch(c));
+        return dispatch(c);
     }
 
     bool intersects(const rb_set_t *glyphs) const

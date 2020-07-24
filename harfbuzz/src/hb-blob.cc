@@ -59,8 +59,7 @@
  *
  * Since: 0.9.2
  **/
-rb_blob_t *
-rb_blob_create(const char *data, unsigned int length, void *user_data, rb_destroy_func_t destroy)
+rb_blob_t *rb_blob_create(const char *data, unsigned int length, void *user_data, rb_destroy_func_t destroy)
 {
     rb_blob_t *blob;
 
@@ -113,10 +112,8 @@ rb_blob_t *rb_blob_create_sub_blob(rb_blob_t *parent, unsigned int offset, unsig
 
     rb_blob_make_immutable(parent);
 
-    blob = rb_blob_create(parent->data + offset,
-                          rb_min(length, parent->length - offset),
-                          rb_blob_reference(parent),
-                          _rb_blob_destroy);
+    blob = rb_blob_create(
+        parent->data + offset, rb_min(length, parent->length - offset), rb_blob_reference(parent), _rb_blob_destroy);
 
     return blob;
 }

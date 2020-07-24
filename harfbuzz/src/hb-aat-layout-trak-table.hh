@@ -57,8 +57,7 @@ struct TrackTableEntry
 public:
     bool sanitize(rb_sanitize_context_t *c, const void *base, unsigned int table_size) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this) && (valuesZ.sanitize(c, base, table_size))));
+        return likely(c->check_struct(this) && (valuesZ.sanitize(c, base, table_size)));
     }
 
 protected:
@@ -129,9 +128,8 @@ struct TrackData
 
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this) && sizeTable.sanitize(c, base, nSizes) &&
-                            trackTable.sanitize(c, nTracks, base, nSizes)));
+        return likely(c->check_struct(this) && sizeTable.sanitize(c, base, nSizes) &&
+                      trackTable.sanitize(c, nTracks, base, nSizes));
     }
 
 protected:
@@ -156,13 +154,11 @@ struct trak
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         rb_mask_t trak_mask = c->plan->trak_mask;
 
         const float ptem = rb_font_get_ptem(c->font);
         if (unlikely(ptem <= 0.f))
-            return_trace(false);
+            return false;
 
         rb_buffer_t *buffer = c->buffer;
         if (RB_DIRECTION_IS_HORIZONTAL(rb_buffer_get_direction(buffer))) {
@@ -191,15 +187,13 @@ struct trak
             }
         }
 
-        return_trace(true);
+        return true;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-
-        return_trace(likely(c->check_struct(this) && version.major == 1 && horizData.sanitize(c, this, this) &&
-                            vertData.sanitize(c, this, this)));
+        return likely(c->check_struct(this) && version.major == 1 && horizData.sanitize(c, this, this) &&
+                      vertData.sanitize(c, this, this));
     }
 
 protected:

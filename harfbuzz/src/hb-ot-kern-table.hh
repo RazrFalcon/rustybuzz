@@ -60,8 +60,6 @@ template <typename KernSubTableHeader> struct KernSubTableFormat3
 
     bool apply(AAT::rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         if (!c->plan->requested_kerning)
             return false;
 
@@ -71,15 +69,14 @@ template <typename KernSubTableHeader> struct KernSubTableFormat3
         rb_kern_machine_t<KernSubTableFormat3> machine(*this, header.coverage & header.CrossStream);
         machine.kern(c->font, c->buffer, c->plan->kern_mask);
 
-        return_trace(true);
+        return true;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && c->check_range(kernValueZ,
-                                                             kernValueCount * sizeof(FWORD) + glyphCount * 2 +
-                                                                 leftClassCount * rightClassCount));
+        return c->check_struct(this) &&
+               c->check_range(kernValueZ,
+                              kernValueCount * sizeof(FWORD) + glyphCount * 2 + leftClassCount * rightClassCount);
     }
 
 protected:
@@ -131,29 +128,27 @@ template <typename KernSubTableHeader> struct KernSubTable
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
         unsigned int subtable_type = get_type();
-        TRACE_DISPATCH(this, subtable_type);
         switch (subtable_type) {
         case 0:
-            return_trace(c->dispatch(u.format0));
+            return c->dispatch(u.format0);
         case 1:
-            return_trace(u.header.apple ? c->dispatch(u.format1, rb_forward<Ts>(ds)...) : c->default_return_value());
+            return u.header.apple ? c->dispatch(u.format1, rb_forward<Ts>(ds)...) : c->default_return_value();
         case 2:
-            return_trace(c->dispatch(u.format2));
+            return c->dispatch(u.format2);
         case 3:
-            return_trace(u.header.apple ? c->dispatch(u.format3, rb_forward<Ts>(ds)...) : c->default_return_value());
+            return u.header.apple ? c->dispatch(u.format3, rb_forward<Ts>(ds)...) : c->default_return_value();
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!u.header.sanitize(c) || u.header.length < u.header.min_size ||
                      !c->check_range(this, u.header.length)))
-            return_trace(false);
+            return false;
 
-        return_trace(dispatch(c));
+        return dispatch(c);
     }
 
 public:
@@ -196,8 +191,7 @@ struct KernOTSubTableHeader
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 public:
@@ -253,8 +247,7 @@ struct KernAATSubTableHeader
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 public:
@@ -344,23 +337,21 @@ struct kern
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
         unsigned int subtable_type = get_type();
-        TRACE_DISPATCH(this, subtable_type);
         switch (subtable_type) {
         case 0:
-            return_trace(c->dispatch(u.ot, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.ot, rb_forward<Ts>(ds)...);
         case 1:
-            return_trace(c->dispatch(u.aat, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.aat, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!u.version32.sanitize(c))
-            return_trace(false);
-        return_trace(dispatch(c));
+            return false;
+        return dispatch(c);
     }
 
 protected:

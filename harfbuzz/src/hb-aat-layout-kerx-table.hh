@@ -76,8 +76,7 @@ struct KernPair
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 protected:
@@ -100,8 +99,6 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat0
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         if (!c->plan->requested_kerning)
             return false;
 
@@ -112,7 +109,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat0
         rb_kern_machine_t<accelerator_t> machine(accel, header.coverage & header.CrossStream);
         machine.kern(c->font, c->buffer, c->plan->kern_mask);
 
-        return_trace(true);
+        return true;
     }
 
     struct accelerator_t
@@ -134,8 +131,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat0
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(pairs.sanitize(c)));
+        return likely(pairs.sanitize(c));
     }
 
 protected:
@@ -329,8 +325,6 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat1
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         if (!c->plan->requested_kerning && !(header.coverage & header.CrossStream))
             return false;
 
@@ -339,14 +333,13 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat1
         StateTableDriver<Types, EntryData> driver(machine, c->buffer, rb_font_get_face(c->font));
         driver.drive(&dc);
 
-        return_trace(true);
+        return true;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         /* The rest of array sanitizations are done at run-time. */
-        return_trace(likely(c->check_struct(this) && machine.sanitize(c)));
+        return likely(c->check_struct(this) && machine.sanitize(c));
     }
 
 protected:
@@ -381,8 +374,6 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat2
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         if (!c->plan->requested_kerning)
             return false;
 
@@ -393,7 +384,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat2
         rb_kern_machine_t<accelerator_t> machine(accel, header.coverage & header.CrossStream);
         machine.kern(c->font, c->buffer, c->plan->kern_mask);
 
-        return_trace(true);
+        return true;
     }
 
     struct accelerator_t
@@ -415,9 +406,8 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat2
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this) && leftClassTable.sanitize(c, this) &&
-                            rightClassTable.sanitize(c, this) && c->check_range(this, array)));
+        return likely(c->check_struct(this) && leftClassTable.sanitize(c, this) && rightClassTable.sanitize(c, this) &&
+                      c->check_range(this, array));
     }
 
 protected:
@@ -570,21 +560,18 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         driver_context_t dc(this, c);
 
         StateTableDriver<Types, EntryData> driver(machine, c->buffer, rb_font_get_face(c->font));
         driver.drive(&dc);
 
-        return_trace(true);
+        return true;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         /* The rest of array sanitizations are done at run-time. */
-        return_trace(likely(c->check_struct(this) && machine.sanitize(c)));
+        return likely(c->check_struct(this) && machine.sanitize(c));
     }
 
 protected:
@@ -637,8 +624,6 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat6
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        TRACE_APPLY(this);
-
         if (!c->plan->requested_kerning)
             return false;
 
@@ -649,18 +634,17 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat6
         rb_kern_machine_t<accelerator_t> machine(accel, header.coverage & header.CrossStream);
         machine.kern(c->font, c->buffer, c->plan->kern_mask);
 
-        return_trace(true);
+        return true;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this) &&
-                            (is_long() ? (u.l.rowIndexTable.sanitize(c, this) &&
-                                          u.l.columnIndexTable.sanitize(c, this) && c->check_range(this, u.l.array))
-                                       : (u.s.rowIndexTable.sanitize(c, this) &&
-                                          u.s.columnIndexTable.sanitize(c, this) && c->check_range(this, u.s.array))) &&
-                            (header.tuple_count() == 0 || c->check_range(this, vector))));
+        return likely(c->check_struct(this) &&
+                      (is_long() ? (u.l.rowIndexTable.sanitize(c, this) && u.l.columnIndexTable.sanitize(c, this) &&
+                                    c->check_range(this, u.l.array))
+                                 : (u.s.rowIndexTable.sanitize(c, this) && u.s.columnIndexTable.sanitize(c, this) &&
+                                    c->check_range(this, u.s.array))) &&
+                      (header.tuple_count() == 0 || c->check_range(this, vector)));
     }
 
     struct accelerator_t
@@ -733,8 +717,7 @@ struct KerxSubTableHeader
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(likely(c->check_struct(this)));
+        return likely(c->check_struct(this));
     }
 
 public:
@@ -762,30 +745,28 @@ struct KerxSubTable
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
         unsigned int subtable_type = get_type();
-        TRACE_DISPATCH(this, subtable_type);
         switch (subtable_type) {
         case 0:
-            return_trace(c->dispatch(u.format0, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format0, rb_forward<Ts>(ds)...);
         case 1:
-            return_trace(c->dispatch(u.format1, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
         case 2:
-            return_trace(c->dispatch(u.format2, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format2, rb_forward<Ts>(ds)...);
         case 4:
-            return_trace(c->dispatch(u.format4, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format4, rb_forward<Ts>(ds)...);
         case 6:
-            return_trace(c->dispatch(u.format6, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format6, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!u.header.sanitize(c) || u.header.length <= u.header.static_size || !c->check_range(this, u.header.length))
-            return_trace(false);
+            return false;
 
-        return_trace(dispatch(c));
+        return dispatch(c);
     }
 
 public:
@@ -916,10 +897,9 @@ template <typename T> struct KerxTable
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!thiz()->version.sanitize(c) || (unsigned)thiz()->version < (unsigned)T::minVersion ||
                      !thiz()->tableCount.sanitize(c)))
-            return_trace(false);
+            return false;
 
         typedef typename T::SubTable SubTable;
 
@@ -927,7 +907,7 @@ template <typename T> struct KerxTable
         unsigned int count = thiz()->tableCount;
         for (unsigned int i = 0; i < count; i++) {
             if (unlikely(!st->u.header.sanitize(c)))
-                return_trace(false);
+                return false;
             /* OpenType kern table has 2-byte subtable lengths.  That's limiting.
              * MS implementation also only supports one subtable, of format 0,
              * anyway.  Certain versions of some fonts, like Calibry, contain
@@ -938,12 +918,12 @@ template <typename T> struct KerxTable
             rb_sanitize_with_object_t with(c, i < count - 1 ? st : (const SubTable *)nullptr);
 
             if (unlikely(!st->sanitize(c)))
-                return_trace(false);
+                return false;
 
             st = &StructAfter<SubTable>(*st);
         }
 
-        return_trace(true);
+        return true;
     }
 };
 

@@ -54,13 +54,11 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(arrayZ.sanitize(c, c->get_num_glyphs()));
+        return arrayZ.sanitize(c, c->get_num_glyphs());
     }
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(arrayZ.sanitize(c, c->get_num_glyphs(), base));
+        return arrayZ.sanitize(c, c->get_num_glyphs(), base);
     }
 
 protected:
@@ -81,13 +79,11 @@ template <typename T> struct LookupSegmentSingle
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && value.sanitize(c));
+        return c->check_struct(this) && value.sanitize(c);
     }
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && value.sanitize(c, base));
+        return c->check_struct(this) && value.sanitize(c, base);
     }
 
     HBGlyphID last;  /* Last GlyphID in this segment */
@@ -110,13 +106,11 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(segments.sanitize(c));
+        return segments.sanitize(c);
     }
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(segments.sanitize(c, base));
+        return segments.sanitize(c, base);
     }
 
 protected:
@@ -144,14 +138,12 @@ template <typename T> struct LookupSegmentArray
 
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && first <= last && valuesZ.sanitize(c, base, last - first + 1));
+        return c->check_struct(this) && first <= last && valuesZ.sanitize(c, base, last - first + 1);
     }
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, const void *base, Ts &&... ds) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && first <= last &&
-                     valuesZ.sanitize(c, base, last - first + 1, rb_forward<Ts>(ds)...));
+        return c->check_struct(this) && first <= last &&
+               valuesZ.sanitize(c, base, last - first + 1, rb_forward<Ts>(ds)...);
     }
 
     HBGlyphID last;                        /* Last GlyphID in this segment */
@@ -175,13 +167,11 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(segments.sanitize(c, this));
+        return segments.sanitize(c, this);
     }
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(segments.sanitize(c, this, base));
+        return segments.sanitize(c, this, base);
     }
 
 protected:
@@ -204,13 +194,11 @@ template <typename T> struct LookupSingle
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && value.sanitize(c));
+        return c->check_struct(this) && value.sanitize(c);
     }
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && value.sanitize(c, base));
+        return c->check_struct(this) && value.sanitize(c, base);
     }
 
     HBGlyphID glyph; /* Last GlyphID */
@@ -232,13 +220,11 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(entries.sanitize(c));
+        return entries.sanitize(c);
     }
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(entries.sanitize(c, base));
+        return entries.sanitize(c, base);
     }
 
 protected:
@@ -261,13 +247,11 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && valueArrayZ.sanitize(c, glyphCount));
+        return c->check_struct(this) && valueArrayZ.sanitize(c, glyphCount);
     }
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && valueArrayZ.sanitize(c, glyphCount, base));
+        return c->check_struct(this) && valueArrayZ.sanitize(c, glyphCount, base);
     }
 
 protected:
@@ -303,8 +287,7 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && valueSize <= 4 && valueArrayZ.sanitize(c, glyphCount * valueSize));
+        return c->check_struct(this) && valueSize <= 4 && valueArrayZ.sanitize(c, glyphCount * valueSize);
     }
 
 protected:
@@ -359,46 +342,44 @@ template <typename T> struct Lookup
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
-            return_trace(false);
+            return false;
         switch (u.format) {
         case 0:
-            return_trace(u.format0.sanitize(c));
+            return u.format0.sanitize(c);
         case 2:
-            return_trace(u.format2.sanitize(c));
+            return u.format2.sanitize(c);
         case 4:
-            return_trace(u.format4.sanitize(c));
+            return u.format4.sanitize(c);
         case 6:
-            return_trace(u.format6.sanitize(c));
+            return u.format6.sanitize(c);
         case 8:
-            return_trace(u.format8.sanitize(c));
+            return u.format8.sanitize(c);
         case 10:
-            return_trace(u.format10.sanitize(c));
+            return u.format10.sanitize(c);
         default:
-            return_trace(true);
+            return true;
         }
     }
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
-        TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
-            return_trace(false);
+            return false;
         switch (u.format) {
         case 0:
-            return_trace(u.format0.sanitize(c, base));
+            return u.format0.sanitize(c, base);
         case 2:
-            return_trace(u.format2.sanitize(c, base));
+            return u.format2.sanitize(c, base);
         case 4:
-            return_trace(u.format4.sanitize(c, base));
+            return u.format4.sanitize(c, base);
         case 6:
-            return_trace(u.format6.sanitize(c, base));
+            return u.format6.sanitize(c, base);
         case 8:
-            return_trace(u.format8.sanitize(c, base));
+            return u.format8.sanitize(c, base);
         case 10:
-            return_trace(false); /* We don't support format10 here currently. */
+            return false; /* We don't support format10 here currently. */
         default:
-            return_trace(true);
+            return true;
         }
     }
 
@@ -451,7 +432,7 @@ template <typename T> struct Entry
          * assertion wouldn't be checked, hence the line below. */
         static_assert(T::static_size, "");
 
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 public:
@@ -468,8 +449,7 @@ template <> struct Entry<void>
 {
     bool sanitize(rb_sanitize_context_t *c, unsigned int count /*XXX Unused?*/) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 public:
@@ -522,24 +502,23 @@ template <typename Types, typename Extra> struct StateTable
         const Entry<Extra> *entries = (this + entryTable).arrayZ;
 
         unsigned int entry = states[state * nClasses + klass];
-        DEBUG_MSG(APPLY, nullptr, "e%u", entry);
+        //        DEBUG_MSG(APPLY, nullptr, "e%u", entry);
 
         return entries[entry];
     }
 
     bool sanitize(rb_sanitize_context_t *c, unsigned int *num_entries_out = nullptr) const
     {
-        TRACE_SANITIZE(this);
         if (unlikely(!(c->check_struct(this) && nClasses >= 4 /* Ensure pre-defined classes fit.  */ &&
                        classTable.sanitize(c, this))))
-            return_trace(false);
+            return false;
 
         const HBUSHORT *states = (this + stateArrayTable).arrayZ;
         const Entry<Extra> *entries = (this + entryTable).arrayZ;
 
         unsigned int num_classes = nClasses;
         if (unlikely(rb_unsigned_mul_overflows(num_classes, states[0].static_size)))
-            return_trace(false);
+            return false;
         unsigned int row_stride = num_classes * states[0].static_size;
 
         /* Apple 'kern' table has this peculiarity:
@@ -567,15 +546,15 @@ template <typename Types, typename Extra> struct StateTable
             if (min_state < state_neg) {
                 /* Negative states. */
                 if (unlikely(rb_unsigned_mul_overflows(min_state, num_classes)))
-                    return_trace(false);
+                    return false;
                 if (unlikely(!c->check_range(&states[min_state * num_classes], -min_state, row_stride)))
-                    return_trace(false);
+                    return false;
                 if ((c->max_ops -= state_neg - min_state) <= 0)
-                    return_trace(false);
+                    return false;
                 { /* Sweep new states. */
                     const HBUSHORT *stop = &states[min_state * num_classes];
                     if (unlikely(stop > states))
-                        return_trace(false);
+                        return false;
                     for (const HBUSHORT *p = states; stop < p; p--)
                         num_entries = rb_max(num_entries, *(p - 1) + 1);
                     state_neg = min_state;
@@ -585,15 +564,15 @@ template <typename Types, typename Extra> struct StateTable
             if (state_pos <= max_state) {
                 /* Positive states. */
                 if (unlikely(!c->check_range(states, max_state + 1, row_stride)))
-                    return_trace(false);
+                    return false;
                 if ((c->max_ops -= max_state - state_pos + 1) <= 0)
-                    return_trace(false);
+                    return false;
                 { /* Sweep new states. */
                     if (unlikely(rb_unsigned_mul_overflows((max_state + 1), num_classes)))
-                        return_trace(false);
+                        return false;
                     const HBUSHORT *stop = &states[(max_state + 1) * num_classes];
                     if (unlikely(stop < states))
-                        return_trace(false);
+                        return false;
                     for (const HBUSHORT *p = &states[state_pos * num_classes]; p < stop; p++)
                         num_entries = rb_max(num_entries, *p + 1);
                     state_pos = max_state + 1;
@@ -601,9 +580,9 @@ template <typename Types, typename Extra> struct StateTable
             }
 
             if (unlikely(!c->check_array(entries, num_entries)))
-                return_trace(false);
+                return false;
             if ((c->max_ops -= num_entries - entry) <= 0)
-                return_trace(false);
+                return false;
             { /* Sweep new entries. */
                 const Entry<Extra> *stop = &entries[num_entries];
                 for (const Entry<Extra> *p = &entries[entry]; p < stop; p++) {
@@ -618,7 +597,7 @@ template <typename Types, typename Extra> struct StateTable
         if (num_entries_out)
             *num_entries_out = num_entries;
 
-        return_trace(true);
+        return true;
     }
 
 protected:
@@ -645,8 +624,7 @@ template <typename HBUCHAR> struct ClassTable
     }
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && classArray.sanitize(c));
+        return c->check_struct(this) && classArray.sanitize(c);
     }
 
 protected:
@@ -724,7 +702,7 @@ template <typename Types, typename EntryData> struct StateTableDriver
                     ? machine.get_class(rb_buffer_get_glyph_infos(buffer)[rb_buffer_get_index(buffer)].codepoint,
                                         num_glyphs)
                     : (unsigned)StateTable<Types, EntryData>::CLASS_END_OF_TEXT;
-            DEBUG_MSG(APPLY, nullptr, "c%u at %u", klass, rb_buffer_get_index(buffer));
+            //            DEBUG_MSG(APPLY, nullptr, "c%u at %u", klass, rb_buffer_get_index(buffer));
             const Entry<EntryData> &entry = machine.get_entry(state, klass);
 
             /* Unsafe-to-break before this if not in state 0, as things might
@@ -753,7 +731,6 @@ template <typename Types, typename EntryData> struct StateTableDriver
             c->transition(this, entry);
 
             state = machine.new_state(entry.newState);
-            DEBUG_MSG(APPLY, nullptr, "s%d", state);
 
             if (rb_buffer_get_index(buffer) == rb_buffer_get_length(buffer))
                 break;
@@ -778,12 +755,8 @@ public:
 
 struct ankr;
 
-struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bool, RB_DEBUG_APPLY>
+struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bool>
 {
-    const char *get_name()
-    {
-        return "APPLY";
-    }
     template <typename T> return_t dispatch(const T &obj)
     {
         return obj.apply(this);

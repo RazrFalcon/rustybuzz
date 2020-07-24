@@ -67,8 +67,7 @@ struct AttachList
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(coverage.sanitize(c, this) && attachPoint.sanitize(c, this));
+        return coverage.sanitize(c, this) && attachPoint.sanitize(c, this);
     }
 
 protected:
@@ -96,8 +95,7 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 protected:
@@ -121,8 +119,7 @@ private:
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this));
+        return c->check_struct(this);
     }
 
 protected:
@@ -149,8 +146,7 @@ struct CaretValueFormat3
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(c->check_struct(this) && deviceTable.sanitize(c, this));
+        return c->check_struct(this) && deviceTable.sanitize(c, this);
     }
 
 protected:
@@ -184,18 +180,17 @@ struct CaretValue
 
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
-        TRACE_DISPATCH(this, u.format);
         if (unlikely(!c->may_dispatch(this, &u.format)))
             return_trace(c->no_dispatch_return_value());
         switch (u.format) {
         case 1:
-            return_trace(c->dispatch(u.format1, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
         case 2:
-            return_trace(c->dispatch(u.format2, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format2, rb_forward<Ts>(ds)...);
         case 3:
-            return_trace(c->dispatch(u.format3, rb_forward<Ts>(ds)...));
+            return c->dispatch(u.format3, rb_forward<Ts>(ds)...);
         default:
-            return_trace(c->default_return_value());
+            return c->default_return_value();
         }
     }
 
@@ -215,18 +210,17 @@ struct CaretValue
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
-            return_trace(false);
+            return false;
         switch (u.format) {
         case 1:
-            return_trace(u.format1.sanitize(c));
+            return u.format1.sanitize(c);
         case 2:
-            return_trace(u.format2.sanitize(c));
+            return u.format2.sanitize(c);
         case 3:
-            return_trace(u.format3.sanitize(c));
+            return u.format3.sanitize(c);
         default:
-            return_trace(true);
+            return true;
         }
     }
 
@@ -269,8 +263,7 @@ struct LigGlyph
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(carets.sanitize(c, this));
+        return carets.sanitize(c, this);
     }
 
 protected:
@@ -309,8 +302,7 @@ struct LigCaretList
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(coverage.sanitize(c, this) && ligGlyph.sanitize(c, this));
+        return coverage.sanitize(c, this) && ligGlyph.sanitize(c, this);
     }
 
 protected:
@@ -331,8 +323,7 @@ struct MarkGlyphSetsFormat1
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(coverage.sanitize(c, this));
+        return coverage.sanitize(c, this);
     }
 
 protected:
@@ -357,14 +348,13 @@ struct MarkGlyphSets
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
         if (!u.format.sanitize(c))
-            return_trace(false);
+            return false;
         switch (u.format) {
         case 1:
-            return_trace(u.format1.sanitize(c));
+            return u.format1.sanitize(c);
         default:
-            return_trace(true);
+            return true;
         }
     }
 
@@ -546,12 +536,10 @@ struct GDEF
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        TRACE_SANITIZE(this);
-        return_trace(version.sanitize(c) && likely(version.major == 1) && glyphClassDef.sanitize(c, this) &&
-                     attachList.sanitize(c, this) && ligCaretList.sanitize(c, this) &&
-                     markAttachClassDef.sanitize(c, this) &&
-                     (version.to_int() < 0x00010002u || markGlyphSetsDef.sanitize(c, this)) &&
-                     (version.to_int() < 0x00010003u || varStore.sanitize(c, this)));
+        return version.sanitize(c) && likely(version.major == 1) && glyphClassDef.sanitize(c, this) &&
+               attachList.sanitize(c, this) && ligCaretList.sanitize(c, this) && markAttachClassDef.sanitize(c, this) &&
+               (version.to_int() < 0x00010002u || markGlyphSetsDef.sanitize(c, this)) &&
+               (version.to_int() < 0x00010003u || varStore.sanitize(c, this));
     }
 
 protected:

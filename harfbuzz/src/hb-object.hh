@@ -102,7 +102,7 @@ struct rb_object_header_t
 
 template <typename Type> static inline void rb_object_trace(const Type *obj, const char *function)
 {
-    DEBUG_MSG(OBJECT, (void *)obj, "%s refcount=%d", function, obj ? obj->header.ref_count.get_relaxed() : 0);
+    //    DEBUG_MSG(OBJECT, (void *)obj, "%s refcount=%d", function, obj ? obj->header.ref_count.get_relaxed() : 0);
 }
 
 template <typename Type> static inline Type *rb_object_create()
