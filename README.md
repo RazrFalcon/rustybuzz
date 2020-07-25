@@ -25,6 +25,25 @@ Embedded `harfbuzz` version: 2.7.0
 - rustybuzz doesn't interact with any system libraries and must produce exactly the same
   results on all OS'es and targets.
 
+## Roadmap
+
+- [ ] Port OpenType tables:
+  - [ ] `GDEF` (ttf-parser already support it, but we have to integrate it with rustybuzz)
+  - [ ] `GPOS`
+  - [ ] `GSUB`
+- [ ] Port Apple tables:
+  - [ ] `ankr` (easy)
+  - [ ] `feat`
+  - [ ] `kern` (ttf-parser already support it, but we have to integrate it with rustybuzz)
+  - [ ] `kerx`
+  - [ ] `mort`
+  - [ ] `morx`
+  - [ ] `trak`
+- [ ] Port text normalization (`hb-ot-shape-normalize.cc`, easy).
+- [ ] Port fallback shaper (`hb-ot-shape-fallback.cc`, easy).
+- [ ] Port shaper logic (`hb-ot-shape.cc`, easy).
+- [ ] Remove C++ sources.
+
 ## Performance
 
 At the moment, performance itsn't that great. We're 1.5-2x slower than harfbuzz.
