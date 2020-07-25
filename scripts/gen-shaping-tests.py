@@ -13,12 +13,9 @@ IGNORE_TESTS = [
 
 IGNORE_TEST_CASES = [
     # aots tests
-    # Unknown issue. Investigate.
-    'gpos_context2_classes_001',
-    'gpos_context2_classes_002',
 
     # in-house tests
-    # Unknown issue. Investigate.
+    # --shaper=fallback is not supported.
     'simple_002',
     # Not possible to implement without shaping.
     'arabic_fallback_shaping_001',
@@ -34,33 +31,11 @@ IGNORE_TEST_CASES = [
     # text-rendering-tests tests
     # Unknown issue. Investigate.
     'cmap_1_004',
-    'morx_29_001',
-    'morx_29_002',
-    'morx_29_003',
-    'morx_29_004',
-    'morx_30_001',
-    'morx_30_002',
-    'morx_30_003',
-    'morx_30_004',
-    'morx_6_001',
-    'sharan_1_002',
-    'sharan_1_003',
-    'sharan_1_004',
-    'sharan_1_005',
-    'sharan_1_006',
     'shknda_3_031',
-    'shlana_10_005',
-    'shlana_10_016',
-    'shlana_10_017',
     'shlana_10_028',
     'shlana_10_041',
-    'shlana_10_044',
-    'shlana_2_014',
-    'shlana_3_013',
     'shlana_5_010',
     'shlana_5_012',
-    'shlana_6_002',
-    'shlana_8_005',
 ]
 
 

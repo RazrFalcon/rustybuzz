@@ -5971,6 +5971,122 @@ fn morx_28_005() {
 }
 
 #[test]
+fn morx_29_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXTwentynine.ttf",
+            "\u{0050}\u{0051}\u{0052}\u{004D}\u{004D}\u{0058}\u{0058}\u{004D}\u{004D}\u{0059}\
+             \u{0059}\u{0041}\u{005A}\u{005A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "P|\
+         Q@333,0|\
+         R@699,0|\
+         M@1050,0|\
+         M@1880,0|\
+         X@2710,0|\
+         X@3074,0|\
+         M@3438,0|\
+         I@4268,0|\
+         N@5098,0|\
+         S@5928,0|\
+         M@6758,0|\
+         Y@7588,0|\
+         Y@7920,0|\
+         A@8252,0|\
+         Z@9082,0|\
+         Z@9404,0"
+    );
+}
+
+#[test]
+fn morx_29_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXTwentynine.ttf",
+            "\u{0050}\u{0051}\u{0052}\u{004D}\u{004D}\u{0058}\u{0058}\u{004D}\u{004D}\u{0059}\
+             \u{0059}\u{0042}\u{005A}\u{005A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "P|\
+         Q@333,0|\
+         R@699,0|\
+         M@1050,0|\
+         M@1880,0|\
+         X@2710,0|\
+         X@3074,0|\
+         M@3438,0|\
+         M@4268,0|\
+         I@5098,0|\
+         N@5928,0|\
+         S@6758,0|\
+         Y@7588,0|\
+         Y@7920,0|\
+         B@8252,0|\
+         Z@9082,0|\
+         Z@9404,0"
+    );
+}
+
+#[test]
+fn morx_29_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXTwentynine.ttf",
+            "\u{0050}\u{0051}\u{0052}\u{004D}\u{004D}\u{0058}\u{0058}\u{004D}\u{004D}\u{0059}\
+             \u{0059}\u{0043}\u{005A}\u{005A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "P|\
+         Q@333,0|\
+         R@699,0|\
+         M@1050,0|\
+         M@1880,0|\
+         X@2710,0|\
+         X@3074,0|\
+         M@3438,0|\
+         M@4268,0|\
+         Y@5098,0|\
+         Y@5430,0|\
+         I@5762,0|\
+         N@6592,0|\
+         S@7422,0|\
+         C@8252,0|\
+         Z@9082,0|\
+         Z@9404,0"
+    );
+}
+
+#[test]
+fn morx_29_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXTwentynine.ttf",
+            "\u{0050}\u{0051}\u{0052}\u{004D}\u{004D}\u{0058}\u{0058}\u{004D}\u{004D}\u{0059}\
+             \u{0059}\u{0044}\u{005A}\u{005A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "P|\
+         Q@333,0|\
+         R@699,0|\
+         M@1050,0|\
+         M@1880,0|\
+         X@2710,0|\
+         X@3074,0|\
+         M@3438,0|\
+         M@4268,0|\
+         Y@5098,0|\
+         Y@5430,0|\
+         D@5762,0|\
+         I@6592,0|\
+         N@7422,0|\
+         S@8252,0|\
+         Z@9082,0|\
+         Z@9404,0"
+    );
+}
+
+#[test]
 fn morx_3_001() {
     assert_eq!(
         shape(
@@ -6239,6 +6355,134 @@ fn morx_3_016() {
          C@1086,0|\
          D@1402,0|\
          one_five@1793,0"
+    );
+}
+
+#[test]
+fn morx_30_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXTwentynine.ttf",
+            "\u{0050}\u{0051}\u{0052}\u{004D}\u{004D}\u{0058}\u{0058}\u{0058}\u{0041}\u{0059}\
+             \u{0059}\u{0041}\u{005A}\u{005A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "P|\
+         Q@333,0|\
+         R@699,0|\
+         M@1050,0|\
+         I@1880,0|\
+         N@2710,0|\
+         S@3540,0|\
+         I@4370,0|\
+         N@5200,0|\
+         S@6030,0|\
+         M@6860,0|\
+         X@7690,0|\
+         X@8054,0|\
+         X@8418,0|\
+         A@8782,0|\
+         Y@9612,0|\
+         Y@9944,0|\
+         A@10276,0|\
+         Z@11106,0|\
+         Z@11428,0"
+    );
+}
+
+#[test]
+fn morx_30_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXTwentynine.ttf",
+            "\u{0050}\u{0051}\u{0052}\u{004D}\u{004D}\u{0058}\u{0058}\u{0058}\u{0041}\u{0059}\
+             \u{0059}\u{0042}\u{005A}\u{005A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "P|\
+         Q@333,0|\
+         R@699,0|\
+         M@1050,0|\
+         I@1880,0|\
+         I@2710,0|\
+         N@3540,0|\
+         S@4370,0|\
+         N@5200,0|\
+         S@6030,0|\
+         M@6860,0|\
+         X@7690,0|\
+         X@8054,0|\
+         X@8418,0|\
+         A@8782,0|\
+         Y@9612,0|\
+         Y@9944,0|\
+         B@10276,0|\
+         Z@11106,0|\
+         Z@11428,0"
+    );
+}
+
+#[test]
+fn morx_30_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXTwentynine.ttf",
+            "\u{0050}\u{0051}\u{0052}\u{004D}\u{004D}\u{0058}\u{0058}\u{0058}\u{0042}\u{0059}\
+             \u{0059}\u{0041}\u{005A}\u{005A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "P|\
+         Q@333,0|\
+         R@699,0|\
+         M@1050,0|\
+         I@1880,0|\
+         N@2710,0|\
+         S@3540,0|\
+         M@4370,0|\
+         I@5200,0|\
+         N@6030,0|\
+         S@6860,0|\
+         X@7690,0|\
+         X@8054,0|\
+         X@8418,0|\
+         B@8782,0|\
+         Y@9612,0|\
+         Y@9944,0|\
+         A@10276,0|\
+         Z@11106,0|\
+         Z@11428,0"
+    );
+}
+
+#[test]
+fn morx_30_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXTwentynine.ttf",
+            "\u{0050}\u{0051}\u{0052}\u{004D}\u{004D}\u{0058}\u{0058}\u{0058}\u{0042}\u{0059}\
+             \u{0059}\u{0042}\u{005A}\u{005A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "P|\
+         Q@333,0|\
+         R@699,0|\
+         M@1050,0|\
+         M@1880,0|\
+         I@2710,0|\
+         N@3540,0|\
+         S@4370,0|\
+         I@5200,0|\
+         N@6030,0|\
+         S@6860,0|\
+         X@7690,0|\
+         X@8054,0|\
+         X@8418,0|\
+         B@8782,0|\
+         Y@9612,0|\
+         Y@9944,0|\
+         B@10276,0|\
+         Z@11106,0|\
+         Z@11428,0"
     );
 }
 
@@ -9199,6 +9443,35 @@ fn morx_5_025() {
 }
 
 #[test]
+fn morx_6_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXTwo.ttf",
+            "\u{004F}\u{004F}\u{004F}\u{0041}\u{0042}\u{0043}\u{0044}\u{0045}\u{0046}\u{0047}\
+             \u{004F}\u{004F}\u{004F}\u{0033}\u{0031}\u{0034}\u{0031}",
+            "--ned --remove-default-ignorables",
+        ),
+        "O|\
+         O@418,0|\
+         O@836,0|\
+         E@1254,0|\
+         F@2084,0|\
+         A@2914,0|\
+         G@3744,0|\
+         B@4574,0|\
+         C@5404,0|\
+         D@6234,0|\
+         O@7064,0|\
+         O@7482,0|\
+         O@7900,0|\
+         three@8318,0|\
+         one@9168,0|\
+         four@10018,0|\
+         one@10868,0"
+    );
+}
+
+#[test]
 fn morx_7_001() {
     assert_eq!(
         shape(
@@ -9337,6 +9610,125 @@ fn sharan_1_001() {
          SeenMed.inT2outT1@2304,0|\
          sp0@3407,0|\
          LamIni.outT2@3407,457"
+    );
+}
+
+#[test]
+fn sharan_1_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeAran.ttf",
+            "\u{06CC}\u{0648}\u{0646}\u{06CC}\u{06A9}\u{0648}\u{0688}",
+            "--ned --remove-default-ignorables",
+        ),
+        "TahSmallNS@241,-437|\
+         DalSep|\
+         WawFin.cut@614,0|\
+         KafMed.outT3@1174,421|\
+         TwoDotsBelowNS@2283,451|\
+         BehxMed.inT2outT1@1849,623|\
+         OneDotAboveNS@2603,-145|\
+         sp1@2396,0|\
+         BehxIni.outT2@2396,920|\
+         WawFin.inD2@2841,0|\
+         TwoDotsBelowNS@3824,2|\
+         sp0@3601,0|\
+         BehxIni.outD2WQ@3601,662"
+    );
+}
+
+#[test]
+fn sharan_1_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeAran.ttf",
+            "\u{0641}\u{0648}\u{0646}\u{0679}",
+            "--ned --remove-default-ignorables",
+        ),
+        "TahSmallNS@1219,-678|\
+         BehxFin.soft|\
+         OneDotAboveNS@2382,-372|\
+         sp0@2425,0|\
+         BehxIni.outT2B@2425,614|\
+         WawFin.inD2alt@2745,0|\
+         OneDotAboveNS@3654,222|\
+         sp0@3274,0|\
+         FehxIni.outD2WQ@3274,486"
+    );
+}
+
+#[test]
+fn sharan_1_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeAran.ttf",
+            "\u{0679}\u{0627}\u{0626}\u{067E}\u{0020}\u{0641}\u{06CC}\u{0633}",
+            "--ned --remove-default-ignorables",
+        ),
+        "SeenFin|\
+         TwoDotsBelowNS@2491,551|\
+         BehxMed.inT1outT2SeenWide@2131,932|\
+         OneDotAboveNS@2978,459|\
+         sp0@2604,0|\
+         FehxIni@2604,1004|\
+         space@3243,0|\
+         ThreeDotsDownBelowNS@4690,-326|\
+         BehxFin.soft@3513,0|\
+         HamzaAboveNS@5895,-412|\
+         sp0@5938,0|\
+         BehxIni.outT2B@5938,614|\
+         AlefFin.narrow@6258,0|\
+         TahSmallNS@7050,-860|\
+         sp0@6748,0|\
+         BehxIni.A@6748,0"
+    );
+}
+
+#[test]
+fn sharan_1_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeAran.ttf",
+            "\u{0641}\u{0646}\u{0020}\u{062E}\u{0637}\u{0627}\u{0637}\u{06CC}",
+            "--ned --remove-default-ignorables",
+        ),
+        "YehxFin|\
+         sp0@1067,0|\
+         TahIni.outD2@1067,778|\
+         AlefFin@2291,0|\
+         TahMed.inD1outT1@2831,0|\
+         OneDotAboveNS@4262,-97|\
+         sp0@2971,0|\
+         HahIni.outD1@2971,74|\
+         space@4764,0|\
+         OneDotEnclNS@5846,-4|\
+         NoonxFin@5034,0|\
+         OneDotAboveNS@6884,384|\
+         sp0@6569,0|\
+         FehxIni.outT2N@6569,688"
+    );
+}
+
+#[test]
+fn sharan_1_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeAran.ttf",
+            "\u{0646}\u{0633}\u{062A}\u{0639}\u{0644}\u{06CC}\u{0642}",
+            "--ned --remove-default-ignorables",
+        ),
+        "TwoDotsAboveNS@1062,-407|\
+         QafxFin.cut|\
+         TwoDotsBelowNS@2001,289|\
+         BehxMed.inT2outD2WQ@1418,558|\
+         LamMed.outT2@2096,889|\
+         AinMed.inT3outT1@2665,1038|\
+         TwoDotsAboveNS@3656,427|\
+         BehxMed.inT2outT3@3200,1234|\
+         SeenMed.inT2outT2@3819,1506|\
+         OneDotAboveNS@5271,1372|\
+         sp0@4985,0|\
+         BehxIni.outT2tall@4985,1949"
     );
 }
 
@@ -11843,6 +12235,32 @@ fn shlana_10_004() {
 }
 
 #[test]
+fn shlana_10_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A2F}\u{1A6E}\u{1A6C}\u{1A65}\u{1A41}\u{1A39}\u{1A6B}\u{1A56}\u{1A23}\u{1A69}\
+             \u{1A31}\u{1A7A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A6E|\
+         uni1A2F@1212,0|\
+         uni1A6C@2424,-384|\
+         uni25CC@2424,0|\
+         uni1A65@3636,0|\
+         uni1A41@3636,0|\
+         uni1A39@4848,0|\
+         uni1A6B@6060,0|\
+         uni25CC@6348,0|\
+         uni1A56@7560,0|\
+         uni1A23@7560,0|\
+         uni1A69@8772,0|\
+         uni1A31@8772,0|\
+         uni1A7A@10332,0"
+    );
+}
+
+#[test]
 fn shlana_10_006() {
     assert_eq!(
         shape(
@@ -12005,6 +12423,47 @@ fn shlana_10_015() {
          uni1A601A2F@2954,0|\
          uni1A65@2954,0|\
          uni1A7C@2954,732"
+    );
+}
+
+#[test]
+fn shlana_10_016() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A3E}\u{1A49}\u{1A63}\u{1A49}\u{1A65}\u{1A26}\u{1A60}\u{1A23}\u{1A69}\u{1A7A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A3E.v2|\
+         uni1A49@1500,0|\
+         uni1A63@3410,0|\
+         uni1A49@4622,0|\
+         uni1A65@6182,0|\
+         uni1A26@6532,0|\
+         uni1A601A23@7744,0|\
+         uni1A69@7744,-1120|\
+         uni25CC@7744,0|\
+         uni1A7A@8956,0"
+    );
+}
+
+#[test]
+fn shlana_10_017() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A3E}\u{1A49}\u{1A63}\u{1A49}\u{1A65}\u{1A26}\u{1A60}\u{1A23}\u{1A69}\u{1A7C}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A3E.v2|\
+         uni1A49@1500,0|\
+         uni1A63@3410,0|\
+         uni1A49@4622,0|\
+         uni1A65@6182,0|\
+         uni1A26@6532,0|\
+         uni1A601A23@7744,0|\
+         uni1A69@7744,-1120|\
+         uni1A7C@7744,0"
     );
 }
 
@@ -12397,6 +12856,29 @@ fn shlana_10_043() {
 }
 
 #[test]
+fn shlana_10_044() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A4B}\u{1A36}\u{1A63}\u{1A33}\u{1A37}\u{1A65}\u{1A31}\u{1A60}\u{1A2F}\u{1A65}\
+             \u{1A20}\u{1A48}\u{1A5E}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A4B|\
+         uni1A361A63@1212,0|\
+         uni1A33@2424,0|\
+         uni1A37@3636,0|\
+         uni1A65@4848,0|\
+         uni1A31@4848,0|\
+         uni1A601A2F@6408,0|\
+         uni1A65@6408,0|\
+         uni1A20@6758,0|\
+         uni1A48@8668,0|\
+         uni1A5E@9880,0"
+    );
+}
+
+#[test]
 fn shlana_10_045() {
     assert_eq!(
         shape(
@@ -12642,6 +13124,26 @@ fn shlana_2_013() {
          uni1A601A3F@1676,0|\
          uni1A75@2149,0|\
          uni1A41@2140,0"
+    );
+}
+
+#[test]
+fn shlana_2_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A3E}\u{1A6F}\u{1A76}\u{1A60}\u{1A36}\u{1A60}\u{1A45}\u{1A75}\u{1A63}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A6F|\
+         uni1A3E.v2@2244,0|\
+         uni1A76@3456,0|\
+         uni1A601A36@3456,0|\
+         uni1A601A45@3456,-752|\
+         uni25CC@3744,0|\
+         uni1A75@4956,0|\
+         uni25CC@4956,0|\
+         uni1A63@6168,0"
     );
 }
 
@@ -13187,6 +13689,26 @@ fn shlana_3_012() {
 }
 
 #[test]
+fn shlana_3_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A37}\u{1A62}\u{1A31}\u{1A60}\u{1A3B}\u{1A37}\u{1A69}\u{1A41}\u{1A69}\u{1A48}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A37|\
+         uni1A62@1212,0|\
+         uni1A31@1212,0|\
+         uni1A601A3B.wide@3122,0|\
+         uni1A37@3122,0|\
+         uni1A69@4334,0|\
+         uni1A41@4334,0|\
+         uni1A69@5546,0|\
+         uni1A48@5546,0"
+    );
+}
+
+#[test]
 fn shlana_4_001() {
     assert_eq!(
         shape(
@@ -13410,6 +13932,29 @@ fn shlana_6_001() {
          uni1A20@2244,0|\
          uni1A62@3804,0|\
          uni1A601A48@4154,0"
+    );
+}
+
+#[test]
+fn shlana_6_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A34}\u{1A55}\u{1A6F}\u{1A60}\u{1A20}\u{1A34}\u{1A6E}\u{1A6C}\u{1A65}\u{1A41}\
+             \u{1A7A}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A6F|\
+         uni1A55@2244,0|\
+         uni1A34@2708,0|\
+         uni1A601A20@3920,0|\
+         uni1A6E@3920,0|\
+         uni1A34@5132,0|\
+         uni1A6C@6344,0|\
+         uni25CC@6344,0|\
+         uni1A65@7556,0|\
+         uni1A41@7556,0|\
+         uni1A7A@8768,0"
     );
 }
 
@@ -13841,6 +14386,26 @@ fn shlana_8_004() {
          uni1A6A@1212,0|\
          uni25CC@1212,0|\
          uni1A7A@2424,0"
+    );
+}
+
+#[test]
+fn shlana_8_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A81}\u{1A82}\u{00A0}\u{1A3B}\u{1A62}\u{1A60}\u{1A36}\u{1A7B}\u{1A63}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A81|\
+         uni1A82@1212,0|\
+         space_nb@2424,0|\
+         uni1A3B@3075,0|\
+         uni1A62@4635,0|\
+         uni1A601A36@4635,0|\
+         uni1A7B@5485,0|\
+         uni25CC@4985,0|\
+         uni1A63@6197,0"
     );
 }
 

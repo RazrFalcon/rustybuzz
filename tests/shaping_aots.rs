@@ -1854,6 +1854,60 @@ fn gpos_context2_boundary_002() {
 }
 
 #[test]
+fn gpos_context2_classes_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_context2_classes_f1.otf",
+            "\u{0000}\u{0014}\u{001A}\u{001C}\u{0018}\u{0000}\u{0015}\u{001B}\u{001A}\u{0018}\
+             \u{0000}\u{0016}\u{001B}\u{001A}\u{0018}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1500,0|\
+         26@3020,0|\
+         28@4500,0|\
+         24@6000,0|\
+         0@7500,0|\
+         21@9000,0|\
+         27@10520,0|\
+         26@12000,0|\
+         24@13500,0|\
+         0@15000,0|\
+         22@16500,0|\
+         27@18000,0|\
+         26@19500,0|\
+         24@21000,0"
+    );
+}
+
+#[test]
+fn gpos_context2_classes_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_context2_classes_f2.otf",
+            "\u{0000}\u{0016}\u{001B}\u{001A}\u{0018}\u{0000}\u{0018}\u{0018}\u{001D}\u{0016}\
+             \u{0000}\u{0016}\u{001B}\u{001A}\u{0018}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         22@1500,0|\
+         27@3020,0|\
+         26@4500,0|\
+         24@6000,0|\
+         0@7500,0|\
+         24@9000,0|\
+         24@10500,0|\
+         29@12020,0|\
+         22@13500,0|\
+         0@15000,0|\
+         22@16500,0|\
+         27@18020,0|\
+         26@19500,0|\
+         24@21000,0"
+    );
+}
+
+#[test]
 fn gpos_context2_expansion_001() {
     assert_eq!(
         shape(
