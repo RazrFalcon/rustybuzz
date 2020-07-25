@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.2.0] - 2020-07-25
 ### Ported
 - All complex shapers.
 - Tables: `CBDT`, `CFF`, `CFF2`, `HVAR`, `MVAR`, `OS/2`, `SVG`, `VORG`, `VVAR`,
@@ -58,5 +60,6 @@ At this point, this is just a simple Rust bindings to a stripped down harfbuzz.
   Embedded harfbuzz relies only on internal TrueType implementation.
 - Most of the non-shaping harfbuzz API.
 
-[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.1.1...HEAD
-[0.1.1]: https://github.com/RazrFalcon/resvg/compare/v0.1.0...v0.1.1
+[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/RazrFalcon/rustybuzz/compare/v0.1.0...v0.1.1

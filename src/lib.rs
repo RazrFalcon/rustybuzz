@@ -2,7 +2,7 @@
 `rustybuzz` is an attempt to incrementally port [harfbuzz](https://github.com/harfbuzz/harfbuzz) to Rust.
 */
 
-#![doc(html_root_url = "https://docs.rs/rustybuzz/0.1.1")]
+#![doc(html_root_url = "https://docs.rs/rustybuzz/0.2.0")]
 #![warn(missing_docs)]
 
 mod buffer;
