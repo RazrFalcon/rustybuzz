@@ -160,11 +160,14 @@ rb_face_t *rb_face_create(rb_blob_t *blob, unsigned int index)
     if (unlikely(!blob))
         blob = rb_blob_get_empty();
 
-    rb_face_for_data_closure_t *closure = _rb_face_for_data_closure_create(
-        rb_sanitize_context_t().sanitize_blob<OT::OpenTypeFontFile>(rb_blob_reference(blob)), index);
+    blob = rb_sanitize_context_t().sanitize_blob<OT::OpenTypeFontFile>(rb_blob_reference(blob));
 
-    if (unlikely(!closure))
+    rb_face_for_data_closure_t *closure = _rb_face_for_data_closure_create(blob, index);
+
+    if (unlikely(!closure)) {
+        rb_blob_destroy(blob);
         return rb_face_get_empty();
+    }
 
     face = rb_face_create_for_tables(_rb_face_for_data_reference_table, closure, _rb_face_for_data_closure_destroy);
 

@@ -575,7 +575,7 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
     }
     return_t recurse(unsigned int sub_lookup_index)
     {
-        if (unlikely(nesting_level_left == 0 || !recurse_func || rb_buffer_decrement_max_ops(buffer) < 0))
+        if (unlikely(nesting_level_left == 0 || !recurse_func || rb_buffer_decrement_max_ops(buffer, 1) < 0))
             return default_return_value();
 
         nesting_level_left--;
@@ -1606,9 +1606,11 @@ struct ContextFormat2
 
         struct ContextClosureLookupContext lookup_context = {{intersects_class}, &class_def};
 
-        return +rb_enumerate(ruleSet) | rb_map([&](const rb_pair_t<unsigned, const OffsetTo<RuleSet> &> p) {
-            return class_def.intersects_class(glyphs, p.first) && (this + p.second).intersects(glyphs, lookup_context);
-        }) | rb_any;
+        return +rb_iter(ruleSet) | rb_map(rb_add(this)) | rb_enumerate |
+               rb_map([&](const rb_pair_t<unsigned, const RuleSet &> p) {
+                   return class_def.intersects_class(glyphs, p.first) && p.second.intersects(glyphs, lookup_context);
+               }) |
+               rb_any;
     }
 
     void closure(rb_closure_context_t *c) const
@@ -2210,10 +2212,12 @@ struct ChainContextFormat2
         struct ChainContextClosureLookupContext lookup_context = {
             {intersects_class}, {&backtrack_class_def, &input_class_def, &lookahead_class_def}};
 
-        return +rb_enumerate(ruleSet) | rb_map([&](const rb_pair_t<unsigned, const OffsetTo<ChainRuleSet> &> p) {
-            return input_class_def.intersects_class(glyphs, p.first) &&
-                   (this + p.second).intersects(glyphs, lookup_context);
-        }) | rb_any;
+        return +rb_iter(ruleSet) | rb_map(rb_add(this)) | rb_enumerate |
+               rb_map([&](const rb_pair_t<unsigned, const ChainRuleSet &> p) {
+                   return input_class_def.intersects_class(glyphs, p.first) &&
+                          p.second.intersects(glyphs, lookup_context);
+               }) |
+               rb_any;
     }
     void closure(rb_closure_context_t *c) const
     {

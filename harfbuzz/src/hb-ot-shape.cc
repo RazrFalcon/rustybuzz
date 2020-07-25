@@ -194,8 +194,11 @@ bool rb_ot_shape_plan_t::init0(rb_face_t *face,
 
     if (shaper->data_create) {
         data = shaper->data_create(this);
-        if (unlikely(!data))
+        if (unlikely(!data)) {
+            map.fini();
+            aat_map.fini();
             return false;
+        }
     }
 
     return true;

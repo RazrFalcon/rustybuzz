@@ -65,7 +65,7 @@ struct rb_hashmap_t
             hash = 0;
         }
 
-        bool operator==(K o)
+        bool operator==(const K &o)
         {
             return rb_deref(key) == rb_deref(o);
         }

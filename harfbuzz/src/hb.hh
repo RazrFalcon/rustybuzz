@@ -443,13 +443,11 @@ static_assert((sizeof(rb_var_int_t) == 4), "");
 #define RB_VAR_ARRAY 1
 #endif
 
-static inline double _rb_roundf(float x)
+static inline float _rb_roundf(float x)
 {
-    return x >= 0 ? floor((double)x + .5) : ceil((double)x - .5);
+    return floorf(x + .5f);
 }
-#ifndef HAVE_ROUNDF
 #define roundf(x) _rb_roundf(x)
-#endif
 
 /* Endian swap, used in Windows related backends */
 static inline uint16_t rb_uint16_swap(const uint16_t v)

@@ -180,7 +180,7 @@ RB_EXTERN rb_glyph_info_t *rb_buffer_get_prev(rb_buffer_t *buffer);
 
 RB_EXTERN rb_glyph_position_t *rb_buffer_get_cur_pos(rb_buffer_t *buffer);
 
-RB_EXTERN int rb_buffer_decrement_max_ops(rb_buffer_t *buffer);
+RB_EXTERN int rb_buffer_decrement_max_ops(rb_buffer_t *buffer, int count);
 
 RB_EXTERN int rb_buffer_get_max_ops(rb_buffer_t *buffer);
 

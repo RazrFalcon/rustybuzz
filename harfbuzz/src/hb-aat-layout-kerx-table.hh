@@ -477,11 +477,13 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
                 case 0: /* Control Point Actions.*/
                 {
                     /* indexed into glyph outline. */
-                    const HBUINT16 *data = &ankrData[entry.data.ankrActionIndex];
+                    /* Each action (record in ankrData) contains two 16-bit fields, so we must
+                       double the ankrActionIndex to get the correct offset here. */
+                    const HBUINT16 *data = &ankrData[entry.data.ankrActionIndex * 2];
                     if (!c->sanitizer.check_array(data, 2))
                         return;
-                    RB_UNUSED unsigned int markControlPoint = *data++;
-                    RB_UNUSED unsigned int currControlPoint = *data++;
+                    unsigned int markControlPoint = *data++;
+                    unsigned int currControlPoint = *data++;
                     rb_position_t markX = 0;
                     rb_position_t markY = 0;
                     rb_position_t currX = 0;
@@ -508,7 +510,9 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
                 case 1: /* Anchor Point Actions. */
                 {
                     /* Indexed into 'ankr' table. */
-                    const HBUINT16 *data = &ankrData[entry.data.ankrActionIndex];
+                    /* Each action (record in ankrData) contains two 16-bit fields, so we must
+                       double the ankrActionIndex to get the correct offset here. */
+                    const HBUINT16 *data = &ankrData[entry.data.ankrActionIndex * 2];
                     if (!c->sanitizer.check_array(data, 2))
                         return;
                     unsigned int markAnchorPoint = *data++;
@@ -526,7 +530,9 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
 
                 case 2: /* Control Point Coordinate Actions. */
                 {
-                    const FWORD *data = (const FWORD *)&ankrData[entry.data.ankrActionIndex];
+                    /* Each action contains four 16-bit fields, so we multiply the ankrActionIndex
+                       by 4 to get the correct offset for the given action. */
+                    const FWORD *data = (const FWORD *)&ankrData[entry.data.ankrActionIndex * 4];
                     if (!c->sanitizer.check_array(data, 4))
                         return;
                     int markX = *data++;

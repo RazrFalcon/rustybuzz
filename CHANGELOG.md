@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Buffer serialization.
 
 ### Changed
+- Update to HarfBuzz 2.7.0
 - Rename `Font::from_data` into `Font::from_slice`.
 - Font is parsed via `ttf-parser` first.
   And if the parsing fails, the `Font` will not be created.

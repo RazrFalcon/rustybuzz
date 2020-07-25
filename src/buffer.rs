@@ -1612,9 +1612,9 @@ pub extern "C" fn rb_buffer_set_max_ops(buffer: *mut ffi::rb_buffer_t, ops: i32)
 }
 
 #[no_mangle]
-pub extern "C" fn rb_buffer_decrement_max_ops(buffer: *mut ffi::rb_buffer_t) -> i32 {
+pub extern "C" fn rb_buffer_decrement_max_ops(buffer: *mut ffi::rb_buffer_t, count: i32) -> i32 {
     let buffer = Buffer::from_ptr_mut(buffer);
-    buffer.max_ops -= 1;
+    buffer.max_ops -= count;
     buffer.max_ops
 }
 

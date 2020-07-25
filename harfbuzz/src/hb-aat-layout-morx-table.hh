@@ -686,6 +686,7 @@ template <typename Types> struct InsertionSubtable
 
             if (entry.data.markedInsertIndex != 0xFFFF) {
                 unsigned int count = (flags & MarkedInsertCount);
+                if (unlikely ((rb_buffer_decrement_max_ops(buffer, count)) < 0)) return;
                 unsigned int start = entry.data.markedInsertIndex;
                 const HBGlyphID *glyphs = &insertionAction[start];
                 if (unlikely(!c->sanitizer.check_array(glyphs, count)))
@@ -715,6 +716,7 @@ template <typename Types> struct InsertionSubtable
 
             if (entry.data.currentInsertIndex != 0xFFFF) {
                 unsigned int count = (flags & CurrentInsertCount) >> 5;
+                if (unlikely ((rb_buffer_decrement_max_ops(buffer, count)) < 0)) return;
                 unsigned int start = entry.data.currentInsertIndex;
                 const HBGlyphID *glyphs = &insertionAction[start];
                 if (unlikely(!c->sanitizer.check_array(glyphs, count)))

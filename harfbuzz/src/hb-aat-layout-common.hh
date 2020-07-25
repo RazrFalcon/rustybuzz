@@ -735,7 +735,7 @@ template <typename Types, typename EntryData> struct StateTableDriver
             if (rb_buffer_get_index(buffer) == rb_buffer_get_length(buffer))
                 break;
 
-            if (!(entry.flags & context_t::DontAdvance) || rb_buffer_decrement_max_ops(buffer) < 0)
+            if (!(entry.flags & context_t::DontAdvance) || rb_buffer_decrement_max_ops(buffer, 1) < 0)
                 rb_buffer_next_glyph(buffer);
         }
 

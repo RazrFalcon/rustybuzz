@@ -205,8 +205,6 @@ fn collect_features(planner: &mut ShapePlanner) {
     planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(None);
 
-    // And undo here.
-
     // The spec includes 'cswh'.  Earlier versions of Windows
     // used to enable this by default, but testing suggests
     // that Windows 8 and later do not enable it by default,

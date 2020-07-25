@@ -15,7 +15,7 @@ The final goal is to produce exactly the same results as harfbuzz.
 
 The current progress can be found at [CHANGELOG.md](./CHANGELOG.md)
 
-Embedded `harfbuzz` version: 2.6.8
+Embedded `harfbuzz` version: 2.7.0
 
 ## Major changes
 

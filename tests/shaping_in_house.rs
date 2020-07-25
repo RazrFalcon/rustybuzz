@@ -10790,6 +10790,30 @@ fn use_014() {
 }
 
 #[test]
+fn variations_rounding_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/HBTest-VF.ttf",
+            "\u{0041}",
+            "--variations=TEST=491",
+        ),
+        "A=0+496"
+    );
+}
+
+#[test]
+fn variations_rounding_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/HBTest-VF.ttf",
+            "\u{0041}",
+            "--variations=TEST=509",
+        ),
+        "A=0+505"
+    );
+}
+
+#[test]
 fn variations_rvrn_001() {
     assert_eq!(
         shape(

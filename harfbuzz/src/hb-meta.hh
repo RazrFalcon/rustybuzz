@@ -438,7 +438,6 @@ template <typename T> union rb_trivial {
     T value;
 };
 
-/* Don't know how to do the following. */
 template <typename T> using rb_is_trivially_destructible = rb_is_destructible<rb_trivial<T>>;
 #define rb_is_trivially_destructible(T) rb_is_trivially_destructible<T>::value
 
