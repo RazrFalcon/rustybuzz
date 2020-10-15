@@ -44,6 +44,28 @@ impl Direction {
         }
     }
 
+    #[inline]
+    pub(crate) fn is_horizontal(self) -> bool {
+        match self {
+            Direction::Invalid => false,
+            Direction::LeftToRight => true,
+            Direction::RightToLeft => true,
+            Direction::TopToBottom => false,
+            Direction::BottomToTop => false,
+        }
+    }
+
+    #[inline]
+    pub(crate) fn is_forward(self) -> bool {
+        match self {
+            Direction::Invalid => false,
+            Direction::LeftToRight => true,
+            Direction::RightToLeft => false,
+            Direction::TopToBottom => true,
+            Direction::BottomToTop => false,
+        }
+    }
+
     pub(crate) fn from_script(script: Script) -> Option<Self> {
         // https://docs.google.com/spreadsheets/d/1Y90M0Ie3MUJ6UVCRDOypOtijlMDLNNyyLk36T6iMu0o
 

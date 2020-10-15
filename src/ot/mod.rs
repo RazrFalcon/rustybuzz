@@ -1,4 +1,5 @@
 pub mod feature;
+mod fallback;
 mod map;
 mod map_builder;
 mod shape_normalize_context;

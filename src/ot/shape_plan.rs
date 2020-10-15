@@ -1,7 +1,7 @@
 use std::os::raw::c_void;
 use std::ptr::NonNull;
 
-use crate::{ffi, ot, Script};
+use crate::{ffi, ot, Script, Direction};
 
 pub struct ShapePlan {
     #[allow(dead_code)]
@@ -32,6 +32,13 @@ impl ShapePlan {
     pub fn script(&self) -> Script {
         unsafe {
             Script::from_raw(ffi::rb_ot_shape_plan_get_script(self.plan.as_ptr()))
+        }
+    }
+
+    #[inline]
+    pub fn direction(&self) -> Direction {
+        unsafe {
+            Direction::from_raw(ffi::rb_ot_shape_plan_get_direction(self.plan.as_ptr()))
         }
     }
 

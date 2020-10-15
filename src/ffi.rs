@@ -180,6 +180,8 @@ extern "C" {
 
     pub fn rb_ot_shape_plan_get_script(plan: *mut rb_ot_shape_plan_t) -> rb_script_t;
 
+    pub fn rb_ot_shape_plan_get_direction(plan: *mut rb_ot_shape_plan_t) -> rb_direction_t;
+
     pub fn rb_ot_shape_plan_has_gpos_mark(plan: *mut rb_ot_shape_plan_t) -> bool;
 
     pub fn rb_ot_shape_planner_get_ot_map(
