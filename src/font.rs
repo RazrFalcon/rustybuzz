@@ -131,6 +131,11 @@ impl<'a> Font<'a> {
         self.rb_face.as_ptr()
     }
 
+    #[inline]
+    pub(crate) fn units_per_em(&self) -> i32 {
+        self.units_per_em
+    }
+
     /// Sets pixels per EM.
     ///
     /// Used during raster glyphs processing and hinting.
@@ -201,6 +206,10 @@ impl<'a> Font<'a> {
 
     pub(crate) fn glyph_h_advance(&self, glyph: u32) -> u32 {
         rb_font_get_advance(self.as_ptr(), glyph, 0)
+    }
+
+    pub(crate) fn glyph_v_advance(&self, glyph: u32) -> i32 {
+        -(rb_font_get_advance(self.as_ptr(), glyph, 1) as i32)
     }
 
     pub(crate) fn glyph_extents(&self, glyph: u32) -> Option<ffi::rb_glyph_extents_t> {

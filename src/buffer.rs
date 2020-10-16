@@ -5,7 +5,7 @@ use std::mem;
 use crate::{script, Font, Mask};
 use crate::common::{Direction, Language, Script};
 use crate::ffi;
-use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt};
+use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
 
 const CONTEXT_LENGTH: usize = 5;
 
@@ -128,6 +128,18 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn space_fallback(&self) -> Option<Space> {
+        if self.general_category() == GeneralCategory::SpaceSeparator {
+            unsafe {
+                let n = (self.unicode_props() >> 8) as u8;
+                Some(std::mem::transmute(n))
+            }
+        } else {
+            None
+        }
+    }
+
+    #[inline]
     pub(crate) fn is_default_ignorable(&self) -> bool {
         let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
         n != 0 && !self.is_ligated()
@@ -185,6 +197,11 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn lig_id(&self) -> u8 {
+        self.lig_props() >> 5
+    }
+
+    #[inline]
     pub(crate) fn is_ligated_internal(&self) -> bool {
         const IS_LIG_BASE: u8 = 0x10;
         self.lig_props() & IS_LIG_BASE != 0
@@ -196,6 +213,15 @@ impl GlyphInfo {
             0
         } else {
             self.lig_props() & 0x0F
+        }
+    }
+
+    #[inline]
+    pub(crate) fn lig_num_comps(&self) -> u8 {
+        if self.glyph_props() & GlyphPropsFlags::LIGATURE.bits != 0 && self.is_ligated_internal() {
+            self.lig_props() & 0x0F
+        } else {
+            1
         }
     }
 

@@ -54,6 +54,11 @@ rb_script_t rb_ot_shape_plan_get_script(const rb_ot_shape_plan_t *plan)
     return plan->props.script;
 }
 
+rb_direction_t rb_ot_shape_plan_get_direction(const rb_ot_shape_plan_t *plan)
+{
+    return plan->props.direction;
+}
+
 bool rb_ot_shape_plan_has_gpos_mark(const rb_ot_shape_plan_t *plan)
 {
     return plan->has_gpos_mark;
