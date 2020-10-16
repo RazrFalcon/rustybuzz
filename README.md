@@ -41,9 +41,10 @@ Embedded `harfbuzz` version: 2.7.0
   - [ ] `morx`
   - [ ] `trak`
 - [ ] Port text normalization (`hb-ot-shape-normalize.cc`, easy).
-- [ ] Port fallback shaper (`hb-ot-shape-fallback.cc`, easy).
+- [x] Port fallback shaper (`hb-ot-shape-fallback.cc`, easy).
 - [ ] Port shaper logic (`hb-ot-shape.cc`).
 - [ ] Remove C++ sources.
+- [ ] Remove `unsafe`.
 
 ## Performance
 

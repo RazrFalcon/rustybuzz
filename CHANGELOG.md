@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Ported
+- Fallback shaper. Thanks to [laurmaedje](https://github.com/laurmaedje).
 
 ## [0.2.0] - 2020-07-25
 ### Ported
