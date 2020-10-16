@@ -209,8 +209,6 @@ impl<'a> Font<'a> {
     }
 
     pub(crate) fn glyph_v_advance(&self, glyph: u32) -> i32 {
-        // NOTE(laurmaedje): Is it correct to negate here?
-        // Seems like it's done this way it `rb_ot_get_glyph_v_advances`.
         -(rb_font_get_advance(self.as_ptr(), glyph, 1) as i32)
     }
 

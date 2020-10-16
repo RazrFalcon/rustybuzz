@@ -132,7 +132,6 @@ impl GlyphInfo {
         if self.general_category() == GeneralCategory::SpaceSeparator {
             unsafe {
                 let n = (self.unicode_props() >> 8) as u8;
-                // NOTE(laurmaedje): Is this the appropriate way to do this?
                 Some(std::mem::transmute(n))
             }
         } else {

@@ -13,7 +13,6 @@ fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
 
     // Thai / Lao need some per-character work.
     if u & !0xFF == 0x0E00 {
-        // NOTE(laurmaedje): This branch is never tested.
         if class == 0 {
             match u {
                 0x0E31 |
@@ -118,7 +117,6 @@ fn zero_mark_advances(
     end: usize,
     adjust_offsets_when_zeroing: bool,
 ) {
-    // NOTE(laurmaedje): This whole function is never tested.
     for (info, pos) in buffer.info[start..end].iter().zip(&mut buffer.pos[start..end]) {
         if info.general_category() == GeneralCategory::NonspacingMark {
             if adjust_offsets_when_zeroing {
@@ -239,8 +237,6 @@ fn position_mark(
 
             // Don't shift down "above" marks too much.
             if (y_gap > 0) != (pos.y_offset > 0) {
-                // NOTE(laurmaedje): In the original this was "unsigned int".
-                // Does it matter? I don't think so, I have to cast back anyway, otherwise.
                 let correction = -pos.y_offset / 2;
                 base_extents.y_bearing += correction;
                 base_extents.height -= correction;
@@ -303,8 +299,6 @@ fn position_around_base(
     for (info, pos) in buffer.info[base+1..end].iter().zip(&mut buffer.pos[base+1..end]) {
         if info.modified_combining_class() != 0 {
             if num_lig_components > 1 {
-                // NOTE(laurmaedje): All of this is never tested.
-
                 let this_lig_id = info.lig_id() as u32;
                 let mut this_lig_component = info.lig_comp() as i32 - 1;
 
@@ -481,7 +475,6 @@ pub extern "C" fn _rb_ot_shape_fallback_spaces(
                         if horizontal {
                             pos.x_advance = font.glyph_h_advance(glyph.0 as u32) as i32;
                         } else {
-                            // NOTE(laurmaedje): This branch is never tested.
                             pos.y_advance = font.glyph_v_advance(glyph.0 as u32);
                         }
                         break;
@@ -498,7 +491,6 @@ pub extern "C" fn _rb_ot_shape_fallback_spaces(
                     if horizontal {
                         pos.x_advance = font.glyph_h_advance(glyph.0 as u32) as i32;
                     } else {
-                        // NOTE(laurmaedje): This branch is never tested.
                         pos.y_advance = font.glyph_v_advance(glyph.0 as u32);
                     }
                 }
