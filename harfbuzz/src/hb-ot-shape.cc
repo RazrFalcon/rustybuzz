@@ -39,6 +39,11 @@
 
 #include "hb-aat-layout.hh"
 
+const rb_ot_complex_shaper_t *rb_ot_shape_plan_get_ot_complex_shaper(const rb_ot_shape_plan_t *plan)
+{
+    return plan->shaper;
+}
+
 const rb_ot_map_t *rb_ot_shape_plan_get_ot_map(const rb_ot_shape_plan_t *plan)
 {
     return &plan->map;
@@ -69,7 +74,7 @@ rb_ot_map_builder_t *rb_ot_shape_planner_get_ot_map(rb_ot_shape_planner_t *plann
     return &planner->map;
 }
 
-RB_EXTERN rb_script_t rb_ot_shape_planner_get_script(rb_ot_shape_planner_t *planner)
+RB_EXTERN rb_script_t rb_ot_shape_planner_get_script(const rb_ot_shape_planner_t *planner)
 {
     return planner->props.script;
 }

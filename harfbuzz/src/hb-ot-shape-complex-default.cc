@@ -38,6 +38,26 @@ void rb_clear_substitution_flags(const rb_ot_shape_plan_t *plan RB_UNUSED,
         _rb_glyph_info_clear_substituted(&info[i]);
 }
 
+rb_ot_shape_normalization_mode_t rb_ot_complex_shaper_get_normalization_preference(const rb_ot_complex_shaper_t *shaper)
+{
+    return shaper->normalization_preference;
+}
+
+rb_ot_decompose_func_t rb_ot_complex_shaper_get_decompose(const rb_ot_complex_shaper_t *shaper)
+{
+    return shaper->decompose;
+}
+
+rb_ot_compose_func_t rb_ot_complex_shaper_get_compose(const rb_ot_complex_shaper_t *shaper)
+{
+    return shaper->compose;
+}
+
+rb_ot_reorder_marks_func_t rb_ot_complex_shaper_get_reorder_marks(const rb_ot_complex_shaper_t *shaper)
+{
+    return shaper->reorder_marks;
+}
+
 const rb_ot_complex_shaper_t _rb_ot_complex_shaper_arabic = {
     rb_ot_complex_collect_features_arabic,
     nullptr, /* override_features */

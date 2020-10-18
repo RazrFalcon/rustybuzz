@@ -60,6 +60,8 @@ enum rb_ot_shape_zero_width_marks_type_t {
     RB_COMPLEX_SHAPER_IMPLEMENT(use)                                                                                   \
     /* ^--- Add new shapers here; keep sorted. */
 
+typedef void (*rb_ot_reorder_marks_func_t)(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, unsigned int start, unsigned int end);
+
 struct rb_ot_complex_shaper_t
 {
     /* collect_features()
@@ -112,16 +114,13 @@ struct rb_ot_complex_shaper_t
      * Called during shape()'s normalization.
      * May be NULL.
      */
-    bool (*decompose)(const rb_ot_shape_normalize_context_t *c,
-                      rb_codepoint_t ab,
-                      rb_codepoint_t *a,
-                      rb_codepoint_t *b);
+    rb_ot_decompose_func_t decompose;
 
     /* compose()
      * Called during shape()'s normalization.
      * May be NULL.
      */
-    bool (*compose)(const rb_ot_shape_normalize_context_t *c, rb_codepoint_t a, rb_codepoint_t b, rb_codepoint_t *ab);
+    rb_ot_compose_func_t compose;
 
     /* setup_masks()
      * Called during shape().
@@ -142,7 +141,7 @@ struct rb_ot_complex_shaper_t
      * Shapers can use to modify ordering of combining marks.
      * May be NULL.
      */
-    void (*reorder_marks)(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, unsigned int start, unsigned int end);
+    rb_ot_reorder_marks_func_t reorder_marks;
 
     rb_ot_shape_zero_width_marks_type_t zero_width_marks;
 
@@ -369,6 +368,15 @@ static inline const rb_ot_complex_shaper_t *rb_ot_shape_complex_categorize(const
 }
 
 extern "C" {
+typedef struct rb_ot_complex_shaper_t rb_ot_complex_shaper_t;
+
+RB_EXTERN rb_ot_shape_normalization_mode_t rb_ot_complex_shaper_get_normalization_preference(const rb_ot_complex_shaper_t *shaper);
+RB_EXTERN rb_ot_decompose_func_t rb_ot_complex_shaper_get_decompose(const rb_ot_complex_shaper_t *shaper);
+RB_EXTERN rb_ot_compose_func_t rb_ot_complex_shaper_get_compose(const rb_ot_complex_shaper_t *shaper);
+RB_EXTERN rb_ot_reorder_marks_func_t rb_ot_complex_shaper_get_reorder_marks(const rb_ot_complex_shaper_t *shaper);
+}
+
+extern "C" {
 typedef struct rb_ot_arabic_shape_plan_t rb_ot_arabic_shape_plan_t;
 
 RB_EXTERN void *rb_ot_complex_data_create_arabic(const rb_ot_shape_plan_t *plan);
@@ -397,10 +405,10 @@ RB_EXTERN void rb_ot_complex_setup_masks_hangul(const rb_ot_shape_plan_t *plan, 
 }
 
 extern "C" {
-RB_EXTERN bool rb_ot_complex_compose_hebrew(const rb_ot_shape_normalize_context_t *c,
-                                            rb_codepoint_t a,
-                                            rb_codepoint_t b,
-                                            rb_codepoint_t *ab);
+RB_EXTERN rb_bool_t rb_ot_complex_compose_hebrew(const rb_ot_shape_normalize_context_t *c,
+                                                 rb_codepoint_t a,
+                                                 rb_codepoint_t b,
+                                                 rb_codepoint_t *ab);
 }
 
 extern "C" {
@@ -412,14 +420,14 @@ RB_EXTERN void *rb_ot_complex_data_create_indic(const rb_ot_shape_plan_t *plan);
 RB_EXTERN void rb_ot_complex_data_destroy_indic(void *data);
 RB_EXTERN void
 rb_ot_complex_preprocess_text_indic(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, rb_font_t *font);
-RB_EXTERN bool rb_ot_complex_decompose_indic(const rb_ot_shape_normalize_context_t *c,
-                                             rb_codepoint_t ab,
-                                             rb_codepoint_t *a,
-                                             rb_codepoint_t *b);
-RB_EXTERN bool rb_ot_complex_compose_indic(const rb_ot_shape_normalize_context_t *c,
-                                           rb_codepoint_t a,
-                                           rb_codepoint_t b,
-                                           rb_codepoint_t *ab);
+RB_EXTERN rb_bool_t rb_ot_complex_decompose_indic(const rb_ot_shape_normalize_context_t *c,
+                                                  rb_codepoint_t ab,
+                                                  rb_codepoint_t *a,
+                                                  rb_codepoint_t *b);
+RB_EXTERN rb_bool_t rb_ot_complex_compose_indic(const rb_ot_shape_normalize_context_t *c,
+                                                rb_codepoint_t a,
+                                                rb_codepoint_t b,
+                                                rb_codepoint_t *ab);
 RB_EXTERN void rb_ot_complex_setup_masks_indic(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, rb_font_t *font);
 }
 
@@ -428,14 +436,14 @@ RB_EXTERN void rb_ot_complex_collect_features_khmer(rb_ot_shape_planner_t *plan)
 RB_EXTERN void rb_ot_complex_override_features_khmer(rb_ot_shape_planner_t *plan);
 RB_EXTERN void *rb_ot_complex_data_create_khmer(const rb_ot_shape_plan_t *plan);
 RB_EXTERN void rb_ot_complex_data_destroy_khmer(void *data);
-RB_EXTERN bool rb_ot_complex_decompose_khmer(const rb_ot_shape_normalize_context_t *c,
-                                             rb_codepoint_t ab,
-                                             rb_codepoint_t *a,
-                                             rb_codepoint_t *b);
-RB_EXTERN bool rb_ot_complex_compose_khmer(const rb_ot_shape_normalize_context_t *c,
-                                           rb_codepoint_t a,
-                                           rb_codepoint_t b,
-                                           rb_codepoint_t *ab);
+RB_EXTERN rb_bool_t rb_ot_complex_decompose_khmer(const rb_ot_shape_normalize_context_t *c,
+                                                  rb_codepoint_t ab,
+                                                  rb_codepoint_t *a,
+                                                  rb_codepoint_t *b);
+RB_EXTERN rb_bool_t rb_ot_complex_compose_khmer(const rb_ot_shape_normalize_context_t *c,
+                                                rb_codepoint_t a,
+                                                rb_codepoint_t b,
+                                                rb_codepoint_t *ab);
 RB_EXTERN void rb_ot_complex_setup_masks_khmer(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, rb_font_t *font);
 }
 
@@ -455,10 +463,10 @@ RB_EXTERN void rb_clear_substitution_flags(const rb_ot_shape_plan_t *plan, rb_fo
 RB_EXTERN void *rb_ot_complex_data_create_use(const rb_ot_shape_plan_t *plan);
 RB_EXTERN void rb_ot_complex_data_destroy_use(void *data);
 RB_EXTERN void rb_ot_complex_preprocess_text_use(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, rb_font_t *font);
-RB_EXTERN bool rb_ot_complex_compose_use(const rb_ot_shape_normalize_context_t *c,
-                                         rb_codepoint_t a,
-                                         rb_codepoint_t b,
-                                         rb_codepoint_t *ab);
+RB_EXTERN rb_bool_t rb_ot_complex_compose_use(const rb_ot_shape_normalize_context_t *c,
+                                              rb_codepoint_t a,
+                                              rb_codepoint_t b,
+                                              rb_codepoint_t *ab);
 RB_EXTERN void rb_ot_complex_setup_masks_use(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, rb_font_t *font);
 }
 
