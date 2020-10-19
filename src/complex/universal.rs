@@ -609,19 +609,19 @@ fn preprocess_text(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 #[no_mangle]
 pub extern "C" fn rb_ot_complex_compose_use(
     ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    a: u32,
-    b: u32,
-    ab: *mut u32,
-) -> bool {
+    a: ffi::rb_codepoint_t,
+    b: ffi::rb_codepoint_t,
+    ab: *mut ffi::rb_codepoint_t,
+) -> ffi::rb_bool_t {
     let ctx = ShapeNormalizeContext::from_ptr(ctx);
     let a = char::try_from(a).unwrap();
     let b = char::try_from(b).unwrap();
     match compose(&ctx, a, b) {
         Some(c) => unsafe {
             *ab = c as u32;
-            true
+            1
         }
-        None => false,
+        None => 0,
     }
 }
 

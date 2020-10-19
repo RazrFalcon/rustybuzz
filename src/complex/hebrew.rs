@@ -39,16 +39,16 @@ pub extern "C" fn rb_ot_complex_compose_hebrew(
     a: ffi::rb_codepoint_t,
     b: ffi::rb_codepoint_t,
     ab: *mut ffi::rb_codepoint_t,
-) -> bool {
+) -> ffi::rb_bool_t {
     let ctx = ShapeNormalizeContext::from_ptr(ctx);
     let a = char::try_from(a).unwrap();
     let b = char::try_from(b).unwrap();
 
     if let Some(new_ab) = compose(&ctx, a, b) {
         unsafe { *ab = new_ab as u32; }
-        true
+        1
     } else {
-        false
+        0
     }
 }
 

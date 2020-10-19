@@ -9,6 +9,7 @@ pub type rb_codepoint_t = u32;
 pub type rb_mask_t = u32;
 pub type rb_position_t = i32;
 pub type rb_script_t = u32;
+pub type rb_ot_shape_normalization_mode_t = u32;
 
 pub const RB_DIRECTION_INVALID: rb_direction_t = 0;
 pub const RB_DIRECTION_LTR: rb_direction_t = 4;
@@ -132,7 +133,32 @@ pub struct rb_ot_shape_planner_t { _unused: [u8; 0] }
 
 #[repr(C)]
 #[derive(Clone, Copy)]
+pub struct rb_ot_complex_shaper_t { _unused: [u8; 0] }
+
+pub type rb_ot_reorder_marks_func_t = unsafe extern "C" fn(
+    plan: *const rb_ot_shape_plan_t,
+    buffer: *mut rb_buffer_t,
+    start: u32,
+    end: u32,
+);
+
+#[repr(C)]
+#[derive(Clone, Copy)]
 pub struct rb_ot_shape_normalize_context_t { _unused: [u8; 0] }
+
+pub type rb_ot_decompose_func_t = unsafe extern "C" fn(
+    ctx: *const rb_ot_shape_normalize_context_t,
+    ab: rb_codepoint_t,
+    a: *mut rb_codepoint_t,
+    b: *mut rb_codepoint_t,
+) -> rb_bool_t;
+
+pub type rb_ot_compose_func_t = unsafe extern "C" fn(
+    ctx: *const rb_ot_shape_normalize_context_t,
+    a: rb_codepoint_t,
+    b: rb_codepoint_t,
+    ab: *mut rb_codepoint_t,
+) -> rb_bool_t;
 
 pub type rb_ot_pause_func_t = Option<
     unsafe extern "C" fn(
@@ -174,23 +200,41 @@ extern "C" {
         lookup_count: *mut u32,
     );
 
+    pub fn rb_ot_shape_plan_get_ot_complex_shaper(plan: *const rb_ot_shape_plan_t) -> *const rb_ot_complex_shaper_t;
+
     pub fn rb_ot_shape_plan_get_ot_map(plan: *const rb_ot_shape_plan_t) -> *const rb_ot_map_t;
 
-    pub fn rb_ot_shape_plan_get_data(plan: *mut rb_ot_shape_plan_t) -> *const c_void;
+    pub fn rb_ot_shape_plan_get_data(plan: *const rb_ot_shape_plan_t) -> *const c_void;
 
-    pub fn rb_ot_shape_plan_get_script(plan: *mut rb_ot_shape_plan_t) -> rb_script_t;
+    pub fn rb_ot_shape_plan_get_script(plan: *const rb_ot_shape_plan_t) -> rb_script_t;
 
-    pub fn rb_ot_shape_plan_get_direction(plan: *mut rb_ot_shape_plan_t) -> rb_direction_t;
+    pub fn rb_ot_shape_plan_get_direction(plan: *const rb_ot_shape_plan_t) -> rb_direction_t;
 
-    pub fn rb_ot_shape_plan_has_gpos_mark(plan: *mut rb_ot_shape_plan_t) -> bool;
+    pub fn rb_ot_shape_plan_has_gpos_mark(plan: *const rb_ot_shape_plan_t) -> bool;
 
     pub fn rb_ot_shape_planner_get_ot_map(
         planner: *mut rb_ot_shape_planner_t,
     ) -> *mut rb_ot_map_builder_t;
 
     pub fn rb_ot_shape_planner_get_script(
-        planner: *mut rb_ot_shape_planner_t,
+        planner: *const rb_ot_shape_planner_t,
     ) -> rb_script_t;
+
+    pub fn rb_ot_complex_shaper_get_normalization_preference(
+        shaper: *const rb_ot_complex_shaper_t,
+    ) -> rb_ot_shape_normalization_mode_t;
+
+    pub fn rb_ot_complex_shaper_get_decompose(
+        shaper: *const rb_ot_complex_shaper_t,
+    ) -> Option<rb_ot_decompose_func_t>;
+
+    pub fn rb_ot_complex_shaper_get_compose(
+        shaper: *const rb_ot_complex_shaper_t,
+    ) -> Option<rb_ot_compose_func_t>;
+
+    pub fn rb_ot_complex_shaper_get_reorder_marks(
+        shaper: *const rb_ot_complex_shaper_t,
+    ) -> Option<rb_ot_reorder_marks_func_t>;
 
     pub fn rb_ot_map_builder_add_feature(
         builder: *mut rb_ot_map_builder_t,
@@ -203,14 +247,6 @@ extern "C" {
         builder: *mut rb_ot_map_builder_t,
         pause: rb_ot_pause_func_t,
     );
-
-    pub fn rb_ot_shape_normalize_context_get_plan(
-        ctx: *const rb_ot_shape_normalize_context_t,
-    ) -> *const rb_ot_shape_plan_t;
-
-    pub fn rb_ot_shape_normalize_context_get_font(
-        ctx: *const rb_ot_shape_normalize_context_t,
-    ) -> *const rb_font_t;
 
     pub fn rb_ot_layout_lookup_would_substitute(
         face: *mut rb_face_t,

@@ -47,7 +47,9 @@ RB_EXTERN void _rb_ot_shape(rb_shape_plan_t *shape_plan,
                             unsigned int num_features);
 
 typedef struct rb_ot_shape_plan_t rb_ot_shape_plan_t;
+typedef struct rb_ot_complex_shaper_t rb_ot_complex_shaper_t;
 typedef struct rb_ot_map_t rb_ot_map_t;
+RB_EXTERN const rb_ot_complex_shaper_t *rb_ot_shape_plan_get_ot_complex_shaper(const rb_ot_shape_plan_t *plan);
 RB_EXTERN const rb_ot_map_t *rb_ot_shape_plan_get_ot_map(const rb_ot_shape_plan_t *plan);
 RB_EXTERN const void *rb_ot_shape_plan_get_data(const rb_ot_shape_plan_t *plan);
 RB_EXTERN rb_script_t rb_ot_shape_plan_get_script(const rb_ot_shape_plan_t *plan);
@@ -57,7 +59,7 @@ RB_EXTERN bool rb_ot_shape_plan_has_gpos_mark(const rb_ot_shape_plan_t *plan);
 typedef struct rb_ot_shape_planner_t rb_ot_shape_planner_t;
 typedef struct rb_ot_map_builder_t rb_ot_map_builder_t;
 RB_EXTERN rb_ot_map_builder_t *rb_ot_shape_planner_get_ot_map(rb_ot_shape_planner_t *planner);
-RB_EXTERN rb_script_t rb_ot_shape_planner_get_script(rb_ot_shape_planner_t *planner);
+RB_EXTERN rb_script_t rb_ot_shape_planner_get_script(const rb_ot_shape_planner_t *planner);
 
 RB_END_DECLS
 

@@ -642,16 +642,16 @@ pub extern "C" fn rb_ot_complex_decompose_indic(
     ab: ffi::rb_codepoint_t,
     a: *mut ffi::rb_codepoint_t,
     b: *mut ffi::rb_codepoint_t,
-) -> bool {
+) -> ffi::rb_bool_t {
     let ctx = ShapeNormalizeContext::from_ptr(ctx);
 
     // Don't decompose these.
     match ab {
-        0x0931 => return false, // DEVANAGARI LETTER RRA
+        0x0931 => return 0, // DEVANAGARI LETTER RRA
         // https://github.com/harfbuzz/harfbuzz/issues/779
-        0x09DC => return false, // BENGALI LETTER RRA
-        0x09DD => return false, // BENGALI LETTER RHA
-        0x0B94 => return false, // TAMIL LETTER AU
+        0x09DC => return 0, // BENGALI LETTER RRA
+        0x09DD => return 0, // BENGALI LETTER RHA
+        0x0B94 => return 0, // TAMIL LETTER AU
         _ => {}
     }
 
@@ -681,10 +681,10 @@ pub extern "C" fn rb_ot_complex_decompose_indic(
         //   https://docs.microsoft.com/en-us/typography/script-development/sinhala#shaping
 
         let mut ok = false;
-        if let Some(g) = ctx.font().glyph_index(ab) {
+        if let Some(g) = ctx.font.glyph_index(ab) {
             let g = g.0 as u32;
             let indic_plan = IndicShapePlan::from_ptr(ctx.plan.data() as _);
-            ok = indic_plan.pstf.would_substitute(&[g], ctx.font());
+            ok = indic_plan.pstf.would_substitute(&[g], ctx.font);
         }
 
         if ok {
@@ -692,30 +692,30 @@ pub extern "C" fn rb_ot_complex_decompose_indic(
             unsafe {
                 *a = 0x0DD9;
                 *b = ab;
-                return true;
+                return 1;
             }
         }
     }
 
-    crate::unicode::rb_ucd_decompose(ab, a, b) != 0
+    crate::unicode::rb_ucd_decompose(ab, a, b)
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_complex_compose_indic(
     ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    a: u32,
-    b: u32,
-    ab: *mut u32,
-) -> bool {
+    a: ffi::rb_codepoint_t,
+    b: ffi::rb_codepoint_t,
+    ab: *mut ffi::rb_codepoint_t,
+) -> ffi::rb_bool_t {
     let ctx = ShapeNormalizeContext::from_ptr(ctx);
     let a = char::try_from(a).unwrap();
     let b = char::try_from(b).unwrap();
     match compose(&ctx, a, b) {
         Some(c) => unsafe {
             *ab = c as u32;
-            true
+            1
         }
-        None => false,
+        None => 0,
     }
 }
 

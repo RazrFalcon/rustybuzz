@@ -367,57 +367,57 @@ pub extern "C" fn rb_ot_complex_decompose_khmer(
     ab: ffi::rb_codepoint_t,
     a: *mut ffi::rb_codepoint_t,
     b: *mut ffi::rb_codepoint_t,
-) -> bool {
+) -> ffi::rb_bool_t {
     // Decompose split matras that don't have Unicode decompositions.
 
     match ab {
         0x17BE => {
             unsafe { *a = 0x17C1; }
             unsafe { *b = 0x17BE; }
-            return true;
+            return 1;
         }
         0x17BF => {
             unsafe { *a = 0x17C1; }
             unsafe { *b = 0x17BF; }
-            return true;
+            return 1;
         }
         0x17C0 => {
             unsafe { *a = 0x17C1; }
             unsafe { *b = 0x17C0; }
-            return true;
+            return 1;
         }
         0x17C4 => {
             unsafe { *a = 0x17C1; }
             unsafe { *b = 0x17C4; }
-            return true;
+            return 1;
         }
         0x17C5 => {
             unsafe { *a = 0x17C1; }
             unsafe { *b = 0x17C5; }
-            return true;
+            return 1;
         }
         _ => {}
     }
 
-    crate::unicode::rb_ucd_decompose(ab, a, b) != 0
+    crate::unicode::rb_ucd_decompose(ab, a, b)
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_complex_compose_khmer(
     ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    a: u32,
-    b: u32,
-    ab: *mut u32,
-) -> bool {
+    a: ffi::rb_codepoint_t,
+    b: ffi::rb_codepoint_t,
+    ab: *mut ffi::rb_codepoint_t,
+) -> ffi::rb_bool_t {
     let ctx = ShapeNormalizeContext::from_ptr(ctx);
     let a = char::try_from(a).unwrap();
     let b = char::try_from(b).unwrap();
     match compose(&ctx, a, b) {
         Some(c) => unsafe {
             *ab = c as u32;
-            true
+            1
         }
-        None => false,
+        None => 0,
     }
 }
 

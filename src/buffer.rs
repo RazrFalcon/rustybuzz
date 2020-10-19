@@ -106,6 +106,59 @@ impl GlyphInfo {
         }
     }
 
+    // In the original sources, this function was called `_rb_glyph_info_set_unicode_props`.
+    // That would, however, clash with the existing `set_unicode_props`, so this is now called
+    // `init_unicode_props`.
+    #[inline]
+    pub(crate) fn init_unicode_props(&mut self, scratch_flags: &mut BufferScratchFlags) {
+        let u = self.as_char();
+        let gc = u.general_category();
+        let mut props = gc.to_rb() as u16;
+
+        if u as u32 >= 0x80 {
+            *scratch_flags |= BufferScratchFlags::HAS_NON_ASCII;
+
+            if u.is_default_ignorable() {
+                props |= UnicodeProps::IGNORABLE.bits;
+                *scratch_flags |= BufferScratchFlags::HAS_DEFAULT_IGNORABLES;
+
+                match u as u32 {
+                    0x200C => props |= UnicodeProps::CF_ZWNJ.bits,
+                    0x200D => props |= UnicodeProps::CF_ZWJ.bits,
+
+                    // Mongolian Free Variation Selectors need to be remembered
+                    // because although we need to hide them like default-ignorables,
+                    // they need to non-ignorable during shaping.  This is similar to
+                    // what we do for joiners in Indic-like shapers, but since the
+                    // FVSes are GC=Mn, we have use a separate bit to remember them.
+                    // Fixes:
+                    // https://github.com/harfbuzz/harfbuzz/issues/234
+                    0x180B..=0x180D => props |= UnicodeProps::HIDDEN.bits,
+
+                    // TAG characters need similar treatment. Fixes:
+                    // https://github.com/harfbuzz/harfbuzz/issues/463
+                    0xE0020..=0xE007F => props |= UnicodeProps::HIDDEN.bits,
+
+                    // COMBINING GRAPHEME JOINER should not be skipped; at least some times.
+                    // https://github.com/harfbuzz/harfbuzz/issues/554
+                    0x034F => {
+                        props |= UnicodeProps::HIDDEN.bits;
+                        *scratch_flags |= BufferScratchFlags::HAS_CGJ;
+                    }
+
+                    _ => {}
+                }
+            }
+
+            if gc.is_mark() {
+                props |= UnicodeProps::CONTINUATION.bits;
+                props |= (u.modified_combining_class() as u16) << 8;
+            }
+        }
+
+        self.set_unicode_props(props);
+    }
+
     #[inline]
     pub(crate) fn lig_props(&self) -> u8 {
         unsafe {
@@ -140,6 +193,14 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn set_space_fallback(&mut self, space: Space) {
+        if self.general_category() == GeneralCategory::SpaceSeparator {
+            let n = ((space as u16) << 8) | (self.unicode_props() & 0xFF);
+            self.set_unicode_props(n);
+        }
+    }
+
+    #[inline]
     pub(crate) fn is_default_ignorable(&self) -> bool {
         let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
         n != 0 && !self.is_ligated()
@@ -166,12 +227,10 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn set_modified_combining_class(&mut self, mcc: u8) {
-        if !self.is_unicode_mark() {
-            return;
+        if self.is_unicode_mark() {
+            let n = ((mcc as u16) << 8) | (self.unicode_props() & 0xFF);
+            self.set_unicode_props(n);
         }
-
-        let n = ((mcc as u16) << 8) | (self.unicode_props() & 0xFF);
-        self.set_unicode_props(n);
     }
 
     #[inline]
@@ -226,6 +285,13 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn unhide(&mut self) {
+        let mut n = self.unicode_props();
+        n &= !UnicodeProps::HIDDEN.bits;
+        self.set_unicode_props(n);
+    }
+
+    #[inline]
     pub(crate) fn set_continuation(&mut self) {
         let mut n = self.unicode_props();
         n |= UnicodeProps::CONTINUATION.bits;
@@ -253,6 +319,12 @@ impl GlyphInfo {
             let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
             v.var_u8[3] = n;
         }
+    }
+
+    #[inline]
+    pub(crate) fn glyph_index(&mut self) -> &mut u32 {
+        // buffer var allocations, used during the normalization process
+        &mut self.var1
     }
 }
 
@@ -291,7 +363,7 @@ pub(crate) struct Buffer {
     pub(crate) language: Option<Language>,
 
     /// Allocations successful.
-    successful: bool,
+    pub(crate) successful: bool,
     /// Whether we have an output buffer going on.
     have_output: bool,
     have_separate_output: bool,
@@ -408,8 +480,14 @@ impl Buffer {
     }
 
     #[inline]
-    fn prev_mut(&mut self) -> &mut GlyphInfo {
-        let idx = if self.out_len != 0 { self.out_len - 1 } else { 0 };
+    pub(crate) fn prev(&self) -> &GlyphInfo {
+        let idx = self.out_len.saturating_sub(1);
+        &self.out_info()[idx]
+    }
+
+    #[inline]
+    pub(crate) fn prev_mut(&mut self) -> &mut GlyphInfo {
+        let idx = self.out_len.saturating_sub(1);
         &mut self.out_info_mut()[idx]
     }
 
@@ -650,6 +728,15 @@ impl Buffer {
         self.out_len += 1;
     }
 
+    pub(crate) fn output_char(&mut self, unichar: u32, glyph: u32) {
+        *self.cur_mut(0).glyph_index() = glyph;
+        // This is very confusing indeed.
+        self.output_glyph(unichar);
+        let mut flags = self.scratch_flags;
+        self.prev_mut().init_unicode_props(&mut flags);
+        self.scratch_flags = flags;
+    }
+
     /// Copies glyph at idx to output but doesn't advance idx.
     fn copy_glyph(&mut self) {
         if !self.make_room_for(0, 1) {
@@ -682,7 +769,7 @@ impl Buffer {
     /// Copies n glyphs at idx to output and advance idx.
     ///
     /// If there's no output, just advance idx.
-    fn next_glyphs(&mut self, n: usize) {
+    pub(crate) fn next_glyphs(&mut self, n: usize) {
         if self.have_output {
             if self.have_separate_output || self.out_len != self.idx {
                 if !self.make_room_for(n, n) {
@@ -700,8 +787,13 @@ impl Buffer {
         self.idx += n;
     }
 
+    pub(crate) fn next_char(&mut self, glyph: u32) {
+        *self.cur_mut(0).glyph_index() = glyph;
+        self.next_glyph();
+    }
+
     /// Advance idx without copying to output.
-    fn skip_glyph(&mut self) {
+    pub(crate) fn skip_glyph(&mut self) {
         self.idx += 1;
     }
 
