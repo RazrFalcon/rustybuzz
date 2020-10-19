@@ -728,6 +728,15 @@ impl Buffer {
         self.out_len += 1;
     }
 
+    pub(crate) fn output_char(&mut self, unichar: u32, glyph: u32) {
+        *self.cur_mut(0).glyph_index() = glyph;
+        // This is very confusing indeed.
+        self.output_glyph(unichar);
+        let mut flags = self.scratch_flags;
+        self.prev_mut().init_unicode_props(&mut flags);
+        self.scratch_flags = flags;
+    }
+
     /// Copies glyph at idx to output but doesn't advance idx.
     fn copy_glyph(&mut self) {
         if !self.make_room_for(0, 1) {
@@ -776,6 +785,11 @@ impl Buffer {
         }
 
         self.idx += n;
+    }
+
+    pub(crate) fn next_char(&mut self, glyph: u32) {
+        *self.cur_mut(0).glyph_index() = glyph;
+        self.next_glyph();
     }
 
     /// Advance idx without copying to output.

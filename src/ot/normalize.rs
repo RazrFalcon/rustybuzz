@@ -115,7 +115,10 @@ pub extern "C" fn _rb_ot_shape_normalize(
     let plan = ot::ShapePlan::from_ptr(plan);
     let buffer = Buffer::from_ptr_mut(buffer);
     let font = Font::from_ptr(font);
+    normalize(plan, buffer, font);
+}
 
+fn normalize(plan: ot::ShapePlan, buffer: &'static mut Buffer, font: &'static Font<'static>) {
     if buffer.is_empty() {
         return;
     }
@@ -377,13 +380,13 @@ fn decompose_current_character(ctx: &mut ShapeNormalizeContext, shortest: bool) 
 
     if !shortest || glyph.is_none() {
         if decompose(ctx, shortest, u as u32) > 0 {
-            skip_char(ctx.buffer);
+            ctx.buffer.skip_glyph();
             return;
         }
     }
 
     if let Some(glyph) = glyph {
-        next_char(ctx.buffer, glyph.0 as u32);
+        ctx.buffer.next_char(glyph.0 as u32);
         return;
     }
 
@@ -392,7 +395,7 @@ fn decompose_current_character(ctx: &mut ShapeNormalizeContext, shortest: bool) 
         if let Some(space_type) = u.space_fallback() {
             if let Some(space_glyph) = ctx.font.glyph_index(' ' as u32) {
                 ctx.buffer.cur_mut(0).set_space_fallback(space_type);
-                next_char(ctx.buffer, space_glyph.0 as u32);
+                ctx.buffer.next_char(space_glyph.0 as u32);
                 ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_SPACE_FALLBACK;
                 return;
             }
@@ -403,13 +406,13 @@ fn decompose_current_character(ctx: &mut ShapeNormalizeContext, shortest: bool) 
     // and not a space.  The space ones are handled already.  Handle this lone one.
     if u as u32 == 0x2011 {
         if let Some(other_glyph) = ctx.font.glyph_index(0x2010) {
-            next_char(ctx.buffer, other_glyph.0 as u32);
+            ctx.buffer.next_char(other_glyph.0 as u32);
             return;
         }
     }
 
     // Insert a .notdef glyph if decomposition failed.
-    next_char(ctx.buffer, 0);
+    ctx.buffer.next_char(0);
 }
 
 /// Returns 0 if didn't decompose, number of resulting characters otherwise.
@@ -433,7 +436,7 @@ fn decompose(ctx: &mut ShapeNormalizeContext, shortest: bool, ab: u32) -> u32 {
         let ret = decompose(ctx, shortest, a);
         if ret != 0 {
             if let Some(b_glyph) = b_glyph {
-                output_char(ctx.buffer, b, b_glyph.0 as u32);
+                ctx.buffer.output_char(b, b_glyph.0 as u32);
                 return ret + 1;
             }
             return ret;
@@ -442,9 +445,9 @@ fn decompose(ctx: &mut ShapeNormalizeContext, shortest: bool, ab: u32) -> u32 {
 
     if let Some(a_glyph) = a_glyph {
         // Output a and b.
-        output_char(ctx.buffer, a, a_glyph.0 as u32);
+        ctx.buffer.output_char(a, a_glyph.0 as u32);
         if let Some(b_glyph) = b_glyph {
-            output_char(ctx.buffer, b, b_glyph.0 as u32);
+            ctx.buffer.output_char(b, b_glyph.0 as u32);
             return 2;
         }
         return 1;
@@ -479,22 +482,4 @@ fn set_glyph(info: &mut GlyphInfo, font: &Font) {
     if let Some(glyph_id) = font.glyph_index(info.codepoint) {
         *info.glyph_index() = glyph_id.0 as u32;
     }
-}
-
-fn output_char(buffer: &mut Buffer, unichar: u32, glyph: u32) {
-    *buffer.cur_mut(0).glyph_index() = glyph;
-    // This is very confusing indeed.
-    buffer.output_glyph(unichar);
-    let mut flags = buffer.scratch_flags;
-    buffer.prev_mut().init_unicode_props(&mut flags);
-    buffer.scratch_flags = flags;
-}
-
-fn next_char(buffer: &mut Buffer, glyph: u32) {
-    *buffer.cur_mut(0).glyph_index() = glyph;
-    buffer.next_glyph();
-}
-
-fn skip_char(buffer: &mut Buffer) {
-    buffer.skip_glyph();
 }

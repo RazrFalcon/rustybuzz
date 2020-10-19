@@ -97,11 +97,17 @@ fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
 
 #[no_mangle]
 pub extern "C" fn _rb_ot_shape_fallback_mark_position_recategorize_marks(
-    _: *const ffi::rb_ot_shape_plan_t,
-    _: *mut ffi::rb_font_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
-    let buffer = Buffer::from_ptr_mut(buffer);
+    let plan = ShapePlan::from_ptr(plan);
+    let font = Font::from_ptr(font);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    recategorize_marks(&plan, font, &mut buffer)
+}
+
+fn recategorize_marks(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
     for info in &mut buffer.info {
         if info.general_category() == GeneralCategory::NonspacingMark {
             let mut class = info.modified_combining_class();
@@ -402,9 +408,17 @@ pub extern "C" fn _rb_ot_shape_fallback_mark_position(
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
-    let buffer = Buffer::from_ptr_mut(buffer);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
     let adjust_offsets_when_zeroing = adjust_offsets_when_zeroing != 0;
+    mark_position(&plan, font, &mut buffer, adjust_offsets_when_zeroing)
+}
 
+fn mark_position(
+    plan: &ShapePlan,
+    font: &Font,
+    buffer: &mut Buffer,
+    adjust_offsets_when_zeroing: bool,
+) {
     let mut start = 0;
     let count = buffer.info.len();
     for i in 1..count {
@@ -428,13 +442,17 @@ pub extern "C" fn _rb_ot_shape_fallback_kern(
 /// Adjusts width of various spaces.
 #[no_mangle]
 pub extern "C" fn _rb_ot_shape_fallback_spaces(
-    _: *const ffi::rb_ot_shape_plan_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
     font: *mut ffi::rb_font_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
+    let plan = ShapePlan::from_ptr(plan);
     let font = Font::from_ptr(font);
-    let buffer = Buffer::from_ptr_mut(buffer);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    spaces(&plan, &font, &mut buffer);
+}
 
+fn spaces(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
     let horizontal = buffer.direction.is_horizontal();
     for (info, pos) in buffer.info.iter().zip(&mut buffer.pos) {
         let space_type = match info.space_fallback() {
