@@ -75,32 +75,6 @@ namespace OT {
 
 #define NOT_COVERED ((unsigned int)-1)
 
-struct rb_collect_variation_indices_context_t : rb_dispatch_context_t<rb_collect_variation_indices_context_t>
-{
-    template <typename T> return_t dispatch(const T &obj)
-    {
-        obj.collect_variation_indices(this);
-        return rb_empty_t();
-    }
-    static return_t default_return_value()
-    {
-        return rb_empty_t();
-    }
-
-    rb_set_t *layout_variation_indices;
-    const rb_set_t *glyph_set;
-    const rb_map_t *gpos_lookups;
-
-    rb_collect_variation_indices_context_t(rb_set_t *layout_variation_indices_,
-                                           const rb_set_t *glyph_set_,
-                                           const rb_map_t *gpos_lookups_)
-        : layout_variation_indices(layout_variation_indices_)
-        , glyph_set(glyph_set_)
-        , gpos_lookups(gpos_lookups_)
-    {
-    }
-};
-
 /*
  *
  * OpenType Layout Common Table Formats
@@ -151,15 +125,6 @@ template <typename Type> struct RecordArrayOf : SortedArrayOf<Record<Type>>
     {
         return (*this)[i].tag;
     }
-    unsigned int
-    get_tags(unsigned int start_offset, unsigned int *record_count /* IN/OUT */, rb_tag_t *record_tags /* OUT */) const
-    {
-        if (record_count) {
-            +this->sub_array(start_offset, record_count) | rb_map(&Record<Type>::tag) |
-                rb_sink(rb_array(record_tags, *record_count));
-        }
-        return this->len;
-    }
     bool find_index(rb_tag_t tag, unsigned int *index) const
     {
         return this->bfind(tag, index, RB_BFIND_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
@@ -197,11 +162,6 @@ struct RangeRecord
         return c->check_struct(this);
     }
 
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return glyphs->intersects(first, last);
-    }
-
     template <typename set_t> bool collect_coverage(set_t *glyphs) const
     {
         return glyphs->add_range(first, last);
@@ -217,11 +177,6 @@ DECLARE_NULL_NAMESPACE_BYTES(OT, RangeRecord);
 
 struct IndexArray : ArrayOf<Index>
 {
-    bool intersects(const rb_map_t *indexes) const
-    {
-        return rb_any(*this, indexes);
-    }
-
     unsigned int
     get_indexes(unsigned int start_offset, unsigned int *_count /* IN/OUT */, unsigned int *_indexes /* OUT */) const
     {
@@ -229,11 +184,6 @@ struct IndexArray : ArrayOf<Index>
             +this->sub_array(start_offset, _count) | rb_sink(rb_array(_indexes, *_count));
         }
         return this->len;
-    }
-
-    void add_indexes_to(rb_set_t *output /* OUT */) const
-    {
-        output->add_array(arrayZ, len);
     }
 };
 
@@ -246,16 +196,6 @@ struct LangSys
     rb_tag_t get_feature_index(unsigned int i) const
     {
         return featureIndex[i];
-    }
-    unsigned int get_feature_indexes(unsigned int start_offset,
-                                     unsigned int *feature_count /* IN/OUT */,
-                                     unsigned int *feature_indexes /* OUT */) const
-    {
-        return featureIndex.get_indexes(start_offset, feature_count, feature_indexes);
-    }
-    void add_feature_indexes_to(rb_set_t *feature_indexes) const
-    {
-        featureIndex.add_indexes_to(feature_indexes);
     }
 
     bool has_required_feature() const
@@ -307,12 +247,6 @@ struct Script
     {
         return langSys.get_tag(i);
     }
-    unsigned int get_lang_sys_tags(unsigned int start_offset,
-                                   unsigned int *lang_sys_count /* IN/OUT */,
-                                   rb_tag_t *lang_sys_tags /* OUT */) const
-    {
-        return langSys.get_tags(start_offset, lang_sys_count, lang_sys_tags);
-    }
     const LangSys &get_lang_sys(unsigned int i) const
     {
         if (i == Index::NOT_FOUND_INDEX)
@@ -349,244 +283,7 @@ public:
 
 typedef RecordListOf<Script> ScriptList;
 
-/* https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#size */
-struct FeatureParamsSize
-{
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        if (unlikely(!c->check_struct(this)))
-            return false;
-
-        /* This subtable has some "history", if you will.  Some earlier versions of
-         * Adobe tools calculated the offset of the FeatureParams sutable from the
-         * beginning of the FeatureList table!  Now, that is dealt with in the
-         * Feature implementation.  But we still need to be able to tell junk from
-         * real data.  Note: We don't check that the nameID actually exists.
-         *
-         * Read Roberts wrote on 9/15/06 on opentype-list@indx.co.uk :
-         *
-         * Yes, it is correct that a new version of the AFDKO (version 2.0) will be
-         * coming out soon, and that the makeotf program will build a font with a
-         * 'size' feature that is correct by the specification.
-         *
-         * The specification for this feature tag is in the "OpenType Layout Tag
-         * Registry". You can see a copy of this at:
-         * https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#tag-size
-         *
-         * Here is one set of rules to determine if the 'size' feature is built
-         * correctly, or as by the older versions of MakeOTF. You may be able to do
-         * better.
-         *
-         * Assume that the offset to the size feature is according to specification,
-         * and make the following value checks. If it fails, assume the size
-         * feature is calculated as versions of MakeOTF before the AFDKO 2.0 built it.
-         * If this fails, reject the 'size' feature. The older makeOTF's calculated the
-         * offset from the beginning of the FeatureList table, rather than from the
-         * beginning of the 'size' Feature table.
-         *
-         * If "design size" == 0:
-         *     fails check
-         *
-         * Else if ("subfamily identifier" == 0 and
-         *     "range start" == 0 and
-         *     "range end" == 0 and
-         *     "range start" == 0 and
-         *     "menu name ID" == 0)
-         *     passes check: this is the format used when there is a design size
-         * specified, but there is no recommended size range.
-         *
-         * Else if ("design size" <  "range start" or
-         *     "design size" >   "range end" or
-         *     "range end" <= "range start" or
-         *     "menu name ID"  < 256 or
-         *     "menu name ID"  > 32767 or
-         *     menu name ID is not a name ID which is actually in the name table)
-         *     fails test
-         * Else
-         *     passes test.
-         */
-
-        if (!designSize)
-            return false;
-        else if (subfamilyID == 0 && subfamilyNameID == 0 && rangeStart == 0 && rangeEnd == 0)
-            return true;
-        else if (designSize < rangeStart || designSize > rangeEnd || subfamilyNameID < 256 || subfamilyNameID > 32767)
-            return false;
-        else
-            return true;
-    }
-
-    HBUINT16 designSize;    /* Represents the design size in 720/inch
-                             * units (decipoints).  The design size entry
-                             * must be non-zero.  When there is a design
-                             * size but no recommended size range, the
-                             * rest of the array will consist of zeros. */
-    HBUINT16 subfamilyID;   /* Has no independent meaning, but serves
-                             * as an identifier that associates fonts
-                             * in a subfamily. All fonts which share a
-                             * Preferred or Font Family name and which
-                             * differ only by size range shall have the
-                             * same subfamily value, and no fonts which
-                             * differ in weight or style shall have the
-                             * same subfamily value. If this value is
-                             * zero, the remaining fields in the array
-                             * will be ignored. */
-    NameID subfamilyNameID; /* If the preceding value is non-zero, this
-                             * value must be set in the range 256 - 32767
-                             * (inclusive). It records the value of a
-                             * field in the name table, which must
-                             * contain English-language strings encoded
-                             * in Windows Unicode and Macintosh Roman,
-                             * and may contain additional strings
-                             * localized to other scripts and languages.
-                             * Each of these strings is the name an
-                             * application should use, in combination
-                             * with the family name, to represent the
-                             * subfamily in a menu.  Applications will
-                             * choose the appropriate version based on
-                             * their selection criteria. */
-    HBUINT16 rangeStart;    /* Large end of the recommended usage range
-                             * (inclusive), stored in 720/inch units
-                             * (decipoints). */
-    HBUINT16 rangeEnd;      /* Small end of the recommended usage range
-                               (exclusive), stored in 720/inch units
-                             * (decipoints). */
-public:
-    DEFINE_SIZE_STATIC(10);
-};
-
-/* https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#ssxx */
-struct FeatureParamsStylisticSet
-{
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        /* Right now minorVersion is at zero.  Which means, any table supports
-         * the uiNameID field. */
-        return c->check_struct(this);
-    }
-
-    HBUINT16 version; /* (set to 0): This corresponds to a “minor”
-                       * version number. Additional data may be
-                       * added to the end of this Feature Parameters
-                       * table in the future. */
-
-    NameID uiNameID; /* The 'name' table name ID that specifies a
-                      * string (or strings, for multiple languages)
-                      * for a user-interface label for this
-                      * feature.  The values of uiLabelNameId and
-                      * sampleTextNameId are expected to be in the
-                      * font-specific name ID range (256-32767),
-                      * though that is not a requirement in this
-                      * Feature Parameters specification. The
-                      * user-interface label for the feature can
-                      * be provided in multiple languages. An
-                      * English string should be included as a
-                      * fallback. The string should be kept to a
-                      * minimal length to fit comfortably with
-                      * different application interfaces. */
-public:
-    DEFINE_SIZE_STATIC(4);
-};
-
-/* https://docs.microsoft.com/en-us/typography/opentype/spec/features_ae#cv01-cv99 */
-struct FeatureParamsCharacterVariants
-{
-    unsigned get_characters(unsigned start_offset, unsigned *char_count, rb_codepoint_t *chars) const
-    {
-        if (char_count) {
-            +characters.sub_array(start_offset, char_count) | rb_sink(rb_array(chars, *char_count));
-        }
-        return characters.len;
-    }
-
-    unsigned get_size() const
-    {
-        return min_size + characters.len * HBUINT24::static_size;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this) && characters.sanitize(c);
-    }
-
-    HBUINT16 format;                /* Format number is set to 0. */
-    NameID featUILableNameID;       /* The ‘name’ table name ID that
-                                     * specifies a string (or strings,
-                                     * for multiple languages) for a
-                                     * user-interface label for this
-                                     * feature. (May be NULL.) */
-    NameID featUITooltipTextNameID; /* The ‘name’ table name ID that
-                                     * specifies a string (or strings,
-                                     * for multiple languages) that an
-                                     * application can use for tooltip
-                                     * text for this feature. (May be
-                                     * nullptr.) */
-    NameID sampleTextNameID;        /* The ‘name’ table name ID that
-                                     * specifies sample text that
-                                     * illustrates the effect of this
-                                     * feature. (May be NULL.) */
-    HBUINT16 numNamedParameters;    /* Number of named parameters. (May
-                                     * be zero.) */
-    NameID firstParamUILabelNameID; /* The first ‘name’ table name ID
-                                     * used to specify strings for
-                                     * user-interface labels for the
-                                     * feature parameters. (Must be zero
-                                     * if numParameters is zero.) */
-    ArrayOf<HBUINT24> characters;   /* Array of the Unicode Scalar Value
-                                     * of the characters for which this
-                                     * feature provides glyph variants.
-                                     * (May be zero.) */
-public:
-    DEFINE_SIZE_ARRAY(14, characters);
-};
-
-struct FeatureParams
-{
-    bool sanitize(rb_sanitize_context_t *c, rb_tag_t tag) const
-    {
-#ifdef RB_NO_LAYOUT_FEATURE_PARAMS
-        return true;
-#endif
-        if (tag == RB_TAG('s', 'i', 'z', 'e'))
-            return u.size.sanitize(c);
-        if ((tag & 0xFFFF0000u) == RB_TAG('s', 's', '\0', '\0')) /* ssXX */
-            return u.stylisticSet.sanitize(c);
-        if ((tag & 0xFFFF0000u) == RB_TAG('c', 'v', '\0', '\0')) /* cvXX */
-            return u.characterVariants.sanitize(c);
-        return true;
-    }
-
-#ifndef RB_NO_LAYOUT_FEATURE_PARAMS
-    const FeatureParamsSize &get_size_params(rb_tag_t tag) const
-    {
-        if (tag == RB_TAG('s', 'i', 'z', 'e'))
-            return u.size;
-        return Null(FeatureParamsSize);
-    }
-    const FeatureParamsStylisticSet &get_stylistic_set_params(rb_tag_t tag) const
-    {
-        if ((tag & 0xFFFF0000u) == RB_TAG('s', 's', '\0', '\0')) /* ssXX */
-            return u.stylisticSet;
-        return Null(FeatureParamsStylisticSet);
-    }
-    const FeatureParamsCharacterVariants &get_character_variants_params(rb_tag_t tag) const
-    {
-        if ((tag & 0xFFFF0000u) == RB_TAG('c', 'v', '\0', '\0')) /* cvXX */
-            return u.characterVariants;
-        return Null(FeatureParamsCharacterVariants);
-    }
-#endif
-
-private:
-    union {
-        FeatureParamsSize size;
-        FeatureParamsStylisticSet stylisticSet;
-        FeatureParamsCharacterVariants characterVariants;
-    } u;
-
-public:
-    DEFINE_SIZE_MIN(0);
-};
+struct FakeFeatureParams {};
 
 struct Feature
 {
@@ -604,64 +301,17 @@ struct Feature
     {
         return lookupIndex.get_indexes(start_index, lookup_count, lookup_tags);
     }
-    void add_lookup_indexes_to(rb_set_t *lookup_indexes) const
-    {
-        lookupIndex.add_indexes_to(lookup_indexes);
-    }
-
-    const FeatureParams &get_feature_params() const
-    {
-        return this + featureParams;
-    }
-
-    bool intersects_lookup_indexes(const rb_map_t *lookup_indexes) const
-    {
-        return lookupIndex.intersects(lookup_indexes);
-    }
 
     bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t *closure = nullptr) const
     {
-        if (unlikely(!(c->check_struct(this) && lookupIndex.sanitize(c))))
-            return false;
-
-        /* Some earlier versions of Adobe tools calculated the offset of the
-         * FeatureParams subtable from the beginning of the FeatureList table!
-         *
-         * If sanitizing "failed" for the FeatureParams subtable, try it with the
-         * alternative location.  We would know sanitize "failed" if old value
-         * of the offset was non-zero, but it's zeroed now.
-         *
-         * Only do this for the 'size' feature, since at the time of the faulty
-         * Adobe tools, only the 'size' feature had FeatureParams defined.
-         */
-
-        if (likely(featureParams.is_null()))
-            return true;
-
-        unsigned int orig_offset = featureParams;
-        if (unlikely(!featureParams.sanitize(c, this, closure ? closure->tag : RB_TAG_NONE)))
-            return false;
-
-        if (featureParams == 0 && closure && closure->tag == RB_TAG('s', 'i', 'z', 'e') && closure->list_base &&
-            closure->list_base < this) {
-            unsigned int new_offset_int = orig_offset - (((char *)this) - ((char *)closure->list_base));
-
-            OffsetTo<FeatureParams> new_offset;
-            /* Check that it would not overflow. */
-            new_offset = new_offset_int;
-            if (new_offset == new_offset_int && c->try_set(&featureParams, new_offset_int) &&
-                !featureParams.sanitize(c, this, closure ? closure->tag : RB_TAG_NONE))
-                return false;
-        }
-
-        return true;
+        return c->check_struct(this) && lookupIndex.sanitize(c);
     }
 
-    OffsetTo<FeatureParams> featureParams; /* Offset to Feature Parameters table (if one
-                                            * has been defined for the feature), relative
-                                            * to the beginning of the Feature Table; = Null
-                                            * if not required */
-    IndexArray lookupIndex;                /* Array of LookupList indices */
+    OffsetTo<FakeFeatureParams> featureParams; /* Offset to Feature Parameters table (if one
+                                                * has been defined for the feature), relative
+                                                * to the beginning of the Feature Table; = Null
+                                                * if not required */
+    IndexArray lookupIndex;                    /* Array of LookupList indices */
 public:
     DEFINE_SIZE_ARRAY_SIZED(4, lookupIndex);
 };
@@ -833,58 +483,11 @@ private:
         return glyphArray.sanitize(c);
     }
 
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        /* TODO Speed up, using rb_set_next() and bsearch()? */
-        unsigned int count = glyphArray.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (glyphs->has(glyphArray[i]))
-                return true;
-        return false;
-    }
-    bool intersects_coverage(const rb_set_t *glyphs, unsigned int index) const
-    {
-        return glyphs->has(glyphArray[index]);
-    }
-
     template <typename set_t> bool collect_coverage(set_t *glyphs) const
     {
         return glyphs->add_sorted_array(glyphArray.arrayZ, glyphArray.len);
     }
 
-public:
-    /* Older compilers need this to be public. */
-    struct iter_t
-    {
-        void init(const struct CoverageFormat1 &c_)
-        {
-            c = &c_;
-            i = 0;
-        }
-        void fini() {}
-        bool more() const
-        {
-            return i < c->glyphArray.len;
-        }
-        void next()
-        {
-            i++;
-        }
-        rb_codepoint_t get_glyph() const
-        {
-            return c->glyphArray[i];
-        }
-        bool operator!=(const iter_t &o) const
-        {
-            return i != o.i || c != o.c;
-        }
-
-    private:
-        const struct CoverageFormat1 *c;
-        unsigned int i;
-    };
-
-private:
 protected:
     HBUINT16 coverageFormat;             /* Format identifier--format = 1 */
     SortedArrayOf<HBGlyphID> glyphArray; /* Array of GlyphIDs--in numerical order */
@@ -908,30 +511,6 @@ private:
         return rangeRecord.sanitize(c);
     }
 
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        /* TODO Speed up, using rb_set_next() and bsearch()? */
-        unsigned int count = rangeRecord.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (rangeRecord[i].intersects(glyphs))
-                return true;
-        return false;
-    }
-    bool intersects_coverage(const rb_set_t *glyphs, unsigned int index) const
-    {
-        unsigned int i;
-        unsigned int count = rangeRecord.len;
-        for (i = 0; i < count; i++) {
-            const RangeRecord &range = rangeRecord[i];
-            if (range.value <= index && index < (unsigned int)range.value + (range.last - range.first) &&
-                range.intersects(glyphs))
-                return true;
-            else if (index < range.value)
-                return false;
-        }
-        return false;
-    }
-
     template <typename set_t> bool collect_coverage(set_t *glyphs) const
     {
         unsigned int count = rangeRecord.len;
@@ -941,64 +520,6 @@ private:
         return true;
     }
 
-public:
-    /* Older compilers need this to be public. */
-    struct iter_t
-    {
-        void init(const CoverageFormat2 &c_)
-        {
-            c = &c_;
-            coverage = 0;
-            i = 0;
-            j = c->rangeRecord.len ? c->rangeRecord[0].first : 0;
-            if (unlikely(c->rangeRecord[0].first > c->rangeRecord[0].last)) {
-                /* Broken table. Skip. */
-                i = c->rangeRecord.len;
-            }
-        }
-        void fini() {}
-        bool more() const
-        {
-            return i < c->rangeRecord.len;
-        }
-        void next()
-        {
-            if (j >= c->rangeRecord[i].last) {
-                i++;
-                if (more()) {
-                    unsigned int old = coverage;
-                    j = c->rangeRecord[i].first;
-                    coverage = c->rangeRecord[i].value;
-                    if (unlikely(coverage != old + 1)) {
-                        /* Broken table. Skip. Important to avoid DoS.
-                         * Also, our callers depend on coverage being
-                         * consecutive and monotonically increasing,
-                         * ie. iota(). */
-                        i = c->rangeRecord.len;
-                        return;
-                    }
-                }
-                return;
-            }
-            coverage++;
-            j++;
-        }
-        rb_codepoint_t get_glyph() const
-        {
-            return j;
-        }
-        bool operator!=(const iter_t &o) const
-        {
-            return i != o.i || j != o.j || c != o.c;
-        }
-
-    private:
-        const struct CoverageFormat2 *c;
-        unsigned int i, coverage;
-        rb_codepoint_t j;
-    };
-
-private:
 protected:
     HBUINT16 coverageFormat;                /* Format identifier--format = 2 */
     SortedArrayOf<RangeRecord> rangeRecord; /* Array of glyph ranges--ordered by
@@ -1057,29 +578,6 @@ struct Coverage
         }
     }
 
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.intersects(glyphs);
-        case 2:
-            return u.format2.intersects(glyphs);
-        default:
-            return false;
-        }
-    }
-    bool intersects_coverage(const rb_set_t *glyphs, unsigned int index) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.intersects_coverage(glyphs, index);
-        case 2:
-            return u.format2.intersects_coverage(glyphs, index);
-        default:
-            return false;
-        }
-    }
-
     /* Might return false if array looks unsorted.
      * Used for faster rejection of corrupt data. */
     template <typename set_t> bool collect_coverage(set_t *glyphs) const
@@ -1092,91 +590,6 @@ struct Coverage
         default:
             return false;
         }
-    }
-
-    struct iter_t : rb_iter_with_fallback_t<iter_t, rb_codepoint_t>
-    {
-        static constexpr bool is_sorted_iterator = true;
-        iter_t(const Coverage &c_ = Null(Coverage))
-        {
-            memset(this, 0, sizeof(*this));
-            format = c_.u.format;
-            switch (format) {
-            case 1:
-                u.format1.init(c_.u.format1);
-                return;
-            case 2:
-                u.format2.init(c_.u.format2);
-                return;
-            default:
-                return;
-            }
-        }
-        bool __more__() const
-        {
-            switch (format) {
-            case 1:
-                return u.format1.more();
-            case 2:
-                return u.format2.more();
-            default:
-                return false;
-            }
-        }
-        void __next__()
-        {
-            switch (format) {
-            case 1:
-                u.format1.next();
-                break;
-            case 2:
-                u.format2.next();
-                break;
-            default:
-                break;
-            }
-        }
-        typedef rb_codepoint_t __item_t__;
-        __item_t__ __item__() const
-        {
-            return get_glyph();
-        }
-
-        rb_codepoint_t get_glyph() const
-        {
-            switch (format) {
-            case 1:
-                return u.format1.get_glyph();
-            case 2:
-                return u.format2.get_glyph();
-            default:
-                return 0;
-            }
-        }
-        bool operator!=(const iter_t &o) const
-        {
-            if (format != o.format)
-                return true;
-            switch (format) {
-            case 1:
-                return u.format1 != o.u.format1;
-            case 2:
-                return u.format2 != o.u.format2;
-            default:
-                return false;
-            }
-        }
-
-    private:
-        unsigned int format;
-        union {
-            CoverageFormat2::iter_t format2; /* Put this one first since it's larger; helps shut up compiler. */
-            CoverageFormat1::iter_t format1;
-        } u;
-    };
-    iter_t iter() const
-    {
-        return iter_t(*this);
     }
 
 protected:
@@ -1209,67 +622,6 @@ private:
         return c->check_struct(this) && classValue.sanitize(c);
     }
 
-    template <typename set_t> bool collect_coverage(set_t *glyphs) const
-    {
-        unsigned int start = 0;
-        unsigned int count = classValue.len;
-        for (unsigned int i = 0; i < count; i++) {
-            if (classValue[i])
-                continue;
-
-            if (start != i)
-                if (unlikely(!glyphs->add_range(startGlyph + start, startGlyph + i)))
-                    return false;
-
-            start = i + 1;
-        }
-        if (start != count)
-            if (unlikely(!glyphs->add_range(startGlyph + start, startGlyph + count)))
-                return false;
-
-        return true;
-    }
-
-    template <typename set_t> bool collect_class(set_t *glyphs, unsigned int klass) const
-    {
-        unsigned int count = classValue.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (classValue[i] == klass)
-                glyphs->add(startGlyph + i);
-        return true;
-    }
-
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        /* TODO Speed up, using rb_set_next()? */
-        rb_codepoint_t start = startGlyph;
-        rb_codepoint_t end = startGlyph + classValue.len;
-        for (rb_codepoint_t iter = startGlyph - 1; rb_set_next(glyphs, &iter) && iter < end;)
-            if (classValue[iter - start])
-                return true;
-        return false;
-    }
-    bool intersects_class(const rb_set_t *glyphs, unsigned int klass) const
-    {
-        unsigned int count = classValue.len;
-        if (klass == 0) {
-            /* Match if there's any glyph that is not listed! */
-            rb_codepoint_t g = RB_SET_VALUE_INVALID;
-            if (!rb_set_next(glyphs, &g))
-                return false;
-            if (g < startGlyph)
-                return true;
-            g = startGlyph + count - 1;
-            if (rb_set_next(glyphs, &g))
-                return true;
-            /* Fall through. */
-        }
-        for (unsigned int i = 0; i < count; i++)
-            if (classValue[i] == klass && glyphs->has(startGlyph + i))
-                return true;
-        return false;
-    }
-
 protected:
     HBUINT16 classFormat;         /* Format identifier--format = 1 */
     HBGlyphID startGlyph;         /* First GlyphID of the classValueArray */
@@ -1291,59 +643,6 @@ private:
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return rangeRecord.sanitize(c);
-    }
-
-    template <typename set_t> bool collect_coverage(set_t *glyphs) const
-    {
-        unsigned int count = rangeRecord.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (rangeRecord[i].value)
-                if (unlikely(!rangeRecord[i].collect_coverage(glyphs)))
-                    return false;
-        return true;
-    }
-
-    template <typename set_t> bool collect_class(set_t *glyphs, unsigned int klass) const
-    {
-        unsigned int count = rangeRecord.len;
-        for (unsigned int i = 0; i < count; i++) {
-            if (rangeRecord[i].value == klass)
-                if (unlikely(!rangeRecord[i].collect_coverage(glyphs)))
-                    return false;
-        }
-        return true;
-    }
-
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        /* TODO Speed up, using rb_set_next() and bsearch()? */
-        unsigned int count = rangeRecord.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (rangeRecord[i].intersects(glyphs))
-                return true;
-        return false;
-    }
-    bool intersects_class(const rb_set_t *glyphs, unsigned int klass) const
-    {
-        unsigned int count = rangeRecord.len;
-        if (klass == 0) {
-            /* Match if there's any glyph that is not listed! */
-            rb_codepoint_t g = RB_SET_VALUE_INVALID;
-            for (unsigned int i = 0; i < count; i++) {
-                if (!rb_set_next(glyphs, &g))
-                    break;
-                if (g < rangeRecord[i].first)
-                    return true;
-                g = rangeRecord[i].last;
-            }
-            if (g != RB_SET_VALUE_INVALID && rb_set_next(glyphs, &g))
-                return true;
-            /* Fall through. */
-        }
-        for (unsigned int i = 0; i < count; i++)
-            if (rangeRecord[i].value == klass && rangeRecord[i].intersects(glyphs))
-                return true;
-        return false;
     }
 
 protected:
@@ -1400,57 +699,6 @@ struct ClassDef
             return u.format2.sanitize(c);
         default:
             return true;
-        }
-    }
-
-    /* Might return false if array looks unsorted.
-     * Used for faster rejection of corrupt data. */
-    template <typename set_t> bool collect_coverage(set_t *glyphs) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.collect_coverage(glyphs);
-        case 2:
-            return u.format2.collect_coverage(glyphs);
-        default:
-            return false;
-        }
-    }
-
-    /* Might return false if array looks unsorted.
-     * Used for faster rejection of corrupt data. */
-    template <typename set_t> bool collect_class(set_t *glyphs, unsigned int klass) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.collect_class(glyphs, klass);
-        case 2:
-            return u.format2.collect_class(glyphs, klass);
-        default:
-            return false;
-        }
-    }
-
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.intersects(glyphs);
-        case 2:
-            return u.format2.intersects(glyphs);
-        default:
-            return false;
-        }
-    }
-    bool intersects_class(const rb_set_t *glyphs, unsigned int klass) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.intersects_class(glyphs, klass);
-        case 2:
-            return u.format2.intersects_class(glyphs, klass);
-        default:
-            return false;
         }
     }
 
@@ -1534,15 +782,6 @@ struct VarRegionList
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return c->check_struct(this) && axesZ.sanitize(c, (unsigned int)axisCount * (unsigned int)regionCount);
-    }
-
-    unsigned int get_size() const
-    {
-        return min_size + VarRegionAxis::static_size * axisCount * regionCount;
-    }
-    unsigned int get_region_count() const
-    {
-        return regionCount;
     }
 
 protected:
@@ -1629,26 +868,6 @@ protected:
         return &StructAfter<HBUINT8>(regionIndices);
     }
 
-    int16_t get_item_delta(unsigned int item, unsigned int region) const
-    {
-        if (item >= itemCount || unlikely(region >= regionIndices.len))
-            return 0;
-        const HBINT8 *p = (const HBINT8 *)get_delta_bytes() + item * get_row_size();
-        if (region < shortCount)
-            return ((const HBINT16 *)p)[region];
-        else
-            return (p + HBINT16::static_size * shortCount)[region - shortCount];
-    }
-
-    void set_item_delta(unsigned int item, unsigned int region, int16_t delta)
-    {
-        HBINT8 *p = (HBINT8 *)get_delta_bytes() + item * get_row_size();
-        if (region < shortCount)
-            ((HBINT16 *)p)[region] = delta;
-        else
-            (p + HBINT16::static_size * shortCount)[region - shortCount] = delta;
-    }
-
 protected:
     HBUINT16 itemCount;
     HBUINT16 shortCount;
@@ -1668,35 +887,9 @@ struct VariationStore
         return (this + dataSets[outer]).get_delta(inner, coords, coord_count, this + regions);
     }
 
-    float get_delta(unsigned int index, const int *coords, unsigned int coord_count) const
-    {
-        unsigned int outer = index >> 16;
-        unsigned int inner = index & 0xFFFF;
-        return get_delta(outer, inner, coords, coord_count);
-    }
-
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return c->check_struct(this) && format == 1 && regions.sanitize(c, this) && dataSets.sanitize(c, this);
-    }
-
-    unsigned int get_region_index_count(unsigned int ivs) const
-    {
-        return (this + dataSets[ivs]).get_region_index_count();
-    }
-
-    void get_scalars(unsigned int ivs,
-                     const int *coords,
-                     unsigned int coord_count,
-                     float *scalars /*OUT*/,
-                     unsigned int num_scalars) const
-    {
-        (this + dataSets[ivs]).get_scalars(coords, coord_count, this + regions, &scalars[0], num_scalars);
-    }
-
-    unsigned int get_sub_table_count() const
-    {
-        return dataSets.len;
     }
 
 protected:
@@ -1811,17 +1004,6 @@ struct FeatureTableSubstitutionRecord
 {
     friend struct FeatureTableSubstitution;
 
-    void collect_lookups(const void *base, rb_set_t *lookup_indexes /* OUT */) const
-    {
-        return (base + feature).add_lookup_indexes_to(lookup_indexes);
-    }
-
-    void closure_features(const void *base, const rb_map_t *lookup_indexes, rb_set_t *feature_indexes /* OUT */) const
-    {
-        if ((base + feature).intersects_lookup_indexes(lookup_indexes))
-            feature_indexes->add(featureIndex);
-    }
-
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
         return c->check_struct(this) && feature.sanitize(c, base);
@@ -1848,20 +1030,6 @@ struct FeatureTableSubstitution
         return nullptr;
     }
 
-    void collect_lookups(const rb_set_t *feature_indexes, rb_set_t *lookup_indexes /* OUT */) const
-    {
-        +rb_iter(substitutions) | rb_filter(feature_indexes, &FeatureTableSubstitutionRecord::featureIndex) |
-            rb_apply([this, lookup_indexes](const FeatureTableSubstitutionRecord &r) {
-                r.collect_lookups(this, lookup_indexes);
-            });
-    }
-
-    void closure_features(const rb_map_t *lookup_indexes, rb_set_t *feature_indexes /* OUT */) const
-    {
-        for (const FeatureTableSubstitutionRecord &record : substitutions)
-            record.closure_features(this, lookup_indexes, feature_indexes);
-    }
-
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return version.sanitize(c) && likely(version.major == 1) && substitutions.sanitize(c, this);
@@ -1878,16 +1046,6 @@ public:
 struct FeatureVariationRecord
 {
     friend struct FeatureVariations;
-
-    void collect_lookups(const void *base, const rb_set_t *feature_indexes, rb_set_t *lookup_indexes /* OUT */) const
-    {
-        return (base + substitutions).collect_lookups(feature_indexes, lookup_indexes);
-    }
-
-    void closure_features(const void *base, const rb_map_t *lookup_indexes, rb_set_t *feature_indexes /* OUT */) const
-    {
-        (base + substitutions).closure_features(lookup_indexes, feature_indexes);
-    }
 
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
@@ -1924,18 +1082,6 @@ struct FeatureVariations
     {
         const FeatureVariationRecord &record = varRecords[variations_index];
         return (this + record.substitutions).find_substitute(feature_index);
-    }
-
-    void collect_lookups(const rb_set_t *feature_indexes, rb_set_t *lookup_indexes /* OUT */) const
-    {
-        for (const FeatureVariationRecord &r : varRecords)
-            r.collect_lookups(this, feature_indexes, lookup_indexes);
-    }
-
-    void closure_features(const rb_map_t *lookup_indexes, rb_set_t *feature_indexes /* OUT */) const
-    {
-        for (const FeatureVariationRecord &record : varRecords)
-            record.closure_features(this, lookup_indexes, feature_indexes);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -2048,12 +1194,6 @@ private:
         return (rb_position_t)roundf(get_delta(font, store));
     }
 
-    void record_variation_index(rb_set_t *layout_variation_indices) const
-    {
-        unsigned var_idx = (outerIndex << 16) + innerIndex;
-        layout_variation_indices->add(var_idx);
-    }
-
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return c->check_struct(this);
@@ -2133,23 +1273,6 @@ struct Device
             return u.variation.sanitize(c);
         default:
             return true;
-        }
-    }
-
-    void collect_variation_indices(rb_set_t *layout_variation_indices) const
-    {
-        switch (u.b.format) {
-#ifndef RB_NO_HINTING
-        case 1:
-        case 2:
-        case 3:
-            return;
-#endif
-        case 0x8000:
-            u.variation.record_variation_index(layout_variation_indices);
-            return;
-        default:
-            return;
         }
     }
 

@@ -981,15 +981,3 @@ void _rb_ot_shape(rb_shape_plan_t *shape_plan,
         &shape_plan->ot, (rb_font_t *)font, rb_font_get_face(font), buffer, features, num_features};
     rb_ot_shape_internal(&c);
 }
-
-/**
- * rb_ot_shape_plan_collect_lookups:
- *
- * Since: 0.9.7
- **/
-void rb_ot_shape_plan_collect_lookups(rb_shape_plan_t *shape_plan,
-                                      rb_tag_t table_tag,
-                                      rb_set_t *lookup_indexes /* OUT */)
-{
-    shape_plan->ot.collect_lookups(table_tag, lookup_indexes);
-}

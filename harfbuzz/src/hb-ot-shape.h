@@ -37,9 +37,6 @@ RB_BEGIN_DECLS
 
 typedef struct rb_shape_plan_t rb_shape_plan_t;
 
-RB_EXTERN void
-rb_ot_shape_plan_collect_lookups(rb_shape_plan_t *shape_plan, rb_tag_t table_tag, rb_set_t *lookup_indexes /* OUT */);
-
 RB_EXTERN void _rb_ot_shape(rb_shape_plan_t *shape_plan,
                             rb_font_t *font,
                             rb_buffer_t *buffer,

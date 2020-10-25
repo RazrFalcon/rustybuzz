@@ -517,11 +517,6 @@ public:
         return *this;
     }
 
-    bool intersects(rb_codepoint_t first, rb_codepoint_t last) const
-    {
-        rb_codepoint_t c = first - 1;
-        return next(&c) && c <= last;
-    }
     void set(const rb_set_t *other)
     {
         if (unlikely(!successful))

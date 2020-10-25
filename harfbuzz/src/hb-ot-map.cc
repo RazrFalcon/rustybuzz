@@ -67,12 +67,6 @@ void rb_ot_map_get_stage_lookups(const rb_ot_map_t *map,
     map->get_stage_lookups(table_index, stage, plookups, lookup_count);
 }
 
-void rb_ot_map_t::collect_lookups(unsigned int table_index, rb_set_t *lookups_out) const
-{
-    for (unsigned int i = 0; i < lookups[table_index].length; i++)
-        lookups_out->add(lookups[table_index][i].index);
-}
-
 rb_ot_map_builder_t::rb_ot_map_builder_t(rb_face_t *face_, const rb_segment_properties_t *props_)
 {
     memset(this, 0, sizeof(*this));

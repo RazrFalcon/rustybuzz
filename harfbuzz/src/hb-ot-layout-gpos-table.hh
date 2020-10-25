@@ -34,10 +34,6 @@
 namespace OT {
 
 struct MarkArray;
-static void Markclass_closure_and_remap_indexes(const Coverage &mark_coverage,
-                                                const MarkArray &mark_array,
-                                                const rb_set_t &glyphset,
-                                                rb_map_t *klass_mapping /* INOUT */);
 
 /* buffer **position** var allocations */
 #define attach_chain()                                                                                                 \
@@ -173,43 +169,6 @@ struct ValueFormat : HBUINT16
             values++;
         }
         return ret;
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c,
-                                   const void *base,
-                                   const rb_array_t<const Value> &values) const
-    {
-        unsigned format = *this;
-        unsigned i = 0;
-        if (format & xPlacement)
-            i++;
-        if (format & yPlacement)
-            i++;
-        if (format & xAdvance)
-            i++;
-        if (format & yAdvance)
-            i++;
-        if (format & xPlaDevice) {
-            (base + get_device(&(values[i]))).collect_variation_indices(c->layout_variation_indices);
-            i++;
-        }
-
-        if (format & ValueFormat::yPlaDevice) {
-            (base + get_device(&(values[i]))).collect_variation_indices(c->layout_variation_indices);
-            i++;
-        }
-
-        if (format & ValueFormat::xAdvDevice) {
-
-            (base + get_device(&(values[i]))).collect_variation_indices(c->layout_variation_indices);
-            i++;
-        }
-
-        if (format & ValueFormat::yAdvDevice) {
-
-            (base + get_device(&(values[i]))).collect_variation_indices(c->layout_variation_indices);
-            i++;
-        }
     }
 
 private:
@@ -381,12 +340,6 @@ struct AnchorFormat3
         return c->check_struct(this) && xDeviceTable.sanitize(c, this) && yDeviceTable.sanitize(c, this);
     }
 
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        (this + xDeviceTable).collect_variation_indices(c->layout_variation_indices);
-        (this + yDeviceTable).collect_variation_indices(c->layout_variation_indices);
-    }
-
 protected:
     HBUINT16 format;               /* Format identifier--format = 3 */
     FWORD xCoordinate;             /* Horizontal value--in design units */
@@ -437,20 +390,6 @@ struct Anchor
         }
     }
 
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        switch (u.format) {
-        case 1:
-        case 2:
-            return;
-        case 3:
-            u.format3.collect_variation_indices(c);
-            return;
-        default:
-            return;
-        }
-    }
-
 protected:
     union {
         HBUINT16 format; /* Format identifier */
@@ -472,13 +411,6 @@ struct AnchorMatrix
             return Null(Anchor);
         *found = !matrixZ[row * cols + col].is_null();
         return this + matrixZ[row * cols + col];
-    }
-
-    template <typename Iterator, rb_requires(rb_is_iterator(Iterator))>
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c, Iterator index_iter) const
-    {
-        for (unsigned i : index_iter)
-            (this + matrixZ[i]).collect_variation_indices(c);
     }
 
     bool sanitize(rb_sanitize_context_t *c, unsigned int cols) const
@@ -514,11 +446,6 @@ struct MarkRecord
     bool sanitize(rb_sanitize_context_t *c, const void *base) const
     {
         return c->check_struct(this) && markAnchor.sanitize(c, base);
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c, const void *src_base) const
-    {
-        (src_base + markAnchor).collect_variation_indices(c);
     }
 
 protected:
@@ -578,30 +505,6 @@ struct MarkArray : ArrayOf<MarkRecord> /* Array of MarkRecords--in Coverage orde
 
 struct SinglePosFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + coverage).intersects(glyphs);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        if (!valueFormat.has_device())
-            return;
-
-        auto it = +rb_iter(this + coverage) | rb_filter(c->glyph_set);
-
-        if (!it)
-            return;
-        valueFormat.collect_variation_indices(c, this, values.as_array(valueFormat.get_len()));
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -640,35 +543,6 @@ public:
 
 struct SinglePosFormat2
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + coverage).intersects(glyphs);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        if (!valueFormat.has_device())
-            return;
-
-        auto it = +rb_zip(this + coverage, rb_range((unsigned)valueCount)) | rb_filter(c->glyph_set, rb_first);
-
-        if (!it)
-            return;
-
-        unsigned sub_length = valueFormat.get_len();
-        const rb_array_t<const Value> values_array = values.as_array(valueCount * sub_length);
-
-        for (unsigned i : +it | rb_map(rb_second))
-            valueFormat.collect_variation_indices(c, this, values_array.sub_array(i * sub_length, sub_length));
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -755,21 +629,6 @@ struct PairValueRecord
         return secondGlyph.cmp(k);
     }
 
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c,
-                                   const ValueFormat *valueFormats,
-                                   const void *base) const
-    {
-        unsigned record1_len = valueFormats[0].get_len();
-        unsigned record2_len = valueFormats[1].get_len();
-        const rb_array_t<const Value> values_array = values.as_array(record1_len + record2_len);
-
-        if (valueFormats[0].has_device())
-            valueFormats[0].collect_variation_indices(c, base, values_array.sub_array(0, record1_len));
-
-        if (valueFormats[1].has_device())
-            valueFormats[1].collect_variation_indices(c, base, values_array.sub_array(record1_len, record2_len));
-    }
-
 protected:
     HBGlyphID secondGlyph; /* GlyphID of second glyph in the
                             * pair--first glyph is listed in the
@@ -783,49 +642,6 @@ public:
 struct PairSet
 {
     friend struct PairPosFormat1;
-
-    bool intersects(const rb_set_t *glyphs, const ValueFormat *valueFormats) const
-    {
-        unsigned int len1 = valueFormats[0].get_len();
-        unsigned int len2 = valueFormats[1].get_len();
-        unsigned int record_size = HBUINT16::static_size * (1 + len1 + len2);
-
-        const PairValueRecord *record = &firstPairValueRecord;
-        unsigned int count = len;
-        for (unsigned int i = 0; i < count; i++) {
-            if (glyphs->has(record->secondGlyph))
-                return true;
-            record = &StructAtOffset<const PairValueRecord>(record, record_size);
-        }
-        return false;
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c, const ValueFormat *valueFormats) const
-    {
-        unsigned int len1 = valueFormats[0].get_len();
-        unsigned int len2 = valueFormats[1].get_len();
-        unsigned int record_size = HBUINT16::static_size * (1 + len1 + len2);
-
-        const PairValueRecord *record = &firstPairValueRecord;
-        c->input->add_array(&record->secondGlyph, len, record_size);
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c, const ValueFormat *valueFormats) const
-    {
-        unsigned len1 = valueFormats[0].get_len();
-        unsigned len2 = valueFormats[1].get_len();
-        unsigned record_size = HBUINT16::static_size * (1 + len1 + len2);
-
-        const PairValueRecord *record = &firstPairValueRecord;
-        unsigned count = len;
-        for (unsigned i = 0; i < count; i++) {
-            if (c->glyph_set->has(record->secondGlyph)) {
-                record->collect_variation_indices(c, valueFormats, this);
-            }
-
-            record = &StructAtOffset<const PairValueRecord>(record, record_size);
-        }
-    }
 
     bool apply(rb_ot_apply_context_t *c, const ValueFormat *valueFormats, unsigned int pos) const
     {
@@ -881,36 +697,6 @@ public:
 
 struct PairPosFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return +rb_zip(this + coverage, pairSet) | rb_filter(*glyphs, rb_first) | rb_map(rb_second) |
-               rb_map(
-                   [glyphs, this](const OffsetTo<PairSet> &_) { return (this + _).intersects(glyphs, valueFormat); }) |
-               rb_any;
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        if ((!valueFormat[0].has_device()) && (!valueFormat[1].has_device()))
-            return;
-
-        auto it = +rb_zip(this + coverage, pairSet) | rb_filter(c->glyph_set, rb_first) | rb_map(rb_second);
-
-        if (!it)
-            return;
-        +it | rb_map(rb_add(this)) | rb_apply([&](const PairSet &_) { _.collect_variation_indices(c, valueFormat); });
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-        unsigned int count = pairSet.len;
-        for (unsigned int i = 0; i < count; i++)
-            (this + pairSet[i]).collect_glyphs(c, valueFormat);
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -961,52 +747,6 @@ public:
 
 struct PairPosFormat2
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + coverage).intersects(glyphs) && (this + classDef2).intersects(glyphs);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        if ((!valueFormat1.has_device()) && (!valueFormat2.has_device()))
-            return;
-
-        rb_set_t class1_set, class2_set;
-        for (const unsigned cp : c->glyph_set->iter()) {
-            unsigned klass1 = (this + classDef1).get(cp);
-            unsigned klass2 = (this + classDef2).get(cp);
-            class1_set.add(klass1);
-            class2_set.add(klass2);
-        }
-
-        if (class1_set.is_empty() || class2_set.is_empty())
-            return;
-
-        unsigned len1 = valueFormat1.get_len();
-        unsigned len2 = valueFormat2.get_len();
-        const rb_array_t<const Value> values_array =
-            values.as_array((unsigned)class1Count * (unsigned)class2Count * (len1 + len2));
-        for (const unsigned class1_idx : class1_set.iter()) {
-            for (const unsigned class2_idx : class2_set.iter()) {
-                unsigned start_offset = (class1_idx * (unsigned)class2Count + class2_idx) * (len1 + len2);
-                if (valueFormat1.has_device())
-                    valueFormat1.collect_variation_indices(c, this, values_array.sub_array(start_offset, len1));
-
-                if (valueFormat2.has_device())
-                    valueFormat2.collect_variation_indices(c, this, values_array.sub_array(start_offset + len1, len2));
-            }
-        }
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-        if (unlikely(!(this + classDef2).collect_coverage(c->input)))
-            return;
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -1123,12 +863,6 @@ struct EntryExitRecord
         return entryAnchor.sanitize(c, base) && exitAnchor.sanitize(c, base);
     }
 
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c, const void *src_base) const
-    {
-        (src_base + entryAnchor).collect_variation_indices(c);
-        (src_base + exitAnchor).collect_variation_indices(c);
-    }
-
 protected:
     OffsetTo<Anchor> entryAnchor; /* Offset to EntryAnchor table--from
                                    * beginning of CursivePos
@@ -1147,25 +881,6 @@ static void reverse_cursive_minor_offset(rb_glyph_position_t *pos,
 
 struct CursivePosFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + coverage).intersects(glyphs);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        +rb_zip(this + coverage, entryExitRecord) | rb_filter(c->glyph_set, rb_first) | rb_map(rb_second) |
-            rb_apply([&](const EntryExitRecord &record) { record.collect_variation_indices(c, this); });
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -1325,62 +1040,8 @@ typedef AnchorMatrix BaseArray; /* base-major--
                                  * mark-minor--
                                  * ordered by class--zero-based. */
 
-static void Markclass_closure_and_remap_indexes(const Coverage &mark_coverage,
-                                                const MarkArray &mark_array,
-                                                const rb_set_t &glyphset,
-                                                rb_map_t *klass_mapping /* INOUT */)
-{
-    rb_set_t orig_classes;
-
-    +rb_zip(mark_coverage, mark_array) | rb_filter(glyphset, rb_first) | rb_map(rb_second) |
-        rb_map(&MarkRecord::get_class) | rb_sink(orig_classes);
-
-    unsigned idx = 0;
-    for (auto klass : orig_classes.iter()) {
-        if (klass_mapping->has(klass))
-            continue;
-        klass_mapping->set(klass, idx);
-        idx++;
-    }
-}
-
 struct MarkBasePosFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + markCoverage).intersects(glyphs) && (this + baseCoverage).intersects(glyphs);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        +rb_zip(this + markCoverage, this + markArray) | rb_filter(c->glyph_set, rb_first) | rb_map(rb_second) |
-            rb_apply([&](const MarkRecord &record) { record.collect_variation_indices(c, &(this + markArray)); });
-
-        rb_map_t klass_mapping;
-        Markclass_closure_and_remap_indexes(this + markCoverage, this + markArray, *c->glyph_set, &klass_mapping);
-
-        unsigned basecount = (this + baseArray).rows;
-        auto base_iter =
-            +rb_zip(this + baseCoverage, rb_range(basecount)) | rb_filter(c->glyph_set, rb_first) | rb_map(rb_second);
-
-        rb_sorted_vector_t<unsigned> base_indexes;
-        for (const unsigned row : base_iter) {
-            +rb_range((unsigned)classCount) | rb_filter(klass_mapping) |
-                rb_map([&](const unsigned col) { return row * (unsigned)classCount + col; }) | rb_sink(base_indexes);
-        }
-        (this + baseArray).collect_variation_indices(c, base_indexes.iter());
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + markCoverage).collect_coverage(c->input)))
-            return;
-        if (unlikely(!(this + baseCoverage).collect_coverage(c->input)))
-            return;
-    }
-
     const Coverage &get_coverage() const
     {
         return this + markCoverage;
@@ -1483,46 +1144,6 @@ typedef OffsetListOf<LigatureAttach> LigatureArray;
 
 struct MarkLigPosFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + markCoverage).intersects(glyphs) && (this + ligatureCoverage).intersects(glyphs);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        +rb_zip(this + markCoverage, this + markArray) | rb_filter(c->glyph_set, rb_first) | rb_map(rb_second) |
-            rb_apply([&](const MarkRecord &record) { record.collect_variation_indices(c, &(this + markArray)); });
-
-        rb_map_t klass_mapping;
-        Markclass_closure_and_remap_indexes(this + markCoverage, this + markArray, *c->glyph_set, &klass_mapping);
-
-        unsigned ligcount = (this + ligatureArray).len;
-        auto lig_iter = +rb_zip(this + ligatureCoverage, rb_range(ligcount)) | rb_filter(c->glyph_set, rb_first) |
-                        rb_map(rb_second);
-
-        const LigatureArray &lig_array = this + ligatureArray;
-        for (const unsigned i : lig_iter) {
-            rb_sorted_vector_t<unsigned> lig_indexes;
-            unsigned row_count = lig_array[i].rows;
-            for (unsigned row : +rb_range(row_count)) {
-                +rb_range((unsigned)classCount) | rb_filter(klass_mapping) |
-                    rb_map([&](const unsigned col) { return row * (unsigned)classCount + col; }) | rb_sink(lig_indexes);
-            }
-
-            lig_array[i].collect_variation_indices(c, lig_indexes.iter());
-        }
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + markCoverage).collect_coverage(c->input)))
-            return;
-        if (unlikely(!(this + ligatureCoverage).collect_coverage(c->input)))
-            return;
-    }
-
     const Coverage &get_coverage() const
     {
         return this + markCoverage;
@@ -1625,41 +1246,6 @@ typedef AnchorMatrix Mark2Array; /* mark2-major--
 
 struct MarkMarkPosFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + mark1Coverage).intersects(glyphs) && (this + mark2Coverage).intersects(glyphs);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        +rb_zip(this + mark1Coverage, this + mark1Array) | rb_filter(c->glyph_set, rb_first) | rb_map(rb_second) |
-            rb_apply([&](const MarkRecord &record) { record.collect_variation_indices(c, &(this + mark1Array)); });
-
-        rb_map_t klass_mapping;
-        Markclass_closure_and_remap_indexes(this + mark1Coverage, this + mark1Array, *c->glyph_set, &klass_mapping);
-
-        unsigned mark2_count = (this + mark2Array).rows;
-        auto mark2_iter = +rb_zip(this + mark2Coverage, rb_range(mark2_count)) | rb_filter(c->glyph_set, rb_first) |
-                          rb_map(rb_second);
-
-        rb_sorted_vector_t<unsigned> mark2_indexes;
-        for (const unsigned row : mark2_iter) {
-            +rb_range((unsigned)classCount) | rb_filter(klass_mapping) |
-                rb_map([&](const unsigned col) { return row * (unsigned)classCount + col; }) | rb_sink(mark2_indexes);
-        }
-        (this + mark2Array).collect_variation_indices(c, mark2_indexes.iter());
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + mark1Coverage).collect_coverage(c->input)))
-            return;
-        if (unlikely(!(this + mark2Coverage).collect_coverage(c->input)))
-            return;
-    }
-
     const Coverage &get_coverage() const
     {
         return this + mark1Coverage;
@@ -1818,12 +1404,6 @@ struct PosLookupSubTable
         }
     }
 
-    bool intersects(const rb_set_t *glyphs, unsigned int lookup_type) const
-    {
-        rb_intersects_context_t c(glyphs);
-        return dispatch(&c, lookup_type);
-    }
-
 protected:
     union {
         SinglePos single;
@@ -1860,33 +1440,6 @@ struct PosLookup : Lookup
         return dispatch(c);
     }
 
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        rb_intersects_context_t c(glyphs);
-        return dispatch(&c);
-    }
-
-    rb_collect_glyphs_context_t::return_t collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        return dispatch(c);
-    }
-
-    rb_closure_lookups_context_t::return_t closure_lookups(rb_closure_lookups_context_t *c, unsigned this_index) const
-    {
-        if (c->is_lookup_visited(this_index))
-            return rb_closure_lookups_context_t::default_return_value();
-
-        c->set_lookup_visited(this_index);
-        if (!intersects(c->glyphs)) {
-            c->set_lookup_inactive(this_index);
-            return rb_closure_lookups_context_t::default_return_value();
-        }
-        c->set_recurse_func(dispatch_closure_lookups_recurse_func);
-
-        rb_closure_lookups_context_t::return_t ret = dispatch(c);
-        return ret;
-    }
-
     template <typename set_t> void collect_coverage(set_t *glyphs) const
     {
         rb_collect_coverage_context_t<set_t> c(glyphs);
@@ -1894,12 +1447,6 @@ struct PosLookup : Lookup
     }
 
     static inline bool apply_recurse_func(rb_ot_apply_context_t *c, unsigned int lookup_index);
-
-    template <typename context_t>
-    static typename context_t::return_t dispatch_recurse_func(context_t *c, unsigned int lookup_index);
-
-    RB_INTERNAL static rb_closure_lookups_context_t::return_t
-    dispatch_closure_lookups_recurse_func(rb_closure_lookups_context_t *c, unsigned this_index);
 
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
@@ -1936,21 +1483,6 @@ struct GPOS : GSUBGPOS
     }
 
     RB_INTERNAL bool is_blocklisted(rb_blob_t *blob, rb_face_t *face) const;
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        for (unsigned i = 0; i < GSUBGPOS::get_lookup_count(); i++) {
-            if (!c->gpos_lookups->has(i))
-                continue;
-            const PosLookup &l = get_lookup(i);
-            l.dispatch(c);
-        }
-    }
-
-    void closure_lookups(rb_face_t *face, const rb_set_t *glyphs, rb_set_t *lookup_indexes /* IN/OUT */) const
-    {
-        GSUBGPOS::closure_lookups<PosLookup>(face, glyphs, lookup_indexes);
-    }
 
     typedef GSUBGPOS::accelerator_t<GPOS> accelerator_t;
 };
@@ -2056,20 +1588,6 @@ struct GPOS_accelerator_t : GPOS::accelerator_t
 };
 
 /* Out-of-class implementation for methods recursing */
-
-template <typename context_t>
-/*static*/ typename context_t::return_t PosLookup::dispatch_recurse_func(context_t *c, unsigned int lookup_index)
-{
-    const PosLookup &l = c->face->table.GPOS.get_relaxed()->table->get_lookup(lookup_index);
-    return l.dispatch(c);
-}
-
-/*static*/ inline rb_closure_lookups_context_t::return_t
-PosLookup::dispatch_closure_lookups_recurse_func(rb_closure_lookups_context_t *c, unsigned this_index)
-{
-    const PosLookup &l = c->face->table.GPOS.get_relaxed()->table->get_lookup(this_index);
-    return l.closure_lookups(c, this_index);
-}
 
 /*static*/ bool PosLookup::apply_recurse_func(rb_ot_apply_context_t *c, unsigned int lookup_index)
 {

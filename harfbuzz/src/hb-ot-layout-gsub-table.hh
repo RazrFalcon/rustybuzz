@@ -37,28 +37,6 @@ typedef rb_pair_t<rb_codepoint_t, rb_codepoint_t> rb_codepoint_pair_t;
 
 struct SingleSubstFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + coverage).intersects(glyphs);
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        unsigned d = deltaGlyphID;
-        +rb_iter(this + coverage) | rb_filter(*c->glyphs) |
-            rb_map([d](rb_codepoint_t g) { return (g + d) & 0xFFFFu; }) | rb_sink(c->output);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-        unsigned d = deltaGlyphID;
-        +rb_iter(this + coverage) | rb_map([d](rb_codepoint_t g) { return (g + d) & 0xFFFFu; }) | rb_sink(c->output);
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -101,25 +79,6 @@ public:
 
 struct SingleSubstFormat2
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + coverage).intersects(glyphs);
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        +rb_zip(this + coverage, substitute) | rb_filter(*c->glyphs, rb_first) | rb_map(rb_second) | rb_sink(c->output);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-        +rb_zip(this + coverage, substitute) | rb_map(rb_second) | rb_sink(c->output);
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -185,21 +144,6 @@ protected:
 
 struct Sequence
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return rb_all(substitute, glyphs);
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        c->output->add_array(substitute.arrayZ, substitute.len);
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        c->output->add_array(substitute.arrayZ, substitute.len);
-    }
-
     bool apply(rb_ot_apply_context_t *c) const
     {
         unsigned int count = substitute.len;
@@ -242,27 +186,6 @@ public:
 
 struct MultipleSubstFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + coverage).intersects(glyphs);
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        +rb_zip(this + coverage, sequence) | rb_filter(*c->glyphs, rb_first) | rb_map(rb_second) |
-            rb_map(rb_add(this)) | rb_apply([c](const Sequence &_) { _.closure(c); });
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-        +rb_zip(this + coverage, sequence) | rb_map(rb_second) | rb_map(rb_add(this)) |
-            rb_apply([c](const Sequence &_) { _.collect_glyphs(c); });
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -320,21 +243,6 @@ protected:
 
 struct AlternateSet
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return rb_any(alternates, glyphs);
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        c->output->add_array(alternates.arrayZ, alternates.len);
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        c->output->add_array(alternates.arrayZ, alternates.len);
-    }
-
     bool apply(rb_ot_apply_context_t *c) const
     {
         unsigned int count = alternates.len;
@@ -361,17 +269,6 @@ struct AlternateSet
         return true;
     }
 
-    unsigned get_alternates(unsigned start_offset,
-                            unsigned *alternate_count /* IN/OUT.  May be NULL. */,
-                            rb_codepoint_t *alternate_glyphs /* OUT.     May be NULL. */) const
-    {
-        if (alternates.len && alternate_count) {
-            +alternates.sub_array(start_offset, alternate_count) |
-                rb_sink(rb_array(alternate_glyphs, *alternate_count));
-        }
-        return alternates.len;
-    }
-
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return alternates.sanitize(c);
@@ -386,27 +283,6 @@ public:
 
 struct AlternateSubstFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return (this + coverage).intersects(glyphs);
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        +rb_zip(this + coverage, alternateSet) | rb_filter(c->glyphs, rb_first) | rb_map(rb_second) |
-            rb_map(rb_add(this)) | rb_apply([c](const AlternateSet &_) { _.closure(c); });
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-        +rb_zip(this + coverage, alternateSet) | rb_map(rb_second) | rb_map(rb_add(this)) |
-            rb_apply([c](const AlternateSet &_) { _.collect_glyphs(c); });
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -415,15 +291,6 @@ struct AlternateSubstFormat1
     bool would_apply(rb_would_apply_context_t *c) const
     {
         return c->len == 1 && (this + coverage).get_coverage(c->glyphs[0]) != NOT_COVERED;
-    }
-
-    unsigned get_glyph_alternates(rb_codepoint_t gid,
-                                  unsigned start_offset,
-                                  unsigned *alternate_count /* IN/OUT.  May be NULL. */,
-                                  rb_codepoint_t *alternate_glyphs /* OUT.     May be NULL. */) const
-    {
-        return (this + alternateSet[(this + coverage).get_coverage(gid)])
-            .get_alternates(start_offset, alternate_count, alternate_glyphs);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
@@ -473,24 +340,6 @@ protected:
 
 struct Ligature
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return rb_all(component, glyphs);
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        if (!intersects(c->glyphs))
-            return;
-        c->output->add(ligGlyph);
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        c->input->add_array(component.arrayZ, component.get_length());
-        c->output->add(ligGlyph);
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         if (c->len != component.lenP1)
@@ -548,22 +397,6 @@ public:
 
 struct LigatureSet
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return +rb_iter(ligature) | rb_map(rb_add(this)) |
-               rb_map([glyphs](const Ligature &_) { return _.intersects(glyphs); }) | rb_any;
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        +rb_iter(ligature) | rb_map(rb_add(this)) | rb_apply([c](const Ligature &_) { _.closure(c); });
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        +rb_iter(ligature) | rb_map(rb_add(this)) | rb_apply([c](const Ligature &_) { _.collect_glyphs(c); });
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         return +rb_iter(ligature) | rb_map(rb_add(this)) | rb_map([c](const Ligature &_) { return _.would_apply(c); }) |
@@ -596,30 +429,6 @@ public:
 
 struct LigatureSubstFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        return +rb_zip(this + coverage, ligatureSet) | rb_filter(*glyphs, rb_first) | rb_map(rb_second) |
-               rb_map([this, glyphs](const OffsetTo<LigatureSet> &_) { return (this + _).intersects(glyphs); }) |
-               rb_any;
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        +rb_zip(this + coverage, ligatureSet) | rb_filter(*c->glyphs, rb_first) | rb_map(rb_second) |
-            rb_map(rb_add(this)) | rb_apply([c](const LigatureSet &_) { _.closure(c); });
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-
-        +rb_zip(this + coverage, ligatureSet) | rb_map(rb_second) | rb_map(rb_add(this)) |
-            rb_apply([c](const LigatureSet &_) { _.collect_glyphs(c); });
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -697,64 +506,6 @@ struct ExtensionSubst : Extension<ExtensionSubst>
 
 struct ReverseChainSingleSubstFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        if (!(this + coverage).intersects(glyphs))
-            return false;
-
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-
-        unsigned int count;
-
-        count = backtrack.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (!(this + backtrack[i]).intersects(glyphs))
-                return false;
-
-        count = lookahead.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (!(this + lookahead[i]).intersects(glyphs))
-                return false;
-
-        return true;
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        if (!intersects(c->glyphs))
-            return;
-
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-        const ArrayOf<HBGlyphID> &substitute = StructAfter<ArrayOf<HBGlyphID>>(lookahead);
-
-        +rb_zip(this + coverage, substitute) | rb_filter(*c->glyphs, rb_first) | rb_map(rb_second) | rb_sink(c->output);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        if (unlikely(!(this + coverage).collect_coverage(c->input)))
-            return;
-
-        unsigned int count;
-
-        count = backtrack.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (unlikely(!(this + backtrack[i]).collect_coverage(c->before)))
-                return;
-
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-        count = lookahead.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (unlikely(!(this + lookahead[i]).collect_coverage(c->after)))
-                return;
-
-        const ArrayOf<HBGlyphID> &substitute = StructAfter<ArrayOf<HBGlyphID>>(lookahead);
-        count = substitute.len;
-        c->output->add_array(substitute.arrayZ, substitute.len);
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
@@ -887,12 +638,6 @@ struct SubstLookupSubTable
         }
     }
 
-    bool intersects(const rb_set_t *glyphs, unsigned int lookup_type) const
-    {
-        rb_intersects_context_t c(glyphs);
-        return dispatch(&c, lookup_type);
-    }
-
 protected:
     union {
         SingleSubst single;
@@ -936,49 +681,6 @@ struct SubstLookup : Lookup
         return dispatch(c);
     }
 
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        rb_intersects_context_t c(glyphs);
-        return dispatch(&c);
-    }
-
-    rb_closure_context_t::return_t closure(rb_closure_context_t *c, unsigned int this_index) const
-    {
-        if (!c->should_visit_lookup(this_index))
-            return rb_closure_context_t::default_return_value();
-
-        c->set_recurse_func(dispatch_closure_recurse_func);
-
-        rb_closure_context_t::return_t ret = dispatch(c);
-
-        c->flush();
-
-        return ret;
-    }
-
-    rb_closure_lookups_context_t::return_t closure_lookups(rb_closure_lookups_context_t *c, unsigned this_index) const
-    {
-        if (c->is_lookup_visited(this_index))
-            return rb_closure_lookups_context_t::default_return_value();
-
-        c->set_lookup_visited(this_index);
-        if (!intersects(c->glyphs)) {
-            c->set_lookup_inactive(this_index);
-            return rb_closure_lookups_context_t::default_return_value();
-        }
-
-        c->set_recurse_func(dispatch_closure_lookups_recurse_func);
-
-        rb_closure_lookups_context_t::return_t ret = dispatch(c);
-        return ret;
-    }
-
-    rb_collect_glyphs_context_t::return_t collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        c->set_recurse_func(dispatch_recurse_func<rb_collect_glyphs_context_t>);
-        return dispatch(c);
-    }
-
     template <typename set_t> void collect_coverage(set_t *glyphs) const
     {
         rb_collect_coverage_context_t<set_t> c(glyphs);
@@ -995,28 +697,6 @@ struct SubstLookup : Lookup
     }
 
     static inline bool apply_recurse_func(rb_ot_apply_context_t *c, unsigned int lookup_index);
-
-    template <typename context_t>
-    static inline typename context_t::return_t dispatch_recurse_func(context_t *c, unsigned int lookup_index);
-
-    static inline rb_closure_context_t::return_t dispatch_closure_recurse_func(rb_closure_context_t *c,
-                                                                               unsigned int lookup_index)
-    {
-        if (!c->should_visit_lookup(lookup_index))
-            return rb_empty_t();
-
-        rb_closure_context_t::return_t ret = dispatch_recurse_func(c, lookup_index);
-
-        /* While in theory we should flush here, it will cause timeouts because a recursive
-         * lookup can keep growing the glyph set.  Skip, and outer loop will retry up to
-         * RB_CLOSURE_MAX_STAGES time, which should be enough for every realistic font. */
-        // c->flush ();
-
-        return ret;
-    }
-
-    RB_INTERNAL static rb_closure_lookups_context_t::return_t
-    dispatch_closure_lookups_recurse_func(rb_closure_lookups_context_t *c, unsigned lookup_index);
 
     template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
     {
@@ -1050,11 +730,6 @@ struct GSUB : GSUBGPOS
 
     RB_INTERNAL bool is_blocklisted(rb_blob_t *blob, rb_face_t *face) const;
 
-    void closure_lookups(rb_face_t *face, const rb_set_t *glyphs, rb_set_t *lookup_indexes /* IN/OUT */) const
-    {
-        GSUBGPOS::closure_lookups<SubstLookup>(face, glyphs, lookup_indexes);
-    }
-
     typedef GSUBGPOS::accelerator_t<GSUB> accelerator_t;
 };
 
@@ -1067,19 +742,6 @@ struct GSUB_accelerator_t : GSUB::accelerator_t
 /*static*/ inline bool ExtensionSubst::is_reverse() const
 {
     return SubstLookup::lookup_type_is_reverse(get_type());
-}
-template <typename context_t>
-/*static*/ typename context_t::return_t SubstLookup::dispatch_recurse_func(context_t *c, unsigned int lookup_index)
-{
-    const SubstLookup &l = c->face->table.GSUB.get_relaxed()->table->get_lookup(lookup_index);
-    return l.dispatch(c);
-}
-
-/*static*/ inline rb_closure_lookups_context_t::return_t
-SubstLookup::dispatch_closure_lookups_recurse_func(rb_closure_lookups_context_t *c, unsigned this_index)
-{
-    const SubstLookup &l = c->face->table.GSUB.get_relaxed()->table->get_lookup(this_index);
-    return l.closure_lookups(c, this_index);
 }
 
 /*static*/ bool SubstLookup::apply_recurse_func(rb_ot_apply_context_t *c, unsigned int lookup_index)

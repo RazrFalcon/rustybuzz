@@ -39,196 +39,6 @@
 
 namespace OT {
 
-struct rb_intersects_context_t : rb_dispatch_context_t<rb_intersects_context_t, bool>
-{
-    template <typename T> return_t dispatch(const T &obj)
-    {
-        return obj.intersects(this->glyphs);
-    }
-    static return_t default_return_value()
-    {
-        return false;
-    }
-    bool stop_sublookup_iteration(return_t r) const
-    {
-        return r;
-    }
-
-    const rb_set_t *glyphs;
-
-    rb_intersects_context_t(const rb_set_t *glyphs_)
-        : glyphs(glyphs_)
-    {
-    }
-};
-
-struct rb_closure_context_t : rb_dispatch_context_t<rb_closure_context_t>
-{
-    typedef return_t (*recurse_func_t)(rb_closure_context_t *c, unsigned int lookup_index);
-    template <typename T> return_t dispatch(const T &obj)
-    {
-        obj.closure(this);
-        return rb_empty_t();
-    }
-    static return_t default_return_value()
-    {
-        return rb_empty_t();
-    }
-    void recurse(unsigned int lookup_index)
-    {
-        if (unlikely(nesting_level_left == 0 || !recurse_func))
-            return;
-
-        nesting_level_left--;
-        recurse_func(this, lookup_index);
-        nesting_level_left++;
-    }
-
-    bool lookup_limit_exceeded()
-    {
-        return lookup_count > RB_MAX_LOOKUP_INDICES;
-    }
-
-    bool should_visit_lookup(unsigned int lookup_index)
-    {
-        if (lookup_count++ > RB_MAX_LOOKUP_INDICES)
-            return false;
-
-        if (is_lookup_done(lookup_index))
-            return false;
-
-        done_lookups->set(lookup_index, glyphs->get_population());
-        return true;
-    }
-
-    bool is_lookup_done(unsigned int lookup_index)
-    {
-        /* Have we visited this lookup with the current set of glyphs? */
-        return done_lookups->get(lookup_index) == glyphs->get_population();
-    }
-
-    rb_face_t *face;
-    rb_set_t *glyphs;
-    rb_set_t output[1];
-    recurse_func_t recurse_func;
-    unsigned int nesting_level_left;
-
-    rb_closure_context_t(rb_face_t *face_,
-                         rb_set_t *glyphs_,
-                         rb_map_t *done_lookups_,
-                         unsigned int nesting_level_left_ = RB_MAX_NESTING_LEVEL)
-        : face(face_)
-        , glyphs(glyphs_)
-        , recurse_func(nullptr)
-        , nesting_level_left(nesting_level_left_)
-        , done_lookups(done_lookups_)
-        , lookup_count(0)
-    {
-    }
-
-    ~rb_closure_context_t()
-    {
-        flush();
-    }
-
-    void set_recurse_func(recurse_func_t func)
-    {
-        recurse_func = func;
-    }
-
-    void flush()
-    {
-        rb_set_del_range(output, face->get_num_glyphs(), rb_set_get_max(output)); /* Remove invalid glyphs. */
-        rb_set_union(glyphs, output);
-        rb_set_clear(output);
-    }
-
-private:
-    rb_map_t *done_lookups;
-    unsigned int lookup_count;
-};
-
-struct rb_closure_lookups_context_t : rb_dispatch_context_t<rb_closure_lookups_context_t>
-{
-    typedef return_t (*recurse_func_t)(rb_closure_lookups_context_t *c, unsigned lookup_index);
-    template <typename T> return_t dispatch(const T &obj)
-    {
-        obj.closure_lookups(this);
-        return rb_empty_t();
-    }
-    static return_t default_return_value()
-    {
-        return rb_empty_t();
-    }
-    void recurse(unsigned lookup_index)
-    {
-        if (unlikely(nesting_level_left == 0 || !recurse_func))
-            return;
-
-        /* Return if new lookup was recursed to before. */
-        if (is_lookup_visited(lookup_index))
-            return;
-
-        set_lookup_visited(lookup_index);
-        nesting_level_left--;
-        recurse_func(this, lookup_index);
-        nesting_level_left++;
-    }
-
-    void set_lookup_visited(unsigned lookup_index)
-    {
-        visited_lookups->add(lookup_index);
-    }
-
-    void set_lookup_inactive(unsigned lookup_index)
-    {
-        inactive_lookups->add(lookup_index);
-    }
-
-    bool lookup_limit_exceeded()
-    {
-        return lookup_count > RB_MAX_LOOKUP_INDICES;
-    }
-
-    bool is_lookup_visited(unsigned lookup_index)
-    {
-        if (lookup_count++ > RB_MAX_LOOKUP_INDICES)
-            return true;
-
-        return visited_lookups->has(lookup_index);
-    }
-
-    rb_face_t *face;
-    const rb_set_t *glyphs;
-    recurse_func_t recurse_func;
-    unsigned int nesting_level_left;
-
-    rb_closure_lookups_context_t(rb_face_t *face_,
-                                 const rb_set_t *glyphs_,
-                                 rb_set_t *visited_lookups_,
-                                 rb_set_t *inactive_lookups_,
-                                 unsigned nesting_level_left_ = RB_MAX_NESTING_LEVEL)
-        : face(face_)
-        , glyphs(glyphs_)
-        , recurse_func(nullptr)
-        , nesting_level_left(nesting_level_left_)
-        , visited_lookups(visited_lookups_)
-        , inactive_lookups(inactive_lookups_)
-        , lookup_count(0)
-    {
-    }
-
-    void set_recurse_func(recurse_func_t func)
-    {
-        recurse_func = func;
-    }
-
-private:
-    rb_set_t *visited_lookups;
-    rb_set_t *inactive_lookups;
-    unsigned int lookup_count;
-};
-
 struct rb_would_apply_context_t : rb_dispatch_context_t<rb_would_apply_context_t, bool>
 {
     template <typename T> return_t dispatch(const T &obj)
@@ -255,92 +65,6 @@ struct rb_would_apply_context_t : rb_dispatch_context_t<rb_would_apply_context_t
         , len(len_)
         , zero_context(zero_context_)
     {
-    }
-};
-
-struct rb_collect_glyphs_context_t : rb_dispatch_context_t<rb_collect_glyphs_context_t>
-{
-    typedef return_t (*recurse_func_t)(rb_collect_glyphs_context_t *c, unsigned int lookup_index);
-    template <typename T> return_t dispatch(const T &obj)
-    {
-        obj.collect_glyphs(this);
-        return rb_empty_t();
-    }
-    static return_t default_return_value()
-    {
-        return rb_empty_t();
-    }
-    void recurse(unsigned int lookup_index)
-    {
-        if (unlikely(nesting_level_left == 0 || !recurse_func))
-            return;
-
-        /* Note that GPOS sets recurse_func to nullptr already, so it doesn't get
-         * past the previous check.  For GSUB, we only want to collect the output
-         * glyphs in the recursion.  If output is not requested, we can go home now.
-         *
-         * Note further, that the above is not exactly correct.  A recursed lookup
-         * is allowed to match input that is not matched in the context, but that's
-         * not how most fonts are built.  It's possible to relax that and recurse
-         * with all sets here if it proves to be an issue.
-         */
-
-        if (output == rb_set_get_empty())
-            return;
-
-        /* Return if new lookup was recursed to before. */
-        if (recursed_lookups->has(lookup_index))
-            return;
-
-        rb_set_t *old_before = before;
-        rb_set_t *old_input = input;
-        rb_set_t *old_after = after;
-        before = input = after = rb_set_get_empty();
-
-        nesting_level_left--;
-        recurse_func(this, lookup_index);
-        nesting_level_left++;
-
-        before = old_before;
-        input = old_input;
-        after = old_after;
-
-        recursed_lookups->add(lookup_index);
-    }
-
-    rb_face_t *face;
-    rb_set_t *before;
-    rb_set_t *input;
-    rb_set_t *after;
-    rb_set_t *output;
-    recurse_func_t recurse_func;
-    rb_set_t *recursed_lookups;
-    unsigned int nesting_level_left;
-
-    rb_collect_glyphs_context_t(rb_face_t *face_,
-                                rb_set_t *glyphs_before, /* OUT.  May be NULL */
-                                rb_set_t *glyphs_input,  /* OUT.  May be NULL */
-                                rb_set_t *glyphs_after,  /* OUT.  May be NULL */
-                                rb_set_t *glyphs_output, /* OUT.  May be NULL */
-                                unsigned int nesting_level_left_ = RB_MAX_NESTING_LEVEL)
-        : face(face_)
-        , before(glyphs_before ? glyphs_before : rb_set_get_empty())
-        , input(glyphs_input ? glyphs_input : rb_set_get_empty())
-        , after(glyphs_after ? glyphs_after : rb_set_get_empty())
-        , output(glyphs_output ? glyphs_output : rb_set_get_empty())
-        , recurse_func(nullptr)
-        , recursed_lookups(rb_set_create())
-        , nesting_level_left(nesting_level_left_)
-    {
-    }
-    ~rb_collect_glyphs_context_t()
-    {
-        rb_set_destroy(recursed_lookups);
-    }
-
-    void set_recurse_func(recurse_func_t func)
-    {
-        recurse_func = func;
     }
 };
 
@@ -816,73 +540,11 @@ struct rb_get_subtables_context_t : rb_dispatch_context_t<rb_get_subtables_conte
     array_t &array;
 };
 
-typedef bool (*intersects_func_t)(const rb_set_t *glyphs, const HBUINT16 &value, const void *data);
-typedef void (*collect_glyphs_func_t)(rb_set_t *glyphs, const HBUINT16 &value, const void *data);
 typedef bool (*match_func_t)(rb_codepoint_t glyph_id, const HBUINT16 &value, const void *data);
-
-struct ContextClosureFuncs
-{
-    intersects_func_t intersects;
-};
-struct ContextCollectGlyphsFuncs
-{
-    collect_glyphs_func_t collect;
-};
 struct ContextApplyFuncs
 {
     match_func_t match;
 };
-
-static inline bool intersects_glyph(const rb_set_t *glyphs, const HBUINT16 &value, const void *data RB_UNUSED)
-{
-    return glyphs->has(value);
-}
-static inline bool intersects_class(const rb_set_t *glyphs, const HBUINT16 &value, const void *data)
-{
-    const ClassDef &class_def = *reinterpret_cast<const ClassDef *>(data);
-    return class_def.intersects_class(glyphs, value);
-}
-static inline bool intersects_coverage(const rb_set_t *glyphs, const HBUINT16 &value, const void *data)
-{
-    const OffsetTo<Coverage> &coverage = (const OffsetTo<Coverage> &)value;
-    return (data + coverage).intersects(glyphs);
-}
-
-static inline bool array_is_subset_of(const rb_set_t *glyphs,
-                                      unsigned int count,
-                                      const HBUINT16 values[],
-                                      intersects_func_t intersects_func,
-                                      const void *intersects_data)
-{
-    for (const HBUINT16 &_ : +rb_iter(values, count))
-        if (!intersects_func(glyphs, _, intersects_data))
-            return false;
-    return true;
-}
-
-static inline void collect_glyph(rb_set_t *glyphs, const HBUINT16 &value, const void *data RB_UNUSED)
-{
-    glyphs->add(value);
-}
-static inline void collect_class(rb_set_t *glyphs, const HBUINT16 &value, const void *data)
-{
-    const ClassDef &class_def = *reinterpret_cast<const ClassDef *>(data);
-    class_def.collect_class(glyphs, value);
-}
-static inline void collect_coverage(rb_set_t *glyphs, const HBUINT16 &value, const void *data)
-{
-    const OffsetTo<Coverage> &coverage = (const OffsetTo<Coverage> &)value;
-    (data + coverage).collect_coverage(glyphs);
-}
-static inline void collect_array(rb_collect_glyphs_context_t *c RB_UNUSED,
-                                 rb_set_t *glyphs,
-                                 unsigned int count,
-                                 const HBUINT16 values[],
-                                 collect_glyphs_func_t collect_func,
-                                 const void *collect_data)
-{
-    return +rb_iter(values, count) | rb_apply([&](const HBUINT16 &_) { collect_func(glyphs, _, collect_data); });
-}
 
 static inline bool match_glyph(rb_codepoint_t glyph_id, const HBUINT16 &value, const void *data RB_UNUSED)
 {
@@ -1185,15 +847,6 @@ public:
     DEFINE_SIZE_STATIC(4);
 };
 
-template <typename context_t>
-static inline void recurse_lookups(context_t *c,
-                                   unsigned int lookupCount,
-                                   const LookupRecord lookupRecord[] /* Array of LookupRecords--in design order */)
-{
-    for (unsigned int i = 0; i < lookupCount; i++)
-        c->recurse(lookupRecord[i].lookupListIndex);
-}
-
 static inline bool apply_lookup(rb_ot_apply_context_t *c,
                                 unsigned int count,                                  /* Including the first glyph */
                                 unsigned int match_positions[RB_MAX_CONTEXT_LENGTH], /* Including the first glyph */
@@ -1310,59 +963,11 @@ static inline bool apply_lookup(rb_ot_apply_context_t *c,
 
 /* Contextual lookups */
 
-struct ContextClosureLookupContext
-{
-    ContextClosureFuncs funcs;
-    const void *intersects_data;
-};
-
-struct ContextCollectGlyphsLookupContext
-{
-    ContextCollectGlyphsFuncs funcs;
-    const void *collect_data;
-};
-
 struct ContextApplyLookupContext
 {
     ContextApplyFuncs funcs;
     const void *match_data;
 };
-
-static inline bool context_intersects(const rb_set_t *glyphs,
-                                      unsigned int inputCount, /* Including the first glyph (not matched) */
-                                      const HBUINT16 input[],  /* Array of input values--start with second glyph */
-                                      ContextClosureLookupContext &lookup_context)
-{
-    return array_is_subset_of(glyphs,
-                              inputCount ? inputCount - 1 : 0,
-                              input,
-                              lookup_context.funcs.intersects,
-                              lookup_context.intersects_data);
-}
-
-static inline void context_closure_lookup(rb_closure_context_t *c,
-                                          unsigned int inputCount, /* Including the first glyph (not matched) */
-                                          const HBUINT16 input[],  /* Array of input values--start with second glyph */
-                                          unsigned int lookupCount,
-                                          const LookupRecord lookupRecord[],
-                                          ContextClosureLookupContext &lookup_context)
-{
-    if (context_intersects(c->glyphs, inputCount, input, lookup_context))
-        recurse_lookups(c, lookupCount, lookupRecord);
-}
-
-static inline void
-context_collect_glyphs_lookup(rb_collect_glyphs_context_t *c,
-                              unsigned int inputCount, /* Including the first glyph (not matched) */
-                              const HBUINT16 input[],  /* Array of input values--start with second glyph */
-                              unsigned int lookupCount,
-                              const LookupRecord lookupRecord[],
-                              ContextCollectGlyphsLookupContext &lookup_context)
-{
-    collect_array(
-        c, c->input, inputCount ? inputCount - 1 : 0, input, lookup_context.funcs.collect, lookup_context.collect_data);
-    recurse_lookups(c, lookupCount, lookupRecord);
-}
 
 static inline bool
 context_would_apply_lookup(rb_would_apply_context_t *c,
@@ -1397,38 +1002,6 @@ static inline bool context_apply_lookup(rb_ot_apply_context_t *c,
 
 struct Rule
 {
-    bool intersects(const rb_set_t *glyphs, ContextClosureLookupContext &lookup_context) const
-    {
-        return context_intersects(glyphs, inputCount, inputZ.arrayZ, lookup_context);
-    }
-
-    void closure(rb_closure_context_t *c, ContextClosureLookupContext &lookup_context) const
-    {
-        if (unlikely(c->lookup_limit_exceeded()))
-            return;
-
-        const UnsizedArrayOf<LookupRecord> &lookupRecord =
-            StructAfter<UnsizedArrayOf<LookupRecord>>(inputZ.as_array((inputCount ? inputCount - 1 : 0)));
-        context_closure_lookup(c, inputCount, inputZ.arrayZ, lookupCount, lookupRecord.arrayZ, lookup_context);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        if (unlikely(c->lookup_limit_exceeded()))
-            return;
-
-        const UnsizedArrayOf<LookupRecord> &lookupRecord =
-            StructAfter<UnsizedArrayOf<LookupRecord>>(inputZ.as_array(inputCount ? inputCount - 1 : 0));
-        recurse_lookups(c, lookupCount, lookupRecord.arrayZ);
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c, ContextCollectGlyphsLookupContext &lookup_context) const
-    {
-        const UnsizedArrayOf<LookupRecord> &lookupRecord =
-            StructAfter<UnsizedArrayOf<LookupRecord>>(inputZ.as_array(inputCount ? inputCount - 1 : 0));
-        context_collect_glyphs_lookup(c, inputCount, inputZ.arrayZ, lookupCount, lookupRecord.arrayZ, lookup_context);
-    }
-
     bool would_apply(rb_would_apply_context_t *c, ContextApplyLookupContext &lookup_context) const
     {
         const UnsizedArrayOf<LookupRecord> &lookupRecord =
@@ -1469,34 +1042,6 @@ public:
 
 struct RuleSet
 {
-    bool intersects(const rb_set_t *glyphs, ContextClosureLookupContext &lookup_context) const
-    {
-        return +rb_iter(rule) | rb_map(rb_add(this)) |
-               rb_map([&](const Rule &_) { return _.intersects(glyphs, lookup_context); }) | rb_any;
-    }
-
-    void closure(rb_closure_context_t *c, ContextClosureLookupContext &lookup_context) const
-    {
-        if (unlikely(c->lookup_limit_exceeded()))
-            return;
-
-        return +rb_iter(rule) | rb_map(rb_add(this)) | rb_apply([&](const Rule &_) { _.closure(c, lookup_context); });
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        if (unlikely(c->lookup_limit_exceeded()))
-            return;
-
-        return +rb_iter(rule) | rb_map(rb_add(this)) | rb_apply([&](const Rule &_) { _.closure_lookups(c); });
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c, ContextCollectGlyphsLookupContext &lookup_context) const
-    {
-        return +rb_iter(rule) | rb_map(rb_add(this)) |
-               rb_apply([&](const Rule &_) { _.collect_glyphs(c, lookup_context); });
-    }
-
     bool would_apply(rb_would_apply_context_t *c, ContextApplyLookupContext &lookup_context) const
     {
         return +rb_iter(rule) | rb_map(rb_add(this)) |
@@ -1523,40 +1068,6 @@ public:
 
 struct ContextFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        struct ContextClosureLookupContext lookup_context = {{intersects_glyph}, nullptr};
-
-        return +rb_zip(this + coverage, ruleSet) | rb_filter(*glyphs, rb_first) | rb_map(rb_second) |
-               rb_map(rb_add(this)) | rb_map([&](const RuleSet &_) { return _.intersects(glyphs, lookup_context); }) |
-               rb_any;
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        struct ContextClosureLookupContext lookup_context = {{intersects_glyph}, nullptr};
-
-        +rb_zip(this + coverage, ruleSet) | rb_filter(*c->glyphs, rb_first) | rb_map(rb_second) | rb_map(rb_add(this)) |
-            rb_apply([&](const RuleSet &_) { _.closure(c, lookup_context); });
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        +rb_iter(ruleSet) | rb_map(rb_add(this)) | rb_apply([&](const RuleSet &_) { _.closure_lookups(c); });
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        (this + coverage).collect_coverage(c->input);
-
-        struct ContextCollectGlyphsLookupContext lookup_context = {{collect_glyph}, nullptr};
-
-        +rb_iter(ruleSet) | rb_map(rb_add(this)) |
-            rb_apply([&](const RuleSet &_) { _.collect_glyphs(c, lookup_context); });
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         const RuleSet &rule_set = this + ruleSet[(this + coverage).get_coverage(c->glyphs[0])];
@@ -1597,55 +1108,6 @@ public:
 
 struct ContextFormat2
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        if (!(this + coverage).intersects(glyphs))
-            return false;
-
-        const ClassDef &class_def = this + classDef;
-
-        struct ContextClosureLookupContext lookup_context = {{intersects_class}, &class_def};
-
-        return +rb_iter(ruleSet) | rb_map(rb_add(this)) | rb_enumerate |
-               rb_map([&](const rb_pair_t<unsigned, const RuleSet &> p) {
-                   return class_def.intersects_class(glyphs, p.first) && p.second.intersects(glyphs, lookup_context);
-               }) |
-               rb_any;
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        if (!(this + coverage).intersects(c->glyphs))
-            return;
-
-        const ClassDef &class_def = this + classDef;
-
-        struct ContextClosureLookupContext lookup_context = {{intersects_class}, &class_def};
-
-        return +rb_enumerate(ruleSet) |
-               rb_filter([&](unsigned _) { return class_def.intersects_class(c->glyphs, _); }, rb_first) |
-               rb_map(rb_second) | rb_map(rb_add(this)) |
-               rb_apply([&](const RuleSet &_) { _.closure(c, lookup_context); });
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        +rb_iter(ruleSet) | rb_map(rb_add(this)) | rb_apply([&](const RuleSet &_) { _.closure_lookups(c); });
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        (this + coverage).collect_coverage(c->input);
-
-        const ClassDef &class_def = this + classDef;
-        struct ContextCollectGlyphsLookupContext lookup_context = {{collect_class}, &class_def};
-
-        +rb_iter(ruleSet) | rb_map(rb_add(this)) |
-            rb_apply([&](const RuleSet &_) { _.collect_glyphs(c, lookup_context); });
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         const ClassDef &class_def = this + classDef;
@@ -1692,45 +1154,6 @@ public:
 
 struct ContextFormat3
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        if (!(this + coverageZ[0]).intersects(glyphs))
-            return false;
-
-        struct ContextClosureLookupContext lookup_context = {{intersects_coverage}, this};
-        return context_intersects(glyphs, glyphCount, (const HBUINT16 *)(coverageZ.arrayZ + 1), lookup_context);
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        if (!(this + coverageZ[0]).intersects(c->glyphs))
-            return;
-
-        const LookupRecord *lookupRecord = &StructAfter<LookupRecord>(coverageZ.as_array(glyphCount));
-        struct ContextClosureLookupContext lookup_context = {{intersects_coverage}, this};
-        context_closure_lookup(
-            c, glyphCount, (const HBUINT16 *)(coverageZ.arrayZ + 1), lookupCount, lookupRecord, lookup_context);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        const LookupRecord *lookupRecord = &StructAfter<LookupRecord>(coverageZ.as_array(glyphCount));
-        recurse_lookups(c, lookupCount, lookupRecord);
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        (this + coverageZ[0]).collect_coverage(c->input);
-
-        const LookupRecord *lookupRecord = &StructAfter<LookupRecord>(coverageZ.as_array(glyphCount));
-        struct ContextCollectGlyphsLookupContext lookup_context = {{collect_coverage}, this};
-
-        context_collect_glyphs_lookup(
-            c, glyphCount, (const HBUINT16 *)(coverageZ.arrayZ + 1), lookupCount, lookupRecord, lookup_context);
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         const LookupRecord *lookupRecord = &StructAfter<LookupRecord>(coverageZ.as_array(glyphCount));
@@ -1815,84 +1238,11 @@ protected:
 
 /* Chaining Contextual lookups */
 
-struct ChainContextClosureLookupContext
-{
-    ContextClosureFuncs funcs;
-    const void *intersects_data[3];
-};
-
-struct ChainContextCollectGlyphsLookupContext
-{
-    ContextCollectGlyphsFuncs funcs;
-    const void *collect_data[3];
-};
-
 struct ChainContextApplyLookupContext
 {
     ContextApplyFuncs funcs;
     const void *match_data[3];
 };
-
-static inline bool chain_context_intersects(const rb_set_t *glyphs,
-                                            unsigned int backtrackCount,
-                                            const HBUINT16 backtrack[],
-                                            unsigned int inputCount, /* Including the first glyph (not matched) */
-                                            const HBUINT16 input[], /* Array of input values--start with second glyph */
-                                            unsigned int lookaheadCount,
-                                            const HBUINT16 lookahead[],
-                                            ChainContextClosureLookupContext &lookup_context)
-{
-    return array_is_subset_of(
-               glyphs, backtrackCount, backtrack, lookup_context.funcs.intersects, lookup_context.intersects_data[0]) &&
-           array_is_subset_of(glyphs,
-                              inputCount ? inputCount - 1 : 0,
-                              input,
-                              lookup_context.funcs.intersects,
-                              lookup_context.intersects_data[1]) &&
-           array_is_subset_of(
-               glyphs, lookaheadCount, lookahead, lookup_context.funcs.intersects, lookup_context.intersects_data[2]);
-}
-
-static inline void
-chain_context_closure_lookup(rb_closure_context_t *c,
-                             unsigned int backtrackCount,
-                             const HBUINT16 backtrack[],
-                             unsigned int inputCount, /* Including the first glyph (not matched) */
-                             const HBUINT16 input[],  /* Array of input values--start with second glyph */
-                             unsigned int lookaheadCount,
-                             const HBUINT16 lookahead[],
-                             unsigned int lookupCount,
-                             const LookupRecord lookupRecord[],
-                             ChainContextClosureLookupContext &lookup_context)
-{
-    if (chain_context_intersects(
-            c->glyphs, backtrackCount, backtrack, inputCount, input, lookaheadCount, lookahead, lookup_context))
-        recurse_lookups(c, lookupCount, lookupRecord);
-}
-
-static inline void
-chain_context_collect_glyphs_lookup(rb_collect_glyphs_context_t *c,
-                                    unsigned int backtrackCount,
-                                    const HBUINT16 backtrack[],
-                                    unsigned int inputCount, /* Including the first glyph (not matched) */
-                                    const HBUINT16 input[],  /* Array of input values--start with second glyph */
-                                    unsigned int lookaheadCount,
-                                    const HBUINT16 lookahead[],
-                                    unsigned int lookupCount,
-                                    const LookupRecord lookupRecord[],
-                                    ChainContextCollectGlyphsLookupContext &lookup_context)
-{
-    collect_array(
-        c, c->before, backtrackCount, backtrack, lookup_context.funcs.collect, lookup_context.collect_data[0]);
-    collect_array(c,
-                  c->input,
-                  inputCount ? inputCount - 1 : 0,
-                  input,
-                  lookup_context.funcs.collect,
-                  lookup_context.collect_data[1]);
-    collect_array(c, c->after, lookaheadCount, lookahead, lookup_context.funcs.collect, lookup_context.collect_data[2]);
-    recurse_lookups(c, lookupCount, lookupRecord);
-}
 
 static inline bool
 chain_context_would_apply_lookup(rb_would_apply_context_t *c,
@@ -1946,68 +1296,6 @@ chain_context_apply_lookup(rb_ot_apply_context_t *c,
 
 struct ChainRule
 {
-    bool intersects(const rb_set_t *glyphs, ChainContextClosureLookupContext &lookup_context) const
-    {
-        const HeadlessArrayOf<HBUINT16> &input = StructAfter<HeadlessArrayOf<HBUINT16>>(backtrack);
-        const ArrayOf<HBUINT16> &lookahead = StructAfter<ArrayOf<HBUINT16>>(input);
-        return chain_context_intersects(glyphs,
-                                        backtrack.len,
-                                        backtrack.arrayZ,
-                                        input.lenP1,
-                                        input.arrayZ,
-                                        lookahead.len,
-                                        lookahead.arrayZ,
-                                        lookup_context);
-    }
-
-    void closure(rb_closure_context_t *c, ChainContextClosureLookupContext &lookup_context) const
-    {
-        if (unlikely(c->lookup_limit_exceeded()))
-            return;
-
-        const HeadlessArrayOf<HBUINT16> &input = StructAfter<HeadlessArrayOf<HBUINT16>>(backtrack);
-        const ArrayOf<HBUINT16> &lookahead = StructAfter<ArrayOf<HBUINT16>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        chain_context_closure_lookup(c,
-                                     backtrack.len,
-                                     backtrack.arrayZ,
-                                     input.lenP1,
-                                     input.arrayZ,
-                                     lookahead.len,
-                                     lookahead.arrayZ,
-                                     lookup.len,
-                                     lookup.arrayZ,
-                                     lookup_context);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        if (unlikely(c->lookup_limit_exceeded()))
-            return;
-
-        const HeadlessArrayOf<HBUINT16> &input = StructAfter<HeadlessArrayOf<HBUINT16>>(backtrack);
-        const ArrayOf<HBUINT16> &lookahead = StructAfter<ArrayOf<HBUINT16>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        recurse_lookups(c, lookup.len, lookup.arrayZ);
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c, ChainContextCollectGlyphsLookupContext &lookup_context) const
-    {
-        const HeadlessArrayOf<HBUINT16> &input = StructAfter<HeadlessArrayOf<HBUINT16>>(backtrack);
-        const ArrayOf<HBUINT16> &lookahead = StructAfter<ArrayOf<HBUINT16>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        chain_context_collect_glyphs_lookup(c,
-                                            backtrack.len,
-                                            backtrack.arrayZ,
-                                            input.lenP1,
-                                            input.arrayZ,
-                                            lookahead.len,
-                                            lookahead.arrayZ,
-                                            lookup.len,
-                                            lookup.arrayZ,
-                                            lookup_context);
-    }
-
     bool would_apply(rb_would_apply_context_t *c, ChainContextApplyLookupContext &lookup_context) const
     {
         const HeadlessArrayOf<HBUINT16> &input = StructAfter<HeadlessArrayOf<HBUINT16>>(backtrack);
@@ -2072,34 +1360,6 @@ public:
 
 struct ChainRuleSet
 {
-    bool intersects(const rb_set_t *glyphs, ChainContextClosureLookupContext &lookup_context) const
-    {
-        return +rb_iter(rule) | rb_map(rb_add(this)) |
-               rb_map([&](const ChainRule &_) { return _.intersects(glyphs, lookup_context); }) | rb_any;
-    }
-    void closure(rb_closure_context_t *c, ChainContextClosureLookupContext &lookup_context) const
-    {
-        if (unlikely(c->lookup_limit_exceeded()))
-            return;
-
-        return +rb_iter(rule) | rb_map(rb_add(this)) |
-               rb_apply([&](const ChainRule &_) { _.closure(c, lookup_context); });
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        if (unlikely(c->lookup_limit_exceeded()))
-            return;
-
-        return +rb_iter(rule) | rb_map(rb_add(this)) | rb_apply([&](const ChainRule &_) { _.closure_lookups(c); });
-    }
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c, ChainContextCollectGlyphsLookupContext &lookup_context) const
-    {
-        return +rb_iter(rule) | rb_map(rb_add(this)) |
-               rb_apply([&](const ChainRule &_) { _.collect_glyphs(c, lookup_context); });
-    }
-
     bool would_apply(rb_would_apply_context_t *c, ChainContextApplyLookupContext &lookup_context) const
     {
         return +rb_iter(rule) | rb_map(rb_add(this)) |
@@ -2126,40 +1386,6 @@ public:
 
 struct ChainContextFormat1
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        struct ChainContextClosureLookupContext lookup_context = {{intersects_glyph}, {nullptr, nullptr, nullptr}};
-
-        return +rb_zip(this + coverage, ruleSet) | rb_filter(*glyphs, rb_first) | rb_map(rb_second) |
-               rb_map(rb_add(this)) |
-               rb_map([&](const ChainRuleSet &_) { return _.intersects(glyphs, lookup_context); }) | rb_any;
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        struct ChainContextClosureLookupContext lookup_context = {{intersects_glyph}, {nullptr, nullptr, nullptr}};
-
-        +rb_zip(this + coverage, ruleSet) | rb_filter(*c->glyphs, rb_first) | rb_map(rb_second) | rb_map(rb_add(this)) |
-            rb_apply([&](const ChainRuleSet &_) { _.closure(c, lookup_context); });
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        +rb_iter(ruleSet) | rb_map(rb_add(this)) | rb_apply([&](const ChainRuleSet &_) { _.closure_lookups(c); });
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        (this + coverage).collect_coverage(c->input);
-
-        struct ChainContextCollectGlyphsLookupContext lookup_context = {{collect_glyph}, {nullptr, nullptr, nullptr}};
-
-        +rb_iter(ruleSet) | rb_map(rb_add(this)) |
-            rb_apply([&](const ChainRuleSet &_) { _.collect_glyphs(c, lookup_context); });
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         const ChainRuleSet &rule_set = this + ruleSet[(this + coverage).get_coverage(c->glyphs[0])];
@@ -2200,65 +1426,6 @@ public:
 
 struct ChainContextFormat2
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        if (!(this + coverage).intersects(glyphs))
-            return false;
-
-        const ClassDef &backtrack_class_def = this + backtrackClassDef;
-        const ClassDef &input_class_def = this + inputClassDef;
-        const ClassDef &lookahead_class_def = this + lookaheadClassDef;
-
-        struct ChainContextClosureLookupContext lookup_context = {
-            {intersects_class}, {&backtrack_class_def, &input_class_def, &lookahead_class_def}};
-
-        return +rb_iter(ruleSet) | rb_map(rb_add(this)) | rb_enumerate |
-               rb_map([&](const rb_pair_t<unsigned, const ChainRuleSet &> p) {
-                   return input_class_def.intersects_class(glyphs, p.first) &&
-                          p.second.intersects(glyphs, lookup_context);
-               }) |
-               rb_any;
-    }
-    void closure(rb_closure_context_t *c) const
-    {
-        if (!(this + coverage).intersects(c->glyphs))
-            return;
-
-        const ClassDef &backtrack_class_def = this + backtrackClassDef;
-        const ClassDef &input_class_def = this + inputClassDef;
-        const ClassDef &lookahead_class_def = this + lookaheadClassDef;
-
-        struct ChainContextClosureLookupContext lookup_context = {
-            {intersects_class}, {&backtrack_class_def, &input_class_def, &lookahead_class_def}};
-
-        return +rb_enumerate(ruleSet) |
-               rb_filter([&](unsigned _) { return input_class_def.intersects_class(c->glyphs, _); }, rb_first) |
-               rb_map(rb_second) | rb_map(rb_add(this)) |
-               rb_apply([&](const ChainRuleSet &_) { _.closure(c, lookup_context); });
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        +rb_iter(ruleSet) | rb_map(rb_add(this)) | rb_apply([&](const ChainRuleSet &_) { _.closure_lookups(c); });
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        (this + coverage).collect_coverage(c->input);
-
-        const ClassDef &backtrack_class_def = this + backtrackClassDef;
-        const ClassDef &input_class_def = this + inputClassDef;
-        const ClassDef &lookahead_class_def = this + lookaheadClassDef;
-
-        struct ChainContextCollectGlyphsLookupContext lookup_context = {
-            {collect_class}, {&backtrack_class_def, &input_class_def, &lookahead_class_def}};
-
-        +rb_iter(ruleSet) | rb_map(rb_add(this)) |
-            rb_apply([&](const ChainRuleSet &_) { _.collect_glyphs(c, lookup_context); });
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         const ClassDef &backtrack_class_def = this + backtrackClassDef;
@@ -2321,78 +1488,6 @@ public:
 
 struct ChainContextFormat3
 {
-    bool intersects(const rb_set_t *glyphs) const
-    {
-        const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-
-        if (!(this + input[0]).intersects(glyphs))
-            return false;
-
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(input);
-        struct ChainContextClosureLookupContext lookup_context = {{intersects_coverage}, {this, this, this}};
-        return chain_context_intersects(glyphs,
-                                        backtrack.len,
-                                        (const HBUINT16 *)backtrack.arrayZ,
-                                        input.len,
-                                        (const HBUINT16 *)input.arrayZ + 1,
-                                        lookahead.len,
-                                        (const HBUINT16 *)lookahead.arrayZ,
-                                        lookup_context);
-    }
-
-    void closure(rb_closure_context_t *c) const
-    {
-        const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-
-        if (!(this + input[0]).intersects(c->glyphs))
-            return;
-
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        struct ChainContextClosureLookupContext lookup_context = {{intersects_coverage}, {this, this, this}};
-        chain_context_closure_lookup(c,
-                                     backtrack.len,
-                                     (const HBUINT16 *)backtrack.arrayZ,
-                                     input.len,
-                                     (const HBUINT16 *)input.arrayZ + 1,
-                                     lookahead.len,
-                                     (const HBUINT16 *)lookahead.arrayZ,
-                                     lookup.len,
-                                     lookup.arrayZ,
-                                     lookup_context);
-    }
-
-    void closure_lookups(rb_closure_lookups_context_t *c) const
-    {
-        const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        recurse_lookups(c, lookup.len, lookup.arrayZ);
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const {}
-
-    void collect_glyphs(rb_collect_glyphs_context_t *c) const
-    {
-        const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-
-        (this + input[0]).collect_coverage(c->input);
-
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        struct ChainContextCollectGlyphsLookupContext lookup_context = {{collect_coverage}, {this, this, this}};
-        chain_context_collect_glyphs_lookup(c,
-                                            backtrack.len,
-                                            (const HBUINT16 *)backtrack.arrayZ,
-                                            input.len,
-                                            (const HBUINT16 *)input.arrayZ + 1,
-                                            lookahead.len,
-                                            (const HBUINT16 *)lookahead.arrayZ,
-                                            lookup.len,
-                                            lookup.arrayZ,
-                                            lookup_context);
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
@@ -2519,11 +1614,6 @@ template <typename T> struct ExtensionFormat1
         return get_subtable<typename T::SubTable>().dispatch(c, get_type(), rb_forward<Ts>(ds)...);
     }
 
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        dispatch(c);
-    }
-
     /* This is called from may_dispatch() above with rb_sanitize_context_t. */
     bool sanitize(rb_sanitize_context_t *c) const
     {
@@ -2550,15 +1640,6 @@ template <typename T> struct Extension
             return u.format1.get_type();
         default:
             return 0;
-        }
-    }
-    template <typename X> const X &get_subtable() const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.template get_subtable<typename T::SubTable>();
-        default:
-            return Null(typename T::SubTable);
         }
     }
 
@@ -2635,12 +1716,6 @@ struct GSUBGPOS
     {
         return (this + scriptList).get_tag(i);
     }
-    unsigned int get_script_tags(unsigned int start_offset,
-                                 unsigned int *script_count /* IN/OUT */,
-                                 rb_tag_t *script_tags /* OUT */) const
-    {
-        return (this + scriptList).get_tags(start_offset, script_count, script_tags);
-    }
     const Script &get_script(unsigned int i) const
     {
         return (this + scriptList)[i];
@@ -2657,12 +1732,6 @@ struct GSUBGPOS
     rb_tag_t get_feature_tag(unsigned int i) const
     {
         return i == Index::NOT_FOUND_INDEX ? RB_TAG_NONE : (this + featureList).get_tag(i);
-    }
-    unsigned int get_feature_tags(unsigned int start_offset,
-                                  unsigned int *feature_count /* IN/OUT */,
-                                  rb_tag_t *feature_tags /* OUT */) const
-    {
-        return (this + featureList).get_tags(start_offset, feature_count, feature_tags);
     }
     const Feature &get_feature(unsigned int i) const
     {
@@ -2695,38 +1764,6 @@ struct GSUBGPOS
                 return *feature;
         }
         return get_feature(feature_index);
-    }
-
-    void feature_variation_collect_lookups(const rb_set_t *feature_indexes, rb_set_t *lookup_indexes /* OUT */) const
-    {
-        if (version.to_int() >= 0x00010001u)
-            (this + featureVars).collect_lookups(feature_indexes, lookup_indexes);
-    }
-
-    template <typename TLookup>
-    void closure_lookups(rb_face_t *face, const rb_set_t *glyphs, rb_set_t *lookup_indexes /* IN/OUT */) const
-    {
-        rb_set_t visited_lookups, inactive_lookups;
-        OT::rb_closure_lookups_context_t c(face, glyphs, &visited_lookups, &inactive_lookups);
-
-        for (unsigned lookup_index : +rb_iter(lookup_indexes))
-            reinterpret_cast<const TLookup &>(get_lookup(lookup_index)).closure_lookups(&c, lookup_index);
-
-        rb_set_union(lookup_indexes, &visited_lookups);
-        rb_set_subtract(lookup_indexes, &inactive_lookups);
-    }
-
-    void closure_features(const rb_map_t *lookup_indexes, /* IN */
-                          rb_set_t *feature_indexes /* OUT */) const
-    {
-        unsigned int feature_count = rb_min(get_feature_count(), (unsigned)RB_MAX_FEATURES);
-        for (unsigned i = 0; i < feature_count; i++) {
-            const Feature &f = get_feature(i);
-            if ((!f.featureParams.is_null()) || f.intersects_lookup_indexes(lookup_indexes))
-                feature_indexes->add(i);
-        }
-        if (version.to_int() >= 0x00010001u)
-            (this + featureVars).closure_features(lookup_indexes, feature_indexes);
     }
 
     unsigned int get_size() const

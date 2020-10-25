@@ -33,286 +33,7 @@
 
 namespace OT {
 
-/*
- * Attachment List Table
- */
-
-/* Array of contour point indices--in increasing numerical order */
-struct AttachPoint : ArrayOf<HBUINT16>
-{
-};
-
-struct AttachList
-{
-    unsigned int get_attach_points(rb_codepoint_t glyph_id,
-                                   unsigned int start_offset,
-                                   unsigned int *point_count /* IN/OUT */,
-                                   unsigned int *point_array /* OUT */) const
-    {
-        unsigned int index = (this + coverage).get_coverage(glyph_id);
-        if (index == NOT_COVERED) {
-            if (point_count)
-                *point_count = 0;
-            return 0;
-        }
-
-        const AttachPoint &points = this + attachPoint[index];
-
-        if (point_count) {
-            +points.sub_array(start_offset, point_count) | rb_sink(rb_array(point_array, *point_count));
-        }
-
-        return points.len;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return coverage.sanitize(c, this) && attachPoint.sanitize(c, this);
-    }
-
-protected:
-    OffsetTo<Coverage> coverage;            /* Offset to Coverage table -- from
-                                             * beginning of AttachList table */
-    OffsetArrayOf<AttachPoint> attachPoint; /* Array of AttachPoint tables
-                                             * in Coverage Index order */
-public:
-    DEFINE_SIZE_ARRAY(4, attachPoint);
-};
-
-/*
- * Ligature Caret Table
- */
-
-struct CaretValueFormat1
-{
-    friend struct CaretValue;
-
-private:
-    rb_position_t get_caret_value(rb_font_t *font, rb_direction_t direction) const
-    {
-        return coordinate;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this);
-    }
-
-protected:
-    HBUINT16 caretValueFormat; /* Format identifier--format = 1 */
-    FWORD coordinate;          /* X or Y value, in design units */
-public:
-    DEFINE_SIZE_STATIC(4);
-};
-
-struct CaretValueFormat2
-{
-    friend struct CaretValue;
-
-private:
-    rb_position_t get_caret_value(rb_font_t *font, rb_direction_t direction, rb_codepoint_t glyph_id) const
-    {
-        rb_position_t x, y;
-        rb_font_get_glyph_contour_point_for_origin(font, glyph_id, caretValuePoint, direction, &x, &y);
-        return RB_DIRECTION_IS_HORIZONTAL(direction) ? x : y;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this);
-    }
-
-protected:
-    HBUINT16 caretValueFormat; /* Format identifier--format = 2 */
-    HBUINT16 caretValuePoint;  /* Contour point index on glyph */
-public:
-    DEFINE_SIZE_STATIC(4);
-};
-
-struct CaretValueFormat3
-{
-    friend struct CaretValue;
-
-    rb_position_t get_caret_value(rb_font_t *font, rb_direction_t direction, const VariationStore &var_store) const
-    {
-        return RB_DIRECTION_IS_HORIZONTAL(direction) ? coordinate + (this + deviceTable).get_x_delta(font, var_store)
-                                                     : coordinate + (this + deviceTable).get_y_delta(font, var_store);
-    }
-
-    void collect_variation_indices(rb_set_t *layout_variation_indices) const
-    {
-        (this + deviceTable).collect_variation_indices(layout_variation_indices);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this) && deviceTable.sanitize(c, this);
-    }
-
-protected:
-    HBUINT16 caretValueFormat;    /* Format identifier--format = 3 */
-    FWORD coordinate;             /* X or Y value, in design units */
-    OffsetTo<Device> deviceTable; /* Offset to Device table for X or Y
-                                   * value--from beginning of CaretValue
-                                   * table */
-public:
-    DEFINE_SIZE_STATIC(6);
-};
-
-struct CaretValue
-{
-    rb_position_t get_caret_value(rb_font_t *font,
-                                  rb_direction_t direction,
-                                  rb_codepoint_t glyph_id,
-                                  const VariationStore &var_store) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.get_caret_value(font, direction);
-        case 2:
-            return u.format2.get_caret_value(font, direction, glyph_id);
-        case 3:
-            return u.format3.get_caret_value(font, direction, var_store);
-        default:
-            return 0;
-        }
-    }
-
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return_trace(c->no_dispatch_return_value());
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        case 2:
-            return c->dispatch(u.format2, rb_forward<Ts>(ds)...);
-        case 3:
-            return c->dispatch(u.format3, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-    void collect_variation_indices(rb_set_t *layout_variation_indices) const
-    {
-        switch (u.format) {
-        case 1:
-        case 2:
-            return;
-        case 3:
-            u.format3.collect_variation_indices(layout_variation_indices);
-            return;
-        default:
-            return;
-        }
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        if (!u.format.sanitize(c))
-            return false;
-        switch (u.format) {
-        case 1:
-            return u.format1.sanitize(c);
-        case 2:
-            return u.format2.sanitize(c);
-        case 3:
-            return u.format3.sanitize(c);
-        default:
-            return true;
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        CaretValueFormat1 format1;
-        CaretValueFormat2 format2;
-        CaretValueFormat3 format3;
-    } u;
-
-public:
-    DEFINE_SIZE_UNION(2, format);
-};
-
-struct LigGlyph
-{
-    unsigned get_lig_carets(rb_font_t *font,
-                            rb_direction_t direction,
-                            rb_codepoint_t glyph_id,
-                            const VariationStore &var_store,
-                            unsigned start_offset,
-                            unsigned *caret_count /* IN/OUT */,
-                            rb_position_t *caret_array /* OUT */) const
-    {
-        if (caret_count) {
-            +carets.sub_array(start_offset, caret_count) | rb_map(rb_add(this)) | rb_map([&](const CaretValue &value) {
-                return value.get_caret_value(font, direction, glyph_id, var_store);
-            }) | rb_sink(rb_array(caret_array, *caret_count));
-        }
-
-        return carets.len;
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        for (const OffsetTo<CaretValue> &offset : carets.iter())
-            (this + offset).collect_variation_indices(c->layout_variation_indices);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return carets.sanitize(c, this);
-    }
-
-protected:
-    OffsetArrayOf<CaretValue> carets; /* Offset array of CaretValue tables
-                                       * --from beginning of LigGlyph table
-                                       * --in increasing coordinate order */
-public:
-    DEFINE_SIZE_ARRAY(2, carets);
-};
-
-struct LigCaretList
-{
-    unsigned int get_lig_carets(rb_font_t *font,
-                                rb_direction_t direction,
-                                rb_codepoint_t glyph_id,
-                                const VariationStore &var_store,
-                                unsigned int start_offset,
-                                unsigned int *caret_count /* IN/OUT */,
-                                rb_position_t *caret_array /* OUT */) const
-    {
-        unsigned int index = (this + coverage).get_coverage(glyph_id);
-        if (index == NOT_COVERED) {
-            if (caret_count)
-                *caret_count = 0;
-            return 0;
-        }
-        const LigGlyph &lig_glyph = this + ligGlyph[index];
-        return lig_glyph.get_lig_carets(font, direction, glyph_id, var_store, start_offset, caret_count, caret_array);
-    }
-
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        +rb_zip(this + coverage, ligGlyph) | rb_filter(c->glyph_set, rb_first) | rb_map(rb_second) |
-            rb_map(rb_add(this)) | rb_apply([c](const LigGlyph &_) { _.collect_variation_indices(c); });
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return coverage.sanitize(c, this) && ligGlyph.sanitize(c, this);
-    }
-
-protected:
-    OffsetTo<Coverage> coverage;      /* Offset to Coverage table--from
-                                       * beginning of LigCaretList table */
-    OffsetArrayOf<LigGlyph> ligGlyph; /* Array of LigGlyph tables
-                                       * in Coverage Index order */
-public:
-    DEFINE_SIZE_ARRAY(4, ligGlyph);
-};
+struct FakeTable {};
 
 struct MarkGlyphSetsFormat1
 {
@@ -379,10 +100,6 @@ struct GDEF
 
     enum GlyphClasses { UnclassifiedGlyph = 0, BaseGlyph = 1, LigatureGlyph = 2, MarkGlyph = 3, ComponentGlyph = 4 };
 
-    bool has_data() const
-    {
-        return version.to_int();
-    }
     bool has_glyph_classes() const
     {
         return glyphClassDef != 0;
@@ -391,60 +108,17 @@ struct GDEF
     {
         return (this + glyphClassDef).get_class(glyph);
     }
-    void get_glyphs_in_class(unsigned int klass, rb_set_t *glyphs) const
-    {
-        (this + glyphClassDef).collect_class(glyphs, klass);
-    }
 
-    bool has_mark_attachment_types() const
-    {
-        return markAttachClassDef != 0;
-    }
     unsigned int get_mark_attachment_type(rb_codepoint_t glyph) const
     {
         return (this + markAttachClassDef).get_class(glyph);
     }
 
-    bool has_attach_points() const
-    {
-        return attachList != 0;
-    }
-    unsigned int get_attach_points(rb_codepoint_t glyph_id,
-                                   unsigned int start_offset,
-                                   unsigned int *point_count /* IN/OUT */,
-                                   unsigned int *point_array /* OUT */) const
-    {
-        return (this + attachList).get_attach_points(glyph_id, start_offset, point_count, point_array);
-    }
-
-    bool has_lig_carets() const
-    {
-        return ligCaretList != 0;
-    }
-    unsigned int get_lig_carets(rb_font_t *font,
-                                rb_direction_t direction,
-                                rb_codepoint_t glyph_id,
-                                unsigned int start_offset,
-                                unsigned int *caret_count /* IN/OUT */,
-                                rb_position_t *caret_array /* OUT */) const
-    {
-        return (this + ligCaretList)
-            .get_lig_carets(font, direction, glyph_id, get_var_store(), start_offset, caret_count, caret_array);
-    }
-
-    bool has_mark_sets() const
-    {
-        return version.to_int() >= 0x00010002u && markGlyphSetsDef != 0;
-    }
     bool mark_set_covers(unsigned int set_index, rb_codepoint_t glyph_id) const
     {
         return version.to_int() >= 0x00010002u && (this + markGlyphSetsDef).covers(set_index, glyph_id);
     }
 
-    bool has_var_store() const
-    {
-        return version.to_int() >= 0x00010003u && varStore != 0;
-    }
     const VariationStore &get_var_store() const
     {
         return version.to_int() >= 0x00010003u ? this + varStore : Null(VariationStore);
@@ -503,41 +177,10 @@ struct GDEF
                (version.to_int() >= 0x00010003u ? varStore.static_size : 0);
     }
 
-    void collect_variation_indices(rb_collect_variation_indices_context_t *c) const
-    {
-        (this + ligCaretList).collect_variation_indices(c);
-    }
-
-    void remap_layout_variation_indices(const rb_set_t *layout_variation_indices,
-                                        rb_map_t *layout_variation_idx_map /* OUT */) const
-    {
-        if (version.to_int() < 0x00010003u || !varStore)
-            return;
-        if (layout_variation_indices->is_empty())
-            return;
-
-        unsigned new_major = 0, new_minor = 0;
-        unsigned last_major = (layout_variation_indices->get_min()) >> 16;
-        for (unsigned idx : layout_variation_indices->iter()) {
-            uint16_t major = idx >> 16;
-            if (major >= (this + varStore).get_sub_table_count())
-                break;
-            if (major != last_major) {
-                new_minor = 0;
-                ++new_major;
-            }
-
-            unsigned new_idx = (new_major << 16) + new_minor;
-            layout_variation_idx_map->set(idx, new_idx);
-            ++new_minor;
-            last_major = major;
-        }
-    }
-
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return version.sanitize(c) && likely(version.major == 1) && glyphClassDef.sanitize(c, this) &&
-               attachList.sanitize(c, this) && ligCaretList.sanitize(c, this) && markAttachClassDef.sanitize(c, this) &&
+               markAttachClassDef.sanitize(c, this) &&
                (version.to_int() < 0x00010002u || markGlyphSetsDef.sanitize(c, this)) &&
                (version.to_int() < 0x00010003u || varStore.sanitize(c, this));
     }
@@ -548,12 +191,8 @@ protected:
     OffsetTo<ClassDef> glyphClassDef;         /* Offset to class definition table
                                                * for glyph type--from beginning of
                                                * GDEF header (may be Null) */
-    OffsetTo<AttachList> attachList;          /* Offset to list of glyphs with
-                                               * attachment points--from beginning
-                                               * of GDEF header (may be Null) */
-    OffsetTo<LigCaretList> ligCaretList;      /* Offset to list of positioning points
-                                               * for ligature carets--from beginning
-                                               * of GDEF header (may be Null) */
+    OffsetTo<FakeTable> attachList;           /* Not used */
+    OffsetTo<FakeTable> ligCaretList;         /* Not used */
     OffsetTo<ClassDef> markAttachClassDef;    /* Offset to class definition table for
                                                * mark attachment type--from beginning
                                                * of GDEF header (may be Null) */

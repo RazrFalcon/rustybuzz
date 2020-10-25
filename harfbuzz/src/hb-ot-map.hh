@@ -160,7 +160,6 @@ public:
         *lookup_count = end - start;
     }
 
-    RB_INTERNAL void collect_lookups(unsigned int table_index, rb_set_t *lookups) const;
     template <typename Proxy>
     RB_INTERNAL void
     apply(const Proxy &proxy, const struct rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const;

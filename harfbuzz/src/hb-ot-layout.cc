@@ -875,33 +875,6 @@ void rb_ot_layout_substitute_lookup(OT::rb_ot_apply_context_t *c,
     apply_string<GSUBProxy>(c, lookup, accel);
 }
 
-struct rb_get_glyph_alternates_dispatch_t : rb_dispatch_context_t<rb_get_glyph_alternates_dispatch_t, unsigned>
-{
-    static return_t default_return_value()
-    {
-        return 0;
-    }
-    bool stop_sublookup_iteration(return_t r) const
-    {
-        return r;
-    }
-
-    rb_face_t *face;
-
-    rb_get_glyph_alternates_dispatch_t(rb_face_t *face)
-        : face(face)
-    {
-    }
-
-private:
-    template <typename T, typename... Ts>
-    auto _dispatch(const T &obj, rb_priority<1>, Ts &&... ds)
-        RB_AUTO_RETURN(obj.get_glyph_alternates(rb_forward<Ts>(ds)...)) template <typename T, typename... Ts>
-        auto _dispatch(const T &obj, rb_priority<0>, Ts &&... ds) RB_AUTO_RETURN(default_return_value()) public
-        : template <typename T, typename... Ts>
-          auto dispatch(const T &obj, Ts &&... ds) RB_AUTO_RETURN(_dispatch(obj, rb_prioritize, rb_forward<Ts>(ds)...))
-};
-
 unsigned int rb_layout_next_syllable(rb_buffer_t *buffer, unsigned int start)
 {
     rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
