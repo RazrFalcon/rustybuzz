@@ -3,7 +3,6 @@ use std::ptr::NonNull;
 use crate::{ffi, Tag, Mask};
 use super::TableIndex;
 
-
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct MapLookup {
@@ -19,6 +18,9 @@ pub struct MapLookup {
 pub struct Map(NonNull<ffi::rb_ot_map_t>);
 
 impl Map {
+    pub const MAX_BITS: u32 = 8;
+    pub const MAX_VALUE: u32 = (1 << Self::MAX_BITS) - 1;
+
     #[inline]
     pub fn from_ptr(ptr: *const ffi::rb_ot_map_t) -> Self {
         Map(NonNull::new(ptr as _).unwrap())

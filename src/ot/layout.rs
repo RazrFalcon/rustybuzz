@@ -2,7 +2,7 @@ use std::ptr::NonNull;
 
 use ttf_parser::GlyphId;
 
-use crate::ffi;
+use crate::{ffi, Mask};
 use crate::buffer::{Buffer, GlyphPropsFlags};
 
 pub struct WouldApplyContext(NonNull<ffi::rb_would_apply_context_t>);
@@ -41,6 +41,24 @@ impl ApplyContext {
     pub(crate) fn buffer(&mut self) -> &mut Buffer {
         unsafe {
             Buffer::from_ptr_mut(ffi::rb_ot_apply_context_get_buffer(self.0.as_ptr()))
+        }
+    }
+
+    pub fn lookup_mask(&self) -> Mask {
+        unsafe {
+            ffi::rb_ot_apply_context_get_lookup_mask(self.0.as_ptr())
+        }
+    }
+
+    pub fn random(&self) -> bool {
+        unsafe {
+            ffi::rb_ot_apply_context_get_random(self.0.as_ptr()) != 0
+        }
+    }
+
+    pub fn random_number(&self) -> u32 {
+        unsafe {
+            ffi::rb_ot_apply_context_random_number(self.0.as_ptr())
         }
     }
 

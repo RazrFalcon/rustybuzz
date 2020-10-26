@@ -36,103 +36,40 @@ RB_EXTERN rb_bool_t rb_single_subst_would_apply(const OT::rb_would_apply_context
 RB_EXTERN rb_bool_t rb_single_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
 RB_EXTERN rb_bool_t rb_multiple_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
 RB_EXTERN rb_bool_t rb_multiple_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_alternate_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_alternate_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
 }
 
 namespace OT {
 
-typedef rb_pair_t<rb_codepoint_t, rb_codepoint_t> rb_codepoint_pair_t;
-
-struct SingleSubstFormat1
-{
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        return rb_single_subst_would_apply(c, (const char*)this, -1);
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        return rb_single_subst_apply(c, (const char*)this, -1);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return coverage.sanitize(c, this) && deltaGlyphID.sanitize(c);
-    }
-
-protected:
-    HBUINT16 format;             /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage; /* Offset to Coverage table--from
-                                  * beginning of Substitution table */
-    HBUINT16 deltaGlyphID;       /* Add to original GlyphID to get
-                                  * substitute GlyphID, modulo 0x10000 */
-public:
-    DEFINE_SIZE_STATIC(6);
-};
-
-struct SingleSubstFormat2
-{
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        return rb_single_subst_would_apply(c, (const char*)this, -1);
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        return rb_single_subst_apply(c, (const char*)this, -1);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return coverage.sanitize(c, this) && substitute.sanitize(c);
-    }
-
-protected:
-    HBUINT16 format;               /* Format identifier--format = 2 */
-    OffsetTo<Coverage> coverage;   /* Offset to Coverage table--from
-                                    * beginning of Substitution table */
-    ArrayOf<HBGlyphID> substitute; /* Array of substitute
-                                    * GlyphIDs--ordered by Coverage Index */
-public:
-    DEFINE_SIZE_ARRAY(6, substitute);
-};
-
 struct SingleSubst
 {
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
+    const Coverage &get_coverage() const
     {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        case 2:
-            return c->dispatch(u.format2, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
+        return this + coverage;
+    }
+
+    bool would_apply(rb_would_apply_context_t *c) const
+    {
+        return rb_single_subst_would_apply(c, (const char*)this, -1);
+    }
+
+    bool apply(rb_ot_apply_context_t *c) const
+    {
+        return rb_single_subst_apply(c, (const char*)this, -1);
+    }
+
+    bool sanitize(rb_sanitize_context_t *c) const
+    {
+        return (format != 1 && format != 2) || coverage.sanitize(c, this);
     }
 
 protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        SingleSubstFormat1 format1;
-        SingleSubstFormat2 format2;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> coverage;
 };
 
-struct FakeSequence {};
-
-struct MultipleSubstFormat1
+struct MultipleSubst
 {
     const Coverage &get_coverage() const
     {
@@ -151,81 +88,15 @@ struct MultipleSubstFormat1
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return coverage.sanitize(c, this);
+        return format != 1 || coverage.sanitize(c, this);
     }
 
 protected:
-    HBUINT16 format;                  /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage;      /* Offset to Coverage table--from
-                                       * beginning of Substitution table */
-    OffsetArrayOf<FakeSequence> sequence; /* Array of Sequence tables
-                                           * ordered by Coverage Index */
-public:
-    DEFINE_SIZE_ARRAY(6, sequence);
+    HBUINT16 format;
+    OffsetTo<Coverage> coverage;
 };
 
-struct MultipleSubst
-{
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        MultipleSubstFormat1 format1;
-    } u;
-};
-
-struct AlternateSet
-{
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        unsigned int count = alternates.len;
-
-        if (unlikely(!count))
-            return false;
-
-        rb_mask_t glyph_mask = rb_buffer_get_cur(c->buffer, 0)->mask;
-        rb_mask_t lookup_mask = c->lookup_mask;
-
-        /* Note: This breaks badly if two features enabled this lookup together. */
-        unsigned int shift = rb_ctz(lookup_mask);
-        unsigned int alt_index = ((lookup_mask & glyph_mask) >> shift);
-
-        /* If alt_index is MAX_VALUE, randomize feature if it is the rand feature. */
-        if (alt_index == RB_OT_MAP_MAX_VALUE && c->random)
-            alt_index = c->random_number() % count + 1;
-
-        if (unlikely(alt_index > count || alt_index == 0))
-            return false;
-
-        c->replace_glyph(alternates[alt_index - 1]);
-
-        return true;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return alternates.sanitize(c);
-    }
-
-protected:
-    ArrayOf<HBGlyphID> alternates; /* Array of alternate GlyphIDs--in
-                                    * arbitrary order */
-public:
-    DEFINE_SIZE_ARRAY(2, alternates);
-};
-
-struct AlternateSubstFormat1
+struct AlternateSubst
 {
     const Coverage &get_coverage() const
     {
@@ -234,52 +105,22 @@ struct AlternateSubstFormat1
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return c->len == 1 && (this + coverage).get_coverage(c->glyphs[0]) != NOT_COVERED;
+        return rb_alternate_subst_would_apply(c, (const char*)this, -1);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        return (this + alternateSet[index]).apply(c);
+        return rb_alternate_subst_apply(c, (const char*)this, -1);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return coverage.sanitize(c, this) && alternateSet.sanitize(c, this);
+        return format != 1 || coverage.sanitize(c, this);
     }
 
 protected:
-    HBUINT16 format;                          /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage;              /* Offset to Coverage table--from
-                                               * beginning of Substitution table */
-    OffsetArrayOf<AlternateSet> alternateSet; /* Array of AlternateSet tables
-                                               * ordered by Coverage Index */
-public:
-    DEFINE_SIZE_ARRAY(6, alternateSet);
-};
-
-struct AlternateSubst
-{
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        AlternateSubstFormat1 format1;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> coverage;
 };
 
 struct Ligature
@@ -562,11 +403,11 @@ struct SubstLookupSubTable
     {
         switch (lookup_type) {
         case Single:
-            return u.single.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.single, rb_forward<Ts>(ds)...);
         case Multiple:
-            return u.multiple.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.multiple, rb_forward<Ts>(ds)...);
         case Alternate:
-            return u.alternate.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.alternate, rb_forward<Ts>(ds)...);
         case Ligature:
             return u.ligature.dispatch(c, rb_forward<Ts>(ds)...);
         case Context:

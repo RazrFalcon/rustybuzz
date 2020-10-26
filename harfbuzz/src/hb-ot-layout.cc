@@ -45,37 +45,15 @@
 #include "hb-aat-layout-morx-table.hh"
 
 extern "C" {
-RB_EXTERN unsigned int rb_would_apply_context_get_len(const OT::rb_would_apply_context_t* c)
-{
-    return c->len;
-}
-
-RB_EXTERN rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_apply_context_t* c, unsigned int index)
-{
-    return c->glyphs[index];
-}
-
-RB_EXTERN rb_bool_t rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t* c)
-{
-    return (rb_bool_t)c->zero_context;
-}
-
-RB_EXTERN rb_buffer_t *rb_ot_apply_context_get_buffer(const OT::rb_ot_apply_context_t* c)
-{
-    return c->buffer;
-}
-
-RB_EXTERN void rb_ot_apply_context_replace_glyph(const OT::rb_ot_apply_context_t* c, rb_codepoint_t glyph_index)
-{
-    c->replace_glyph(glyph_index);
-}
-
-RB_EXTERN void rb_ot_apply_context_output_glyph_for_component(const OT::rb_ot_apply_context_t* c,
-                                                    rb_codepoint_t glyph_index,
-                                                    unsigned int class_guess)
-{
-    c->output_glyph_for_component(glyph_index, class_guess);
-}
+unsigned int   rb_would_apply_context_get_len(const OT::rb_would_apply_context_t *c) { return c->len; }
+rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_apply_context_t *c, unsigned int index) { return c->glyphs[index]; }
+rb_bool_t      rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t *c) { return (rb_bool_t)c->zero_context; }
+rb_buffer_t   *rb_ot_apply_context_get_buffer(const OT::rb_ot_apply_context_t *c) { return c->buffer; }
+rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context_t *c) { return c->lookup_mask; }
+rb_bool_t      rb_ot_apply_context_get_random(const OT::rb_ot_apply_context_t *c) { return (rb_bool_t)c->random; }
+uint32_t       rb_ot_apply_context_random_number(OT::rb_ot_apply_context_t *c) { return c->random_number(); }
+void           rb_ot_apply_context_replace_glyph(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_index) { c->replace_glyph(glyph_index); }
+void           rb_ot_apply_context_output_glyph_for_component(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_index, unsigned int class_guess) { c->output_glyph_for_component(glyph_index, class_guess); }
 }
 
 /**

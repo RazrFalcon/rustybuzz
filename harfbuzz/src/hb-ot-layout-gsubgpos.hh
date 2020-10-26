@@ -1835,4 +1835,16 @@ public:
 
 } /* namespace OT */
 
+extern "C" {
+RB_EXTERN unsigned int   rb_would_apply_context_get_len(const OT::rb_would_apply_context_t *c);
+RB_EXTERN rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_apply_context_t *c, unsigned int index);
+RB_EXTERN rb_bool_t      rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t *c);
+RB_EXTERN rb_buffer_t   *rb_ot_apply_context_get_buffer(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t      rb_ot_apply_context_get_random(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN uint32_t       rb_ot_apply_context_random_number(OT::rb_ot_apply_context_t *c);
+RB_EXTERN void           rb_ot_apply_context_replace_glyph(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_index);
+RB_EXTERN void           rb_ot_apply_context_output_glyph_for_component(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_index, unsigned int class_guess);
+}
+
 #endif /* RB_OT_LAYOUT_GSUBGPOS_HH */

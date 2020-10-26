@@ -275,6 +275,12 @@ extern "C" {
 
     pub fn rb_ot_apply_context_get_buffer(ctx: *const rb_ot_apply_context_t) -> *mut rb_buffer_t;
 
+    pub fn rb_ot_apply_context_get_lookup_mask(ctx: *const rb_ot_apply_context_t) -> rb_mask_t;
+
+    pub fn rb_ot_apply_context_get_random(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
+
+    pub fn rb_ot_apply_context_random_number(ctx: *mut rb_ot_apply_context_t) -> u32;
+
     pub fn rb_ot_apply_context_replace_glyph(
         ctx: *const rb_ot_apply_context_t,
         glyph_index: rb_codepoint_t,
