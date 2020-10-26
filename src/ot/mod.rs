@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod feature;
 mod fallback;
 mod map;
@@ -6,6 +8,9 @@ mod normalize;
 mod shape_plan;
 mod shape_planner;
 mod complex_shaper;
+mod ggg;
+mod gsub;
+mod layout;
 
 pub use map::*;
 pub use map_builder::*;

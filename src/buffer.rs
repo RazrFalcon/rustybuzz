@@ -207,6 +207,11 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn is_ligature(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::LIGATURE.bits != 0
+    }
+
+    #[inline]
     pub(crate) fn is_ligated(&self) -> bool {
         self.glyph_props() & GlyphPropsFlags::LIGATED.bits != 0
     }
@@ -248,6 +253,17 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn is_substituted(&self) -> bool {
         self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits != 0
+    }
+
+    pub(crate) fn set_lig_props_for_mark(&mut self, lig_id: u8, lig_comp: u8) {
+        unsafe {
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
+            v.var_u8[2] = (lig_id << 5) | (lig_comp & 0x0F);
+        }
+    }
+
+    pub(crate) fn set_lig_props_for_component(&mut self, lig_comp: u8) {
+        self.set_lig_props_for_mark(0, lig_comp)
     }
 
     #[inline]
@@ -916,7 +932,7 @@ impl Buffer {
     }
 
     /// Merge clusters for deleting current glyph, and skip it.
-    fn delete_glyph(&mut self) {
+    pub(crate) fn delete_glyph(&mut self) {
         let cluster = self.info[self.idx].cluster;
 
         if self.idx + 1 < self.len && cluster == self.info[self.idx + 1].cluster {

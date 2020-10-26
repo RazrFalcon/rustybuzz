@@ -40,8 +40,43 @@
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
+#include "hb-ot-layout-gsubgpos.hh"
 
 #include "hb-aat-layout-morx-table.hh"
+
+extern "C" {
+RB_EXTERN unsigned int rb_would_apply_context_get_len(const OT::rb_would_apply_context_t* c)
+{
+    return c->len;
+}
+
+RB_EXTERN rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_apply_context_t* c, unsigned int index)
+{
+    return c->glyphs[index];
+}
+
+RB_EXTERN rb_bool_t rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t* c)
+{
+    return (rb_bool_t)c->zero_context;
+}
+
+RB_EXTERN rb_buffer_t *rb_ot_apply_context_get_buffer(const OT::rb_ot_apply_context_t* c)
+{
+    return c->buffer;
+}
+
+RB_EXTERN void rb_ot_apply_context_replace_glyph(const OT::rb_ot_apply_context_t* c, rb_codepoint_t glyph_index)
+{
+    c->replace_glyph(glyph_index);
+}
+
+RB_EXTERN void rb_ot_apply_context_output_glyph_for_component(const OT::rb_ot_apply_context_t* c,
+                                                    rb_codepoint_t glyph_index,
+                                                    unsigned int class_guess)
+{
+    c->output_glyph_for_component(glyph_index, class_guess);
+}
+}
 
 /**
  * SECTION:hb-ot-layout

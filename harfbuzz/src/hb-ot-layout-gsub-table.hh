@@ -31,6 +31,13 @@
 
 #include "hb-ot-layout-gsubgpos.hh"
 
+extern "C" {
+RB_EXTERN rb_bool_t rb_single_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_single_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_multiple_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_multiple_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
+}
+
 namespace OT {
 
 typedef rb_pair_t<rb_codepoint_t, rb_codepoint_t> rb_codepoint_pair_t;
@@ -44,22 +51,12 @@ struct SingleSubstFormat1
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return c->len == 1 && (this + coverage).get_coverage(c->glyphs[0]) != NOT_COVERED;
+        return rb_single_subst_would_apply(c, (const char*)this, -1);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        rb_codepoint_t glyph_id = rb_buffer_get_cur(c->buffer, 0)->codepoint;
-        unsigned int index = (this + coverage).get_coverage(glyph_id);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        /* According to the Adobe Annotated OpenType Suite, result is always
-         * limited to 16bit. */
-        glyph_id = (glyph_id + deltaGlyphID) & 0xFFFFu;
-        c->replace_glyph(glyph_id);
-
-        return true;
+        return rb_single_subst_apply(c, (const char*)this, -1);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -86,21 +83,12 @@ struct SingleSubstFormat2
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return c->len == 1 && (this + coverage).get_coverage(c->glyphs[0]) != NOT_COVERED;
+        return rb_single_subst_would_apply(c, (const char*)this, -1);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        if (unlikely(index >= substitute.len))
-            return false;
-
-        c->replace_glyph(substitute[index]);
-
-        return true;
+        return rb_single_subst_apply(c, (const char*)this, -1);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -142,47 +130,7 @@ protected:
     } u;
 };
 
-struct Sequence
-{
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        unsigned int count = substitute.len;
-
-        /* Special-case to make it in-place and not consider this
-         * as a "multiplied" substitution. */
-        if (unlikely(count == 1)) {
-            c->replace_glyph(substitute.arrayZ[0]);
-            return true;
-        }
-        /* Spec disallows this, but Uniscribe allows it.
-         * https://github.com/harfbuzz/harfbuzz/issues/253 */
-        else if (unlikely(count == 0)) {
-            rb_buffer_delete_glyph(c->buffer);
-            return true;
-        }
-
-        unsigned int klass =
-            _rb_glyph_info_is_ligature(rb_buffer_get_cur(c->buffer, 0)) ? RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH : 0;
-
-        for (unsigned int i = 0; i < count; i++) {
-            _rb_glyph_info_set_lig_props_for_component(rb_buffer_get_cur(c->buffer, 0), i);
-            c->output_glyph_for_component(substitute.arrayZ[i], klass);
-        }
-        rb_buffer_skip_glyph(c->buffer);
-
-        return true;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return substitute.sanitize(c);
-    }
-
-protected:
-    ArrayOf<HBGlyphID> substitute; /* String of GlyphIDs to substitute */
-public:
-    DEFINE_SIZE_ARRAY(2, substitute);
-};
+struct FakeSequence {};
 
 struct MultipleSubstFormat1
 {
@@ -193,29 +141,25 @@ struct MultipleSubstFormat1
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return c->len == 1 && (this + coverage).get_coverage(c->glyphs[0]) != NOT_COVERED;
+        return rb_multiple_subst_would_apply(c, (const char*)this, -1);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        return (this + sequence[index]).apply(c);
+        return rb_multiple_subst_apply(c, (const char*)this, -1);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return coverage.sanitize(c, this) && sequence.sanitize(c, this);
+        return coverage.sanitize(c, this);
     }
 
 protected:
     HBUINT16 format;                  /* Format identifier--format = 1 */
     OffsetTo<Coverage> coverage;      /* Offset to Coverage table--from
                                        * beginning of Substitution table */
-    OffsetArrayOf<Sequence> sequence; /* Array of Sequence tables
-                                       * ordered by Coverage Index */
+    OffsetArrayOf<FakeSequence> sequence; /* Array of Sequence tables
+                                           * ordered by Coverage Index */
 public:
     DEFINE_SIZE_ARRAY(6, sequence);
 };

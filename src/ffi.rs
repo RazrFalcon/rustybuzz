@@ -168,6 +168,14 @@ pub type rb_ot_pause_func_t = Option<
     ),
 >;
 
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct rb_would_apply_context_t { _unused: [u8; 0] }
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct rb_ot_apply_context_t { _unused: [u8; 0] }
+
 extern "C" {
     pub fn rb_blob_create(
         data: *const c_char,
@@ -255,6 +263,28 @@ extern "C" {
         glyphs_length: u32,
         zero_context: rb_bool_t,
     ) -> rb_bool_t;
+
+    pub fn rb_would_apply_context_get_len(ctx: *const rb_would_apply_context_t) -> u32;
+
+    pub fn rb_would_apply_context_get_glyph(
+        ctx: *const rb_would_apply_context_t,
+        index: u32,
+    ) -> rb_codepoint_t;
+
+    pub fn rb_would_apply_context_get_zero_context(ctx: *const rb_would_apply_context_t) -> rb_bool_t;
+
+    pub fn rb_ot_apply_context_get_buffer(ctx: *const rb_ot_apply_context_t) -> *mut rb_buffer_t;
+
+    pub fn rb_ot_apply_context_replace_glyph(
+        ctx: *const rb_ot_apply_context_t,
+        glyph_index: rb_codepoint_t,
+    );
+
+    pub fn rb_ot_apply_context_output_glyph_for_component(
+        ctx: *const rb_ot_apply_context_t,
+        glyph_index: rb_codepoint_t,
+        class_guess: u32,
+    );
 
     pub fn rb_layout_clear_syllables(
         plan: *const rb_ot_shape_plan_t,
