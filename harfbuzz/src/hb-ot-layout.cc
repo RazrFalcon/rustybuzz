@@ -50,7 +50,11 @@ rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_apply_context
 rb_bool_t      rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t *c) { return (rb_bool_t)c->zero_context; }
 rb_buffer_t   *rb_ot_apply_context_get_buffer(const OT::rb_ot_apply_context_t *c) { return c->buffer; }
 rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context_t *c) { return c->lookup_mask; }
+unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context_t *c) { return c->table_index; }
+rb_bool_t      rb_ot_apply_context_get_auto_zwnj(const OT::rb_ot_apply_context_t *c) { return c->auto_zwnj; }
+rb_bool_t      rb_ot_apply_context_get_auto_zwj(const OT::rb_ot_apply_context_t *c) { return c->auto_zwj; }
 rb_bool_t      rb_ot_apply_context_get_random(const OT::rb_ot_apply_context_t *c) { return (rb_bool_t)c->random; }
+rb_bool_t      rb_ot_apply_context_gdef_mark_set_covers(const OT::rb_ot_apply_context_t *c, unsigned int set_index, rb_codepoint_t glyph_id) { return (rb_bool_t)c->gdef.mark_set_covers(set_index, glyph_id); }
 uint32_t       rb_ot_apply_context_random_number(OT::rb_ot_apply_context_t *c) { return c->random_number(); }
 void           rb_ot_apply_context_replace_glyph(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_index) { c->replace_glyph(glyph_index); }
 void           rb_ot_apply_context_output_glyph_for_component(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_index, unsigned int class_guess) { c->output_glyph_for_component(glyph_index, class_guess); }

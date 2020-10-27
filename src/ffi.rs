@@ -277,7 +277,19 @@ extern "C" {
 
     pub fn rb_ot_apply_context_get_lookup_mask(ctx: *const rb_ot_apply_context_t) -> rb_mask_t;
 
+    pub fn rb_ot_apply_context_get_table_index(ctx: *const rb_ot_apply_context_t) -> u32;
+
+    pub fn rb_ot_apply_context_get_auto_zwnj(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
+
+    pub fn rb_ot_apply_context_get_auto_zwj(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
+
     pub fn rb_ot_apply_context_get_random(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
+
+    pub fn rb_ot_apply_context_gdef_mark_set_covers(
+        ctx: *const rb_ot_apply_context_t,
+        set_index: u32,
+        glyph_id: rb_codepoint_t,
+    ) -> rb_bool_t;
 
     pub fn rb_ot_apply_context_random_number(ctx: *mut rb_ot_apply_context_t) -> u32;
 

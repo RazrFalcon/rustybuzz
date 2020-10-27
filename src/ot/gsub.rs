@@ -3,11 +3,11 @@ use std::convert::TryFrom;
 use ttf_parser::GlyphId;
 use ttf_parser::parser::{LazyArray16, Stream, Offset, Offset16, Offsets16};
 
+use crate::ffi;
+use crate::buffer::GlyphPropsFlags;
 use super::Map;
 use super::ggg::Coverage;
 use super::layout::{ApplyContext, WouldApplyContext};
-use crate::ffi;
-use crate::buffer::GlyphPropsFlags;
 
 #[derive(Clone, Copy, Debug)]
 enum SingleSubst<'a> {
@@ -139,7 +139,7 @@ impl<'a> Sequence<'a> {
         match self.substitutes.len() {
             // Spec disallows this, but Uniscribe allows it.
             // https://github.com/harfbuzz/harfbuzz/issues/253
-            0 => ctx.buffer().delete_glyph(),
+            0 => ctx.buffer_mut().delete_glyph(),
 
             // Special-case to make it in-place and not consider this
             // as a "multiplied" substitution.
@@ -153,11 +153,11 @@ impl<'a> Sequence<'a> {
                 };
 
                 for (i, subst) in self.substitutes.into_iter().enumerate() {
-                    ctx.buffer().cur_mut(0).set_lig_props_for_component(i as u8);
+                    ctx.buffer_mut().cur_mut(0).set_lig_props_for_component(i as u8);
                     ctx.output_glyph_for_component(subst, class);
                 }
 
-                ctx.buffer().skip_glyph();
+                ctx.buffer_mut().skip_glyph();
             }
         }
         Some(())

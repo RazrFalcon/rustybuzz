@@ -75,7 +75,7 @@ impl GlyphInfo {
     }
 
     #[inline]
-    fn glyph_props(&self) -> u16 {
+    pub(crate) fn glyph_props(&self) -> u16 {
         unsafe {
             let v: ffi::rb_var_int_t = std::mem::transmute(self.var1);
             v.var_u16[0]
@@ -201,12 +201,6 @@ impl GlyphInfo {
     }
 
     #[inline]
-    pub(crate) fn is_default_ignorable(&self) -> bool {
-        let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
-        n != 0 && !self.is_ligated()
-    }
-
-    #[inline]
     pub(crate) fn is_ligature(&self) -> bool {
         self.glyph_props() & GlyphPropsFlags::LIGATURE.bits != 0
     }
@@ -219,6 +213,18 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn is_unicode_mark(&self) -> bool {
         self.general_category().is_mark()
+    }
+
+    #[inline]
+    pub(crate) fn is_zwnj(&self) -> bool {
+        self.general_category() == GeneralCategory::Format
+            && (self.unicode_props() & UnicodeProps::CF_ZWNJ.bits != 0)
+    }
+
+    #[inline]
+    pub(crate) fn is_zwj(&self) -> bool {
+        self.general_category() == GeneralCategory::Format
+            && (self.unicode_props() & UnicodeProps::CF_ZWJ.bits != 0)
     }
 
     #[inline]
@@ -298,6 +304,17 @@ impl GlyphInfo {
         } else {
             1
         }
+    }
+
+    #[inline]
+    pub(crate) fn is_default_ignorable(&self) -> bool {
+        let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
+        n != 0 && !self.is_ligated()
+    }
+
+    #[inline]
+    pub(crate) fn is_hidden(&self) -> bool {
+        self.unicode_props() & UnicodeProps::HIDDEN.bits != 0
     }
 
     #[inline]
@@ -431,7 +448,7 @@ impl Buffer {
     }
 
     #[inline]
-    fn from_ptr(buffer: *const ffi::rb_buffer_t) -> &'static Buffer {
+    pub(crate) fn from_ptr(buffer: *const ffi::rb_buffer_t) -> &'static Buffer {
         unsafe { &*(buffer as *const Buffer) }
     }
 
@@ -531,7 +548,7 @@ impl Buffer {
     }
 
     #[inline]
-    fn backtrack_len(&self) -> usize {
+    pub(crate) fn backtrack_len(&self) -> usize {
         if self.have_output { self.out_len } else { self.idx }
     }
 

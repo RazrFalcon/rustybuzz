@@ -73,12 +73,12 @@ impl<'a> Lookup<'a> {
     pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let type_ = s.read::<u16>()?;
-        let flags = LookupFlags(s.read()?);
+        let flags = LookupFlags::from_bits_truncate(s.read()?);
         let count = s.read::<u16>()?;
         let offsets = s.read_offsets16(count, data)?;
 
         let mut mark_filtering_set: Option<u16> = None;
-        if flags.use_mark_filtering_set() {
+        if flags.contains(LookupFlags::USE_MARK_FILTERING_SET) {
             mark_filtering_set = Some(s.read()?);
         }
 
@@ -91,13 +91,16 @@ impl<'a> Lookup<'a> {
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct LookupFlags(u16);
-
-impl LookupFlags {
-    #[inline]
-    pub fn use_mark_filtering_set(self) -> bool {
-        self.0 & (1 << 4) != 0
+bitflags::bitflags! {
+    #[derive(Default)]
+    pub struct LookupFlags: u16 {
+        const RIGHT_TO_LEFT          = 0x0001;
+        const IGNORE_BASE_GLYPHS     = 0x0002;
+        const IGNORE_LIGATURES       = 0x0004;
+        const IGNORE_MARKS           = 0x0008;
+        const IGNORE_FLAGS           = 0x000E;
+        const USE_MARK_FILTERING_SET = 0x0010;
+        const MARK_ATTACHMENT_TYPE   = 0xFF00;
     }
 }
 

@@ -11,6 +11,7 @@ mod complex_shaper;
 mod ggg;
 mod gsub;
 mod layout;
+mod matching;
 
 pub use map::*;
 pub use map_builder::*;
