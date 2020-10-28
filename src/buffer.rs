@@ -68,6 +68,8 @@ pub struct GlyphInfo {
     pub(crate) var2: u32,
 }
 
+const IS_LIG_BASE: u8 = 0x10;
+
 impl GlyphInfo {
     #[inline]
     pub(crate) fn as_char(&self) -> char {
@@ -83,7 +85,7 @@ impl GlyphInfo {
     }
 
     #[inline]
-    fn set_glyph_props(&mut self, n: u16) {
+    pub(crate) fn set_glyph_props(&mut self, n: u16) {
         unsafe {
             let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
             v.var_u16[0] = n;
@@ -257,8 +259,25 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn is_base_glyph(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::BASE_GLYPH.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_mark(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::MARK.bits != 0
+    }
+
+    #[inline]
     pub(crate) fn is_substituted(&self) -> bool {
         self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits != 0
+    }
+
+    pub(crate) fn set_lig_props_for_ligature(&mut self, lig_id: u8, lig_num_comps: u8) {
+        unsafe {
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
+            v.var_u8[2] = (lig_id << 5) | IS_LIG_BASE | (lig_num_comps & 0x0F);
+        }
     }
 
     pub(crate) fn set_lig_props_for_mark(&mut self, lig_id: u8, lig_comp: u8) {
@@ -284,7 +303,6 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn is_ligated_internal(&self) -> bool {
-        const IS_LIG_BASE: u8 = 0x10;
         self.lig_props() & IS_LIG_BASE != 0
     }
 
@@ -1230,6 +1248,16 @@ impl Buffer {
         }
 
         start
+    }
+
+    #[inline]
+    pub(crate) fn allocate_lig_id(&mut self) -> u8 {
+        let mut lig_id = self.next_serial() & 0x07;
+        if lig_id == 0 {
+            // In case of overflow.
+            lig_id = self.next_serial() & 0x07;
+        }
+        lig_id as u8
     }
 }
 

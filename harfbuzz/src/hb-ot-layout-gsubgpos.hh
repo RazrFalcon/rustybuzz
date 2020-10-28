@@ -683,112 +683,6 @@ static inline bool match_input(rb_ot_apply_context_t *c,
 
     return true;
 }
-static inline bool
-ligate_input(rb_ot_apply_context_t *c,
-             unsigned int count,                                        /* Including the first glyph */
-             const unsigned int match_positions[RB_MAX_CONTEXT_LENGTH], /* Including the first glyph */
-             unsigned int match_length,
-             rb_codepoint_t lig_glyph,
-             unsigned int total_component_count)
-{
-    rb_buffer_t *buffer = c->buffer;
-
-    rb_buffer_merge_clusters(buffer, rb_buffer_get_index(buffer), rb_buffer_get_index(buffer) + match_length);
-
-    /* - If a base and one or more marks ligate, consider that as a base, NOT
-     *   ligature, such that all following marks can still attach to it.
-     *   https://github.com/harfbuzz/harfbuzz/issues/1109
-     *
-     * - If all components of the ligature were marks, we call this a mark ligature.
-     *   If it *is* a mark ligature, we don't allocate a new ligature id, and leave
-     *   the ligature to keep its old ligature id.  This will allow it to attach to
-     *   a base ligature in GPOS.  Eg. if the sequence is: LAM,LAM,SHADDA,FATHA,HEH,
-     *   and LAM,LAM,HEH for a ligature, they will leave SHADDA and FATHA with a
-     *   ligature id and component value of 2.  Then if SHADDA,FATHA form a ligature
-     *   later, we don't want them to lose their ligature id/component, otherwise
-     *   GPOS will fail to correctly position the mark ligature on top of the
-     *   LAM,LAM,HEH ligature.  See:
-     *     https://bugzilla.gnome.org/show_bug.cgi?id=676343
-     *
-     * - If a ligature is formed of components that some of which are also ligatures
-     *   themselves, and those ligature components had marks attached to *their*
-     *   components, we have to attach the marks to the new ligature component
-     *   positions!  Now *that*'s tricky!  And these marks may be following the
-     *   last component of the whole sequence, so we should loop forward looking
-     *   for them and update them.
-     *
-     *   Eg. the sequence is LAM,LAM,SHADDA,FATHA,HEH, and the font first forms a
-     *   'calt' ligature of LAM,HEH, leaving the SHADDA and FATHA with a ligature
-     *   id and component == 1.  Now, during 'liga', the LAM and the LAM-HEH ligature
-     *   form a LAM-LAM-HEH ligature.  We need to reassign the SHADDA and FATHA to
-     *   the new ligature with a component value of 2.
-     *
-     *   This in fact happened to a font...  See:
-     *   https://bugzilla.gnome.org/show_bug.cgi?id=437633
-     */
-
-    bool is_base_ligature = _rb_glyph_info_is_base_glyph(&rb_buffer_get_glyph_infos(buffer)[match_positions[0]]);
-    bool is_mark_ligature = _rb_glyph_info_is_mark(&rb_buffer_get_glyph_infos(buffer)[match_positions[0]]);
-    for (unsigned int i = 1; i < count; i++)
-        if (!_rb_glyph_info_is_mark(&rb_buffer_get_glyph_infos(buffer)[match_positions[i]])) {
-            is_base_ligature = false;
-            is_mark_ligature = false;
-            break;
-        }
-    bool is_ligature = !is_base_ligature && !is_mark_ligature;
-
-    unsigned int klass = is_ligature ? RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE : 0;
-    unsigned int lig_id = is_ligature ? _rb_allocate_lig_id(buffer) : 0;
-    unsigned int last_lig_id = _rb_glyph_info_get_lig_id(rb_buffer_get_cur(buffer, 0));
-    unsigned int last_num_components = _rb_glyph_info_get_lig_num_comps(rb_buffer_get_cur(buffer, 0));
-    unsigned int components_so_far = last_num_components;
-
-    if (is_ligature) {
-        _rb_glyph_info_set_lig_props_for_ligature(rb_buffer_get_cur(buffer, 0), lig_id, total_component_count);
-        if (_rb_glyph_info_get_general_category(rb_buffer_get_cur(buffer, 0)) ==
-            RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) {
-            _rb_glyph_info_set_general_category(rb_buffer_get_cur(buffer, 0), RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER);
-        }
-    }
-    c->replace_glyph_with_ligature(lig_glyph, klass);
-
-    for (unsigned int i = 1; i < count; i++) {
-        while (rb_buffer_get_index(buffer) < match_positions[i] && rb_buffer_is_allocation_successful(buffer)) {
-            if (is_ligature) {
-                unsigned int this_comp = _rb_glyph_info_get_lig_comp(rb_buffer_get_cur(buffer, 0));
-                if (this_comp == 0)
-                    this_comp = last_num_components;
-                unsigned int new_lig_comp =
-                    components_so_far - last_num_components + rb_min(this_comp, last_num_components);
-                _rb_glyph_info_set_lig_props_for_mark(rb_buffer_get_cur(buffer, 0), lig_id, new_lig_comp);
-            }
-            rb_buffer_next_glyph(buffer);
-        }
-
-        last_lig_id = _rb_glyph_info_get_lig_id(rb_buffer_get_cur(buffer, 0));
-        last_num_components = _rb_glyph_info_get_lig_num_comps(rb_buffer_get_cur(buffer, 0));
-        components_so_far += last_num_components;
-
-        /* Skip the base glyph */
-        rb_buffer_set_index(buffer, rb_buffer_get_index(buffer) + 1);
-    }
-
-    if (!is_mark_ligature && last_lig_id) {
-        /* Re-adjust components for any marks following. */
-        for (unsigned i = rb_buffer_get_index(buffer); i < rb_buffer_get_length(buffer); ++i) {
-            if (last_lig_id != _rb_glyph_info_get_lig_id(&rb_buffer_get_glyph_infos(buffer)[i]))
-                break;
-
-            unsigned this_comp = _rb_glyph_info_get_lig_comp(&rb_buffer_get_glyph_infos(buffer)[i]);
-            if (!this_comp)
-                break;
-
-            unsigned new_lig_comp = components_so_far - last_num_components + rb_min(this_comp, last_num_components);
-            _rb_glyph_info_set_lig_props_for_mark(&rb_buffer_get_glyph_infos(buffer)[i], lig_id, new_lig_comp);
-        }
-    }
-    return true;
-}
 
 static inline bool match_backtrack(rb_ot_apply_context_t *c,
                                    unsigned int count,
@@ -1841,10 +1735,15 @@ RB_EXTERN rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_app
 RB_EXTERN rb_bool_t      rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t *c);
 RB_EXTERN rb_buffer_t   *rb_ot_apply_context_get_buffer(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN unsigned int   rb_ot_apply_context_get_lookup_props(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t      rb_ot_apply_context_get_has_glyph_classes(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t      rb_ot_apply_context_get_auto_zwnj(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t      rb_ot_apply_context_get_auto_zwj(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_get_random(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t      rb_ot_apply_context_gdef_mark_set_covers(const OT::rb_ot_apply_context_t *c, unsigned int set_index, rb_codepoint_t glyph_id);
+RB_EXTERN unsigned int   rb_ot_apply_context_gdef_get_glyph_props(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_id);
 RB_EXTERN uint32_t       rb_ot_apply_context_random_number(OT::rb_ot_apply_context_t *c);
-RB_EXTERN void           rb_ot_apply_context_replace_glyph(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_index);
-RB_EXTERN void           rb_ot_apply_context_output_glyph_for_component(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_index, unsigned int class_guess);
 }
 
 #endif /* RB_OT_LAYOUT_GSUBGPOS_HH */

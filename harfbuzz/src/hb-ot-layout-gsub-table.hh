@@ -38,6 +38,8 @@ RB_EXTERN rb_bool_t rb_multiple_subst_would_apply(const OT::rb_would_apply_conte
 RB_EXTERN rb_bool_t rb_multiple_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
 RB_EXTERN rb_bool_t rb_alternate_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
 RB_EXTERN rb_bool_t rb_alternate_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_ligature_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_ligature_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
 }
 
 namespace OT {
@@ -123,96 +125,7 @@ protected:
     OffsetTo<Coverage> coverage;
 };
 
-struct Ligature
-{
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        if (c->len != component.lenP1)
-            return false;
-
-        for (unsigned int i = 1; i < c->len; i++)
-            if (likely(c->glyphs[i] != component[i]))
-                return false;
-
-        return true;
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        unsigned int count = component.lenP1;
-
-        if (unlikely(!count))
-            return false;
-
-        /* Special-case to make it in-place and not consider this
-         * as a "ligated" substitution. */
-        if (unlikely(count == 1)) {
-            c->replace_glyph(ligGlyph);
-            return true;
-        }
-
-        unsigned int total_component_count = 0;
-
-        unsigned int match_length = 0;
-        unsigned int match_positions[RB_MAX_CONTEXT_LENGTH];
-
-        if (likely(!match_input(
-                c, count, &component[1], match_glyph, nullptr, &match_length, match_positions, &total_component_count)))
-            return false;
-
-        ligate_input(c, count, match_positions, match_length, ligGlyph, total_component_count);
-
-        return true;
-    }
-
-public:
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return ligGlyph.sanitize(c) && component.sanitize(c);
-    }
-
-protected:
-    HBGlyphID ligGlyph;                   /* GlyphID of ligature to substitute */
-    HeadlessArrayOf<HBGlyphID> component; /* Array of component GlyphIDs--start
-                                           * with the second  component--ordered
-                                           * in writing direction */
-public:
-    DEFINE_SIZE_ARRAY(4, component);
-};
-
-struct LigatureSet
-{
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        return +rb_iter(ligature) | rb_map(rb_add(this)) | rb_map([c](const Ligature &_) { return _.would_apply(c); }) |
-               rb_any;
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        unsigned int num_ligs = ligature.len;
-        for (unsigned int i = 0; i < num_ligs; i++) {
-            const Ligature &lig = this + ligature[i];
-            if (lig.apply(c))
-                return true;
-        }
-
-        return false;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return ligature.sanitize(c, this);
-    }
-
-protected:
-    OffsetArrayOf<Ligature> ligature; /* Array LigatureSet tables
-                                       * ordered by preference */
-public:
-    DEFINE_SIZE_ARRAY(2, ligature);
-};
-
-struct LigatureSubstFormat1
+struct LigatureSubst
 {
     const Coverage &get_coverage() const
     {
@@ -221,58 +134,22 @@ struct LigatureSubstFormat1
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        unsigned int index = (this + coverage).get_coverage(c->glyphs[0]);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        const LigatureSet &lig_set = this + ligatureSet[index];
-        return lig_set.would_apply(c);
+        return rb_ligature_subst_would_apply(c, (const char*)this, -1);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        const LigatureSet &lig_set = this + ligatureSet[index];
-        return lig_set.apply(c);
+        return rb_ligature_subst_apply(c, (const char*)this, -1);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return coverage.sanitize(c, this) && ligatureSet.sanitize(c, this);
+        return format != 1 || coverage.sanitize(c, this);
     }
 
 protected:
-    HBUINT16 format;                        /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage;            /* Offset to Coverage table--from
-                                             * beginning of Substitution table */
-    OffsetArrayOf<LigatureSet> ligatureSet; /* Array LigatureSet tables
-                                             * ordered by Coverage Index */
-public:
-    DEFINE_SIZE_ARRAY(6, ligatureSet);
-};
-
-struct LigatureSubst
-{
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        LigatureSubstFormat1 format1;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> coverage;
 };
 
 struct ContextSubst : Context
@@ -409,7 +286,7 @@ struct SubstLookupSubTable
         case Alternate:
             return c->dispatch(u.alternate, rb_forward<Ts>(ds)...);
         case Ligature:
-            return u.ligature.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.ligature, rb_forward<Ts>(ds)...);
         case Context:
             return u.context.dispatch(c, rb_forward<Ts>(ds)...);
         case ChainContext:

@@ -9,22 +9,21 @@ use super::layout::{ApplyContext, MAX_CONTEXT_LENGTH};
 
 pub type MatchFunc = dyn Fn(GlyphId, GlyphId) -> bool;
 
-pub struct MatchedInput {
-    pub end_offset: usize,
-    pub match_positions: [usize; MAX_CONTEXT_LENGTH],
-    pub total_component_count: u32,
+pub fn match_glyph(a: GlyphId, b: GlyphId) -> bool {
+    a == b
+}
+
+pub struct Matched {
+    pub len: usize,
+    pub positions: [usize; MAX_CONTEXT_LENGTH],
+    pub total_component_count: u8,
 }
 
 pub fn match_input(
     ctx: &ApplyContext,
     input: LazyArray16<GlyphId>,
     match_func: &MatchFunc,
-) -> Option<MatchedInput> {
-    let count = 1 + input.len() as usize;
-    if count > MAX_CONTEXT_LENGTH {
-        return None;
-    }
-
+) -> Option<Matched> {
     // This is perhaps the trickiest part of OpenType...  Remarks:
     //
     // - If all components of the ligature were marks, we call this a mark ligature.
@@ -54,24 +53,30 @@ pub fn match_input(
         MaySkip,
     }
 
+    let count = 1 + input.len() as usize;
+    if count > MAX_CONTEXT_LENGTH {
+        return None;
+    }
+
     let buffer = ctx.buffer();
+    let mut iter = SkippyIter::new(ctx, input, buffer.idx, false);
+    iter.set_match_func(Some(match_func));
+
     let first = buffer.cur(0);
     let first_lig_id = first.lig_id();
     let first_lig_comp = first.lig_comp();
-    let mut match_positions = [0; MAX_CONTEXT_LENGTH];
-    let mut total_component_count = first.lig_num_comps() as u32;
+    let mut positions = [0; MAX_CONTEXT_LENGTH];
+    let mut total_component_count = first.lig_num_comps();
     let mut ligbase = Ligbase::NotChecked;
-    let mut iter = SkippyIter::new(ctx, input, false, buffer.idx);
-    iter.set_match_func(Some(match_func));
 
-    match_positions[0] = buffer.idx;
+    positions[0] = buffer.idx;
 
-    for i in 1 .. count {
+    for i in 1..count {
         if !iter.next() {
             return None;
         }
 
-        match_positions[i] = iter.buf_idx;
+        positions[i] = iter.buf_idx;
 
         let this = buffer.info[iter.buf_idx];
         let this_lig_id = this.lig_id();
@@ -85,9 +90,9 @@ pub fn match_input(
                 // ...unless, we are attached to a base ligature and that base
                 // ligature is ignorable.
                 if ligbase == Ligbase::NotChecked {
-                    let mut found = false;
                     let out = buffer.out_info();
                     let mut j = buffer.out_len;
+                    let mut found = false;
                     while j > 0 && out[j - 1].lig_id() == first_lig_id {
                         if out[j - 1].lig_comp() == 0 {
                             j -= 1;
@@ -117,12 +122,12 @@ pub fn match_input(
             }
         }
 
-        total_component_count += buffer.info[iter.buf_idx].lig_num_comps() as u32;
+        total_component_count += this.lig_num_comps();
     }
 
-    Some(MatchedInput {
-        end_offset: iter.buf_idx - buffer.idx + 1,
-        match_positions,
+    Some(Matched {
+        len: iter.buf_idx - buffer.idx + 1,
+        positions,
         total_component_count,
     })
 }
@@ -132,10 +137,10 @@ pub fn match_backtrack(
     backtrack: LazyArray16<GlyphId>,
     match_func: &MatchFunc,
 ) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, backtrack, true, ctx.buffer().backtrack_len());
+    let mut iter = SkippyIter::new(ctx, backtrack, ctx.buffer().backtrack_len(), true);
     iter.set_match_func(Some(match_func));
 
-    for _ in 0 .. backtrack.len() {
+    for _ in 0..backtrack.len() {
         if !iter.prev() {
             return None;
         }
@@ -150,10 +155,10 @@ pub fn match_lookahead(
     match_func: &MatchFunc,
     offset: usize,
 ) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, lookahead, true, ctx.buffer().idx + offset - 1);
+    let mut iter = SkippyIter::new(ctx, lookahead, ctx.buffer().idx + offset - 1, true);
     iter.set_match_func(Some(match_func));
 
-    for _ in 0 .. lookahead.len() {
+    for _ in 0..lookahead.len() {
         if !iter.next() {
             return None;
         }
@@ -164,7 +169,7 @@ pub fn match_lookahead(
 
 pub struct SkippyIter<'a> {
     ctx: &'a ApplyContext,
-    lookup_props: u16,
+    lookup_props: u32,
     ignore_zwnj: bool,
     ignore_zwj: bool,
     mask: Mask,
@@ -180,27 +185,28 @@ impl<'a> SkippyIter<'a> {
     pub fn new(
         ctx: &'a ApplyContext,
         input: LazyArray16<'a, GlyphId>,
-        context_match: bool,
         start_buf_index: usize,
+        context_match: bool,
     ) -> Self {
+        let buffer = ctx.buffer();
         SkippyIter {
             ctx,
-            lookup_props: 0,
+            lookup_props: ctx.lookup_props(),
             // Ignore ZWNJ if we are matching GPOS, or matching GSUB context and asked to.
             ignore_zwnj: ctx.table_index() == 1 || (context_match && ctx.auto_zwnj()),
             // Ignore ZWJ if we are matching context, or asked to.
             ignore_zwj: context_match || ctx.auto_zwj(),
             mask: if context_match { u32::MAX } else { ctx.lookup_mask() },
-            syllable: if ctx.buffer().idx > 0 { ctx.buffer().cur(0).syllable() } else { 0 },
+            syllable: if buffer.idx == start_buf_index { buffer.cur(0).syllable() } else { 0 },
             match_func: None,
             input,
-            buf_len: ctx.buffer().len,
+            buf_len: buffer.len,
             buf_idx: start_buf_index,
             input_idx: 0,
         }
     }
 
-    pub fn set_lookup_props(&mut self, lookup_props: u16) {
+    pub fn set_lookup_props(&mut self, lookup_props: u32) {
         self.lookup_props = lookup_props;
     }
 
@@ -255,6 +261,10 @@ impl SkippyIter<'_> {
         false
     }
 
+    pub fn reject(&mut self) {
+        self.input_idx += 1;
+    }
+
     fn may_match(&self, info: &GlyphInfo, glyph: GlyphId) -> Option<bool> {
         if (info.mask & self.mask) != 0 && (self.syllable == 0 || self.syllable == info.syllable()) {
             self.match_func.map(|func| {
@@ -266,7 +276,7 @@ impl SkippyIter<'_> {
     }
 
     fn may_skip(&self, info: &GlyphInfo) -> Option<bool> {
-        if self.ctx.check_glyph_property(info, self.lookup_props) {
+        if !self.ctx.check_glyph_property(info, self.lookup_props) {
             return Some(true);
         }
 

@@ -279,6 +279,10 @@ extern "C" {
 
     pub fn rb_ot_apply_context_get_table_index(ctx: *const rb_ot_apply_context_t) -> u32;
 
+    pub fn rb_ot_apply_context_get_lookup_props(ctx: *const rb_ot_apply_context_t) -> u32;
+
+    pub fn rb_ot_apply_context_get_has_glyph_classes(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
+
     pub fn rb_ot_apply_context_get_auto_zwnj(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
 
     pub fn rb_ot_apply_context_get_auto_zwj(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
@@ -291,18 +295,12 @@ extern "C" {
         glyph_id: rb_codepoint_t,
     ) -> rb_bool_t;
 
+    pub fn rb_ot_apply_context_gdef_get_glyph_props(
+        ctx: *const rb_ot_apply_context_t,
+        glyph_id: rb_codepoint_t,
+    ) -> u32;
+
     pub fn rb_ot_apply_context_random_number(ctx: *mut rb_ot_apply_context_t) -> u32;
-
-    pub fn rb_ot_apply_context_replace_glyph(
-        ctx: *const rb_ot_apply_context_t,
-        glyph_index: rb_codepoint_t,
-    );
-
-    pub fn rb_ot_apply_context_output_glyph_for_component(
-        ctx: *const rb_ot_apply_context_t,
-        glyph_index: rb_codepoint_t,
-        class_guess: u32,
-    );
 
     pub fn rb_layout_clear_syllables(
         plan: *const rb_ot_shape_plan_t,
