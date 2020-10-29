@@ -1,9 +1,8 @@
 use std::convert::TryFrom;
 
 use ttf_parser::GlyphId;
-use ttf_parser::parser::{LazyArray16, Stream, Offset, Offset16, Offsets16};
+use ttf_parser::parser::{LazyArray16, Stream, Offset16, Offsets16};
 
-use crate::ffi;
 use crate::buffer::GlyphPropsFlags;
 use crate::unicode::GeneralCategory;
 use super::Map;
@@ -26,17 +25,15 @@ enum SingleSubst<'a> {
 impl<'a> SingleSubst<'a> {
     fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
-        let format = s.read::<u16>()?;
+        let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let offset = s.read::<Offset16>()?.to_usize();
-                let coverage = Coverage::parse(data.get(offset..)?)?;
+                let coverage = Coverage::parse(s.read_offset16_data()?)?;
                 let delta = s.read::<i16>()?;
                 Self::Format1 { coverage, delta }
             }
             2 => {
-                let offset = s.read::<Offset16>()?.to_usize();
-                let coverage = Coverage::parse(data.get(offset..)?)?;
+                let coverage = Coverage::parse(s.read_offset16_data()?)?;
                 let count = s.read::<u16>()?;
                 let substitutes = s.read_array16(count)?;
                 Self::Format2 { coverage, substitutes }
@@ -82,17 +79,16 @@ enum MultipleSubst<'a> {
     Format1 {
         coverage: Coverage<'a>,
         sequences: Offsets16<'a, Offset16>,
-    }
+    },
 }
 
 impl<'a> MultipleSubst<'a> {
     fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
-        let format = s.read::<u16>()?;
+        let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let offset = s.read::<Offset16>()?.to_usize();
-                let coverage = Coverage::parse(data.get(offset..)?)?;
+                let coverage = Coverage::parse(s.read_offset16_data()?)?;
                 let count = s.read::<u16>()?;
                 let sequences = s.read_offsets16(count, data)?;
                 Self::Format1 { coverage, sequences }
@@ -171,17 +167,16 @@ enum AlternateSubst<'a> {
     Format1 {
         coverage: Coverage<'a>,
         alternate_sets: Offsets16<'a, Offset16>,
-    }
+    },
 }
 
 impl<'a> AlternateSubst<'a> {
     fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
-        let format = s.read::<u16>()?;
+        let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let offset = s.read::<Offset16>()?.to_usize();
-                let coverage = Coverage::parse(data.get(offset..)?)?;
+                let coverage = Coverage::parse(s.read_offset16_data()?)?;
                 let count = s.read::<u16>()?;
                 let alternate_sets = s.read_offsets16(count, data)?;
                 Self::Format1 { coverage, alternate_sets }
@@ -256,17 +251,16 @@ enum LigatureSubst<'a> {
     Format1 {
         coverage: Coverage<'a>,
         ligature_sets: Offsets16<'a, Offset16>,
-    }
+    },
 }
 
 impl<'a> LigatureSubst<'a> {
     fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
-        let format = s.read::<u16>()?;
+        let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let offset = s.read::<Offset16>()?.to_usize();
-                let coverage = Coverage::parse(data.get(offset..)?)?;
+                let coverage = Coverage::parse(s.read_offset16_data()?)?;
                 let count = s.read::<u16>()?;
                 let ligature_sets = s.read_offsets16(count, data)?;
                 Self::Format1 { coverage, ligature_sets }
@@ -338,15 +332,15 @@ impl<'a> LigatureSet<'a> {
 
 struct Ligature<'a> {
     lig_glyph: GlyphId,
-    components: LazyArray16<'a, GlyphId>,
+    components: LazyArray16<'a, u16>,
 }
 
 impl<'a> Ligature<'a> {
     fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let lig_glyph = s.read::<GlyphId>()?;
-        let count = s.read::<u16>()?.checked_sub(1)?;
-        let components = s.read_array16(count)?;
+        let count = s.read::<u16>()?;
+        let components = s.read_array16(count.checked_sub(1)?)?;
         Some(Self { lig_glyph, components })
     }
 
@@ -355,7 +349,7 @@ impl<'a> Ligature<'a> {
             && self.components
                 .into_iter()
                 .enumerate()
-                .all(|(i, comp)| ctx.glyph(1 + i) == comp.0 as u32)
+                .all(|(i, comp)| ctx.glyph(1 + i) == comp as u32)
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
@@ -363,14 +357,13 @@ impl<'a> Ligature<'a> {
         // as a "ligated" substitution.
         if self.components.is_empty() {
             ctx.replace_glyph(self.lig_glyph);
-        } else if let Some(matched) = match_input(ctx, self.components, &match_glyph) {
-            let count = 1 + self.components.len() as usize;
-            ligate(ctx, count, matched, self.lig_glyph);
+            Some(())
         } else {
-            return None;
+            match_input(ctx, self.components, &match_glyph).map(|matched| {
+                let count = 1 + self.components.len() as usize;
+                ligate(ctx, count, matched, self.lig_glyph);
+            })
         }
-
-        Some(())
     }
 }
 
@@ -475,38 +468,6 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
 
             let new_lig_comp = comps_so_far - last_num_comps + this_comp.min(last_num_comps);
             info.set_lig_props_for_mark(lig_id, new_lig_comp)
-        }
-    }
-}
-
-macro_rules! make_ffi_funcs {
-    ($table:ident, $would_apply:ident, $apply:ident) => {
-        #[no_mangle]
-        pub extern "C" fn $would_apply(
-            ctx: *const ffi::rb_would_apply_context_t,
-            data_ptr: *const u8,
-            data_len: u32,
-        ) -> ffi::rb_bool_t {
-            let ctx = WouldApplyContext::from_ptr(ctx);
-            let data = unsafe { std::slice::from_raw_parts(data_ptr, data_len as usize) };
-            match $table::parse(data) {
-                Some(table) => table.would_apply(&ctx) as ffi::rb_bool_t,
-                None => 0,
-            }
-        }
-
-        #[no_mangle]
-        pub extern "C" fn $apply(
-            ctx: *mut ffi::rb_ot_apply_context_t,
-            data_ptr: *const u8,
-            data_len: u32,
-        ) -> ffi::rb_bool_t {
-            let mut ctx = ApplyContext::from_ptr_mut(ctx);
-            let data = unsafe { std::slice::from_raw_parts(data_ptr, data_len as usize) };
-            match $table::parse(data) {
-                Some(table) => table.apply(&mut ctx).is_some() as ffi::rb_bool_t,
-                None => 0,
-            }
         }
     }
 }

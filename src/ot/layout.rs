@@ -47,8 +47,12 @@ impl ApplyContext {
         unsafe { ffi::rb_ot_apply_context_get_lookup_mask(self.0.as_ptr()) }
     }
 
-    pub fn table_index(&self) -> u32 {
-        unsafe { ffi::rb_ot_apply_context_get_table_index(self.0.as_ptr()) }
+    pub fn table_index(&self) -> usize {
+        unsafe { ffi::rb_ot_apply_context_get_table_index(self.0.as_ptr()) as usize }
+    }
+
+    pub fn lookup_index(&self) -> usize {
+        unsafe { ffi::rb_ot_apply_context_get_lookup_index(self.0.as_ptr()) as usize }
     }
 
     pub fn lookup_props(&self) -> u32 {
@@ -69,6 +73,10 @@ impl ApplyContext {
 
     pub fn random_number(&self) -> u32 {
         unsafe { ffi::rb_ot_apply_context_random_number(self.0.as_ptr()) }
+    }
+
+    pub fn recurse(&self, sub_lookup_index: usize) -> bool {
+        unsafe { ffi::rb_ot_apply_context_recurse(self.0.as_ptr(), sub_lookup_index as u32) != 0 }
     }
 
     pub fn check_glyph_property(&self, info: &GlyphInfo, match_props: u32) -> bool {

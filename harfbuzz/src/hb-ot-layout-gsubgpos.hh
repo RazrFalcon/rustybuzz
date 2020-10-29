@@ -857,275 +857,95 @@ static inline bool apply_lookup(rb_ot_apply_context_t *c,
 
 /* Contextual lookups */
 
-struct ContextApplyLookupContext
-{
-    ContextApplyFuncs funcs;
-    const void *match_data;
-};
-
-static inline bool
-context_would_apply_lookup(rb_would_apply_context_t *c,
-                           unsigned int inputCount, /* Including the first glyph (not matched) */
-                           const HBUINT16 input[],  /* Array of input values--start with second glyph */
-                           unsigned int lookupCount RB_UNUSED,
-                           const LookupRecord lookupRecord[] RB_UNUSED,
-                           ContextApplyLookupContext &lookup_context)
-{
-    return would_match_input(c, inputCount, input, lookup_context.funcs.match, lookup_context.match_data);
-}
-static inline bool context_apply_lookup(rb_ot_apply_context_t *c,
-                                        unsigned int inputCount, /* Including the first glyph (not matched) */
-                                        const HBUINT16 input[],  /* Array of input values--start with second glyph */
-                                        unsigned int lookupCount,
-                                        const LookupRecord lookupRecord[],
-                                        ContextApplyLookupContext &lookup_context)
-{
-    unsigned int match_length = 0;
-    unsigned int match_positions[RB_MAX_CONTEXT_LENGTH];
-    return match_input(c,
-                       inputCount,
-                       input,
-                       lookup_context.funcs.match,
-                       lookup_context.match_data,
-                       &match_length,
-                       match_positions) &&
-           (rb_buffer_unsafe_to_break(
-                c->buffer, rb_buffer_get_index(c->buffer), rb_buffer_get_index(c->buffer) + match_length),
-            apply_lookup(c, inputCount, match_positions, lookupCount, lookupRecord, match_length));
+extern "C" {
+RB_EXTERN rb_bool_t rb_context_lookup_would_apply(const rb_would_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_context_lookup_apply(rb_ot_apply_context_t *c, const char *data, unsigned int length);
 }
 
-struct Rule
+struct ContextFormat1Or2
 {
-    bool would_apply(rb_would_apply_context_t *c, ContextApplyLookupContext &lookup_context) const
-    {
-        const UnsizedArrayOf<LookupRecord> &lookupRecord =
-            StructAfter<UnsizedArrayOf<LookupRecord>>(inputZ.as_array(inputCount ? inputCount - 1 : 0));
-        return context_would_apply_lookup(
-            c, inputCount, inputZ.arrayZ, lookupCount, lookupRecord.arrayZ, lookup_context);
-    }
-
-    bool apply(rb_ot_apply_context_t *c, ContextApplyLookupContext &lookup_context) const
-    {
-        const UnsizedArrayOf<LookupRecord> &lookupRecord =
-            StructAfter<UnsizedArrayOf<LookupRecord>>(inputZ.as_array(inputCount ? inputCount - 1 : 0));
-        return context_apply_lookup(c, inputCount, inputZ.arrayZ, lookupCount, lookupRecord.arrayZ, lookup_context);
-    }
-
-public:
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return inputCount.sanitize(c) && lookupCount.sanitize(c) &&
-               c->check_range(inputZ.arrayZ,
-                              inputZ.item_size * (inputCount ? inputCount - 1 : 0) +
-                                  LookupRecord::static_size * lookupCount);
-    }
-
-protected:
-    HBUINT16 inputCount;             /* Total number of glyphs in input
-                                      * glyph sequence--includes the first
-                                      * glyph */
-    HBUINT16 lookupCount;            /* Number of LookupRecords */
-    UnsizedArrayOf<HBUINT16> inputZ; /* Array of match inputs--start with
-                                      * second glyph */
-                                     /*UnsizedArrayOf<LookupRecord>
-                                                     lookupRecordX;*/	/* Array of LookupRecords--in
-                     * design order */
-public:
-    DEFINE_SIZE_ARRAY(4, inputZ);
-};
-
-struct RuleSet
-{
-    bool would_apply(rb_would_apply_context_t *c, ContextApplyLookupContext &lookup_context) const
-    {
-        return +rb_iter(rule) | rb_map(rb_add(this)) |
-               rb_map([&](const Rule &_) { return _.would_apply(c, lookup_context); }) | rb_any;
-    }
-
-    bool apply(rb_ot_apply_context_t *c, ContextApplyLookupContext &lookup_context) const
-    {
-        return +rb_iter(rule) | rb_map(rb_add(this)) |
-               rb_map([&](const Rule &_) { return _.apply(c, lookup_context); }) | rb_any;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return rule.sanitize(c, this);
-    }
-
-protected:
-    OffsetArrayOf<Rule> rule; /* Array of Rule tables
-                               * ordered by preference */
-public:
-    DEFINE_SIZE_ARRAY(2, rule);
-};
-
-struct ContextFormat1
-{
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        const RuleSet &rule_set = this + ruleSet[(this + coverage).get_coverage(c->glyphs[0])];
-        struct ContextApplyLookupContext lookup_context = {{match_glyph}, nullptr};
-        return rule_set.would_apply(c, lookup_context);
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
     }
 
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        const RuleSet &rule_set = this + ruleSet[index];
-        struct ContextApplyLookupContext lookup_context = {{match_glyph}, nullptr};
-        return rule_set.apply(c, lookup_context);
-    }
-
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return coverage.sanitize(c, this) && ruleSet.sanitize(c, this);
+        return coverage.sanitize(c, this);
     }
 
 protected:
     HBUINT16 format;                /* Format identifier--format = 1 */
     OffsetTo<Coverage> coverage;    /* Offset to Coverage table--from
                                      * beginning of table */
-    OffsetArrayOf<RuleSet> ruleSet; /* Array of RuleSet tables
-                                     * ordered by Coverage Index */
 public:
-    DEFINE_SIZE_ARRAY(6, ruleSet);
+    DEFINE_SIZE_STATIC(4);
 };
 
-struct ContextFormat2
+struct ContextFormat3
 {
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        const ClassDef &class_def = this + classDef;
-        unsigned int index = class_def.get_class(c->glyphs[0]);
-        const RuleSet &rule_set = this + ruleSet[index];
-        struct ContextApplyLookupContext lookup_context = {{match_class}, &class_def};
-        return rule_set.would_apply(c, lookup_context);
-    }
-
     const Coverage &get_coverage() const
     {
         return this + coverage;
     }
 
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        const ClassDef &class_def = this + classDef;
-        index = class_def.get_class(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        const RuleSet &rule_set = this + ruleSet[index];
-        struct ContextApplyLookupContext lookup_context = {{match_class}, &class_def};
-        return rule_set.apply(c, lookup_context);
-    }
-
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return coverage.sanitize(c, this) && classDef.sanitize(c, this) && ruleSet.sanitize(c, this);
+        return coverage.sanitize(c, this);
     }
 
 protected:
-    HBUINT16 format;                /* Format identifier--format = 2 */
-    OffsetTo<Coverage> coverage;    /* Offset to Coverage table--from
-                                     * beginning of table */
-    OffsetTo<ClassDef> classDef;    /* Offset to glyph ClassDef table--from
-                                     * beginning of table */
-    OffsetArrayOf<RuleSet> ruleSet; /* Array of RuleSet tables
-                                     * ordered by class */
+    HBUINT16 format;
+    HBUINT16 glyphCount;
+    HBUINT16 lookupCount;
+    OffsetTo<Coverage> coverage;
+
 public:
-    DEFINE_SIZE_ARRAY(8, ruleSet);
-};
-
-struct ContextFormat3
-{
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        const LookupRecord *lookupRecord = &StructAfter<LookupRecord>(coverageZ.as_array(glyphCount));
-        struct ContextApplyLookupContext lookup_context = {{match_coverage}, this};
-        return context_would_apply_lookup(
-            c, glyphCount, (const HBUINT16 *)(coverageZ.arrayZ + 1), lookupCount, lookupRecord, lookup_context);
-    }
-
-    const Coverage &get_coverage() const
-    {
-        return this + coverageZ[0];
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        unsigned int index = (this + coverageZ[0]).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        const LookupRecord *lookupRecord = &StructAfter<LookupRecord>(coverageZ.as_array(glyphCount));
-        struct ContextApplyLookupContext lookup_context = {{match_coverage}, this};
-        return context_apply_lookup(
-            c, glyphCount, (const HBUINT16 *)(coverageZ.arrayZ + 1), lookupCount, lookupRecord, lookup_context);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        if (!c->check_struct(this))
-            return false;
-        unsigned int count = glyphCount;
-        if (!count)
-            return false; /* We want to access coverageZ[0] freely. */
-        if (!c->check_array(coverageZ.arrayZ, count))
-            return false;
-        for (unsigned int i = 0; i < count; i++)
-            if (!coverageZ[i].sanitize(c, this))
-                return false;
-        const LookupRecord *lookupRecord = &StructAfter<LookupRecord>(coverageZ.as_array(glyphCount));
-        return c->check_array(lookupRecord, lookupCount);
-    }
-
-protected:
-    HBUINT16 format;                              /* Format identifier--format = 3 */
-    HBUINT16 glyphCount;                          /* Number of glyphs in the input glyph
-                                                   * sequence */
-    HBUINT16 lookupCount;                         /* Number of LookupRecords */
-    UnsizedArrayOf<OffsetTo<Coverage>> coverageZ; /* Array of offsets to Coverage
-                                                   * table in glyph sequence order */
-                                                  /*UnsizedArrayOf<LookupRecord>
-                                                                  lookupRecordX;*/	/* Array of LookupRecords--in
-                     * design order */
-public:
-    DEFINE_SIZE_ARRAY(6, coverageZ);
+    DEFINE_SIZE_STATIC(8);
 };
 
 struct Context
 {
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
+    const Coverage &get_coverage() const
     {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
         switch (u.format) {
         case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
         case 2:
-            return c->dispatch(u.format2, rb_forward<Ts>(ds)...);
+            return u.format1or2.get_coverage();
         case 3:
-            return c->dispatch(u.format3, rb_forward<Ts>(ds)...);
+            return u.format3.get_coverage();
         default:
-            return c->default_return_value();
+            return Null(Coverage);
+        }
+    }
+
+    bool would_apply(rb_would_apply_context_t *c) const
+    {
+        return rb_context_lookup_would_apply(c, (const char*)this, -1);
+    }
+
+    bool apply(rb_ot_apply_context_t *c) const
+    {
+        return rb_context_lookup_apply(c, (const char*)this, -1);
+    }
+
+    bool sanitize(rb_sanitize_context_t *c) const
+    {
+        switch (u.format) {
+        case 1:
+        case 2:
+            return u.format1or2.sanitize(c);
+        case 3:
+            return u.format3.sanitize(c);
+        default:
+            return true;
         }
     }
 
 protected:
     union {
         HBUINT16 format; /* Format identifier */
-        ContextFormat1 format1;
-        ContextFormat2 format2;
+        ContextFormat1Or2 format1or2;
         ContextFormat3 format3;
     } u;
 };
@@ -1736,6 +1556,7 @@ RB_EXTERN rb_bool_t      rb_would_apply_context_get_zero_context(const OT::rb_wo
 RB_EXTERN rb_buffer_t   *rb_ot_apply_context_get_buffer(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN unsigned int   rb_ot_apply_context_get_lookup_index(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN unsigned int   rb_ot_apply_context_get_lookup_props(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_get_has_glyph_classes(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_get_auto_zwnj(const OT::rb_ot_apply_context_t *c);
@@ -1744,6 +1565,7 @@ RB_EXTERN rb_bool_t      rb_ot_apply_context_get_random(const OT::rb_ot_apply_co
 RB_EXTERN rb_bool_t      rb_ot_apply_context_gdef_mark_set_covers(const OT::rb_ot_apply_context_t *c, unsigned int set_index, rb_codepoint_t glyph_id);
 RB_EXTERN unsigned int   rb_ot_apply_context_gdef_get_glyph_props(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_id);
 RB_EXTERN uint32_t       rb_ot_apply_context_random_number(OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t      rb_ot_apply_context_recurse(OT::rb_ot_apply_context_t *c, unsigned int sub_lookup_index);
 }
 
 #endif /* RB_OT_LAYOUT_GSUBGPOS_HH */

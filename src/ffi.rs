@@ -279,6 +279,8 @@ extern "C" {
 
     pub fn rb_ot_apply_context_get_table_index(ctx: *const rb_ot_apply_context_t) -> u32;
 
+    pub fn rb_ot_apply_context_get_lookup_index(ctx: *const rb_ot_apply_context_t) -> u32;
+
     pub fn rb_ot_apply_context_get_lookup_props(ctx: *const rb_ot_apply_context_t) -> u32;
 
     pub fn rb_ot_apply_context_get_has_glyph_classes(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
@@ -301,6 +303,11 @@ extern "C" {
     ) -> u32;
 
     pub fn rb_ot_apply_context_random_number(ctx: *mut rb_ot_apply_context_t) -> u32;
+
+    pub fn rb_ot_apply_context_recurse(
+        ctx: *mut rb_ot_apply_context_t,
+        sub_lookup_index: u32,
+    ) -> rb_bool_t;
 
     pub fn rb_layout_clear_syllables(
         plan: *const rb_ot_shape_plan_t,

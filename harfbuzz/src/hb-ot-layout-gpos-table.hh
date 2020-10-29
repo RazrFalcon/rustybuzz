@@ -1394,7 +1394,7 @@ struct PosLookupSubTable
         case MarkMark:
             return u.markMark.dispatch(c, rb_forward<Ts>(ds)...);
         case Context:
-            return u.context.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.context, rb_forward<Ts>(ds)...);
         case ChainContext:
             return u.chainContext.dispatch(c, rb_forward<Ts>(ds)...);
         case Extension:

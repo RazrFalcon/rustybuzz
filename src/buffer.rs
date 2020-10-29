@@ -571,7 +571,7 @@ impl Buffer {
     }
 
     #[inline]
-    fn lookahead_len(&self) -> usize {
+    pub(crate) fn lookahead_len(&self) -> usize {
         self.len - self.idx
     }
 
@@ -1040,7 +1040,7 @@ impl Buffer {
         }
     }
 
-    fn move_to(&mut self, i: usize) -> bool {
+    pub(crate) fn move_to(&mut self, i: usize) -> bool {
         if !self.have_output {
             assert!(i <= self.len);
             self.idx = i;
