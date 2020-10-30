@@ -290,7 +290,7 @@ struct SubstLookupSubTable
         case Context:
             return c->dispatch(u.context, rb_forward<Ts>(ds)...);
         case ChainContext:
-            return u.chainContext.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.chainContext, rb_forward<Ts>(ds)...);
         case Extension:
             return u.extension.dispatch(c, rb_forward<Ts>(ds)...);
         case ReverseChainSingle:

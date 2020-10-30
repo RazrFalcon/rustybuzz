@@ -80,7 +80,6 @@ impl ApplyContext {
     }
 
     pub fn check_glyph_property(&self, info: &GlyphInfo, match_props: u32) -> bool {
-        let glyph = info.codepoint;
         let glyph_props = info.glyph_props();
         let lookup_flags = match_props as u16;
 
@@ -95,6 +94,7 @@ impl ApplyContext {
             // match_props has the set index.
             if lookup_flags & LookupFlags::USE_MARK_FILTERING_SET.bits() != 0 {
                 let set_index = match_props >> 16;
+                let glyph = info.codepoint;
                 return unsafe {
                     ffi::rb_ot_apply_context_gdef_mark_set_covers(
                         self.0.as_ptr(),

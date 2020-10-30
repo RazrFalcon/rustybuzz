@@ -244,27 +244,6 @@ impl<'a> SkippyIter<'a> {
     }
 }
 
-macro_rules! advance_impl {
-    ($self:expr, $value:expr) => {{
-        let info = &$self.ctx.buffer().info[$self.buf_idx];
-
-        let skip = $self.may_skip(info);
-        if skip == Some(true) {
-            continue;
-        }
-
-        let matched = $self.may_match(info, $value);
-        if matched == Some(true) || (matched.is_none() && skip == Some(false)) {
-            $self.input_idx += 1;
-            return true;
-        }
-
-        if skip == Some(false) {
-            return false;
-        }
-    }}
-}
-
 impl SkippyIter<'_> {
     pub fn next(&mut self) -> bool {
         let value = self.input.get(self.input_idx).unwrap();
@@ -272,7 +251,22 @@ impl SkippyIter<'_> {
 
         while self.buf_idx + num_items < self.buf_len {
             self.buf_idx += 1;
-            advance_impl!(self, value);
+            let info = &self.ctx.buffer().info[self.buf_idx];
+
+            let skip = self.may_skip(info);
+            if skip == Some(true) {
+                continue;
+            }
+
+            let matched = self.may_match(info, value);
+            if matched == Some(true) || (matched.is_none() && skip == Some(false)) {
+                self.input_idx += 1;
+                return true;
+            }
+
+            if skip == Some(false) {
+                return false;
+            }
         }
 
         false
@@ -282,9 +276,24 @@ impl SkippyIter<'_> {
         let value = self.input.get(self.input_idx).unwrap();
         let num_items = (self.input.len() - self.input_idx) as usize;
 
-        while self.buf_idx > num_items - 1 {
+        while self.buf_idx >= num_items {
             self.buf_idx -= 1;
-            advance_impl!(self, value);
+            let info = &self.ctx.buffer().out_info()[self.buf_idx];
+
+            let skip = self.may_skip(info);
+            if skip == Some(true) {
+                continue;
+            }
+
+            let matched = self.may_match(info, value);
+            if matched == Some(true) || (matched.is_none() && skip == Some(false)) {
+                self.input_idx += 1;
+                return true;
+            }
+
+            if skip == Some(false) {
+                return false;
+            }
         }
 
         false

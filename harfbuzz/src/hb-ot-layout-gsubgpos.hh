@@ -546,142 +546,10 @@ struct ContextApplyFuncs
     match_func_t match;
 };
 
-static inline bool match_glyph(rb_codepoint_t glyph_id, const HBUINT16 &value, const void *data RB_UNUSED)
-{
-    return glyph_id == value;
-}
-static inline bool match_class(rb_codepoint_t glyph_id, const HBUINT16 &value, const void *data)
-{
-    const ClassDef &class_def = *reinterpret_cast<const ClassDef *>(data);
-    return class_def.get_class(glyph_id) == value;
-}
 static inline bool match_coverage(rb_codepoint_t glyph_id, const HBUINT16 &value, const void *data)
 {
     const OffsetTo<Coverage> &coverage = (const OffsetTo<Coverage> &)value;
     return (data + coverage).get_coverage(glyph_id) != NOT_COVERED;
-}
-
-static inline bool would_match_input(rb_would_apply_context_t *c,
-                                     unsigned int count,     /* Including the first glyph (not matched) */
-                                     const HBUINT16 input[], /* Array of input values--start with second glyph */
-                                     match_func_t match_func,
-                                     const void *match_data)
-{
-    if (count != c->len)
-        return false;
-
-    for (unsigned int i = 1; i < count; i++)
-        if (likely(!match_func(c->glyphs[i], input[i - 1], match_data)))
-            return false;
-
-    return true;
-}
-static inline bool match_input(rb_ot_apply_context_t *c,
-                               unsigned int count,     /* Including the first glyph (not matched) */
-                               const HBUINT16 input[], /* Array of input values--start with second glyph */
-                               match_func_t match_func,
-                               const void *match_data,
-                               unsigned int *end_offset,
-                               unsigned int match_positions[RB_MAX_CONTEXT_LENGTH],
-                               unsigned int *p_total_component_count = nullptr)
-{
-    if (unlikely(count > RB_MAX_CONTEXT_LENGTH))
-        return false;
-
-    rb_buffer_t *buffer = c->buffer;
-
-    rb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset(rb_buffer_get_index(buffer), count - 1);
-    skippy_iter.set_match_func(match_func, match_data, input);
-
-    /*
-     * This is perhaps the trickiest part of OpenType...  Remarks:
-     *
-     * - If all components of the ligature were marks, we call this a mark ligature.
-     *
-     * - If there is no GDEF, and the ligature is NOT a mark ligature, we categorize
-     *   it as a ligature glyph.
-     *
-     * - Ligatures cannot be formed across glyphs attached to different components
-     *   of previous ligatures.  Eg. the sequence is LAM,SHADDA,LAM,FATHA,HEH, and
-     *   LAM,LAM,HEH form a ligature, leaving SHADDA,FATHA next to eachother.
-     *   However, it would be wrong to ligate that SHADDA,FATHA sequence.
-     *   There are a couple of exceptions to this:
-     *
-     *   o If a ligature tries ligating with marks that belong to it itself, go ahead,
-     *     assuming that the font designer knows what they are doing (otherwise it can
-     *     break Indic stuff when a matra wants to ligate with a conjunct,
-     *
-     *   o If two marks want to ligate and they belong to different components of the
-     *     same ligature glyph, and said ligature glyph is to be ignored according to
-     *     mark-filtering rules, then allow.
-     *     https://github.com/harfbuzz/harfbuzz/issues/545
-     */
-
-    unsigned int total_component_count = 0;
-    total_component_count += _rb_glyph_info_get_lig_num_comps(rb_buffer_get_cur(buffer, 0));
-
-    unsigned int first_lig_id = _rb_glyph_info_get_lig_id(rb_buffer_get_cur(buffer, 0));
-    unsigned int first_lig_comp = _rb_glyph_info_get_lig_comp(rb_buffer_get_cur(buffer, 0));
-
-    enum { LIGBASE_NOT_CHECKED, LIGBASE_MAY_NOT_SKIP, LIGBASE_MAY_SKIP } ligbase = LIGBASE_NOT_CHECKED;
-
-    match_positions[0] = rb_buffer_get_index(buffer);
-    for (unsigned int i = 1; i < count; i++) {
-        if (!skippy_iter.next())
-            return false;
-
-        match_positions[i] = skippy_iter.idx;
-
-        unsigned int this_lig_id = _rb_glyph_info_get_lig_id(&rb_buffer_get_glyph_infos(buffer)[skippy_iter.idx]);
-        unsigned int this_lig_comp = _rb_glyph_info_get_lig_comp(&rb_buffer_get_glyph_infos(buffer)[skippy_iter.idx]);
-
-        if (first_lig_id && first_lig_comp) {
-            /* If first component was attached to a previous ligature component,
-             * all subsequent components should be attached to the same ligature
-             * component, otherwise we shouldn't ligate them... */
-            if (first_lig_id != this_lig_id || first_lig_comp != this_lig_comp) {
-                /* ...unless, we are attached to a base ligature and that base
-                 * ligature is ignorable. */
-                if (ligbase == LIGBASE_NOT_CHECKED) {
-                    bool found = false;
-                    const auto *out = rb_buffer_get_out_infos(buffer);
-                    unsigned int j = rb_buffer_get_out_len(buffer);
-                    while (j && _rb_glyph_info_get_lig_id(&out[j - 1]) == first_lig_id) {
-                        if (_rb_glyph_info_get_lig_comp(&out[j - 1]) == 0) {
-                            j--;
-                            found = true;
-                            break;
-                        }
-                        j--;
-                    }
-
-                    if (found && skippy_iter.may_skip(out[j]) == rb_ot_apply_context_t::matcher_t::SKIP_YES)
-                        ligbase = LIGBASE_MAY_SKIP;
-                    else
-                        ligbase = LIGBASE_MAY_NOT_SKIP;
-                }
-
-                if (ligbase == LIGBASE_MAY_NOT_SKIP)
-                    return false;
-            }
-        } else {
-            /* If first component was NOT attached to a previous ligature component,
-             * all subsequent components should also NOT be attached to any ligature
-             * component, unless they are attached to the first component itself! */
-            if (this_lig_id && this_lig_comp && (this_lig_id != first_lig_id))
-                return false;
-        }
-
-        total_component_count += _rb_glyph_info_get_lig_num_comps(&rb_buffer_get_glyph_infos(buffer)[skippy_iter.idx]);
-    }
-
-    *end_offset = skippy_iter.idx - rb_buffer_get_index(buffer) + 1;
-
-    if (p_total_component_count)
-        *p_total_component_count = total_component_count;
-
-    return true;
 }
 
 static inline bool match_backtrack(rb_ot_apply_context_t *c,
@@ -725,141 +593,13 @@ static inline bool match_lookahead(rb_ot_apply_context_t *c,
     return true;
 }
 
-struct LookupRecord
-{
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this);
-    }
-
-    HBUINT16 sequenceIndex;   /* Index into current glyph
-                               * sequence--first glyph = 0 */
-    HBUINT16 lookupListIndex; /* Lookup to apply to that
-                               * position--zero--based */
-public:
-    DEFINE_SIZE_STATIC(4);
-};
-
-static inline bool apply_lookup(rb_ot_apply_context_t *c,
-                                unsigned int count,                                  /* Including the first glyph */
-                                unsigned int match_positions[RB_MAX_CONTEXT_LENGTH], /* Including the first glyph */
-                                unsigned int lookupCount,
-                                const LookupRecord lookupRecord[], /* Array of LookupRecords--in design order */
-                                unsigned int match_length)
-{
-    rb_buffer_t *buffer = c->buffer;
-    int end;
-
-    /* All positions are distance from beginning of *output* buffer.
-     * Adjust. */
-    {
-        unsigned int bl = rb_buffer_get_backtrack_len(buffer);
-        end = bl + match_length;
-
-        int delta = bl - rb_buffer_get_index(buffer);
-        /* Convert positions to new indexing. */
-        for (unsigned int j = 0; j < count; j++)
-            match_positions[j] += delta;
-    }
-
-    for (unsigned int i = 0; i < lookupCount && rb_buffer_is_allocation_successful(buffer); i++) {
-        unsigned int idx = lookupRecord[i].sequenceIndex;
-        if (idx >= count)
-            continue;
-
-        /* Don't recurse to ourself at same position.
-         * Note that this test is too naive, it doesn't catch longer loops. */
-        if (idx == 0 && lookupRecord[i].lookupListIndex == c->lookup_index)
-            continue;
-
-        if (!rb_buffer_move_to(buffer, match_positions[idx])) {
-            break;
-        }
-
-        if (unlikely(rb_buffer_get_max_ops(buffer) <= 0))
-            break;
-
-        unsigned int orig_len = rb_buffer_get_backtrack_len(buffer) + rb_buffer_get_lookahead_len(buffer);
-        if (!c->recurse(lookupRecord[i].lookupListIndex))
-            continue;
-
-        unsigned int new_len = rb_buffer_get_backtrack_len(buffer) + rb_buffer_get_lookahead_len(buffer);
-        int delta = new_len - orig_len;
-
-        if (!delta)
-            continue;
-
-        /* Recursed lookup changed buffer len.  Adjust.
-         *
-         * TODO:
-         *
-         * Right now, if buffer length increased by n, we assume n new glyphs
-         * were added right after the current position, and if buffer length
-         * was decreased by n, we assume n match positions after the current
-         * one where removed.  The former (buffer length increased) case is
-         * fine, but the decrease case can be improved in at least two ways,
-         * both of which are significant:
-         *
-         *   - If recursed-to lookup is MultipleSubst and buffer length
-         *     decreased, then it's current match position that was deleted,
-         *     NOT the one after it.
-         *
-         *   - If buffer length was decreased by n, it does not necessarily
-         *     mean that n match positions where removed, as there might
-         *     have been marks and default-ignorables in the sequence.  We
-         *     should instead drop match positions between current-position
-         *     and current-position + n instead.
-         *
-         * It should be possible to construct tests for both of these cases.
-         */
-
-        end += delta;
-        if (end <= int(match_positions[idx])) {
-            /* End might end up being smaller than match_positions[idx] if the recursed
-             * lookup ended up removing many items, more than we have had matched.
-             * Just never rewind end back and get out of here.
-             * https://bugs.chromium.org/p/chromium/issues/detail?id=659496 */
-            end = match_positions[idx];
-            /* There can't be any further changes. */
-            break;
-        }
-
-        unsigned int next = idx + 1; /* next now is the position after the recursed lookup. */
-
-        if (delta > 0) {
-            if (unlikely(delta + count > RB_MAX_CONTEXT_LENGTH))
-                break;
-        } else {
-            /* NOTE: delta is negative. */
-            delta = rb_max(delta, (int)next - (int)count);
-            next -= delta;
-        }
-
-        /* Shift! */
-        memmove(match_positions + next + delta, match_positions + next, (count - next) * sizeof(match_positions[0]));
-        next += delta;
-        count += delta;
-
-        /* Fill in new entries. */
-        for (unsigned int j = idx + 1; j < next; j++)
-            match_positions[j] = match_positions[j - 1] + 1;
-
-        /* And fixup the rest. */
-        for (; next < count; next++)
-            match_positions[next] += delta;
-    }
-
-    rb_buffer_move_to(buffer, end);
-
-    return true;
-}
-
 /* Contextual lookups */
 
 extern "C" {
 RB_EXTERN rb_bool_t rb_context_lookup_would_apply(const rb_would_apply_context_t *c, const char *data, unsigned int length);
 RB_EXTERN rb_bool_t rb_context_lookup_apply(rb_ot_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_chain_context_lookup_would_apply(const rb_would_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_chain_context_lookup_apply(rb_ot_apply_context_t *c, const char *data, unsigned int length);
 }
 
 struct ContextFormat1Or2
@@ -950,303 +690,12 @@ protected:
     } u;
 };
 
-/* Chaining Contextual lookups */
-
-struct ChainContextApplyLookupContext
-{
-    ContextApplyFuncs funcs;
-    const void *match_data[3];
-};
-
-static inline bool
-chain_context_would_apply_lookup(rb_would_apply_context_t *c,
-                                 unsigned int backtrackCount,
-                                 const HBUINT16 backtrack[] RB_UNUSED,
-                                 unsigned int inputCount, /* Including the first glyph (not matched) */
-                                 const HBUINT16 input[],  /* Array of input values--start with second glyph */
-                                 unsigned int lookaheadCount,
-                                 const HBUINT16 lookahead[] RB_UNUSED,
-                                 unsigned int lookupCount RB_UNUSED,
-                                 const LookupRecord lookupRecord[] RB_UNUSED,
-                                 ChainContextApplyLookupContext &lookup_context)
-{
-    return (c->zero_context ? !backtrackCount && !lookaheadCount : true) &&
-           would_match_input(c, inputCount, input, lookup_context.funcs.match, lookup_context.match_data[1]);
-}
-
-static inline bool
-chain_context_apply_lookup(rb_ot_apply_context_t *c,
-                           unsigned int backtrackCount,
-                           const HBUINT16 backtrack[],
-                           unsigned int inputCount, /* Including the first glyph (not matched) */
-                           const HBUINT16 input[],  /* Array of input values--start with second glyph */
-                           unsigned int lookaheadCount,
-                           const HBUINT16 lookahead[],
-                           unsigned int lookupCount,
-                           const LookupRecord lookupRecord[],
-                           ChainContextApplyLookupContext &lookup_context)
-{
-    unsigned int start_index = 0, match_length = 0, end_index = 0;
-    unsigned int match_positions[RB_MAX_CONTEXT_LENGTH];
-    return match_input(c,
-                       inputCount,
-                       input,
-                       lookup_context.funcs.match,
-                       lookup_context.match_data[1],
-                       &match_length,
-                       match_positions) &&
-           match_backtrack(
-               c, backtrackCount, backtrack, lookup_context.funcs.match, lookup_context.match_data[0], &start_index) &&
-           match_lookahead(c,
-                           lookaheadCount,
-                           lookahead,
-                           lookup_context.funcs.match,
-                           lookup_context.match_data[2],
-                           match_length,
-                           &end_index) &&
-           (rb_buffer_unsafe_to_break_from_outbuffer(c->buffer, start_index, end_index),
-            apply_lookup(c, inputCount, match_positions, lookupCount, lookupRecord, match_length));
-}
-
-struct ChainRule
-{
-    bool would_apply(rb_would_apply_context_t *c, ChainContextApplyLookupContext &lookup_context) const
-    {
-        const HeadlessArrayOf<HBUINT16> &input = StructAfter<HeadlessArrayOf<HBUINT16>>(backtrack);
-        const ArrayOf<HBUINT16> &lookahead = StructAfter<ArrayOf<HBUINT16>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        return chain_context_would_apply_lookup(c,
-                                                backtrack.len,
-                                                backtrack.arrayZ,
-                                                input.lenP1,
-                                                input.arrayZ,
-                                                lookahead.len,
-                                                lookahead.arrayZ,
-                                                lookup.len,
-                                                lookup.arrayZ,
-                                                lookup_context);
-    }
-
-    bool apply(rb_ot_apply_context_t *c, ChainContextApplyLookupContext &lookup_context) const
-    {
-        const HeadlessArrayOf<HBUINT16> &input = StructAfter<HeadlessArrayOf<HBUINT16>>(backtrack);
-        const ArrayOf<HBUINT16> &lookahead = StructAfter<ArrayOf<HBUINT16>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        return chain_context_apply_lookup(c,
-                                          backtrack.len,
-                                          backtrack.arrayZ,
-                                          input.lenP1,
-                                          input.arrayZ,
-                                          lookahead.len,
-                                          lookahead.arrayZ,
-                                          lookup.len,
-                                          lookup.arrayZ,
-                                          lookup_context);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        if (!backtrack.sanitize(c))
-            return false;
-        const HeadlessArrayOf<HBUINT16> &input = StructAfter<HeadlessArrayOf<HBUINT16>>(backtrack);
-        if (!input.sanitize(c))
-            return false;
-        const ArrayOf<HBUINT16> &lookahead = StructAfter<ArrayOf<HBUINT16>>(input);
-        if (!lookahead.sanitize(c))
-            return false;
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        return lookup.sanitize(c);
-    }
-
-protected:
-    ArrayOf<HBUINT16> backtrack;      /* Array of backtracking values
-                                       * (to be matched before the input
-                                       * sequence) */
-    HeadlessArrayOf<HBUINT16> inputX; /* Array of input values (start with
-                                       * second glyph) */
-    ArrayOf<HBUINT16> lookaheadX;     /* Array of lookahead values's (to be
-                                       * matched after the input sequence) */
-    ArrayOf<LookupRecord> lookupX;    /* Array of LookupRecords--in
-                                       * design order) */
-public:
-    DEFINE_SIZE_MIN(8);
-};
-
-struct ChainRuleSet
-{
-    bool would_apply(rb_would_apply_context_t *c, ChainContextApplyLookupContext &lookup_context) const
-    {
-        return +rb_iter(rule) | rb_map(rb_add(this)) |
-               rb_map([&](const ChainRule &_) { return _.would_apply(c, lookup_context); }) | rb_any;
-    }
-
-    bool apply(rb_ot_apply_context_t *c, ChainContextApplyLookupContext &lookup_context) const
-    {
-        return +rb_iter(rule) | rb_map(rb_add(this)) |
-               rb_map([&](const ChainRule &_) { return _.apply(c, lookup_context); }) | rb_any;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return rule.sanitize(c, this);
-    }
-
-protected:
-    OffsetArrayOf<ChainRule> rule; /* Array of ChainRule tables
-                                    * ordered by preference */
-public:
-    DEFINE_SIZE_ARRAY(2, rule);
-};
-
-struct ChainContextFormat1
-{
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        const ChainRuleSet &rule_set = this + ruleSet[(this + coverage).get_coverage(c->glyphs[0])];
-        struct ChainContextApplyLookupContext lookup_context = {{match_glyph}, {nullptr, nullptr, nullptr}};
-        return rule_set.would_apply(c, lookup_context);
-    }
-
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        const ChainRuleSet &rule_set = this + ruleSet[index];
-        struct ChainContextApplyLookupContext lookup_context = {{match_glyph}, {nullptr, nullptr, nullptr}};
-        return rule_set.apply(c, lookup_context);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return coverage.sanitize(c, this) && ruleSet.sanitize(c, this);
-    }
-
-protected:
-    HBUINT16 format;                     /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage;         /* Offset to Coverage table--from
-                                          * beginning of table */
-    OffsetArrayOf<ChainRuleSet> ruleSet; /* Array of ChainRuleSet tables
-                                          * ordered by Coverage Index */
-public:
-    DEFINE_SIZE_ARRAY(6, ruleSet);
-};
-
-struct ChainContextFormat2
-{
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        const ClassDef &backtrack_class_def = this + backtrackClassDef;
-        const ClassDef &input_class_def = this + inputClassDef;
-        const ClassDef &lookahead_class_def = this + lookaheadClassDef;
-
-        unsigned int index = input_class_def.get_class(c->glyphs[0]);
-        const ChainRuleSet &rule_set = this + ruleSet[index];
-        struct ChainContextApplyLookupContext lookup_context = {
-            {match_class}, {&backtrack_class_def, &input_class_def, &lookahead_class_def}};
-        return rule_set.would_apply(c, lookup_context);
-    }
-
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        const ClassDef &backtrack_class_def = this + backtrackClassDef;
-        const ClassDef &input_class_def = this + inputClassDef;
-        const ClassDef &lookahead_class_def = this + lookaheadClassDef;
-
-        index = input_class_def.get_class(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        const ChainRuleSet &rule_set = this + ruleSet[index];
-        struct ChainContextApplyLookupContext lookup_context = {
-            {match_class}, {&backtrack_class_def, &input_class_def, &lookahead_class_def}};
-        return rule_set.apply(c, lookup_context);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return coverage.sanitize(c, this) && backtrackClassDef.sanitize(c, this) && inputClassDef.sanitize(c, this) &&
-               lookaheadClassDef.sanitize(c, this) && ruleSet.sanitize(c, this);
-    }
-
-protected:
-    HBUINT16 format;                      /* Format identifier--format = 2 */
-    OffsetTo<Coverage> coverage;          /* Offset to Coverage table--from
-                                           * beginning of table */
-    OffsetTo<ClassDef> backtrackClassDef; /* Offset to glyph ClassDef table
-                                           * containing backtrack sequence
-                                           * data--from beginning of table */
-    OffsetTo<ClassDef> inputClassDef;     /* Offset to glyph ClassDef
-                                           * table containing input sequence
-                                           * data--from beginning of table */
-    OffsetTo<ClassDef> lookaheadClassDef; /* Offset to glyph ClassDef table
-                                           * containing lookahead sequence
-                                           * data--from beginning of table */
-    OffsetArrayOf<ChainRuleSet> ruleSet;  /* Array of ChainRuleSet tables
-                                           * ordered by class */
-public:
-    DEFINE_SIZE_ARRAY(12, ruleSet);
-};
-
 struct ChainContextFormat3
 {
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        struct ChainContextApplyLookupContext lookup_context = {{match_coverage}, {this, this, this}};
-        return chain_context_would_apply_lookup(c,
-                                                backtrack.len,
-                                                (const HBUINT16 *)backtrack.arrayZ,
-                                                input.len,
-                                                (const HBUINT16 *)input.arrayZ + 1,
-                                                lookahead.len,
-                                                (const HBUINT16 *)lookahead.arrayZ,
-                                                lookup.len,
-                                                lookup.arrayZ,
-                                                lookup_context);
-    }
-
     const Coverage &get_coverage() const
     {
         const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
         return this + input[0];
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-
-        unsigned int index = (this + input[0]).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(input);
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        struct ChainContextApplyLookupContext lookup_context = {{match_coverage}, {this, this, this}};
-        return chain_context_apply_lookup(c,
-                                          backtrack.len,
-                                          (const HBUINT16 *)backtrack.arrayZ,
-                                          input.len,
-                                          (const HBUINT16 *)input.arrayZ + 1,
-                                          lookahead.len,
-                                          (const HBUINT16 *)lookahead.arrayZ,
-                                          lookup.len,
-                                          lookup.arrayZ,
-                                          lookup_context);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -1258,11 +707,7 @@ struct ChainContextFormat3
             return false;
         if (!input.len)
             return false; /* To be consistent with Context. */
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(input);
-        if (!lookahead.sanitize(c, this))
-            return false;
-        const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>>(lookahead);
-        return lookup.sanitize(c);
+        return true;
     }
 
 protected:
@@ -1273,38 +718,52 @@ protected:
     OffsetArrayOf<Coverage> inputX;     /* Array of coverage
                                          * tables in input sequence, in glyph
                                          * sequence order */
-    OffsetArrayOf<Coverage> lookaheadX; /* Array of coverage tables
-                                         * in lookahead sequence, in glyph
-                                         * sequence order */
-    ArrayOf<LookupRecord> lookupX;      /* Array of LookupRecords--in
-                                         * design order) */
 public:
-    DEFINE_SIZE_MIN(10);
+    DEFINE_SIZE_MIN(6);
 };
 
 struct ChainContext
 {
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
+    const Coverage &get_coverage() const
     {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
         switch (u.format) {
         case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
         case 2:
-            return c->dispatch(u.format2, rb_forward<Ts>(ds)...);
+            return u.format1or2.get_coverage();
         case 3:
-            return c->dispatch(u.format3, rb_forward<Ts>(ds)...);
+            return u.format3.get_coverage();
         default:
-            return c->default_return_value();
+            return Null(Coverage);
+        }
+    }
+
+    bool would_apply(rb_would_apply_context_t *c) const
+    {
+        return rb_chain_context_lookup_would_apply(c, (const char*)this, -1);
+    }
+
+    bool apply(rb_ot_apply_context_t *c) const
+    {
+        return rb_chain_context_lookup_apply(c, (const char*)this, -1);
+    }
+
+    bool sanitize(rb_sanitize_context_t *c) const
+    {
+        switch (u.format) {
+        case 1:
+        case 2:
+            return u.format1or2.sanitize(c);
+        case 3:
+            return u.format3.sanitize(c);
+        default:
+            return true;
         }
     }
 
 protected:
     union {
         HBUINT16 format; /* Format identifier */
-        ChainContextFormat1 format1;
-        ChainContextFormat2 format2;
+        ContextFormat1Or2 format1or2;
         ChainContextFormat3 format3;
     } u;
 };
