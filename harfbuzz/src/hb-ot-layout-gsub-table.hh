@@ -40,6 +40,8 @@ RB_EXTERN rb_bool_t rb_alternate_subst_would_apply(const OT::rb_would_apply_cont
 RB_EXTERN rb_bool_t rb_alternate_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
 RB_EXTERN rb_bool_t rb_ligature_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
 RB_EXTERN rb_bool_t rb_ligature_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_reverse_chain_single_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_reverse_chain_single_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
 }
 
 namespace OT {
@@ -166,7 +168,7 @@ struct ExtensionSubst : Extension<ExtensionSubst>
     bool is_reverse() const;
 };
 
-struct ReverseChainSingleSubstFormat1
+struct ReverseChainSingleSubst
 {
     const Coverage &get_coverage() const
     {
@@ -175,84 +177,22 @@ struct ReverseChainSingleSubstFormat1
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return c->len == 1 && (this + coverage).get_coverage(c->glyphs[0]) != NOT_COVERED;
+        return rb_reverse_chain_single_subst_would_apply(c, (const char*)this, -1);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        if (unlikely(c->nesting_level_left != RB_MAX_NESTING_LEVEL))
-            return false; /* No chaining to this type */
-
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(c->buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-        const ArrayOf<HBGlyphID> &substitute = StructAfter<ArrayOf<HBGlyphID>>(lookahead);
-
-        if (unlikely(index >= substitute.len))
-            return false;
-
-        unsigned int start_index = 0, end_index = 0;
-        if (match_backtrack(c, backtrack.len, (HBUINT16 *)backtrack.arrayZ, match_coverage, this, &start_index) &&
-            match_lookahead(c, lookahead.len, (HBUINT16 *)lookahead.arrayZ, match_coverage, this, 1, &end_index)) {
-            rb_buffer_unsafe_to_break_from_outbuffer(c->buffer, start_index, end_index);
-            c->replace_glyph_inplace(substitute[index]);
-            /* Note: We DON'T decrease buffer->idx.  The main loop does it
-             * for us.  This is useful for preventing surprises if someone
-             * calls us through a Context lookup. */
-            return true;
-        }
-
-        return false;
+        return rb_reverse_chain_single_subst_apply(c, (const char*)this, -1);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        if (!(coverage.sanitize(c, this) && backtrack.sanitize(c, this)))
-            return false;
-        const OffsetArrayOf<Coverage> &lookahead = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-        if (!lookahead.sanitize(c, this))
-            return false;
-        const ArrayOf<HBGlyphID> &substitute = StructAfter<ArrayOf<HBGlyphID>>(lookahead);
-        return substitute.sanitize(c);
+        return format != 1 || coverage.sanitize(c, this);
     }
 
 protected:
-    HBUINT16 format;                    /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage;        /* Offset to Coverage table--from
-                                         * beginning of table */
-    OffsetArrayOf<Coverage> backtrack;  /* Array of coverage tables
-                                         * in backtracking sequence, in glyph
-                                         * sequence order */
-    OffsetArrayOf<Coverage> lookaheadX; /* Array of coverage tables
-                                         * in lookahead sequence, in glyph
-                                         * sequence order */
-    ArrayOf<HBGlyphID> substituteX;     /* Array of substitute
-                                         * GlyphIDs--ordered by Coverage Index */
-public:
-    DEFINE_SIZE_MIN(10);
-};
-
-struct ReverseChainSingleSubst
-{
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        ReverseChainSingleSubstFormat1 format1;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> coverage;
 };
 
 /*
@@ -294,7 +234,7 @@ struct SubstLookupSubTable
         case Extension:
             return u.extension.dispatch(c, rb_forward<Ts>(ds)...);
         case ReverseChainSingle:
-            return u.reverseChainContextSingle.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.reverseChainContextSingle, rb_forward<Ts>(ds)...);
         default:
             return c->default_return_value();
         }

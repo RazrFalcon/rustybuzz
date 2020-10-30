@@ -283,6 +283,8 @@ extern "C" {
 
     pub fn rb_ot_apply_context_get_lookup_props(ctx: *const rb_ot_apply_context_t) -> u32;
 
+    pub fn rb_ot_apply_context_get_nesting_level_left(ctx: *const rb_ot_apply_context_t) -> u32;
+
     pub fn rb_ot_apply_context_get_has_glyph_classes(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
 
     pub fn rb_ot_apply_context_get_auto_zwnj(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;

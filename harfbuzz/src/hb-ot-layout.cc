@@ -53,6 +53,7 @@ rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context
 unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context_t *c) { return c->table_index; }
 unsigned int   rb_ot_apply_context_get_lookup_index(const OT::rb_ot_apply_context_t *c) { return c->lookup_index; }
 unsigned int   rb_ot_apply_context_get_lookup_props(const OT::rb_ot_apply_context_t *c) { return c->lookup_props; }
+unsigned int   rb_ot_apply_context_get_nesting_level_left(const OT::rb_ot_apply_context_t *c) { return c->nesting_level_left; }
 rb_bool_t      rb_ot_apply_context_get_has_glyph_classes(const OT::rb_ot_apply_context_t *c) { return c->has_glyph_classes; }
 rb_bool_t      rb_ot_apply_context_get_auto_zwnj(const OT::rb_ot_apply_context_t *c) { return c->auto_zwnj; }
 rb_bool_t      rb_ot_apply_context_get_auto_zwj(const OT::rb_ot_apply_context_t *c) { return c->auto_zwj; }

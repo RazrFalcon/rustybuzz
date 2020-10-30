@@ -242,9 +242,7 @@ impl<'a> SkippyIter<'a> {
     pub fn set_match_func(&mut self, match_func: Option<&'a MatchFunc>) {
         self.match_func = match_func;
     }
-}
 
-impl SkippyIter<'_> {
     pub fn next(&mut self) -> bool {
         let value = self.input.get(self.input_idx).unwrap();
         let num_items = (self.input.len() - self.input_idx) as usize;

@@ -1,14 +1,16 @@
 use std::convert::TryFrom;
 
+use ttf_parser::parser::{LazyArray16, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
-use ttf_parser::parser::{LazyArray16, Stream, Offset16, Offsets16};
 
+use super::ggg::Coverage;
+use super::layout::{ApplyContext, WouldApplyContext, MAX_NESTING_LEVEL};
+use super::matching::{
+    match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
+};
+use super::Map;
 use crate::buffer::GlyphPropsFlags;
 use crate::unicode::GeneralCategory;
-use super::Map;
-use super::ggg::Coverage;
-use super::layout::{ApplyContext, WouldApplyContext};
-use super::matching::{match_input, match_glyph, Matched};
 
 #[derive(Clone, Copy, Debug)]
 enum SingleSubst<'a> {
@@ -472,7 +474,95 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+enum ReverseChainSingleSubst<'a> {
+    Format1 {
+        data: &'a [u8],
+        coverage: Coverage<'a>,
+        backtrack_coverages: LazyArray16<'a, u16>,
+        lookahead_coverages: LazyArray16<'a, u16>,
+        substitutes: LazyArray16<'a, GlyphId>,
+    },
+}
+
+impl<'a> ReverseChainSingleSubst<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let format: u16 = s.read()?;
+        Some(match format {
+            1 => {
+                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let backtrack_count = s.read::<u16>()?;
+                let backtrack_coverages = s.read_array16(backtrack_count)?;
+                let lookahead_count = s.read::<u16>()?;
+                let lookahead_coverages = s.read_array16(lookahead_count)?;
+                let substitute_count = s.read::<u16>()?;
+                let substitutes = s.read_array16(substitute_count)?;
+                Self::Format1 {
+                    data,
+                    coverage,
+                    backtrack_coverages,
+                    lookahead_coverages,
+                    substitutes,
+                }
+            }
+            _ => return None,
+        })
+    }
+
+    fn coverage(&self) -> &Coverage<'a> {
+        match self {
+            Self::Format1 { coverage, .. } => coverage,
+        }
+    }
+
+    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
+        let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
+        ctx.len() == 1 && self.coverage().get(glyph_id).is_some()
+    }
+
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+        // No chaining to this type.
+        if ctx.nesting_level_left() != MAX_NESTING_LEVEL {
+            return None;
+        }
+
+        let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        match self {
+            Self::Format1 {
+                data,
+                coverage,
+                backtrack_coverages,
+                lookahead_coverages,
+                substitutes,
+            } => {
+                let index = coverage.get(glyph_id)?;
+                if index >= substitutes.len() {
+                    return None;
+                }
+
+                let subst = substitutes.get(index)?;
+                let match_func = &match_coverage(data);
+                if let Some(start_idx) = match_backtrack(ctx, *backtrack_coverages, match_func) {
+                    if let Some(end_idx) = match_lookahead(ctx, *lookahead_coverages, match_func, 1) {
+                        ctx.buffer_mut().unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                        ctx.replace_glyph_inplace(subst);
+
+                        // Note: We DON'T decrease buffer.idx.  The main loop does it
+                        // for us.  This is useful for preventing surprises if someone
+                        // calls us through a Context lookup.
+                        return Some(());
+                    }
+                }
+
+                None
+            }
+        }
+    }
+}
+
 make_ffi_funcs!(SingleSubst, rb_single_subst_would_apply, rb_single_subst_apply);
 make_ffi_funcs!(MultipleSubst, rb_multiple_subst_would_apply, rb_multiple_subst_apply);
 make_ffi_funcs!(AlternateSubst, rb_alternate_subst_would_apply, rb_alternate_subst_apply);
 make_ffi_funcs!(LigatureSubst, rb_ligature_subst_would_apply, rb_ligature_subst_apply);
+make_ffi_funcs!(ReverseChainSingleSubst, rb_reverse_chain_single_subst_would_apply, rb_reverse_chain_single_subst_apply);

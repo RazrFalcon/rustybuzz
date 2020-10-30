@@ -540,59 +540,6 @@ struct rb_get_subtables_context_t : rb_dispatch_context_t<rb_get_subtables_conte
     array_t &array;
 };
 
-typedef bool (*match_func_t)(rb_codepoint_t glyph_id, const HBUINT16 &value, const void *data);
-struct ContextApplyFuncs
-{
-    match_func_t match;
-};
-
-static inline bool match_coverage(rb_codepoint_t glyph_id, const HBUINT16 &value, const void *data)
-{
-    const OffsetTo<Coverage> &coverage = (const OffsetTo<Coverage> &)value;
-    return (data + coverage).get_coverage(glyph_id) != NOT_COVERED;
-}
-
-static inline bool match_backtrack(rb_ot_apply_context_t *c,
-                                   unsigned int count,
-                                   const HBUINT16 backtrack[],
-                                   match_func_t match_func,
-                                   const void *match_data,
-                                   unsigned int *match_start)
-{
-    rb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_context;
-    skippy_iter.reset(rb_buffer_get_backtrack_len(c->buffer), count);
-    skippy_iter.set_match_func(match_func, match_data, backtrack);
-
-    for (unsigned int i = 0; i < count; i++)
-        if (!skippy_iter.prev())
-            return false;
-
-    *match_start = skippy_iter.idx;
-
-    return true;
-}
-
-static inline bool match_lookahead(rb_ot_apply_context_t *c,
-                                   unsigned int count,
-                                   const HBUINT16 lookahead[],
-                                   match_func_t match_func,
-                                   const void *match_data,
-                                   unsigned int offset,
-                                   unsigned int *end_index)
-{
-    rb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_context;
-    skippy_iter.reset(rb_buffer_get_index(c->buffer) + offset - 1, count);
-    skippy_iter.set_match_func(match_func, match_data, lookahead);
-
-    for (unsigned int i = 0; i < count; i++)
-        if (!skippy_iter.next())
-            return false;
-
-    *end_index = skippy_iter.idx + 1;
-
-    return true;
-}
-
 /* Contextual lookups */
 
 extern "C" {
@@ -1017,6 +964,7 @@ RB_EXTERN rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_app
 RB_EXTERN unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN unsigned int   rb_ot_apply_context_get_lookup_index(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN unsigned int   rb_ot_apply_context_get_lookup_props(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN unsigned int   rb_ot_apply_context_get_nesting_level_left(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_get_has_glyph_classes(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_get_auto_zwnj(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_get_auto_zwj(const OT::rb_ot_apply_context_t *c);

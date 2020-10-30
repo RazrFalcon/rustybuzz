@@ -6,6 +6,8 @@ use crate::{ffi, Mask};
 use crate::buffer::{Buffer, GlyphPropsFlags, GlyphInfo};
 use super::ggg::LookupFlags;
 
+pub const MAX_NESTING_LEVEL: usize = 6;
+
 pub const MAX_CONTEXT_LENGTH: usize = 64;
 
 pub struct WouldApplyContext(NonNull<ffi::rb_would_apply_context_t>);
@@ -57,6 +59,10 @@ impl ApplyContext {
 
     pub fn lookup_props(&self) -> u32 {
         unsafe { ffi::rb_ot_apply_context_get_lookup_props(self.0.as_ptr()) }
+    }
+
+    pub fn nesting_level_left(&self) -> usize {
+        unsafe { ffi::rb_ot_apply_context_get_nesting_level_left(self.0.as_ptr()) as usize }
     }
 
     pub fn auto_zwnj(&self) -> bool {
