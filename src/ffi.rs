@@ -273,7 +273,9 @@ extern "C" {
 
     pub fn rb_would_apply_context_get_zero_context(ctx: *const rb_would_apply_context_t) -> rb_bool_t;
 
-    pub fn rb_ot_apply_context_get_buffer(ctx: *const rb_ot_apply_context_t) -> *mut rb_buffer_t;
+    pub fn rb_ot_apply_context_get_font(ctx: *const rb_ot_apply_context_t) -> *const rb_font_t;
+
+    pub fn rb_ot_apply_context_get_buffer(ctx: *mut rb_ot_apply_context_t) -> *mut rb_buffer_t;
 
     pub fn rb_ot_apply_context_get_direction(ctx: *const rb_ot_apply_context_t) -> rb_direction_t;
 

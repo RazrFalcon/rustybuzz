@@ -32,16 +32,16 @@
 #include "hb-ot-layout-gsubgpos.hh"
 
 extern "C" {
-RB_EXTERN rb_bool_t rb_single_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_single_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_multiple_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_multiple_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_alternate_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_alternate_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_ligature_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_ligature_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_reverse_chain_single_subst_would_apply(const OT::rb_would_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_reverse_chain_single_subst_apply(OT::rb_ot_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_single_subst_would_apply(const char *data, OT::rb_would_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_single_subst_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_multiple_subst_would_apply(const char *data, OT::rb_would_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_multiple_subst_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_alternate_subst_would_apply(const char *data, OT::rb_would_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_alternate_subst_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_ligature_subst_would_apply(const char *data, OT::rb_would_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_ligature_subst_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_reverse_chain_single_subst_would_apply(const char *data, OT::rb_would_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_reverse_chain_single_subst_apply(const char *data, OT::rb_ot_apply_context_t *c);
 }
 
 namespace OT {
@@ -55,12 +55,12 @@ struct SingleSubst
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return rb_single_subst_would_apply(c, (const char*)this, -1);
+        return rb_single_subst_would_apply((const char*)this, c);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        return rb_single_subst_apply(c, (const char*)this, -1);
+        return rb_single_subst_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -82,12 +82,12 @@ struct MultipleSubst
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return rb_multiple_subst_would_apply(c, (const char*)this, -1);
+        return rb_multiple_subst_would_apply((const char*)this, c);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        return rb_multiple_subst_apply(c, (const char*)this, -1);
+        return rb_multiple_subst_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -109,12 +109,12 @@ struct AlternateSubst
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return rb_alternate_subst_would_apply(c, (const char*)this, -1);
+        return rb_alternate_subst_would_apply((const char*)this, c);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        return rb_alternate_subst_apply(c, (const char*)this, -1);
+        return rb_alternate_subst_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -136,12 +136,12 @@ struct LigatureSubst
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return rb_ligature_subst_would_apply(c, (const char*)this, -1);
+        return rb_ligature_subst_would_apply((const char*)this, c);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        return rb_ligature_subst_apply(c, (const char*)this, -1);
+        return rb_ligature_subst_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -177,12 +177,12 @@ struct ReverseChainSingleSubst
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return rb_reverse_chain_single_subst_would_apply(c, (const char*)this, -1);
+        return rb_reverse_chain_single_subst_would_apply((const char*)this, c);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        return rb_reverse_chain_single_subst_apply(c, (const char*)this, -1);
+        return rb_reverse_chain_single_subst_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const

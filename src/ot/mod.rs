@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 pub mod feature;
 mod fallback;
 mod map;

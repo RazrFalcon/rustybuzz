@@ -614,5 +614,5 @@ fn apply_lookup(
     buffer.move_to(end);
 }
 
-make_ffi_funcs!(ContextLookup, rb_context_lookup_would_apply, rb_context_lookup_apply);
-make_ffi_funcs!(ChainContextLookup, rb_chain_context_lookup_would_apply, rb_chain_context_lookup_apply);
+make_ffi_funcs!(ContextLookup, rb_context_lookup_apply, rb_context_lookup_would_apply);
+make_ffi_funcs!(ChainContextLookup, rb_chain_context_lookup_apply, rb_chain_context_lookup_would_apply);

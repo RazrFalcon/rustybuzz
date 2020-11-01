@@ -564,8 +564,8 @@ impl<'a> ReverseChainSingleSubst<'a> {
     }
 }
 
-make_ffi_funcs!(SingleSubst, rb_single_subst_would_apply, rb_single_subst_apply);
-make_ffi_funcs!(MultipleSubst, rb_multiple_subst_would_apply, rb_multiple_subst_apply);
-make_ffi_funcs!(AlternateSubst, rb_alternate_subst_would_apply, rb_alternate_subst_apply);
-make_ffi_funcs!(LigatureSubst, rb_ligature_subst_would_apply, rb_ligature_subst_apply);
-make_ffi_funcs!(ReverseChainSingleSubst, rb_reverse_chain_single_subst_would_apply, rb_reverse_chain_single_subst_apply);
+make_ffi_funcs!(SingleSubst, rb_single_subst_apply, rb_single_subst_would_apply);
+make_ffi_funcs!(MultipleSubst, rb_multiple_subst_apply, rb_multiple_subst_would_apply);
+make_ffi_funcs!(AlternateSubst, rb_alternate_subst_apply, rb_alternate_subst_would_apply);
+make_ffi_funcs!(LigatureSubst, rb_ligature_subst_apply, rb_ligature_subst_would_apply);
+make_ffi_funcs!(ReverseChainSingleSubst, rb_reverse_chain_single_subst_apply, rb_reverse_chain_single_subst_would_apply);

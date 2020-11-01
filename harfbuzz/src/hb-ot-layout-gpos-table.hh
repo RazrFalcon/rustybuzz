@@ -31,6 +31,11 @@
 
 #include "hb-ot-layout-gsubgpos.hh"
 
+extern "C" {
+RB_EXTERN rb_bool_t rb_single_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
+}
+
 namespace OT {
 
 struct MarkArray;
@@ -58,47 +63,6 @@ typedef UnsizedArrayOf<Value> ValueRecord;
 
 struct ValueFormat : HBUINT16
 {
-    enum Flags {
-        xPlacement = 0x0001u, /* Includes horizontal adjustment for placement */
-        yPlacement = 0x0002u, /* Includes vertical adjustment for placement */
-        xAdvance = 0x0004u,   /* Includes horizontal adjustment for advance */
-        yAdvance = 0x0008u,   /* Includes vertical adjustment for advance */
-        xPlaDevice = 0x0010u, /* Includes horizontal Device table for placement */
-        yPlaDevice = 0x0020u, /* Includes vertical Device table for placement */
-        xAdvDevice = 0x0040u, /* Includes horizontal Device table for advance */
-        yAdvDevice = 0x0080u, /* Includes vertical Device table for advance */
-        ignored = 0x0F00u,    /* Was used in TrueType Open for MM fonts */
-        reserved = 0xF000u,   /* For future use */
-
-        devices = 0x00F0u /* Mask for having any Device table */
-    };
-
-/* All fields are options.  Only those available advance the value pointer. */
-#if 0
-  HBINT16		xPlacement;		/* Horizontal adjustment for
-                     * placement--in design units */
-  HBINT16		yPlacement;		/* Vertical adjustment for
-                     * placement--in design units */
-  HBINT16		xAdvance;		/* Horizontal adjustment for
-                     * advance--in design units (only used
-                     * for horizontal writing) */
-  HBINT16		yAdvance;		/* Vertical adjustment for advance--in
-                     * design units (only used for vertical
-                     * writing) */
-  OffsetTo<Device>	xPlaDevice;	/* Offset to Device table for
-                     * horizontal placement--measured from
-                     * beginning of PosTable (may be NULL) */
-  OffsetTo<Device>	yPlaDevice;	/* Offset to Device table for vertical
-                     * placement--measured from beginning
-                     * of PosTable (may be NULL) */
-  OffsetTo<Device>	xAdvDevice;	/* Offset to Device table for
-                     * horizontal advance--measured from
-                     * beginning of PosTable (may be NULL) */
-  OffsetTo<Device>	yAdvDevice;	/* Offset to Device table for vertical
-                     * advance--measured from beginning of
-                     * PosTable (may be NULL) */
-#endif
-
     unsigned int get_len() const
     {
         return rb_popcount((unsigned int)*this);
@@ -109,155 +73,9 @@ struct ValueFormat : HBUINT16
     }
 
     bool
-    apply_value(rb_ot_apply_context_t *c, const void *base, const Value *values, rb_glyph_position_t &glyph_pos) const
+    apply_value(rb_ot_apply_context_t *c, const void *base, const Value *values, unsigned int idx) const
     {
-        bool ret = false;
-        unsigned int format = *this;
-        if (!format)
-            return ret;
-
-        rb_font_t *font = c->font;
-        bool horizontal = RB_DIRECTION_IS_HORIZONTAL(c->direction);
-
-        if (format & xPlacement)
-            glyph_pos.x_offset += get_short(values++, &ret);
-        if (format & yPlacement)
-            glyph_pos.y_offset += get_short(values++, &ret);
-        if (format & xAdvance) {
-            if (likely(horizontal))
-                glyph_pos.x_advance += get_short(values, &ret);
-            values++;
-        }
-        /* y_advance values grow downward but font-space grows upward, hence negation */
-        if (format & yAdvance) {
-            if (unlikely(!horizontal))
-                glyph_pos.y_advance -= get_short(values, &ret);
-            values++;
-        }
-
-        if (!has_device())
-            return ret;
-
-        bool use_x_device = rb_font_get_ppem_x(font) || rb_font_get_num_coords(font);
-        bool use_y_device = rb_font_get_ppem_y(font) || rb_font_get_num_coords(font);
-
-        if (!use_x_device && !use_y_device)
-            return ret;
-
-        /* pixel -> fractional pixel */
-        if (format & xPlaDevice) {
-            if (use_x_device)
-                glyph_pos.x_offset += (base + get_device(values, &ret)).get_x_delta(font);
-            values++;
-        }
-        if (format & yPlaDevice) {
-            if (use_y_device)
-                glyph_pos.y_offset += (base + get_device(values, &ret)).get_y_delta(font);
-            values++;
-        }
-        if (format & xAdvDevice) {
-            if (horizontal && use_x_device)
-                glyph_pos.x_advance += (base + get_device(values, &ret)).get_x_delta(font);
-            values++;
-        }
-        if (format & yAdvDevice) {
-            /* y_advance values grow downward but font-space grows upward, hence negation */
-            if (!horizontal && use_y_device)
-                glyph_pos.y_advance -= (base + get_device(values, &ret)).get_y_delta(font);
-            values++;
-        }
-        return ret;
-    }
-
-private:
-    bool sanitize_value_devices(rb_sanitize_context_t *c, const void *base, const Value *values) const
-    {
-        unsigned int format = *this;
-
-        if (format & xPlacement)
-            values++;
-        if (format & yPlacement)
-            values++;
-        if (format & xAdvance)
-            values++;
-        if (format & yAdvance)
-            values++;
-
-        if ((format & xPlaDevice) && !get_device(values++).sanitize(c, base))
-            return false;
-        if ((format & yPlaDevice) && !get_device(values++).sanitize(c, base))
-            return false;
-        if ((format & xAdvDevice) && !get_device(values++).sanitize(c, base))
-            return false;
-        if ((format & yAdvDevice) && !get_device(values++).sanitize(c, base))
-            return false;
-
-        return true;
-    }
-
-    static inline OffsetTo<Device> &get_device(Value *value)
-    {
-        return *static_cast<OffsetTo<Device> *>(value);
-    }
-    static inline const OffsetTo<Device> &get_device(const Value *value, bool *worked = nullptr)
-    {
-        if (worked)
-            *worked |= bool(*value);
-        return *static_cast<const OffsetTo<Device> *>(value);
-    }
-
-    static inline const HBINT16 &get_short(const Value *value, bool *worked = nullptr)
-    {
-        if (worked)
-            *worked |= bool(*value);
-        return *reinterpret_cast<const HBINT16 *>(value);
-    }
-
-public:
-    bool has_device() const
-    {
-        unsigned int format = *this;
-        return (format & devices) != 0;
-    }
-
-    bool sanitize_value(rb_sanitize_context_t *c, const void *base, const Value *values) const
-    {
-        return c->check_range(values, get_size()) && (!has_device() || sanitize_value_devices(c, base, values));
-    }
-
-    bool sanitize_values(rb_sanitize_context_t *c, const void *base, const Value *values, unsigned int count) const
-    {
-        unsigned int len = get_len();
-
-        if (!c->check_range(values, count, get_size()))
-            return false;
-
-        if (!has_device())
-            return true;
-
-        for (unsigned int i = 0; i < count; i++) {
-            if (!sanitize_value_devices(c, base, values))
-                return false;
-            values += len;
-        }
-
-        return true;
-    }
-
-    /* Just sanitize referenced Device tables.  Doesn't check the values themselves. */
-    bool sanitize_values_stride_unsafe(
-        rb_sanitize_context_t *c, const void *base, const Value *values, unsigned int count, unsigned int stride) const
-    {
-        if (!has_device())
-            return true;
-
-        for (unsigned int i = 0; i < count; i++) {
-            if (!sanitize_value_devices(c, base, values))
-                return false;
-            values += stride;
-        }
-
-        return true;
+        return rb_value_format_apply((unsigned int)*this, c, (const char*)base, (const char*)values, idx);
     }
 };
 
@@ -501,121 +319,26 @@ struct MarkArray : ArrayOf<MarkRecord> /* Array of MarkRecords--in Coverage orde
 
 /* Lookups */
 
-struct SinglePosFormat1
-{
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        rb_buffer_t *buffer = c->buffer;
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        valueFormat.apply_value(c, this, values, *rb_buffer_get_cur_pos(buffer));
-
-        rb_buffer_set_index(buffer, rb_buffer_get_index(buffer) + 1);
-        return true;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this) && coverage.sanitize(c, this) && valueFormat.sanitize_value(c, this, values);
-    }
-
-protected:
-    HBUINT16 format;             /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage; /* Offset to Coverage table--from
-                                  * beginning of subtable */
-    ValueFormat valueFormat;     /* Defines the types of data in the
-                                  * ValueRecord */
-    ValueRecord values;          /* Defines positioning
-                                  * value(s)--applied to all glyphs in
-                                  * the Coverage table */
-public:
-    DEFINE_SIZE_ARRAY(6, values);
-};
-
-struct SinglePosFormat2
-{
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        rb_buffer_t *buffer = c->buffer;
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        if (likely(index >= valueCount))
-            return false;
-
-        valueFormat.apply_value(c, this, &values[index * valueFormat.get_len()], *rb_buffer_get_cur_pos(buffer));
-
-        rb_buffer_set_index(buffer, rb_buffer_get_index(buffer) + 1);
-        return true;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this) && coverage.sanitize(c, this) &&
-               valueFormat.sanitize_values(c, this, values, valueCount);
-    }
-
-protected:
-    HBUINT16 format;             /* Format identifier--format = 2 */
-    OffsetTo<Coverage> coverage; /* Offset to Coverage table--from
-                                  * beginning of subtable */
-    ValueFormat valueFormat;     /* Defines the types of data in the
-                                  * ValueRecord */
-    HBUINT16 valueCount;         /* Number of ValueRecords */
-    ValueRecord values;          /* Array of ValueRecords--positioning
-                                  * values applied to glyphs */
-public:
-    DEFINE_SIZE_ARRAY(8, values);
-};
-
 struct SinglePos
 {
-    template <typename Iterator, rb_requires(rb_is_iterator(Iterator))>
-    unsigned get_format(Iterator glyph_val_iter_pairs)
+    const Coverage &get_coverage() const
     {
-        rb_array_t<const Value> first_val_iter = rb_second(*glyph_val_iter_pairs);
-
-        for (const auto iter : glyph_val_iter_pairs)
-            for (const auto _ : rb_zip(iter.second, first_val_iter))
-                if (_.first != _.second)
-                    return 2;
-
-        return 1;
+        return this + coverage;
     }
 
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
+    bool apply(rb_ot_apply_context_t *c) const
     {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        case 2:
-            return c->dispatch(u.format2, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
+        return rb_single_pos_apply((const char*)this, c);
+    }
+
+    bool sanitize(rb_sanitize_context_t *c) const
+    {
+        return (format != 1 && format != 2) || coverage.sanitize(c, this);
     }
 
 protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        SinglePosFormat1 format1;
-        SinglePosFormat2 format2;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> coverage;
 };
 
 struct PairValueRecord
@@ -652,8 +375,8 @@ struct PairSet
             rb_bsearch(rb_buffer_get_glyph_infos(buffer)[pos].codepoint, &firstPairValueRecord, len, record_size);
         if (record) {
             /* Note the intentional use of "|" instead of short-circuit "||". */
-            if (valueFormats[0].apply_value(c, this, &record->values[0], *rb_buffer_get_cur_pos(buffer)) |
-                valueFormats[1].apply_value(c, this, &record->values[len1], rb_buffer_get_glyph_positions(buffer)[pos]))
+            if (valueFormats[0].apply_value(c, this, &record->values[0], rb_buffer_get_index(buffer)) |
+                valueFormats[1].apply_value(c, this, &record->values[len1], pos))
                 rb_buffer_unsafe_to_break(buffer, rb_buffer_get_index(buffer), pos + 1);
             if (len2)
                 pos++;
@@ -672,16 +395,8 @@ struct PairSet
 
     bool sanitize(rb_sanitize_context_t *c, const sanitize_closure_t *closure) const
     {
-        if (!(c->check_struct(this) &&
-              c->check_range(&firstPairValueRecord, len, HBUINT16::static_size, closure->stride)))
-            return false;
-
-        unsigned int count = len;
-        const PairValueRecord *record = &firstPairValueRecord;
-        return closure->valueFormats[0].sanitize_values_stride_unsafe(
-                   c, this, &record->values[0], count, closure->stride) &&
-               closure->valueFormats[1].sanitize_values_stride_unsafe(
-                   c, this, &record->values[closure->len1], count, closure->stride);
+        return c->check_struct(this) &&
+            c->check_range(&firstPairValueRecord, len, HBUINT16::static_size, closure->stride);
     }
 
 protected:
@@ -774,8 +489,8 @@ struct PairPosFormat2
 
         const Value *v = &values[record_len * (klass1 * class2Count + klass2)];
         /* Note the intentional use of "|" instead of short-circuit "||". */
-        if (valueFormat1.apply_value(c, this, v, *rb_buffer_get_cur_pos(buffer)) |
-            valueFormat2.apply_value(c, this, v + len1, rb_buffer_get_glyph_positions(buffer)[skippy_iter.idx]))
+        if (valueFormat1.apply_value(c, this, v, rb_buffer_get_index(buffer)) |
+            valueFormat2.apply_value(c, this, v + len1, skippy_iter.idx))
             rb_buffer_unsafe_to_break(buffer, rb_buffer_get_index(buffer), skippy_iter.idx + 1);
 
         rb_buffer_set_index(buffer, skippy_iter.idx);
@@ -791,14 +506,9 @@ struct PairPosFormat2
               classDef2.sanitize(c, this)))
             return false;
 
-        unsigned int len1 = valueFormat1.get_len();
-        unsigned int len2 = valueFormat2.get_len();
-        unsigned int stride = len1 + len2;
         unsigned int record_size = valueFormat1.get_size() + valueFormat2.get_size();
         unsigned int count = (unsigned int)class1Count * (unsigned int)class2Count;
-        return c->check_range((const void *)values, count, record_size) &&
-               valueFormat1.sanitize_values_stride_unsafe(c, this, &values[0], count, stride) &&
-               valueFormat2.sanitize_values_stride_unsafe(c, this, &values[len1], count, stride);
+        return c->check_range((const void *)values, count, record_size);
     }
 
 protected:
@@ -1380,7 +1090,7 @@ struct PosLookupSubTable
     {
         switch (lookup_type) {
         case Single:
-            return u.single.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.single, rb_forward<Ts>(ds)...);
         case Pair:
             return u.pair.dispatch(c, rb_forward<Ts>(ds)...);
         case Cursive:

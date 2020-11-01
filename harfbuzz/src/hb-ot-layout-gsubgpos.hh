@@ -543,10 +543,10 @@ struct rb_get_subtables_context_t : rb_dispatch_context_t<rb_get_subtables_conte
 /* Contextual lookups */
 
 extern "C" {
-RB_EXTERN rb_bool_t rb_context_lookup_would_apply(const rb_would_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_context_lookup_apply(rb_ot_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_chain_context_lookup_would_apply(const rb_would_apply_context_t *c, const char *data, unsigned int length);
-RB_EXTERN rb_bool_t rb_chain_context_lookup_apply(rb_ot_apply_context_t *c, const char *data, unsigned int length);
+RB_EXTERN rb_bool_t rb_context_lookup_would_apply(const char *data, const rb_would_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_context_lookup_apply(const char *data, rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_chain_context_lookup_would_apply(const char *data, const rb_would_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_chain_context_lookup_apply(const char *data, rb_ot_apply_context_t *c);
 }
 
 struct ContextFormat1Or2
@@ -608,12 +608,12 @@ struct Context
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return rb_context_lookup_would_apply(c, (const char*)this, -1);
+        return rb_context_lookup_would_apply((const char*)this, c);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        return rb_context_lookup_apply(c, (const char*)this, -1);
+        return rb_context_lookup_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -686,12 +686,12 @@ struct ChainContext
 
     bool would_apply(rb_would_apply_context_t *c) const
     {
-        return rb_chain_context_lookup_would_apply(c, (const char*)this, -1);
+        return rb_chain_context_lookup_would_apply((const char*)this, c);
     }
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        return rb_chain_context_lookup_apply(c, (const char*)this, -1);
+        return rb_chain_context_lookup_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
@@ -959,7 +959,8 @@ extern "C" {
 RB_EXTERN unsigned int   rb_would_apply_context_get_len(const OT::rb_would_apply_context_t *c);
 RB_EXTERN rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_apply_context_t *c, unsigned int index);
 RB_EXTERN rb_bool_t      rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t *c);
-RB_EXTERN rb_buffer_t   *rb_ot_apply_context_get_buffer(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN const rb_font_t *rb_ot_apply_context_get_font(const OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_buffer_t   *rb_ot_apply_context_get_buffer(OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_direction_t rb_ot_apply_context_get_direction(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context_t *c);

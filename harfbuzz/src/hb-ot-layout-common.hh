@@ -1102,19 +1102,19 @@ public:
  */
 
 extern "C" {
-RB_EXTERN rb_position_t rb_device_get_x_delta(const rb_font_t *font, const char *data, unsigned int length);
-RB_EXTERN rb_position_t rb_device_get_y_delta(const rb_font_t *font, const char *data, unsigned int length);
+RB_EXTERN rb_position_t rb_device_get_x_delta(const char *data, const rb_font_t *font);
+RB_EXTERN rb_position_t rb_device_get_y_delta(const char *data, const rb_font_t *font);
 }
 
 struct Device
 {
     rb_position_t get_x_delta(rb_font_t *font) const
     {
-        return rb_device_get_x_delta(font, (const char*)this, -1);
+        return rb_device_get_x_delta((const char*)this, font);
     }
     rb_position_t get_y_delta(rb_font_t *font) const
     {
-        return rb_device_get_y_delta(font, (const char*)this, -1);
+        return rb_device_get_y_delta((const char*)this, font);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
