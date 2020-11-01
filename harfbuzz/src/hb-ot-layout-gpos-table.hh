@@ -144,28 +144,26 @@ struct ValueFormat : HBUINT16
         if (!use_x_device && !use_y_device)
             return ret;
 
-        const VariationStore &store = c->var_store;
-
         /* pixel -> fractional pixel */
         if (format & xPlaDevice) {
             if (use_x_device)
-                glyph_pos.x_offset += (base + get_device(values, &ret)).get_x_delta(font, store);
+                glyph_pos.x_offset += (base + get_device(values, &ret)).get_x_delta(font);
             values++;
         }
         if (format & yPlaDevice) {
             if (use_y_device)
-                glyph_pos.y_offset += (base + get_device(values, &ret)).get_y_delta(font, store);
+                glyph_pos.y_offset += (base + get_device(values, &ret)).get_y_delta(font);
             values++;
         }
         if (format & xAdvDevice) {
             if (horizontal && use_x_device)
-                glyph_pos.x_advance += (base + get_device(values, &ret)).get_x_delta(font, store);
+                glyph_pos.x_advance += (base + get_device(values, &ret)).get_x_delta(font);
             values++;
         }
         if (format & yAdvDevice) {
             /* y_advance values grow downward but font-space grows upward, hence negation */
             if (!horizontal && use_y_device)
-                glyph_pos.y_advance -= (base + get_device(values, &ret)).get_y_delta(font, store);
+                glyph_pos.y_advance -= (base + get_device(values, &ret)).get_y_delta(font);
             values++;
         }
         return ret;
@@ -330,9 +328,9 @@ struct AnchorFormat3
         *y = (float)yCoordinate;
 
         if (rb_font_get_ppem_x(font) || rb_font_get_num_coords(font))
-            *x += (this + xDeviceTable).get_x_delta(font, c->var_store);
+            *x += (this + xDeviceTable).get_x_delta(font);
         if (rb_font_get_ppem_y(font) || rb_font_get_num_coords(font))
-            *y += (this + yDeviceTable).get_y_delta(font, c->var_store);
+            *y += (this + yDeviceTable).get_y_delta(font);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const

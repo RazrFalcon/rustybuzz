@@ -252,3 +252,141 @@ impl<'a> ClassDef<'a> {
         class.unwrap_or(GlyphClass(0))
     }
 }
+
+/// A device table.
+///
+/// https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#device-and-variationindex-tables
+#[derive(Clone, Copy, Debug)]
+enum Device<'a> {
+    Hinting(HintingDevice<'a>),
+    Variation(VariationDevice),
+}
+
+impl<'a> Device<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let first = s.read::<u16>()?;
+        let second = s.read::<u16>()?;
+        let format = s.read::<u16>()?;
+        Some(match format {
+            1..=3 => {
+                let start_size = first;
+                let end_size = second;
+                let count = 1 + (end_size - start_size) >> (4 - format);
+                let delta_values = s.read_array16(count)?;
+                Self::Hinting(HintingDevice {
+                    start_size,
+                    end_size,
+                    delta_format: format,
+                    delta_values,
+                })
+            }
+            0x8000 => Self::Variation(VariationDevice {
+                outer_index: first,
+                inner_index: second,
+            }),
+            _ => return None,
+        })
+    }
+
+    fn get_x_delta(&self, font: &Font) -> Option<i32> {
+        match self {
+            Self::Hinting(hinting) => hinting.get_x_delta(font),
+            Self::Variation(variation) => variation.get_x_delta(font),
+        }
+    }
+
+    fn get_y_delta(&self, font: &Font) -> Option<i32> {
+        match self {
+            Self::Hinting(hinting) => hinting.get_y_delta(font),
+            Self::Variation(variation) => variation.get_y_delta(font),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct HintingDevice<'a> {
+    start_size: u16,
+    end_size: u16,
+    delta_format: u16,
+    delta_values: LazyArray16<'a, u16>,
+}
+
+impl HintingDevice<'_> {
+    fn get_x_delta(&self, font: &Font) -> Option<i32> {
+        let ppem = font.pixels_per_em().map(|(x, _)| x)?;
+        let scale = font.units_per_em();
+        self.get_delta(ppem, scale)
+    }
+
+    fn get_y_delta(&self, font: &Font) -> Option<i32> {
+        let ppem = font.pixels_per_em().map(|(_, y)| y)?;
+        let scale = font.units_per_em();
+        self.get_delta(ppem, scale)
+    }
+
+    fn get_delta(&self, ppem: u16, scale: i32) -> Option<i32> {
+        let f = self.delta_format;
+        debug_assert!(matches!(f, 1..=3));
+
+        if ppem == 0 || ppem < self.start_size || ppem > self.end_size {
+            return None;
+        }
+
+        let s = ppem - self.start_size;
+        let byte = self.delta_values.get(s >> (4 - f)).unwrap();
+        let bits = byte >> (16 - (((s & ((1 << (4 - f)) - 1)) + 1) << f));
+        let mask = 0xFFFF >> (16 - (1 << f));
+
+        let mut delta = i64::from(bits & mask);
+        if delta >= i64::from(mask + 1 >> 1) {
+            delta -= i64::from(mask + 1);
+        }
+
+        i32::try_from(delta * i64::from(scale) / i64::from(ppem)).ok()
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct VariationDevice {
+    outer_index: u16,
+    inner_index: u16,
+}
+
+impl VariationDevice {
+    fn get_x_delta(&self, font: &Font) -> Option<i32> {
+        self.get_delta(font)
+    }
+
+    fn get_y_delta(&self, font: &Font) -> Option<i32> {
+        self.get_delta(font)
+    }
+
+    fn get_delta(&self, font: &Font) -> Option<i32> {
+        font.ttfp_face
+            .gdef_variation_delta(self.outer_index, self.inner_index)
+            .and_then(|float| i32::try_num_from(float.round()))
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_device_get_x_delta(
+    font: *const crate::ffi::rb_font_t,
+    data_ptr: *const u8,
+    data_len: u32,
+) -> crate::ffi::rb_position_t {
+    let font = Font::from_ptr(font);
+    let data = unsafe { std::slice::from_raw_parts(data_ptr, data_len as usize) };
+    Device::parse(data).and_then(|table| table.get_x_delta(font)).unwrap_or(0)
+}
+
+#[no_mangle]
+pub extern "C" fn rb_device_get_y_delta(
+    font: *const crate::ffi::rb_font_t,
+    data_ptr: *const u8,
+    data_len: u32,
+) -> crate::ffi::rb_position_t {
+    let font = Font::from_ptr(font);
+    let data = unsafe { std::slice::from_raw_parts(data_ptr, data_len as usize) };
+    Device::parse(data).and_then(|table| table.get_y_delta(font)).unwrap_or(0)
+}

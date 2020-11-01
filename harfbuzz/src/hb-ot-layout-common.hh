@@ -1098,193 +1098,29 @@ public:
 };
 
 /*
- * Device Tables
+ * Device Table
  */
 
-struct HintingDevice
-{
-    friend struct Device;
-
-private:
-    rb_position_t get_x_delta(rb_font_t *font) const
-    {
-        return get_delta(rb_font_get_ppem_x(font), rb_font_get_upem(font));
-    }
-
-    rb_position_t get_y_delta(rb_font_t *font) const
-    {
-        return get_delta(rb_font_get_ppem_y(font), rb_font_get_upem(font));
-    }
-
-public:
-    unsigned int get_size() const
-    {
-        unsigned int f = deltaFormat;
-        if (unlikely(f < 1 || f > 3 || startSize > endSize))
-            return 3 * HBUINT16::static_size;
-        return HBUINT16::static_size * (4 + ((endSize - startSize) >> (4 - f)));
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this) && c->check_range(this, this->get_size());
-    }
-
-private:
-    int get_delta(unsigned int ppem, int scale) const
-    {
-        if (!ppem)
-            return 0;
-
-        int pixels = get_delta_pixels(ppem);
-
-        if (!pixels)
-            return 0;
-
-        return (int)(pixels * (int64_t)scale / ppem);
-    }
-    int get_delta_pixels(unsigned int ppem_size) const
-    {
-        unsigned int f = deltaFormat;
-        if (unlikely(f < 1 || f > 3))
-            return 0;
-
-        if (ppem_size < startSize || ppem_size > endSize)
-            return 0;
-
-        unsigned int s = ppem_size - startSize;
-
-        unsigned int byte = deltaValueZ[s >> (4 - f)];
-        unsigned int bits = (byte >> (16 - (((s & ((1 << (4 - f)) - 1)) + 1) << f)));
-        unsigned int mask = (0xFFFFu >> (16 - (1 << f)));
-
-        int delta = bits & mask;
-
-        if ((unsigned int)delta >= ((mask + 1) >> 1))
-            delta -= mask + 1;
-
-        return delta;
-    }
-
-protected:
-    HBUINT16 startSize;                   /* Smallest size to correct--in ppem */
-    HBUINT16 endSize;                     /* Largest size to correct--in ppem */
-    HBUINT16 deltaFormat;                 /* Format of DeltaValue array data: 1, 2, or 3
-                                           * 1	Signed 2-bit value, 8 values per uint16
-                                           * 2	Signed 4-bit value, 4 values per uint16
-                                           * 3	Signed 8-bit value, 2 values per uint16
-                                           */
-    UnsizedArrayOf<HBUINT16> deltaValueZ; /* Array of compressed data */
-public:
-    DEFINE_SIZE_ARRAY(6, deltaValueZ);
-};
-
-struct VariationDevice
-{
-    friend struct Device;
-
-private:
-    rb_position_t get_x_delta(rb_font_t *font, const VariationStore &store) const
-    {
-        return (rb_position_t)roundf(get_delta(font, store));
-    }
-
-    rb_position_t get_y_delta(rb_font_t *font, const VariationStore &store) const
-    {
-        return (rb_position_t)roundf(get_delta(font, store));
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this);
-    }
-
-private:
-    float get_delta(rb_font_t *font, const VariationStore &store) const
-    {
-        return store.get_delta(outerIndex, innerIndex, rb_font_get_coords(font), rb_font_get_num_coords(font));
-    }
-
-protected:
-    HBUINT16 outerIndex;
-    HBUINT16 innerIndex;
-    HBUINT16 deltaFormat; /* Format identifier for this table: 0x0x8000 */
-public:
-    DEFINE_SIZE_STATIC(6);
-};
-
-struct DeviceHeader
-{
-protected:
-    HBUINT16 reserved1;
-    HBUINT16 reserved2;
-
-public:
-    HBUINT16 format; /* Format identifier */
-public:
-    DEFINE_SIZE_STATIC(6);
-};
+extern "C" {
+RB_EXTERN rb_position_t rb_device_get_x_delta(const rb_font_t *font, const char *data, unsigned int length);
+RB_EXTERN rb_position_t rb_device_get_y_delta(const rb_font_t *font, const char *data, unsigned int length);
+}
 
 struct Device
 {
-    rb_position_t get_x_delta(rb_font_t *font, const VariationStore &store = Null(VariationStore)) const
+    rb_position_t get_x_delta(rb_font_t *font) const
     {
-        switch (u.b.format) {
-#ifndef RB_NO_HINTING
-        case 1:
-        case 2:
-        case 3:
-            return u.hinting.get_x_delta(font);
-#endif
-        case 0x8000:
-            return u.variation.get_x_delta(font, store);
-        default:
-            return 0;
-        }
+        return rb_device_get_x_delta(font, (const char*)this, -1);
     }
-    rb_position_t get_y_delta(rb_font_t *font, const VariationStore &store = Null(VariationStore)) const
+    rb_position_t get_y_delta(rb_font_t *font) const
     {
-        switch (u.b.format) {
-        case 1:
-        case 2:
-        case 3:
-#ifndef RB_NO_HINTING
-            return u.hinting.get_y_delta(font);
-#endif
-        case 0x8000:
-            return u.variation.get_y_delta(font, store);
-        default:
-            return 0;
-        }
+        return rb_device_get_y_delta(font, (const char*)this, -1);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        if (!u.b.format.sanitize(c))
-            return false;
-        switch (u.b.format) {
-#ifndef RB_NO_HINTING
-        case 1:
-        case 2:
-        case 3:
-            return u.hinting.sanitize(c);
-#endif
-        case 0x8000:
-            return u.variation.sanitize(c);
-        default:
-            return true;
-        }
+        return true;
     }
-
-protected:
-    union {
-        DeviceHeader b;
-        HintingDevice hinting;
-        VariationDevice variation;
-    } u;
-
-public:
-    DEFINE_SIZE_UNION(6, b);
 };
 
 } /* namespace OT */
