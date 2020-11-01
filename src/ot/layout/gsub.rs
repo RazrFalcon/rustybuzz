@@ -1,15 +1,17 @@
+//! The Glyph Subsitution Table.
+
 use std::convert::TryFrom;
 
 use ttf_parser::parser::{LazyArray16, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
-use super::ggg::Coverage;
-use super::layout::{ApplyContext, WouldApplyContext, MAX_NESTING_LEVEL};
+use super::common::Coverage;
 use super::matching::{
     match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
 };
-use super::Map;
+use super::{ApplyContext, WouldApplyContext, MAX_NESTING_LEVEL};
 use crate::buffer::GlyphPropsFlags;
+use crate::ot::Map;
 use crate::unicode::GeneralCategory;
 
 #[derive(Clone, Copy, Debug)]
@@ -62,7 +64,7 @@ impl<'a> SingleSubst<'a> {
             Self::Format1 { coverage, delta } => {
                 coverage.get(glyph_id)?;
                 // According to the Adobe Annotated OpenType Suite, result is always
-                // limited to 16bit.
+                // limited to 16bit, so we explicitly want to truncate.
                 GlyphId((i32::from(glyph_id.0) + i32::from(*delta)) as u16)
             }
             Self::Format2 { coverage, substitutes } => {
@@ -153,6 +155,7 @@ impl<'a> Sequence<'a> {
                 };
 
                 for (i, subst) in self.substitutes.into_iter().enumerate() {
+                    // Index is truncated to 4 bits anway, so we can safely cast to u8.
                     ctx.buffer_mut().cur_mut(0).set_lig_props_for_component(i as u8);
                     ctx.output_glyph_for_component(subst, class);
                 }
@@ -224,7 +227,7 @@ impl<'a> AlternateSet<'a> {
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let len = self.alternates.len() as u32;
+        let len = self.alternates.len();
         if len == 0 {
             return None;
         }
@@ -238,7 +241,7 @@ impl<'a> AlternateSet<'a> {
 
         // If alt_index is MAX_VALUE, randomize feature if it is the rand feature.
         if alt_index == Map::MAX_VALUE && ctx.random() {
-            alt_index = ctx.random_number() % len + 1;
+            alt_index = ctx.random_number() % u32::from(len) + 1;
         }
 
         let idx = u16::try_from(alt_index).ok()?.checked_sub(1)?;
@@ -347,11 +350,11 @@ impl<'a> Ligature<'a> {
     }
 
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        ctx.len() == 1 + self.components.len() as usize
+        ctx.len() == 1 + usize::from(self.components.len())
             && self.components
                 .into_iter()
                 .enumerate()
-                .all(|(i, comp)| ctx.glyph(1 + i) == comp as u32)
+                .all(|(i, comp)| ctx.glyph(1 + i) == u32::from(comp))
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
@@ -362,7 +365,7 @@ impl<'a> Ligature<'a> {
             Some(())
         } else {
             match_input(ctx, self.components, &match_glyph).map(|matched| {
-                let count = 1 + self.components.len() as usize;
+                let count = 1 + usize::from(self.components.len());
                 ligate(ctx, count, matched, self.lig_glyph);
             })
         }

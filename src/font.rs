@@ -87,7 +87,7 @@ impl Drop for Face<'_> {
 
 /// A font handle.
 pub struct Font<'a> {
-    ttfp_face: ttf_parser::Face<'a>,
+    pub(crate) ttfp_face: ttf_parser::Face<'a>,
     rb_face: Face<'a>,
     units_per_em: i32,
     pixels_per_em: Option<(u16, u16)>,
@@ -134,6 +134,11 @@ impl<'a> Font<'a> {
     #[inline]
     pub(crate) fn units_per_em(&self) -> i32 {
         self.units_per_em
+    }
+
+    #[inline]
+    pub(crate) fn pixels_per_em(&self) -> Option<(u16, u16)> {
+        self.pixels_per_em
     }
 
     /// Sets pixels per EM.

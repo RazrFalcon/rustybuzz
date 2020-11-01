@@ -275,6 +275,8 @@ extern "C" {
 
     pub fn rb_ot_apply_context_get_buffer(ctx: *const rb_ot_apply_context_t) -> *mut rb_buffer_t;
 
+    pub fn rb_ot_apply_context_get_direction(ctx: *const rb_ot_apply_context_t) -> rb_direction_t;
+
     pub fn rb_ot_apply_context_get_lookup_mask(ctx: *const rb_ot_apply_context_t) -> rb_mask_t;
 
     pub fn rb_ot_apply_context_get_table_index(ctx: *const rb_ot_apply_context_t) -> u32;

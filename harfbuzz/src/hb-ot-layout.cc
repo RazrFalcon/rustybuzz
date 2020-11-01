@@ -49,6 +49,7 @@ unsigned int   rb_would_apply_context_get_len(const OT::rb_would_apply_context_t
 rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_apply_context_t *c, unsigned int index) { return c->glyphs[index]; }
 rb_bool_t      rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t *c) { return (rb_bool_t)c->zero_context; }
 rb_buffer_t   *rb_ot_apply_context_get_buffer(const OT::rb_ot_apply_context_t *c) { return c->buffer; }
+rb_direction_t rb_ot_apply_context_get_direction(const OT::rb_ot_apply_context_t *c) { return c->direction; }
 rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context_t *c) { return c->lookup_mask; }
 unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context_t *c) { return c->table_index; }
 unsigned int   rb_ot_apply_context_get_lookup_index(const OT::rb_ot_apply_context_t *c) { return c->lookup_index; }

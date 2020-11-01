@@ -1,12 +1,14 @@
+//! Matching of glyph patterns.
+
 use std::convert::TryFrom;
 
-use ttf_parser::GlyphId;
 use ttf_parser::parser::LazyArray16;
+use ttf_parser::GlyphId;
 
-use crate::Mask;
+use super::common::{ClassDef, Coverage, GlyphClass};
+use super::{ApplyContext, WouldApplyContext, MAX_CONTEXT_LENGTH};
 use crate::buffer::GlyphInfo;
-use super::layout::{ApplyContext, WouldApplyContext, MAX_CONTEXT_LENGTH};
-use super::ggg::{ClassDef, Coverage, GlyphClass};
+use crate::Mask;
 
 pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 
@@ -23,7 +25,7 @@ pub fn match_class<'a>(class_def: ClassDef<'a>) -> impl Fn(GlyphId, u16) -> bool
 /// Value represents offset to coverage table.
 pub fn match_coverage<'a>(data: &'a [u8]) -> impl Fn(GlyphId, u16) -> bool + 'a {
     move |glyph, value| {
-        data.get(value as usize..)
+        data.get(usize::from(value)..)
             .and_then(Coverage::parse)
             .map(|coverage| coverage.get(glyph).is_some())
             .unwrap_or(false)
@@ -35,7 +37,7 @@ pub fn would_match_input(
     input: LazyArray16<u16>,
     match_func: &MatchFunc,
 ) -> bool {
-    ctx.len() == 1 + input.len() as usize
+    ctx.len() == 1 + usize::from(input.len())
         && input
             .into_iter()
             .enumerate()
@@ -82,7 +84,7 @@ pub fn match_input(
         MaySkip,
     }
 
-    let count = 1 + input.len() as usize;
+    let count = 1 + usize::from(input.len());
     if count > MAX_CONTEXT_LENGTH {
         return None;
     }
@@ -245,7 +247,7 @@ impl<'a> SkippyIter<'a> {
 
     pub fn next(&mut self) -> bool {
         let value = self.input.get(self.input_idx).unwrap();
-        let num_items = (self.input.len() - self.input_idx) as usize;
+        let num_items = usize::from(self.input.len() - self.input_idx);
 
         while self.buf_idx + num_items < self.buf_len {
             self.buf_idx += 1;
@@ -272,7 +274,7 @@ impl<'a> SkippyIter<'a> {
 
     pub fn prev(&mut self) -> bool {
         let value = self.input.get(self.input_idx).unwrap();
-        let num_items = (self.input.len() - self.input_idx) as usize;
+        let num_items = usize::from(self.input.len() - self.input_idx);
 
         while self.buf_idx >= num_items {
             self.buf_idx -= 1;

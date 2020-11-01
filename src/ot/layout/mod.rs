@@ -1,13 +1,52 @@
+//! OpenType layout.
+
+macro_rules! make_ffi_funcs {
+    ($table:ident, $would_apply:ident, $apply:ident) => {
+        #[no_mangle]
+        pub extern "C" fn $would_apply(
+            ctx: *const crate::ffi::rb_would_apply_context_t,
+            data_ptr: *const u8,
+            data_len: u32,
+        ) -> crate::ffi::rb_bool_t {
+            let ctx = WouldApplyContext::from_ptr(ctx);
+            let data = unsafe { std::slice::from_raw_parts(data_ptr, data_len as usize) };
+            match $table::parse(data) {
+                Some(table) => table.would_apply(&ctx) as crate::ffi::rb_bool_t,
+                None => 0,
+            }
+        }
+
+        #[no_mangle]
+        pub extern "C" fn $apply(
+            ctx: *mut crate::ffi::rb_ot_apply_context_t,
+            data_ptr: *const u8,
+            data_len: u32,
+        ) -> crate::ffi::rb_bool_t {
+            let mut ctx = ApplyContext::from_ptr_mut(ctx);
+            let data = unsafe { std::slice::from_raw_parts(data_ptr, data_len as usize) };
+            match $table::parse(data) {
+                Some(table) => table.apply(&mut ctx).is_some() as crate::ffi::rb_bool_t,
+                None => 0,
+            }
+        }
+    }
+}
+
+mod common;
+mod context_lookups;
+mod gsub;
+mod matching;
+
 use std::ptr::NonNull;
 
 use ttf_parser::GlyphId;
 
+use self::common::LookupFlags;
+use crate::buffer::{Buffer, GlyphInfo, GlyphPropsFlags};
+use crate::common::Direction;
 use crate::{ffi, Mask};
-use crate::buffer::{Buffer, GlyphPropsFlags, GlyphInfo};
-use super::ggg::LookupFlags;
 
 pub const MAX_NESTING_LEVEL: usize = 6;
-
 pub const MAX_CONTEXT_LENGTH: usize = 64;
 
 pub struct WouldApplyContext(NonNull<ffi::rb_would_apply_context_t>);
@@ -43,6 +82,10 @@ impl ApplyContext {
 
     pub(crate) fn buffer_mut(&mut self) -> &mut Buffer {
         unsafe { Buffer::from_ptr_mut(ffi::rb_ot_apply_context_get_buffer(self.0.as_ptr())) }
+    }
+
+    pub fn direction(&self) -> Direction {
+        unsafe { Direction::from_raw(ffi::rb_ot_apply_context_get_direction(self.0.as_ptr())) }
     }
 
     pub fn lookup_mask(&self) -> Mask {
@@ -87,6 +130,8 @@ impl ApplyContext {
 
     pub fn check_glyph_property(&self, info: &GlyphInfo, match_props: u32) -> bool {
         let glyph_props = info.glyph_props();
+
+        // Lookup flags are lower 16-bit of match props.
         let lookup_flags = match_props as u16;
 
         // Not covered, if, for example, glyph class is ligature and
@@ -151,7 +196,7 @@ impl ApplyContext {
 
         if unsafe { ffi::rb_ot_apply_context_get_has_glyph_classes(ptr) != 0 } {
             props = (props & !GlyphPropsFlags::MARK.bits()) | unsafe {
-                ffi::rb_ot_apply_context_gdef_get_glyph_props(ptr, glyph_id.0 as u32) as u16
+                ffi::rb_ot_apply_context_gdef_get_glyph_props(ptr, u32::from(glyph_id.0)) as u16
             };
         } else if !class_guess.is_empty() {
             props = (props & !GlyphPropsFlags::MARK.bits()) | class_guess.bits();
@@ -162,21 +207,21 @@ impl ApplyContext {
 
     pub fn replace_glyph(&mut self, glyph_id: GlyphId) {
         self.set_glyph_class(glyph_id, GlyphPropsFlags::empty(), false, false);
-        self.buffer_mut().replace_glyph(glyph_id.0 as u32);
+        self.buffer_mut().replace_glyph(u32::from(glyph_id.0));
     }
 
     pub fn replace_glyph_inplace(&mut self, glyph_id: GlyphId) {
         self.set_glyph_class(glyph_id, GlyphPropsFlags::empty(), false, false);
-        self.buffer_mut().cur_mut(0).codepoint = glyph_id.0 as u32;
+        self.buffer_mut().cur_mut(0).codepoint = u32::from(glyph_id.0);
     }
 
     pub fn replace_glyph_with_ligature(&mut self, glyph_id: GlyphId, class_guess: GlyphPropsFlags) {
         self.set_glyph_class(glyph_id, class_guess, true, false);
-        self.buffer_mut().replace_glyph(glyph_id.0 as u32);
+        self.buffer_mut().replace_glyph(u32::from(glyph_id.0));
     }
 
     pub fn output_glyph_for_component(&mut self, glyph_id: GlyphId, class_guess: GlyphPropsFlags) {
         self.set_glyph_class(glyph_id, class_guess, false, true);
-        self.buffer_mut().output_glyph(glyph_id.0 as u32);
+        self.buffer_mut().output_glyph(u32::from(glyph_id.0));
     }
 }
