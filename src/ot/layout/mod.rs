@@ -34,6 +34,7 @@ macro_rules! make_ffi_funcs {
 
 mod common;
 mod context_lookups;
+mod dyn_array;
 mod gpos;
 mod gsub;
 mod matching;

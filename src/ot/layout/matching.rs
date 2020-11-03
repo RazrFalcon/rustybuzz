@@ -90,8 +90,8 @@ pub fn match_input(
     }
 
     let buffer = ctx.buffer();
-    let mut iter = SkippyIter::new(ctx, input, buffer.idx, false);
-    iter.set_match_func(Some(match_func));
+    let mut iter = SkippyIter::new(ctx, buffer.idx, input.len(), false);
+    iter.enable_matching(input, match_func);
 
     let first = buffer.cur(0);
     let first_lig_id = first.lig_id();
@@ -107,9 +107,9 @@ pub fn match_input(
             return None;
         }
 
-        positions[i] = iter.buf_idx;
+        positions[i] = iter.index();
 
-        let this = buffer.info[iter.buf_idx];
+        let this = buffer.info[iter.index()];
         let this_lig_id = this.lig_id();
         let this_lig_comp = this.lig_comp();
 
@@ -157,7 +157,7 @@ pub fn match_input(
     }
 
     Some(Matched {
-        len: iter.buf_idx - buffer.idx + 1,
+        len: iter.index() - buffer.idx + 1,
         positions,
         total_component_count,
     })
@@ -168,8 +168,8 @@ pub fn match_backtrack(
     backtrack: LazyArray16<u16>,
     match_func: &MatchFunc,
 ) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, backtrack, ctx.buffer().backtrack_len(), true);
-    iter.set_match_func(Some(match_func));
+    let mut iter = SkippyIter::new(ctx, ctx.buffer().backtrack_len(), backtrack.len(), true);
+    iter.enable_matching(backtrack, match_func);
 
     for _ in 0..backtrack.len() {
         if !iter.prev() {
@@ -177,7 +177,7 @@ pub fn match_backtrack(
         }
     }
 
-    Some(iter.buf_idx)
+    Some(iter.index())
 }
 
 pub fn match_lookahead(
@@ -186,8 +186,8 @@ pub fn match_lookahead(
     match_func: &MatchFunc,
     offset: usize,
 ) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, lookahead, ctx.buffer().idx + offset - 1, true);
-    iter.set_match_func(Some(match_func));
+    let mut iter = SkippyIter::new(ctx, ctx.buffer().idx + offset - 1, lookahead.len(), true);
+    iter.enable_matching(lookahead, match_func);
 
     for _ in 0..lookahead.len() {
         if !iter.next() {
@@ -195,7 +195,7 @@ pub fn match_lookahead(
         }
     }
 
-    Some(iter.buf_idx + 1)
+    Some(iter.index() + 1)
 }
 
 pub struct SkippyIter<'a> {
@@ -205,18 +205,17 @@ pub struct SkippyIter<'a> {
     ignore_zwj: bool,
     mask: Mask,
     syllable: u8,
-    match_func: Option<&'a MatchFunc<'a>>,
-    input: LazyArray16<'a, u16>,
+    matching: Option<(LazyArray16<'a, u16>, &'a MatchFunc<'a>)>,
     buf_len: usize,
     buf_idx: usize,
-    input_idx: u16,
+    num_items: u16,
 }
 
 impl<'a> SkippyIter<'a> {
     pub fn new(
         ctx: &'a ApplyContext,
-        input: LazyArray16<'a, u16>,
         start_buf_index: usize,
+        num_items: u16,
         context_match: bool,
     ) -> Self {
         let buffer = ctx.buffer();
@@ -229,11 +228,10 @@ impl<'a> SkippyIter<'a> {
             ignore_zwj: context_match || ctx.auto_zwj(),
             mask: if context_match { u32::MAX } else { ctx.lookup_mask() },
             syllable: if buffer.idx == start_buf_index { buffer.cur(0).syllable() } else { 0 },
-            match_func: None,
-            input,
+            matching: None,
             buf_len: buffer.len,
             buf_idx: start_buf_index,
-            input_idx: 0,
+            num_items
         }
     }
 
@@ -241,15 +239,17 @@ impl<'a> SkippyIter<'a> {
         self.lookup_props = lookup_props;
     }
 
-    pub fn set_match_func(&mut self, match_func: Option<&'a MatchFunc>) {
-        self.match_func = match_func;
+    pub fn enable_matching(&mut self, input: LazyArray16<'a, u16>, match_func: &'a MatchFunc) {
+        self.matching = Some((input, match_func));
+    }
+
+    pub fn index(&self) -> usize {
+        self.buf_idx
     }
 
     pub fn next(&mut self) -> bool {
-        let value = self.input.get(self.input_idx).unwrap();
-        let num_items = usize::from(self.input.len() - self.input_idx);
-
-        while self.buf_idx + num_items < self.buf_len {
+        assert!(self.num_items > 0);
+        while self.buf_idx + usize::from(self.num_items) < self.buf_len {
             self.buf_idx += 1;
             let info = &self.ctx.buffer().info[self.buf_idx];
 
@@ -258,9 +258,9 @@ impl<'a> SkippyIter<'a> {
                 continue;
             }
 
-            let matched = self.may_match(info, value);
+            let matched = self.may_match(info);
             if matched == Some(true) || (matched.is_none() && skip == Some(false)) {
-                self.input_idx += 1;
+                self.num_items -= 1;
                 return true;
             }
 
@@ -273,10 +273,8 @@ impl<'a> SkippyIter<'a> {
     }
 
     pub fn prev(&mut self) -> bool {
-        let value = self.input.get(self.input_idx).unwrap();
-        let num_items = usize::from(self.input.len() - self.input_idx);
-
-        while self.buf_idx >= num_items {
+        assert!(self.num_items > 0);
+        while self.buf_idx >= usize::from(self.num_items) {
             self.buf_idx -= 1;
             let info = &self.ctx.buffer().out_info()[self.buf_idx];
 
@@ -285,9 +283,9 @@ impl<'a> SkippyIter<'a> {
                 continue;
             }
 
-            let matched = self.may_match(info, value);
+            let matched = self.may_match(info);
             if matched == Some(true) || (matched.is_none() && skip == Some(false)) {
-                self.input_idx += 1;
+                self.num_items -= 1;
                 return true;
             }
 
@@ -300,12 +298,14 @@ impl<'a> SkippyIter<'a> {
     }
 
     pub fn reject(&mut self) {
-        self.input_idx += 1;
+        self.num_items += 1;
     }
 
-    fn may_match(&self, info: &GlyphInfo, value: u16) -> Option<bool> {
+    fn may_match(&self, info: &GlyphInfo) -> Option<bool> {
         if (info.mask & self.mask) != 0 && (self.syllable == 0 || self.syllable == info.syllable()) {
-            self.match_func.map(|func| {
+            self.matching.map(|(input, func)| {
+                let index = input.len() - self.num_items;
+                let value = input.get(index).unwrap();
                 func(GlyphId(u16::try_from(info.codepoint).unwrap()), value)
             })
         } else {

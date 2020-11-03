@@ -60,12 +60,12 @@ impl<'a> SingleSubst<'a> {
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
-        let subst = match self {
+        let subst = match *self {
             Self::Format1 { coverage, delta } => {
                 coverage.get(glyph_id)?;
                 // According to the Adobe Annotated OpenType Suite, result is always
                 // limited to 16bit, so we explicitly want to truncate.
-                GlyphId((i32::from(glyph_id.0) + i32::from(*delta)) as u16)
+                GlyphId((i32::from(glyph_id.0) + i32::from(delta)) as u16)
             }
             Self::Format2 { coverage, substitutes } => {
                 let index = coverage.get(glyph_id)?;
@@ -531,7 +531,7 @@ impl<'a> ReverseChainSingleSubst<'a> {
         }
 
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
-        match self {
+        match *self {
             Self::Format1 {
                 data,
                 coverage,
@@ -546,8 +546,8 @@ impl<'a> ReverseChainSingleSubst<'a> {
 
                 let subst = substitutes.get(index)?;
                 let match_func = &match_coverage(data);
-                if let Some(start_idx) = match_backtrack(ctx, *backtrack_coverages, match_func) {
-                    if let Some(end_idx) = match_lookahead(ctx, *lookahead_coverages, match_func, 1) {
+                if let Some(start_idx) = match_backtrack(ctx, backtrack_coverages, match_func) {
+                    if let Some(end_idx) = match_lookahead(ctx, lookahead_coverages, match_func, 1) {
                         ctx.buffer_mut().unsafe_to_break_from_outbuffer(start_idx, end_idx);
                         ctx.replace_glyph_inplace(subst);
 

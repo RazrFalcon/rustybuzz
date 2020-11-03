@@ -90,7 +90,7 @@ impl<'a> ContextLookup<'a> {
 
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
-        match self {
+        match *self {
             Self::Format1 { coverage, sets } => {
                 coverage.get(glyph_id)
                     .and_then(|index| sets.slice(index))
@@ -103,18 +103,18 @@ impl<'a> ContextLookup<'a> {
                 sets.get(class.0).map_or(false, |offset| !offset.is_null())
                     && sets.slice(class.0)
                         .and_then(RuleSet::parse)
-                        .map(|set| set.would_apply(ctx, &match_class(*class_def)))
+                        .map(|set| set.would_apply(ctx, &match_class(class_def)))
                         .unwrap_or(false)
             }
             Self::Format3 { data, coverages, .. } => {
-                would_apply_context(ctx, *coverages, &match_coverage(data))
+                would_apply_context(ctx, coverages, &match_coverage(data))
             }
         }
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
-        match self {
+        match *self {
             Self::Format1 { coverage, sets } => {
                 let index = coverage.get(glyph_id)?;
                 let set = RuleSet::parse(sets.slice(index)?)?;
@@ -126,14 +126,14 @@ impl<'a> ContextLookup<'a> {
                 let offset = sets.get(class.0)?;
                 if !offset.is_null() {
                     let set = RuleSet::parse(sets.slice(class.0)?)?;
-                    set.apply(ctx, &match_class(*classes))
+                    set.apply(ctx, &match_class(classes))
                 } else {
                     None
                 }
             }
             Self::Format3 { data, coverage, coverages, lookups } => {
                 coverage.get(glyph_id)?;
-                apply_context(ctx, *coverages, &match_coverage(data), *lookups)
+                apply_context(ctx, coverages, &match_coverage(data), lookups)
             }
         }
     }
@@ -278,7 +278,7 @@ impl<'a> ChainContextLookup<'a> {
 
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
-        match self {
+        match *self {
             Self::Format1 { coverage, sets } => {
                 coverage.get(glyph_id)
                     .and_then(|index| sets.slice(index))
@@ -291,15 +291,15 @@ impl<'a> ChainContextLookup<'a> {
                 sets.get(class.0).map_or(false, |offset| !offset.is_null())
                     && sets.slice(class.0)
                         .and_then(ChainRuleSet::parse)
-                        .map(|set| set.would_apply(ctx, &match_class(*input_classes)))
+                        .map(|set| set.would_apply(ctx, &match_class(input_classes)))
                         .unwrap_or(false)
             }
             Self::Format3 { data, backtrack_coverages, input_coverages, lookahead_coverages, .. } => {
                 would_apply_chain_context(
                     ctx,
-                    *backtrack_coverages,
-                    *input_coverages,
-                    *lookahead_coverages,
+                    backtrack_coverages,
+                    input_coverages,
+                    lookahead_coverages,
                     &match_coverage(data),
                 )
             }
@@ -308,7 +308,7 @@ impl<'a> ChainContextLookup<'a> {
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
-        match self {
+        match *self {
             Self::Format1 { coverage, sets } => {
                 let index = coverage.get(glyph_id)?;
                 let set = ChainRuleSet::parse(sets.slice(index)?)?;
@@ -327,9 +327,9 @@ impl<'a> ChainContextLookup<'a> {
                 if !offset.is_null() {
                     let set = ChainRuleSet::parse(sets.slice(class.0)?)?;
                     set.apply(ctx, [
-                        &match_class(*backtrack_classes),
-                        &match_class(*input_classes),
-                        &match_class(*lookahead_classes),
+                        &match_class(backtrack_classes),
+                        &match_class(input_classes),
+                        &match_class(lookahead_classes),
                     ])
                 } else {
                     None
@@ -346,15 +346,15 @@ impl<'a> ChainContextLookup<'a> {
                 coverage.get(glyph_id)?;
                 apply_chain_context(
                     ctx,
-                    *backtrack_coverages,
-                    *input_coverages,
-                    *lookahead_coverages,
+                    backtrack_coverages,
+                    input_coverages,
+                    lookahead_coverages,
                     [
                         &match_coverage(data),
                         &match_coverage(data),
                         &match_coverage(data),
                     ],
-                    *lookups,
+                    lookups,
                 )
             }
         }

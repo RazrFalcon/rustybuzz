@@ -33,6 +33,7 @@
 
 extern "C" {
 RB_EXTERN rb_bool_t rb_single_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_pair_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
 }
 
@@ -341,225 +342,26 @@ protected:
     OffsetTo<Coverage> coverage;
 };
 
-struct PairValueRecord
-{
-    friend struct PairSet;
-
-    int cmp(rb_codepoint_t k) const
-    {
-        return secondGlyph.cmp(k);
-    }
-
-protected:
-    HBGlyphID secondGlyph; /* GlyphID of second glyph in the
-                            * pair--first glyph is listed in the
-                            * Coverage table */
-    ValueRecord values;    /* Positioning data for the first glyph
-                            * followed by for second glyph */
-public:
-    DEFINE_SIZE_ARRAY(2, values);
-};
-
-struct PairSet
-{
-    friend struct PairPosFormat1;
-
-    bool apply(rb_ot_apply_context_t *c, const ValueFormat *valueFormats, unsigned int pos) const
-    {
-        rb_buffer_t *buffer = c->buffer;
-        unsigned int len1 = valueFormats[0].get_len();
-        unsigned int len2 = valueFormats[1].get_len();
-        unsigned int record_size = HBUINT16::static_size * (1 + len1 + len2);
-
-        const PairValueRecord *record =
-            rb_bsearch(rb_buffer_get_glyph_infos(buffer)[pos].codepoint, &firstPairValueRecord, len, record_size);
-        if (record) {
-            /* Note the intentional use of "|" instead of short-circuit "||". */
-            if (valueFormats[0].apply_value(c, this, &record->values[0], rb_buffer_get_index(buffer)) |
-                valueFormats[1].apply_value(c, this, &record->values[len1], pos))
-                rb_buffer_unsafe_to_break(buffer, rb_buffer_get_index(buffer), pos + 1);
-            if (len2)
-                pos++;
-            rb_buffer_set_index(buffer, pos);
-            return true;
-        }
-        return false;
-    }
-
-    struct sanitize_closure_t
-    {
-        const ValueFormat *valueFormats;
-        unsigned int len1;   /* valueFormats[0].get_len() */
-        unsigned int stride; /* 1 + len1 + len2 */
-    };
-
-    bool sanitize(rb_sanitize_context_t *c, const sanitize_closure_t *closure) const
-    {
-        return c->check_struct(this) &&
-            c->check_range(&firstPairValueRecord, len, HBUINT16::static_size, closure->stride);
-    }
-
-protected:
-    HBUINT16 len; /* Number of PairValueRecords */
-    PairValueRecord firstPairValueRecord;
-    /* Array of PairValueRecords--ordered
-     * by GlyphID of the second glyph */
-public:
-    DEFINE_SIZE_MIN(2);
-};
-
-struct PairPosFormat1
-{
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        rb_buffer_t *buffer = c->buffer;
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        rb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-        skippy_iter.reset(rb_buffer_get_index(buffer), 1);
-        if (!skippy_iter.next())
-            return false;
-
-        return (this + pairSet[index]).apply(c, valueFormat, skippy_iter.idx);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        if (!c->check_struct(this))
-            return false;
-
-        unsigned int len1 = valueFormat[0].get_len();
-        unsigned int len2 = valueFormat[1].get_len();
-        PairSet::sanitize_closure_t closure = {valueFormat, len1, 1 + len1 + len2};
-
-        return coverage.sanitize(c, this) && pairSet.sanitize(c, this, &closure);
-    }
-
-protected:
-    HBUINT16 format;                /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage;    /* Offset to Coverage table--from
-                                     * beginning of subtable */
-    ValueFormat valueFormat[2];     /* [0] Defines the types of data in
-                                     * ValueRecord1--for the first glyph
-                                     * in the pair--may be zero (0) */
-                                    /* [1] Defines the types of data in
-                                     * ValueRecord2--for the second glyph
-                                     * in the pair--may be zero (0) */
-    OffsetArrayOf<PairSet> pairSet; /* Array of PairSet tables
-                                     * ordered by Coverage Index */
-public:
-    DEFINE_SIZE_ARRAY(10, pairSet);
-};
-
-struct PairPosFormat2
-{
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        rb_buffer_t *buffer = c->buffer;
-        unsigned int index = (this + coverage).get_coverage(rb_buffer_get_cur(buffer, 0)->codepoint);
-        if (likely(index == NOT_COVERED))
-            return false;
-
-        rb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-        skippy_iter.reset(rb_buffer_get_index(buffer), 1);
-        if (!skippy_iter.next())
-            return false;
-
-        unsigned int len1 = valueFormat1.get_len();
-        unsigned int len2 = valueFormat2.get_len();
-        unsigned int record_len = len1 + len2;
-
-        unsigned int klass1 = (this + classDef1).get_class(rb_buffer_get_cur(buffer, 0)->codepoint);
-        unsigned int klass2 =
-            (this + classDef2).get_class(rb_buffer_get_glyph_infos(buffer)[skippy_iter.idx].codepoint);
-        if (unlikely(klass1 >= class1Count || klass2 >= class2Count))
-            return false;
-
-        const Value *v = &values[record_len * (klass1 * class2Count + klass2)];
-        /* Note the intentional use of "|" instead of short-circuit "||". */
-        if (valueFormat1.apply_value(c, this, v, rb_buffer_get_index(buffer)) |
-            valueFormat2.apply_value(c, this, v + len1, skippy_iter.idx))
-            rb_buffer_unsafe_to_break(buffer, rb_buffer_get_index(buffer), skippy_iter.idx + 1);
-
-        rb_buffer_set_index(buffer, skippy_iter.idx);
-        if (len2)
-            rb_buffer_set_index(buffer, rb_buffer_get_index(buffer) + 1);
-
-        return true;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        if (!(c->check_struct(this) && coverage.sanitize(c, this) && classDef1.sanitize(c, this) &&
-              classDef2.sanitize(c, this)))
-            return false;
-
-        unsigned int record_size = valueFormat1.get_size() + valueFormat2.get_size();
-        unsigned int count = (unsigned int)class1Count * (unsigned int)class2Count;
-        return c->check_range((const void *)values, count, record_size);
-    }
-
-protected:
-    HBUINT16 format;              /* Format identifier--format = 2 */
-    OffsetTo<Coverage> coverage;  /* Offset to Coverage table--from
-                                   * beginning of subtable */
-    ValueFormat valueFormat1;     /* ValueRecord definition--for the
-                                   * first glyph of the pair--may be zero
-                                   * (0) */
-    ValueFormat valueFormat2;     /* ValueRecord definition--for the
-                                   * second glyph of the pair--may be
-                                   * zero (0) */
-    OffsetTo<ClassDef> classDef1; /* Offset to ClassDef table--from
-                                   * beginning of PairPos subtable--for
-                                   * the first glyph of the pair */
-    OffsetTo<ClassDef> classDef2; /* Offset to ClassDef table--from
-                                   * beginning of PairPos subtable--for
-                                   * the second glyph of the pair */
-    HBUINT16 class1Count;         /* Number of classes in ClassDef1
-                                   * table--includes Class0 */
-    HBUINT16 class2Count;         /* Number of classes in ClassDef2
-                                   * table--includes Class0 */
-    ValueRecord values;           /* Matrix of value pairs:
-                                   * class1-major, class2-minor,
-                                   * Each entry has value1 and value2 */
-public:
-    DEFINE_SIZE_ARRAY(16, values);
-};
-
 struct PairPos
 {
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
+    const Coverage &get_coverage() const
     {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        case 2:
-            return c->dispatch(u.format2, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
+        return this + coverage;
+    }
+
+    bool apply(rb_ot_apply_context_t *c) const
+    {
+        return rb_pair_pos_apply((const char*)this, c);
+    }
+
+    bool sanitize(rb_sanitize_context_t *c) const
+    {
+        return (format != 1 && format != 2) || coverage.sanitize(c, this);
     }
 
 protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        PairPosFormat1 format1;
-        PairPosFormat2 format2;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> coverage;
 };
 
 struct EntryExitRecord
@@ -1092,7 +894,7 @@ struct PosLookupSubTable
         case Single:
             return c->dispatch(u.single, rb_forward<Ts>(ds)...);
         case Pair:
-            return u.pair.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.pair, rb_forward<Ts>(ds)...);
         case Cursive:
             return u.cursive.dispatch(c, rb_forward<Ts>(ds)...);
         case MarkBase:
