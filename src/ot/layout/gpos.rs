@@ -340,6 +340,72 @@ impl FromData for ValueFormatFlags {
     }
 }
 
+
+#[derive(Clone, Copy, Debug)]
+struct Anchor<'a> {
+    x: i16,
+    y: i16,
+    x_device: Option<Device<'a>>,
+    y_device: Option<Device<'a>>,
+}
+
+impl<'a> Anchor<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let format: u16 = s.read()?;
+        if !matches!(format, 1..=3) {
+            return None;
+        }
+
+        let mut table = Anchor {
+            x: s.read::<i16>()?,
+            y: s.read::<i16>()?,
+            x_device: None,
+            y_device: None,
+        };
+
+        // Note: Format 2 is not handled since there is currently no way to
+        // get a glyph contour point by index.
+
+        if format == 3 {
+            table.x_device = s.read::<Option<Offset16>>()?
+                .and_then(|offset| data.get(offset.to_usize()..))
+                .and_then(Device::parse);
+
+            table.y_device = s.read::<Option<Offset16>>()?
+                .and_then(|offset| data.get(offset.to_usize()..))
+                .and_then(Device::parse);
+        }
+
+        Some(table)
+    }
+
+    fn get(&self, ctx: &ApplyContext) -> (f32, f32) {
+        let mut x = f32::from(self.x);
+        let mut y = f32::from(self.y);
+
+        if self.x_device.is_some() || self.y_device.is_some() {
+            let font = ctx.font();
+            let (ppem_x, ppem_y) = font.pixels_per_em().unwrap_or((0, 0));
+            let coords = font.ttfp_face.variation_coordinates().len();
+
+            if let Some(device) = self.x_device {
+                if ppem_x != 0 || coords != 0 {
+                    x += device.get_x_delta(font).unwrap_or(0) as f32;
+                }
+            }
+
+            if let Some(device) = self.y_device {
+                if ppem_y != 0 || coords != 0 {
+                    y += device.get_y_delta(font).unwrap_or(0) as f32;
+                }
+            }
+        }
+
+        (x, y)
+    }
+}
+
 make_ffi_funcs!(SinglePos, rb_single_pos_apply);
 make_ffi_funcs!(PairPos, rb_pair_pos_apply);
 
@@ -356,4 +422,22 @@ pub extern "C" fn rb_value_format_apply(
     let base = unsafe { std::slice::from_raw_parts(base, isize::MAX as usize) };
     let data = unsafe { std::slice::from_raw_parts(values, isize::MAX as usize) };
     ValueRecord { data, flags }.apply(&mut ctx, base, idx as usize) as crate::ffi::rb_bool_t
+}
+
+#[no_mangle]
+pub extern "C" fn rb_anchor_get(
+    data: *const u8,
+    ctx: *const crate::ffi::rb_ot_apply_context_t,
+    x: *mut f32,
+    y: *mut f32,
+) {
+    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
+    let ctx = ApplyContext::from_ptr(ctx);
+    if let Some(anchor) = Anchor::parse(data) {
+        let (vx, vy) = anchor.get(&ctx);
+        unsafe {
+            *x = vx;
+            *y = vy;
+        }
+    }
 }

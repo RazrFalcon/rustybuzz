@@ -35,6 +35,7 @@ extern "C" {
 RB_EXTERN rb_bool_t rb_single_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_pair_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
+RB_EXTERN rb_bool_t rb_anchor_get(const char *data, const OT::rb_ot_apply_context_t *c, float *x, float *y);
 }
 
 namespace OT {
@@ -80,143 +81,18 @@ struct ValueFormat : HBUINT16
     }
 };
 
-struct AnchorFormat1
-{
-    void get_anchor(rb_ot_apply_context_t *c, rb_codepoint_t glyph_id RB_UNUSED, float *x, float *y) const
-    {
-        *x = (float)xCoordinate;
-        *y = (float)yCoordinate;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this);
-    }
-
-protected:
-    HBUINT16 format;   /* Format identifier--format = 1 */
-    FWORD xCoordinate; /* Horizontal value--in design units */
-    FWORD yCoordinate; /* Vertical value--in design units */
-public:
-    DEFINE_SIZE_STATIC(6);
-};
-
-struct AnchorFormat2
-{
-    void get_anchor(rb_ot_apply_context_t *c, rb_codepoint_t glyph_id, float *x, float *y) const
-    {
-        rb_font_t *font = c->font;
-
-#ifdef RB_NO_HINTING
-        *x = font->em_fscale_x(xCoordinate);
-        *y = font->em_fscale_y(yCoordinate);
-        return;
-#endif
-
-        unsigned int x_ppem = rb_font_get_ppem_x(font);
-        unsigned int y_ppem = rb_font_get_ppem_y(font);
-        rb_position_t cx = 0, cy = 0;
-        bool ret;
-
-        ret = (x_ppem || y_ppem) &&
-              rb_font_get_glyph_contour_point_for_origin(font, glyph_id, anchorPoint, RB_DIRECTION_LTR, &cx, &cy);
-        *x = ret && x_ppem ? cx : (float)xCoordinate;
-        *y = ret && y_ppem ? cy : (float)yCoordinate;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this);
-    }
-
-protected:
-    HBUINT16 format;      /* Format identifier--format = 2 */
-    FWORD xCoordinate;    /* Horizontal value--in design units */
-    FWORD yCoordinate;    /* Vertical value--in design units */
-    HBUINT16 anchorPoint; /* Index to glyph contour point */
-public:
-    DEFINE_SIZE_STATIC(8);
-};
-
-struct AnchorFormat3
-{
-    void get_anchor(rb_ot_apply_context_t *c, rb_codepoint_t glyph_id RB_UNUSED, float *x, float *y) const
-    {
-        rb_font_t *font = c->font;
-        *x = (float)xCoordinate;
-        *y = (float)yCoordinate;
-
-        if (rb_font_get_ppem_x(font) || rb_font_get_num_coords(font))
-            *x += (this + xDeviceTable).get_x_delta(font);
-        if (rb_font_get_ppem_y(font) || rb_font_get_num_coords(font))
-            *y += (this + yDeviceTable).get_y_delta(font);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this) && xDeviceTable.sanitize(c, this) && yDeviceTable.sanitize(c, this);
-    }
-
-protected:
-    HBUINT16 format;               /* Format identifier--format = 3 */
-    FWORD xCoordinate;             /* Horizontal value--in design units */
-    FWORD yCoordinate;             /* Vertical value--in design units */
-    OffsetTo<Device> xDeviceTable; /* Offset to Device table for X
-                                    * coordinate-- from beginning of
-                                    * Anchor table (may be NULL) */
-    OffsetTo<Device> yDeviceTable; /* Offset to Device table for Y
-                                    * coordinate-- from beginning of
-                                    * Anchor table (may be NULL) */
-public:
-    DEFINE_SIZE_STATIC(10);
-};
-
 struct Anchor
 {
     void get_anchor(rb_ot_apply_context_t *c, rb_codepoint_t glyph_id, float *x, float *y) const
     {
         *x = *y = 0;
-        switch (u.format) {
-        case 1:
-            u.format1.get_anchor(c, glyph_id, x, y);
-            return;
-        case 2:
-            u.format2.get_anchor(c, glyph_id, x, y);
-            return;
-        case 3:
-            u.format3.get_anchor(c, glyph_id, x, y);
-            return;
-        default:
-            return;
-        }
+        rb_anchor_get((const char*)this, c, x, y);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        if (!u.format.sanitize(c))
-            return false;
-        switch (u.format) {
-        case 1:
-            return u.format1.sanitize(c);
-        case 2:
-            return u.format2.sanitize(c);
-        case 3:
-            return u.format3.sanitize(c);
-        default:
-            return true;
-        }
+        return true;
     }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        AnchorFormat1 format1;
-        AnchorFormat2 format2;
-        AnchorFormat3 format3;
-    } u;
-
-public:
-    DEFINE_SIZE_UNION(2, format);
 };
 
 struct AnchorMatrix

@@ -75,6 +75,10 @@ impl WouldApplyContext {
 pub struct ApplyContext(NonNull<ffi::rb_ot_apply_context_t>);
 
 impl ApplyContext {
+    pub fn from_ptr(ptr: *const ffi::rb_ot_apply_context_t) -> Self {
+        Self(NonNull::new(ptr as _).unwrap())
+    }
+
     pub fn from_ptr_mut(ptr: *mut ffi::rb_ot_apply_context_t) -> Self {
         Self(NonNull::new(ptr).unwrap())
     }
