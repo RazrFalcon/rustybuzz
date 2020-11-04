@@ -16,12 +16,12 @@ use crate::Font;
 #[derive(Clone, Copy, Debug)]
 enum SinglePos<'a> {
     Format1 {
-        base: &'a [u8],
+        data: &'a [u8],
         coverage: Coverage<'a>,
         value: ValueRecord<'a>,
     },
     Format2 {
-        base: &'a [u8],
+        data: &'a [u8],
         coverage: Coverage<'a>,
         flags: ValueFormatFlags,
         values: DynArray<'a>,
@@ -37,14 +37,14 @@ impl<'a> SinglePos<'a> {
                 let coverage = Coverage::parse(s.read_offset16_data()?)?;
                 let flags = s.read::<ValueFormatFlags>()?;
                 let value = ValueRecord::read(&mut s, flags)?;
-                Self::Format1 { base: data, coverage, value }
+                Self::Format1 { data, coverage, value }
             }
             2 => {
                 let coverage = Coverage::parse(s.read_offset16_data()?)?;
                 let flags = s.read::<ValueFormatFlags>()?;
                 let count = s.read::<u16>()?;
                 let values = DynArray::read(&mut s, usize::from(count), flags.size())?;
-                Self::Format2 { base: data, coverage, flags, values }
+                Self::Format2 { data, coverage, flags, values }
             }
             _ => return None,
         })
@@ -60,14 +60,14 @@ impl<'a> SinglePos<'a> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         let (base, value) = match *self {
-            Self::Format1 { base, coverage, value } => {
+            Self::Format1 { data, coverage, value } => {
                 coverage.get(glyph_id)?;
-                (base, value)
+                (data, value)
             }
-            Self::Format2 { base, coverage, flags, values } => {
+            Self::Format2 { data, coverage, flags, values } => {
                 let index = coverage.get(glyph_id)?;
-                let data = values.get(usize::from(index))?;
-                (base, ValueRecord::new(data, flags))
+                let record = ValueRecord::new(values.get(usize::from(index))?, flags);
+                (data, record)
             }
         };
 
@@ -81,13 +81,12 @@ impl<'a> SinglePos<'a> {
 #[derive(Clone, Copy, Debug)]
 enum PairPos<'a> {
     Format1 {
-        base: &'a [u8],
         coverage: Coverage<'a>,
         flags: [ValueFormatFlags; 2],
         sets: Offsets16<'a, Offset16>,
     },
     Format2 {
-        base: &'a [u8],
+        data: &'a [u8],
         coverage: Coverage<'a>,
         flags: [ValueFormatFlags; 2],
         classes: [ClassDef<'a>; 2],
@@ -109,7 +108,7 @@ impl<'a> PairPos<'a> {
                 ];
                 let count = s.read::<u16>()?;
                 let sets = s.read_offsets16(count, data)?;
-                Self::Format1 { base: data, coverage, flags, sets }
+                Self::Format1 { coverage, flags, sets }
             }
             2 => {
                 let coverage = Coverage::parse(s.read_offset16_data()?)?;
@@ -125,7 +124,7 @@ impl<'a> PairPos<'a> {
                 let count = usize::num_from(u32::from(counts[0]) * u32::from(counts[1]));
                 let stride = flags[0].size() + flags[1].size();
                 let matrix = DynArray::read(&mut s, count, stride)?;
-                Self::Format2 { base: data, coverage, flags, classes, counts, matrix }
+                Self::Format2 { data, coverage, flags, classes, counts, matrix }
             },
             _ => return None,
         })
@@ -151,8 +150,9 @@ impl<'a> PairPos<'a> {
         let second = GlyphId(u16::try_from(ctx.buffer().info[pos].codepoint).unwrap());
 
         let (base, flags, mut s) = match *self {
-            Self::Format1 { base, flags, sets, .. } => {
-                let mut s = Stream::new(sets.slice(index)?);
+            Self::Format1 { flags, sets, .. } => {
+                let data = sets.slice(index)?;
+                let mut s = Stream::new(data);
                 let count = s.read::<u16>()?;
                 let stride = GlyphId::SIZE + flags[0].size() + flags[1].size();
                 let records = DynArray::read(&mut s, usize::from(count), stride)?;
@@ -162,9 +162,9 @@ impl<'a> PairPos<'a> {
 
                 let mut s = Stream::new(record);
                 s.skip::<GlyphId>();
-                (base, flags, s)
+                (data, flags, s)
             }
-            Self::Format2 { base, flags, classes, counts, matrix, .. } => {
+            Self::Format2 { data, flags, classes, counts, matrix, .. } => {
                 let classes = [classes[0].get(first).0, classes[1].get(second).0];
                 if classes[0] >= counts[0] || classes[1] >= counts[1] {
                     return None;
@@ -172,7 +172,7 @@ impl<'a> PairPos<'a> {
 
                 let idx = usize::from(classes[0]) * usize::from(counts[1]) + usize::from(classes[1]);
                 let record = matrix.get(idx)?;
-                (base, flags, Stream::new(record))
+                (data, flags, Stream::new(record))
             }
         };
 

@@ -15,7 +15,7 @@ impl<'a> DynArray<'a> {
         count: usize,
         stride: usize,
     ) -> Option<Self> {
-        let len = usize::from(count) * stride;
+        let len = count * stride;
         s.read_bytes(len).map(|data| Self { data, stride })
     }
 
