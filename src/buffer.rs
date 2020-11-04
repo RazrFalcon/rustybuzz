@@ -54,6 +54,46 @@ pub struct GlyphPosition {
     var: u32,
 }
 
+impl GlyphPosition {
+    #[inline]
+    pub(crate) fn attach_chain(&mut self) -> i16 {
+        // glyph to which this attaches to, relative to current glyphs;
+        // negative for going back, positive for forward.
+        unsafe {
+            let v: ffi::rb_var_int_t = std::mem::transmute(self.var);
+            v.var_i16[0]
+        }
+    }
+
+    #[inline]
+    pub(crate) fn set_attach_chain(&mut self, chain: i16) {
+        unsafe {
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var);
+            v.var_i16[0] = chain;
+        }
+    }
+
+    #[inline]
+    pub(crate) fn attach_type(&mut self) -> u8 {
+        // attachment type
+        // Note! if attach_chain() is zero, the value of attach_type() is irrelevant.
+        unsafe {
+            let v: ffi::rb_var_int_t = std::mem::transmute(self.var);
+            v.var_u8[2]
+        }
+    }
+
+    #[inline]
+    pub(crate) fn set_attach_type(&mut self, attach_type: u8) {
+        // attachment type
+        // Note! if attach_chain() is zero, the value of attach_type() is irrelevant.
+        unsafe {
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var);
+            v.var_u8[2] = attach_type;
+        }
+    }
+}
+
 
 /// A glyph info.
 #[repr(C)]
@@ -373,9 +413,8 @@ impl GlyphInfo {
     }
 
     #[inline]
-    pub(crate) fn glyph_index(&mut self) -> &mut u32 {
-        // buffer var allocations, used during the normalization process
-        &mut self.var1
+    pub(crate) fn set_glyph_index(&mut self, glyph_index: u32) {
+        self.var1 = glyph_index;
     }
 }
 
@@ -780,7 +819,7 @@ impl Buffer {
     }
 
     pub(crate) fn output_char(&mut self, unichar: u32, glyph: u32) {
-        *self.cur_mut(0).glyph_index() = glyph;
+        self.cur_mut(0).set_glyph_index(glyph);
         // This is very confusing indeed.
         self.output_glyph(unichar);
         let mut flags = self.scratch_flags;
@@ -839,7 +878,7 @@ impl Buffer {
     }
 
     pub(crate) fn next_char(&mut self, glyph: u32) {
-        *self.cur_mut(0).glyph_index() = glyph;
+        self.cur_mut(0).set_glyph_index(glyph);
         self.next_glyph();
     }
 

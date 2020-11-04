@@ -34,6 +34,7 @@
 extern "C" {
 RB_EXTERN rb_bool_t rb_single_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_pair_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_cursive_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
 RB_EXTERN rb_bool_t rb_anchor_get(const char *data, const OT::rb_ot_apply_context_t *c, float *x, float *y);
 }
@@ -240,185 +241,25 @@ protected:
     OffsetTo<Coverage> coverage;
 };
 
-struct EntryExitRecord
-{
-    friend struct CursivePosFormat1;
-
-    bool sanitize(rb_sanitize_context_t *c, const void *base) const
-    {
-        return entryAnchor.sanitize(c, base) && exitAnchor.sanitize(c, base);
-    }
-
-protected:
-    OffsetTo<Anchor> entryAnchor; /* Offset to EntryAnchor table--from
-                                   * beginning of CursivePos
-                                   * subtable--may be NULL */
-    OffsetTo<Anchor> exitAnchor;  /* Offset to ExitAnchor table--from
-                                   * beginning of CursivePos
-                                   * subtable--may be NULL */
-public:
-    DEFINE_SIZE_STATIC(4);
-};
-
-static void reverse_cursive_minor_offset(rb_glyph_position_t *pos,
-                                         unsigned int i,
-                                         rb_direction_t direction,
-                                         unsigned int new_parent);
-
-struct CursivePosFormat1
+struct CursivePos
 {
     const Coverage &get_coverage() const
     {
         return this + coverage;
     }
 
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        rb_buffer_t *buffer = c->buffer;
-
-        const EntryExitRecord &this_record =
-            entryExitRecord[(this + coverage).get_coverage(rb_buffer_get_cur(buffer, 0)->codepoint)];
-        if (!this_record.entryAnchor)
-            return false;
-
-        rb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-        skippy_iter.reset(rb_buffer_get_index(buffer), 1);
-        if (!skippy_iter.prev())
-            return false;
-
-        const EntryExitRecord &prev_record =
-            entryExitRecord[(this + coverage)
-                                .get_coverage(rb_buffer_get_glyph_infos(buffer)[skippy_iter.idx].codepoint)];
-        if (!prev_record.exitAnchor)
-            return false;
-
-        unsigned int i = skippy_iter.idx;
-        unsigned int j = rb_buffer_get_index(buffer);
-
-        rb_buffer_unsafe_to_break(buffer, i, j);
-        float entry_x, entry_y, exit_x, exit_y;
-        (this + prev_record.exitAnchor).get_anchor(c, rb_buffer_get_glyph_infos(buffer)[i].codepoint, &exit_x, &exit_y);
-        (this + this_record.entryAnchor)
-            .get_anchor(c, rb_buffer_get_glyph_infos(buffer)[j].codepoint, &entry_x, &entry_y);
-
-        rb_glyph_position_t *pos = rb_buffer_get_glyph_positions(buffer);
-
-        rb_position_t d;
-        /* Main-direction adjustment */
-        switch (c->direction) {
-        case RB_DIRECTION_LTR:
-            pos[i].x_advance = roundf(exit_x) + pos[i].x_offset;
-
-            d = roundf(entry_x) + pos[j].x_offset;
-            pos[j].x_advance -= d;
-            pos[j].x_offset -= d;
-            break;
-        case RB_DIRECTION_RTL:
-            d = roundf(exit_x) + pos[i].x_offset;
-            pos[i].x_advance -= d;
-            pos[i].x_offset -= d;
-
-            pos[j].x_advance = roundf(entry_x) + pos[j].x_offset;
-            break;
-        case RB_DIRECTION_TTB:
-            pos[i].y_advance = roundf(exit_y) + pos[i].y_offset;
-
-            d = roundf(entry_y) + pos[j].y_offset;
-            pos[j].y_advance -= d;
-            pos[j].y_offset -= d;
-            break;
-        case RB_DIRECTION_BTT:
-            d = roundf(exit_y) + pos[i].y_offset;
-            pos[i].y_advance -= d;
-            pos[i].y_offset -= d;
-
-            pos[j].y_advance = roundf(entry_y);
-            break;
-        case RB_DIRECTION_INVALID:
-        default:
-            break;
-        }
-
-        /* Cross-direction adjustment */
-
-        /* We attach child to parent (think graph theory and rooted trees whereas
-         * the root stays on baseline and each node aligns itself against its
-         * parent.
-         *
-         * Optimize things for the case of RightToLeft, as that's most common in
-         * Arabic. */
-        unsigned int child = i;
-        unsigned int parent = j;
-        rb_position_t x_offset = entry_x - exit_x;
-        rb_position_t y_offset = entry_y - exit_y;
-        if (!(c->lookup_props & LookupFlag::RightToLeft)) {
-            unsigned int k = child;
-            child = parent;
-            parent = k;
-            x_offset = -x_offset;
-            y_offset = -y_offset;
-        }
-
-        /* If child was already connected to someone else, walk through its old
-         * chain and reverse the link direction, such that the whole tree of its
-         * previous connection now attaches to new parent.  Watch out for case
-         * where new parent is on the path from old chain...
-         */
-        reverse_cursive_minor_offset(pos, child, c->direction, parent);
-
-        pos[child].attach_type() = ATTACH_TYPE_CURSIVE;
-        pos[child].attach_chain() = (int)parent - (int)child;
-        rb_buffer_set_scratch_flags(buffer,
-                                    rb_buffer_get_scratch_flags(buffer) | RB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT);
-        if (likely(RB_DIRECTION_IS_HORIZONTAL(c->direction)))
-            pos[child].y_offset = y_offset;
-        else
-            pos[child].x_offset = x_offset;
-
-        /* If parent was attached to child, break them free.
-         * https://github.com/harfbuzz/harfbuzz/issues/2469
-         */
-        if (unlikely(pos[parent].attach_chain() == -pos[child].attach_chain()))
-            pos[parent].attach_chain() = 0;
-
-        rb_buffer_set_index(buffer, rb_buffer_get_index(buffer) + 1);
-        return true;
+    bool apply(rb_ot_apply_context_t *c) const {
+        return rb_cursive_pos_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return coverage.sanitize(c, this) && entryExitRecord.sanitize(c, this);
+        return format != 1 || coverage.sanitize(c, this);
     }
 
 protected:
-    HBUINT16 format;                          /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage;              /* Offset to Coverage table--from
-                                               * beginning of subtable */
-    ArrayOf<EntryExitRecord> entryExitRecord; /* Array of EntryExit records--in
-                                               * Coverage Index order */
-public:
-    DEFINE_SIZE_ARRAY(6, entryExitRecord);
-};
-
-struct CursivePos
-{
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        CursivePosFormat1 format1;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> coverage;
 };
 
 typedef AnchorMatrix BaseArray; /* base-major--
@@ -772,7 +613,7 @@ struct PosLookupSubTable
         case Pair:
             return c->dispatch(u.pair, rb_forward<Ts>(ds)...);
         case Cursive:
-            return u.cursive.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.cursive, rb_forward<Ts>(ds)...);
         case MarkBase:
             return u.markBase.dispatch(c, rb_forward<Ts>(ds)...);
         case MarkLig:

@@ -2,13 +2,15 @@
 
 use std::convert::TryFrom;
 
-use ttf_parser::parser::{FromData, NumFrom, Offset, Offset16, Offsets16, Stream};
+use ttf_parser::parser::{FromData, LazyArray16, NumFrom, Offset, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
-use super::common::{Coverage, ClassDef, Device};
+use super::common::{Coverage, ClassDef, Device, LookupFlags};
 use super::dyn_array::DynArray;
 use super::matching::SkippyIter;
 use super::ApplyContext;
+use crate::buffer::{BufferScratchFlags, GlyphPosition};
+use crate::common::Direction;
 use crate::Font;
 
 #[derive(Clone, Copy, Debug)]
@@ -188,6 +190,196 @@ impl<'a> PairPos<'a> {
         ctx.buffer_mut().idx = pos + usize::from(!flags[1].is_empty());
         Some(())
     }
+}
+
+#[derive(Clone, Copy, Debug)]
+enum CursivePos<'a> {
+    Format1 {
+        data: &'a [u8],
+        coverage: Coverage<'a>,
+        entry_exits: LazyArray16<'a, EntryExitRecord>,
+    }
+}
+
+impl<'a> CursivePos<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let format: u16 = s.read()?;
+        Some(match format {
+            1 => {
+                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let count = s.read::<u16>()?;
+                let entry_exits = s.read_array16(count)?;
+                Self::Format1 { data, coverage, entry_exits }
+            }
+            _ => return None,
+        })
+    }
+
+    fn coverage(&self) -> &Coverage<'a> {
+        match self {
+            Self::Format1 { coverage, .. } => coverage,
+        }
+    }
+
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+        let (i, (exit_x, exit_y), (entry_x, entry_y)) = match self {
+            Self::Format1 { data, coverage, entry_exits } => {
+                let this = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+                let entry = entry_exits.get(coverage.get(this)?)?.entry_anchor;
+                if entry.is_null() {
+                    return None;
+                }
+
+                let mut iter = SkippyIter::new(ctx, ctx.buffer().idx, 1, false);
+                if !iter.prev() {
+                    return None;
+                }
+
+                let i = iter.index();
+                let prev = GlyphId(u16::try_from(ctx.buffer().info[i].codepoint).unwrap());
+                let exit = entry_exits.get(coverage.get(prev)?)?.exit_anchor;
+                if exit.is_null() {
+                    return None;
+                }
+
+                let exit_pos = Anchor::parse(data.get(exit.to_usize()..)?)?.get(ctx);
+                let entry_pos = Anchor::parse(data.get(entry.to_usize()..)?)?.get(ctx);
+                (i, exit_pos, entry_pos)
+            }
+        };
+
+        let direction = ctx.direction();
+        let lookup_props = ctx.lookup_props();
+        let buffer = ctx.buffer_mut();
+        let j = buffer.idx;
+        buffer.unsafe_to_break(i, j);
+
+        let pos = &mut buffer.pos;
+        match direction {
+            Direction::LeftToRight => {
+                pos[i].x_advance = exit_x + pos[i].x_offset;
+                let d = entry_x + pos[j].x_offset;
+                pos[j].x_advance -= d;
+                pos[j].x_offset -= d;
+            }
+            Direction::RightToLeft => {
+                let d = exit_x + pos[i].x_offset;
+                pos[i].x_advance -= d;
+                pos[i].x_offset -= d;
+                pos[j].x_advance = entry_x + pos[j].x_offset;
+            }
+            Direction::TopToBottom => {
+                pos[i].y_advance = exit_y + pos[i].y_offset;
+                let d = entry_y + pos[j].y_offset;
+                pos[j].y_advance -= d;
+                pos[j].y_offset -= d;
+            }
+            Direction::BottomToTop => {
+                let d = exit_y + pos[i].y_offset;
+                pos[i].y_advance -= d;
+                pos[i].y_offset -= d;
+                pos[j].y_advance = entry_y;
+            }
+            Direction::Invalid => {}
+        }
+
+        // Cross-direction adjustment
+
+        // We attach child to parent (think graph theory and rooted trees whereas
+        // the root stays on baseline and each node aligns itself against its
+        // parent.
+        //
+        // Optimize things for the case of RightToLeft, as that's most common in
+        // Arabic.
+        let mut child = i;
+        let mut parent = j;
+        let mut x_offset = entry_x - exit_x;
+        let mut y_offset = entry_y - exit_y;
+
+        // Low bits are lookup flags, so we want to truncate.
+        if lookup_props as u16 & LookupFlags::RIGHT_TO_LEFT.bits() == 0 {
+            std::mem::swap(&mut child, &mut parent);
+            x_offset = -x_offset;
+            y_offset = -y_offset;
+        }
+
+        // If child was already connected to someone else, walk through its old
+        // chain and reverse the link direction, such that the whole tree of its
+        // previous connection now attaches to new parent.  Watch out for case
+        // where new parent is on the path from old chain...
+        reverse_cursive_minor_offset(pos, child, direction, parent);
+
+        pos[child].set_attach_type(AttachType::Cursive as u8);
+        pos[child].set_attach_chain(parent as i16 - child as i16);
+
+        buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+        if direction.is_horizontal() {
+            pos[child].y_offset = y_offset;
+        } else {
+            pos[child].x_offset = x_offset;
+        }
+
+        // If parent was attached to child, break them free.
+        // https://github.com/harfbuzz/harfbuzz/issues/2469
+        if pos[parent].attach_chain() == -pos[child].attach_chain() {
+            pos[parent].set_attach_chain(0);
+        }
+
+        buffer.idx += 1;
+        Some(())
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct EntryExitRecord {
+    entry_anchor: Offset16,
+    exit_anchor: Offset16,
+}
+
+impl FromData for EntryExitRecord {
+    const SIZE: usize = 4;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        Some(Self {
+            entry_anchor: s.read()?,
+            exit_anchor: s.read()?,
+        })
+    }
+}
+
+fn reverse_cursive_minor_offset(
+    pos: &mut [GlyphPosition],
+    i: usize,
+    direction: Direction,
+    new_parent: usize,
+) {
+    let chain = pos[i].attach_chain();
+    let attach_type = pos[i].attach_type();
+    if chain == 0 || attach_type & AttachType::Cursive as u8 == 0 {
+        return;
+    }
+
+    pos[i].set_attach_chain(0);
+
+    // Stop if we see new parent in the chain.
+    let j = (i as isize + isize::from(chain)) as _;
+    if j == new_parent {
+        return;
+    }
+
+    reverse_cursive_minor_offset(pos, j, direction, new_parent);
+
+    if direction.is_horizontal() {
+        pos[j].y_offset = -pos[i].y_offset;
+    } else {
+        pos[j].x_offset = -pos[i].x_offset;
+    }
+
+    pos[j].set_attach_chain(-chain);
+    pos[j].set_attach_type(attach_type);
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -380,9 +572,9 @@ impl<'a> Anchor<'a> {
         Some(table)
     }
 
-    fn get(&self, ctx: &ApplyContext) -> (f32, f32) {
-        let mut x = f32::from(self.x);
-        let mut y = f32::from(self.y);
+    fn get(&self, ctx: &ApplyContext) -> (i32, i32) {
+        let mut x = i32::from(self.x);
+        let mut y = i32::from(self.y);
 
         if self.x_device.is_some() || self.y_device.is_some() {
             let font = ctx.font();
@@ -391,13 +583,13 @@ impl<'a> Anchor<'a> {
 
             if let Some(device) = self.x_device {
                 if ppem_x != 0 || coords != 0 {
-                    x += device.get_x_delta(font).unwrap_or(0) as f32;
+                    x += device.get_x_delta(font).unwrap_or(0);
                 }
             }
 
             if let Some(device) = self.y_device {
                 if ppem_y != 0 || coords != 0 {
-                    y += device.get_y_delta(font).unwrap_or(0) as f32;
+                    y += device.get_y_delta(font).unwrap_or(0);
                 }
             }
         }
@@ -406,8 +598,15 @@ impl<'a> Anchor<'a> {
     }
 }
 
+enum AttachType {
+    None = 0,
+    Mark = 1,
+    Cursive = 2,
+}
+
 make_ffi_funcs!(SinglePos, rb_single_pos_apply);
 make_ffi_funcs!(PairPos, rb_pair_pos_apply);
+make_ffi_funcs!(CursivePos, rb_cursive_pos_apply);
 
 #[no_mangle]
 pub extern "C" fn rb_value_format_apply(
@@ -436,8 +635,8 @@ pub extern "C" fn rb_anchor_get(
     if let Some(anchor) = Anchor::parse(data) {
         let (vx, vy) = anchor.get(&ctx);
         unsafe {
-            *x = vx;
-            *y = vy;
+            *x = vx as f32;
+            *y = vy as f32;
         }
     }
 }
