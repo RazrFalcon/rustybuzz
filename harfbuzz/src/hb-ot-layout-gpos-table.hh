@@ -37,6 +37,7 @@ RB_EXTERN rb_bool_t rb_pair_pos_apply(const char *data, OT::rb_ot_apply_context_
 RB_EXTERN rb_bool_t rb_cursive_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
 RB_EXTERN rb_bool_t rb_anchor_get(const char *data, const OT::rb_ot_apply_context_t *c, float *x, float *y);
+RB_EXTERN rb_bool_t rb_anchor_matrix_get(const char *data, unsigned int row, unsigned int col, unsigned int cols, const void **anchor);
 }
 
 namespace OT {
@@ -100,33 +101,21 @@ struct AnchorMatrix
 {
     const Anchor &get_anchor(unsigned int row, unsigned int col, unsigned int cols, bool *found) const
     {
+        const void *anchor;
         *found = false;
-        if (unlikely(row >= rows || col >= cols))
-            return Null(Anchor);
-        *found = !matrixZ[row * cols + col].is_null();
-        return this + matrixZ[row * cols + col];
+        if (rb_anchor_matrix_get((const char*)this, row, col, cols, &anchor)) {
+            *found = true;
+            return *((const Anchor*)anchor);
+        }
+        return Null(Anchor);
     }
 
     bool sanitize(rb_sanitize_context_t *c, unsigned int cols) const
     {
-        if (!c->check_struct(this))
-            return false;
-        if (unlikely(rb_unsigned_mul_overflows(rows, cols)))
-            return false;
-        unsigned int count = rows * cols;
-        if (!c->check_array(matrixZ.arrayZ, count))
-            return false;
-        for (unsigned int i = 0; i < count; i++)
-            if (!matrixZ[i].sanitize(c, this))
-                return false;
         return true;
     }
 
-    HBUINT16 rows;                            /* Number of rows */
-    UnsizedArrayOf<OffsetTo<Anchor>> matrixZ; /* Matrix of offsets to Anchor tables--
-                                               * from beginning of AnchorMatrix table */
-public:
-    DEFINE_SIZE_ARRAY(2, matrixZ);
+    HBUINT16 rows;
 };
 
 struct MarkRecord

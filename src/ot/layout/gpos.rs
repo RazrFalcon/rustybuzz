@@ -2,7 +2,9 @@
 
 use std::convert::TryFrom;
 
-use ttf_parser::parser::{FromData, LazyArray16, NumFrom, Offset, Offset16, Offsets16, Stream};
+use ttf_parser::parser::{
+    FromData, LazyArray16, LazyArray32, NumFrom, Offset, Offset16, Offsets16, Stream
+};
 use ttf_parser::GlyphId;
 
 use super::common::{Coverage, ClassDef, Device, LookupFlags};
@@ -532,7 +534,6 @@ impl FromData for ValueFormatFlags {
     }
 }
 
-
 #[derive(Clone, Copy, Debug)]
 struct Anchor<'a> {
     x: i16,
@@ -598,6 +599,34 @@ impl<'a> Anchor<'a> {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+struct AnchorMatrix<'a> {
+    data: &'a [u8],
+    cols: u16,
+    matrix: LazyArray32<'a, Offset16>,
+}
+
+impl<'a> AnchorMatrix<'a> {
+    fn parse(data: &'a [u8], cols: u16) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let rows = s.read::<u16>()?;
+        let count = u32::from(rows) * u32::from(cols);
+        let matrix = s.read_array32(count)?;
+        Some(Self { data, cols, matrix })
+    }
+
+    fn get(&self, row: u16, col: u16) -> Option<Anchor> {
+        Anchor::parse(self.get_data(row, col)?)
+    }
+
+    fn get_data(&self, row: u16, col: u16) -> Option<&'a [u8]> {
+        let idx = u32::from(row) * u32::from(self.cols) + u32::from(col);
+        let offset = self.matrix.get(idx)?.to_usize();
+        self.data.get(offset..)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
 enum AttachType {
     None = 0,
     Mark = 1,
@@ -638,5 +667,24 @@ pub extern "C" fn rb_anchor_get(
             *x = vx as f32;
             *y = vy as f32;
         }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_anchor_matrix_get(
+    data: *const u8,
+    row: u32,
+    col: u32,
+    cols: u32,
+    anchor_data: *mut *const u8,
+) -> crate::ffi::rb_bool_t {
+    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
+    let anchor = AnchorMatrix::parse(data, cols as u16)
+        .and_then(|matrix| matrix.get_data(row as u16, col as u16));
+    if let Some(data) = anchor {
+        unsafe { *anchor_data = data.as_ptr(); }
+        1
+    } else {
+        0
     }
 }
