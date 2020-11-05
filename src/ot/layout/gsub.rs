@@ -525,42 +525,40 @@ impl<'a> ReverseChainSingleSubst<'a> {
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+        let Self::Format1 {
+            data,
+            coverage,
+            backtrack_coverages,
+            lookahead_coverages,
+            substitutes,
+        } = *self;
+
         // No chaining to this type.
         if ctx.nesting_level_left() != MAX_NESTING_LEVEL {
             return None;
         }
 
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
-        match *self {
-            Self::Format1 {
-                data,
-                coverage,
-                backtrack_coverages,
-                lookahead_coverages,
-                substitutes,
-            } => {
-                let index = coverage.get(glyph_id)?;
-                if index >= substitutes.len() {
-                    return None;
-                }
+        let index = coverage.get(glyph_id)?;
+        if index >= substitutes.len() {
+            return None;
+        }
 
-                let subst = substitutes.get(index)?;
-                let match_func = &match_coverage(data);
-                if let Some(start_idx) = match_backtrack(ctx, backtrack_coverages, match_func) {
-                    if let Some(end_idx) = match_lookahead(ctx, lookahead_coverages, match_func, 1) {
-                        ctx.buffer_mut().unsafe_to_break_from_outbuffer(start_idx, end_idx);
-                        ctx.replace_glyph_inplace(subst);
+        let subst = substitutes.get(index)?;
+        let match_func = &match_coverage(data);
+        if let Some(start_idx) = match_backtrack(ctx, backtrack_coverages, match_func) {
+            if let Some(end_idx) = match_lookahead(ctx, lookahead_coverages, match_func, 1) {
+                ctx.buffer_mut().unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                ctx.replace_glyph_inplace(subst);
 
-                        // Note: We DON'T decrease buffer.idx.  The main loop does it
-                        // for us.  This is useful for preventing surprises if someone
-                        // calls us through a Context lookup.
-                        return Some(());
-                    }
-                }
-
-                None
+                // Note: We DON'T decrease buffer.idx.  The main loop does it
+                // for us.  This is useful for preventing surprises if someone
+                // calls us through a Context lookup.
+                return Some(());
             }
         }
+
+        None
     }
 }
 

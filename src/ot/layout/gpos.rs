@@ -225,32 +225,29 @@ impl<'a> CursivePos<'a> {
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let (i, (exit_x, exit_y), (entry_x, entry_y)) = match self {
-            Self::Format1 { data, coverage, entry_exits } => {
-                let this = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
-                let entry = entry_exits.get(coverage.get(this)?)?.entry_anchor;
-                if entry.is_null() {
-                    return None;
-                }
+        let Self::Format1 { data, coverage, entry_exits } = *self;
 
-                let mut iter = SkippyIter::new(ctx, ctx.buffer().idx, 1, false);
-                if !iter.prev() {
-                    return None;
-                }
+        let this = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let entry = entry_exits.get(coverage.get(this)?)?.entry_anchor;
+        if entry.is_null() {
+            return None;
+        }
 
-                let i = iter.index();
-                let prev = GlyphId(u16::try_from(ctx.buffer().info[i].codepoint).unwrap());
-                let exit = entry_exits.get(coverage.get(prev)?)?.exit_anchor;
-                if exit.is_null() {
-                    return None;
-                }
+        let mut iter = SkippyIter::new(ctx, ctx.buffer().idx, 1, false);
+        if !iter.prev() {
+            return None;
+        }
 
-                let font = ctx.font();
-                let exit_pos = Anchor::parse(data.get(exit.to_usize()..)?)?.get(font);
-                let entry_pos = Anchor::parse(data.get(entry.to_usize()..)?)?.get(font);
-                (i, exit_pos, entry_pos)
-            }
-        };
+        let i = iter.index();
+        let prev = GlyphId(u16::try_from(ctx.buffer().info[i].codepoint).unwrap());
+        let exit = entry_exits.get(coverage.get(prev)?)?.exit_anchor;
+        if exit.is_null() {
+            return None;
+        }
+
+        let font = ctx.font();
+        let (exit_x, exit_y) = Anchor::parse(data.get(exit.to_usize()..)?)?.get(font);
+        let (entry_x, entry_y) = Anchor::parse(data.get(entry.to_usize()..)?)?.get(font);
 
         let direction = ctx.direction();
         let lookup_props = ctx.lookup_props();
@@ -419,50 +416,48 @@ impl<'a> MarkBasePos<'a> {
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        match *self {
-            Self::Format1 { mark_coverage, base_coverage, marks, base_matrix } => {
-                let mark_glyph = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
-                let mark_index = mark_coverage.get(mark_glyph)?;
+        let Self::Format1 { mark_coverage, base_coverage, marks, base_matrix } = *self;
 
-                // Now we search backwards for a non-mark glyph
-                let mut iter = SkippyIter::new(ctx, ctx.buffer().idx, 1, false);
-                iter.set_lookup_props(u32::from(LookupFlags::IGNORE_MARKS.bits()));
+        let mark_glyph = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let mark_index = mark_coverage.get(mark_glyph)?;
 
-                let info = &ctx.buffer().info;
-                loop {
-                    if !iter.prev() {
-                        return None;
-                    }
+        // Now we search backwards for a non-mark glyph
+        let mut iter = SkippyIter::new(ctx, ctx.buffer().idx, 1, false);
+        iter.set_lookup_props(u32::from(LookupFlags::IGNORE_MARKS.bits()));
 
-                    // We only want to attach to the first of a MultipleSubst sequence.
-                    // https://github.com/harfbuzz/harfbuzz/issues/740
-                    // Reject others...
-                    // ...but stop if we find a mark in the MultipleSubst sequence:
-                    // https://github.com/harfbuzz/harfbuzz/issues/1020
-                    let idx = iter.index();
-                    if !info[idx].is_multiplied()
-                        || info[idx].lig_comp() == 0
-                        || idx == 0
-                        || info[idx - 1].is_mark()
-                        || info[idx].lig_id() != info[idx - 1].lig_id()
-                        || info[idx].lig_comp() != info[idx - 1].lig_comp() + 1
-                    {
-                        break;
-                    }
-                    iter.reject();
-                }
-
-                // Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled
-
-                let idx = iter.index();
-                let base_glyph = GlyphId(u16::try_from(info[idx].codepoint).unwrap());
-                let base_index = base_coverage.get(base_glyph)?;
-
-                marks.apply(ctx, base_matrix, mark_index, base_index, idx)?;
-
-                Some(())
+        let info = &ctx.buffer().info;
+        loop {
+            if !iter.prev() {
+                return None;
             }
+
+            // We only want to attach to the first of a MultipleSubst sequence.
+            // https://github.com/harfbuzz/harfbuzz/issues/740
+            // Reject others...
+            // ...but stop if we find a mark in the MultipleSubst sequence:
+            // https://github.com/harfbuzz/harfbuzz/issues/1020
+            let idx = iter.index();
+            if !info[idx].is_multiplied()
+                || info[idx].lig_comp() == 0
+                || idx == 0
+                || info[idx - 1].is_mark()
+                || info[idx].lig_id() != info[idx - 1].lig_id()
+                || info[idx].lig_comp() != info[idx - 1].lig_comp() + 1
+            {
+                break;
+            }
+            iter.reject();
         }
+
+        // Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled
+
+        let idx = iter.index();
+        let base_glyph = GlyphId(u16::try_from(info[idx].codepoint).unwrap());
+        let base_index = base_coverage.get(base_glyph)?;
+
+        marks.apply(ctx, base_matrix, mark_index, base_index, idx)?;
+
+        Some(())
     }
 }
 
