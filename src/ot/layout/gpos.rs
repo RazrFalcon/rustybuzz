@@ -418,14 +418,15 @@ impl<'a> MarkBasePos<'a> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let Self::Format1 { mark_coverage, base_coverage, marks, base_matrix } = *self;
 
-        let mark_glyph = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let buffer = ctx.buffer();
+        let mark_glyph = GlyphId(u16::try_from(buffer.cur(0).codepoint).unwrap());
         let mark_index = mark_coverage.get(mark_glyph)?;
 
         // Now we search backwards for a non-mark glyph
-        let mut iter = SkippyIter::new(ctx, ctx.buffer().idx, 1, false);
+        let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
         iter.set_lookup_props(u32::from(LookupFlags::IGNORE_MARKS.bits()));
 
-        let info = &ctx.buffer().info;
+        let info = &buffer.info;
         loop {
             if !iter.prev() {
                 return None;
@@ -455,9 +456,100 @@ impl<'a> MarkBasePos<'a> {
         let base_glyph = GlyphId(u16::try_from(info[idx].codepoint).unwrap());
         let base_index = base_coverage.get(base_glyph)?;
 
-        marks.apply(ctx, base_matrix, mark_index, base_index, idx)?;
+        marks.apply(ctx, base_matrix, mark_index, base_index, idx)
+    }
+}
 
-        Some(())
+#[derive(Clone, Copy, Debug)]
+enum MarkLigPos<'a> {
+    Format1 {
+        mark_coverage: Coverage<'a>,
+        lig_coverage: Coverage<'a>,
+        marks: MarkArray<'a>,
+        lig_array: LigatureArray<'a>,
+    }
+}
+
+impl<'a> MarkLigPos<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let format: u16 = s.read()?;
+        Some(match format {
+            1 => {
+                let mark_coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let lig_coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let class_count = s.read::<u16>()?;
+                let marks = MarkArray::parse(s.read_offset16_data()?)?;
+                let lig_array = LigatureArray::parse(s.read_offset16_data()?, class_count)?;
+                Self::Format1 { mark_coverage, lig_coverage, marks, lig_array }
+            }
+            _ => return None,
+        })
+    }
+
+    fn coverage(&self) -> &Coverage<'a> {
+        match self {
+            Self::Format1 { mark_coverage, .. } => mark_coverage,
+        }
+    }
+
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+        let Self::Format1 { mark_coverage, lig_coverage, marks, lig_array } = *self;
+
+        let buffer = ctx.buffer();
+        let mark_glyph = GlyphId(u16::try_from(buffer.cur(0).codepoint).unwrap());
+        let mark_index = mark_coverage.get(mark_glyph)?;
+
+        // Now we search backwards for a non-mark glyph
+        let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
+        iter.set_lookup_props(u32::from(LookupFlags::IGNORE_MARKS.bits()));
+        if !iter.prev() {
+            return None;
+        }
+
+        // Checking that matched glyph is actually a ligature by GDEF is too strong; disabled
+
+        let idx = iter.index();
+        let lig_glyph = GlyphId(u16::try_from(buffer.info[idx].codepoint).unwrap());
+        let lig_index = lig_coverage.get(lig_glyph)?;
+        let lig_attach = lig_array.get(lig_index)?;
+
+        // Find component to attach to
+        let comp_count = lig_attach.rows;
+        if comp_count == 0 {
+            return None;
+        }
+
+        // We must now check whether the ligature ID of the current mark glyph
+        // is identical to the ligature ID of the found ligature.  If yes, we
+        // can directly use the component index.  If not, we attach the mark
+        // glyph to the last component of the ligature.
+        let lig_id = buffer.info[idx].lig_id();
+        let mark_id = buffer.cur(0).lig_id();
+        let mark_comp = u16::from(buffer.cur(0).lig_comp());
+        let matched = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
+        let comp_index = if matched { mark_comp.min(comp_count) } else { comp_count } - 1;
+
+        marks.apply(ctx, lig_attach, mark_index, comp_index, idx)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct LigatureArray<'a> {
+    class_count: u16,
+    attach: Offsets16<'a, Offset16>,
+}
+
+impl<'a> LigatureArray<'a> {
+    fn parse(data: &'a [u8], class_count: u16) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let count = s.read::<u16>()?;
+        let attach = s.read_offsets16(count, data)?;
+        Some(Self { class_count, attach })
+    }
+
+    fn get(&self, idx: u16) -> Option<AnchorMatrix> {
+        AnchorMatrix::parse(self.attach.slice(idx)?, self.class_count)
     }
 }
 
@@ -678,6 +770,7 @@ impl<'a> Anchor<'a> {
 #[derive(Clone, Copy, Debug)]
 struct AnchorMatrix<'a> {
     data: &'a [u8],
+    rows: u16,
     cols: u16,
     matrix: LazyArray32<'a, Offset16>,
 }
@@ -688,7 +781,7 @@ impl<'a> AnchorMatrix<'a> {
         let rows = s.read::<u16>()?;
         let count = u32::from(rows) * u32::from(cols);
         let matrix = s.read_array32(count)?;
-        Some(Self { data, cols, matrix })
+        Some(Self { data, rows, cols, matrix })
     }
 
     fn get(&self, row: u16, col: u16) -> Option<Anchor> {
@@ -777,6 +870,7 @@ make_ffi_funcs!(SinglePos, rb_single_pos_apply);
 make_ffi_funcs!(PairPos, rb_pair_pos_apply);
 make_ffi_funcs!(CursivePos, rb_cursive_pos_apply);
 make_ffi_funcs!(MarkBasePos, rb_mark_base_pos_apply);
+make_ffi_funcs!(MarkLigPos, rb_mark_lig_pos_apply);
 
 #[no_mangle]
 pub extern "C" fn rb_value_format_apply(

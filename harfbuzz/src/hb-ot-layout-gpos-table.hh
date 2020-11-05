@@ -36,6 +36,7 @@ RB_EXTERN rb_bool_t rb_single_pos_apply(const char *data, OT::rb_ot_apply_contex
 RB_EXTERN rb_bool_t rb_pair_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_cursive_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_mark_base_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_mark_lig_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
 RB_EXTERN rb_bool_t rb_mark_array_apply(const char *data, OT::rb_ot_apply_context_t *c, unsigned int mark_index, unsigned int glyph_index, const char *anchors_data, unsigned int class_count, unsigned int glyph_pos);
 }
@@ -196,17 +197,7 @@ protected:
     OffsetTo<Coverage> markCoverage;
 };
 
-typedef AnchorMatrix LigatureAttach; /* component-major--
-                                      * in order of writing direction--,
-                                      * mark-minor--
-                                      * ordered by class--zero-based. */
-
-typedef OffsetListOf<LigatureAttach> LigatureArray;
-/* Array of LigatureAttach
- * tables ordered by
- * LigatureCoverage Index */
-
-struct MarkLigPosFormat1
+struct MarkLigPos
 {
     const Coverage &get_coverage() const
     {
@@ -215,92 +206,17 @@ struct MarkLigPosFormat1
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        rb_buffer_t *buffer = c->buffer;
-        unsigned int mark_index = (this + markCoverage).get_coverage(rb_buffer_get_cur(buffer, 0)->codepoint);
-        if (likely(mark_index == NOT_COVERED))
-            return false;
-
-        /* Now we search backwards for a non-mark glyph */
-        rb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-        skippy_iter.reset(rb_buffer_get_index(buffer), 1);
-        skippy_iter.set_lookup_props(LookupFlag::IgnoreMarks);
-        if (!skippy_iter.prev())
-            return false;
-
-        /* Checking that matched glyph is actually a ligature by GDEF is too strong; disabled */
-        // if (!_rb_glyph_info_is_ligature (&rb_buffer_get_glyph_infos(buffer)[skippy_iter.idx])) { return_trace
-        // (false); }
-
-        unsigned int j = skippy_iter.idx;
-        unsigned int lig_index = (this + ligatureCoverage).get_coverage(rb_buffer_get_glyph_infos(buffer)[j].codepoint);
-        if (lig_index == NOT_COVERED)
-            return false;
-
-        const LigatureArray &lig_array = this + ligatureArray;
-        const LigatureAttach &lig_attach = lig_array[lig_index];
-
-        /* Find component to attach to */
-        unsigned int comp_count = lig_attach.rows;
-        if (unlikely(!comp_count))
-            return false;
-
-        /* We must now check whether the ligature ID of the current mark glyph
-         * is identical to the ligature ID of the found ligature.  If yes, we
-         * can directly use the component index.  If not, we attach the mark
-         * glyph to the last component of the ligature. */
-        unsigned int comp_index;
-        unsigned int lig_id = _rb_glyph_info_get_lig_id(&rb_buffer_get_glyph_infos(buffer)[j]);
-        unsigned int mark_id = _rb_glyph_info_get_lig_id(rb_buffer_get_cur(buffer, 0));
-        unsigned int mark_comp = _rb_glyph_info_get_lig_comp(rb_buffer_get_cur(buffer, 0));
-        if (lig_id && lig_id == mark_id && mark_comp > 0)
-            comp_index = rb_min(comp_count, _rb_glyph_info_get_lig_comp(rb_buffer_get_cur(buffer, 0))) - 1;
-        else
-            comp_index = comp_count - 1;
-
-        return (this + markArray).apply(c, mark_index, comp_index, lig_attach, classCount, j);
+        return rb_mark_lig_pos_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return c->check_struct(this) && markCoverage.sanitize(c, this) && ligatureCoverage.sanitize(c, this) &&
-               markArray.sanitize(c, this) && ligatureArray.sanitize(c, this, (unsigned int)classCount);
+        return format != 1 || markCoverage.sanitize(c, this);
     }
 
 protected:
-    HBUINT16 format;                       /* Format identifier--format = 1 */
-    OffsetTo<Coverage> markCoverage;       /* Offset to Mark Coverage table--from
-                                            * beginning of MarkLigPos subtable */
-    OffsetTo<Coverage> ligatureCoverage;   /* Offset to Ligature Coverage
-                                            * table--from beginning of MarkLigPos
-                                            * subtable */
-    HBUINT16 classCount;                   /* Number of defined mark classes */
-    OffsetTo<MarkArray> markArray;         /* Offset to MarkArray table--from
-                                            * beginning of MarkLigPos subtable */
-    OffsetTo<LigatureArray> ligatureArray; /* Offset to LigatureArray table--from
-                                            * beginning of MarkLigPos subtable */
-public:
-    DEFINE_SIZE_STATIC(12);
-};
-
-struct MarkLigPos
-{
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        MarkLigPosFormat1 format1;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> markCoverage;
 };
 
 typedef AnchorMatrix Mark2Array; /* mark2-major--
@@ -454,7 +370,7 @@ struct PosLookupSubTable
         case MarkBase:
             return c->dispatch(u.markBase, rb_forward<Ts>(ds)...);
         case MarkLig:
-            return u.markLig.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.markLig, rb_forward<Ts>(ds)...);
         case MarkMark:
             return u.markMark.dispatch(c, rb_forward<Ts>(ds)...);
         case Context:
