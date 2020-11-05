@@ -3,11 +3,11 @@
 use std::convert::TryFrom;
 
 use ttf_parser::parser::{
-    FromData, LazyArray16, LazyArray32, NumFrom, Offset, Offset16, Offsets16, Stream
+    FromData, LazyArray16, LazyArray32, NumFrom, Offset, Offset16, Offsets16, Stream,
 };
 use ttf_parser::GlyphId;
 
-use super::common::{Coverage, ClassDef, Device, GlyphClass, LookupFlags};
+use super::common::{ClassDef, Coverage, Device, GlyphClass, LookupFlags};
 use super::dyn_array::DynArray;
 use super::matching::SkippyIter;
 use super::ApplyContext;
@@ -527,8 +527,8 @@ impl<'a> MarkLigPos<'a> {
         let lig_id = buffer.info[idx].lig_id();
         let mark_id = buffer.cur(0).lig_id();
         let mark_comp = u16::from(buffer.cur(0).lig_comp());
-        let matched = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
-        let comp_index = if matched { mark_comp.min(comp_count) } else { comp_count } - 1;
+        let matches = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
+        let comp_index = if matches { mark_comp.min(comp_count) } else { comp_count } - 1;
 
         marks.apply(ctx, lig_attach, mark_index, comp_index, idx)
     }
@@ -550,6 +550,84 @@ impl<'a> LigatureArray<'a> {
 
     fn get(&self, idx: u16) -> Option<AnchorMatrix> {
         AnchorMatrix::parse(self.attach.slice(idx)?, self.class_count)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+enum MarkMarkPos<'a> {
+    Format1 {
+        mark1_coverage: Coverage<'a>,
+        mark2_coverage: Coverage<'a>,
+        marks: MarkArray<'a>,
+        mark2_matrix: AnchorMatrix<'a>,
+    }
+}
+
+impl<'a> MarkMarkPos<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let format: u16 = s.read()?;
+        Some(match format {
+            1 => {
+                let mark1_coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let mark2_coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let class_count = s.read::<u16>()?;
+                let marks = MarkArray::parse(s.read_offset16_data()?)?;
+                let mark2_matrix = AnchorMatrix::parse(s.read_offset16_data()?, class_count)?;
+                Self::Format1 { mark1_coverage, mark2_coverage, marks, mark2_matrix }
+            }
+            _ => return None,
+        })
+    }
+
+    fn coverage(&self) -> &Coverage<'a> {
+        match self {
+            Self::Format1 { mark1_coverage, .. } => mark1_coverage,
+        }
+    }
+
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+        let Self::Format1 { mark1_coverage, mark2_coverage, marks, mark2_matrix } = *self;
+
+        let buffer = ctx.buffer();
+        let mark1_glyph = GlyphId(u16::try_from(buffer.cur(0).codepoint).unwrap());
+        let mark1_index = mark1_coverage.get(mark1_glyph)?;
+
+        // Now we search backwards for a suitable mark glyph until a non-mark glyph
+        let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
+        iter.set_lookup_props(ctx.lookup_props() & !u32::from(LookupFlags::IGNORE_FLAGS.bits()));
+        if !iter.prev() {
+            return None;
+        }
+
+        let idx = iter.index();
+        if !buffer.info[idx].is_mark() {
+            return None;
+        }
+
+        let id1 = buffer.cur(0).lig_id();
+        let id2 = buffer.info[idx].lig_id();
+        let comp1 = buffer.cur(0).lig_comp();
+        let comp2 = buffer.info[idx].lig_comp();
+
+        let matches = if id1 == id2 {
+            // Marks belonging to the same base
+            // or marks belonging to the same ligature component.
+            id1 == 0 || comp1 == comp2
+        } else {
+            // If ligature ids don't match, it may be the case that one of the marks
+            // itself is a ligature.  In which case match.
+            (id1 > 0 && comp1 == 0) || (id2 > 0 && comp2 == 0)
+        };
+
+        if !matches {
+            return None;
+        }
+
+        let mark2_glyph = GlyphId(u16::try_from(buffer.info[idx].codepoint).unwrap());
+        let mark2_index = mark2_coverage.get(mark2_glyph)?;
+
+        marks.apply(ctx, mark2_matrix, mark1_index, mark2_index, idx)
     }
 }
 
@@ -871,6 +949,7 @@ make_ffi_funcs!(PairPos, rb_pair_pos_apply);
 make_ffi_funcs!(CursivePos, rb_cursive_pos_apply);
 make_ffi_funcs!(MarkBasePos, rb_mark_base_pos_apply);
 make_ffi_funcs!(MarkLigPos, rb_mark_lig_pos_apply);
+make_ffi_funcs!(MarkMarkPos, rb_mark_mark_pos_apply);
 
 #[no_mangle]
 pub extern "C" fn rb_value_format_apply(

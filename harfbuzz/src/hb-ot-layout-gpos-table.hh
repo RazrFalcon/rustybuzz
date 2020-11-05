@@ -37,6 +37,7 @@ RB_EXTERN rb_bool_t rb_pair_pos_apply(const char *data, OT::rb_ot_apply_context_
 RB_EXTERN rb_bool_t rb_cursive_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_mark_base_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_mark_lig_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_mark_mark_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
 RB_EXTERN rb_bool_t rb_mark_array_apply(const char *data, OT::rb_ot_apply_context_t *c, unsigned int mark_index, unsigned int glyph_index, const char *anchors_data, unsigned int class_count, unsigned int glyph_pos);
 }
@@ -219,12 +220,7 @@ protected:
     OffsetTo<Coverage> markCoverage;
 };
 
-typedef AnchorMatrix Mark2Array; /* mark2-major--
-                                  * in order of Mark2Coverage Index--,
-                                  * mark1-minor--
-                                  * ordered by class--zero-based. */
-
-struct MarkMarkPosFormat1
+struct MarkMarkPos
 {
     const Coverage &get_coverage() const
     {
@@ -233,94 +229,17 @@ struct MarkMarkPosFormat1
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        rb_buffer_t *buffer = c->buffer;
-        unsigned int mark1_index = (this + mark1Coverage).get_coverage(rb_buffer_get_cur(buffer, 0)->codepoint);
-        if (likely(mark1_index == NOT_COVERED))
-            return false;
-
-        /* now we search backwards for a suitable mark glyph until a non-mark glyph */
-        rb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-        skippy_iter.reset(rb_buffer_get_index(buffer), 1);
-        skippy_iter.set_lookup_props(c->lookup_props & ~LookupFlag::IgnoreFlags);
-        if (!skippy_iter.prev())
-            return false;
-
-        if (!_rb_glyph_info_is_mark(&rb_buffer_get_glyph_infos(buffer)[skippy_iter.idx])) {
-            return false;
-        }
-
-        unsigned int j = skippy_iter.idx;
-
-        unsigned int id1 = _rb_glyph_info_get_lig_id(rb_buffer_get_cur(buffer, 0));
-        unsigned int id2 = _rb_glyph_info_get_lig_id(&rb_buffer_get_glyph_infos(buffer)[j]);
-        unsigned int comp1 = _rb_glyph_info_get_lig_comp(rb_buffer_get_cur(buffer, 0));
-        unsigned int comp2 = _rb_glyph_info_get_lig_comp(&rb_buffer_get_glyph_infos(buffer)[j]);
-
-        if (likely(id1 == id2)) {
-            if (id1 == 0) /* Marks belonging to the same base. */
-                goto good;
-            else if (comp1 == comp2) /* Marks belonging to the same ligature component. */
-                goto good;
-        } else {
-            /* If ligature ids don't match, it may be the case that one of the marks
-             * itself is a ligature.  In which case match. */
-            if ((id1 > 0 && !comp1) || (id2 > 0 && !comp2))
-                goto good;
-        }
-
-        /* Didn't match. */
-        return false;
-
-    good:
-        unsigned int mark2_index = (this + mark2Coverage).get_coverage(rb_buffer_get_glyph_infos(buffer)[j].codepoint);
-        if (mark2_index == NOT_COVERED)
-            return false;
-
-        return (this + mark1Array).apply(c, mark1_index, mark2_index, this + mark2Array, classCount, j);
+        return rb_mark_mark_pos_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return c->check_struct(this) && mark1Coverage.sanitize(c, this) && mark2Coverage.sanitize(c, this) &&
-               mark1Array.sanitize(c, this) && mark2Array.sanitize(c, this, (unsigned int)classCount);
+        return format != 1 || mark1Coverage.sanitize(c, this);
     }
 
 protected:
-    HBUINT16 format;                  /* Format identifier--format = 1 */
-    OffsetTo<Coverage> mark1Coverage; /* Offset to Combining Mark1 Coverage
-                                       * table--from beginning of MarkMarkPos
-                                       * subtable */
-    OffsetTo<Coverage> mark2Coverage; /* Offset to Combining Mark2 Coverage
-                                       * table--from beginning of MarkMarkPos
-                                       * subtable */
-    HBUINT16 classCount;              /* Number of defined mark classes */
-    OffsetTo<MarkArray> mark1Array;   /* Offset to Mark1Array table--from
-                                       * beginning of MarkMarkPos subtable */
-    OffsetTo<Mark2Array> mark2Array;  /* Offset to Mark2Array table--from
-                                       * beginning of MarkMarkPos subtable */
-public:
-    DEFINE_SIZE_STATIC(12);
-};
-
-struct MarkMarkPos
-{
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        MarkMarkPosFormat1 format1;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> mark1Coverage;
 };
 
 struct ContextPos : Context
@@ -372,7 +291,7 @@ struct PosLookupSubTable
         case MarkLig:
             return c->dispatch(u.markLig, rb_forward<Ts>(ds)...);
         case MarkMark:
-            return u.markMark.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.markMark, rb_forward<Ts>(ds)...);
         case Context:
             return c->dispatch(u.context, rb_forward<Ts>(ds)...);
         case ChainContext:
