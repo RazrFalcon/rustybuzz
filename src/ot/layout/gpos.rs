@@ -7,7 +7,7 @@ use ttf_parser::parser::{
 };
 use ttf_parser::GlyphId;
 
-use super::common::{Coverage, ClassDef, Device, LookupFlags};
+use super::common::{Coverage, ClassDef, Device, GlyphClass, LookupFlags};
 use super::dyn_array::DynArray;
 use super::matching::SkippyIter;
 use super::ApplyContext;
@@ -245,8 +245,9 @@ impl<'a> CursivePos<'a> {
                     return None;
                 }
 
-                let exit_pos = Anchor::parse(data.get(exit.to_usize()..)?)?.get(ctx);
-                let entry_pos = Anchor::parse(data.get(entry.to_usize()..)?)?.get(ctx);
+                let font = ctx.font();
+                let exit_pos = Anchor::parse(data.get(exit.to_usize()..)?)?.get(font);
+                let entry_pos = Anchor::parse(data.get(entry.to_usize()..)?)?.get(font);
                 (i, exit_pos, entry_pos)
             }
         };
@@ -313,7 +314,7 @@ impl<'a> CursivePos<'a> {
         reverse_cursive_minor_offset(pos, child, direction, parent);
 
         pos[child].set_attach_type(AttachType::Cursive as u8);
-        pos[child].set_attach_chain(parent as i16 - child as i16);
+        pos[child].set_attach_chain((parent as isize - child as isize) as i16);
 
         buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
         if direction.is_horizontal() {
@@ -573,12 +574,11 @@ impl<'a> Anchor<'a> {
         Some(table)
     }
 
-    fn get(&self, ctx: &ApplyContext) -> (i32, i32) {
+    fn get(&self, font: &Font) -> (i32, i32) {
         let mut x = i32::from(self.x);
         let mut y = i32::from(self.y);
 
         if self.x_device.is_some() || self.y_device.is_some() {
-            let font = ctx.font();
             let (ppem_x, ppem_y) = font.pixels_per_em().unwrap_or((0, 0));
             let coords = font.ttfp_face.variation_coordinates().len();
 
@@ -616,13 +616,76 @@ impl<'a> AnchorMatrix<'a> {
     }
 
     fn get(&self, row: u16, col: u16) -> Option<Anchor> {
-        Anchor::parse(self.get_data(row, col)?)
-    }
-
-    fn get_data(&self, row: u16, col: u16) -> Option<&'a [u8]> {
         let idx = u32::from(row) * u32::from(self.cols) + u32::from(col);
         let offset = self.matrix.get(idx)?.to_usize();
-        self.data.get(offset..)
+        Anchor::parse(self.data.get(offset..)?)
+    }
+}
+
+struct MarkArray<'a> {
+    data: &'a [u8],
+    array: LazyArray16<'a, MarkRecord>,
+}
+
+impl<'a> MarkArray<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let count = s.read::<u16>()?;
+        let array = s.read_array16(count)?;
+        Some(Self { data, array })
+    }
+
+    fn apply(
+        &self,
+        ctx: &mut ApplyContext,
+        anchors: AnchorMatrix,
+        mark_index: u16,
+        glyph_id: GlyphId,
+        glyph_pos: usize,
+    ) -> Option<()> {
+        // If this subtable doesn't have an anchor for this base and this class
+        // return `None` such that the subsequent subtables have a chance at it.
+        let record = self.array.get(mark_index)?;
+        let mark_anchor = Anchor::parse(self.data.get(record.mark_anchor.to_usize()..)?)?;
+        let base_anchor = anchors.get(glyph_id.0, record.class.0)?;
+
+        let font = ctx.font();
+        let (mark_x, mark_y) = mark_anchor.get(font);
+        let (base_x, base_y) = base_anchor.get(font);
+
+        let buffer = ctx.buffer_mut();
+        buffer.unsafe_to_break(glyph_pos, buffer.idx);
+
+        let idx = buffer.idx;
+        let pos = buffer.cur_pos_mut();
+        pos.x_offset = base_x - mark_x;
+        pos.y_offset = base_y - mark_y;
+        pos.set_attach_type(AttachType::Mark as u8);
+        pos.set_attach_chain((glyph_pos as isize - idx as isize) as i16);
+
+        buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+        buffer.idx += 1;
+
+        Some(())
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct MarkRecord {
+    class: GlyphClass,
+    mark_anchor: Offset16,
+}
+
+impl FromData for MarkRecord {
+    const SIZE: usize = 4;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        Some(Self {
+            class: s.read()?,
+            mark_anchor: s.read()?,
+        })
     }
 }
 
@@ -653,38 +716,27 @@ pub extern "C" fn rb_value_format_apply(
 }
 
 #[no_mangle]
-pub extern "C" fn rb_anchor_get(
+pub extern "C" fn rb_mark_array_apply(
     data: *const u8,
-    ctx: *const crate::ffi::rb_ot_apply_context_t,
-    x: *mut f32,
-    y: *mut f32,
-) {
-    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
-    let ctx = ApplyContext::from_ptr(ctx);
-    if let Some(anchor) = Anchor::parse(data) {
-        let (vx, vy) = anchor.get(&ctx);
-        unsafe {
-            *x = vx as f32;
-            *y = vy as f32;
-        }
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_anchor_matrix_get(
-    data: *const u8,
-    row: u32,
-    col: u32,
-    cols: u32,
-    anchor_data: *mut *const u8,
+    ctx: *mut crate::ffi::rb_ot_apply_context_t,
+    mark_index: u32,
+    glyph_index: u32,
+    anchors_data: *const u8,
+    class_count: u32,
+    glyph_pos: u32,
 ) -> crate::ffi::rb_bool_t {
     let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
-    let anchor = AnchorMatrix::parse(data, cols as u16)
-        .and_then(|matrix| matrix.get_data(row as u16, col as u16));
-    if let Some(data) = anchor {
-        unsafe { *anchor_data = data.as_ptr(); }
-        1
-    } else {
-        0
-    }
+    let anchors_data = unsafe { std::slice::from_raw_parts(anchors_data, isize::MAX as usize) };
+    let mut ctx = ApplyContext::from_ptr_mut(ctx);
+    (|| -> Option<()> {
+        let array = MarkArray::parse(data)?;
+        let anchors = AnchorMatrix::parse(anchors_data, class_count as u16)?;
+        array.apply(
+            &mut ctx,
+            anchors,
+            mark_index as u16,
+            GlyphId(glyph_index as u16),
+            glyph_pos as usize,
+        )
+    })().is_some() as crate::ffi::rb_bool_t
 }

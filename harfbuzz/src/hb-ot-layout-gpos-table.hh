@@ -36,8 +36,7 @@ RB_EXTERN rb_bool_t rb_single_pos_apply(const char *data, OT::rb_ot_apply_contex
 RB_EXTERN rb_bool_t rb_pair_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_cursive_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
-RB_EXTERN rb_bool_t rb_anchor_get(const char *data, const OT::rb_ot_apply_context_t *c, float *x, float *y);
-RB_EXTERN rb_bool_t rb_anchor_matrix_get(const char *data, unsigned int row, unsigned int col, unsigned int cols, const void **anchor);
+RB_EXTERN rb_bool_t rb_mark_array_apply(const char *data, OT::rb_ot_apply_context_t *c, unsigned int mark_index, unsigned int glyph_index, const char *anchors_data, unsigned int class_count, unsigned int glyph_pos);
 }
 
 namespace OT {
@@ -71,10 +70,6 @@ struct ValueFormat : HBUINT16
     {
         return rb_popcount((unsigned int)*this);
     }
-    unsigned int get_size() const
-    {
-        return get_len() * Value::static_size;
-    }
 
     bool
     apply_value(rb_ot_apply_context_t *c, const void *base, const Value *values, unsigned int idx) const
@@ -83,33 +78,8 @@ struct ValueFormat : HBUINT16
     }
 };
 
-struct Anchor
-{
-    void get_anchor(rb_ot_apply_context_t *c, rb_codepoint_t glyph_id, float *x, float *y) const
-    {
-        *x = *y = 0;
-        rb_anchor_get((const char*)this, c, x, y);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
-};
-
 struct AnchorMatrix
 {
-    const Anchor &get_anchor(unsigned int row, unsigned int col, unsigned int cols, bool *found) const
-    {
-        const void *anchor;
-        *found = false;
-        if (rb_anchor_matrix_get((const char*)this, row, col, cols, &anchor)) {
-            *found = true;
-            return *((const Anchor*)anchor);
-        }
-        return Null(Anchor);
-    }
-
     bool sanitize(rb_sanitize_context_t *c, unsigned int cols) const
     {
         return true;
@@ -118,28 +88,7 @@ struct AnchorMatrix
     HBUINT16 rows;
 };
 
-struct MarkRecord
-{
-    friend struct MarkArray;
-
-    unsigned get_class() const
-    {
-        return (unsigned)klass;
-    }
-    bool sanitize(rb_sanitize_context_t *c, const void *base) const
-    {
-        return c->check_struct(this) && markAnchor.sanitize(c, base);
-    }
-
-protected:
-    HBUINT16 klass;              /* Class defined for this mark */
-    OffsetTo<Anchor> markAnchor; /* Offset to Anchor table--from
-                                  * beginning of MarkArray table */
-public:
-    DEFINE_SIZE_STATIC(4);
-};
-
-struct MarkArray : ArrayOf<MarkRecord> /* Array of MarkRecords--in Coverage order */
+struct MarkArray
 {
     bool apply(rb_ot_apply_context_t *c,
                unsigned int mark_index,
@@ -148,39 +97,12 @@ struct MarkArray : ArrayOf<MarkRecord> /* Array of MarkRecords--in Coverage orde
                unsigned int class_count,
                unsigned int glyph_pos) const
     {
-        rb_buffer_t *buffer = c->buffer;
-        const MarkRecord &record = ArrayOf<MarkRecord>::operator[](mark_index);
-        unsigned int mark_class = record.klass;
-
-        const Anchor &mark_anchor = this + record.markAnchor;
-        bool found;
-        const Anchor &glyph_anchor = anchors.get_anchor(glyph_index, mark_class, class_count, &found);
-        /* If this subtable doesn't have an anchor for this base and this class,
-         * return false such that the subsequent subtables have a chance at it. */
-        if (unlikely(!found))
-            return false;
-
-        float mark_x, mark_y, base_x, base_y;
-
-        rb_buffer_unsafe_to_break(buffer, glyph_pos, rb_buffer_get_index(buffer));
-        mark_anchor.get_anchor(c, rb_buffer_get_cur(buffer, 0)->codepoint, &mark_x, &mark_y);
-        glyph_anchor.get_anchor(c, rb_buffer_get_glyph_infos(buffer)[glyph_pos].codepoint, &base_x, &base_y);
-
-        rb_glyph_position_t &o = *rb_buffer_get_cur_pos(buffer);
-        o.x_offset = roundf(base_x - mark_x);
-        o.y_offset = roundf(base_y - mark_y);
-        o.attach_type() = ATTACH_TYPE_MARK;
-        o.attach_chain() = (int)glyph_pos - (int)rb_buffer_get_index(buffer);
-        rb_buffer_set_scratch_flags(buffer,
-                                    rb_buffer_get_scratch_flags(buffer) | RB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT);
-
-        rb_buffer_set_index(buffer, rb_buffer_get_index(buffer) + 1);
-        return true;
+        return rb_mark_array_apply((const char*)this, c, mark_index, glyph_index, (const char*)&anchors, class_count, glyph_pos);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return ArrayOf<MarkRecord>::sanitize(c, this);
+        return true;
     }
 };
 
