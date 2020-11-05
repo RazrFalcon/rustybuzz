@@ -386,6 +386,87 @@ fn reverse_cursive_minor_offset(
 }
 
 #[derive(Clone, Copy, Debug)]
+enum MarkBasePos<'a> {
+    Format1 {
+        mark_coverage: Coverage<'a>,
+        base_coverage: Coverage<'a>,
+        marks: MarkArray<'a>,
+        base_matrix: AnchorMatrix<'a>,
+    }
+}
+
+impl<'a> MarkBasePos<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let format: u16 = s.read()?;
+        Some(match format {
+            1 => {
+                let mark_coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let base_coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let class_count = s.read::<u16>()?;
+                let marks = MarkArray::parse(s.read_offset16_data()?)?;
+                let base_matrix = AnchorMatrix::parse(s.read_offset16_data()?, class_count)?;
+                Self::Format1 { mark_coverage, base_coverage, marks, base_matrix }
+            }
+            _ => return None,
+        })
+    }
+
+    fn coverage(&self) -> &Coverage<'a> {
+        match self {
+            Self::Format1 { mark_coverage, .. } => mark_coverage,
+        }
+    }
+
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+        match *self {
+            Self::Format1 { mark_coverage, base_coverage, marks, base_matrix } => {
+                let mark_glyph = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+                let mark_index = mark_coverage.get(mark_glyph)?;
+
+                // Now we search backwards for a non-mark glyph
+                let mut iter = SkippyIter::new(ctx, ctx.buffer().idx, 1, false);
+                iter.set_lookup_props(u32::from(LookupFlags::IGNORE_MARKS.bits()));
+
+                let info = &ctx.buffer().info;
+                loop {
+                    if !iter.prev() {
+                        return None;
+                    }
+
+                    // We only want to attach to the first of a MultipleSubst sequence.
+                    // https://github.com/harfbuzz/harfbuzz/issues/740
+                    // Reject others...
+                    // ...but stop if we find a mark in the MultipleSubst sequence:
+                    // https://github.com/harfbuzz/harfbuzz/issues/1020
+                    let idx = iter.index();
+                    if !info[idx].is_multiplied()
+                        || info[idx].lig_comp() == 0
+                        || idx == 0
+                        || info[idx - 1].is_mark()
+                        || info[idx].lig_id() != info[idx - 1].lig_id()
+                        || info[idx].lig_comp() != info[idx - 1].lig_comp() + 1
+                    {
+                        break;
+                    }
+                    iter.reject();
+                }
+
+                // Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled
+
+                let idx = iter.index();
+                let base_glyph = GlyphId(u16::try_from(info[idx].codepoint).unwrap());
+                let base_index = base_coverage.get(base_glyph)?;
+
+                marks.apply(ctx, base_matrix, mark_index, base_index, idx)?;
+
+                Some(())
+            }
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
 struct ValueRecord<'a> {
     data: &'a [u8],
     flags: ValueFormatFlags,
@@ -622,6 +703,7 @@ impl<'a> AnchorMatrix<'a> {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 struct MarkArray<'a> {
     data: &'a [u8],
     array: LazyArray16<'a, MarkRecord>,
@@ -640,14 +722,14 @@ impl<'a> MarkArray<'a> {
         ctx: &mut ApplyContext,
         anchors: AnchorMatrix,
         mark_index: u16,
-        glyph_id: GlyphId,
+        glyph_index: u16,
         glyph_pos: usize,
     ) -> Option<()> {
         // If this subtable doesn't have an anchor for this base and this class
         // return `None` such that the subsequent subtables have a chance at it.
         let record = self.array.get(mark_index)?;
         let mark_anchor = Anchor::parse(self.data.get(record.mark_anchor.to_usize()..)?)?;
-        let base_anchor = anchors.get(glyph_id.0, record.class.0)?;
+        let base_anchor = anchors.get(glyph_index, record.class.0)?;
 
         let font = ctx.font();
         let (mark_x, mark_y) = mark_anchor.get(font);
@@ -699,6 +781,7 @@ enum AttachType {
 make_ffi_funcs!(SinglePos, rb_single_pos_apply);
 make_ffi_funcs!(PairPos, rb_pair_pos_apply);
 make_ffi_funcs!(CursivePos, rb_cursive_pos_apply);
+make_ffi_funcs!(MarkBasePos, rb_mark_base_pos_apply);
 
 #[no_mangle]
 pub extern "C" fn rb_value_format_apply(
@@ -735,7 +818,7 @@ pub extern "C" fn rb_mark_array_apply(
             &mut ctx,
             anchors,
             mark_index as u16,
-            GlyphId(glyph_index as u16),
+            glyph_index as u16,
             glyph_pos as usize,
         )
     })().is_some() as crate::ffi::rb_bool_t

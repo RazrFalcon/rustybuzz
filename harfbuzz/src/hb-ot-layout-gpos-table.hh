@@ -35,6 +35,7 @@ extern "C" {
 RB_EXTERN rb_bool_t rb_single_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_pair_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_cursive_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_mark_base_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
 RB_EXTERN rb_bool_t rb_mark_array_apply(const char *data, OT::rb_ot_apply_context_t *c, unsigned int mark_index, unsigned int glyph_index, const char *anchors_data, unsigned int class_count, unsigned int glyph_pos);
 }
@@ -173,12 +174,7 @@ protected:
     OffsetTo<Coverage> coverage;
 };
 
-typedef AnchorMatrix BaseArray; /* base-major--
-                                 * in order of BaseCoverage Index--,
-                                 * mark-minor--
-                                 * ordered by class--zero-based. */
-
-struct MarkBasePosFormat1
+struct MarkBasePos
 {
     const Coverage &get_coverage() const
     {
@@ -187,87 +183,17 @@ struct MarkBasePosFormat1
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        rb_buffer_t *buffer = c->buffer;
-        unsigned int mark_index = (this + markCoverage).get_coverage(rb_buffer_get_cur(buffer, 0)->codepoint);
-        if (likely(mark_index == NOT_COVERED))
-            return false;
-
-        /* Now we search backwards for a non-mark glyph */
-        rb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-        skippy_iter.reset(rb_buffer_get_index(buffer), 1);
-        skippy_iter.set_lookup_props(LookupFlag::IgnoreMarks);
-        do {
-            if (!skippy_iter.prev())
-                return false;
-            /* We only want to attach to the first of a MultipleSubst sequence.
-             * https://github.com/harfbuzz/harfbuzz/issues/740
-             * Reject others...
-             * ...but stop if we find a mark in the MultipleSubst sequence:
-             * https://github.com/harfbuzz/harfbuzz/issues/1020 */
-            auto info = rb_buffer_get_glyph_infos(buffer);
-            if (!_rb_glyph_info_multiplied(&info[skippy_iter.idx]) ||
-                0 == _rb_glyph_info_get_lig_comp(&info[skippy_iter.idx]) ||
-                (skippy_iter.idx == 0 || _rb_glyph_info_is_mark(&info[skippy_iter.idx - 1]) ||
-                 _rb_glyph_info_get_lig_id(&info[skippy_iter.idx]) !=
-                     _rb_glyph_info_get_lig_id(&info[skippy_iter.idx - 1]) ||
-                 _rb_glyph_info_get_lig_comp(&info[skippy_iter.idx]) !=
-                     _rb_glyph_info_get_lig_comp(&info[skippy_iter.idx - 1]) + 1))
-                break;
-            skippy_iter.reject();
-        } while (true);
-
-        /* Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled */
-        // if (!_rb_glyph_info_is_base_glyph (&rb_buffer_get_glyph_infos(buffer)[skippy_iter.idx])) { return_trace
-        // (false); }
-
-        unsigned int base_index =
-            (this + baseCoverage).get_coverage(rb_buffer_get_glyph_infos(buffer)[skippy_iter.idx].codepoint);
-        if (base_index == NOT_COVERED)
-            return false;
-
-        return (this + markArray).apply(c, mark_index, base_index, this + baseArray, classCount, skippy_iter.idx);
+        return rb_mark_base_pos_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return c->check_struct(this) && markCoverage.sanitize(c, this) && baseCoverage.sanitize(c, this) &&
-               markArray.sanitize(c, this) && baseArray.sanitize(c, this, (unsigned int)classCount);
+        return format != 1 || markCoverage.sanitize(c, this);
     }
 
 protected:
-    HBUINT16 format;                 /* Format identifier--format = 1 */
-    OffsetTo<Coverage> markCoverage; /* Offset to MarkCoverage table--from
-                                      * beginning of MarkBasePos subtable */
-    OffsetTo<Coverage> baseCoverage; /* Offset to BaseCoverage table--from
-                                      * beginning of MarkBasePos subtable */
-    HBUINT16 classCount;             /* Number of classes defined for marks */
-    OffsetTo<MarkArray> markArray;   /* Offset to MarkArray table--from
-                                      * beginning of MarkBasePos subtable */
-    OffsetTo<BaseArray> baseArray;   /* Offset to BaseArray table--from
-                                      * beginning of MarkBasePos subtable */
-public:
-    DEFINE_SIZE_STATIC(12);
-};
-
-struct MarkBasePos
-{
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return c->dispatch(u.format1, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        MarkBasePosFormat1 format1;
-    } u;
+    HBUINT16 format;
+    OffsetTo<Coverage> markCoverage;
 };
 
 typedef AnchorMatrix LigatureAttach; /* component-major--
@@ -526,7 +452,7 @@ struct PosLookupSubTable
         case Cursive:
             return c->dispatch(u.cursive, rb_forward<Ts>(ds)...);
         case MarkBase:
-            return u.markBase.dispatch(c, rb_forward<Ts>(ds)...);
+            return c->dispatch(u.markBase, rb_forward<Ts>(ds)...);
         case MarkLig:
             return u.markLig.dispatch(c, rb_forward<Ts>(ds)...);
         case MarkMark:
