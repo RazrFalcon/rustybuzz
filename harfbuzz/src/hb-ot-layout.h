@@ -37,11 +37,9 @@
 
 RB_BEGIN_DECLS
 
-#define RB_OT_TAG_BASE RB_TAG('B', 'A', 'S', 'E')
 #define RB_OT_TAG_GDEF RB_TAG('G', 'D', 'E', 'F')
 #define RB_OT_TAG_GSUB RB_TAG('G', 'S', 'U', 'B')
 #define RB_OT_TAG_GPOS RB_TAG('G', 'P', 'O', 'S')
-#define RB_OT_TAG_JSTF RB_TAG('J', 'S', 'T', 'F')
 
 /*
  * Script & Language tags.
@@ -75,25 +73,6 @@ RB_EXTERN void rb_ot_tags_from_script_and_language(rb_script_t script,
  */
 
 RB_EXTERN rb_bool_t rb_ot_layout_has_glyph_classes(rb_face_t *face);
-
-/**
- * rb_ot_layout_glyph_class_t:
- * @RB_OT_LAYOUT_GLYPH_CLASS_UNCLASSIFIED: Glyphs not matching the other classifications
- * @RB_OT_LAYOUT_GLYPH_CLASS_BASE_GLYPH: Spacing, single characters, capable of accepting marks
- * @RB_OT_LAYOUT_GLYPH_CLASS_LIGATURE: Glyphs that represent ligation of multiple characters
- * @RB_OT_LAYOUT_GLYPH_CLASS_MARK: Non-spacing, combining glyphs that represent marks
- * @RB_OT_LAYOUT_GLYPH_CLASS_COMPONENT: Spacing glyphs that represent part of a single character
- *
- * The GDEF classes defined for glyphs.
- *
- **/
-typedef enum {
-    RB_OT_LAYOUT_GLYPH_CLASS_UNCLASSIFIED = 0,
-    RB_OT_LAYOUT_GLYPH_CLASS_BASE_GLYPH = 1,
-    RB_OT_LAYOUT_GLYPH_CLASS_LIGATURE = 2,
-    RB_OT_LAYOUT_GLYPH_CLASS_MARK = 3,
-    RB_OT_LAYOUT_GLYPH_CLASS_COMPONENT = 4
-} rb_ot_layout_glyph_class_t;
 
 /*
  * GSUB/GPOS feature query and enumeration interface

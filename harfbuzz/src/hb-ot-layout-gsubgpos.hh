@@ -212,13 +212,6 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
                 start_index_ == rb_buffer_get_index(c->buffer) ? rb_buffer_get_cur(c->buffer, 0)->syllable() : 0);
         }
 
-        void reject()
-        {
-            num_items++;
-            if (match_glyph_data)
-                match_glyph_data--;
-        }
-
         matcher_t::may_skip_t may_skip(const rb_glyph_info_t &info) const
         {
             return matcher.may_skip(c, info);
@@ -308,14 +301,13 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
         return ret;
     }
 
-    skipping_iterator_t iter_input, iter_context;
+    skipping_iterator_t iter_input;
 
     rb_font_t *font;
     rb_face_t *face;
     rb_buffer_t *buffer;
     recurse_func_t recurse_func;
     const GDEF &gdef;
-    const VariationStore &var_store;
 
     rb_direction_t direction;
     rb_mask_t lookup_mask;
@@ -324,7 +316,6 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
     unsigned int lookup_props;
     unsigned int nesting_level_left;
 
-    bool has_glyph_classes;
     bool auto_zwnj;
     bool auto_zwj;
     bool random;
@@ -333,20 +324,17 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
 
     rb_ot_apply_context_t(unsigned int table_index_, rb_font_t *font_, rb_buffer_t *buffer_)
         : iter_input()
-        , iter_context()
         , font(font_)
         , face(rb_font_get_face(font))
         , buffer(buffer_)
         , recurse_func(nullptr)
         , gdef(*face->table.GDEF->table)
-        , var_store(gdef.get_var_store())
         , direction(rb_buffer_get_direction(buffer_))
         , lookup_mask(1)
         , table_index(table_index_)
         , lookup_index((unsigned int)-1)
         , lookup_props(0)
         , nesting_level_left(RB_MAX_NESTING_LEVEL)
-        , has_glyph_classes(gdef.has_glyph_classes())
         , auto_zwnj(true)
         , auto_zwj(true)
         , random(false)
@@ -358,7 +346,6 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
     void init_iters()
     {
         iter_input.init(this, false);
-        iter_context.init(this, true);
     }
 
     void set_lookup_mask(rb_mask_t mask)
@@ -434,56 +421,6 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
             return match_properties_mark(glyph, glyph_props, match_props);
 
         return true;
-    }
-
-    void _set_glyph_class(rb_codepoint_t glyph_index,
-                          unsigned int class_guess = 0,
-                          bool ligature = false,
-                          bool component = false) const
-    {
-        unsigned int props = _rb_glyph_info_get_glyph_props(rb_buffer_get_cur(buffer, 0));
-
-        props |= RB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED;
-        if (ligature) {
-            props |= RB_OT_LAYOUT_GLYPH_PROPS_LIGATED;
-            /* In the only place that the MULTIPLIED bit is used, Uniscribe
-             * seems to only care about the "last" transformation between
-             * Ligature and Multiple substitutions.  Ie. if you ligate, expand,
-             * and ligate again, it forgives the multiplication and acts as
-             * if only ligation happened.  As such, clear MULTIPLIED bit.
-             */
-            props &= ~RB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
-        }
-        if (component)
-            props |= RB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
-
-        if (likely(has_glyph_classes))
-            props = (props & ~RB_OT_LAYOUT_GLYPH_PROPS_CLASS_MASK) | gdef.get_glyph_props(glyph_index);
-        else if (class_guess)
-            props = (props & ~RB_OT_LAYOUT_GLYPH_PROPS_CLASS_MASK) | class_guess;
-
-        _rb_glyph_info_set_glyph_props(rb_buffer_get_cur(buffer, 0), props);
-    }
-
-    void replace_glyph(rb_codepoint_t glyph_index) const
-    {
-        _set_glyph_class(glyph_index);
-        rb_buffer_replace_glyph(buffer, glyph_index);
-    }
-    void replace_glyph_inplace(rb_codepoint_t glyph_index) const
-    {
-        _set_glyph_class(glyph_index);
-        rb_buffer_get_cur(buffer, 0)->codepoint = glyph_index;
-    }
-    void replace_glyph_with_ligature(rb_codepoint_t glyph_index, unsigned int class_guess) const
-    {
-        _set_glyph_class(glyph_index, class_guess, true);
-        rb_buffer_replace_glyph(buffer, glyph_index);
-    }
-    void output_glyph_for_component(rb_codepoint_t glyph_index, unsigned int class_guess) const
-    {
-        _set_glyph_class(glyph_index, class_guess, false, true);
-        rb_buffer_output_glyph(buffer, glyph_index);
     }
 };
 
@@ -967,12 +904,9 @@ RB_EXTERN unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_app
 RB_EXTERN unsigned int   rb_ot_apply_context_get_lookup_index(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN unsigned int   rb_ot_apply_context_get_lookup_props(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN unsigned int   rb_ot_apply_context_get_nesting_level_left(const OT::rb_ot_apply_context_t *c);
-RB_EXTERN rb_bool_t      rb_ot_apply_context_get_has_glyph_classes(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_get_auto_zwnj(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_get_auto_zwj(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_get_random(const OT::rb_ot_apply_context_t *c);
-RB_EXTERN rb_bool_t      rb_ot_apply_context_gdef_mark_set_covers(const OT::rb_ot_apply_context_t *c, unsigned int set_index, rb_codepoint_t glyph_id);
-RB_EXTERN unsigned int   rb_ot_apply_context_gdef_get_glyph_props(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_id);
 RB_EXTERN uint32_t       rb_ot_apply_context_random_number(OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t      rb_ot_apply_context_recurse(OT::rb_ot_apply_context_t *c, unsigned int sub_lookup_index);
 }

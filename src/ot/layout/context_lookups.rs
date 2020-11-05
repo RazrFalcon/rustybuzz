@@ -5,12 +5,13 @@ use std::convert::TryFrom;
 use ttf_parser::parser::{FromData, LazyArray16, Offset, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
+use super::apply::{ApplyContext, WouldApplyContext};
 use super::common::{ClassDef, Coverage};
 use super::matching::{
     match_backtrack, match_class, match_coverage, match_glyph, match_input, match_lookahead,
     would_match_input, MatchFunc, Matched,
 };
-use super::{ApplyContext, WouldApplyContext, MAX_CONTEXT_LENGTH};
+use super::MAX_CONTEXT_LENGTH;
 
 #[derive(Clone, Copy, Debug)]
 struct LookupRecord {

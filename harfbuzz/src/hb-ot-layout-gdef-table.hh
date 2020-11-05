@@ -104,24 +104,10 @@ struct GDEF
     {
         return glyphClassDef != 0;
     }
-    unsigned int get_glyph_class(rb_codepoint_t glyph) const
-    {
-        return (this + glyphClassDef).get_class(glyph);
-    }
-
-    unsigned int get_mark_attachment_type(rb_codepoint_t glyph) const
-    {
-        return (this + markAttachClassDef).get_class(glyph);
-    }
 
     bool mark_set_covers(unsigned int set_index, rb_codepoint_t glyph_id) const
     {
         return version.to_int() >= 0x00010002u && (this + markGlyphSetsDef).covers(set_index, glyph_id);
-    }
-
-    const VariationStore &get_var_store() const
-    {
-        return version.to_int() >= 0x00010003u ? this + varStore : Null(VariationStore);
     }
 
     /* glyph_props is a 16-bit integer where the lower 8-bit have bits representing
@@ -129,12 +115,10 @@ struct GDEF
      * Not to be confused with lookup_props which is very similar. */
     unsigned int get_glyph_props(rb_codepoint_t glyph) const
     {
-        unsigned int klass = get_glyph_class(glyph);
+        unsigned int klass = (this + glyphClassDef).get_class(glyph);
 
-        static_assert(((unsigned int)RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH == (unsigned int)LookupFlag::IgnoreBaseGlyphs),
-                      "");
-        static_assert(((unsigned int)RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE == (unsigned int)LookupFlag::IgnoreLigatures),
-                      "");
+        static_assert(((unsigned int)RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH == (unsigned int)LookupFlag::IgnoreBaseGlyphs), "");
+        static_assert(((unsigned int)RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE == (unsigned int)LookupFlag::IgnoreLigatures), "");
         static_assert(((unsigned int)RB_OT_LAYOUT_GLYPH_PROPS_MARK == (unsigned int)LookupFlag::IgnoreMarks), "");
 
         switch (klass) {
@@ -145,7 +129,7 @@ struct GDEF
         case LigatureGlyph:
             return RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE;
         case MarkGlyph:
-            klass = get_mark_attachment_type(glyph);
+            klass = (this + markAttachClassDef).get_class(glyph);
             return RB_OT_LAYOUT_GLYPH_PROPS_MARK | (klass << 8);
         }
     }
@@ -173,16 +157,14 @@ struct GDEF
 
     unsigned int get_size() const
     {
-        return min_size + (version.to_int() >= 0x00010002u ? markGlyphSetsDef.static_size : 0) +
-               (version.to_int() >= 0x00010003u ? varStore.static_size : 0);
+        return min_size + (version.to_int() >= 0x00010002u ? markGlyphSetsDef.static_size : 0);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return version.sanitize(c) && likely(version.major == 1) && glyphClassDef.sanitize(c, this) &&
                markAttachClassDef.sanitize(c, this) &&
-               (version.to_int() < 0x00010002u || markGlyphSetsDef.sanitize(c, this)) &&
-               (version.to_int() < 0x00010003u || varStore.sanitize(c, this));
+               (version.to_int() < 0x00010002u || markGlyphSetsDef.sanitize(c, this));
     }
 
 protected:
@@ -200,10 +182,6 @@ protected:
                                                * definitions--from beginning of GDEF
                                                * header (may be NULL).  Introduced
                                                * in version 0x00010002. */
-    LOffsetTo<VariationStore> varStore;       /* Offset to the table of Item Variation
-                                               * Store--from beginning of GDEF
-                                               * header (may be NULL).  Introduced
-                                               * in version 0x00010003. */
 public:
     DEFINE_SIZE_MIN(12);
 };

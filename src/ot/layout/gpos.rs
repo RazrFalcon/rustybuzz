@@ -7,10 +7,10 @@ use ttf_parser::parser::{
 };
 use ttf_parser::GlyphId;
 
-use super::common::{ClassDef, Coverage, Device, GlyphClass, LookupFlags};
+use super::apply::ApplyContext;
+use super::common::{ClassDef, Coverage, Device, Class, LookupFlags};
 use super::dyn_array::DynArray;
 use super::matching::SkippyIter;
-use super::ApplyContext;
 use crate::buffer::{BufferScratchFlags, GlyphPosition};
 use crate::common::Direction;
 use crate::Font;
@@ -920,7 +920,7 @@ impl<'a> MarkArray<'a> {
 
 #[derive(Clone, Copy, Debug)]
 struct MarkRecord {
-    class: GlyphClass,
+    class: Class,
     mark_anchor: Offset16,
 }
 
@@ -950,44 +950,3 @@ make_ffi_funcs!(CursivePos, rb_cursive_pos_apply);
 make_ffi_funcs!(MarkBasePos, rb_mark_base_pos_apply);
 make_ffi_funcs!(MarkLigPos, rb_mark_lig_pos_apply);
 make_ffi_funcs!(MarkMarkPos, rb_mark_mark_pos_apply);
-
-#[no_mangle]
-pub extern "C" fn rb_value_format_apply(
-    flags: u32,
-    ctx: *mut crate::ffi::rb_ot_apply_context_t,
-    base: *const u8,
-    values: *const u8,
-    idx: u32,
-) -> crate::ffi::rb_bool_t {
-    let flags = ValueFormatFlags::from_bits_truncate(flags as u16);
-    let mut ctx = ApplyContext::from_ptr_mut(ctx);
-    let base = unsafe { std::slice::from_raw_parts(base, isize::MAX as usize) };
-    let data = unsafe { std::slice::from_raw_parts(values, isize::MAX as usize) };
-    ValueRecord { data, flags }.apply(&mut ctx, base, idx as usize) as crate::ffi::rb_bool_t
-}
-
-#[no_mangle]
-pub extern "C" fn rb_mark_array_apply(
-    data: *const u8,
-    ctx: *mut crate::ffi::rb_ot_apply_context_t,
-    mark_index: u32,
-    glyph_index: u32,
-    anchors_data: *const u8,
-    class_count: u32,
-    glyph_pos: u32,
-) -> crate::ffi::rb_bool_t {
-    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
-    let anchors_data = unsafe { std::slice::from_raw_parts(anchors_data, isize::MAX as usize) };
-    let mut ctx = ApplyContext::from_ptr_mut(ctx);
-    (|| -> Option<()> {
-        let array = MarkArray::parse(data)?;
-        let anchors = AnchorMatrix::parse(anchors_data, class_count as u16)?;
-        array.apply(
-            &mut ctx,
-            anchors,
-            mark_index as u16,
-            glyph_index as u16,
-            glyph_pos as usize,
-        )
-    })().is_some() as crate::ffi::rb_bool_t
-}

@@ -5,11 +5,12 @@ use std::convert::TryFrom;
 use ttf_parser::parser::{LazyArray16, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
+use super::apply::{ApplyContext, WouldApplyContext};
 use super::common::Coverage;
 use super::matching::{
     match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
 };
-use super::{ApplyContext, WouldApplyContext, MAX_NESTING_LEVEL};
+use super::MAX_NESTING_LEVEL;
 use crate::buffer::GlyphPropsFlags;
 use crate::ot::Map;
 use crate::unicode::GeneralCategory;

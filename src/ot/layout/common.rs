@@ -8,20 +8,6 @@ use ttf_parser::GlyphId;
 
 use crate::font::Font;
 
-/// A type-safe wrapper for a glyph class.
-#[repr(transparent)]
-#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Default, Debug)]
-pub struct GlyphClass(pub u16);
-
-impl FromData for GlyphClass {
-    const SIZE: usize = 2;
-
-    #[inline]
-    fn parse(data: &[u8]) -> Option<Self> {
-        u16::parse(data).map(Self)
-    }
-}
-
 /// A GSUB or GPOS table.
 #[derive(Clone, Copy)]
 pub struct SubstPosTable<'a> {
@@ -211,7 +197,7 @@ impl<'a> Coverage<'a> {
 pub enum ClassDef<'a> {
     Format1 {
         start: GlyphId,
-        classes: LazyArray16<'a, GlyphClass>,
+        classes: LazyArray16<'a, Class>,
     },
     Format2 {
         records: LazyArray16<'a, RangeRecord>,
@@ -238,7 +224,7 @@ impl<'a> ClassDef<'a> {
     }
 
     /// Returns the glyph class of the glyph (zero if it is not defined).
-    pub fn get(&self, glyph: GlyphId) -> GlyphClass {
+    pub fn get(&self, glyph: GlyphId) -> Class {
         let class = match self {
             Self::Format1 { start, classes } => {
                 glyph.0.checked_sub(start.0)
@@ -246,10 +232,24 @@ impl<'a> ClassDef<'a> {
             }
             Self::Format2 { records } => {
                 RangeRecord::binary_search(records, glyph)
-                    .map(|record| GlyphClass(record.value))
+                    .map(|record| Class(record.value))
             }
         };
-        class.unwrap_or(GlyphClass(0))
+        class.unwrap_or(Class(0))
+    }
+}
+
+/// A type-safe wrapper for a glyph class.
+#[repr(transparent)]
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Default, Debug)]
+pub struct Class(pub u16);
+
+impl FromData for Class {
+    const SIZE: usize = 2;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        u16::parse(data).map(Self)
     }
 }
 
@@ -367,24 +367,4 @@ impl VariationDevice {
             .gdef_variation_delta(self.outer_index, self.inner_index)
             .and_then(|float| i32::try_num_from(float.round()))
     }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_device_get_x_delta(
-    data: *const u8,
-    font: *const crate::ffi::rb_font_t,
-) -> crate::ffi::rb_position_t {
-    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
-    let font = Font::from_ptr(font);
-    Device::parse(data).and_then(|table| table.get_x_delta(font)).unwrap_or(0)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_device_get_y_delta(
-    data: *const u8,
-    font: *const crate::ffi::rb_font_t,
-) -> crate::ffi::rb_position_t {
-    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
-    let font = Font::from_ptr(font);
-    Device::parse(data).and_then(|table| table.get_y_delta(font)).unwrap_or(0)
 }

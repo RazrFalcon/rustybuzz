@@ -56,12 +56,9 @@ unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context
 unsigned int   rb_ot_apply_context_get_lookup_index(const OT::rb_ot_apply_context_t *c) { return c->lookup_index; }
 unsigned int   rb_ot_apply_context_get_lookup_props(const OT::rb_ot_apply_context_t *c) { return c->lookup_props; }
 unsigned int   rb_ot_apply_context_get_nesting_level_left(const OT::rb_ot_apply_context_t *c) { return c->nesting_level_left; }
-rb_bool_t      rb_ot_apply_context_get_has_glyph_classes(const OT::rb_ot_apply_context_t *c) { return c->has_glyph_classes; }
 rb_bool_t      rb_ot_apply_context_get_auto_zwnj(const OT::rb_ot_apply_context_t *c) { return c->auto_zwnj; }
 rb_bool_t      rb_ot_apply_context_get_auto_zwj(const OT::rb_ot_apply_context_t *c) { return c->auto_zwj; }
 rb_bool_t      rb_ot_apply_context_get_random(const OT::rb_ot_apply_context_t *c) { return (rb_bool_t)c->random; }
-rb_bool_t      rb_ot_apply_context_gdef_mark_set_covers(const OT::rb_ot_apply_context_t *c, unsigned int set_index, rb_codepoint_t glyph_id) { return (rb_bool_t)c->gdef.mark_set_covers(set_index, glyph_id); }
-unsigned int   rb_ot_apply_context_gdef_get_glyph_props(const OT::rb_ot_apply_context_t *c, rb_codepoint_t glyph_id) { return (rb_bool_t)c->gdef.get_glyph_props(glyph_id); }
 uint32_t       rb_ot_apply_context_random_number(OT::rb_ot_apply_context_t *c) { return c->random_number(); }
 rb_bool_t      rb_ot_apply_context_recurse(OT::rb_ot_apply_context_t *c, unsigned int sub_lookup_index) { return (rb_bool_t)c->recurse(sub_lookup_index); }
 }
@@ -896,18 +893,6 @@ void rb_ot_layout_substitute_lookup(OT::rb_ot_apply_context_t *c,
                                     const OT::rb_ot_layout_lookup_accelerator_t &accel)
 {
     apply_string<GSUBProxy>(c, lookup, accel);
-}
-
-unsigned int rb_layout_next_syllable(rb_buffer_t *buffer, unsigned int start)
-{
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-    unsigned int count = rb_buffer_get_length(buffer);
-
-    unsigned int syllable = info[start].syllable();
-    while (++start < count && syllable == info[start].syllable())
-        ;
-
-    return start;
 }
 
 void rb_layout_clear_syllables(const rb_ot_shape_plan_t *plan RB_UNUSED, rb_font_t *font RB_UNUSED, rb_buffer_t *buffer)

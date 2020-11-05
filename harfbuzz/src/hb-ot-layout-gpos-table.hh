@@ -38,13 +38,9 @@ RB_EXTERN rb_bool_t rb_cursive_pos_apply(const char *data, OT::rb_ot_apply_conte
 RB_EXTERN rb_bool_t rb_mark_base_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_mark_lig_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_bool_t rb_mark_mark_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
-RB_EXTERN rb_bool_t rb_value_format_apply(unsigned int flags, OT::rb_ot_apply_context_t *c, const char *base, const char *values, unsigned int idx);
-RB_EXTERN rb_bool_t rb_mark_array_apply(const char *data, OT::rb_ot_apply_context_t *c, unsigned int mark_index, unsigned int glyph_index, const char *anchors_data, unsigned int class_count, unsigned int glyph_pos);
 }
 
 namespace OT {
-
-struct MarkArray;
 
 /* buffer **position** var allocations */
 #define attach_chain()                                                                                                 \
@@ -59,54 +55,6 @@ enum attach_type_t {
     /* Each attachment should be either a mark or a cursive; can't be both. */
     ATTACH_TYPE_MARK = 0X01,
     ATTACH_TYPE_CURSIVE = 0X02,
-};
-
-/* Shared Tables: ValueRecord, Anchor Table, and MarkArray */
-
-typedef HBUINT16 Value;
-
-typedef UnsizedArrayOf<Value> ValueRecord;
-
-struct ValueFormat : HBUINT16
-{
-    unsigned int get_len() const
-    {
-        return rb_popcount((unsigned int)*this);
-    }
-
-    bool
-    apply_value(rb_ot_apply_context_t *c, const void *base, const Value *values, unsigned int idx) const
-    {
-        return rb_value_format_apply((unsigned int)*this, c, (const char*)base, (const char*)values, idx);
-    }
-};
-
-struct AnchorMatrix
-{
-    bool sanitize(rb_sanitize_context_t *c, unsigned int cols) const
-    {
-        return true;
-    }
-
-    HBUINT16 rows;
-};
-
-struct MarkArray
-{
-    bool apply(rb_ot_apply_context_t *c,
-               unsigned int mark_index,
-               unsigned int glyph_index,
-               const AnchorMatrix &anchors,
-               unsigned int class_count,
-               unsigned int glyph_pos) const
-    {
-        return rb_mark_array_apply((const char*)this, c, mark_index, glyph_index, (const char*)&anchors, class_count, glyph_pos);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
 };
 
 /* Lookups */
@@ -386,33 +334,6 @@ struct GPOS : GSUBGPOS
     typedef GSUBGPOS::accelerator_t<GPOS> accelerator_t;
 };
 
-static void reverse_cursive_minor_offset(rb_glyph_position_t *pos,
-                                         unsigned int i,
-                                         rb_direction_t direction,
-                                         unsigned int new_parent)
-{
-    int chain = pos[i].attach_chain(), type = pos[i].attach_type();
-    if (likely(!chain || 0 == (type & ATTACH_TYPE_CURSIVE)))
-        return;
-
-    pos[i].attach_chain() = 0;
-
-    unsigned int j = (int)i + chain;
-
-    /* Stop if we see new parent in the chain. */
-    if (j == new_parent)
-        return;
-
-    reverse_cursive_minor_offset(pos, j, direction, new_parent);
-
-    if (RB_DIRECTION_IS_HORIZONTAL(direction))
-        pos[j].y_offset = -pos[i].y_offset;
-    else
-        pos[j].x_offset = -pos[i].x_offset;
-
-    pos[j].attach_chain() = -chain;
-    pos[j].attach_type() = type;
-}
 static void
 propagate_attachment_offsets(rb_glyph_position_t *pos, unsigned int len, unsigned int i, rb_direction_t direction)
 {

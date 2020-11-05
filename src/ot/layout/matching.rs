@@ -5,8 +5,9 @@ use std::convert::TryFrom;
 use ttf_parser::parser::LazyArray16;
 use ttf_parser::GlyphId;
 
-use super::common::{ClassDef, Coverage, GlyphClass};
-use super::{ApplyContext, WouldApplyContext, MAX_CONTEXT_LENGTH};
+use super::apply::{ApplyContext, WouldApplyContext};
+use super::common::{ClassDef, Coverage, Class};
+use super::MAX_CONTEXT_LENGTH;
 use crate::buffer::GlyphInfo;
 use crate::Mask;
 
@@ -19,7 +20,7 @@ pub fn match_glyph(glyph: GlyphId, value: u16) -> bool {
 
 /// Value represents glyph class.
 pub fn match_class<'a>(class_def: ClassDef<'a>) -> impl Fn(GlyphId, u16) -> bool + 'a {
-    move |glyph, value| class_def.get(glyph) == GlyphClass(value)
+    move |glyph, value| class_def.get(glyph) == Class(value)
 }
 
 /// Value represents offset to coverage table.

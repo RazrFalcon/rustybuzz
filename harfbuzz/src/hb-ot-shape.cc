@@ -379,7 +379,7 @@ static void rb_set_unicode_props(rb_buffer_t *buffer)
     unsigned int count = rb_buffer_get_length(buffer);
     rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
     for (unsigned int i = 0; i < count; i++) {
-        _rb_glyph_info_set_unicode_props(&info[i], buffer);
+        rb_glyph_info_init_unicode_props(&info[i], buffer);
 
         /* Marks are already set as continuation by the above line.
          * Handle Emoji_Modifier and ZWJ-continuation. */
@@ -392,7 +392,7 @@ static void rb_set_unicode_props(rb_buffer_t *buffer)
             _rb_glyph_info_set_continuation(&info[i]);
             if (i + 1 < count && rb_ucd_is_emoji_extended_pictographic(info[i + 1].codepoint)) {
                 i++;
-                _rb_glyph_info_set_unicode_props(&info[i], buffer);
+                rb_glyph_info_init_unicode_props(&info[i], buffer);
                 _rb_glyph_info_set_continuation(&info[i]);
             }
         }
@@ -428,7 +428,7 @@ static void rb_insert_dotted_circle(rb_buffer_t *buffer, rb_font_t *font)
 
     rb_glyph_info_t dottedcircle = {0};
     dottedcircle.codepoint = 0x25CCu;
-    _rb_glyph_info_set_unicode_props(&dottedcircle, buffer);
+    rb_glyph_info_init_unicode_props(&dottedcircle, buffer);
 
     rb_buffer_clear_output(buffer);
 

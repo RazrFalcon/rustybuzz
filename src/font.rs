@@ -3,8 +3,9 @@ use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::ptr::NonNull;
 
-use ttf_parser::{Tag, GlyphId};
+use ttf_parser::{Tag, GlyphClass, GlyphId};
 
+use crate::buffer::GlyphPropsFlags;
 use crate::common::Variation;
 use crate::ffi;
 
@@ -250,6 +251,18 @@ impl<'a> Font<'a> {
     pub(crate) fn glyph_name(&self, glyph: u32) -> Option<&str> {
         let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
         self.ttfp_face.glyph_name(glyph_id)
+    }
+
+    pub(crate) fn glyph_props(&self, glyph: GlyphId) -> u16 {
+        match self.ttfp_face.glyph_class(glyph) {
+            Some(GlyphClass::Base) => GlyphPropsFlags::BASE_GLYPH.bits(),
+            Some(GlyphClass::Ligature) => GlyphPropsFlags::LIGATURE.bits(),
+            Some(GlyphClass::Mark) => {
+                let class = self.ttfp_face.glyph_mark_attachment_class(glyph).0;
+                (class << 8) | GlyphPropsFlags::MARK.bits()
+            }
+            _ => 0,
+        }
     }
 }
 
