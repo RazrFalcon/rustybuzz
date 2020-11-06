@@ -45,19 +45,6 @@ namespace OT {
 
 struct rb_would_apply_context_t : rb_dispatch_context_t<rb_would_apply_context_t, bool>
 {
-    template <typename T> return_t dispatch(const T &obj)
-    {
-        return obj.would_apply(this);
-    }
-    static return_t default_return_value()
-    {
-        return false;
-    }
-    bool stop_sublookup_iteration(return_t r) const
-    {
-        return r;
-    }
-
     rb_face_t *face;
     const rb_codepoint_t *glyphs;
     unsigned int len;
@@ -258,22 +245,11 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
     };
 
     typedef return_t (*recurse_func_t)(rb_ot_apply_context_t *c, unsigned int lookup_index);
-    template <typename T> return_t dispatch(const T &obj)
-    {
-        return obj.apply(this);
-    }
-    static return_t default_return_value()
-    {
-        return false;
-    }
-    bool stop_sublookup_iteration(return_t r) const
-    {
-        return r;
-    }
+
     return_t recurse(unsigned int sub_lookup_index)
     {
         if (unlikely(nesting_level_left == 0 || !recurse_func || rb_buffer_decrement_max_ops(buffer, 1) < 0))
-            return default_return_value();
+            return false;
 
         nesting_level_left--;
         bool ret = recurse_func(this, sub_lookup_index);

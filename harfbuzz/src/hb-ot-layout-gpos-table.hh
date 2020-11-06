@@ -103,6 +103,9 @@ struct PosLookup : Lookup
 struct GPOS : GSUBGPOS
 {
     static constexpr rb_tag_t tableTag = RB_OT_TAG_GPOS;
+    static constexpr unsigned table_index = 1u;
+    static constexpr bool inplace = true;
+    typedef PosLookup Lookup;
 
     const PosLookup &get_lookup(unsigned int i) const
     {

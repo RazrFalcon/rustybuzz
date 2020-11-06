@@ -740,36 +740,8 @@ void rb_ot_layout_position_finish_offsets(rb_font_t *font, rb_buffer_t *buffer)
  * access to GSUB/GPOS lookups.
  */
 
-struct GSUBProxy
-{
-    static constexpr unsigned table_index = 0u;
-    static constexpr bool inplace = false;
-    typedef OT::SubstLookup Lookup;
-
-    GSUBProxy(rb_face_t *face)
-        : table(*face->table.GSUB->table)
-    {
-    }
-
-    const OT::GSUB &table;
-};
-
-struct GPOSProxy
-{
-    static constexpr unsigned table_index = 1u;
-    static constexpr bool inplace = true;
-    typedef OT::PosLookup Lookup;
-
-    GPOSProxy(rb_face_t *face)
-        : table(*face->table.GPOS->table)
-    {
-    }
-
-    const OT::GPOS &table;
-};
-
-template <typename Proxy>
-static inline bool apply_forward(OT::rb_ot_apply_context_t *c, const typename Proxy::Lookup &lookup)
+template <typename Table>
+static inline bool apply_forward(OT::rb_ot_apply_context_t *c, const typename Table::Lookup &lookup)
 {
     bool ret = false;
     rb_buffer_t *buffer = c->buffer;
@@ -788,8 +760,8 @@ static inline bool apply_forward(OT::rb_ot_apply_context_t *c, const typename Pr
     return ret;
 }
 
-template <typename Proxy>
-static inline bool apply_backward(OT::rb_ot_apply_context_t *c, const typename Proxy::Lookup &lookup)
+template <typename Table>
+static inline bool apply_backward(OT::rb_ot_apply_context_t *c, const typename Table::Lookup &lookup)
 {
     bool ret = false;
     rb_buffer_t *buffer = c->buffer;
@@ -804,8 +776,8 @@ static inline bool apply_backward(OT::rb_ot_apply_context_t *c, const typename P
     return ret;
 }
 
-template <typename Proxy>
-static inline void apply_string(OT::rb_ot_apply_context_t *c, const typename Proxy::Lookup &lookup)
+template <typename Table>
+static inline void apply_string(OT::rb_ot_apply_context_t *c, const typename Table::Lookup &lookup)
 {
     rb_buffer_t *buffer = c->buffer;
 
@@ -816,36 +788,36 @@ static inline void apply_string(OT::rb_ot_apply_context_t *c, const typename Pro
 
     if (likely(!lookup.is_reverse())) {
         /* in/out forward substitution/positioning */
-        if (Proxy::table_index == 0u)
+        if (Table::table_index == 0u)
             rb_buffer_clear_output(buffer);
         rb_buffer_set_index(buffer, 0);
 
         bool ret;
-        ret = apply_forward<Proxy>(c, lookup);
+        ret = apply_forward<Table>(c, lookup);
         if (ret) {
-            if (!Proxy::inplace)
+            if (!Table::inplace)
                 rb_buffer_swap_buffers(buffer);
             else
                 assert(!rb_buffer_has_separate_output(buffer));
         }
     } else {
         /* in-place backward substitution/positioning */
-        if (Proxy::table_index == 0u)
+        if (Table::table_index == 0u)
             rb_buffer_remove_output(buffer);
         rb_buffer_set_index(buffer, rb_buffer_get_length(buffer) - 1);
 
-        apply_backward<Proxy>(c, lookup);
+        apply_backward<Table>(c, lookup);
     }
 }
 
-template <typename Proxy>
+template <typename Table>
 inline void
-rb_ot_map_t::apply(const Proxy &proxy, const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const
+rb_ot_map_t::apply(const Table &table, const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const
 {
-    const unsigned int table_index = proxy.table_index;
+    const unsigned int table_index = table.table_index;
     unsigned int i = 0;
     OT::rb_ot_apply_context_t c(table_index, font, buffer);
-    c.set_recurse_func(Proxy::Lookup::apply_recurse_func);
+    c.set_recurse_func(Table::Lookup::apply_recurse_func);
 
     for (unsigned int stage_index = 0; stage_index < stages[table_index].length; stage_index++) {
         const stage_map_t *stage = &stages[table_index][stage_index];
@@ -859,7 +831,7 @@ rb_ot_map_t::apply(const Proxy &proxy, const rb_ot_shape_plan_t *plan, rb_font_t
                 c.set_random(true);
                 rb_buffer_unsafe_to_break_all(buffer);
             }
-            apply_string<Proxy>(&c, proxy.table.get_lookup(lookup_index));
+            apply_string<Table>(&c, table.get_lookup(lookup_index));
         }
 
         if (stage->pause_func) {
@@ -871,14 +843,12 @@ rb_ot_map_t::apply(const Proxy &proxy, const rb_ot_shape_plan_t *plan, rb_font_t
 
 void rb_ot_map_t::substitute(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const
 {
-    GSUBProxy proxy(rb_font_get_face(font));
-    apply(proxy, plan, font, buffer);
+    apply(*rb_font_get_face(font)->table.GSUB->table, plan, font, buffer);
 }
 
 void rb_ot_map_t::position(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const
 {
-    GPOSProxy proxy(rb_font_get_face(font));
-    apply(proxy, plan, font, buffer);
+    apply(*rb_font_get_face(font)->table.GPOS->table, plan, font, buffer);
 }
 
 void rb_layout_clear_syllables(const rb_ot_shape_plan_t *plan RB_UNUSED, rb_font_t *font RB_UNUSED, rb_buffer_t *buffer)

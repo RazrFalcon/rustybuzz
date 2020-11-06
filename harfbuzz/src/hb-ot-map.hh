@@ -160,9 +160,8 @@ public:
         *lookup_count = end - start;
     }
 
-    template <typename Proxy>
-    RB_INTERNAL void
-    apply(const Proxy &proxy, const struct rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const;
+    template <typename Table>
+    RB_INTERNAL void apply(const Table &table, const struct rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const;
     RB_INTERNAL void substitute(const struct rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const;
     RB_INTERNAL void position(const struct rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const;
 

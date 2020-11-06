@@ -113,6 +113,9 @@ struct SubstLookup : Lookup
 struct GSUB : GSUBGPOS
 {
     static constexpr rb_tag_t tableTag = RB_OT_TAG_GSUB;
+    static constexpr unsigned table_index = 0u;
+    static constexpr bool inplace = false;
+    typedef SubstLookup Lookup;
 
     const SubstLookup &get_lookup(unsigned int i) const
     {
