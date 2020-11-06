@@ -236,6 +236,14 @@ impl<'a> LangSys<'a> {
     pub fn has_required_feature(&self) -> bool {
         self.required_feature_index.0 != 0xFFFF
     }
+
+    pub fn feature_count(&self) -> u16 {
+        self.feature_indices.len()
+    }
+
+    pub fn get_feature_index(&self, index: u16) -> Option<FeatureIndex> {
+        self.feature_indices.get(index)
+    }
 }
 
 #[derive(Clone, Copy, Debug)]

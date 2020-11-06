@@ -13,7 +13,9 @@ mod matching;
 use crate::common::TagExt;
 use crate::{ffi, Tag};
 
-use common::{SubstPosTable, FeatureIndex, Feature, LangSysIndex, ScriptIndex, VariationIndex};
+use common::{
+    SubstPosTable, FeatureIndex, Feature, LangSys, LangSysIndex, ScriptIndex, VariationIndex,
+};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -168,22 +170,8 @@ pub extern "C" fn rb_ot_layout_language_get_required_feature(
     }
 
     let data = unsafe { get_table_data(face, table_tag) };
-    let table = match SubstPosTable::parse(data) {
-        Some(table) => table,
-        None => return 0,
-    };
-
-    let sys = match table
-        .get_script(ScriptIndex(script_index as u16))
-        .and_then(|script| {
-            if language_index == LANGUAGE_NOT_FOUND_INDEX {
-                script.default_lang_sys()
-            } else {
-                script.get_lang_sys(LangSysIndex(language_index as u16))
-            }
-        })
-    {
-        Some(sys) => sys,
+    let (table, sys) = match get_table_and_lang_sys(data, script_index, language_index) {
+        Some(v) => v,
         None => return 0,
     };
 
@@ -196,6 +184,49 @@ pub extern "C" fn rb_ot_layout_language_get_required_feature(
     }
 
     return sys.has_required_feature() as ffi::rb_bool_t;
+}
+
+
+/// rb_ot_layout_language_find_feature:
+///
+/// @face: #rb_face_t to work upon
+/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
+/// @script_index: The index of the requested script tag
+/// @language_index: The index of the requested language tag
+/// @feature_tag: #rb_tag_t of the feature tag requested
+/// @feature_index: (out): The index of the requested feature
+///
+/// Fetches the index of a given feature tag in the specified face's GSUB table
+/// or GPOS table, underneath the specified script and language.
+///
+/// Return value: true if the feature is found, false otherwise
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_language_find_feature(
+    face: *const ffi::rb_face_t,
+    table_tag: Tag,
+    script_index: u32,
+    language_index: u32,
+    feature_tag: Tag,
+    feature_index: *mut u32,
+) -> ffi::rb_bool_t {
+    unsafe { *feature_index = FEATURE_NOT_FOUND_INDEX; }
+
+    let data = unsafe { get_table_data(face, table_tag) };
+    let (table, sys) = match get_table_and_lang_sys(data, script_index, language_index) {
+        Some(v) => v,
+        None => return 0,
+    };
+
+    for i in 0..sys.feature_count() {
+        if let Some(index) = sys.get_feature_index(i) {
+            if table.get_feature_tag(index) == Some(feature_tag) {
+                unsafe { *feature_index = index.0 as u32; }
+                return 1;
+            }
+        }
+    }
+
+    0
 }
 
 /// rb_ot_layout_table_find_feature:
@@ -302,6 +333,21 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
     } else {
         unsafe { *lookup_count = 0; }
     }
+}
+
+fn get_table_and_lang_sys<'a>(
+    data: &'a [u8],
+    script_index: u32,
+    language_index: u32,
+) -> Option<(SubstPosTable<'a>, LangSys<'a>)> {
+    let table = SubstPosTable::parse(data)?;
+    let script = table.get_script(ScriptIndex(script_index as u16))?;
+    let lang_sys = if language_index == LANGUAGE_NOT_FOUND_INDEX {
+        script.default_lang_sys()?
+    } else {
+        script.get_lang_sys(LangSysIndex(language_index as u16))?
+    };
+    Some((table, lang_sys))
 }
 
 unsafe fn write_lookup_indices(

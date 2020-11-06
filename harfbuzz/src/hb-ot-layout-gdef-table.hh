@@ -38,8 +38,6 @@ namespace OT {
  * https://docs.microsoft.com/en-us/typography/opentype/spec/gdef
  */
 
-struct FakeTable {};
-
 struct GDEF
 {
     static constexpr rb_tag_t tableTag = RB_OT_TAG_GDEF;
@@ -83,7 +81,7 @@ struct GDEF
 protected:
     FixedVersion<> version;                   /* Version of the GDEF table--currently
                                                * 0x00010003u */
-    OffsetTo<FakeTable> glyphClassDef;         /* Offset to class definition table
+    Offset16 glyphClassDef;                   /* Offset to class definition table
                                                * for glyph type--from beginning of
                                                * GDEF header (may be Null) */
 public:

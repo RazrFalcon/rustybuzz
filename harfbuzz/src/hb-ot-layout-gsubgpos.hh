@@ -361,16 +361,6 @@ struct GSUBGPOS
         return version.to_int();
     }
 
-    const Script &get_script(unsigned int i) const
-    {
-        return (this + scriptList)[i];
-    }
-
-    rb_tag_t get_feature_tag(unsigned int i) const
-    {
-        return i == Index::NOT_FOUND_INDEX ? RB_TAG_NONE : (this + featureList).get_tag(i);
-    }
-
     unsigned int get_lookup_count() const
     {
         return (this + lookupList).len;
@@ -388,8 +378,7 @@ struct GSUBGPOS
     template <typename TLookup> bool sanitize(rb_sanitize_context_t *c) const
     {
         typedef OffsetListOf<TLookup> TLookupList;
-        if (unlikely(!(version.sanitize(c) && likely(version.major == 1) && scriptList.sanitize(c, this) &&
-                       featureList.sanitize(c, this) &&
+        if (unlikely(!(version.sanitize(c) && likely(version.major == 1) &&
                        reinterpret_cast<const OffsetTo<TLookupList> &>(lookupList).sanitize(c, this))))
             return false;
 
@@ -421,8 +410,8 @@ struct GSUBGPOS
 protected:
     FixedVersion<> version;                   /* Version of the GSUB/GPOS table--initially set
                                                * to 0x00010000u */
-    OffsetTo<ScriptList> scriptList;          /* ScriptList table */
-    OffsetTo<FeatureList> featureList;        /* FeatureList table */
+    Offset16 scriptList;                      /* Offset to ScriptList table */
+    Offset16 featureList;                     /* Offset to FeatureList table */
     OffsetTo<LookupList> lookupList;          /* LookupList table */
 
 public:
