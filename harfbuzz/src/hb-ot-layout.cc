@@ -518,63 +518,6 @@ unsigned int rb_ot_layout_table_get_lookup_count(rb_face_t *face, rb_tag_t table
     return get_gsubgpos_table(face, table_tag).get_lookup_count();
 }
 
-/* Variations support */
-
-/**
- * rb_ot_layout_table_find_feature_variations:
- * @face: #rb_face_t to work upon
- * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
- * @coords: The variation coordinates to query
- * @num_coords: The number of variation coorinates
- * @variations_index: (out): The array of feature variations found for the query
- *
- * Fetches a list of feature variations in the specified face's GSUB table
- * or GPOS table, at the specified variation coordinates.
- *
- **/
-rb_bool_t rb_ot_layout_table_find_feature_variations(rb_face_t *face,
-                                                     rb_tag_t table_tag,
-                                                     const int *coords,
-                                                     unsigned int num_coords,
-                                                     unsigned int *variations_index /* out */)
-{
-    const OT::GSUBGPOS &g = get_gsubgpos_table(face, table_tag);
-
-    return g.find_variations_index(coords, num_coords, variations_index);
-}
-
-/**
- * rb_ot_layout_feature_with_variations_get_lookups:
- * @face: #rb_face_t to work upon
- * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
- * @feature_index: The index of the feature to query
- * @variations_index: The index of the feature variation to query
- * @start_offset: offset of the first lookup to retrieve
- * @lookup_count: (inout) (allow-none): Input = the maximum number of lookups to return;
- *                Output = the actual number of lookups returned (may be zero)
- * @lookup_indexes: (out) (array length=lookup_count): The array of lookups found for the query
- *
- * Fetches a list of all lookups enumerated for the specified feature, in
- * the specified face's GSUB table or GPOS table, enabled at the specified
- * variations index. The list returned will begin at the offset provided.
- *
- **/
-unsigned int rb_ot_layout_feature_with_variations_get_lookups(rb_face_t *face,
-                                                              rb_tag_t table_tag,
-                                                              unsigned int feature_index,
-                                                              unsigned int variations_index,
-                                                              unsigned int start_offset,
-                                                              unsigned int *lookup_count /* IN/OUT */,
-                                                              unsigned int *lookup_indexes /* OUT */)
-{
-    static_assert((OT::FeatureVariations::NOT_FOUND_INDEX == RB_OT_LAYOUT_NO_VARIATIONS_INDEX), "");
-    const OT::GSUBGPOS &g = get_gsubgpos_table(face, table_tag);
-
-    const OT::Feature &f = g.get_feature_variation(feature_index, variations_index);
-
-    return f.get_lookup_indexes(start_offset, lookup_count, lookup_indexes);
-}
-
 /*
  * OT::GSUB
  */

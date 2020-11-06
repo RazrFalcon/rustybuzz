@@ -121,13 +121,13 @@ RB_EXTERN rb_bool_t rb_ot_layout_table_find_feature_variations(rb_face_t *face,
                                                                unsigned int num_coords,
                                                                unsigned int *variations_index /* out */);
 
-RB_EXTERN unsigned int rb_ot_layout_feature_with_variations_get_lookups(rb_face_t *face,
-                                                                        rb_tag_t table_tag,
-                                                                        unsigned int feature_index,
-                                                                        unsigned int variations_index,
-                                                                        unsigned int start_offset,
-                                                                        unsigned int *lookup_count /* IN/OUT */,
-                                                                        unsigned int *lookup_indexes /* OUT */);
+RB_EXTERN void rb_ot_layout_feature_with_variations_get_lookups(rb_face_t *face,
+                                                                rb_tag_t table_tag,
+                                                                unsigned int feature_index,
+                                                                unsigned int variations_index,
+                                                                unsigned int start_offset,
+                                                                unsigned int *lookup_count /* IN/OUT */,
+                                                                unsigned int *lookup_indexes /* OUT */);
 
 /*
  * GSUB

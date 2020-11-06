@@ -361,14 +361,6 @@ struct GSUBGPOS
         return version.to_int();
     }
 
-    unsigned int get_script_count() const
-    {
-        return (this + scriptList).len;
-    }
-    const Tag &get_script_tag(unsigned int i) const
-    {
-        return (this + scriptList).get_tag(i);
-    }
     const Script &get_script(unsigned int i) const
     {
         return (this + scriptList)[i];
@@ -386,14 +378,6 @@ struct GSUBGPOS
     {
         return i == Index::NOT_FOUND_INDEX ? RB_TAG_NONE : (this + featureList).get_tag(i);
     }
-    const Feature &get_feature(unsigned int i) const
-    {
-        return (this + featureList)[i];
-    }
-    bool find_feature_index(rb_tag_t tag, unsigned int *index) const
-    {
-        return (this + featureList).find_index(tag, index);
-    }
 
     unsigned int get_lookup_count() const
     {
@@ -404,24 +388,9 @@ struct GSUBGPOS
         return (this + lookupList)[i];
     }
 
-    bool find_variations_index(const int *coords, unsigned int num_coords, unsigned int *index) const
-    {
-        return (version.to_int() >= 0x00010001u ? this + featureVars : Null(FeatureVariations))
-            .find_index(coords, num_coords, index);
-    }
-    const Feature &get_feature_variation(unsigned int feature_index, unsigned int variations_index) const
-    {
-        if (FeatureVariations::NOT_FOUND_INDEX != variations_index && version.to_int() >= 0x00010001u) {
-            const Feature *feature = (this + featureVars).find_substitute(variations_index, feature_index);
-            if (feature)
-                return *feature;
-        }
-        return get_feature(feature_index);
-    }
-
     unsigned int get_size() const
     {
-        return min_size + (version.to_int() >= 0x00010001u ? featureVars.static_size : 0);
+        return min_size;
     }
 
     template <typename TLookup> bool sanitize(rb_sanitize_context_t *c) const
@@ -430,9 +399,6 @@ struct GSUBGPOS
         if (unlikely(!(version.sanitize(c) && likely(version.major == 1) && scriptList.sanitize(c, this) &&
                        featureList.sanitize(c, this) &&
                        reinterpret_cast<const OffsetTo<TLookupList> &>(lookupList).sanitize(c, this))))
-            return false;
-
-        if (unlikely(!(version.to_int() < 0x00010001u || featureVars.sanitize(c, this))))
             return false;
 
         return true;
@@ -466,10 +432,7 @@ protected:
     OffsetTo<ScriptList> scriptList;          /* ScriptList table */
     OffsetTo<FeatureList> featureList;        /* FeatureList table */
     OffsetTo<LookupList> lookupList;          /* LookupList table */
-    LOffsetTo<FeatureVariations> featureVars; /* Offset to Feature Variations
-                                                 table--from beginning of table
-                                               * (may be NULL).  Introduced
-                                               * in version 0x00010001. */
+
 public:
     DEFINE_SIZE_MIN(10);
 };

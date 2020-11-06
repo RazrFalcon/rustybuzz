@@ -190,6 +190,10 @@ extern "C" {
 
     pub fn rb_face_destroy(face: *mut rb_face_t);
 
+    pub fn rb_face_get_table_data(face: *const rb_face_t, tag: Tag) -> *const u8;
+
+    pub fn rb_face_get_table_len(face: *const rb_face_t, tag: Tag) -> u32;
+
     pub fn rb_ot_map_get_1_mask(map: *const rb_ot_map_t, tag: Tag) -> rb_mask_t;
 
     pub fn rb_ot_map_global_mask(map: *const rb_ot_map_t) -> rb_mask_t;

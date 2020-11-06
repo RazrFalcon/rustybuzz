@@ -115,12 +115,6 @@ template <typename Type> struct RecordListOf : RecordArrayOf<Type>
     }
 };
 
-struct Feature;
-
-struct RecordListOfFeature : RecordListOf<Feature>
-{
-};
-
 struct IndexArray : ArrayOf<Index>
 {
     unsigned int
@@ -229,37 +223,12 @@ public:
 
 typedef RecordListOf<Script> ScriptList;
 
-struct FakeFeatureParams {};
-
 struct Feature
 {
-    unsigned int get_lookup_count() const
-    {
-        return lookupIndex.len;
-    }
-    rb_tag_t get_lookup_index(unsigned int i) const
-    {
-        return lookupIndex[i];
-    }
-    unsigned int get_lookup_indexes(unsigned int start_index,
-                                    unsigned int *lookup_count /* IN/OUT */,
-                                    unsigned int *lookup_tags /* OUT */) const
-    {
-        return lookupIndex.get_indexes(start_index, lookup_count, lookup_tags);
-    }
-
     bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t *closure = nullptr) const
     {
-        return c->check_struct(this) && lookupIndex.sanitize(c);
+        return true;
     }
-
-    OffsetTo<FakeFeatureParams> featureParams; /* Offset to Feature Parameters table (if one
-                                                * has been defined for the feature), relative
-                                                * to the beginning of the Feature Table; = Null
-                                                * if not required */
-    IndexArray lookupIndex;                    /* Array of LookupList indices */
-public:
-    DEFINE_SIZE_ARRAY_SIZED(4, lookupIndex);
 };
 
 typedef RecordListOf<Feature> FeatureList;
@@ -376,201 +345,6 @@ template <typename TLookup> struct LookupOffsetList : OffsetListOf<TLookup>
     }
 };
 
-/*
- * Feature Variations
- */
-
-struct ConditionFormat1
-{
-    friend struct Condition;
-
-private:
-    bool evaluate(const int *coords, unsigned int coord_len) const
-    {
-        int coord = axisIndex < coord_len ? coords[axisIndex] : 0;
-        return filterRangeMinValue <= coord && coord <= filterRangeMaxValue;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this);
-    }
-
-protected:
-    HBUINT16 format; /* Format identifier--format = 1 */
-    HBUINT16 axisIndex;
-    F2DOT14 filterRangeMinValue;
-    F2DOT14 filterRangeMaxValue;
-
-public:
-    DEFINE_SIZE_STATIC(8);
-};
-
-struct Condition
-{
-    bool evaluate(const int *coords, unsigned int coord_len) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.evaluate(coords, coord_len);
-        default:
-            return false;
-        }
-    }
-
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return_trace(c->no_dispatch_return_value());
-        switch (u.format) {
-        case 1:
-            return_trace(c->dispatch(u.format1, rb_forward<Ts>(ds)...));
-        default:
-            return_trace(c->default_return_value());
-        }
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        if (!u.format.sanitize(c))
-            return false;
-        switch (u.format) {
-        case 1:
-            return u.format1.sanitize(c);
-        default:
-            return true;
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        ConditionFormat1 format1;
-    } u;
-
-public:
-    DEFINE_SIZE_UNION(2, format);
-};
-
-struct ConditionSet
-{
-    bool evaluate(const int *coords, unsigned int coord_len) const
-    {
-        unsigned int count = conditions.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (!(this + conditions.arrayZ[i]).evaluate(coords, coord_len))
-                return false;
-        return true;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return conditions.sanitize(c, this);
-    }
-
-protected:
-    LOffsetArrayOf<Condition> conditions;
-
-public:
-    DEFINE_SIZE_ARRAY(2, conditions);
-};
-
-struct FeatureTableSubstitutionRecord
-{
-    friend struct FeatureTableSubstitution;
-
-    bool sanitize(rb_sanitize_context_t *c, const void *base) const
-    {
-        return c->check_struct(this) && feature.sanitize(c, base);
-    }
-
-protected:
-    HBUINT16 featureIndex;
-    LOffsetTo<Feature> feature;
-
-public:
-    DEFINE_SIZE_STATIC(6);
-};
-
-struct FeatureTableSubstitution
-{
-    const Feature *find_substitute(unsigned int feature_index) const
-    {
-        unsigned int count = substitutions.len;
-        for (unsigned int i = 0; i < count; i++) {
-            const FeatureTableSubstitutionRecord &record = substitutions.arrayZ[i];
-            if (record.featureIndex == feature_index)
-                return &(this + record.feature);
-        }
-        return nullptr;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return version.sanitize(c) && likely(version.major == 1) && substitutions.sanitize(c, this);
-    }
-
-protected:
-    FixedVersion<> version; /* Version--0x00010000u */
-    ArrayOf<FeatureTableSubstitutionRecord> substitutions;
-
-public:
-    DEFINE_SIZE_ARRAY(6, substitutions);
-};
-
-struct FeatureVariationRecord
-{
-    friend struct FeatureVariations;
-
-    bool sanitize(rb_sanitize_context_t *c, const void *base) const
-    {
-        return conditions.sanitize(c, base) && substitutions.sanitize(c, base);
-    }
-
-protected:
-    LOffsetTo<ConditionSet> conditions;
-    LOffsetTo<FeatureTableSubstitution> substitutions;
-
-public:
-    DEFINE_SIZE_STATIC(8);
-};
-
-struct FeatureVariations
-{
-    static constexpr unsigned NOT_FOUND_INDEX = 0xFFFFFFFFu;
-
-    bool find_index(const int *coords, unsigned int coord_len, unsigned int *index) const
-    {
-        unsigned int count = varRecords.len;
-        for (unsigned int i = 0; i < count; i++) {
-            const FeatureVariationRecord &record = varRecords.arrayZ[i];
-            if ((this + record.conditions).evaluate(coords, coord_len)) {
-                *index = i;
-                return true;
-            }
-        }
-        *index = NOT_FOUND_INDEX;
-        return false;
-    }
-
-    const Feature *find_substitute(unsigned int variations_index, unsigned int feature_index) const
-    {
-        const FeatureVariationRecord &record = varRecords[variations_index];
-        return (this + record.substitutions).find_substitute(feature_index);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return version.sanitize(c) && likely(version.major == 1) && varRecords.sanitize(c, this);
-    }
-
-protected:
-    FixedVersion<> version; /* Version--0x00010000u */
-    LArrayOf<FeatureVariationRecord> varRecords;
-
-public:
-    DEFINE_SIZE_ARRAY_SIZED(8, varRecords);
-};
 
 } /* namespace OT */
 

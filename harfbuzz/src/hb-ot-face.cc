@@ -31,6 +31,30 @@
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
 
+extern "C" {
+const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag) {
+    switch (tag) {
+    case RB_OT_TAG_GSUB:
+        return face->table.GSUB->table.get_blob()->data;
+    case RB_OT_TAG_GPOS:
+        return face->table.GPOS->table.get_blob()->data;
+    default:
+        assert(false);
+    }
+}
+
+unsigned int rb_face_get_table_len(const rb_face_t *face, rb_tag_t tag) {
+    switch (tag) {
+    case RB_OT_TAG_GSUB:
+        return face->table.GSUB->table.get_blob()->length;
+    case RB_OT_TAG_GPOS:
+        return face->table.GPOS->table.get_blob()->length;
+    default:
+        return 0;
+    }
+}
+}
+
 void rb_ot_face_t::init0(rb_face_t *face)
 {
     this->face = face;

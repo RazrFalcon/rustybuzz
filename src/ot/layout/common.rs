@@ -4,16 +4,20 @@ use std::cmp::Ordering;
 use std::convert::TryFrom;
 
 use ttf_parser::parser::{
-    FromData, LazyArray16, Offset, Offset16, Offset32, Offsets16, Stream, TryNumFrom,
+    FromData, LazyArray16, LazyArray32, Offset, Offset16, Offset32, Offsets16, Stream, TryNumFrom,
 };
 use ttf_parser::GlyphId;
 
+use crate::Tag;
 use crate::font::Font;
 
 /// A GSUB or GPOS table.
 #[derive(Clone, Copy)]
 pub struct SubstPosTable<'a> {
+    scripts: RecordList<'a>,
+    features: RecordList<'a>,
     lookups: LookupList<'a>,
+    variations: Option<FeatureVariations<'a>>,
 }
 
 impl<'a> SubstPosTable<'a> {
@@ -26,55 +30,169 @@ impl<'a> SubstPosTable<'a> {
             return None;
         }
 
-        s.skip::<Offset16>(); // TODO: script list
-        s.skip::<Offset16>(); // TODO: feature list
+        let scripts = RecordList::parse(s.read_offset16_data()?)?;
+        let features = RecordList::parse(s.read_offset16_data()?)?;
         let lookups = LookupList::parse(s.read_offset16_data()?)?;
+
+        let mut variations = None;
         if minor_version >= 1 {
-            s.skip::<Offset32>(); // TODO: feature variations
+            variations = FeatureVariations::parse(s.read_offset32_data()?);
         }
 
-        Some(Self { lookups })
+        Some(Self { scripts, features, lookups, variations })
     }
 
-    pub fn lookups(&self) -> LookupList {
-        self.lookups
+    pub fn get_feature(&self, feature_index: FeatureIndex) -> Option<Feature<'a>> {
+        Feature::parse(self.features.get(feature_index.0)?)
+    }
+
+    pub fn find_variation_index(&self, coords: &[i32]) -> Option<VariationIndex> {
+        self.variations?.find_index(coords)
+    }
+
+    pub fn get_feature_variation(
+        &self,
+        feature_index: FeatureIndex,
+        var_index: VariationIndex,
+    ) -> Option<Feature<'a>> {
+        self.variations
+            .and_then(|var| var.find_substitute(feature_index, var_index))
+            .or_else(|| self.get_feature(feature_index))
+    }
+}
+
+/// A type-safe wrapper for a lookup type.
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
+pub struct LookupType(pub u16);
+
+impl FromData for LookupType {
+    const SIZE: usize = 2;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        u16::parse(data).map(Self)
+    }
+}
+
+/// A type-safe wrapper for a lookup index.
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
+pub struct LookupIndex(pub u16);
+
+impl FromData for LookupIndex {
+    const SIZE: usize = 2;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        u16::parse(data).map(Self)
+    }
+}
+
+/// A type-safe wrapper for a feature index.
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
+pub struct FeatureIndex(pub u16);
+
+impl FromData for FeatureIndex {
+    const SIZE: usize = 2;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        u16::parse(data).map(Self)
+    }
+}
+
+/// A type-safe wrapper for a variation index used by GSUB/GPOS tables.
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
+pub struct VariationIndex(pub u32);
+
+#[derive(Clone, Copy, Debug)]
+struct RecordList<'a> {
+    data: &'a [u8],
+    records: LazyArray16<'a, TagRecord>
+}
+
+impl<'a> RecordList<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let count = s.read::<u16>()?;
+        let records = s.read_array16(count)?;
+        Some(Self { data, records })
+    }
+
+    fn get(&self, index: u16) -> Option<&'a [u8]> {
+        let offset = self.records.get(index)?.offset.to_usize();
+        self.data.get(offset..)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct TagRecord {
+    tag: Tag,
+    offset: Offset16,
+}
+
+impl FromData for TagRecord {
+    const SIZE: usize = 6;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        Some(Self {
+            tag: s.read()?,
+            offset: s.read()?,
+        })
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Feature<'a> {
+    pub params: Offset16,
+    pub lookup_indices: LazyArray16<'a, LookupIndex>,
+}
+
+impl<'a> Feature<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let params = s.read::<Offset16>()?;
+        let count = s.read::<u16>()?;
+        let lookup_indices = s.read_array16(count)?;
+        Some(Self { params, lookup_indices })
     }
 }
 
 #[derive(Clone, Copy)]
-pub struct LookupList<'a> {
+struct LookupList<'a> {
     offsets: Offsets16<'a, Offset16>,
 }
 
 impl<'a> LookupList<'a> {
-    pub fn parse(data: &'a [u8]) -> Option<Self> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let count = s.read::<u16>()?;
         let offsets = s.read_offsets16(count, data)?;
         Some(LookupList { offsets })
     }
 
-    pub fn len(&self) -> usize {
+    fn len(&self) -> usize {
         usize::from(self.offsets.len())
     }
 
-    pub fn get(&self, index: usize) -> Option<Lookup<'a>> {
-        Lookup::parse(self.offsets.slice(u16::try_from(index).ok()?)?)
+    fn get(&self, index: LookupIndex) -> Option<Lookup<'a>> {
+        Lookup::parse(self.offsets.slice(index.0)?)
     }
 }
 
 #[derive(Clone, Copy)]
-pub struct Lookup<'a> {
-    pub kind: u16,
-    pub flags: LookupFlags,
-    pub offsets: Offsets16<'a, Offset16>,
-    pub mark_filtering_set: Option<u16>,
+struct Lookup<'a> {
+    kind: LookupType,
+    flags: LookupFlags,
+    offsets: Offsets16<'a, Offset16>,
+    mark_filtering_set: Option<u16>,
 }
 
 impl<'a> Lookup<'a> {
-    pub fn parse(data: &'a [u8]) -> Option<Self> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
-        let kind = s.read::<u16>()?;
+        let kind = s.read::<LookupType>()?;
         let flags = s.read::<LookupFlags>()?;
         let count = s.read::<u16>()?;
         let offsets = s.read_offsets16(count, data)?;
@@ -131,38 +249,168 @@ pub fn parse_extension_lookup<'a, T: 'a>(
     }
 }
 
-/// A record that describes a range of glyph ids.
 #[derive(Clone, Copy, Debug)]
-pub struct RangeRecord {
-    start: GlyphId,
-    end: GlyphId,
-    value: u16,
+struct FeatureVariations<'a> {
+    data: &'a [u8],
+    records: LazyArray32<'a, FeatureVariationRecord>,
 }
 
-impl RangeRecord {
-    fn binary_search(records: &LazyArray16<RangeRecord>, glyph: GlyphId) -> Option<RangeRecord> {
-        records.binary_search_by(|record| {
-            if glyph < record.start {
-                Ordering::Greater
-            } else if glyph <= record.end {
-                Ordering::Equal
-            } else {
-                Ordering::Less
+impl<'a> FeatureVariations<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let major_version = s.read::<u16>()?;
+        s.skip::<u16>(); // minor version
+        if major_version != 1 {
+            return None;
+        }
+
+        let count = s.read::<u32>()?;
+        let records = s.read_array32(count)?;
+        Some(Self { data, records })
+    }
+
+    fn find_index(&self, coords: &[i32]) -> Option<VariationIndex> {
+        for i in 0..self.records.len() {
+            let record = self.records.get(i)?;
+            let offset = record.conditions.to_usize();
+            let set = ConditionSet::parse(self.data.get(offset..)?)?;
+            if set.evaluate(coords) {
+                return Some(VariationIndex(i));
             }
-        }).map(|p| p.1)
+        }
+        None
+    }
+
+    fn find_substitute(
+        &self,
+        feature_index: FeatureIndex,
+        var_index: VariationIndex,
+    ) -> Option<Feature<'a>> {
+        let offset = self.records.get(var_index.0)?.substitutions.to_usize();
+        let subst = FeatureTableSubstitution::parse(self.data.get(offset..)?)?;
+        subst.find_substitute(feature_index)
     }
 }
 
-impl FromData for RangeRecord {
+#[derive(Clone, Copy, Debug)]
+struct FeatureVariationRecord {
+    conditions: Offset32,
+    substitutions: Offset32,
+}
+
+impl FromData for FeatureVariationRecord {
+    const SIZE: usize = 8;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        Some(Self {
+            conditions: s.read()?,
+            substitutions: s.read()?,
+        })
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct ConditionSet<'a> {
+    data: &'a [u8],
+    conditions: LazyArray16<'a, Offset32>,
+}
+
+impl<'a> ConditionSet<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let count = s.read::<u16>()?;
+        let conditions = s.read_array16(count)?;
+        Some(Self { data, conditions })
+    }
+
+    fn evaluate(&self, coords: &[i32]) -> bool {
+        self.conditions.into_iter().all(|offset| {
+            self.data.get(offset.to_usize()..)
+                .and_then(Condition::parse)
+                .map_or(false, |c| c.evaluate(coords))
+        })
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+enum Condition {
+    Format1 {
+        axis_index: u16,
+        filter_range_min: i16,
+        filter_range_max: i16,
+    }
+}
+
+impl Condition {
+    fn parse(data: &[u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let format: u16 = s.read()?;
+        Some(match format {
+            1 => {
+                let axis_index = s.read::<u16>()?;
+                let filter_range_min = s.read::<i16>()?;
+                let filter_range_max = s.read::<i16>()?;
+                Self::Format1 { axis_index, filter_range_min, filter_range_max }
+            }
+            _ => return None,
+        })
+    }
+
+    fn evaluate(&self, coords: &[i32]) -> bool {
+        let Self::Format1 { axis_index, filter_range_min, filter_range_max } = *self;
+        let coord = coords.get(usize::from(axis_index)).copied().unwrap_or(0);
+        i32::from(filter_range_min) <= coord && coord <= i32::from(filter_range_max)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct FeatureTableSubstitution<'a> {
+    data: &'a [u8],
+    records: LazyArray16<'a, FeatureTableSubstitutionRecord>,
+}
+
+impl<'a> FeatureTableSubstitution<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let major_version = s.read::<u16>()?;
+        s.skip::<u16>(); // minor version
+        if major_version != 1 {
+            return None;
+        }
+
+        let count = s.read::<u16>()?;
+        let records = s.read_array16(count)?;
+        Some(Self { data, records })
+    }
+
+    fn find_substitute(&self, feature_index: FeatureIndex) -> Option<Feature<'a>> {
+        for record in self.records {
+            if record.feature_index == feature_index {
+                let offset = record.feature.to_usize();
+                return Feature::parse(self.data.get(offset..)?);
+            }
+        }
+        None
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct FeatureTableSubstitutionRecord {
+    feature_index: FeatureIndex,
+    feature: Offset32,
+}
+
+impl FromData for FeatureTableSubstitutionRecord {
     const SIZE: usize = 6;
 
     #[inline]
     fn parse(data: &[u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         Some(Self {
-            start: s.read::<GlyphId>()?,
-            end: s.read::<GlyphId>()?,
-            value: s.read::<u16>()?,
+            feature_index: s.read()?,
+            feature: s.read()?,
         })
     }
 }
@@ -268,6 +516,42 @@ impl FromData for Class {
     #[inline]
     fn parse(data: &[u8]) -> Option<Self> {
         u16::parse(data).map(Self)
+    }
+}
+
+/// A record that describes a range of glyph ids.
+#[derive(Clone, Copy, Debug)]
+pub struct RangeRecord {
+    start: GlyphId,
+    end: GlyphId,
+    value: u16,
+}
+
+impl RangeRecord {
+    fn binary_search(records: &LazyArray16<RangeRecord>, glyph: GlyphId) -> Option<RangeRecord> {
+        records.binary_search_by(|record| {
+            if glyph < record.start {
+                Ordering::Greater
+            } else if glyph <= record.end {
+                Ordering::Equal
+            } else {
+                Ordering::Less
+            }
+        }).map(|p| p.1)
+    }
+}
+
+impl FromData for RangeRecord {
+    const SIZE: usize = 6;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        Some(Self {
+            start: s.read::<GlyphId>()?,
+            end: s.read::<GlyphId>()?,
+            value: s.read::<u16>()?,
+        })
     }
 }
 
