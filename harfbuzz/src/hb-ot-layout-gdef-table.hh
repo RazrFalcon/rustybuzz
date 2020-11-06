@@ -33,105 +33,20 @@
 
 namespace OT {
 
-struct FakeTable {};
-
-struct MarkGlyphSetsFormat1
-{
-    bool covers(unsigned int set_index, rb_codepoint_t glyph_id) const
-    {
-        return (this + coverage[set_index]).get_coverage(glyph_id) != NOT_COVERED;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return coverage.sanitize(c, this);
-    }
-
-protected:
-    HBUINT16 format;                       /* Format identifier--format = 1 */
-    ArrayOf<LOffsetTo<Coverage>> coverage; /* Array of long offsets to mark set
-                                            * coverage tables */
-public:
-    DEFINE_SIZE_ARRAY(4, coverage);
-};
-
-struct MarkGlyphSets
-{
-    bool covers(unsigned int set_index, rb_codepoint_t glyph_id) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.covers(set_index, glyph_id);
-        default:
-            return false;
-        }
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        if (!u.format.sanitize(c))
-            return false;
-        switch (u.format) {
-        case 1:
-            return u.format1.sanitize(c);
-        default:
-            return true;
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        MarkGlyphSetsFormat1 format1;
-    } u;
-
-public:
-    DEFINE_SIZE_UNION(2, format);
-};
-
 /*
  * GDEF -- Glyph Definition
  * https://docs.microsoft.com/en-us/typography/opentype/spec/gdef
  */
 
+struct FakeTable {};
+
 struct GDEF
 {
     static constexpr rb_tag_t tableTag = RB_OT_TAG_GDEF;
 
-    enum GlyphClasses { UnclassifiedGlyph = 0, BaseGlyph = 1, LigatureGlyph = 2, MarkGlyph = 3, ComponentGlyph = 4 };
-
     bool has_glyph_classes() const
     {
         return glyphClassDef != 0;
-    }
-
-    bool mark_set_covers(unsigned int set_index, rb_codepoint_t glyph_id) const
-    {
-        return version.to_int() >= 0x00010002u && (this + markGlyphSetsDef).covers(set_index, glyph_id);
-    }
-
-    /* glyph_props is a 16-bit integer where the lower 8-bit have bits representing
-     * glyph class and other bits, and high 8-bit the mark attachment type (if any).
-     * Not to be confused with lookup_props which is very similar. */
-    unsigned int get_glyph_props(rb_codepoint_t glyph) const
-    {
-        unsigned int klass = (this + glyphClassDef).get_class(glyph);
-
-        static_assert(((unsigned int)RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH == (unsigned int)LookupFlag::IgnoreBaseGlyphs), "");
-        static_assert(((unsigned int)RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE == (unsigned int)LookupFlag::IgnoreLigatures), "");
-        static_assert(((unsigned int)RB_OT_LAYOUT_GLYPH_PROPS_MARK == (unsigned int)LookupFlag::IgnoreMarks), "");
-
-        switch (klass) {
-        default:
-            return 0;
-        case BaseGlyph:
-            return RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH;
-        case LigatureGlyph:
-            return RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE;
-        case MarkGlyph:
-            klass = (this + markAttachClassDef).get_class(glyph);
-            return RB_OT_LAYOUT_GLYPH_PROPS_MARK | (klass << 8);
-        }
     }
 
     RB_INTERNAL bool is_blocklisted(rb_blob_t *blob, rb_face_t *face) const;
@@ -157,33 +72,22 @@ struct GDEF
 
     unsigned int get_size() const
     {
-        return min_size + (version.to_int() >= 0x00010002u ? markGlyphSetsDef.static_size : 0);
+        return min_size;
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return version.sanitize(c) && likely(version.major == 1) && glyphClassDef.sanitize(c, this) &&
-               markAttachClassDef.sanitize(c, this) &&
-               (version.to_int() < 0x00010002u || markGlyphSetsDef.sanitize(c, this));
+        return version.sanitize(c) && likely(version.major == 1);
     }
 
 protected:
     FixedVersion<> version;                   /* Version of the GDEF table--currently
                                                * 0x00010003u */
-    OffsetTo<ClassDef> glyphClassDef;         /* Offset to class definition table
+    OffsetTo<FakeTable> glyphClassDef;         /* Offset to class definition table
                                                * for glyph type--from beginning of
                                                * GDEF header (may be Null) */
-    OffsetTo<FakeTable> attachList;           /* Not used */
-    OffsetTo<FakeTable> ligCaretList;         /* Not used */
-    OffsetTo<ClassDef> markAttachClassDef;    /* Offset to class definition table for
-                                               * mark attachment type--from beginning
-                                               * of GDEF header (may be Null) */
-    OffsetTo<MarkGlyphSets> markGlyphSetsDef; /* Offset to the table of mark set
-                                               * definitions--from beginning of GDEF
-                                               * header (may be NULL).  Introduced
-                                               * in version 0x00010002. */
 public:
-    DEFINE_SIZE_MIN(12);
+    DEFINE_SIZE_MIN(4);
 };
 
 struct GDEF_accelerator_t : GDEF::accelerator_t

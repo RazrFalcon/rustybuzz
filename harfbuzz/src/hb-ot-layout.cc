@@ -242,8 +242,8 @@ static void _rb_ot_layout_set_glyph_props(rb_font_t *font, rb_buffer_t *buffer)
     const OT::GDEF &gdef = *rb_font_get_face(font)->table.GDEF->table;
     unsigned int count = rb_buffer_get_length(buffer);
     for (unsigned int i = 0; i < count; i++) {
-        _rb_glyph_info_set_glyph_props(&rb_buffer_get_glyph_infos(buffer)[i],
-                                       gdef.get_glyph_props(rb_buffer_get_glyph_infos(buffer)[i].codepoint));
+        unsigned int props = rb_font_get_glyph_props(font, rb_buffer_get_glyph_infos(buffer)[i].codepoint);
+        _rb_glyph_info_set_glyph_props(&rb_buffer_get_glyph_infos(buffer)[i], props);
         _rb_glyph_info_clear_lig_props(&rb_buffer_get_glyph_infos(buffer)[i]);
         rb_buffer_get_glyph_infos(buffer)[i].syllable() = 0;
     }

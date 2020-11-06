@@ -184,3 +184,12 @@ impl ApplyContext {
         self.buffer_mut().output_glyph(u32::from(glyph_id.0));
     }
 }
+
+#[no_mangle]
+pub extern "C" fn rb_ot_apply_context_check_glyph_property(
+    ctx: *const ffi::rb_ot_apply_context_t,
+    info: *const GlyphInfo,
+    match_props: u32,
+) -> ffi::rb_bool_t {
+    ApplyContext::from_ptr(ctx).check_glyph_property(unsafe { &*info }, match_props) as ffi::rb_bool_t
+}

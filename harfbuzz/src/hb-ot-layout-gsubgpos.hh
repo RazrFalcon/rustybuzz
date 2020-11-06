@@ -68,6 +68,12 @@ struct rb_would_apply_context_t : rb_dispatch_context_t<rb_would_apply_context_t
     }
 };
 
+struct rb_ot_apply_context_t;
+
+extern "C" {
+RB_EXTERN rb_bool_t      rb_ot_apply_context_check_glyph_property(const OT::rb_ot_apply_context_t *c, const rb_glyph_info_t *info, unsigned int match_props);
+}
+
 struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool>
 {
     struct matcher_t
@@ -362,39 +368,9 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
         return random_state;
     }
 
-    bool match_properties_mark(rb_codepoint_t glyph, unsigned int glyph_props, unsigned int match_props) const
-    {
-        /* If using mark filtering sets, the high short of
-         * match_props has the set index.
-         */
-        if (match_props & LookupFlag::UseMarkFilteringSet)
-            return gdef.mark_set_covers(match_props >> 16, glyph);
-
-        /* The second byte of match_props has the meaning
-         * "ignore marks of attachment type different than
-         * the attachment type specified."
-         */
-        if (match_props & LookupFlag::MarkAttachmentType)
-            return (match_props & LookupFlag::MarkAttachmentType) == (glyph_props & LookupFlag::MarkAttachmentType);
-
-        return true;
-    }
-
     bool check_glyph_property(const rb_glyph_info_t *info, unsigned int match_props) const
     {
-        rb_codepoint_t glyph = info->codepoint;
-        unsigned int glyph_props = _rb_glyph_info_get_glyph_props(info);
-
-        /* Not covered, if, for example, glyph class is ligature and
-         * match_props includes LookupFlags::IgnoreLigatures
-         */
-        if (glyph_props & match_props & LookupFlag::IgnoreFlags)
-            return false;
-
-        if (unlikely(glyph_props & RB_OT_LAYOUT_GLYPH_PROPS_MARK))
-            return match_properties_mark(glyph, glyph_props, match_props);
-
-        return true;
+        return rb_ot_apply_context_check_glyph_property(this, info, match_props);
     }
 };
 

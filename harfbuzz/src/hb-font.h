@@ -153,6 +153,8 @@ rb_font_guess_v_origin_minus_h_origin(rb_font_t *font, rb_codepoint_t glyph, rb_
 RB_EXTERN rb_bool_t rb_font_has_vorg_data(rb_font_t *font);
 RB_EXTERN int rb_font_get_y_origin(rb_font_t *font, rb_codepoint_t glyph);
 
+RB_EXTERN unsigned int rb_font_get_glyph_props(rb_font_t *font, rb_codepoint_t glyph);
+
 RB_END_DECLS
 
 #endif /* RB_FONT_H */

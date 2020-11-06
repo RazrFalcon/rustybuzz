@@ -494,6 +494,12 @@ pub extern "C" fn rb_font_get_y_origin(font: *const ffi::rb_font_t, glyph: ffi::
 }
 
 #[no_mangle]
+pub extern "C" fn rb_font_get_glyph_props(font: *const ffi::rb_font_t, glyph: ffi::rb_codepoint_t) -> u32 {
+    let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
+    Font::from_ptr(font).glyph_props(glyph_id) as u32
+}
+
+#[no_mangle]
 pub extern "C" fn rb_ot_get_nominal_glyph(
     font: *const ffi::rb_font_t,
     u: ffi::rb_codepoint_t,
