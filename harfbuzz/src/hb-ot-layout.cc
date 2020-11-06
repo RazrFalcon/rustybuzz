@@ -290,67 +290,6 @@ static const OT::GSUBGPOS &get_gsubgpos_table(rb_face_t *face, rb_tag_t table_ta
     }
 }
 
-#define RB_OT_TAG_LATIN_SCRIPT RB_TAG('l', 'a', 't', 'n')
-
-/**
- * rb_ot_layout_table_select_script:
- * @face: #rb_face_t to work upon
- * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
- * @script_count: Number of script tags in the array
- * @script_tags: Array of #rb_tag_t script tags
- * @script_index: (out): The index of the requested script
- * @chosen_script: (out): #rb_tag_t of the requested script
- *
- * Since: 2.0.0
- **/
-rb_bool_t rb_ot_layout_table_select_script(rb_face_t *face,
-                                           rb_tag_t table_tag,
-                                           unsigned int script_count,
-                                           const rb_tag_t *script_tags,
-                                           unsigned int *script_index /* OUT */,
-                                           rb_tag_t *chosen_script /* OUT */)
-{
-    static_assert((OT::Index::NOT_FOUND_INDEX == RB_OT_LAYOUT_NO_SCRIPT_INDEX), "");
-    const OT::GSUBGPOS &g = get_gsubgpos_table(face, table_tag);
-    unsigned int i;
-
-    for (i = 0; i < script_count; i++) {
-        if (g.find_script_index(script_tags[i], script_index)) {
-            if (chosen_script)
-                *chosen_script = script_tags[i];
-            return true;
-        }
-    }
-
-    /* try finding 'DFLT' */
-    if (g.find_script_index(RB_OT_TAG_DEFAULT_SCRIPT, script_index)) {
-        if (chosen_script)
-            *chosen_script = RB_OT_TAG_DEFAULT_SCRIPT;
-        return false;
-    }
-
-    /* try with 'dflt'; MS site has had typos and many fonts use it now :( */
-    if (g.find_script_index(RB_OT_TAG_DEFAULT_LANGUAGE, script_index)) {
-        if (chosen_script)
-            *chosen_script = RB_OT_TAG_DEFAULT_LANGUAGE;
-        return false;
-    }
-
-    /* try with 'latn'; some old fonts put their features there even though
-       they're really trying to support Thai, for example :( */
-    if (g.find_script_index(RB_OT_TAG_LATIN_SCRIPT, script_index)) {
-        if (chosen_script)
-            *chosen_script = RB_OT_TAG_LATIN_SCRIPT;
-        return false;
-    }
-
-    if (script_index)
-        *script_index = RB_OT_LAYOUT_NO_SCRIPT_INDEX;
-    if (chosen_script)
-        *chosen_script = RB_OT_LAYOUT_NO_SCRIPT_INDEX;
-    return false;
-}
-
 /**
  * rb_ot_layout_script_select_language:
  * @face: #rb_face_t to work upon

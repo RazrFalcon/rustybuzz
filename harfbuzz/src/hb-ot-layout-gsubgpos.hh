@@ -365,10 +365,6 @@ struct GSUBGPOS
     {
         return (this + scriptList)[i];
     }
-    bool find_script_index(rb_tag_t tag, unsigned int *index) const
-    {
-        return (this + scriptList).find_index(tag, index);
-    }
 
     rb_tag_t get_feature_tag(unsigned int i) const
     {

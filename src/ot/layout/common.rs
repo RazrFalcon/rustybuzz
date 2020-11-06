@@ -42,6 +42,10 @@ impl<'a> SubstPosTable<'a> {
         Some(Self { scripts, features, lookups, variations })
     }
 
+    pub fn find_script_index(&self, script_tag: Tag) -> Option<ScriptIndex> {
+        self.scripts.find_index(script_tag).map(ScriptIndex)
+    }
+
     pub fn feature_count(&self) -> u16 {
         self.features.len()
     }
@@ -69,24 +73,11 @@ impl<'a> SubstPosTable<'a> {
     }
 }
 
-/// A type-safe wrapper for a lookup type.
+/// A type-safe wrapper for a script index.
 #[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
-pub struct LookupType(pub u16);
+pub struct ScriptIndex(pub u16);
 
-impl FromData for LookupType {
-    const SIZE: usize = 2;
-
-    #[inline]
-    fn parse(data: &[u8]) -> Option<Self> {
-        u16::parse(data).map(Self)
-    }
-}
-
-/// A type-safe wrapper for a lookup index.
-#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
-pub struct LookupIndex(pub u16);
-
-impl FromData for LookupIndex {
+impl FromData for ScriptIndex {
     const SIZE: usize = 2;
 
     #[inline]
@@ -100,6 +91,19 @@ impl FromData for LookupIndex {
 pub struct FeatureIndex(pub u16);
 
 impl FromData for FeatureIndex {
+    const SIZE: usize = 2;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        u16::parse(data).map(Self)
+    }
+}
+
+/// A type-safe wrapper for a lookup index.
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
+pub struct LookupIndex(pub u16);
+
+impl FromData for LookupIndex {
     const SIZE: usize = 2;
 
     #[inline]
@@ -137,6 +141,10 @@ impl<'a> RecordList<'a> {
     fn get_data(&self, index: u16) -> Option<&'a [u8]> {
         let offset = self.records.get(index)?.offset.to_usize();
         self.data.get(offset..)
+    }
+
+    fn find_index(&self, tag: Tag) -> Option<u16> {
+        self.records.binary_search_by(|record| record.tag.cmp(&tag)).map(|p| p.0)
     }
 }
 
@@ -224,6 +232,19 @@ impl<'a> Lookup<'a> {
             offsets,
             mark_filtering_set,
         })
+    }
+}
+
+/// A type-safe wrapper for a lookup type.
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
+pub struct LookupType(pub u16);
+
+impl FromData for LookupType {
+    const SIZE: usize = 2;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        u16::parse(data).map(Self)
     }
 }
 

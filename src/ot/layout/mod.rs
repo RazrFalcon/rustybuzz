@@ -10,6 +10,7 @@ mod gpos;
 mod gsub;
 mod matching;
 
+use crate::common::TagExt;
 use crate::{ffi, Tag};
 
 use common::{SubstPosTable, FeatureIndex, Feature, VariationIndex};
@@ -19,6 +20,105 @@ pub const MAX_CONTEXT_LENGTH: usize = 64;
 
 pub const FEATURE_VARIATION_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
 pub const FEATURE_NOT_FOUND_INDEX: u32 = 0xFFFF;
+pub const SCRIPT_NOT_FOUND_INDEX: u32 = 0xFFFF;
+
+
+/// rb_ot_layout_table_select_script:
+///
+/// @face: #rb_face_t to work upon
+/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
+/// @script_count: Number of script tags in the array
+/// @script_tags: Array of #rb_tag_t script tags
+/// @script_index: (out): The index of the requested script
+/// @chosen_script: (out): #rb_tag_t of the requested script
+///
+/// Since: 2.0.0
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_table_select_script(
+    face: *const ffi::rb_face_t,
+    table_tag: Tag,
+    script_count: u32,
+    script_tags: *const Tag,
+    script_index: *mut u32,
+    chosen_script: *mut Tag,
+) -> ffi::rb_bool_t {
+    const LATIN_SCRIPT: Tag = Tag::from_bytes(b"latn");
+
+    let data = unsafe { get_table_data(face, table_tag) };
+    let table = match SubstPosTable::parse(data) {
+        Some(table) => table,
+        None => return 0,
+    };
+
+    let tags = unsafe { std::slice::from_raw_parts(script_tags, script_count as usize) };
+    for &tag in tags {
+        if let Some(index) = table.find_script_index(tag) {
+            unsafe {
+                *script_index = index.0 as u32;
+                *chosen_script = tag;
+            }
+            return 1;
+        }
+    }
+
+    for &tag in &[
+        // try finding 'DFLT'
+        Tag::default_script(),
+        // try with 'dflt'; MS site has had typos and many fonts use it now :(
+        Tag::default_language(),
+        // try with 'latn'; some old fonts put their features there even though
+        // they're really trying to support Thai, for example :(
+        LATIN_SCRIPT,
+    ] {
+        if let Some(index) = table.find_script_index(tag) {
+            unsafe {
+                *script_index = index.0 as u32;
+                *chosen_script = tag;
+            }
+            return 0;
+        }
+    }
+
+    unsafe {
+        *script_index = SCRIPT_NOT_FOUND_INDEX;
+        *chosen_script = Tag(SCRIPT_NOT_FOUND_INDEX);
+    }
+
+    0
+}
+
+/// rb_ot_layout_table_find_feature:
+///
+/// @face: #rb_face_t to work upon
+/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
+/// @feature_tag: The #rb_tag_t og the requested feature tag
+/// @feature_index: (out): The index of the requested feature
+///
+/// Fetches the index for a given feature tag in the specified face's GSUB table
+/// or GPOS table.
+///
+/// Return value: true if the feature is found, false otherwise
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_table_find_feature(
+    face: *const ffi::rb_face_t,
+    table_tag: Tag,
+    feature_tag: Tag,
+    feature_index: *mut u32,
+) -> ffi::rb_bool_t {
+    unsafe { *feature_index = FEATURE_NOT_FOUND_INDEX };
+
+    let data = unsafe { get_table_data(face, table_tag) };
+    if let Some(table) = SubstPosTable::parse(data) {
+        for i in 0..table.feature_count() {
+            if table.get_feature_tag(FeatureIndex(i)) == Some(feature_tag) {
+                unsafe { *feature_index = i as u32; }
+                return 1;
+            }
+        }
+    }
+
+    0
+}
 
 /// rb_ot_layout_table_find_feature_variations:
 ///
@@ -91,39 +191,6 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
     } else {
         unsafe { *lookup_count = 0; }
     }
-}
-
-/// rb_ot_layout_table_find_feature:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-/// @feature_tag: The #rb_tag_t og the requested feature tag
-/// @feature_index: (out): The index of the requested feature
-///
-/// Fetches the index for a given feature tag in the specified face's GSUB table
-/// or GPOS table.
-///
-/// Return value: true if the feature is found, false otherwise
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_table_find_feature(
-    face: *const ffi::rb_face_t,
-    table_tag: Tag,
-    feature_tag: Tag,
-    feature_index: *mut u32,
-) -> ffi::rb_bool_t {
-    unsafe { *feature_index = FEATURE_NOT_FOUND_INDEX };
-
-    let data = unsafe { get_table_data(face, table_tag) };
-    if let Some(table) = SubstPosTable::parse(data) {
-        for i in 0..table.feature_count() {
-            if table.get_feature_tag(FeatureIndex(i)) == Some(feature_tag) {
-                unsafe { *feature_index = i as u32; }
-                return 1;
-            }
-        }
-    }
-
-    0
 }
 
 unsafe fn write_lookup_indices(
