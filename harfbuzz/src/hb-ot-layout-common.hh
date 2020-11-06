@@ -133,11 +133,6 @@ struct RangeRecord
         return c->check_struct(this);
     }
 
-    template <typename set_t> bool collect_coverage(set_t *glyphs) const
-    {
-        return glyphs->add_range(first, last);
-    }
-
     HBGlyphID first; /* First GlyphID in the range */
     HBGlyphID last;  /* Last GlyphID in the range */
     HBUINT16 value;  /* Value */
@@ -454,11 +449,6 @@ private:
         return glyphArray.sanitize(c);
     }
 
-    template <typename set_t> bool collect_coverage(set_t *glyphs) const
-    {
-        return glyphs->add_sorted_array(glyphArray.arrayZ, glyphArray.len);
-    }
-
 protected:
     HBUINT16 coverageFormat;             /* Format identifier--format = 1 */
     SortedArrayOf<HBGlyphID> glyphArray; /* Array of GlyphIDs--in numerical order */
@@ -480,15 +470,6 @@ private:
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return rangeRecord.sanitize(c);
-    }
-
-    template <typename set_t> bool collect_coverage(set_t *glyphs) const
-    {
-        unsigned int count = rangeRecord.len;
-        for (unsigned int i = 0; i < count; i++)
-            if (unlikely(!rangeRecord[i].collect_coverage(glyphs)))
-                return false;
-        return true;
     }
 
 protected:
@@ -546,20 +527,6 @@ struct Coverage
             return u.format2.sanitize(c);
         default:
             return true;
-        }
-    }
-
-    /* Might return false if array looks unsorted.
-     * Used for faster rejection of corrupt data. */
-    template <typename set_t> bool collect_coverage(set_t *glyphs) const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.collect_coverage(glyphs);
-        case 2:
-            return u.format2.collect_coverage(glyphs);
-        default:
-            return false;
         }
     }
 

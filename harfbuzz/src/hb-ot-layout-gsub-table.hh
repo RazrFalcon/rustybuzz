@@ -48,11 +48,6 @@ namespace OT {
 
 struct SingleSubst
 {
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         return rb_single_subst_would_apply((const char*)this, c);
@@ -65,21 +60,12 @@ struct SingleSubst
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return (format != 1 && format != 2) || coverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> coverage;
 };
 
 struct MultipleSubst
 {
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         return rb_multiple_subst_would_apply((const char*)this, c);
@@ -92,21 +78,12 @@ struct MultipleSubst
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return format != 1 || coverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> coverage;
 };
 
 struct AlternateSubst
 {
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         return rb_alternate_subst_would_apply((const char*)this, c);
@@ -119,21 +96,12 @@ struct AlternateSubst
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return format != 1 || coverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> coverage;
 };
 
 struct LigatureSubst
 {
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         return rb_ligature_subst_would_apply((const char*)this, c);
@@ -146,12 +114,8 @@ struct LigatureSubst
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return format != 1 || coverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> coverage;
 };
 
 struct ContextSubst : Context
@@ -170,11 +134,6 @@ struct ExtensionSubst : Extension<ExtensionSubst>
 
 struct ReverseChainSingleSubst
 {
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         return rb_reverse_chain_single_subst_would_apply((const char*)this, c);
@@ -187,12 +146,8 @@ struct ReverseChainSingleSubst
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return format != 1 || coverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> coverage;
 };
 
 /*
@@ -281,12 +236,6 @@ struct SubstLookup : Lookup
     bool apply(rb_ot_apply_context_t *c) const
     {
         return dispatch(c);
-    }
-
-    template <typename set_t> void collect_coverage(set_t *glyphs) const
-    {
-        rb_collect_coverage_context_t<set_t> c(glyphs);
-        dispatch(&c);
     }
 
     bool would_apply(rb_would_apply_context_t *c, const rb_ot_layout_lookup_accelerator_t *accel) const

@@ -68,32 +68,6 @@ struct rb_would_apply_context_t : rb_dispatch_context_t<rb_would_apply_context_t
     }
 };
 
-template <typename set_t>
-struct rb_collect_coverage_context_t : rb_dispatch_context_t<rb_collect_coverage_context_t<set_t>, const Coverage &>
-{
-    typedef const Coverage &return_t; // Stoopid that we have to dupe this here.
-    template <typename T> return_t dispatch(const T &obj)
-    {
-        return obj.get_coverage();
-    }
-    static return_t default_return_value()
-    {
-        return Null(Coverage);
-    }
-    bool stop_sublookup_iteration(return_t r) const
-    {
-        r.collect_coverage(set);
-        return false;
-    }
-
-    rb_collect_coverage_context_t(set_t *set_)
-        : set(set_)
-    {
-    }
-
-    set_t *set;
-};
-
 struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool>
 {
     struct matcher_t
@@ -440,19 +414,16 @@ struct rb_get_subtables_context_t : rb_dispatch_context_t<rb_get_subtables_conte
         {
             obj = &obj_;
             apply_func = apply_func_;
-            digest.init();
-            obj_.get_coverage().collect_coverage(&digest);
         }
 
         bool apply(OT::rb_ot_apply_context_t *c) const
         {
-            return digest.may_have(rb_buffer_get_cur(c->buffer, 0)->codepoint) && apply_func(obj, c);
+            return apply_func(obj, c);
         }
 
     private:
         const void *obj;
         rb_apply_func_t apply_func;
-        rb_set_digest_t digest;
     };
 
     typedef rb_vector_t<rb_applicable_t> array_t;
@@ -486,63 +457,8 @@ RB_EXTERN rb_bool_t rb_chain_context_lookup_would_apply(const char *data, const 
 RB_EXTERN rb_bool_t rb_chain_context_lookup_apply(const char *data, rb_ot_apply_context_t *c);
 }
 
-struct ContextFormat1Or2
-{
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return coverage.sanitize(c, this);
-    }
-
-protected:
-    HBUINT16 format;                /* Format identifier--format = 1 */
-    OffsetTo<Coverage> coverage;    /* Offset to Coverage table--from
-                                     * beginning of table */
-public:
-    DEFINE_SIZE_STATIC(4);
-};
-
-struct ContextFormat3
-{
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return coverage.sanitize(c, this);
-    }
-
-protected:
-    HBUINT16 format;
-    HBUINT16 glyphCount;
-    HBUINT16 lookupCount;
-    OffsetTo<Coverage> coverage;
-
-public:
-    DEFINE_SIZE_STATIC(8);
-};
-
 struct Context
 {
-    const Coverage &get_coverage() const
-    {
-        switch (u.format) {
-        case 1:
-        case 2:
-            return u.format1or2.get_coverage();
-        case 3:
-            return u.format3.get_coverage();
-        default:
-            return Null(Coverage);
-        }
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         return rb_context_lookup_would_apply((const char*)this, c);
@@ -555,72 +471,12 @@ struct Context
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        switch (u.format) {
-        case 1:
-        case 2:
-            return u.format1or2.sanitize(c);
-        case 3:
-            return u.format3.sanitize(c);
-        default:
-            return true;
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        ContextFormat1Or2 format1or2;
-        ContextFormat3 format3;
-    } u;
-};
-
-struct ChainContextFormat3
-{
-    const Coverage &get_coverage() const
-    {
-        const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-        return this + input[0];
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        if (!backtrack.sanitize(c, this))
-            return false;
-        const OffsetArrayOf<Coverage> &input = StructAfter<OffsetArrayOf<Coverage>>(backtrack);
-        if (!input.sanitize(c, this))
-            return false;
-        if (!input.len)
-            return false; /* To be consistent with Context. */
         return true;
     }
-
-protected:
-    HBUINT16 format;                    /* Format identifier--format = 3 */
-    OffsetArrayOf<Coverage> backtrack;  /* Array of coverage tables
-                                         * in backtracking sequence, in  glyph
-                                         * sequence order */
-    OffsetArrayOf<Coverage> inputX;     /* Array of coverage
-                                         * tables in input sequence, in glyph
-                                         * sequence order */
-public:
-    DEFINE_SIZE_MIN(6);
 };
 
 struct ChainContext
 {
-    const Coverage &get_coverage() const
-    {
-        switch (u.format) {
-        case 1:
-        case 2:
-            return u.format1or2.get_coverage();
-        case 3:
-            return u.format3.get_coverage();
-        default:
-            return Null(Coverage);
-        }
-    }
-
     bool would_apply(rb_would_apply_context_t *c) const
     {
         return rb_chain_context_lookup_would_apply((const char*)this, c);
@@ -633,23 +489,8 @@ struct ChainContext
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        switch (u.format) {
-        case 1:
-        case 2:
-            return u.format1or2.sanitize(c);
-        case 3:
-            return u.format3.sanitize(c);
-        default:
-            return true;
-        }
+        return true;
     }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        ContextFormat1Or2 format1or2;
-        ChainContextFormat3 format3;
-    } u;
 };
 
 template <typename T> struct ExtensionFormat1
@@ -727,9 +568,6 @@ struct rb_ot_layout_lookup_accelerator_t
 {
     template <typename TLookup> void init(const TLookup &lookup)
     {
-        digest.init();
-        lookup.collect_coverage(&digest);
-
         subtables.init();
         OT::rb_get_subtables_context_t c_get_subtables(subtables);
         lookup.dispatch(&c_get_subtables);
@@ -741,7 +579,7 @@ struct rb_ot_layout_lookup_accelerator_t
 
     bool may_have(rb_codepoint_t g) const
     {
-        return digest.may_have(g);
+        return true;
     }
 
     bool apply(rb_ot_apply_context_t *c) const
@@ -755,7 +593,6 @@ struct rb_ot_layout_lookup_accelerator_t
     }
 
 private:
-    rb_set_digest_t digest;
     rb_get_subtables_context_t::array_t subtables;
 };
 

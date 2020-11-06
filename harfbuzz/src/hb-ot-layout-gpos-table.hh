@@ -61,11 +61,6 @@ enum attach_type_t {
 
 struct SinglePos
 {
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
     bool apply(rb_ot_apply_context_t *c) const
     {
         return rb_single_pos_apply((const char*)this, c);
@@ -73,21 +68,12 @@ struct SinglePos
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return (format != 1 && format != 2) || coverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> coverage;
 };
 
 struct PairPos
 {
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
     bool apply(rb_ot_apply_context_t *c) const
     {
         return rb_pair_pos_apply((const char*)this, c);
@@ -95,42 +81,24 @@ struct PairPos
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return (format != 1 && format != 2) || coverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> coverage;
 };
 
 struct CursivePos
 {
-    const Coverage &get_coverage() const
-    {
-        return this + coverage;
-    }
-
     bool apply(rb_ot_apply_context_t *c) const {
         return rb_cursive_pos_apply((const char*)this, c);
     }
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return format != 1 || coverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> coverage;
 };
 
 struct MarkBasePos
 {
-    const Coverage &get_coverage() const
-    {
-        return this + markCoverage;
-    }
-
     bool apply(rb_ot_apply_context_t *c) const
     {
         return rb_mark_base_pos_apply((const char*)this, c);
@@ -138,21 +106,12 @@ struct MarkBasePos
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return format != 1 || markCoverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> markCoverage;
 };
 
 struct MarkLigPos
 {
-    const Coverage &get_coverage() const
-    {
-        return this + markCoverage;
-    }
-
     bool apply(rb_ot_apply_context_t *c) const
     {
         return rb_mark_lig_pos_apply((const char*)this, c);
@@ -160,21 +119,12 @@ struct MarkLigPos
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return format != 1 || markCoverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> markCoverage;
 };
 
 struct MarkMarkPos
 {
-    const Coverage &get_coverage() const
-    {
-        return this + mark1Coverage;
-    }
-
     bool apply(rb_ot_apply_context_t *c) const
     {
         return rb_mark_mark_pos_apply((const char*)this, c);
@@ -182,12 +132,8 @@ struct MarkMarkPos
 
     bool sanitize(rb_sanitize_context_t *c) const
     {
-        return format != 1 || mark1Coverage.sanitize(c, this);
+        return true;
     }
-
-protected:
-    HBUINT16 format;
-    OffsetTo<Coverage> mark1Coverage;
 };
 
 struct ContextPos : Context
@@ -285,12 +231,6 @@ struct PosLookup : Lookup
     bool apply(rb_ot_apply_context_t *c) const
     {
         return dispatch(c);
-    }
-
-    template <typename set_t> void collect_coverage(set_t *glyphs) const
-    {
-        rb_collect_coverage_context_t<set_t> c(glyphs);
-        dispatch(&c);
     }
 
     static inline bool apply_recurse_func(rb_ot_apply_context_t *c, unsigned int lookup_index);
