@@ -42,12 +42,16 @@ impl<'a> SubstPosTable<'a> {
         Some(Self { scripts, features, lookups, variations })
     }
 
-    pub fn get_feature(&self, feature_index: FeatureIndex) -> Option<Feature<'a>> {
-        Feature::parse(self.features.get(feature_index.0)?)
+    pub fn feature_count(&self) -> u16 {
+        self.features.len()
     }
 
-    pub fn find_variation_index(&self, coords: &[i32]) -> Option<VariationIndex> {
-        self.variations?.find_index(coords)
+    pub fn get_feature(&self, index: FeatureIndex) -> Option<Feature<'a>> {
+        Feature::parse(self.features.get_data(index.0)?)
+    }
+
+    pub fn get_feature_tag(&self, index: FeatureIndex) -> Option<Tag> {
+        self.features.get_tag(index.0)
     }
 
     pub fn get_feature_variation(
@@ -58,6 +62,10 @@ impl<'a> SubstPosTable<'a> {
         self.variations
             .and_then(|var| var.find_substitute(feature_index, var_index))
             .or_else(|| self.get_feature(feature_index))
+    }
+
+    pub fn find_variation_index(&self, coords: &[i32]) -> Option<VariationIndex> {
+        self.variations?.find_index(coords)
     }
 }
 
@@ -118,7 +126,15 @@ impl<'a> RecordList<'a> {
         Some(Self { data, records })
     }
 
-    fn get(&self, index: u16) -> Option<&'a [u8]> {
+    fn len(&self) -> u16 {
+        self.records.len()
+    }
+
+    fn get_tag(&self, index: u16) -> Option<Tag> {
+        self.records.get(index).map(|record| record.tag)
+    }
+
+    fn get_data(&self, index: u16) -> Option<&'a [u8]> {
         let offset = self.records.get(index)?.offset.to_usize();
         self.data.get(offset..)
     }

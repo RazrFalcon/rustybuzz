@@ -90,6 +90,11 @@ RB_EXTERN rb_bool_t rb_ot_layout_table_select_script(rb_face_t *face,
                                                      unsigned int *script_index /* OUT */,
                                                      rb_tag_t *chosen_script /* OUT */);
 
+RB_EXTERN rb_bool_t rb_ot_layout_table_find_feature(rb_face_t *face,
+                                                    rb_tag_t table_tag,
+                                                    rb_tag_t feature_tag,
+                                                    unsigned int *feature_index /* OUT */);
+
 RB_EXTERN rb_bool_t rb_ot_layout_script_select_language(rb_face_t *face,
                                                         rb_tag_t table_tag,
                                                         unsigned int script_index,

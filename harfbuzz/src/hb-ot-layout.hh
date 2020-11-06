@@ -50,11 +50,6 @@ RB_INTERNAL bool rb_ot_layout_has_cross_kerning(rb_face_t *face);
 
 RB_INTERNAL void rb_ot_layout_kern(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
 
-/* Private API corresponding to hb-ot-layout.h: */
-
-RB_INTERNAL bool
-rb_ot_layout_table_find_feature(rb_face_t *face, rb_tag_t table_tag, rb_tag_t feature_tag, unsigned int *feature_index);
-
 /*
  * GDEF
  */

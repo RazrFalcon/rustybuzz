@@ -16,7 +16,9 @@ use common::{SubstPosTable, FeatureIndex, Feature, VariationIndex};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
-pub const FEATURE_VARIATIONS_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
+
+pub const FEATURE_VARIATION_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
+pub const FEATURE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 
 /// rb_ot_layout_table_find_feature_variations:
 ///
@@ -36,7 +38,7 @@ pub extern "C" fn rb_ot_layout_table_find_feature_variations(
     num_coords: u32,
     variations_index: *mut u32,
 ) -> ffi::rb_bool_t {
-    unsafe { *variations_index = FEATURE_VARIATIONS_NOT_FOUND_INDEX; }
+    unsafe { *variations_index = FEATURE_VARIATION_NOT_FOUND_INDEX; }
 
     let data = unsafe { get_table_data(face, tag) };
     let coords = unsafe { std::slice::from_raw_parts(coords, num_coords as usize) };
@@ -75,21 +77,53 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
     lookup_indices: *mut u32,
 ) {
     let data = unsafe { get_table_data(face, tag) };
-    let feature = SubstPosTable::parse(data)
-        .and_then(|table| {
-            let feature_index = FeatureIndex(feature_index as u16);
-            if var_index == FEATURE_VARIATIONS_NOT_FOUND_INDEX {
-                table.get_feature(feature_index)
-            } else {
-                table.get_feature_variation(feature_index, VariationIndex(var_index))
-            }
-        });
+    let feature = SubstPosTable::parse(data).and_then(|table| {
+        let feature_index = FeatureIndex(feature_index as u16);
+        if var_index == FEATURE_VARIATION_NOT_FOUND_INDEX {
+            table.get_feature(feature_index)
+        } else {
+            table.get_feature_variation(feature_index, VariationIndex(var_index))
+        }
+    });
 
     if let Some(feature) = feature {
         unsafe { write_lookup_indices(feature, start, lookup_count, lookup_indices); }
     } else {
         unsafe { *lookup_count = 0; }
     }
+}
+
+/// rb_ot_layout_table_find_feature:
+///
+/// @face: #rb_face_t to work upon
+/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
+/// @feature_tag: The #rb_tag_t og the requested feature tag
+/// @feature_index: (out): The index of the requested feature
+///
+/// Fetches the index for a given feature tag in the specified face's GSUB table
+/// or GPOS table.
+///
+/// Return value: true if the feature is found, false otherwise
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_table_find_feature(
+    face: *const ffi::rb_face_t,
+    table_tag: Tag,
+    feature_tag: Tag,
+    feature_index: *mut u32,
+) -> ffi::rb_bool_t {
+    unsafe { *feature_index = FEATURE_NOT_FOUND_INDEX };
+
+    let data = unsafe { get_table_data(face, table_tag) };
+    if let Some(table) = SubstPosTable::parse(data) {
+        for i in 0..table.feature_count() {
+            if table.get_feature_tag(FeatureIndex(i)) == Some(feature_tag) {
+                unsafe { *feature_index = i as u32; }
+                return 1;
+            }
+        }
+    }
+
+    0
 }
 
 unsafe fn write_lookup_indices(

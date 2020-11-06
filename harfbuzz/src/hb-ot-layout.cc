@@ -352,40 +352,6 @@ rb_bool_t rb_ot_layout_table_select_script(rb_face_t *face,
 }
 
 /**
- * rb_ot_layout_table_find_feature:
- * @face: #rb_face_t to work upon
- * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
- * @feature_tag: The #rb_tag_t og the requested feature tag
- * @feature_index: (out): The index of the requested feature
- *
- * Fetches the index for a given feature tag in the specified face's GSUB table
- * or GPOS table.
- *
- * Return value: true if the feature is found, false otherwise
- **/
-bool rb_ot_layout_table_find_feature(rb_face_t *face,
-                                     rb_tag_t table_tag,
-                                     rb_tag_t feature_tag,
-                                     unsigned int *feature_index /* OUT */)
-{
-    static_assert((OT::Index::NOT_FOUND_INDEX == RB_OT_LAYOUT_NO_FEATURE_INDEX), "");
-    const OT::GSUBGPOS &g = get_gsubgpos_table(face, table_tag);
-
-    unsigned int num_features = g.get_feature_count();
-    for (unsigned int i = 0; i < num_features; i++) {
-        if (feature_tag == g.get_feature_tag(i)) {
-            if (feature_index)
-                *feature_index = i;
-            return true;
-        }
-    }
-
-    if (feature_index)
-        *feature_index = RB_OT_LAYOUT_NO_FEATURE_INDEX;
-    return false;
-}
-
-/**
  * rb_ot_layout_script_select_language:
  * @face: #rb_face_t to work upon
  * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS

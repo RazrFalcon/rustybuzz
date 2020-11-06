@@ -370,10 +370,6 @@ struct GSUBGPOS
         return (this + scriptList).find_index(tag, index);
     }
 
-    unsigned int get_feature_count() const
-    {
-        return (this + featureList).len;
-    }
     rb_tag_t get_feature_tag(unsigned int i) const
     {
         return i == Index::NOT_FOUND_INDEX ? RB_TAG_NONE : (this + featureList).get_tag(i);
