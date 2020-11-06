@@ -13,7 +13,7 @@ mod matching;
 use crate::common::TagExt;
 use crate::{ffi, Tag};
 
-use common::{SubstPosTable, FeatureIndex, Feature, ScriptIndex, VariationIndex};
+use common::{SubstPosTable, FeatureIndex, Feature, LangSysIndex, ScriptIndex, VariationIndex};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -138,6 +138,66 @@ pub extern "C" fn rb_ot_layout_script_select_language(
     0
 }
 
+/// rb_ot_layout_language_get_required_feature:
+///
+/// @face: #rb_face_t to work upon
+/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
+/// @script_index: The index of the requested script tag
+/// @language_index: The index of the requested language tag
+/// @feature_index: (out): The index of the requested feature
+/// @feature_tag: (out): The #rb_tag_t of the requested feature
+///
+/// Fetches the tag of a requested feature index in the given face's GSUB or GPOS table,
+/// underneath the specified script and language.
+///
+/// Return value: true if the feature is found, false otherwise
+///
+/// Since: 0.9.30
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_language_get_required_feature(
+    face: *const ffi::rb_face_t,
+    table_tag: Tag,
+    script_index: u32,
+    language_index: u32,
+    feature_index: *mut u32,
+    feature_tag: *mut Tag,
+) -> ffi::rb_bool_t {
+    unsafe {
+        *feature_index = FEATURE_NOT_FOUND_INDEX;
+        *feature_tag = Tag(0);
+    }
+
+    let data = unsafe { get_table_data(face, table_tag) };
+    let table = match SubstPosTable::parse(data) {
+        Some(table) => table,
+        None => return 0,
+    };
+
+    let sys = match table
+        .get_script(ScriptIndex(script_index as u16))
+        .and_then(|script| {
+            if language_index == LANGUAGE_NOT_FOUND_INDEX {
+                script.default_lang_sys()
+            } else {
+                script.get_lang_sys(LangSysIndex(language_index as u16))
+            }
+        })
+    {
+        Some(sys) => sys,
+        None => return 0,
+    };
+
+    let index = sys.required_feature_index;
+    unsafe {
+        *feature_index = sys.required_feature_index.0 as u32;
+        if let Some(tag) = table.get_feature_tag(index) {
+            *feature_tag = tag;
+        }
+    }
+
+    return sys.has_required_feature() as ffi::rb_bool_t;
+}
+
 /// rb_ot_layout_table_find_feature:
 ///
 /// @face: #rb_face_t to work upon
@@ -184,14 +244,14 @@ pub extern "C" fn rb_ot_layout_table_find_feature(
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_table_find_feature_variations(
     face: *const ffi::rb_face_t,
-    tag: Tag,
+    table_tag: Tag,
     coords: *const i32,
     num_coords: u32,
     variations_index: *mut u32,
 ) -> ffi::rb_bool_t {
     unsafe { *variations_index = FEATURE_VARIATION_NOT_FOUND_INDEX; }
 
-    let data = unsafe { get_table_data(face, tag) };
+    let data = unsafe { get_table_data(face, table_tag) };
     let coords = unsafe { std::slice::from_raw_parts(coords, num_coords as usize) };
     if let Some(table) = SubstPosTable::parse(data) {
         if let Some(index) = table.find_variation_index(coords) {
@@ -220,14 +280,14 @@ pub extern "C" fn rb_ot_layout_table_find_feature_variations(
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
     face: *const ffi::rb_face_t,
-    tag: Tag,
+    table_tag: Tag,
     feature_index: u32,
     var_index: u32,
     start: u32,
     lookup_count: *mut u32,
     lookup_indices: *mut u32,
 ) {
-    let data = unsafe { get_table_data(face, tag) };
+    let data = unsafe { get_table_data(face, table_tag) };
     let feature = SubstPosTable::parse(data).and_then(|table| {
         let feature_index = FeatureIndex(feature_index as u16);
         if var_index == FEATURE_VARIATION_NOT_FOUND_INDEX {
@@ -261,8 +321,8 @@ unsafe fn write_lookup_indices(
     *count = i as u32;
 }
 
-unsafe fn get_table_data(face: *const ffi::rb_face_t, tag: Tag) -> &'static [u8] {
-    let data = ffi::rb_face_get_table_data(face, tag);
-    let len = ffi::rb_face_get_table_len(face, tag);
+unsafe fn get_table_data(face: *const ffi::rb_face_t, table_tag: Tag) -> &'static [u8] {
+    let data = ffi::rb_face_get_table_data(face, table_tag);
+    let len = ffi::rb_face_get_table_len(face, table_tag);
     std::slice::from_raw_parts(data, len as usize)
 }

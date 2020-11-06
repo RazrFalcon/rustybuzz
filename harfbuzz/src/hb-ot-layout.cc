@@ -291,41 +291,6 @@ static const OT::GSUBGPOS &get_gsubgpos_table(rb_face_t *face, rb_tag_t table_ta
 }
 
 /**
- * rb_ot_layout_language_get_required_feature:
- * @face: #rb_face_t to work upon
- * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
- * @script_index: The index of the requested script tag
- * @language_index: The index of the requested language tag
- * @feature_index: (out): The index of the requested feature
- * @feature_tag: (out): The #rb_tag_t of the requested feature
- *
- * Fetches the tag of a requested feature index in the given face's GSUB or GPOS table,
- * underneath the specified script and language.
- *
- * Return value: true if the feature is found, false otherwise
- *
- * Since: 0.9.30
- **/
-rb_bool_t rb_ot_layout_language_get_required_feature(rb_face_t *face,
-                                                     rb_tag_t table_tag,
-                                                     unsigned int script_index,
-                                                     unsigned int language_index,
-                                                     unsigned int *feature_index /* OUT */,
-                                                     rb_tag_t *feature_tag /* OUT */)
-{
-    const OT::GSUBGPOS &g = get_gsubgpos_table(face, table_tag);
-    const OT::LangSys &l = g.get_script(script_index).get_lang_sys(language_index);
-
-    unsigned int index = l.get_required_feature_index();
-    if (feature_index)
-        *feature_index = index;
-    if (feature_tag)
-        *feature_tag = g.get_feature_tag(index);
-
-    return l.has_required_feature();
-}
-
-/**
  * rb_ot_layout_language_find_feature:
  * @face: #rb_face_t to work upon
  * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS

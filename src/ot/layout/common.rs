@@ -197,12 +197,18 @@ impl<'a> Script<'a> {
         if let Some(offset) = s.read::<Option<Offset16>>()? {
             default = LangSys::parse(data.get(offset.to_usize()..)?);
         }
-        let systems = RecordList::parse(s.tail()?)?;
+        let mut systems = RecordList::parse(s.tail()?)?;
+        // Offsets are relative to this table.
+        systems.data = data;
         Some(Self { default, systems })
     }
 
-    pub fn default(&self) -> Option<LangSys<'a>> {
+    pub fn default_lang_sys(&self) -> Option<LangSys<'a>> {
         self.default
+    }
+
+    pub fn get_lang_sys(&self, index: LangSysIndex) -> Option<LangSys<'a>> {
+        LangSys::parse(self.systems.get_data(index.0)?)
     }
 
     pub fn find_lang_sys_index(&self, tag: Tag) -> Option<LangSysIndex> {
@@ -212,19 +218,23 @@ impl<'a> Script<'a> {
 
 #[derive(Clone, Copy, Debug)]
 pub struct LangSys<'a> {
-    lookup_order: Offset16,
-    required: FeatureIndex,
-    indices: LazyArray16<'a, FeatureIndex>
+    pub lookup_order: Offset16,
+    pub required_feature_index: FeatureIndex,
+    pub feature_indices: LazyArray16<'a, FeatureIndex>
 }
 
 impl<'a> LangSys<'a> {
     fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let lookup_order = s.read::<Offset16>()?;
-        let required = s.read::<FeatureIndex>()?;
+        let required_feature_index = s.read::<FeatureIndex>()?;
         let count = s.read::<u16>()?;
-        let indices = s.read_array16(count)?;
-        Some(Self { lookup_order, required, indices })
+        let feature_indices = s.read_array16(count)?;
+        Some(Self { lookup_order, required_feature_index, feature_indices })
+    }
+
+    pub fn has_required_feature(&self) -> bool {
+        self.required_feature_index.0 != 0xFFFF
     }
 }
 
