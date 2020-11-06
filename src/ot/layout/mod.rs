@@ -13,15 +13,15 @@ mod matching;
 use crate::common::TagExt;
 use crate::{ffi, Tag};
 
-use common::{SubstPosTable, FeatureIndex, Feature, VariationIndex};
+use common::{SubstPosTable, FeatureIndex, Feature, ScriptIndex, VariationIndex};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
 
-pub const FEATURE_VARIATION_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
-pub const FEATURE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const SCRIPT_NOT_FOUND_INDEX: u32 = 0xFFFF;
-
+pub const LANGUAGE_NOT_FOUND_INDEX: u32 = 0xFFFF;
+pub const FEATURE_NOT_FOUND_INDEX: u32 = 0xFFFF;
+pub const FEATURE_VARIATION_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
 
 /// rb_ot_layout_table_select_script:
 ///
@@ -43,6 +43,11 @@ pub extern "C" fn rb_ot_layout_table_select_script(
     chosen_script: *mut Tag,
 ) -> ffi::rb_bool_t {
     const LATIN_SCRIPT: Tag = Tag::from_bytes(b"latn");
+
+    unsafe {
+        *script_index = SCRIPT_NOT_FOUND_INDEX;
+        *chosen_script = Tag(SCRIPT_NOT_FOUND_INDEX);
+    }
 
     let data = unsafe { get_table_data(face, table_tag) };
     let table = match SubstPosTable::parse(data) {
@@ -79,9 +84,55 @@ pub extern "C" fn rb_ot_layout_table_select_script(
         }
     }
 
-    unsafe {
-        *script_index = SCRIPT_NOT_FOUND_INDEX;
-        *chosen_script = Tag(SCRIPT_NOT_FOUND_INDEX);
+    0
+}
+
+/// rb_ot_layout_script_select_language:
+///
+/// @face: #rb_face_t to work upon
+/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
+/// @script_index: The index of the requested script tag
+/// @language_count: The number of languages in the specified script
+/// @language_tags: The array of language tags
+/// @language_index: (out): The index of the requested language
+///
+/// Fetches the index of a given language tag in the specified face's GSUB table
+/// or GPOS table, underneath the specified script index.
+///
+/// Return value: true if the language tag is found, false otherwise
+///
+/// Since: 2.0.0
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_script_select_language(
+    face: *const ffi::rb_face_t,
+    table_tag: Tag,
+    script_index: u32,
+    language_count: u32,
+    language_tags: *const Tag,
+    language_index: *mut u32,
+) -> ffi::rb_bool_t {
+    unsafe { *language_index = LANGUAGE_NOT_FOUND_INDEX; }
+
+    let data = unsafe { get_table_data(face, table_tag) };
+    let script = match SubstPosTable::parse(data)
+        .and_then(|table| table.get_script(ScriptIndex(script_index as u16)))
+    {
+        Some(script) => script,
+        None => return 0,
+    };
+
+    let languages = unsafe { std::slice::from_raw_parts(language_tags, language_count as usize) };
+    for &tag in languages {
+        if let Some(index) = script.find_lang_sys_index(tag) {
+            unsafe { *language_index = index.0 as u32; }
+            return 1;
+        }
+    }
+
+    /* try finding 'dflt' */
+    if let Some(index) = script.find_lang_sys_index(Tag::default_language()) {
+        unsafe { *language_index = index.0 as u32; }
+        return 0;
     }
 
     0

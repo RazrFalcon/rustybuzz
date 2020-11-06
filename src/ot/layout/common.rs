@@ -42,6 +42,10 @@ impl<'a> SubstPosTable<'a> {
         Some(Self { scripts, features, lookups, variations })
     }
 
+    pub fn get_script(&self, index: ScriptIndex) -> Option<Script<'a>> {
+        Script::parse(self.scripts.get_data(index.0)?)
+    }
+
     pub fn find_script_index(&self, script_tag: Tag) -> Option<ScriptIndex> {
         self.scripts.find_index(script_tag).map(ScriptIndex)
     }
@@ -78,6 +82,19 @@ impl<'a> SubstPosTable<'a> {
 pub struct ScriptIndex(pub u16);
 
 impl FromData for ScriptIndex {
+    const SIZE: usize = 2;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        u16::parse(data).map(Self)
+    }
+}
+
+/// A type-safe wrapper for a language system index.
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
+pub struct LangSysIndex(pub u16);
+
+impl FromData for LangSysIndex {
     const SIZE: usize = 2;
 
     #[inline]
@@ -164,6 +181,50 @@ impl FromData for TagRecord {
             tag: s.read()?,
             offset: s.read()?,
         })
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Script<'a> {
+    default: Option<LangSys<'a>>,
+    systems: RecordList<'a>,
+}
+
+impl<'a> Script<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let mut default = None;
+        if let Some(offset) = s.read::<Option<Offset16>>()? {
+            default = LangSys::parse(data.get(offset.to_usize()..)?);
+        }
+        let systems = RecordList::parse(s.tail()?)?;
+        Some(Self { default, systems })
+    }
+
+    pub fn default(&self) -> Option<LangSys<'a>> {
+        self.default
+    }
+
+    pub fn find_lang_sys_index(&self, tag: Tag) -> Option<LangSysIndex> {
+        self.systems.find_index(tag).map(LangSysIndex)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct LangSys<'a> {
+    lookup_order: Offset16,
+    required: FeatureIndex,
+    indices: LazyArray16<'a, FeatureIndex>
+}
+
+impl<'a> LangSys<'a> {
+    fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let lookup_order = s.read::<Offset16>()?;
+        let required = s.read::<FeatureIndex>()?;
+        let count = s.read::<u16>()?;
+        let indices = s.read_array16(count)?;
+        Some(Self { lookup_order, required, indices })
     }
 }
 

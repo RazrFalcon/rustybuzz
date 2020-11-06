@@ -291,47 +291,6 @@ static const OT::GSUBGPOS &get_gsubgpos_table(rb_face_t *face, rb_tag_t table_ta
 }
 
 /**
- * rb_ot_layout_script_select_language:
- * @face: #rb_face_t to work upon
- * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
- * @script_index: The index of the requested script tag
- * @language_count: The number of languages in the specified script
- * @language_tags: The array of language tags
- * @language_index: (out): The index of the requested language
- *
- * Fetches the index of a given language tag in the specified face's GSUB table
- * or GPOS table, underneath the specified script index.
- *
- * Return value: true if the language tag is found, false otherwise
- *
- * Since: 2.0.0
- **/
-rb_bool_t rb_ot_layout_script_select_language(rb_face_t *face,
-                                              rb_tag_t table_tag,
-                                              unsigned int script_index,
-                                              unsigned int language_count,
-                                              const rb_tag_t *language_tags,
-                                              unsigned int *language_index /* OUT */)
-{
-    static_assert((OT::Index::NOT_FOUND_INDEX == RB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX), "");
-    const OT::Script &s = get_gsubgpos_table(face, table_tag).get_script(script_index);
-    unsigned int i;
-
-    for (i = 0; i < language_count; i++) {
-        if (s.find_lang_sys_index(language_tags[i], language_index))
-            return true;
-    }
-
-    /* try finding 'dflt' */
-    if (s.find_lang_sys_index(RB_OT_TAG_DEFAULT_LANGUAGE, language_index))
-        return false;
-
-    if (language_index)
-        *language_index = RB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX;
-    return false;
-}
-
-/**
  * rb_ot_layout_language_get_required_feature:
  * @face: #rb_face_t to work upon
  * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS

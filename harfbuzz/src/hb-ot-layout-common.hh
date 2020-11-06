@@ -44,8 +44,6 @@
 
 namespace OT {
 
-#define NOT_COVERED ((unsigned int)-1)
-
 /*
  *
  * OpenType Layout Common Table Formats
@@ -115,18 +113,6 @@ template <typename Type> struct RecordListOf : RecordArrayOf<Type>
     }
 };
 
-struct IndexArray : ArrayOf<Index>
-{
-    unsigned int
-    get_indexes(unsigned int start_offset, unsigned int *_count /* IN/OUT */, unsigned int *_indexes /* OUT */) const
-    {
-        if (_count) {
-            +this->sub_array(start_offset, _count) | rb_sink(rb_array(_indexes, *_count));
-        }
-        return this->len;
-    }
-};
-
 struct LangSys
 {
     unsigned int get_feature_count() const
@@ -149,29 +135,17 @@ struct LangSys
         return reqFeatureIndex;
     }
 
-    bool operator==(const LangSys &o) const
-    {
-        if (featureIndex.len != o.featureIndex.len || reqFeatureIndex != o.reqFeatureIndex)
-            return false;
-
-        for (const auto _ : +rb_zip(featureIndex, o.featureIndex))
-            if (_.first != _.second)
-                return false;
-
-        return true;
-    }
-
     bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t * = nullptr) const
     {
         return c->check_struct(this) && featureIndex.sanitize(c);
     }
 
-    Offset16 lookupOrderZ;    /* = Null (reserved for an offset to a
-                               * reordering table) */
-    HBUINT16 reqFeatureIndex; /* Index of a feature required for this
-                               * language system--if no required features
-                               * = 0xFFFFu */
-    IndexArray featureIndex;  /* Array of indices into the FeatureList */
+    Offset16 lookupOrderZ;        /* = Null (reserved for an offset to a
+                                   * reordering table) */
+    HBUINT16 reqFeatureIndex;     /* Index of a feature required for this
+                                   * language system--if no required features
+                                   * = 0xFFFFu */
+    ArrayOf<Index> featureIndex;  /* Array of indices into the FeatureList */
 public:
     DEFINE_SIZE_ARRAY_SIZED(6, featureIndex);
 };
@@ -179,32 +153,11 @@ DECLARE_NULL_NAMESPACE_BYTES(OT, LangSys);
 
 struct Script
 {
-    unsigned int get_lang_sys_count() const
-    {
-        return langSys.len;
-    }
-    const Tag &get_lang_sys_tag(unsigned int i) const
-    {
-        return langSys.get_tag(i);
-    }
     const LangSys &get_lang_sys(unsigned int i) const
     {
         if (i == Index::NOT_FOUND_INDEX)
-            return get_default_lang_sys();
+            return this + defaultLangSys;
         return this + langSys[i].offset;
-    }
-    bool find_lang_sys_index(rb_tag_t tag, unsigned int *index) const
-    {
-        return langSys.find_index(tag, index);
-    }
-
-    bool has_default_lang_sys() const
-    {
-        return defaultLangSys != 0;
-    }
-    const LangSys &get_default_lang_sys() const
-    {
-        return this + defaultLangSys;
     }
 
     bool sanitize(rb_sanitize_context_t *c, const Record_sanitize_closure_t * = nullptr) const
