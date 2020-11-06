@@ -3,7 +3,9 @@
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 
-use ttf_parser::parser::{FromData, LazyArray16, Offset16, Offset32, Offsets16, Stream, TryNumFrom};
+use ttf_parser::parser::{
+    FromData, LazyArray16, Offset, Offset16, Offset32, Offsets16, Stream, TryNumFrom,
+};
 use ttf_parser::GlyphId;
 
 use crate::font::Font;
@@ -63,7 +65,7 @@ impl<'a> LookupList<'a> {
 
 #[derive(Clone, Copy)]
 pub struct Lookup<'a> {
-    pub type_: u16,
+    pub kind: u16,
     pub flags: LookupFlags,
     pub offsets: Offsets16<'a, Offset16>,
     pub mark_filtering_set: Option<u16>,
@@ -72,7 +74,7 @@ pub struct Lookup<'a> {
 impl<'a> Lookup<'a> {
     pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
-        let type_ = s.read::<u16>()?;
+        let kind = s.read::<u16>()?;
         let flags = s.read::<LookupFlags>()?;
         let count = s.read::<u16>()?;
         let offsets = s.read_offsets16(count, data)?;
@@ -83,7 +85,7 @@ impl<'a> Lookup<'a> {
         }
 
         Some(Self {
-            type_,
+            kind,
             flags,
             offsets,
             mark_filtering_set,
@@ -110,6 +112,22 @@ impl FromData for LookupFlags {
     #[inline]
     fn parse(data: &[u8]) -> Option<Self> {
         u16::parse(data).map(Self::from_bits_truncate)
+    }
+}
+
+pub fn parse_extension_lookup<'a, T: 'a>(
+    data: &'a [u8],
+    parse: impl FnOnce(&'a [u8], u16) -> Option<T>,
+) -> Option<T> {
+    let mut s = Stream::new(data);
+    let format: u16 = s.read()?;
+    match format {
+        1 => {
+            let kind = s.read::<u16>()?;
+            let offset = s.read::<Offset32>()?.to_usize();
+            parse(data.get(offset..)?, kind)
+        }
+        _ => None,
     }
 }
 

@@ -42,7 +42,6 @@ uint64_t const _rb_NullPool[(RB_NULL_POOL_SIZE + sizeof(uint64_t) - 1) / sizeof(
 
 DEFINE_NULL_NAMESPACE_BYTES(OT, Index) = {0xFF, 0xFF};
 DEFINE_NULL_NAMESPACE_BYTES(OT, LangSys) = {0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00};
-DEFINE_NULL_NAMESPACE_BYTES(OT, RangeRecord) = {0x00, 0x01, 0x00, 0x00, 0x00, 0x00};
 DEFINE_NULL_NAMESPACE_BYTES(AAT, SettingName) = {0xFF, 0xFF, 0xFF, 0xFF};
 /* Hand-coded because Lookup is a template.  Sad. */
 const unsigned char _rb_Null_AAT_Lookup[2] = {0xFF, 0xFF};

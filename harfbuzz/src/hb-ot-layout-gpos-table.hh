@@ -32,12 +32,7 @@
 #include "hb-ot-layout-gsubgpos.hh"
 
 extern "C" {
-RB_EXTERN rb_bool_t rb_single_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
-RB_EXTERN rb_bool_t rb_pair_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
-RB_EXTERN rb_bool_t rb_cursive_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
-RB_EXTERN rb_bool_t rb_mark_base_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
-RB_EXTERN rb_bool_t rb_mark_lig_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
-RB_EXTERN rb_bool_t rb_mark_mark_pos_apply(const char *data, OT::rb_ot_apply_context_t *c);
+RB_EXTERN rb_bool_t rb_pos_lookup_apply(const char *data, OT::rb_ot_apply_context_t *c, unsigned int kind);
 }
 
 namespace OT {
@@ -57,158 +52,16 @@ enum attach_type_t {
     ATTACH_TYPE_CURSIVE = 0X02,
 };
 
-/* Lookups */
-
-struct SinglePos
-{
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        return rb_single_pos_apply((const char*)this, c);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
-};
-
-struct PairPos
-{
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        return rb_pair_pos_apply((const char*)this, c);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
-};
-
-struct CursivePos
-{
-    bool apply(rb_ot_apply_context_t *c) const {
-        return rb_cursive_pos_apply((const char*)this, c);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
-};
-
-struct MarkBasePos
-{
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        return rb_mark_base_pos_apply((const char*)this, c);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
-};
-
-struct MarkLigPos
-{
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        return rb_mark_lig_pos_apply((const char*)this, c);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
-};
-
-struct MarkMarkPos
-{
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        return rb_mark_mark_pos_apply((const char*)this, c);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
-};
-
-struct ContextPos : Context
-{
-};
-
-struct ChainContextPos : ChainContext
-{
-};
-
-struct ExtensionPos : Extension<ExtensionPos>
-{
-    typedef struct PosLookupSubTable SubTable;
-};
-
 /*
  * PosLookup
  */
 
 struct PosLookupSubTable
 {
-    friend struct Lookup;
-    friend struct PosLookup;
-
-    enum Type {
-        Single = 1,
-        Pair = 2,
-        Cursive = 3,
-        MarkBase = 4,
-        MarkLig = 5,
-        MarkMark = 6,
-        Context = 7,
-        ChainContext = 8,
-        Extension = 9
-    };
-
-    template <typename context_t, typename... Ts>
-    typename context_t::return_t dispatch(context_t *c, unsigned int lookup_type, Ts &&... ds) const
+    bool apply(rb_ot_apply_context_t *c, unsigned int lookup_type) const
     {
-        switch (lookup_type) {
-        case Single:
-            return c->dispatch(u.single, rb_forward<Ts>(ds)...);
-        case Pair:
-            return c->dispatch(u.pair, rb_forward<Ts>(ds)...);
-        case Cursive:
-            return c->dispatch(u.cursive, rb_forward<Ts>(ds)...);
-        case MarkBase:
-            return c->dispatch(u.markBase, rb_forward<Ts>(ds)...);
-        case MarkLig:
-            return c->dispatch(u.markLig, rb_forward<Ts>(ds)...);
-        case MarkMark:
-            return c->dispatch(u.markMark, rb_forward<Ts>(ds)...);
-        case Context:
-            return c->dispatch(u.context, rb_forward<Ts>(ds)...);
-        case ChainContext:
-            return c->dispatch(u.chainContext, rb_forward<Ts>(ds)...);
-        case Extension:
-            return u.extension.dispatch(c, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
+        return rb_pos_lookup_apply((const char*)this, c, lookup_type);
     }
-
-protected:
-    union {
-        SinglePos single;
-        PairPos pair;
-        CursivePos cursive;
-        MarkBasePos markBase;
-        MarkLigPos markLig;
-        MarkMarkPos markMark;
-        ContextPos context;
-        ChainContextPos chainContext;
-        ExtensionPos extension;
-    } u;
 
 public:
     DEFINE_SIZE_MIN(0);
@@ -230,20 +83,16 @@ struct PosLookup : Lookup
 
     bool apply(rb_ot_apply_context_t *c) const
     {
-        return dispatch(c);
+        unsigned int lookup_type = get_type();
+        unsigned int count = get_subtable_count();
+        for (unsigned int i = 0; i < count; i++) {
+            if (get_subtable(i).apply(c, lookup_type))
+                return true;
+        }
+        return false;
     }
 
     static inline bool apply_recurse_func(rb_ot_apply_context_t *c, unsigned int lookup_index);
-
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        return Lookup::dispatch<SubTable>(c, rb_forward<Ts>(ds)...);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return Lookup::sanitize<SubTable>(c);
-    }
 };
 
 /*
@@ -356,7 +205,7 @@ struct GPOS_accelerator_t : GPOS::accelerator_t
     unsigned int saved_lookup_index = c->lookup_index;
     c->set_lookup_index(lookup_index);
     c->set_lookup_props(l.get_props());
-    bool ret = l.dispatch(c);
+    bool ret = l.apply(c);
     c->set_lookup_index(saved_lookup_index);
     c->set_lookup_props(saved_lookup_props);
     return ret;

@@ -87,12 +87,7 @@ RB_INTERNAL void rb_ot_layout_delete_glyphs_inplace(rb_buffer_t *buffer, bool (*
 namespace OT {
 struct rb_ot_apply_context_t;
 struct SubstLookup;
-struct rb_ot_layout_lookup_accelerator_t;
 } // namespace OT
-
-RB_INTERNAL void rb_ot_layout_substitute_lookup(OT::rb_ot_apply_context_t *c,
-                                                const OT::SubstLookup &lookup,
-                                                const OT::rb_ot_layout_lookup_accelerator_t &accel);
 
 /* Should be called before all the position_lookup's are done. */
 RB_INTERNAL void rb_ot_layout_position_start(rb_font_t *font, rb_buffer_t *buffer);

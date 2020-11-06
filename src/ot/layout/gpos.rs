@@ -8,12 +8,69 @@ use ttf_parser::parser::{
 use ttf_parser::GlyphId;
 
 use super::apply::ApplyContext;
-use super::common::{ClassDef, Coverage, Device, Class, LookupFlags};
+use super::common::{parse_extension_lookup, ClassDef, Coverage, Device, Class, LookupFlags};
+use super::context_lookups::{ContextLookup, ChainContextLookup};
 use super::dyn_array::DynArray;
 use super::matching::SkippyIter;
 use crate::buffer::{BufferScratchFlags, GlyphPosition};
 use crate::common::Direction;
 use crate::Font;
+
+#[derive(Clone, Copy, Debug)]
+enum PosLookupSubtable<'a> {
+    Single(SinglePos<'a>),
+    Pair(PairPos<'a>),
+    Cursive(CursivePos<'a>),
+    MarkBase(MarkBasePos<'a>),
+    MarkLig(MarkLigPos<'a>),
+    MarkMark(MarkMarkPos<'a>),
+    Context(ContextLookup<'a>),
+    ChainContext(ChainContextLookup<'a>),
+}
+
+impl<'a> PosLookupSubtable<'a> {
+    fn parse(data: &'a [u8], kind: u16) -> Option<Self> {
+        match kind {
+            1 => SinglePos::parse(data).map(Self::Single),
+            2 => PairPos::parse(data).map(Self::Pair),
+            3 => CursivePos::parse(data).map(Self::Cursive),
+            4 => MarkBasePos::parse(data).map(Self::MarkBase),
+            5 => MarkLigPos::parse(data).map(Self::MarkLig),
+            6 => MarkMarkPos::parse(data).map(Self::MarkMark),
+            7 => ContextLookup::parse(data).map(Self::Context),
+            8 => ChainContextLookup::parse(data).map(Self::ChainContext),
+            9 => parse_extension_lookup(data, Self::parse),
+            _ => None,
+        }
+    }
+
+    #[allow(dead_code)]
+    fn coverage(&self) -> &Coverage<'a> {
+        match self {
+            Self::Single(t) => t.coverage(),
+            Self::Pair(t) => t.coverage(),
+            Self::Cursive(t) => t.coverage(),
+            Self::MarkBase(t) => t.coverage(),
+            Self::MarkLig(t) => t.coverage(),
+            Self::MarkMark(t) => t.coverage(),
+            Self::Context(t) => t.coverage(),
+            Self::ChainContext(t) => t.coverage(),
+        }
+    }
+
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+        match self {
+            Self::Single(t) => t.apply(ctx),
+            Self::Pair(t) => t.apply(ctx),
+            Self::Cursive(t) => t.apply(ctx),
+            Self::MarkBase(t) => t.apply(ctx),
+            Self::MarkLig(t) => t.apply(ctx),
+            Self::MarkMark(t) => t.apply(ctx),
+            Self::Context(t) => t.apply(ctx),
+            Self::ChainContext(t) => t.apply(ctx),
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 enum SinglePos<'a> {
@@ -939,14 +996,21 @@ impl FromData for MarkRecord {
 
 #[derive(Clone, Copy, Debug)]
 enum AttachType {
+    #[allow(dead_code)]
     None = 0,
     Mark = 1,
     Cursive = 2,
 }
 
-make_ffi_funcs!(SinglePos, rb_single_pos_apply);
-make_ffi_funcs!(PairPos, rb_pair_pos_apply);
-make_ffi_funcs!(CursivePos, rb_cursive_pos_apply);
-make_ffi_funcs!(MarkBasePos, rb_mark_base_pos_apply);
-make_ffi_funcs!(MarkLigPos, rb_mark_lig_pos_apply);
-make_ffi_funcs!(MarkMarkPos, rb_mark_mark_pos_apply);
+#[no_mangle]
+pub extern "C" fn rb_pos_lookup_apply(
+    data: *const u8,
+    ctx: *mut crate::ffi::rb_ot_apply_context_t,
+    kind: u32,
+) -> crate::ffi::rb_bool_t {
+    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
+    let mut ctx = ApplyContext::from_ptr_mut(ctx);
+    PosLookupSubtable::parse(data, kind as u16)
+        .map(|table| table.apply(&mut ctx).is_some())
+        .unwrap_or(false) as crate::ffi::rb_bool_t
+}

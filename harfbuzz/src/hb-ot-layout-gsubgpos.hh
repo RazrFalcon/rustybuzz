@@ -37,6 +37,10 @@
 #include "hb-ot-layout-common.hh"
 #include "hb-ot-layout-gdef-table.hh"
 
+extern "C" {
+RB_EXTERN rb_bool_t rb_ot_apply_context_check_glyph_property(const OT::rb_ot_apply_context_t *c, const rb_glyph_info_t *info, unsigned int match_props);
+}
+
 namespace OT {
 
 struct rb_would_apply_context_t : rb_dispatch_context_t<rb_would_apply_context_t, bool>
@@ -69,10 +73,6 @@ struct rb_would_apply_context_t : rb_dispatch_context_t<rb_would_apply_context_t
 };
 
 struct rb_ot_apply_context_t;
-
-extern "C" {
-RB_EXTERN rb_bool_t      rb_ot_apply_context_check_glyph_property(const OT::rb_ot_apply_context_t *c, const rb_glyph_info_t *info, unsigned int match_props);
-}
 
 struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool>
 {
@@ -374,203 +374,9 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
     }
 };
 
-struct rb_get_subtables_context_t : rb_dispatch_context_t<rb_get_subtables_context_t>
-{
-    template <typename Type> static inline bool apply_to(const void *obj, OT::rb_ot_apply_context_t *c)
-    {
-        const Type *typed_obj = (const Type *)obj;
-        return typed_obj->apply(c);
-    }
-
-    typedef bool (*rb_apply_func_t)(const void *obj, OT::rb_ot_apply_context_t *c);
-
-    struct rb_applicable_t
-    {
-        template <typename T> void init(const T &obj_, rb_apply_func_t apply_func_)
-        {
-            obj = &obj_;
-            apply_func = apply_func_;
-        }
-
-        bool apply(OT::rb_ot_apply_context_t *c) const
-        {
-            return apply_func(obj, c);
-        }
-
-    private:
-        const void *obj;
-        rb_apply_func_t apply_func;
-    };
-
-    typedef rb_vector_t<rb_applicable_t> array_t;
-
-    /* Dispatch interface. */
-    template <typename T> return_t dispatch(const T &obj)
-    {
-        rb_applicable_t *entry = array.push();
-        entry->init(obj, apply_to<T>);
-        return rb_empty_t();
-    }
-    static return_t default_return_value()
-    {
-        return rb_empty_t();
-    }
-
-    rb_get_subtables_context_t(array_t &array_)
-        : array(array_)
-    {
-    }
-
-    array_t &array;
-};
-
-/* Contextual lookups */
-
-extern "C" {
-RB_EXTERN rb_bool_t rb_context_lookup_would_apply(const char *data, const rb_would_apply_context_t *c);
-RB_EXTERN rb_bool_t rb_context_lookup_apply(const char *data, rb_ot_apply_context_t *c);
-RB_EXTERN rb_bool_t rb_chain_context_lookup_would_apply(const char *data, const rb_would_apply_context_t *c);
-RB_EXTERN rb_bool_t rb_chain_context_lookup_apply(const char *data, rb_ot_apply_context_t *c);
-}
-
-struct Context
-{
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        return rb_context_lookup_would_apply((const char*)this, c);
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        return rb_context_lookup_apply((const char*)this, c);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
-};
-
-struct ChainContext
-{
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        return rb_chain_context_lookup_would_apply((const char*)this, c);
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        return rb_chain_context_lookup_apply((const char*)this, c);
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return true;
-    }
-};
-
-template <typename T> struct ExtensionFormat1
-{
-    unsigned int get_type() const
-    {
-        return extensionLookupType;
-    }
-
-    template <typename X> const X &get_subtable() const
-    {
-        return this + reinterpret_cast<const LOffsetTo<typename T::SubTable> &>(extensionOffset);
-    }
-
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, this)))
-            return c->no_dispatch_return_value();
-        return get_subtable<typename T::SubTable>().dispatch(c, get_type(), rb_forward<Ts>(ds)...);
-    }
-
-    /* This is called from may_dispatch() above with rb_sanitize_context_t. */
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this) && extensionLookupType != T::SubTable::Extension;
-    }
-
-protected:
-    HBUINT16 format;              /* Format identifier. Set to 1. */
-    HBUINT16 extensionLookupType; /* Lookup type of subtable referenced
-                                   * by ExtensionOffset (i.e. the
-                                   * extension subtable). */
-    Offset32 extensionOffset;     /* Offset to the extension subtable,
-                                   * of lookup type subtable. */
-public:
-    DEFINE_SIZE_STATIC(8);
-};
-
-template <typename T> struct Extension
-{
-    unsigned int get_type() const
-    {
-        switch (u.format) {
-        case 1:
-            return u.format1.get_type();
-        default:
-            return 0;
-        }
-    }
-
-    template <typename context_t, typename... Ts> typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!c->may_dispatch(this, &u.format)))
-            return c->no_dispatch_return_value();
-        switch (u.format) {
-        case 1:
-            return u.format1.dispatch(c, rb_forward<Ts>(ds)...);
-        default:
-            return c->default_return_value();
-        }
-    }
-
-protected:
-    union {
-        HBUINT16 format; /* Format identifier */
-        ExtensionFormat1<T> format1;
-    } u;
-};
-
 /*
  * GSUB/GPOS Common
  */
-
-struct rb_ot_layout_lookup_accelerator_t
-{
-    template <typename TLookup> void init(const TLookup &lookup)
-    {
-        subtables.init();
-        OT::rb_get_subtables_context_t c_get_subtables(subtables);
-        lookup.dispatch(&c_get_subtables);
-    }
-    void fini()
-    {
-        subtables.fini();
-    }
-
-    bool may_have(rb_codepoint_t g) const
-    {
-        return true;
-    }
-
-    bool apply(rb_ot_apply_context_t *c) const
-    {
-        for (unsigned int i = 0; i < subtables.length; i++) {
-            if (subtables[i].apply(c)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-private:
-    rb_get_subtables_context_t::array_t subtables;
-};
 
 struct GSUBGPOS
 {
@@ -578,6 +384,7 @@ struct GSUBGPOS
     {
         return version.to_int();
     }
+
     unsigned int get_script_count() const
     {
         return (this + scriptList).len;
@@ -666,27 +473,15 @@ struct GSUBGPOS
             }
 
             this->lookup_count = table->get_lookup_count();
-
-            this->accels = (rb_ot_layout_lookup_accelerator_t *)calloc(this->lookup_count,
-                                                                       sizeof(rb_ot_layout_lookup_accelerator_t));
-            if (unlikely(!this->accels))
-                this->lookup_count = 0;
-
-            for (unsigned int i = 0; i < this->lookup_count; i++)
-                this->accels[i].init(table->get_lookup(i));
         }
 
         void fini()
         {
-            for (unsigned int i = 0; i < this->lookup_count; i++)
-                this->accels[i].fini();
-            free(this->accels);
             this->table.destroy();
         }
 
         rb_blob_ptr_t<T> table;
         unsigned int lookup_count;
-        rb_ot_layout_lookup_accelerator_t *accels;
     };
 
 protected:

@@ -121,26 +121,6 @@ struct RecordListOfFeature : RecordListOf<Feature>
 {
 };
 
-struct RangeRecord
-{
-    int cmp(rb_codepoint_t g) const
-    {
-        return g < first ? -1 : g <= last ? 0 : +1;
-    }
-
-    bool sanitize(rb_sanitize_context_t *c) const
-    {
-        return c->check_struct(this);
-    }
-
-    HBGlyphID first; /* First GlyphID in the range */
-    HBGlyphID last;  /* Last GlyphID in the range */
-    HBUINT16 value;  /* Value */
-public:
-    DEFINE_SIZE_STATIC(6);
-};
-DECLARE_NULL_NAMESPACE_BYTES(OT, RangeRecord);
-
 struct IndexArray : ArrayOf<Index>
 {
     unsigned int
@@ -357,20 +337,7 @@ struct Lookup
         return flag;
     }
 
-    template <typename TSubTable, typename context_t, typename... Ts>
-    typename context_t::return_t dispatch(context_t *c, Ts &&... ds) const
-    {
-        unsigned int lookup_type = get_type();
-        unsigned int count = get_subtable_count();
-        for (unsigned int i = 0; i < count; i++) {
-            typename context_t::return_t r = get_subtable<TSubTable>(i).dispatch(c, lookup_type, rb_forward<Ts>(ds)...);
-            if (c->stop_sublookup_iteration(r))
-                return r;
-        }
-        return c->default_return_value();
-    }
-
-    template <typename TSubTable> bool sanitize(rb_sanitize_context_t *c) const
+    bool sanitize(rb_sanitize_context_t *c) const
     {
         if (!(c->check_struct(this) && subTable.sanitize(c)))
             return false;
@@ -385,25 +352,6 @@ struct Lookup
                 return false;
         }
 
-        if (unlikely(!get_subtables<TSubTable>().sanitize(c, this, get_type())))
-            return false;
-
-        if (unlikely(get_type() == TSubTable::Extension && !c->get_edit_count())) {
-            /* The spec says all subtables of an Extension lookup should
-             * have the same type, which shall not be the Extension type
-             * itself (but we already checked for that).
-             * This is specially important if one has a reverse type!
-             *
-             * We only do this if sanitizer edit_count is zero.  Otherwise,
-             * some of the subtables might have become insane after they
-             * were sanity-checked by the edits of subsequent subtables.
-             * https://bugs.chromium.org/p/chromium/issues/detail?id=960331
-             */
-            unsigned int type = get_subtable<TSubTable>(0).u.extension.get_type();
-            for (unsigned int i = 1; i < subtables; i++)
-                if (get_subtable<TSubTable>(i).u.extension.get_type() != type)
-                    return false;
-        }
         return true;
     }
 

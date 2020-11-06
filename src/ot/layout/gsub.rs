@@ -6,7 +6,8 @@ use ttf_parser::parser::{LazyArray16, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
 use super::apply::{ApplyContext, WouldApplyContext};
-use super::common::Coverage;
+use super::common::{parse_extension_lookup, Coverage};
+use super::context_lookups::{ContextLookup, ChainContextLookup};
 use super::matching::{
     match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
 };
@@ -14,6 +15,74 @@ use super::MAX_NESTING_LEVEL;
 use crate::buffer::GlyphPropsFlags;
 use crate::ot::Map;
 use crate::unicode::GeneralCategory;
+
+#[derive(Clone, Copy, Debug)]
+enum SubstLookupSubtable<'a> {
+    Single(SingleSubst<'a>),
+    Multiple(MultipleSubst<'a>),
+    Alternate(AlternateSubst<'a>),
+    Ligature(LigatureSubst<'a>),
+    Context(ContextLookup<'a>),
+    ChainContext(ChainContextLookup<'a>),
+    ReverseChainSingle(ReverseChainSingleSubst<'a>),
+}
+
+impl<'a> SubstLookupSubtable<'a> {
+    fn parse(data: &'a [u8], kind: u16) -> Option<Self> {
+        match kind {
+            1 => SingleSubst::parse(data).map(Self::Single),
+            2 => MultipleSubst::parse(data).map(Self::Multiple),
+            3 => AlternateSubst::parse(data).map(Self::Alternate),
+            4 => LigatureSubst::parse(data).map(Self::Ligature),
+            5 => ContextLookup::parse(data).map(Self::Context),
+            6 => ChainContextLookup::parse(data).map(Self::ChainContext),
+            7 => parse_extension_lookup(data, Self::parse),
+            8 => ReverseChainSingleSubst::parse(data).map(Self::ReverseChainSingle),
+            _ => None,
+        }
+    }
+
+    #[allow(dead_code)]
+    fn coverage(&self) -> &Coverage<'a> {
+        match self {
+            Self::Single(t) => t.coverage(),
+            Self::Multiple(t) => t.coverage(),
+            Self::Alternate(t) => t.coverage(),
+            Self::Ligature(t) => t.coverage(),
+            Self::Context(t) => t.coverage(),
+            Self::ChainContext(t) => t.coverage(),
+            Self::ReverseChainSingle(t) => t.coverage(),
+        }
+    }
+
+    fn is_reverse(&self) -> bool {
+        matches!(self, Self::ReverseChainSingle(_))
+    }
+
+    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
+        match self {
+            Self::Single(t) => t.would_apply(ctx),
+            Self::Multiple(t) => t.would_apply(ctx),
+            Self::Alternate(t) => t.would_apply(ctx),
+            Self::Ligature(t) => t.would_apply(ctx),
+            Self::Context(t) => t.would_apply(ctx),
+            Self::ChainContext(t) => t.would_apply(ctx),
+            Self::ReverseChainSingle(t) => t.would_apply(ctx),
+        }
+    }
+
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+        match self {
+            Self::Single(t) => t.apply(ctx),
+            Self::Multiple(t) => t.apply(ctx),
+            Self::Alternate(t) => t.apply(ctx),
+            Self::Ligature(t) => t.apply(ctx),
+            Self::Context(t) => t.apply(ctx),
+            Self::ChainContext(t) => t.apply(ctx),
+            Self::ReverseChainSingle(t) => t.apply(ctx),
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 enum SingleSubst<'a> {
@@ -563,8 +632,39 @@ impl<'a> ReverseChainSingleSubst<'a> {
     }
 }
 
-make_ffi_funcs!(SingleSubst, rb_single_subst_apply, rb_single_subst_would_apply);
-make_ffi_funcs!(MultipleSubst, rb_multiple_subst_apply, rb_multiple_subst_would_apply);
-make_ffi_funcs!(AlternateSubst, rb_alternate_subst_apply, rb_alternate_subst_would_apply);
-make_ffi_funcs!(LigatureSubst, rb_ligature_subst_apply, rb_ligature_subst_would_apply);
-make_ffi_funcs!(ReverseChainSingleSubst, rb_reverse_chain_single_subst_apply, rb_reverse_chain_single_subst_would_apply);
+#[no_mangle]
+pub extern "C" fn rb_subst_lookup_would_apply(
+    data: *const u8,
+    ctx: *const crate::ffi::rb_would_apply_context_t,
+    kind: u32,
+) -> crate::ffi::rb_bool_t {
+    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
+    let ctx = WouldApplyContext::from_ptr(ctx);
+    SubstLookupSubtable::parse(data, kind as u16)
+        .map(|table| table.would_apply(&ctx))
+        .unwrap_or(false) as crate::ffi::rb_bool_t
+}
+
+#[no_mangle]
+pub extern "C" fn rb_subst_lookup_apply(
+    data: *const u8,
+    ctx: *mut crate::ffi::rb_ot_apply_context_t,
+    kind: u32,
+) -> crate::ffi::rb_bool_t {
+    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
+    let mut ctx = ApplyContext::from_ptr_mut(ctx);
+    SubstLookupSubtable::parse(data, kind as u16)
+        .map(|table| table.apply(&mut ctx).is_some())
+        .unwrap_or(false) as crate::ffi::rb_bool_t
+}
+
+#[no_mangle]
+pub extern "C" fn rb_subst_lookup_is_reverse(
+    data: *const u8,
+    kind: u32,
+) -> crate::ffi::rb_bool_t {
+    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
+    SubstLookupSubtable::parse(data, kind as u16)
+        .map(|table| table.is_reverse())
+        .unwrap_or(false) as crate::ffi::rb_bool_t
+}

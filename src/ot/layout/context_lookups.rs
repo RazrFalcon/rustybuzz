@@ -14,7 +14,7 @@ use super::matching::{
 use super::MAX_CONTEXT_LENGTH;
 
 #[derive(Clone, Copy, Debug)]
-struct LookupRecord {
+pub struct LookupRecord {
     sequence_index: u16,
     lookup_list_index: u16,
 }
@@ -33,7 +33,7 @@ impl FromData for LookupRecord {
 }
 
 #[derive(Clone, Copy, Debug)]
-enum ContextLookup<'a> {
+pub enum ContextLookup<'a> {
     Format1 {
         coverage: Coverage<'a>,
         sets: Offsets16<'a, Offset16>,
@@ -52,7 +52,7 @@ enum ContextLookup<'a> {
 }
 
 impl<'a> ContextLookup<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let format: u16 = s.read()?;
         Some(match format {
@@ -81,7 +81,7 @@ impl<'a> ContextLookup<'a> {
         })
     }
 
-    fn coverage(&self) -> &Coverage<'a> {
+    pub fn coverage(&self) -> &Coverage<'a> {
         match self {
             Self::Format1 { coverage, .. } => coverage,
             Self::Format2 { coverage, .. } => coverage,
@@ -89,7 +89,7 @@ impl<'a> ContextLookup<'a> {
         }
     }
 
-    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
+    pub fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
@@ -113,7 +113,7 @@ impl<'a> ContextLookup<'a> {
         }
     }
 
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    pub fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
@@ -198,7 +198,7 @@ impl<'a> Rule<'a> {
 }
 
 #[derive(Clone, Copy, Debug)]
-enum ChainContextLookup<'a> {
+pub enum ChainContextLookup<'a> {
     Format1 {
         coverage: Coverage<'a>,
         sets: Offsets16<'a, Offset16>,
@@ -221,7 +221,7 @@ enum ChainContextLookup<'a> {
 }
 
 impl<'a> ChainContextLookup<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let format: u16 = s.read()?;
         Some(match format {
@@ -269,7 +269,7 @@ impl<'a> ChainContextLookup<'a> {
         })
     }
 
-    fn coverage(&self) -> &Coverage<'a> {
+    pub fn coverage(&self) -> &Coverage<'a> {
         match self {
             Self::Format1 { coverage, .. } => coverage,
             Self::Format2 { coverage, .. } => coverage,
@@ -277,7 +277,7 @@ impl<'a> ChainContextLookup<'a> {
         }
     }
 
-    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
+    pub fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
@@ -307,7 +307,7 @@ impl<'a> ChainContextLookup<'a> {
         }
     }
 
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    pub fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
@@ -614,6 +614,3 @@ fn apply_lookup(
 
     buffer.move_to(end);
 }
-
-make_ffi_funcs!(ContextLookup, rb_context_lookup_apply, rb_context_lookup_would_apply);
-make_ffi_funcs!(ChainContextLookup, rb_chain_context_lookup_apply, rb_chain_context_lookup_would_apply);

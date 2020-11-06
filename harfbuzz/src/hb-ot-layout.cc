@@ -239,7 +239,6 @@ bool OT::GDEF::is_blocklisted(rb_blob_t *blob, rb_face_t *face) const
 
 static void _rb_ot_layout_set_glyph_props(rb_font_t *font, rb_buffer_t *buffer)
 {
-    const OT::GDEF &gdef = *rb_font_get_face(font)->table.GDEF->table;
     unsigned int count = rb_buffer_get_length(buffer);
     for (unsigned int i = 0; i < count; i++) {
         unsigned int props = rb_font_get_glyph_props(font, rb_buffer_get_glyph_infos(buffer)[i].codepoint);
@@ -620,7 +619,7 @@ rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
     OT::rb_would_apply_context_t c(face, glyphs, glyphs_length, (bool)zero_context);
 
     const OT::SubstLookup &l = face->table.GSUB->table->get_lookup(lookup_index);
-    return l.would_apply(&c, &face->table.GSUB->accels[lookup_index]);
+    return l.would_apply(&c);
 }
 
 /**
@@ -749,12 +748,10 @@ struct GSUBProxy
 
     GSUBProxy(rb_face_t *face)
         : table(*face->table.GSUB->table)
-        , accels(face->table.GSUB->accels)
     {
     }
 
     const OT::GSUB &table;
-    const OT::rb_ot_layout_lookup_accelerator_t *accels;
 };
 
 struct GPOSProxy
@@ -765,24 +762,22 @@ struct GPOSProxy
 
     GPOSProxy(rb_face_t *face)
         : table(*face->table.GPOS->table)
-        , accels(face->table.GPOS->accels)
     {
     }
 
     const OT::GPOS &table;
-    const OT::rb_ot_layout_lookup_accelerator_t *accels;
 };
 
-static inline bool apply_forward(OT::rb_ot_apply_context_t *c, const OT::rb_ot_layout_lookup_accelerator_t &accel)
+template <typename Proxy>
+static inline bool apply_forward(OT::rb_ot_apply_context_t *c, const typename Proxy::Lookup &lookup)
 {
     bool ret = false;
     rb_buffer_t *buffer = c->buffer;
     while (rb_buffer_get_index(buffer) < rb_buffer_get_length(buffer) && rb_buffer_is_allocation_successful(buffer)) {
         bool applied = false;
-        if (accel.may_have(rb_buffer_get_cur(buffer, 0)->codepoint) &&
-            (rb_buffer_get_cur(buffer, 0)->mask & c->lookup_mask) &&
+        if ((rb_buffer_get_cur(buffer, 0)->mask & c->lookup_mask) &&
             c->check_glyph_property(rb_buffer_get_cur(buffer, 0), c->lookup_props)) {
-            applied = accel.apply(c);
+            applied = lookup.apply(c);
         }
 
         if (applied)
@@ -793,15 +788,15 @@ static inline bool apply_forward(OT::rb_ot_apply_context_t *c, const OT::rb_ot_l
     return ret;
 }
 
-static inline bool apply_backward(OT::rb_ot_apply_context_t *c, const OT::rb_ot_layout_lookup_accelerator_t &accel)
+template <typename Proxy>
+static inline bool apply_backward(OT::rb_ot_apply_context_t *c, const typename Proxy::Lookup &lookup)
 {
     bool ret = false;
     rb_buffer_t *buffer = c->buffer;
     do {
-        if (accel.may_have(rb_buffer_get_cur(buffer, 0)->codepoint) &&
-            (rb_buffer_get_cur(buffer, 0)->mask & c->lookup_mask) &&
+        if ((rb_buffer_get_cur(buffer, 0)->mask & c->lookup_mask) &&
             c->check_glyph_property(rb_buffer_get_cur(buffer, 0), c->lookup_props))
-            ret |= accel.apply(c);
+            ret |= lookup.apply(c);
 
         /* The reverse lookup doesn't "advance" cursor (for good reason). */
         rb_buffer_set_index(buffer, rb_buffer_get_index(buffer) - 1);
@@ -810,9 +805,7 @@ static inline bool apply_backward(OT::rb_ot_apply_context_t *c, const OT::rb_ot_
 }
 
 template <typename Proxy>
-static inline void apply_string(OT::rb_ot_apply_context_t *c,
-                                const typename Proxy::Lookup &lookup,
-                                const OT::rb_ot_layout_lookup_accelerator_t &accel)
+static inline void apply_string(OT::rb_ot_apply_context_t *c, const typename Proxy::Lookup &lookup)
 {
     rb_buffer_t *buffer = c->buffer;
 
@@ -828,7 +821,7 @@ static inline void apply_string(OT::rb_ot_apply_context_t *c,
         rb_buffer_set_index(buffer, 0);
 
         bool ret;
-        ret = apply_forward(c, accel);
+        ret = apply_forward<Proxy>(c, lookup);
         if (ret) {
             if (!Proxy::inplace)
                 rb_buffer_swap_buffers(buffer);
@@ -841,7 +834,7 @@ static inline void apply_string(OT::rb_ot_apply_context_t *c,
             rb_buffer_remove_output(buffer);
         rb_buffer_set_index(buffer, rb_buffer_get_length(buffer) - 1);
 
-        apply_backward(c, accel);
+        apply_backward<Proxy>(c, lookup);
     }
 }
 
@@ -866,7 +859,7 @@ rb_ot_map_t::apply(const Proxy &proxy, const rb_ot_shape_plan_t *plan, rb_font_t
                 c.set_random(true);
                 rb_buffer_unsafe_to_break_all(buffer);
             }
-            apply_string<Proxy>(&c, proxy.table.get_lookup(lookup_index), proxy.accels[lookup_index]);
+            apply_string<Proxy>(&c, proxy.table.get_lookup(lookup_index));
         }
 
         if (stage->pause_func) {
@@ -886,13 +879,6 @@ void rb_ot_map_t::position(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_b
 {
     GPOSProxy proxy(rb_font_get_face(font));
     apply(proxy, plan, font, buffer);
-}
-
-void rb_ot_layout_substitute_lookup(OT::rb_ot_apply_context_t *c,
-                                    const OT::SubstLookup &lookup,
-                                    const OT::rb_ot_layout_lookup_accelerator_t &accel)
-{
-    apply_string<GSUBProxy>(c, lookup, accel);
 }
 
 void rb_layout_clear_syllables(const rb_ot_shape_plan_t *plan RB_UNUSED, rb_font_t *font RB_UNUSED, rb_buffer_t *buffer)
