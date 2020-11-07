@@ -10,9 +10,10 @@ mod gpos;
 mod gsub;
 mod matching;
 
+use ttf_parser::parser::NumFrom;
+
 use crate::common::TagExt;
 use crate::{ffi, Tag};
-
 use common::{
     SubstPosTable, FeatureIndex, Feature, LangSys, LangSysIndex, ScriptIndex, VariationIndex,
 };
@@ -57,11 +58,11 @@ pub extern "C" fn rb_ot_layout_table_select_script(
         None => return 0,
     };
 
-    let tags = unsafe { std::slice::from_raw_parts(script_tags, script_count as usize) };
+    let tags = unsafe { std::slice::from_raw_parts(script_tags, usize::num_from(script_count)) };
     for &tag in tags {
         if let Some(index) = table.find_script_index(tag) {
             unsafe {
-                *script_index = index.0 as u32;
+                *script_index = u32::from(index.0);
                 *chosen_script = tag;
             }
             return 1;
@@ -79,7 +80,7 @@ pub extern "C" fn rb_ot_layout_table_select_script(
     ] {
         if let Some(index) = table.find_script_index(tag) {
             unsafe {
-                *script_index = index.0 as u32;
+                *script_index = u32::from(index.0);
                 *chosen_script = tag;
             }
             return 0;
@@ -123,17 +124,17 @@ pub extern "C" fn rb_ot_layout_script_select_language(
         None => return 0,
     };
 
-    let languages = unsafe { std::slice::from_raw_parts(language_tags, language_count as usize) };
+    let languages = unsafe { std::slice::from_raw_parts(language_tags, usize::num_from(language_count)) };
     for &tag in languages {
         if let Some(index) = script.find_lang_sys_index(tag) {
-            unsafe { *language_index = index.0 as u32; }
+            unsafe { *language_index = u32::from(index.0); }
             return 1;
         }
     }
 
     /* try finding 'dflt' */
     if let Some(index) = script.find_lang_sys_index(Tag::default_language()) {
-        unsafe { *language_index = index.0 as u32; }
+        unsafe { *language_index = u32::from(index.0); }
         return 0;
     }
 
@@ -177,7 +178,7 @@ pub extern "C" fn rb_ot_layout_language_get_required_feature(
 
     let index = sys.required_feature_index;
     unsafe {
-        *feature_index = sys.required_feature_index.0 as u32;
+        *feature_index = u32::from(sys.required_feature_index.0);
         if let Some(tag) = table.get_feature_tag(index) {
             *feature_tag = tag;
         }
@@ -220,7 +221,7 @@ pub extern "C" fn rb_ot_layout_language_find_feature(
     for i in 0..sys.feature_count() {
         if let Some(index) = sys.get_feature_index(i) {
             if table.get_feature_tag(index) == Some(feature_tag) {
-                unsafe { *feature_index = index.0 as u32; }
+                unsafe { *feature_index = u32::from(index.0); }
                 return 1;
             }
         }
@@ -253,7 +254,7 @@ pub extern "C" fn rb_ot_layout_table_find_feature(
     if let Some(table) = SubstPosTable::parse(data) {
         for i in 0..table.feature_count() {
             if table.get_feature_tag(FeatureIndex(i)) == Some(feature_tag) {
-                unsafe { *feature_index = i as u32; }
+                unsafe { *feature_index = u32::from(i); }
                 return 1;
             }
         }
@@ -261,6 +262,25 @@ pub extern "C" fn rb_ot_layout_table_find_feature(
 
     0
 }
+
+/// rb_ot_layout_table_get_lookup_count:
+///
+/// @face: #rb_face_t to work upon
+/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
+///
+/// Fetches the total number of lookups enumerated in the specified
+/// face's GSUB table or GPOS table.
+///
+/// Since: 0.9.22
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_table_get_lookup_count(
+    face: *const ffi::rb_face_t,
+    table_tag: Tag,
+) -> u32 {
+    let data = unsafe { get_table_data(face, table_tag) };
+    SubstPosTable::parse(data).map_or(0, |table| u32::from(table.lookup_count()))
+}
+
 
 /// rb_ot_layout_table_find_feature_variations:
 ///
@@ -283,7 +303,7 @@ pub extern "C" fn rb_ot_layout_table_find_feature_variations(
     unsafe { *variations_index = FEATURE_VARIATION_NOT_FOUND_INDEX; }
 
     let data = unsafe { get_table_data(face, table_tag) };
-    let coords = unsafe { std::slice::from_raw_parts(coords, num_coords as usize) };
+    let coords = unsafe { std::slice::from_raw_parts(coords, usize::num_from(num_coords)) };
     if let Some(table) = SubstPosTable::parse(data) {
         if let Some(index) = table.find_variation_index(coords) {
             unsafe { *variations_index = index.0; }
@@ -357,18 +377,18 @@ unsafe fn write_lookup_indices(
     indices: *mut u32,
 ) {
     let mut i = 0;
-    for index in feature.lookup_indices.into_iter().skip(start as usize) {
+    for index in feature.lookup_indices.into_iter().skip(usize::num_from(start)) {
         if i == *count {
             break;
         }
-        *indices.offset(i as isize) = index.0 as u32;
+        *indices.offset(i as isize) = u32::from(index.0);
         i += 1;
     }
-    *count = i as u32;
+    *count = i;
 }
 
 unsafe fn get_table_data(face: *const ffi::rb_face_t, table_tag: Tag) -> &'static [u8] {
     let data = ffi::rb_face_get_table_data(face, table_tag);
     let len = ffi::rb_face_get_table_len(face, table_tag);
-    std::slice::from_raw_parts(data, len as usize)
+    std::slice::from_raw_parts(data, usize::num_from(len))
 }

@@ -278,33 +278,6 @@ bool OT::GPOS::is_blocklisted(rb_blob_t *blob RB_UNUSED, rb_face_t *face RB_UNUS
     return false;
 }
 
-static const OT::GSUBGPOS &get_gsubgpos_table(rb_face_t *face, rb_tag_t table_tag)
-{
-    switch (table_tag) {
-    case RB_OT_TAG_GSUB:
-        return *face->table.GSUB->table;
-    case RB_OT_TAG_GPOS:
-        return *face->table.GPOS->table;
-    default:
-        return Null(OT::GSUBGPOS);
-    }
-}
-
-/**
- * rb_ot_layout_table_get_lookup_count:
- * @face: #rb_face_t to work upon
- * @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
- *
- * Fetches the total number of lookups enumerated in the specified
- * face's GSUB table or GPOS table.
- *
- * Since: 0.9.22
- **/
-unsigned int rb_ot_layout_table_get_lookup_count(rb_face_t *face, rb_tag_t table_tag)
-{
-    return get_gsubgpos_table(face, table_tag).get_lookup_count();
-}
-
 /*
  * OT::GSUB
  */

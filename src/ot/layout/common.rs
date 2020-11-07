@@ -62,6 +62,10 @@ impl<'a> SubstPosTable<'a> {
         self.features.get_tag(index.0)
     }
 
+    pub fn lookup_count(&self) -> u16 {
+        self.lookups.len()
+    }
+
     pub fn get_feature_variation(
         &self,
         feature_index: FeatureIndex,
@@ -275,11 +279,11 @@ impl<'a> LookupList<'a> {
         Some(LookupList { offsets })
     }
 
-    fn len(&self) -> usize {
-        usize::from(self.offsets.len())
+    fn len(&self) -> u16 {
+        self.offsets.len()
     }
 
-    fn get(&self, index: LookupIndex) -> Option<Lookup<'a>> {
+    fn get_lookup(&self, index: LookupIndex) -> Option<Lookup<'a>> {
         Lookup::parse(self.offsets.slice(index.0)?)
     }
 }
