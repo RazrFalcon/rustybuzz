@@ -38,7 +38,7 @@ impl ApplyContext {
     }
 
     pub fn direction(&self) -> Direction {
-        unsafe { Direction::from_raw(ffi::rb_ot_apply_context_get_direction(self.0.as_ptr())) }
+        self.buffer().direction
     }
 
     pub fn lookup_mask(&self) -> Mask {

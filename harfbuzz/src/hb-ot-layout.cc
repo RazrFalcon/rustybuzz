@@ -46,7 +46,6 @@
 extern "C" {
 const rb_font_t *rb_ot_apply_context_get_font(const OT::rb_ot_apply_context_t *c) { return c->font; }
 rb_buffer_t   *rb_ot_apply_context_get_buffer(OT::rb_ot_apply_context_t *c) { return c->buffer; }
-rb_direction_t rb_ot_apply_context_get_direction(const OT::rb_ot_apply_context_t *c) { return c->direction; }
 rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context_t *c) { return c->lookup_mask; }
 unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context_t *c) { return c->table_index; }
 unsigned int   rb_ot_apply_context_get_lookup_index(const OT::rb_ot_apply_context_t *c) { return c->lookup_index; }

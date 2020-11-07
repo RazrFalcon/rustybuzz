@@ -6,6 +6,7 @@ mod context_lookups;
 mod dyn_array;
 mod gpos;
 mod gsub;
+mod kern;
 mod matching;
 
 use std::convert::TryFrom;

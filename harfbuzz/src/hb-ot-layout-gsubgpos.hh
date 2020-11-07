@@ -45,187 +45,6 @@ namespace OT {
 
 struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool>
 {
-    struct matcher_t
-    {
-        matcher_t()
-            : lookup_props(0)
-            , ignore_zwnj(false)
-            , ignore_zwj(false)
-            , mask(-1)
-            ,
-#define arg1(arg) (arg) /* Remove the macro to see why it's needed! */
-            syllable arg1(0)
-            ,
-#undef arg1
-            match_func(nullptr)
-            , match_data(nullptr)
-        {
-        }
-
-        typedef bool (*match_func_t)(rb_codepoint_t glyph_id, const HBUINT16 &value, const void *data);
-
-        void set_ignore_zwnj(bool ignore_zwnj_)
-        {
-            ignore_zwnj = ignore_zwnj_;
-        }
-        void set_ignore_zwj(bool ignore_zwj_)
-        {
-            ignore_zwj = ignore_zwj_;
-        }
-        void set_lookup_props(unsigned int lookup_props_)
-        {
-            lookup_props = lookup_props_;
-        }
-        void set_mask(rb_mask_t mask_)
-        {
-            mask = mask_;
-        }
-        void set_syllable(uint8_t syllable_)
-        {
-            syllable = syllable_;
-        }
-        void set_match_func(match_func_t match_func_, const void *match_data_)
-        {
-            match_func = match_func_;
-            match_data = match_data_;
-        }
-
-        enum may_match_t { MATCH_NO, MATCH_YES, MATCH_MAYBE };
-
-        may_match_t may_match(const rb_glyph_info_t &info, const HBUINT16 *glyph_data) const
-        {
-            if (!(info.mask & mask) || (syllable && syllable != info.syllable()))
-                return MATCH_NO;
-
-            if (match_func)
-                return match_func(info.codepoint, *glyph_data, match_data) ? MATCH_YES : MATCH_NO;
-
-            return MATCH_MAYBE;
-        }
-
-        enum may_skip_t { SKIP_NO, SKIP_YES, SKIP_MAYBE };
-
-        may_skip_t may_skip(const rb_ot_apply_context_t *c, const rb_glyph_info_t &info) const
-        {
-            if (!c->check_glyph_property(&info, lookup_props))
-                return SKIP_YES;
-
-            if (unlikely(_rb_glyph_info_is_default_ignorable_and_not_hidden(&info) &&
-                         (ignore_zwnj || !_rb_glyph_info_is_zwnj(&info)) &&
-                         (ignore_zwj || !_rb_glyph_info_is_zwj(&info))))
-                return SKIP_MAYBE;
-
-            return SKIP_NO;
-        }
-
-    protected:
-        unsigned int lookup_props;
-        bool ignore_zwnj;
-        bool ignore_zwj;
-        rb_mask_t mask;
-        uint8_t syllable;
-        match_func_t match_func;
-        const void *match_data;
-    };
-
-    struct skipping_iterator_t
-    {
-        void init(rb_ot_apply_context_t *c_, bool context_match = false)
-        {
-            c = c_;
-            match_glyph_data = nullptr;
-            matcher.set_match_func(nullptr, nullptr);
-            matcher.set_lookup_props(c->lookup_props);
-            /* Ignore ZWNJ if we are matching GPOS, or matching GSUB context and asked to. */
-            matcher.set_ignore_zwnj(c->table_index == 1 || (context_match && c->auto_zwnj));
-            /* Ignore ZWJ if we are matching context, or asked to. */
-            matcher.set_ignore_zwj(context_match || c->auto_zwj);
-            matcher.set_mask(context_match ? -1 : c->lookup_mask);
-        }
-        void set_lookup_props(unsigned int lookup_props)
-        {
-            matcher.set_lookup_props(lookup_props);
-        }
-        void set_match_func(matcher_t::match_func_t match_func_, const void *match_data_, const HBUINT16 glyph_data[])
-        {
-            matcher.set_match_func(match_func_, match_data_);
-            match_glyph_data = glyph_data;
-        }
-
-        void reset(unsigned int start_index_, unsigned int num_items_)
-        {
-            idx = start_index_;
-            num_items = num_items_;
-            end = rb_buffer_get_length(c->buffer);
-            matcher.set_syllable(
-                start_index_ == rb_buffer_get_index(c->buffer) ? rb_buffer_get_cur(c->buffer, 0)->syllable() : 0);
-        }
-
-        matcher_t::may_skip_t may_skip(const rb_glyph_info_t &info) const
-        {
-            return matcher.may_skip(c, info);
-        }
-
-        bool next()
-        {
-            assert(num_items > 0);
-            while (idx + num_items < end) {
-                idx++;
-                const rb_glyph_info_t &info = rb_buffer_get_glyph_infos(c->buffer)[idx];
-
-                matcher_t::may_skip_t skip = matcher.may_skip(c, info);
-                if (unlikely(skip == matcher_t::SKIP_YES))
-                    continue;
-
-                matcher_t::may_match_t match = matcher.may_match(info, match_glyph_data);
-                if (match == matcher_t::MATCH_YES || (match == matcher_t::MATCH_MAYBE && skip == matcher_t::SKIP_NO)) {
-                    num_items--;
-                    if (match_glyph_data)
-                        match_glyph_data++;
-                    return true;
-                }
-
-                if (skip == matcher_t::SKIP_NO)
-                    return false;
-            }
-            return false;
-        }
-        bool prev()
-        {
-            assert(num_items > 0);
-            while (idx > num_items - 1) {
-                idx--;
-                const rb_glyph_info_t &info = rb_buffer_get_out_infos(c->buffer)[idx];
-
-                matcher_t::may_skip_t skip = matcher.may_skip(c, info);
-                if (unlikely(skip == matcher_t::SKIP_YES))
-                    continue;
-
-                matcher_t::may_match_t match = matcher.may_match(info, match_glyph_data);
-                if (match == matcher_t::MATCH_YES || (match == matcher_t::MATCH_MAYBE && skip == matcher_t::SKIP_NO)) {
-                    num_items--;
-                    if (match_glyph_data)
-                        match_glyph_data++;
-                    return true;
-                }
-
-                if (skip == matcher_t::SKIP_NO)
-                    return false;
-            }
-            return false;
-        }
-
-        unsigned int idx;
-
-    protected:
-        rb_ot_apply_context_t *c;
-        matcher_t matcher;
-        const HBUINT16 *match_glyph_data;
-
-        unsigned int num_items;
-        unsigned int end;
-    };
-
     typedef return_t (*recurse_func_t)(rb_ot_apply_context_t *c, unsigned int lookup_index);
 
     return_t recurse(unsigned int sub_lookup_index)
@@ -239,14 +58,11 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
         return ret;
     }
 
-    skipping_iterator_t iter_input;
-
     rb_font_t *font;
     rb_face_t *face;
     rb_buffer_t *buffer;
     recurse_func_t recurse_func;
 
-    rb_direction_t direction;
     rb_mask_t lookup_mask;
     unsigned int table_index; /* GSUB/GPOS */
     unsigned int lookup_index;
@@ -260,12 +76,10 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
     uint32_t random_state;
 
     rb_ot_apply_context_t(unsigned int table_index_, rb_font_t *font_, rb_buffer_t *buffer_)
-        : iter_input()
-        , font(font_)
+        : font(font_)
         , face(rb_font_get_face(font))
         , buffer(buffer_)
         , recurse_func(nullptr)
-        , direction(rb_buffer_get_direction(buffer_))
         , lookup_mask(1)
         , table_index(table_index_)
         , lookup_index((unsigned int)-1)
@@ -275,29 +89,19 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
         , auto_zwj(true)
         , random(false)
         , random_state(1)
-    {
-        init_iters();
-    }
-
-    void init_iters()
-    {
-        iter_input.init(this, false);
-    }
+    {}
 
     void set_lookup_mask(rb_mask_t mask)
     {
         lookup_mask = mask;
-        init_iters();
     }
     void set_auto_zwj(bool auto_zwj_)
     {
         auto_zwj = auto_zwj_;
-        init_iters();
     }
     void set_auto_zwnj(bool auto_zwnj_)
     {
         auto_zwnj = auto_zwnj_;
-        init_iters();
     }
     void set_random(bool random_)
     {
@@ -314,7 +118,6 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
     void set_lookup_props(unsigned int lookup_props_)
     {
         lookup_props = lookup_props_;
-        init_iters();
     }
 
     uint32_t random_number()
@@ -403,7 +206,6 @@ public:
 extern "C" {
 RB_EXTERN const rb_font_t *rb_ot_apply_context_get_font(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_buffer_t   *rb_ot_apply_context_get_buffer(OT::rb_ot_apply_context_t *c);
-RB_EXTERN rb_direction_t rb_ot_apply_context_get_direction(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_mask_t      rb_ot_apply_context_get_lookup_mask(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN unsigned int   rb_ot_apply_context_get_table_index(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN unsigned int   rb_ot_apply_context_get_lookup_index(const OT::rb_ot_apply_context_t *c);
