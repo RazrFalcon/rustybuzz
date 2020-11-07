@@ -27,31 +27,15 @@
 #include "hb-ot-face.hh"
 
 #include "hb-ot-kern-table.hh"
-#include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
 
 extern "C" {
-const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag) {
-    switch (tag) {
-    case RB_OT_TAG_GSUB:
-        return face->table.GSUB->table.get_blob()->data;
-    case RB_OT_TAG_GPOS:
-        return face->table.GPOS->table.get_blob()->data;
-    default:
-        assert(false);
-    }
-}
-
-unsigned int rb_face_get_table_len(const rb_face_t *face, rb_tag_t tag) {
-    switch (tag) {
-    case RB_OT_TAG_GSUB:
-        return face->table.GSUB->table.get_blob()->length;
-    case RB_OT_TAG_GPOS:
-        return face->table.GPOS->table.get_blob()->length;
-    default:
-        return 0;
-    }
+const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag, unsigned int *len)
+{
+    rb_blob_t* blob = face->reference_table(tag);
+    *len = blob->length;
+    return blob->data;
 }
 }
 
@@ -60,7 +44,6 @@ void rb_ot_face_t::init0(rb_face_t *face)
     this->face = face;
     head.init0();
     kern.init0();
-    GDEF.init0();
     GSUB.init0();
     GPOS.init0();
     morx.init0();
@@ -75,7 +58,6 @@ void rb_ot_face_t::fini()
 {
     head.fini();
     kern.fini();
-    GDEF.fini();
     GSUB.fini();
     GPOS.fini();
     morx.fini();

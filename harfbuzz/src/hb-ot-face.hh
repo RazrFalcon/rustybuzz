@@ -42,7 +42,6 @@ namespace OT { struct head; }
 
 namespace OT { struct kern; }
 
-namespace OT { struct GDEF_accelerator_t; }
 namespace OT { struct GSUB_accelerator_t; }
 namespace OT { struct GPOS_accelerator_t; }
 
@@ -62,7 +61,6 @@ struct rb_ot_face_t
         ORDER_ZERO,
         ORDER_OT_head,
         ORDER_OT_kern,
-        ORDER_OT_GDEF,
         ORDER_OT_GSUB,
         ORDER_OT_GPOS,
         ORDER_AAT_morx,
@@ -78,7 +76,6 @@ struct rb_ot_face_t
     rb_table_lazy_loader_t<OT::head, ORDER_OT_head> head;
     rb_table_lazy_loader_t<OT::kern, ORDER_OT_kern> kern;
 
-    rb_face_lazy_loader_t<OT::GDEF_accelerator_t, ORDER_OT_GDEF> GDEF;
     rb_face_lazy_loader_t<OT::GSUB_accelerator_t, ORDER_OT_GSUB> GSUB;
     rb_face_lazy_loader_t<OT::GPOS_accelerator_t, ORDER_OT_GPOS> GPOS;
 
@@ -91,8 +88,7 @@ struct rb_ot_face_t
 };
 
 extern "C" {
-RB_EXTERN const char  *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag);
-RB_EXTERN unsigned int rb_face_get_table_len(const rb_face_t *face, rb_tag_t tag);
+RB_EXTERN const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag, unsigned int *len);
 }
 
 #endif /* RB_OT_FACE_HH */

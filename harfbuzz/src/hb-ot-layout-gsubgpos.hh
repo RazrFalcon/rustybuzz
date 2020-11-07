@@ -35,7 +35,6 @@
 #include "hb-set.hh"
 #include "hb-ot-map.hh"
 #include "hb-ot-layout-common.hh"
-#include "hb-ot-layout-gdef-table.hh"
 
 extern "C" {
 RB_EXTERN rb_bool_t rb_ot_apply_context_check_glyph_property(const OT::rb_ot_apply_context_t *c, const rb_glyph_info_t *info, unsigned int match_props);
@@ -263,7 +262,6 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
     rb_face_t *face;
     rb_buffer_t *buffer;
     recurse_func_t recurse_func;
-    const GDEF &gdef;
 
     rb_direction_t direction;
     rb_mask_t lookup_mask;
@@ -284,7 +282,6 @@ struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool
         , face(rb_font_get_face(font))
         , buffer(buffer_)
         , recurse_func(nullptr)
-        , gdef(*face->table.GDEF->table)
         , direction(rb_buffer_get_direction(buffer_))
         , lookup_mask(1)
         , table_index(table_index_)

@@ -10,7 +10,7 @@ mod gpos;
 mod gsub;
 mod matching;
 
-use ttf_parser::parser::NumFrom;
+use ttf_parser::parser::{NumFrom, Offset, Offset16, Stream};
 
 use crate::buffer::Buffer;
 use crate::common::TagExt;
@@ -27,6 +27,32 @@ pub const SCRIPT_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const LANGUAGE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const FEATURE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const FEATURE_VARIATION_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
+
+// GDEF
+// Note: GDEF blocklisting was removed for now because we use
+//       ttf_parser's GDEF parsing routines.
+
+/// rb_ot_layout_has_glyph_classes:
+/// @face: #rb_face_t to work upon
+///
+/// Tests whether a face has any glyph classes defined in its GDEF table.
+///
+/// Return value: true if data found, false otherwise
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_has_glyph_classes(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
+    // TODO: Find out through ttfp_face when that's reachable.
+    let data = unsafe { get_table_data(face, Tag::from_bytes(b"GDEF")) };
+    (|| {
+        let mut s = Stream::new(data);
+        let major_version = s.read::<u16>()?;
+        if major_version != 1 {
+            return None;
+        }
+        s.skip::<u16>();
+        let glyph_class_offset = s.read::<Offset16>()?;
+        Some(!glyph_class_offset.is_null())
+    })().unwrap_or(false) as ffi::rb_bool_t
+}
 
 // GSUB/GPOS
 
@@ -444,7 +470,7 @@ unsafe fn write_lookup_indices(
 }
 
 unsafe fn get_table_data(face: *const ffi::rb_face_t, table_tag: Tag) -> &'static [u8] {
-    let data = ffi::rb_face_get_table_data(face, table_tag);
-    let len = ffi::rb_face_get_table_len(face, table_tag);
+    let mut len = 0;
+    let data = ffi::rb_face_get_table_data(face, table_tag, &mut len);
     std::slice::from_raw_parts(data, usize::num_from(len))
 }
