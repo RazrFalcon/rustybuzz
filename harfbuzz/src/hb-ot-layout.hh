@@ -71,15 +71,6 @@ enum rb_ot_layout_glyph_props_flags_t {
 RB_MARK_AS_FLAG_T(rb_ot_layout_glyph_props_flags_t);
 
 /*
- * GSUB/GPOS
- */
-
-namespace OT {
-struct rb_ot_apply_context_t;
-struct SubstLookup;
-} // namespace OT
-
-/*
  * Buffer var routines.
  */
 

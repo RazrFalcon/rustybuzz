@@ -6,7 +6,7 @@ use ttf_parser::parser::{LazyArray16, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
 use super::apply::{ApplyContext, WouldApplyContext};
-use super::common::{parse_extension_lookup, Coverage};
+use super::common::{parse_extension_lookup, Coverage, SubstPosTable};
 use super::context_lookups::{ContextLookup, ChainContextLookup};
 use super::matching::{
     match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
@@ -15,6 +15,18 @@ use super::MAX_NESTING_LEVEL;
 use crate::buffer::GlyphPropsFlags;
 use crate::ot::Map;
 use crate::unicode::GeneralCategory;
+use crate::Tag;
+
+#[derive(Clone, Copy, Debug)]
+pub struct SubstTable<'a>(SubstPosTable<'a>);
+
+impl<'a> SubstTable<'a> {
+    pub const TAG: Tag = Tag::from_bytes(b"GSUB");
+
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
+        SubstPosTable::parse(data).map(Self)
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 enum SubstLookupSubtable<'a> {

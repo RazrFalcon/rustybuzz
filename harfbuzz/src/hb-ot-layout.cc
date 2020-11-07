@@ -155,20 +155,6 @@ bool OT::GPOS::is_blocklisted(rb_blob_t *blob RB_UNUSED, rb_face_t *face RB_UNUS
  */
 
 /**
- * rb_ot_layout_has_substitution:
- * @face: #rb_face_t to work upon
- *
- * Tests whether the specified face includes any GSUB substitutions.
- *
- * Return value: true if data found, false otherwise
- *
- **/
-rb_bool_t rb_ot_layout_has_substitution(rb_face_t *face)
-{
-    return face->table.GSUB->table->has_data();
-}
-
-/**
  * rb_ot_layout_lookup_would_substitute:
  * @face: #rb_face_t to work upon
  * @lookup_index: The index of the lookup to query
@@ -195,22 +181,6 @@ rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
 
     const OT::SubstLookup &l = face->table.GSUB->table->get_lookup(lookup_index);
     return l.would_apply(&c);
-}
-
-/*
- * OT::GPOS
- */
-
-/**
- * rb_ot_layout_has_positioning:
- * @face: #rb_face_t to work upon
- *
- * Return value: true if the face has GPOS data, false otherwise
- *
- **/
-rb_bool_t rb_ot_layout_has_positioning(rb_face_t *face)
-{
-    return face->table.GPOS->table->has_data();
 }
 
 /*

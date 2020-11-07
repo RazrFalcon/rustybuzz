@@ -22,6 +22,7 @@ use common::{
     SubstPosTable, FeatureIndex, Feature, LangSys, LangSysIndex, ScriptIndex, VariationIndex,
 };
 use gpos::PosTable;
+use gsub::SubstTable;
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -123,6 +124,48 @@ pub extern "C" fn rb_ot_layout_table_select_script(
     0
 }
 
+/// rb_ot_layout_language_find_feature:
+///
+/// @face: #rb_face_t to work upon
+/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
+/// @script_index: The index of the requested script tag
+/// @language_index: The index of the requested language tag
+/// @feature_tag: #rb_tag_t of the feature tag requested
+/// @feature_index: (out): The index of the requested feature
+///
+/// Fetches the index of a given feature tag in the specified face's GSUB table
+/// or GPOS table, underneath the specified script and language.
+///
+/// Return value: true if the feature is found, false otherwise
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_language_find_feature(
+    face: *const ffi::rb_face_t,
+    table_tag: Tag,
+    script_index: u32,
+    language_index: u32,
+    feature_tag: Tag,
+    feature_index: *mut u32,
+) -> ffi::rb_bool_t {
+    unsafe { *feature_index = FEATURE_NOT_FOUND_INDEX; }
+
+    let data = unsafe { get_table_data(face, table_tag) };
+    let (table, sys) = match get_table_and_lang_sys(data, script_index, language_index) {
+        Some(v) => v,
+        None => return 0,
+    };
+
+    for i in 0..sys.feature_count() {
+        if let Some(index) = sys.get_feature_index(i) {
+            if table.get_feature_tag(index) == Some(feature_tag) {
+                unsafe { *feature_index = u32::from(index.0); }
+                return 1;
+            }
+        }
+    }
+
+    0
+}
+
 /// rb_ot_layout_script_select_language:
 ///
 /// @face: #rb_face_t to work upon
@@ -218,49 +261,6 @@ pub extern "C" fn rb_ot_layout_language_get_required_feature(
     }
 
     return sys.has_required_feature() as ffi::rb_bool_t;
-}
-
-
-/// rb_ot_layout_language_find_feature:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-/// @script_index: The index of the requested script tag
-/// @language_index: The index of the requested language tag
-/// @feature_tag: #rb_tag_t of the feature tag requested
-/// @feature_index: (out): The index of the requested feature
-///
-/// Fetches the index of a given feature tag in the specified face's GSUB table
-/// or GPOS table, underneath the specified script and language.
-///
-/// Return value: true if the feature is found, false otherwise
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_language_find_feature(
-    face: *const ffi::rb_face_t,
-    table_tag: Tag,
-    script_index: u32,
-    language_index: u32,
-    feature_tag: Tag,
-    feature_index: *mut u32,
-) -> ffi::rb_bool_t {
-    unsafe { *feature_index = FEATURE_NOT_FOUND_INDEX; }
-
-    let data = unsafe { get_table_data(face, table_tag) };
-    let (table, sys) = match get_table_and_lang_sys(data, script_index, language_index) {
-        Some(v) => v,
-        None => return 0,
-    };
-
-    for i in 0..sys.feature_count() {
-        if let Some(index) = sys.get_feature_index(i) {
-            if table.get_feature_tag(index) == Some(feature_tag) {
-                unsafe { *feature_index = u32::from(index.0); }
-                return 1;
-            }
-        }
-    }
-
-    0
 }
 
 /// rb_ot_layout_table_find_feature:
@@ -391,6 +391,19 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
 
 // GSUB
 
+/// rb_ot_layout_has_substitution:
+///
+/// @face: #rb_face_t to work upon
+///
+/// Tests whether the specified face includes any GSUB substitutions.
+///
+/// Return value: true if data found, false otherwise
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_has_substitution(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
+    let data = unsafe { get_table_data(face, SubstTable::TAG) };
+    SubstTable::parse(data).is_some() as ffi::rb_bool_t
+}
+
 /// rb_ot_layout_substitute_start:
 ///
 /// @font: #rb_font_t to use
@@ -477,6 +490,17 @@ pub extern "C" fn rb_ot_layout_delete_glyphs_inplace(
 
 // GPOS
 
+/// rb_ot_layout_has_positioning:
+///
+/// @face: #rb_face_t to work upon
+///
+/// Return value: true if the face has GPOS data, false otherwise
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_has_positioning(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
+    let data = unsafe { get_table_data(face, PosTable::TAG) };
+    PosTable::parse(data).is_some() as ffi::rb_bool_t
+}
+
 /// rb_ot_layout_position_start:
 ///
 /// @font: #rb_font_t to use
@@ -525,6 +549,8 @@ pub extern "C" fn rb_ot_layout_position_finish_offsets(
     let mut buffer = Buffer::from_ptr_mut(buffer);
     PosTable::position_finish_offsets(font, &mut buffer);
 }
+
+// Helpers
 
 fn get_table_and_lang_sys<'a>(
     data: &'a [u8],

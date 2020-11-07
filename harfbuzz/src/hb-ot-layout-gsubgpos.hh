@@ -37,6 +37,7 @@
 #include "hb-ot-layout-common.hh"
 
 extern "C" {
+namespace OT { struct rb_ot_apply_context_t; }
 RB_EXTERN rb_bool_t rb_ot_apply_context_check_glyph_property(const OT::rb_ot_apply_context_t *c, const rb_glyph_info_t *info, unsigned int match_props);
 }
 
