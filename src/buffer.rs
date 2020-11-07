@@ -384,8 +384,23 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn is_base_glyph(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::BASE_GLYPH.bits != 0
+    }
+
+    #[inline]
     pub(crate) fn is_ligature(&self) -> bool {
         self.glyph_props() & GlyphPropsFlags::LIGATURE.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_mark(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::MARK.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_substituted(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits != 0
     }
 
     #[inline]
@@ -411,18 +426,10 @@ impl GlyphInfo {
     }
 
     #[inline]
-    pub(crate) fn is_base_glyph(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::BASE_GLYPH.bits != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_mark(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::MARK.bits != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_substituted(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits != 0
+    pub(crate) fn clear_substituted(&mut self) {
+        let mut n = self.glyph_props();
+        n &= !GlyphPropsFlags::SUBSTITUTED.bits;
+        self.set_glyph_props(n);
     }
 
     // Var allocation: syllable
@@ -1073,6 +1080,56 @@ impl Buffer {
         }
 
         self.skip_glyph();
+    }
+
+    pub(crate) fn delete_glyphs_inplace(&mut self, filter: impl Fn(&GlyphInfo) -> bool) {
+        // Merge clusters and delete filtered glyphs.
+        // NOTE! We can't use out-buffer as we have positioning data.
+        let mut j = 0;
+
+        for i in 0..self.len {
+            if filter(&self.info[i]) {
+                // Merge clusters.
+                // Same logic as delete_glyph(), but for in-place removal
+
+                let cluster = self.info[i].cluster;
+                if i + 1 < self.len && cluster == self.info[i + 1].cluster {
+                    // Cluster survives; do nothing.
+                    continue;
+                }
+
+                if j != 0 {
+                    // Merge cluster backward.
+                    if cluster < self.info[j - 1].cluster {
+                        let mask = self.info[i].mask;
+                        let old_cluster = self.info[j - 1].cluster;
+
+                        let mut k = j;
+                        while k > 0 && self.info[k - 1].cluster == old_cluster {
+                            Self::set_cluster(&mut self.info[k - 1], cluster, mask);
+                            k -= 1;
+                        }
+                    }
+                    continue;
+                }
+
+                if i + 1 < self.len {
+                    // Merge cluster forward.
+                    self.merge_clusters(i, i + 2);
+                }
+
+                continue;
+            }
+
+            if j != i {
+                self.info[j] = self.info[i];
+                self.pos[j] = self.pos[i];
+            }
+
+            j += 1;
+        }
+
+        self.len = j;
     }
 
     pub(crate) fn unsafe_to_break(&mut self, start: usize, end: usize) {
@@ -1850,6 +1907,14 @@ pub extern "C" fn rb_buffer_set_masks(buffer: *mut ffi::rb_buffer_t, value: Mask
 #[no_mangle]
 pub extern "C" fn rb_buffer_delete_glyph(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).delete_glyph();
+}
+
+#[no_mangle]
+pub extern "C" fn rb_buffer_delete_glyphs_inplace(
+    buffer: *mut ffi::rb_buffer_t,
+    filter: unsafe extern "C" fn(info: *const GlyphInfo) -> ffi::rb_bool_t,
+) {
+    Buffer::from_ptr_mut(buffer).delete_glyphs_inplace(|info| unsafe { filter(info) != 0 })
 }
 
 #[no_mangle]

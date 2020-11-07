@@ -28,16 +28,6 @@
 
 #include "hb-ot-shape-complex.hh"
 
-void rb_clear_substitution_flags(const rb_ot_shape_plan_t *plan RB_UNUSED,
-                                 rb_font_t *font RB_UNUSED,
-                                 rb_buffer_t *buffer)
-{
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-    unsigned int count = rb_buffer_get_length(buffer);
-    for (unsigned int i = 0; i < count; i++)
-        _rb_glyph_info_clear_substituted(&info[i]);
-}
-
 rb_ot_shape_normalization_mode_t rb_ot_complex_shaper_get_normalization_preference(const rb_ot_complex_shaper_t *shaper)
 {
     return shaper->normalization_preference;

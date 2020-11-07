@@ -1,6 +1,9 @@
 use std::ptr::NonNull;
 
-use crate::{ffi, ot};
+use super::{ShapeNormalizationMode, ShapePlan};
+use crate::ffi;
+use crate::buffer::Buffer;
+use crate::Font;
 
 pub const MAX_COMBINING_MARKS: usize = 32;
 
@@ -18,7 +21,7 @@ impl ComplexShaper {
     }
 
     #[inline]
-    pub fn normalization_preference(&self) -> ot::ShapeNormalizationMode {
+    pub fn normalization_preference(&self) -> ShapeNormalizationMode {
         unsafe {
             let n = ffi::rb_ot_complex_shaper_get_normalization_preference(self.as_ptr());
             std::mem::transmute(n as u8)
@@ -38,5 +41,43 @@ impl ComplexShaper {
     #[inline]
     pub fn get_reorder_marks(&self) -> Option<ffi::rb_ot_reorder_marks_func_t> {
         unsafe { ffi::rb_ot_complex_shaper_get_reorder_marks(self.as_ptr()) }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_clear_substitution_flags(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let plan = ShapePlan::from_ptr(plan);
+    let font = Font::from_ptr(font);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    clear_substitution_flags(&plan, font, &mut buffer);
+}
+
+fn clear_substitution_flags(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
+        info.clear_substituted();
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_clear_syllables(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let plan = ShapePlan::from_ptr(plan);
+    let font = Font::from_ptr(font);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    clear_syllables(&plan, font, &mut buffer);
+}
+
+fn clear_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
+        info.set_syllable(0);
     }
 }

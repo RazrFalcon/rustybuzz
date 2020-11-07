@@ -82,10 +82,6 @@ RB_MARK_AS_FLAG_T(rb_ot_layout_glyph_props_flags_t);
 #define lig_props() var1.u8[2]    /* GSUB/GPOS ligature tracking */
 #define syllable() var1.u8[3]     /* GSUB/GPOS shaping boundaries */
 
-extern "C" {
-RB_EXTERN void rb_layout_clear_syllables(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
-}
-
 /* unicode_props */
 
 /* Design:
@@ -201,11 +197,6 @@ static inline void _rb_glyph_info_set_glyph_props(rb_glyph_info_t *info, unsigne
 static inline bool _rb_glyph_info_is_mark(const rb_glyph_info_t *info)
 {
     return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_MARK);
-}
-
-static inline void _rb_glyph_info_clear_substituted(rb_glyph_info_t *info)
-{
-    info->glyph_props() &= ~(RB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
 }
 
 /* Make sure no one directly touches our props... */

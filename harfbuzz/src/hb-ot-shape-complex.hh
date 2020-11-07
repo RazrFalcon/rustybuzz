@@ -460,6 +460,7 @@ RB_EXTERN void rb_ot_complex_preprocess_text_thai(const rb_ot_shape_plan_t *plan
 extern "C" {
 RB_EXTERN void rb_ot_complex_collect_features_use(rb_ot_shape_planner_t *plan);
 RB_EXTERN void rb_clear_substitution_flags(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
+RB_EXTERN void rb_clear_syllables(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
 RB_EXTERN void *rb_ot_complex_data_create_use(const rb_ot_shape_plan_t *plan);
 RB_EXTERN void rb_ot_complex_data_destroy_use(void *data);
 RB_EXTERN void rb_ot_complex_preprocess_text_use(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, rb_font_t *font);

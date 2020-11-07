@@ -457,7 +457,7 @@ static rb_bool_t is_deleted_glyph(const rb_glyph_info_t *info)
 
 void rb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer)
 {
-    rb_ot_layout_delete_glyphs_inplace(buffer, is_deleted_glyph);
+    rb_buffer_delete_glyphs_inplace(buffer, is_deleted_glyph);
 }
 
 /*

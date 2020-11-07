@@ -148,8 +148,6 @@ RB_EXTERN rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
 
 RB_EXTERN void rb_ot_layout_substitute_start(rb_font_t *font, rb_buffer_t *buffer);
 
-RB_EXTERN void rb_ot_layout_delete_glyphs_inplace(rb_buffer_t *buffer, rb_bool_t (*filter)(const rb_glyph_info_t *info));
-
 /*
  * GPOS
  */

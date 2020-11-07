@@ -10,18 +10,16 @@ mod kern;
 mod matching;
 
 use std::convert::TryFrom;
+use std::slice;
 
 use ttf_parser::parser::{NumFrom, Offset, Offset16, Stream};
 use ttf_parser::GlyphId;
 
-use crate::buffer::{Buffer, GlyphInfo};
+use crate::buffer::Buffer;
 use crate::common::TagExt;
 use crate::{ffi, Font, Tag};
 use apply::WouldApplyContext;
-use common::{
-    SubstPosTable, FeatureIndex, Feature, LangSys, LangSysIndex, LookupIndex, ScriptIndex,
-    VariationIndex,
-};
+use common::{SubstPosTable, FeatureIndex, LangIndex, LookupIndex, ScriptIndex, VariationIndex};
 use gpos::PosTable;
 use gsub::SubstTable;
 
@@ -46,8 +44,8 @@ pub const FEATURE_VARIATION_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_has_glyph_classes(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
     // TODO: Find out through ttfp_face when that's reachable.
-    let data = unsafe { get_table_data(face, Tag::from_bytes(b"GDEF")) };
     (|| {
+        let data = table_data(face, Tag::from_bytes(b"GDEF"));
         let mut s = Stream::new(data);
         let major_version = s.read::<u16>()?;
         if major_version != 1 {
@@ -80,27 +78,31 @@ pub extern "C" fn rb_ot_layout_table_select_script(
     script_index: *mut u32,
     chosen_script: *mut Tag,
 ) -> ffi::rb_bool_t {
-    const LATIN_SCRIPT: Tag = Tag::from_bytes(b"latn");
-
     unsafe {
         *script_index = SCRIPT_NOT_FOUND_INDEX;
         *chosen_script = Tag(SCRIPT_NOT_FOUND_INDEX);
     }
 
-    let data = unsafe { get_table_data(face, table_tag) };
-    let table = match SubstPosTable::parse(data) {
-        Some(table) => table,
-        None => return 0,
-    };
+    let scripts = unsafe { slice::from_raw_parts(script_tags, usize::num_from(script_count)) };
+    if let Some((found, index, tag)) = SubstPosTable::parse(table_data(face, table_tag))
+        .and_then(|table| select_script(table, scripts))
+    {
+        unsafe {
+            *script_index = u32::from(index.0);
+            *chosen_script = tag;
+        }
+        return found as ffi::rb_bool_t;
+    }
 
-    let tags = unsafe { std::slice::from_raw_parts(script_tags, usize::num_from(script_count)) };
-    for &tag in tags {
+    0
+}
+
+fn select_script(table: SubstPosTable, script_tags: &[Tag]) -> Option<(bool, ScriptIndex, Tag)> {
+    const LATIN_SCRIPT: Tag = Tag::from_bytes(b"latn");
+
+    for &tag in script_tags {
         if let Some(index) = table.find_script_index(tag) {
-            unsafe {
-                *script_index = u32::from(index.0);
-                *chosen_script = tag;
-            }
-            return 1;
+            return Some((true, index, tag));
         }
     }
 
@@ -114,15 +116,11 @@ pub extern "C" fn rb_ot_layout_table_select_script(
         LATIN_SCRIPT,
     ] {
         if let Some(index) = table.find_script_index(tag) {
-            unsafe {
-                *script_index = u32::from(index.0);
-                *chosen_script = tag;
-            }
-            return 0;
+            return Some((false, index, tag));
         }
     }
 
-    0
+    None
 }
 
 /// rb_ot_layout_language_find_feature:
@@ -149,22 +147,43 @@ pub extern "C" fn rb_ot_layout_language_find_feature(
 ) -> ffi::rb_bool_t {
     unsafe { *feature_index = FEATURE_NOT_FOUND_INDEX; }
 
-    let data = unsafe { get_table_data(face, table_tag) };
-    let (table, sys) = match get_table_and_lang_sys(data, script_index, language_index) {
-        Some(v) => v,
-        None => return 0,
+    let script_index = ScriptIndex(script_index as u16);
+    let lang_index = match language_index {
+        LANGUAGE_NOT_FOUND_INDEX => None,
+        _ => Some(LangIndex(language_index as u16)),
+    };
+
+    if let Some(index) = SubstPosTable::parse(table_data(face, table_tag))
+        .and_then(|table| language_find_feature(table, script_index, lang_index, feature_tag))
+    {
+        unsafe { *feature_index = u32::from(index.0); }
+        return 1;
+    }
+
+    0
+}
+
+fn language_find_feature(
+    table: SubstPosTable,
+    script_index: ScriptIndex,
+    lang_index: Option<LangIndex>,
+    feature_tag: Tag,
+) -> Option<FeatureIndex> {
+    let script = table.get_script(script_index)?;
+    let sys = match lang_index {
+        Some(index) => script.get_lang(index)?,
+        None => script.default_lang()?,
     };
 
     for i in 0..sys.feature_count() {
         if let Some(index) = sys.get_feature_index(i) {
             if table.get_feature_tag(index) == Some(feature_tag) {
-                unsafe { *feature_index = u32::from(index.0); }
-                return 1;
+               return Some(index);
             }
         }
     }
 
-    0
+    None
 }
 
 /// rb_ot_layout_script_select_language:
@@ -193,29 +212,37 @@ pub extern "C" fn rb_ot_layout_script_select_language(
 ) -> ffi::rb_bool_t {
     unsafe { *language_index = LANGUAGE_NOT_FOUND_INDEX; }
 
-    let data = unsafe { get_table_data(face, table_tag) };
-    let script = match SubstPosTable::parse(data)
-        .and_then(|table| table.get_script(ScriptIndex(script_index as u16)))
+    let langs = unsafe { slice::from_raw_parts(language_tags, usize::num_from(language_count)) };
+    let script_index = ScriptIndex(script_index as u16);
+    if let Some((found, index)) = SubstPosTable::parse(table_data(face, table_tag))
+        .and_then(|table| script_select_language(table, script_index, langs))
     {
-        Some(script) => script,
-        None => return 0,
-    };
-
-    let languages = unsafe { std::slice::from_raw_parts(language_tags, usize::num_from(language_count)) };
-    for &tag in languages {
-        if let Some(index) = script.find_lang_sys_index(tag) {
-            unsafe { *language_index = u32::from(index.0); }
-            return 1;
-        }
-    }
-
-    /* try finding 'dflt' */
-    if let Some(index) = script.find_lang_sys_index(Tag::default_language()) {
         unsafe { *language_index = u32::from(index.0); }
-        return 0;
+        return found as ffi::rb_bool_t;
     }
 
     0
+}
+
+fn script_select_language(
+    table: SubstPosTable,
+    script_index: ScriptIndex,
+    lang_tags: &[Tag],
+) -> Option<(bool, LangIndex)> {
+    let script = table.get_script(script_index)?;
+
+    for &tag in lang_tags {
+        if let Some(index) = script.find_lang_index(tag) {
+            return Some((true, index));
+        }
+    }
+
+    // try finding 'dflt'
+    if let Some(index) = script.find_lang_index(Tag::default_language()) {
+        return Some((false, index));
+    }
+
+    None
 }
 
 /// rb_ot_layout_language_get_required_feature:
@@ -247,21 +274,38 @@ pub extern "C" fn rb_ot_layout_language_get_required_feature(
         *feature_tag = Tag(0);
     }
 
-    let data = unsafe { get_table_data(face, table_tag) };
-    let (table, sys) = match get_table_and_lang_sys(data, script_index, language_index) {
-        Some(v) => v,
-        None => return 0,
+    let script_index = ScriptIndex(script_index as u16);
+    let lang_index = match language_index {
+        LANGUAGE_NOT_FOUND_INDEX => None,
+        _ => Some(LangIndex(language_index as u16)),
     };
 
-    let index = sys.required_feature_index;
-    unsafe {
-        *feature_index = u32::from(sys.required_feature_index.0);
-        if let Some(tag) = table.get_feature_tag(index) {
+    if let Some((index, tag)) = SubstPosTable::parse(table_data(face, table_tag))
+        .and_then(|table| language_get_required_feature(table, script_index, lang_index))
+    {
+        unsafe {
+            *feature_index = u32::from(index.0);
             *feature_tag = tag;
         }
+        return 1;
     }
 
-    return sys.has_required_feature() as ffi::rb_bool_t;
+    0
+}
+
+fn language_get_required_feature(
+    table: SubstPosTable,
+    script_index: ScriptIndex,
+    lang_index: Option<LangIndex>,
+) -> Option<(FeatureIndex, Tag)> {
+    let script = table.get_script(script_index)?;
+    let sys = match lang_index {
+        Some(index) => script.get_lang(index)?,
+        None => script.default_lang()?,
+    };
+    let idx = sys.required_feature?;
+    let tag = table.get_feature_tag(idx)?;
+    Some((idx, tag))
 }
 
 /// rb_ot_layout_table_find_feature:
@@ -284,14 +328,11 @@ pub extern "C" fn rb_ot_layout_table_find_feature(
 ) -> ffi::rb_bool_t {
     unsafe { *feature_index = FEATURE_NOT_FOUND_INDEX };
 
-    let data = unsafe { get_table_data(face, table_tag) };
-    if let Some(table) = SubstPosTable::parse(data) {
-        for i in 0..table.feature_count() {
-            if table.get_feature_tag(FeatureIndex(i)) == Some(feature_tag) {
-                unsafe { *feature_index = u32::from(i); }
-                return 1;
-            }
-        }
+    if let Some(feature) = SubstPosTable::parse(table_data(face, table_tag))
+        .and_then(|table| table.find_feature_index(feature_tag))
+    {
+        unsafe { *feature_index = u32::from(feature.0); }
+        return 1;
     }
 
     0
@@ -311,8 +352,8 @@ pub extern "C" fn rb_ot_layout_table_get_lookup_count(
     face: *const ffi::rb_face_t,
     table_tag: Tag,
 ) -> u32 {
-    let data = unsafe { get_table_data(face, table_tag) };
-    SubstPosTable::parse(data).map_or(0, |table| u32::from(table.lookup_count()))
+    SubstPosTable::parse(table_data(face, table_tag))
+        .map_or(0, |table| u32::from(table.lookup_count()))
 }
 
 // Variations support
@@ -337,9 +378,8 @@ pub extern "C" fn rb_ot_layout_table_find_feature_variations(
 ) -> ffi::rb_bool_t {
     unsafe { *variations_index = FEATURE_VARIATION_NOT_FOUND_INDEX; }
 
-    let data = unsafe { get_table_data(face, table_tag) };
-    let coords = unsafe { std::slice::from_raw_parts(coords, usize::num_from(num_coords)) };
-    if let Some(table) = SubstPosTable::parse(data) {
+    let coords = unsafe { slice::from_raw_parts(coords, usize::num_from(num_coords)) };
+    if let Some(table) = SubstPosTable::parse(table_data(face, table_tag)) {
         if let Some(index) = table.find_variation_index(coords) {
             unsafe { *variations_index = index.0; }
             return 1;
@@ -373,18 +413,26 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
     lookup_count: *mut u32,
     lookup_indices: *mut u32,
 ) {
-    let data = unsafe { get_table_data(face, table_tag) };
-    let feature = SubstPosTable::parse(data).and_then(|table| {
-        let feature_index = FeatureIndex(feature_index as u16);
-        if var_index == FEATURE_VARIATION_NOT_FOUND_INDEX {
-            table.get_feature(feature_index)
-        } else {
-            table.get_feature_variation(feature_index, VariationIndex(var_index))
+    if let Some(feature) = SubstPosTable::parse(table_data(face, table_tag))
+        .and_then(|table| {
+            let feature_index = FeatureIndex(feature_index as u16);
+            match var_index {
+                FEATURE_VARIATION_NOT_FOUND_INDEX => table.get_feature(feature_index),
+                _ => table.get_variation(feature_index, VariationIndex(var_index)),
+            }
+        })
+    {
+        unsafe {
+            let mut i = 0;
+            for index in feature.lookup_indices.into_iter().skip(usize::num_from(start)) {
+                if i == *lookup_count {
+                    break;
+                }
+                *lookup_indices.offset(i as isize) = u32::from(index.0);
+                i += 1;
+            }
+            *lookup_count = i;
         }
-    });
-
-    if let Some(feature) = feature {
-        unsafe { write_lookup_indices(feature, start, lookup_count, lookup_indices); }
     } else {
         unsafe { *lookup_count = 0; }
     }
@@ -401,8 +449,7 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
 /// Return value: true if data found, false otherwise
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_has_substitution(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
-    let data = unsafe { get_table_data(face, SubstTable::TAG) };
-    SubstTable::parse(data).is_some() as ffi::rb_bool_t
+    SubstTable::parse(table_data(face, SubstTable::TAG)).is_some() as ffi::rb_bool_t
 }
 
 /// rb_ot_layout_lookup_would_substitute:
@@ -427,11 +474,10 @@ pub extern "C" fn rb_ot_layout_lookup_would_substitute(
     glyphs_length: u32,
     zero_context: ffi::rb_bool_t,
 ) -> ffi::rb_bool_t {
-    let data = unsafe { get_table_data(face, SubstTable::TAG) };
-    let glyphs = unsafe { std::slice::from_raw_parts(glyphs, usize::num_from(glyphs_length)) };
+    let glyphs = unsafe { slice::from_raw_parts(glyphs, usize::num_from(glyphs_length)) };
     let zero_context = zero_context != 0;
     let ctx = WouldApplyContext { glyphs, zero_context };
-    SubstTable::parse(data)
+    SubstTable::parse(table_data(face, SubstTable::TAG))
         .and_then(|table| table.get_lookup(LookupIndex(lookup_index as u16)))
         .map_or(false, |lookup| lookup.would_apply(&ctx)) as ffi::rb_bool_t
 }
@@ -463,63 +509,6 @@ fn set_glyph_props(font: &Font, buffer: &mut Buffer) {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_delete_glyphs_inplace(
-    buffer: *mut ffi::rb_buffer_t,
-    filter: unsafe extern "C" fn(info: *const GlyphInfo) -> ffi::rb_bool_t,
-) {
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-
-    // Merge clusters and delete filtered glyphs.
-    // NOTE! We can't use out-buffer as we have positioning data.
-    let mut j = 0;
-    let len = buffer.len;
-
-    for i in 0..len {
-        if unsafe { filter(&buffer.info[i]) != 0 } {
-            // Merge clusters.
-            // Same logic as buffer.delete_glyph(), but for in-place removal
-
-            let cluster = buffer.info[i].cluster;
-            if i + 1 < len && cluster == buffer.info[i + 1].cluster {
-                // Cluster survives; do nothing.
-                continue;
-            }
-
-            if j != 0 {
-                // Merge cluster backward.
-                if cluster < buffer.info[j - 1].cluster {
-                    let mask = buffer.info[i].mask;
-                    let old_cluster = buffer.info[j - 1].cluster;
-
-                    let mut k = j;
-                    while k > 0 && buffer.info[k - 1].cluster == old_cluster {
-                        Buffer::set_cluster(&mut buffer.info[k - 1], cluster, mask);
-                        k -= 1;
-                    }
-                }
-                continue;
-            }
-
-            if i + 1 < len {
-                // Merge cluster forward.
-                buffer.merge_clusters(i, i + 2);
-            }
-
-            continue;
-        }
-
-        if j != i {
-            buffer.info[j] = buffer.info[i];
-            buffer.pos[j] = buffer.pos[i];
-        }
-
-        j += 1;
-    }
-
-    buffer.len = j;
-}
-
 // GPOS
 
 /// rb_ot_layout_has_positioning:
@@ -529,8 +518,7 @@ pub extern "C" fn rb_ot_layout_delete_glyphs_inplace(
 /// Return value: true if the face has GPOS data, false otherwise
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_has_positioning(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
-    let data = unsafe { get_table_data(face, PosTable::TAG) };
-    PosTable::parse(data).is_some() as ffi::rb_bool_t
+    PosTable::parse(table_data(face, PosTable::TAG)).is_some() as ffi::rb_bool_t
 }
 
 /// rb_ot_layout_position_start:
@@ -582,42 +570,12 @@ pub extern "C" fn rb_ot_layout_position_finish_offsets(
     PosTable::position_finish_offsets(font, &mut buffer);
 }
 
-// Helpers
+// General
 
-fn get_table_and_lang_sys<'a>(
-    data: &'a [u8],
-    script_index: u32,
-    language_index: u32,
-) -> Option<(SubstPosTable<'a>, LangSys<'a>)> {
-    let table = SubstPosTable::parse(data)?;
-    let script = table.get_script(ScriptIndex(script_index as u16))?;
-    let lang_sys = if language_index == LANGUAGE_NOT_FOUND_INDEX {
-        script.default_lang_sys()?
-    } else {
-        script.get_lang_sys(LangSysIndex(language_index as u16))?
-    };
-    Some((table, lang_sys))
-}
-
-unsafe fn write_lookup_indices(
-    feature: Feature,
-    start: u32,
-    count: *mut u32,
-    indices: *mut u32,
-) {
-    let mut i = 0;
-    for index in feature.lookup_indices.into_iter().skip(usize::num_from(start)) {
-        if i == *count {
-            break;
-        }
-        *indices.offset(i as isize) = u32::from(index.0);
-        i += 1;
+fn table_data(face: *const ffi::rb_face_t, table_tag: Tag) -> &'static [u8] {
+    unsafe {
+        let mut len = 0;
+        let data = ffi::rb_face_get_table_data(face, table_tag, &mut len);
+        slice::from_raw_parts(data, usize::num_from(len))
     }
-    *count = i;
-}
-
-unsafe fn get_table_data(face: *const ffi::rb_face_t, table_tag: Tag) -> &'static [u8] {
-    let mut len = 0;
-    let data = ffi::rb_face_get_table_data(face, table_tag, &mut len);
-    std::slice::from_raw_parts(data, usize::num_from(len))
 }

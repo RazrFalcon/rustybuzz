@@ -707,7 +707,7 @@ static void rb_ot_hide_default_ignorables(rb_buffer_t *buffer, rb_font_t *font)
                 info[i].codepoint = invisible;
         }
     } else
-        rb_ot_layout_delete_glyphs_inplace(buffer, _rb_glyph_info_is_default_ignorable);
+        rb_buffer_delete_glyphs_inplace(buffer, _rb_glyph_info_is_default_ignorable);
 }
 
 static inline void rb_ot_map_glyphs_fast(rb_buffer_t *buffer)

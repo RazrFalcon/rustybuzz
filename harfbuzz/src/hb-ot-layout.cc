@@ -146,11 +146,6 @@ bool OT::GPOS::is_blocklisted(rb_blob_t *blob RB_UNUSED, rb_face_t *face RB_UNUS
     return false;
 }
 
-/*
- * Parts of different types are implemented here such that they have direct
- * access to GSUB/GPOS lookups.
- */
-
 template <typename Table>
 static inline bool apply_forward(OT::rb_ot_apply_context_t *c, const typename Table::Lookup &lookup)
 {
@@ -260,12 +255,4 @@ void rb_ot_map_t::substitute(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb
 void rb_ot_map_t::position(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const
 {
     apply(*rb_font_get_face(font)->table.GPOS->table, plan, font, buffer);
-}
-
-void rb_layout_clear_syllables(const rb_ot_shape_plan_t *plan RB_UNUSED, rb_font_t *font RB_UNUSED, rb_buffer_t *buffer)
-{
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-    unsigned int count = rb_buffer_get_length(buffer);
-    for (unsigned int i = 0; i < count; i++)
-        info[i].syllable() = 0;
 }

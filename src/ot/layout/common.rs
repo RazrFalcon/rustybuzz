@@ -20,6 +20,7 @@ pub struct SubstPosTable<'a> {
     variations: Option<FeatureVariations<'a>>,
 }
 
+#[allow(dead_code)]
 impl<'a> SubstPosTable<'a> {
     pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
@@ -42,13 +43,25 @@ impl<'a> SubstPosTable<'a> {
         Some(Self { scripts, features, lookups, variations })
     }
 
+    // Scripts
+
+    pub fn script_count(&self) -> u16 {
+        self.scripts.len()
+    }
+
     pub fn get_script(&self, index: ScriptIndex) -> Option<Script<'a>> {
         Script::parse(self.scripts.get_data(index.0)?)
+    }
+
+    pub fn get_script_tag(&self, index: ScriptIndex) -> Option<Tag> {
+        self.scripts.get_tag(index.0)
     }
 
     pub fn find_script_index(&self, script_tag: Tag) -> Option<ScriptIndex> {
         self.scripts.find_index(script_tag).map(ScriptIndex)
     }
+
+    // Features
 
     pub fn feature_count(&self) -> u16 {
         self.features.len()
@@ -62,6 +75,12 @@ impl<'a> SubstPosTable<'a> {
         self.features.get_tag(index.0)
     }
 
+    pub fn find_feature_index(&self, feature_tag: Tag) -> Option<FeatureIndex> {
+        self.features.find_index(feature_tag).map(FeatureIndex)
+    }
+
+    // Lookups
+
     pub fn lookup_count(&self) -> u16 {
         self.lookups.len()
     }
@@ -70,7 +89,13 @@ impl<'a> SubstPosTable<'a> {
         self.lookups.get(index)
     }
 
-    pub fn get_feature_variation(
+    // Feature variations
+
+    pub fn variation_count(&self) -> u32 {
+        self.variations.map_or(0, |var| var.len())
+    }
+
+    pub fn get_variation(
         &self,
         feature_index: FeatureIndex,
         var_index: VariationIndex,
@@ -100,9 +125,9 @@ impl FromData for ScriptIndex {
 
 /// A type-safe wrapper for a language system index.
 #[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
-pub struct LangSysIndex(pub u16);
+pub struct LangIndex(pub u16);
 
-impl FromData for LangSysIndex {
+impl FromData for LangIndex {
     const SIZE: usize = 2;
 
     #[inline]
@@ -211,23 +236,23 @@ impl<'a> Script<'a> {
         Some(Self { default, systems })
     }
 
-    pub fn default_lang_sys(&self) -> Option<LangSys<'a>> {
+    pub fn default_lang(&self) -> Option<LangSys<'a>> {
         self.default
     }
 
-    pub fn get_lang_sys(&self, index: LangSysIndex) -> Option<LangSys<'a>> {
+    pub fn get_lang(&self, index: LangIndex) -> Option<LangSys<'a>> {
         LangSys::parse(self.systems.get_data(index.0)?)
     }
 
-    pub fn find_lang_sys_index(&self, tag: Tag) -> Option<LangSysIndex> {
-        self.systems.find_index(tag).map(LangSysIndex)
+    pub fn find_lang_index(&self, tag: Tag) -> Option<LangIndex> {
+        self.systems.find_index(tag).map(LangIndex)
     }
 }
 
 #[derive(Clone, Copy, Debug)]
 pub struct LangSys<'a> {
     pub lookup_order: Offset16,
-    pub required_feature_index: FeatureIndex,
+    pub required_feature: Option<FeatureIndex>,
     pub feature_indices: LazyArray16<'a, FeatureIndex>
 }
 
@@ -235,14 +260,13 @@ impl<'a> LangSys<'a> {
     pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let lookup_order = s.read::<Offset16>()?;
-        let required_feature_index = s.read::<FeatureIndex>()?;
+        let required_feature = match s.read::<FeatureIndex>()? {
+            FeatureIndex(0xFFFF) => None,
+            v => Some(v),
+        };
         let count = s.read::<u16>()?;
         let feature_indices = s.read_array16(count)?;
-        Some(Self { lookup_order, required_feature_index, feature_indices })
-    }
-
-    pub fn has_required_feature(&self) -> bool {
-        self.required_feature_index.0 != 0xFFFF
+        Some(Self { lookup_order, required_feature, feature_indices })
     }
 
     pub fn feature_count(&self) -> u16 {
@@ -391,6 +415,10 @@ impl<'a> FeatureVariations<'a> {
         let count = s.read::<u32>()?;
         let records = s.read_array32(count)?;
         Some(Self { data, records })
+    }
+
+    fn len(&self) -> u32 {
+        self.records.len()
     }
 
     fn find_index(&self, coords: &[i32]) -> Option<VariationIndex> {

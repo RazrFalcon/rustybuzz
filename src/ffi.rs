@@ -293,12 +293,6 @@ extern "C" {
         sub_lookup_index: u32,
     ) -> rb_bool_t;
 
-    pub fn rb_layout_clear_syllables(
-        plan: *const rb_ot_shape_plan_t,
-        font: *mut rb_font_t,
-        buffer: *mut rb_buffer_t,
-    );
-
     pub fn rb_clear_substitution_flags(
         plan: *const rb_ot_shape_plan_t,
         font: *mut rb_font_t,
