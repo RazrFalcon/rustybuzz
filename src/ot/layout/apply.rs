@@ -9,6 +9,16 @@ use crate::common::Direction;
 use crate::font::Font;
 use crate::{ffi, Mask};
 
+/// Find out whether a GSUB/GPOS lookup would be applied.
+pub trait WouldApply {
+    fn would_apply(&self, ctx: &WouldApplyContext) -> bool;
+}
+
+/// Apply a GSUB/GPOS lookup.
+pub trait Apply {
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()>;
+}
+
 pub struct WouldApplyContext<'a> {
     pub glyphs: &'a [u32],
     pub zero_context: bool,

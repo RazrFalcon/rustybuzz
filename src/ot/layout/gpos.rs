@@ -7,7 +7,7 @@ use ttf_parser::parser::{
 };
 use ttf_parser::GlyphId;
 
-use super::apply::ApplyContext;
+use super::apply::{Apply, ApplyContext};
 use super::common::{
     parse_extension_lookup, ClassDef, Coverage, Device, Class, LookupFlags, LookupType,
     SubstPosTable,
@@ -145,7 +145,9 @@ impl<'a> PosLookupSubtable<'a> {
             Self::ChainContext(t) => t.coverage(),
         }
     }
+}
 
+impl Apply for PosLookupSubtable<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         match self {
             Self::Single(t) => t.apply(ctx),
@@ -203,7 +205,9 @@ impl<'a> SinglePos<'a> {
             Self::Format2 { coverage, .. } => coverage,
         }
     }
+}
 
+impl Apply for SinglePos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         let (base, value) = match *self {
@@ -283,7 +287,9 @@ impl<'a> PairPos<'a> {
             Self::Format2 { coverage, .. } => coverage,
         }
     }
+}
 
+impl Apply for PairPos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let first = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         let index = self.coverage().get(first)?;
@@ -368,7 +374,9 @@ impl<'a> CursivePos<'a> {
             Self::Format1 { coverage, .. } => coverage,
         }
     }
+}
 
+impl Apply for CursivePos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let Self::Format1 { data, coverage, entry_exits } = *self;
 
@@ -559,7 +567,9 @@ impl<'a> MarkBasePos<'a> {
             Self::Format1 { mark_coverage, .. } => mark_coverage,
         }
     }
+}
 
+impl Apply for MarkBasePos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let Self::Format1 { mark_coverage, base_coverage, marks, base_matrix } = *self;
 
@@ -637,7 +647,9 @@ impl<'a> MarkLigPos<'a> {
             Self::Format1 { mark_coverage, .. } => mark_coverage,
         }
     }
+}
 
+impl Apply for MarkLigPos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let Self::Format1 { mark_coverage, lig_coverage, marks, lig_array } = *self;
 
@@ -730,7 +742,9 @@ impl<'a> MarkMarkPos<'a> {
             Self::Format1 { mark1_coverage, .. } => mark1_coverage,
         }
     }
+}
 
+impl Apply for MarkMarkPos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let Self::Format1 { mark1_coverage, mark2_coverage, marks, mark2_matrix } = *self;
 

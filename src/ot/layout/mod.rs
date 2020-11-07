@@ -18,7 +18,7 @@ use ttf_parser::GlyphId;
 use crate::buffer::Buffer;
 use crate::common::TagExt;
 use crate::{ffi, Font, Tag};
-use apply::WouldApplyContext;
+use apply::{WouldApply, WouldApplyContext};
 use common::{SubstPosTable, FeatureIndex, LangIndex, LookupIndex, ScriptIndex, VariationIndex};
 use gpos::PosTable;
 use gsub::SubstTable;

@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 use ttf_parser::parser::{FromData, LazyArray16, Offset, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
-use super::apply::{ApplyContext, WouldApplyContext};
+use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
 use super::common::{ClassDef, Coverage};
 use super::matching::{
     match_backtrack, match_class, match_coverage, match_glyph, match_input, match_lookahead,
@@ -88,8 +88,10 @@ impl<'a> ContextLookup<'a> {
             Self::Format3 { coverage, .. } => coverage,
         }
     }
+}
 
-    pub fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
+impl WouldApply for ContextLookup<'_> {
+    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
@@ -110,8 +112,10 @@ impl<'a> ContextLookup<'a> {
             }
         }
     }
+}
 
-    pub fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+impl Apply for ContextLookup<'_> {
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
@@ -274,8 +278,10 @@ impl<'a> ChainContextLookup<'a> {
             Self::Format3 { coverage, .. } => coverage,
         }
     }
+}
 
-    pub fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
+impl WouldApply for ChainContextLookup<'_> {
+    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
@@ -302,8 +308,10 @@ impl<'a> ChainContextLookup<'a> {
             }
         }
     }
+}
 
-    pub fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+impl Apply for ChainContextLookup<'_> {
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {

@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 use ttf_parser::parser::{LazyArray16, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
-use super::apply::{ApplyContext, WouldApplyContext};
+use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
 use super::common::{
     parse_extension_lookup, Coverage, Lookup, LookupIndex, LookupType, SubstPosTable,
 };
@@ -37,8 +37,8 @@ impl<'a> SubstTable<'a> {
 #[derive(Clone, Copy, Debug)]
 pub struct SubstLookup<'a>(Lookup<'a>);
 
-impl<'a> SubstLookup<'a> {
-    pub fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
+impl WouldApply for SubstLookup<'_> {
+    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         self.0.subtables
             .into_iter()
             .filter_map(|data| SubstLookupSubtable::parse(data, self.0.kind))
@@ -88,7 +88,9 @@ impl<'a> SubstLookupSubtable<'a> {
     fn is_reverse(&self) -> bool {
         matches!(self, Self::ReverseChainSingle(_))
     }
+}
 
+impl WouldApply for SubstLookupSubtable<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         match self {
             Self::Single(t) => t.would_apply(ctx),
@@ -100,7 +102,9 @@ impl<'a> SubstLookupSubtable<'a> {
             Self::ReverseChainSingle(t) => t.would_apply(ctx),
         }
     }
+}
 
+impl Apply for SubstLookupSubtable<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         match self {
             Self::Single(t) => t.apply(ctx),
@@ -152,12 +156,16 @@ impl<'a> SingleSubst<'a> {
             Self::Format2 { coverage, .. } => coverage,
         }
     }
+}
 
+impl WouldApply for SingleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
     }
+}
 
+impl Apply for SingleSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         let subst = match *self {
@@ -206,12 +214,16 @@ impl<'a> MultipleSubst<'a> {
             Self::Format1 { coverage, .. } => coverage,
         }
     }
+}
 
+impl WouldApply for MultipleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
     }
+}
 
+impl Apply for MultipleSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         match self {
@@ -236,7 +248,9 @@ impl<'a> Sequence<'a> {
         let substitutes = s.read_array16(count)?;
         Some(Self { substitutes })
     }
+}
 
+impl Apply for Sequence<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         match self.substitutes.len() {
             // Spec disallows this, but Uniscribe allows it.
@@ -295,12 +309,16 @@ impl<'a> AlternateSubst<'a> {
             Self::Format1 { coverage, .. } => coverage,
         }
     }
+}
 
+impl WouldApply for AlternateSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
     }
+}
 
+impl Apply for AlternateSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         match self {
@@ -325,7 +343,9 @@ impl<'a> AlternateSet<'a> {
         let alternates = s.read_array16(count)?;
         Some(Self { alternates })
     }
+}
 
+impl Apply for AlternateSet<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let len = self.alternates.len();
         if len == 0 {
@@ -379,7 +399,9 @@ impl<'a> LigatureSubst<'a> {
             Self::Format1 { coverage, .. } => coverage,
         }
     }
+}
 
+impl WouldApply for LigatureSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         match self {
@@ -391,7 +413,9 @@ impl<'a> LigatureSubst<'a> {
             }
         }
     }
+}
 
+impl Apply for LigatureSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
         match self {
@@ -415,14 +439,18 @@ impl<'a> LigatureSet<'a> {
         let ligatures = s.read_offsets16(count, data)?;
         Some(Self { ligatures })
     }
+}
 
+impl WouldApply for LigatureSet<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         self.ligatures
             .into_iter()
             .filter_map(|data| Ligature::parse(data))
             .any(|lig| lig.would_apply(ctx))
     }
+}
 
+impl Apply for LigatureSet<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         for data in self.ligatures {
             let lig = Ligature::parse(data)?;
@@ -447,7 +475,9 @@ impl<'a> Ligature<'a> {
         let components = s.read_array16(count.checked_sub(1)?)?;
         Some(Self { lig_glyph, components })
     }
+}
 
+impl WouldApply for Ligature<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         ctx.glyphs.len() == 1 + usize::from(self.components.len())
             && self.components
@@ -455,7 +485,9 @@ impl<'a> Ligature<'a> {
                 .enumerate()
                 .all(|(i, comp)| ctx.glyphs[1 + i] == u32::from(comp))
     }
+}
 
+impl Apply for Ligature<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         // Special-case to make it in-place and not consider this
         // as a "ligated" substitution.
@@ -617,12 +649,16 @@ impl<'a> ReverseChainSingleSubst<'a> {
             Self::Format1 { coverage, .. } => coverage,
         }
     }
+}
 
+impl WouldApply for ReverseChainSingleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
     }
+}
 
+impl Apply for ReverseChainSingleSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let Self::Format1 {
             data,
