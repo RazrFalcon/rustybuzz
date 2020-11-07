@@ -29,7 +29,8 @@ impl<'a> PosTable<'a> {
     }
 
     pub(crate) fn position_start(_: &Font, buffer: &mut Buffer) {
-        for pos in &mut buffer.pos {
+        let len = buffer.len;
+        for pos in &mut buffer.pos[..len] {
             pos.set_attach_chain(0);
             pos.set_attach_type(0);
         }

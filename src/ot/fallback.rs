@@ -108,7 +108,8 @@ pub extern "C" fn _rb_ot_shape_fallback_mark_position_recategorize_marks(
 }
 
 fn recategorize_marks(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
-    for info in &mut buffer.info {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
         if info.general_category() == GeneralCategory::NonspacingMark {
             let mut class = info.modified_combining_class();
             class = recategorize_combining_class(info.codepoint, class);
@@ -420,15 +421,15 @@ fn mark_position(
     adjust_offsets_when_zeroing: bool,
 ) {
     let mut start = 0;
-    let count = buffer.info.len();
-    for i in 1..count {
+    let len = buffer.len;
+    for i in 1..len {
         if !buffer.info[i].is_unicode_mark() {
             position_cluster(&plan, font, buffer, start, i, adjust_offsets_when_zeroing);
             start = i;
         }
     }
 
-    position_cluster(&plan, font, buffer, start, count, adjust_offsets_when_zeroing);
+    position_cluster(&plan, font, buffer, start, len, adjust_offsets_when_zeroing);
 }
 
 /// Performs font-assisted kerning.
@@ -453,8 +454,9 @@ pub extern "C" fn _rb_ot_shape_fallback_spaces(
 }
 
 fn spaces(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
+    let len = buffer.len;
     let horizontal = buffer.direction.is_horizontal();
-    for (info, pos) in buffer.info.iter().zip(&mut buffer.pos) {
+    for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
         let space_type = match info.space_fallback() {
             Some(fallback) if !info.is_ligated() => fallback,
             _ => continue,
