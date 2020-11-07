@@ -90,22 +90,20 @@ impl<'a> ContextLookup<'a> {
     }
 
     pub fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
                 coverage.get(glyph_id)
                     .and_then(|index| sets.slice(index))
                     .and_then(RuleSet::parse)
-                    .map(|set| set.would_apply(ctx, &match_glyph))
-                    .unwrap_or(false)
+                    .map_or(false, |set| set.would_apply(ctx, &match_glyph))
             }
             Self::Format2 { classes: class_def, sets, .. } => {
                 let class = class_def.get(glyph_id);
                 sets.get(class.0).map_or(false, |offset| !offset.is_null())
                     && sets.slice(class.0)
                         .and_then(RuleSet::parse)
-                        .map(|set| set.would_apply(ctx, &match_class(class_def)))
-                        .unwrap_or(false)
+                        .map_or(false, |set| set.would_apply(ctx, &match_class(class_def)))
             }
             Self::Format3 { data, coverages, .. } => {
                 would_apply_context(ctx, coverages, &match_coverage(data))
@@ -278,22 +276,20 @@ impl<'a> ChainContextLookup<'a> {
     }
 
     pub fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
                 coverage.get(glyph_id)
                     .and_then(|index| sets.slice(index))
                     .and_then(ChainRuleSet::parse)
-                    .map(|set| set.would_apply(ctx, &match_glyph))
-                    .unwrap_or(false)
+                    .map_or(false, |set| set.would_apply(ctx, &match_glyph))
             }
             Self::Format2 { input_classes, sets, .. } => {
                 let class = input_classes.get(glyph_id);
                 sets.get(class.0).map_or(false, |offset| !offset.is_null())
                     && sets.slice(class.0)
                         .and_then(ChainRuleSet::parse)
-                        .map(|set| set.would_apply(ctx, &match_class(input_classes)))
-                        .unwrap_or(false)
+                        .map_or(false, |set| set.would_apply(ctx, &match_class(input_classes)))
             }
             Self::Format3 { data, backtrack_coverages, input_coverages, lookahead_coverages, .. } => {
                 would_apply_chain_context(
@@ -447,7 +443,7 @@ fn would_apply_chain_context(
     lookahead: LazyArray16<u16>,
     match_func: &MatchFunc,
 ) -> bool {
-    (!ctx.zero_context() || (backtrack.len() == 0 && lookahead.len() == 0))
+    (!ctx.zero_context || (backtrack.len() == 0 && lookahead.len() == 0))
         && would_match_input(ctx, input, match_func)
 }
 

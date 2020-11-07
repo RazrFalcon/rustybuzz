@@ -9,7 +9,8 @@ use ttf_parser::GlyphId;
 
 use super::apply::ApplyContext;
 use super::common::{
-    parse_extension_lookup, ClassDef, Coverage, Device, Class, LookupFlags, SubstPosTable,
+    parse_extension_lookup, ClassDef, Coverage, Device, Class, LookupFlags, LookupType,
+    SubstPosTable,
 };
 use super::context_lookups::{ContextLookup, ChainContextLookup};
 use super::dyn_array::DynArray;
@@ -116,8 +117,8 @@ enum PosLookupSubtable<'a> {
 }
 
 impl<'a> PosLookupSubtable<'a> {
-    fn parse(data: &'a [u8], kind: u16) -> Option<Self> {
-        match kind {
+    fn parse(data: &'a [u8], kind: LookupType) -> Option<Self> {
+        match kind.0 {
             1 => SinglePos::parse(data).map(Self::Single),
             2 => PairPos::parse(data).map(Self::Pair),
             3 => CursivePos::parse(data).map(Self::Cursive),
@@ -1105,7 +1106,6 @@ pub extern "C" fn rb_pos_lookup_apply(
 ) -> crate::ffi::rb_bool_t {
     let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
     let mut ctx = ApplyContext::from_ptr_mut(ctx);
-    PosLookupSubtable::parse(data, kind as u16)
-        .map(|table| table.apply(&mut ctx).is_some())
-        .unwrap_or(false) as crate::ffi::rb_bool_t
+    PosLookupSubtable::parse(data, LookupType(kind as u16))
+        .map_or(false, |table| table.apply(&mut ctx).is_some()) as crate::ffi::rb_bool_t
 }

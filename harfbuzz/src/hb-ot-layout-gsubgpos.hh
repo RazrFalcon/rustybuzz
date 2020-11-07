@@ -43,24 +43,6 @@ RB_EXTERN rb_bool_t rb_ot_apply_context_check_glyph_property(const OT::rb_ot_app
 
 namespace OT {
 
-struct rb_would_apply_context_t : rb_dispatch_context_t<rb_would_apply_context_t, bool>
-{
-    rb_face_t *face;
-    const rb_codepoint_t *glyphs;
-    unsigned int len;
-    bool zero_context;
-
-    rb_would_apply_context_t(rb_face_t *face_, const rb_codepoint_t *glyphs_, unsigned int len_, bool zero_context_)
-        : face(face_)
-        , glyphs(glyphs_)
-        , len(len_)
-        , zero_context(zero_context_)
-    {
-    }
-};
-
-struct rb_ot_apply_context_t;
-
 struct rb_ot_apply_context_t : rb_dispatch_context_t<rb_ot_apply_context_t, bool>
 {
     struct matcher_t
@@ -419,9 +401,6 @@ public:
 } /* namespace OT */
 
 extern "C" {
-RB_EXTERN unsigned int   rb_would_apply_context_get_len(const OT::rb_would_apply_context_t *c);
-RB_EXTERN rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_apply_context_t *c, unsigned int index);
-RB_EXTERN rb_bool_t      rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t *c);
 RB_EXTERN const rb_font_t *rb_ot_apply_context_get_font(const OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_buffer_t   *rb_ot_apply_context_get_buffer(OT::rb_ot_apply_context_t *c);
 RB_EXTERN rb_direction_t rb_ot_apply_context_get_direction(const OT::rb_ot_apply_context_t *c);

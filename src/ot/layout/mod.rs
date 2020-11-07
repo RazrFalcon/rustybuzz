@@ -1,7 +1,5 @@
 //! OpenType layout.
 
-#![allow(dead_code)]
-
 mod apply;
 mod common;
 mod context_lookups;
@@ -18,8 +16,10 @@ use ttf_parser::GlyphId;
 use crate::buffer::{Buffer, GlyphInfo};
 use crate::common::TagExt;
 use crate::{ffi, Font, Tag};
+use apply::WouldApplyContext;
 use common::{
-    SubstPosTable, FeatureIndex, Feature, LangSys, LangSysIndex, ScriptIndex, VariationIndex,
+    SubstPosTable, FeatureIndex, Feature, LangSys, LangSysIndex, LookupIndex, ScriptIndex,
+    VariationIndex,
 };
 use gpos::PosTable;
 use gsub::SubstTable;
@@ -402,6 +402,37 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
 pub extern "C" fn rb_ot_layout_has_substitution(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
     let data = unsafe { get_table_data(face, SubstTable::TAG) };
     SubstTable::parse(data).is_some() as ffi::rb_bool_t
+}
+
+/// rb_ot_layout_lookup_would_substitute:
+///
+/// @face: #rb_face_t to work upon
+/// @lookup_index: The index of the lookup to query
+/// @glyphs: The sequence of glyphs to query for substitution
+/// @glyphs_length: The length of the glyph sequence
+/// @zero_context: #rb_bool_t indicating whether substitutions should be context-free
+///
+/// Tests whether a specified lookup in the specified face would
+/// trigger a substitution on the given glyph sequence.
+///
+/// Return value: true if a substitution would be triggered, false otherwise
+///
+/// Since: 0.9.7
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_lookup_would_substitute(
+    face: *const ffi::rb_face_t,
+    lookup_index: u32,
+    glyphs: *const u32,
+    glyphs_length: u32,
+    zero_context: ffi::rb_bool_t,
+) -> ffi::rb_bool_t {
+    let data = unsafe { get_table_data(face, SubstTable::TAG) };
+    let glyphs = unsafe { std::slice::from_raw_parts(glyphs, usize::num_from(glyphs_length)) };
+    let zero_context = zero_context != 0;
+    let ctx = WouldApplyContext { glyphs, zero_context };
+    SubstTable::parse(data)
+        .and_then(|table| table.get_lookup(LookupIndex(lookup_index as u16)))
+        .map_or(false, |lookup| lookup.would_apply(&ctx)) as ffi::rb_bool_t
 }
 
 /// rb_ot_layout_substitute_start:

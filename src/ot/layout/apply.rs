@@ -9,24 +9,9 @@ use crate::common::Direction;
 use crate::font::Font;
 use crate::{ffi, Mask};
 
-pub struct WouldApplyContext(NonNull<ffi::rb_would_apply_context_t>);
-
-impl WouldApplyContext {
-    pub fn from_ptr(ptr: *const ffi::rb_would_apply_context_t) -> Self {
-        Self(NonNull::new(ptr as _).unwrap())
-    }
-
-    pub fn len(&self) -> usize {
-        unsafe { ffi::rb_would_apply_context_get_len(self.0.as_ptr()) as usize }
-    }
-
-    pub fn glyph(&self, index: usize) -> u32 {
-        unsafe { ffi::rb_would_apply_context_get_glyph(self.0.as_ptr(), index as u32) }
-    }
-
-    pub fn zero_context(&self) -> bool {
-        unsafe { ffi::rb_would_apply_context_get_zero_context(self.0.as_ptr()) != 0 }
-    }
+pub struct WouldApplyContext<'a> {
+    pub glyphs: &'a [u32],
+    pub zero_context: bool,
 }
 
 pub struct ApplyContext(NonNull<ffi::rb_ot_apply_context_t>);

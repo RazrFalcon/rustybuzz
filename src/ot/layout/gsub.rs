@@ -6,7 +6,9 @@ use ttf_parser::parser::{LazyArray16, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
 use super::apply::{ApplyContext, WouldApplyContext};
-use super::common::{parse_extension_lookup, Coverage, SubstPosTable};
+use super::common::{
+    parse_extension_lookup, Coverage, Lookup, LookupIndex, LookupType, SubstPosTable,
+};
 use super::context_lookups::{ContextLookup, ChainContextLookup};
 use super::matching::{
     match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
@@ -26,6 +28,22 @@ impl<'a> SubstTable<'a> {
     pub fn parse(data: &'a [u8]) -> Option<Self> {
         SubstPosTable::parse(data).map(Self)
     }
+
+    pub fn get_lookup(&self, index: LookupIndex) -> Option<SubstLookup<'a>> {
+        self.0.get_lookup(index).map(SubstLookup)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct SubstLookup<'a>(Lookup<'a>);
+
+impl<'a> SubstLookup<'a> {
+    pub fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
+        self.0.subtables
+            .into_iter()
+            .filter_map(|data| SubstLookupSubtable::parse(data, self.0.kind))
+            .any(|subtable| subtable.would_apply(ctx))
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -40,8 +58,8 @@ enum SubstLookupSubtable<'a> {
 }
 
 impl<'a> SubstLookupSubtable<'a> {
-    fn parse(data: &'a [u8], kind: u16) -> Option<Self> {
-        match kind {
+    fn parse(data: &'a [u8], kind: LookupType) -> Option<Self> {
+        match kind.0 {
             1 => SingleSubst::parse(data).map(Self::Single),
             2 => MultipleSubst::parse(data).map(Self::Multiple),
             3 => AlternateSubst::parse(data).map(Self::Alternate),
@@ -136,8 +154,8 @@ impl<'a> SingleSubst<'a> {
     }
 
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
-        ctx.len() == 1 && self.coverage().get(glyph_id).is_some()
+        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
@@ -190,8 +208,8 @@ impl<'a> MultipleSubst<'a> {
     }
 
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
-        ctx.len() == 1 && self.coverage().get(glyph_id).is_some()
+        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
@@ -279,8 +297,8 @@ impl<'a> AlternateSubst<'a> {
     }
 
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
-        ctx.len() == 1 && self.coverage().get(glyph_id).is_some()
+        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
@@ -363,14 +381,13 @@ impl<'a> LigatureSubst<'a> {
     }
 
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         match self {
             Self::Format1 { coverage, ligature_sets } => {
                 coverage.get(glyph_id)
                     .and_then(|index| ligature_sets.slice(index))
                     .and_then(LigatureSet::parse)
-                    .map(|set| set.would_apply(ctx))
-                    .unwrap_or(false)
+                    .map_or(false, |set| set.would_apply(ctx))
             }
         }
     }
@@ -432,11 +449,11 @@ impl<'a> Ligature<'a> {
     }
 
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        ctx.len() == 1 + usize::from(self.components.len())
+        ctx.glyphs.len() == 1 + usize::from(self.components.len())
             && self.components
                 .into_iter()
                 .enumerate()
-                .all(|(i, comp)| ctx.glyph(1 + i) == u32::from(comp))
+                .all(|(i, comp)| ctx.glyphs[1 + i] == u32::from(comp))
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
@@ -602,8 +619,8 @@ impl<'a> ReverseChainSingleSubst<'a> {
     }
 
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyph(0)).unwrap());
-        ctx.len() == 1 && self.coverage().get(glyph_id).is_some()
+        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
     }
 
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
@@ -645,19 +662,6 @@ impl<'a> ReverseChainSingleSubst<'a> {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_subst_lookup_would_apply(
-    data: *const u8,
-    ctx: *const crate::ffi::rb_would_apply_context_t,
-    kind: u32,
-) -> crate::ffi::rb_bool_t {
-    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
-    let ctx = WouldApplyContext::from_ptr(ctx);
-    SubstLookupSubtable::parse(data, kind as u16)
-        .map(|table| table.would_apply(&ctx))
-        .unwrap_or(false) as crate::ffi::rb_bool_t
-}
-
-#[no_mangle]
 pub extern "C" fn rb_subst_lookup_apply(
     data: *const u8,
     ctx: *mut crate::ffi::rb_ot_apply_context_t,
@@ -665,9 +669,8 @@ pub extern "C" fn rb_subst_lookup_apply(
 ) -> crate::ffi::rb_bool_t {
     let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
     let mut ctx = ApplyContext::from_ptr_mut(ctx);
-    SubstLookupSubtable::parse(data, kind as u16)
-        .map(|table| table.apply(&mut ctx).is_some())
-        .unwrap_or(false) as crate::ffi::rb_bool_t
+    SubstLookupSubtable::parse(data, LookupType(kind as u16))
+        .map_or(false, |table| table.apply(&mut ctx).is_some()) as crate::ffi::rb_bool_t
 }
 
 #[no_mangle]
@@ -676,7 +679,6 @@ pub extern "C" fn rb_subst_lookup_is_reverse(
     kind: u32,
 ) -> crate::ffi::rb_bool_t {
     let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
-    SubstLookupSubtable::parse(data, kind as u16)
-        .map(|table| table.is_reverse())
-        .unwrap_or(false) as crate::ffi::rb_bool_t
+    SubstLookupSubtable::parse(data, LookupType(kind as u16))
+        .map_or(false, |table| table.is_reverse()) as crate::ffi::rb_bool_t
 }

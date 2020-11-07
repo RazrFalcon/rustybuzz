@@ -66,6 +66,10 @@ impl<'a> SubstPosTable<'a> {
         self.lookups.len()
     }
 
+    pub fn get_lookup(&self, index: LookupIndex) -> Option<Lookup<'a>> {
+        self.lookups.get(index)
+    }
+
     pub fn get_feature_variation(
         &self,
         feature_index: FeatureIndex,
@@ -195,7 +199,7 @@ pub struct Script<'a> {
 }
 
 impl<'a> Script<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let mut default = None;
         if let Some(offset) = s.read::<Option<Offset16>>()? {
@@ -228,7 +232,7 @@ pub struct LangSys<'a> {
 }
 
 impl<'a> LangSys<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let lookup_order = s.read::<Offset16>()?;
         let required_feature_index = s.read::<FeatureIndex>()?;
@@ -257,7 +261,7 @@ pub struct Feature<'a> {
 }
 
 impl<'a> Feature<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let params = s.read::<Offset16>()?;
         let count = s.read::<u16>()?;
@@ -283,26 +287,26 @@ impl<'a> LookupList<'a> {
         self.offsets.len()
     }
 
-    fn get_lookup(&self, index: LookupIndex) -> Option<Lookup<'a>> {
+    fn get(&self, index: LookupIndex) -> Option<Lookup<'a>> {
         Lookup::parse(self.offsets.slice(index.0)?)
     }
 }
 
 #[derive(Clone, Copy, Debug)]
-struct Lookup<'a> {
-    kind: LookupType,
-    flags: LookupFlags,
-    offsets: Offsets16<'a, Offset16>,
-    mark_filtering_set: Option<u16>,
+pub struct Lookup<'a> {
+    pub kind: LookupType,
+    pub flags: LookupFlags,
+    pub subtables: Offsets16<'a, Offset16>,
+    pub mark_filtering_set: Option<u16>,
 }
 
 impl<'a> Lookup<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
         let kind = s.read::<LookupType>()?;
         let flags = s.read::<LookupFlags>()?;
         let count = s.read::<u16>()?;
-        let offsets = s.read_offsets16(count, data)?;
+        let subtables = s.read_offsets16(count, data)?;
 
         let mut mark_filtering_set: Option<u16> = None;
         if flags.contains(LookupFlags::USE_MARK_FILTERING_SET) {
@@ -312,7 +316,7 @@ impl<'a> Lookup<'a> {
         Some(Self {
             kind,
             flags,
-            offsets,
+            subtables,
             mark_filtering_set,
         })
     }
@@ -355,13 +359,13 @@ impl FromData for LookupFlags {
 
 pub fn parse_extension_lookup<'a, T: 'a>(
     data: &'a [u8],
-    parse: impl FnOnce(&'a [u8], u16) -> Option<T>,
+    parse: impl FnOnce(&'a [u8], LookupType) -> Option<T>,
 ) -> Option<T> {
     let mut s = Stream::new(data);
     let format: u16 = s.read()?;
     match format {
         1 => {
-            let kind = s.read::<u16>()?;
+            let kind = s.read::<LookupType>()?;
             let offset = s.read::<Offset32>()?.to_usize();
             parse(data.get(offset..)?, kind)
         }

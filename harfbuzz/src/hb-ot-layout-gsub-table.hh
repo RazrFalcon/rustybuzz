@@ -32,7 +32,6 @@
 #include "hb-ot-layout-gsubgpos.hh"
 
 extern "C" {
-RB_EXTERN rb_bool_t rb_subst_lookup_would_apply(const char *data, OT::rb_would_apply_context_t *c, unsigned int kind);
 RB_EXTERN rb_bool_t rb_subst_lookup_apply(const char *data, OT::rb_ot_apply_context_t *c, unsigned int kind);
 RB_EXTERN rb_bool_t rb_subst_lookup_is_reverse(const char *data, unsigned int kind);
 }
@@ -45,11 +44,6 @@ namespace OT {
 
 struct SubstLookupSubTable
 {
-    bool would_apply(rb_would_apply_context_t *c, unsigned int lookup_type) const
-    {
-        return rb_subst_lookup_would_apply((const char*)this, c, lookup_type);
-    }
-
     bool apply(rb_ot_apply_context_t *c, unsigned int lookup_type) const
     {
         return rb_subst_lookup_apply((const char*)this, c, lookup_type);
@@ -84,19 +78,6 @@ struct SubstLookup : Lookup
         unsigned int count = get_subtable_count();
         for (unsigned int i = 0; i < count; i++) {
             if (get_subtable(i).apply(c, lookup_type))
-                return true;
-        }
-        return false;
-    }
-
-    bool would_apply(rb_would_apply_context_t *c) const
-    {
-        if (unlikely(!c->len))
-            return false;
-        unsigned int lookup_type = get_type();
-        unsigned int count = get_subtable_count();
-        for (unsigned int i = 0; i < count; i++) {
-            if (get_subtable(i).would_apply(c, lookup_type))
                 return true;
         }
         return false;

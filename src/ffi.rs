@@ -170,10 +170,6 @@ pub type rb_ot_pause_func_t = Option<
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct rb_would_apply_context_t { _unused: [u8; 0] }
-
-#[repr(C)]
-#[derive(Clone, Copy)]
 pub struct rb_ot_apply_context_t { _unused: [u8; 0] }
 
 extern "C" {
@@ -269,15 +265,6 @@ extern "C" {
         glyphs_length: u32,
         zero_context: rb_bool_t,
     ) -> rb_bool_t;
-
-    pub fn rb_would_apply_context_get_len(ctx: *const rb_would_apply_context_t) -> u32;
-
-    pub fn rb_would_apply_context_get_glyph(
-        ctx: *const rb_would_apply_context_t,
-        index: u32,
-    ) -> rb_codepoint_t;
-
-    pub fn rb_would_apply_context_get_zero_context(ctx: *const rb_would_apply_context_t) -> rb_bool_t;
 
     pub fn rb_ot_apply_context_get_font(ctx: *const rb_ot_apply_context_t) -> *const rb_font_t;
 

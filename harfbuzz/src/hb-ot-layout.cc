@@ -44,9 +44,6 @@
 #include "hb-aat-layout-morx-table.hh"
 
 extern "C" {
-unsigned int   rb_would_apply_context_get_len(const OT::rb_would_apply_context_t *c) { return c->len; }
-rb_codepoint_t rb_would_apply_context_get_glyph(const OT::rb_would_apply_context_t *c, unsigned int index) { return c->glyphs[index]; }
-rb_bool_t      rb_would_apply_context_get_zero_context(const OT::rb_would_apply_context_t *c) { return (rb_bool_t)c->zero_context; }
 const rb_font_t *rb_ot_apply_context_get_font(const OT::rb_ot_apply_context_t *c) { return c->font; }
 rb_buffer_t   *rb_ot_apply_context_get_buffer(OT::rb_ot_apply_context_t *c) { return c->buffer; }
 rb_direction_t rb_ot_apply_context_get_direction(const OT::rb_ot_apply_context_t *c) { return c->direction; }
@@ -148,39 +145,6 @@ bool OT::GSUB::is_blocklisted(rb_blob_t *blob RB_UNUSED, rb_face_t *face) const
 bool OT::GPOS::is_blocklisted(rb_blob_t *blob RB_UNUSED, rb_face_t *face RB_UNUSED) const
 {
     return false;
-}
-
-/*
- * OT::GSUB
- */
-
-/**
- * rb_ot_layout_lookup_would_substitute:
- * @face: #rb_face_t to work upon
- * @lookup_index: The index of the lookup to query
- * @glyphs: The sequence of glyphs to query for substitution
- * @glyphs_length: The length of the glyph sequence
- * @zero_context: #rb_bool_t indicating whether substitutions should be context-free
- *
- * Tests whether a specified lookup in the specified face would
- * trigger a substitution on the given glyph sequence.
- *
- * Return value: true if a substitution would be triggered, false otherwise
- *
- * Since: 0.9.7
- **/
-rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
-                                               unsigned int lookup_index,
-                                               const rb_codepoint_t *glyphs,
-                                               unsigned int glyphs_length,
-                                               rb_bool_t zero_context)
-{
-    if (unlikely(lookup_index >= face->table.GSUB->lookup_count))
-        return false;
-    OT::rb_would_apply_context_t c(face, glyphs, glyphs_length, (bool)zero_context);
-
-    const OT::SubstLookup &l = face->table.GSUB->table->get_lookup(lookup_index);
-    return l.would_apply(&c);
 }
 
 /*

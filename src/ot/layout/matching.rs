@@ -28,8 +28,7 @@ pub fn match_coverage<'a>(data: &'a [u8]) -> impl Fn(GlyphId, u16) -> bool + 'a 
     move |glyph, value| {
         data.get(usize::from(value)..)
             .and_then(Coverage::parse)
-            .map(|coverage| coverage.get(glyph).is_some())
-            .unwrap_or(false)
+            .map_or(false, |coverage| coverage.get(glyph).is_some())
     }
 }
 
@@ -38,11 +37,10 @@ pub fn would_match_input(
     input: LazyArray16<u16>,
     match_func: &MatchFunc,
 ) -> bool {
-    ctx.len() == 1 + usize::from(input.len())
-        && input
-            .into_iter()
-            .enumerate()
-            .all(|(i, value)| match_func(GlyphId(u16::try_from(ctx.glyph(1 + i)).unwrap()), value))
+    ctx.glyphs.len() == 1 + usize::from(input.len())
+        && input.into_iter().enumerate().all(|(i, value)| {
+            match_func(GlyphId(u16::try_from(ctx.glyphs[1 + i]).unwrap()), value)
+        })
 }
 
 pub struct Matched {
