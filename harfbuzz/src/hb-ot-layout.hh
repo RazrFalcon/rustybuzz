@@ -84,15 +84,6 @@ struct rb_ot_apply_context_t;
 struct SubstLookup;
 } // namespace OT
 
-/* Should be called before all the position_lookup's are done. */
-RB_INTERNAL void rb_ot_layout_position_start(rb_font_t *font, rb_buffer_t *buffer);
-
-/* Should be called after all the position_lookup's are done, to fini advances. */
-RB_INTERNAL void rb_ot_layout_position_finish_advances(rb_font_t *font, rb_buffer_t *buffer);
-
-/* Should be called after rb_ot_layout_position_finish_advances, to fini offsets. */
-RB_INTERNAL void rb_ot_layout_position_finish_offsets(rb_font_t *font, rb_buffer_t *buffer);
-
 /*
  * Buffer var routines.
  */

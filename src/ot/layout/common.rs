@@ -12,7 +12,7 @@ use crate::Tag;
 use crate::font::Font;
 
 /// A GSUB or GPOS table.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct SubstPosTable<'a> {
     scripts: RecordList<'a>,
     features: RecordList<'a>,
@@ -266,7 +266,7 @@ impl<'a> Feature<'a> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct LookupList<'a> {
     offsets: Offsets16<'a, Offset16>,
 }
@@ -288,7 +288,7 @@ impl<'a> LookupList<'a> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct Lookup<'a> {
     kind: LookupType,
     flags: LookupFlags,

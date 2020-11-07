@@ -398,46 +398,6 @@ rb_bool_t rb_ot_layout_has_positioning(rb_face_t *face)
     return face->table.GPOS->table->has_data();
 }
 
-/**
- * rb_ot_layout_position_start:
- * @font: #rb_font_t to use
- * @buffer: #rb_buffer_t buffer to work upon
- *
- * Called before positioning lookups are performed, to ensure that glyph
- * attachment types and glyph-attachment chains are set for the glyphs in the buffer.
- *
- **/
-void rb_ot_layout_position_start(rb_font_t *font, rb_buffer_t *buffer)
-{
-    OT::GPOS::position_start(font, buffer);
-}
-
-/**
- * rb_ot_layout_position_finish_advances:
- * @font: #rb_font_t to use
- * @buffer: #rb_buffer_t buffer to work upon
- *
- * Called after positioning lookups are performed, to finish glyph advances.
- *
- **/
-void rb_ot_layout_position_finish_advances(rb_font_t *font, rb_buffer_t *buffer)
-{
-    OT::GPOS::position_finish_advances(font, buffer);
-}
-
-/**
- * rb_ot_layout_position_finish_offsets:
- * @font: #rb_font_t to use
- * @buffer: #rb_buffer_t buffer to work upon
- *
- * Called after positioning lookups are performed, to finish glyph offsets.
- *
- **/
-void rb_ot_layout_position_finish_offsets(rb_font_t *font, rb_buffer_t *buffer)
-{
-    OT::GPOS::position_finish_offsets(font, buffer);
-}
-
 /*
  * Parts of different types are implemented here such that they have direct
  * access to GSUB/GPOS lookups.

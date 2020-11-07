@@ -12,11 +12,13 @@ mod matching;
 
 use ttf_parser::parser::NumFrom;
 
+use crate::buffer::Buffer;
 use crate::common::TagExt;
-use crate::{ffi, Tag};
+use crate::{ffi, Font, Tag};
 use common::{
     SubstPosTable, FeatureIndex, Feature, LangSys, LangSysIndex, ScriptIndex, VariationIndex,
 };
+use gpos::PosTable;
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -25,6 +27,8 @@ pub const SCRIPT_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const LANGUAGE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const FEATURE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const FEATURE_VARIATION_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
+
+// GSUB/GPOS
 
 /// rb_ot_layout_table_select_script:
 ///
@@ -281,6 +285,7 @@ pub extern "C" fn rb_ot_layout_table_get_lookup_count(
     SubstPosTable::parse(data).map_or(0, |table| u32::from(table.lookup_count()))
 }
 
+// Variations support
 
 /// rb_ot_layout_table_find_feature_variations:
 ///
@@ -353,6 +358,57 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
     } else {
         unsafe { *lookup_count = 0; }
     }
+}
+
+// GPOS
+
+/// rb_ot_layout_position_start:
+///
+/// @font: #rb_font_t to use
+/// @buffer: #rb_buffer_t buffer to work upon
+///
+/// Called before positioning lookups are performed, to ensure that glyph
+/// attachment types and glyph-attachment chains are set for the glyphs in the buffer.
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_position_start(
+    font: *const ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let font = Font::from_ptr(font);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    PosTable::position_start(font, &mut buffer);
+}
+
+/// rb_ot_layout_position_finish_advances:
+///
+/// @font: #rb_font_t to use
+/// @buffer: #rb_buffer_t buffer to work upon
+///
+/// Called after positioning lookups are performed, to finish glyph advances.
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_position_finish_advances(
+    font: *const ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let font = Font::from_ptr(font);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    PosTable::position_finish_advances(font, &mut buffer);
+}
+
+/// rb_ot_layout_position_finish_offsets:
+///
+/// @font: #rb_font_t to use
+/// @buffer: #rb_buffer_t buffer to work upon
+///
+/// Called after positioning lookups are performed, to finish glyph offsets.
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_position_finish_offsets(
+    font: *const ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let font = Font::from_ptr(font);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    PosTable::position_finish_offsets(font, &mut buffer);
 }
 
 fn get_table_and_lang_sys<'a>(

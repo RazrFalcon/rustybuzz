@@ -8,13 +8,99 @@ use ttf_parser::parser::{
 use ttf_parser::GlyphId;
 
 use super::apply::ApplyContext;
-use super::common::{parse_extension_lookup, ClassDef, Coverage, Device, Class, LookupFlags};
+use super::common::{
+    parse_extension_lookup, ClassDef, Coverage, Device, Class, LookupFlags, SubstPosTable,
+};
 use super::context_lookups::{ContextLookup, ChainContextLookup};
 use super::dyn_array::DynArray;
 use super::matching::SkippyIter;
-use crate::buffer::{BufferScratchFlags, GlyphPosition};
+use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
 use crate::common::Direction;
-use crate::Font;
+use crate::{Font, Tag};
+
+#[derive(Clone, Copy, Debug)]
+pub struct PosTable<'a>(SubstPosTable<'a>);
+
+impl<'a> PosTable<'a> {
+    pub const TAG: Tag = Tag::from_bytes(b"GPOS");
+
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
+        SubstPosTable::parse(data).map(Self)
+    }
+
+    pub(crate) fn position_start(_: &Font, buffer: &mut Buffer) {
+        for pos in &mut buffer.pos {
+            pos.set_attach_chain(0);
+            pos.set_attach_type(0);
+        }
+    }
+
+    pub(crate) fn position_finish_advances(_: &Font, _: &mut Buffer) {}
+
+    pub(crate) fn position_finish_offsets(_: &Font, buffer: &mut Buffer) {
+        let len = buffer.len;
+        let direction = buffer.direction;
+
+        // Handle attachments
+        if buffer.scratch_flags.contains(BufferScratchFlags::HAS_GPOS_ATTACHMENT) {
+            for i in 0..len {
+                propagate_attachment_offsets(&mut buffer.pos, len, i, direction);
+            }
+        }
+    }
+}
+
+fn propagate_attachment_offsets(
+    pos: &mut [GlyphPosition],
+    len: usize,
+    i: usize,
+    direction: Direction,
+) {
+    // Adjusts offsets of attached glyphs (both cursive and mark) to accumulate
+    // offset of glyph they are attached to.
+    let chain = pos[i].attach_chain();
+    let kind = pos[i].attach_type();
+    if chain == 0 {
+        return;
+    }
+
+    pos[i].set_attach_chain(0);
+
+    let j = (i as isize + isize::from(chain)) as _;
+    if j >= len {
+        return;
+    }
+
+    propagate_attachment_offsets(pos, len, j, direction);
+
+    match AttachType::from_raw(kind).unwrap() {
+        AttachType::Mark => {
+            pos[i].x_offset += pos[j].x_offset;
+            pos[i].y_offset += pos[j].y_offset;
+
+            assert!(j < i);
+            if direction.is_forward() {
+                for k in j..i {
+                    pos[i].x_offset -= pos[k].x_advance;
+                    pos[i].y_offset -= pos[k].y_advance;
+                }
+            } else {
+                for k in j+1..i+1 {
+                    pos[i].x_offset += pos[k].x_advance;
+                    pos[i].y_offset += pos[k].y_advance;
+                }
+            }
+        }
+
+        AttachType::Cursive => {
+            if direction.is_horizontal() {
+                pos[i].y_offset += pos[j].y_offset;
+            } else {
+                pos[i].x_offset += pos[j].x_offset;
+            }
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 enum PosLookupSubtable<'a> {
@@ -996,10 +1082,18 @@ impl FromData for MarkRecord {
 
 #[derive(Clone, Copy, Debug)]
 enum AttachType {
-    #[allow(dead_code)]
-    None = 0,
     Mark = 1,
     Cursive = 2,
+}
+
+impl AttachType {
+    fn from_raw(kind: u8) -> Option<Self> {
+        match kind {
+            1 => Some(Self::Mark),
+            2 => Some(Self::Cursive),
+            _ => None,
+        }
+    }
 }
 
 #[no_mangle]

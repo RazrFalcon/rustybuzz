@@ -112,10 +112,6 @@ struct GPOS : GSUBGPOS
         return static_cast<const PosLookup &>(GSUBGPOS::get_lookup(i));
     }
 
-    static inline void position_start(rb_font_t *font, rb_buffer_t *buffer);
-    static inline void position_finish_advances(rb_font_t *font, rb_buffer_t *buffer);
-    static inline void position_finish_offsets(rb_font_t *font, rb_buffer_t *buffer);
-
     bool sanitize(rb_sanitize_context_t *c) const
     {
         return GSUBGPOS::sanitize<PosLookup>(c);
@@ -125,75 +121,6 @@ struct GPOS : GSUBGPOS
 
     typedef GSUBGPOS::accelerator_t<GPOS> accelerator_t;
 };
-
-static void
-propagate_attachment_offsets(rb_glyph_position_t *pos, unsigned int len, unsigned int i, rb_direction_t direction)
-{
-    /* Adjusts offsets of attached glyphs (both cursive and mark) to accumulate
-     * offset of glyph they are attached to. */
-    int chain = pos[i].attach_chain(), type = pos[i].attach_type();
-    if (likely(!chain))
-        return;
-
-    pos[i].attach_chain() = 0;
-
-    unsigned int j = (int)i + chain;
-
-    if (unlikely(j >= len))
-        return;
-
-    propagate_attachment_offsets(pos, len, j, direction);
-
-    assert(!!(type & ATTACH_TYPE_MARK) ^ !!(type & ATTACH_TYPE_CURSIVE));
-
-    if (type & ATTACH_TYPE_CURSIVE) {
-        if (RB_DIRECTION_IS_HORIZONTAL(direction))
-            pos[i].y_offset += pos[j].y_offset;
-        else
-            pos[i].x_offset += pos[j].x_offset;
-    } else /*if (type & ATTACH_TYPE_MARK)*/
-    {
-        pos[i].x_offset += pos[j].x_offset;
-        pos[i].y_offset += pos[j].y_offset;
-
-        assert(j < i);
-        if (RB_DIRECTION_IS_FORWARD(direction))
-            for (unsigned int k = j; k < i; k++) {
-                pos[i].x_offset -= pos[k].x_advance;
-                pos[i].y_offset -= pos[k].y_advance;
-            }
-        else
-            for (unsigned int k = j + 1; k < i + 1; k++) {
-                pos[i].x_offset += pos[k].x_advance;
-                pos[i].y_offset += pos[k].y_advance;
-            }
-    }
-}
-
-void GPOS::position_start(rb_font_t *font RB_UNUSED, rb_buffer_t *buffer)
-{
-    unsigned int count = rb_buffer_get_length(buffer);
-    for (unsigned int i = 0; i < count; i++)
-        rb_buffer_get_glyph_positions(buffer)[i].attach_chain() =
-            rb_buffer_get_glyph_positions(buffer)[i].attach_type() = 0;
-}
-
-void GPOS::position_finish_advances(rb_font_t *font RB_UNUSED, rb_buffer_t *buffer RB_UNUSED)
-{
-    //_rb_buffer_assert_gsubgpos_vars (buffer);
-}
-
-void GPOS::position_finish_offsets(rb_font_t *font RB_UNUSED, rb_buffer_t *buffer)
-{
-    unsigned int len = rb_buffer_get_length(buffer);
-    rb_glyph_position_t *pos = rb_buffer_get_glyph_positions(buffer);
-    rb_direction_t direction = rb_buffer_get_direction(buffer);
-
-    /* Handle attachments */
-    if (rb_buffer_get_scratch_flags(buffer) & RB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT)
-        for (unsigned int i = 0; i < len; i++)
-            propagate_attachment_offsets(pos, len, i, direction);
-}
 
 struct GPOS_accelerator_t : GPOS::accelerator_t
 {

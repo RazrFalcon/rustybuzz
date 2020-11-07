@@ -152,6 +152,12 @@ RB_EXTERN rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
 
 RB_EXTERN rb_bool_t rb_ot_layout_has_positioning(rb_face_t *face);
 
+RB_EXTERN void rb_ot_layout_position_start(rb_font_t *font, rb_buffer_t *buffer);
+
+RB_EXTERN void rb_ot_layout_position_finish_advances(rb_font_t *font, rb_buffer_t *buffer);
+
+RB_EXTERN void rb_ot_layout_position_finish_offsets(rb_font_t *font, rb_buffer_t *buffer);
+
 RB_END_DECLS
 
 #endif /* RB_OT_LAYOUT_H */
