@@ -450,7 +450,7 @@ void rb_aat_layout_zero_width_deleted_glyphs(rb_buffer_t *buffer)
             pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
 }
 
-static bool is_deleted_glyph(const rb_glyph_info_t *info)
+static rb_bool_t is_deleted_glyph(const rb_glyph_info_t *info)
 {
     return info->codepoint == AAT::DELETED_GLYPH;
 }

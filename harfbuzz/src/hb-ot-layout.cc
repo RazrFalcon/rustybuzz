@@ -197,49 +197,6 @@ rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
     return l.would_apply(&c);
 }
 
-void rb_ot_layout_delete_glyphs_inplace(rb_buffer_t *buffer, bool (*filter)(const rb_glyph_info_t *info))
-{
-    /* Merge clusters and delete filtered glyphs.
-     * NOTE! We can't use out-buffer as we have positioning data. */
-    unsigned int j = 0;
-    unsigned int count = rb_buffer_get_length(buffer);
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-    rb_glyph_position_t *pos = rb_buffer_get_glyph_positions(buffer);
-    for (unsigned int i = 0; i < count; i++) {
-        if (filter(&info[i])) {
-            /* Merge clusters.
-             * Same logic as buffer->delete_glyph(), but for in-place removal. */
-
-            unsigned int cluster = info[i].cluster;
-            if (i + 1 < count && cluster == info[i + 1].cluster)
-                continue; /* Cluster survives; do nothing. */
-
-            if (j) {
-                /* Merge cluster backward. */
-                if (cluster < info[j - 1].cluster) {
-                    unsigned int mask = info[i].mask;
-                    unsigned int old_cluster = info[j - 1].cluster;
-                    for (unsigned k = j; k && info[k - 1].cluster == old_cluster; k--)
-                        rb_buffer_set_cluster(buffer, &info[k - 1], cluster, mask);
-                }
-                continue;
-            }
-
-            if (i + 1 < count)
-                rb_buffer_merge_clusters(buffer, i, i + 2); /* Merge cluster forward. */
-
-            continue;
-        }
-
-        if (j != i) {
-            info[j] = info[i];
-            pos[j] = pos[i];
-        }
-        j++;
-    }
-    rb_buffer_set_length(buffer, j);
-}
-
 /*
  * OT::GPOS
  */

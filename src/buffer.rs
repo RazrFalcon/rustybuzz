@@ -1250,7 +1250,7 @@ impl Buffer {
         }
     }
 
-    fn set_cluster(info: &mut GlyphInfo, cluster: u32, mask: Mask) {
+    pub(crate) fn set_cluster(info: &mut GlyphInfo, cluster: u32, mask: Mask) {
         if info.cluster != cluster {
             if mask & glyph_flag::UNSAFE_TO_BREAK != 0 {
                 info.mask |= glyph_flag::UNSAFE_TO_BREAK;

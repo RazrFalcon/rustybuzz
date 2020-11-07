@@ -15,7 +15,7 @@ use std::convert::TryFrom;
 use ttf_parser::parser::{NumFrom, Offset, Offset16, Stream};
 use ttf_parser::GlyphId;
 
-use crate::buffer::Buffer;
+use crate::buffer::{Buffer, GlyphInfo};
 use crate::common::TagExt;
 use crate::{ffi, Font, Tag};
 use common::{
@@ -389,7 +389,7 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
     }
 }
 
-// GPOS
+// GSUB
 
 /// rb_ot_layout_substitute_start:
 ///
@@ -416,6 +416,63 @@ fn set_glyph_props(font: &Font, buffer: &mut Buffer) {
         info.set_lig_props(0);
         info.set_syllable(0);
     }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_delete_glyphs_inplace(
+    buffer: *mut ffi::rb_buffer_t,
+    filter: unsafe extern "C" fn(info: *const GlyphInfo) -> ffi::rb_bool_t,
+) {
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+
+    // Merge clusters and delete filtered glyphs.
+    // NOTE! We can't use out-buffer as we have positioning data.
+    let mut j = 0;
+    let len = buffer.len;
+
+    for i in 0..len {
+        if unsafe { filter(&buffer.info[i]) != 0 } {
+            // Merge clusters.
+            // Same logic as buffer.delete_glyph(), but for in-place removal
+
+            let cluster = buffer.info[i].cluster;
+            if i + 1 < len && cluster == buffer.info[i + 1].cluster {
+                // Cluster survives; do nothing.
+                continue;
+            }
+
+            if j != 0 {
+                // Merge cluster backward.
+                if cluster < buffer.info[j - 1].cluster {
+                    let mask = buffer.info[i].mask;
+                    let old_cluster = buffer.info[j - 1].cluster;
+
+                    let mut k = j;
+                    while k > 0 && buffer.info[k - 1].cluster == old_cluster {
+                        Buffer::set_cluster(&mut buffer.info[k - 1], cluster, mask);
+                        k -= 1;
+                    }
+                }
+                continue;
+            }
+
+            if i + 1 < len {
+                // Merge cluster forward.
+                buffer.merge_clusters(i, i + 2);
+            }
+
+            continue;
+        }
+
+        if j != i {
+            buffer.info[j] = buffer.info[i];
+            buffer.pos[j] = buffer.pos[i];
+        }
+
+        j += 1;
+    }
+
+    buffer.len = j;
 }
 
 // GPOS

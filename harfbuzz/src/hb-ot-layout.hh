@@ -74,9 +74,6 @@ RB_MARK_AS_FLAG_T(rb_ot_layout_glyph_props_flags_t);
  * GSUB/GPOS
  */
 
-/* Should be called before all the substitute_lookup's are done. */
-RB_INTERNAL void rb_ot_layout_delete_glyphs_inplace(rb_buffer_t *buffer, bool (*filter)(const rb_glyph_info_t *info));
-
 namespace OT {
 struct rb_ot_apply_context_t;
 struct SubstLookup;
@@ -148,7 +145,7 @@ static inline bool _rb_glyph_info_ligated(const rb_glyph_info_t *info)
     return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_LIGATED);
 }
 
-static inline bool _rb_glyph_info_is_default_ignorable(const rb_glyph_info_t *info)
+static inline rb_bool_t _rb_glyph_info_is_default_ignorable(const rb_glyph_info_t *info)
 {
     return (info->unicode_props() & UPROPS_MASK_IGNORABLE) && !_rb_glyph_info_ligated(info);
 }
@@ -203,46 +200,11 @@ static inline bool _rb_glyph_info_is_zwj(const rb_glyph_info_t *info)
     return _rb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
 }
 
-/* lig_props: aka lig_id / lig_comp
- *
- * When a ligature is formed:
- *
- *   - The ligature glyph and any marks in between all the same newly allocated
- *     lig_id,
- *   - The ligature glyph will get lig_num_comps set to the number of components
- *   - The marks get lig_comp > 0, reflecting which component of the ligature
- *     they were applied to.
- *   - This is used in GPOS to attach marks to the right component of a ligature
- *     in MarkLigPos,
- *   - Note that when marks are ligated together, much of the above is skipped
- *     and the current lig_id reused.
- *
- * When a multiple-substitution is done:
- *
- *   - All resulting glyphs will have lig_id = 0,
- *   - The resulting glyphs will have lig_comp = 0, 1, 2, ... respectively.
- *   - This is used in GPOS to attach marks to the first component of a
- *     multiple substitution in MarkBasePos.
- *
- * The numbers are also used in GPOS to do mark-to-mark positioning only
- * to marks that belong to the same component of the same ligature.
- */
-
-static inline void _rb_glyph_info_clear_lig_props(rb_glyph_info_t *info)
-{
-    info->lig_props() = 0;
-}
-
 /* glyph_props: */
 
 static inline void _rb_glyph_info_set_glyph_props(rb_glyph_info_t *info, unsigned int props)
 {
     info->glyph_props() = props;
-}
-
-static inline unsigned int _rb_glyph_info_get_glyph_props(const rb_glyph_info_t *info)
-{
-    return info->glyph_props();
 }
 
 static inline bool _rb_glyph_info_is_mark(const rb_glyph_info_t *info)
