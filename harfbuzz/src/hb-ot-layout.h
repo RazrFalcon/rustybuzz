@@ -146,6 +146,8 @@ RB_EXTERN rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
                                                          unsigned int glyphs_length,
                                                          rb_bool_t zero_context);
 
+RB_EXTERN void rb_ot_layout_substitute_start(rb_font_t *font, rb_buffer_t *buffer);
+
 /*
  * GPOS
  */

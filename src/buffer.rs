@@ -66,10 +66,10 @@ impl GlyphPosition {
     }
 
     #[inline]
-    pub(crate) fn set_attach_chain(&mut self, chain: i16) {
+    pub(crate) fn set_attach_chain(&mut self, n: i16) {
         unsafe {
             let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var);
-            v.var_i16[0] = chain;
+            v.var_i16[0] = n;
         }
     }
 
@@ -84,12 +84,12 @@ impl GlyphPosition {
     }
 
     #[inline]
-    pub(crate) fn set_attach_type(&mut self, attach_type: u8) {
+    pub(crate) fn set_attach_type(&mut self, n: u8) {
         // attachment type
         // Note! if attach_chain() is zero, the value of attach_type() is irrelevant.
         unsafe {
             let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var);
-            v.var_u8[2] = attach_type;
+            v.var_u8[2] = n;
         }
     }
 }
@@ -316,18 +316,20 @@ impl GlyphInfo {
         }
     }
 
-    pub(crate) fn set_lig_props_for_ligature(&mut self, lig_id: u8, lig_num_comps: u8) {
+    #[inline]
+    pub(crate) fn set_lig_props(&mut self, n: u8) {
         unsafe {
             let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
-            v.var_u8[2] = (lig_id << 5) | IS_LIG_BASE | (lig_num_comps & 0x0F);
+            v.var_u8[2] = n;
         }
     }
 
+    pub(crate) fn set_lig_props_for_ligature(&mut self, lig_id: u8, lig_num_comps: u8) {
+        self.set_lig_props((lig_id << 5) | IS_LIG_BASE | (lig_num_comps & 0x0F));
+    }
+
     pub(crate) fn set_lig_props_for_mark(&mut self, lig_id: u8, lig_comp: u8) {
-        unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
-            v.var_u8[2] = (lig_id << 5) | (lig_comp & 0x0F);
-        }
+        self.set_lig_props((lig_id << 5) | (lig_comp & 0x0F));
     }
 
     pub(crate) fn set_lig_props_for_component(&mut self, lig_comp: u8) {
@@ -446,8 +448,8 @@ impl GlyphInfo {
     // Used during the normalization process to store glyph indices
 
     #[inline]
-    pub(crate) fn set_glyph_index(&mut self, glyph_index: u32) {
-        self.var1 = glyph_index;
+    pub(crate) fn set_glyph_index(&mut self, n: u32) {
+        self.var1 = n;
     }
 }
 

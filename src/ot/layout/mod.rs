@@ -10,7 +10,10 @@ mod gpos;
 mod gsub;
 mod matching;
 
+use std::convert::TryFrom;
+
 use ttf_parser::parser::{NumFrom, Offset, Offset16, Stream};
+use ttf_parser::GlyphId;
 
 use crate::buffer::Buffer;
 use crate::common::TagExt;
@@ -383,6 +386,35 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
         unsafe { write_lookup_indices(feature, start, lookup_count, lookup_indices); }
     } else {
         unsafe { *lookup_count = 0; }
+    }
+}
+
+// GPOS
+
+/// rb_ot_layout_substitute_start:
+///
+/// @font: #rb_font_t to use
+/// @buffer: #rb_buffer_t buffer to work upon
+///
+/// Called before substitution lookups are performed, to ensure that glyph
+/// class and other properties are set on the glyphs in the buffer.
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_substitute_start(
+    font: *const ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let font = Font::from_ptr(font);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    set_glyph_props(font, &mut buffer);
+}
+
+fn set_glyph_props(font: &Font, buffer: &mut Buffer) {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
+        let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
+        info.set_glyph_props(font.glyph_props(glyph));
+        info.set_lig_props(0);
+        info.set_syllable(0);
     }
 }
 

@@ -75,8 +75,6 @@ RB_MARK_AS_FLAG_T(rb_ot_layout_glyph_props_flags_t);
  */
 
 /* Should be called before all the substitute_lookup's are done. */
-RB_INTERNAL void rb_ot_layout_substitute_start(rb_font_t *font, rb_buffer_t *buffer);
-
 RB_INTERNAL void rb_ot_layout_delete_glyphs_inplace(rb_buffer_t *buffer, bool (*filter)(const rb_glyph_info_t *info));
 
 namespace OT {
