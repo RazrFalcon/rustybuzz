@@ -15,7 +15,7 @@ exclude = ["benches/**"]
 [dependencies]
 bitflags = "1.2"
 smallvec = "1.4"
-ttf-parser = { git = "https://github.com/laurmaedje/ttf-parser", branch = "rb-ggg" }
+ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser" }
 unicode-bidi-mirroring = "0.1"
 unicode-ccc = "0.1"
 unicode-general-category = "0.2"

@@ -5,11 +5,11 @@ use std::convert::TryFrom;
 use ttf_parser::parser::LazyArray16;
 use ttf_parser::GlyphId;
 
-use super::apply::{ApplyContext, WouldApplyContext};
-use super::common::{Class, ClassDef, Coverage};
-use super::{TableIndex, MAX_CONTEXT_LENGTH};
 use crate::buffer::GlyphInfo;
+use crate::tables::gsubgpos::{Class, ClassDef, Coverage};
 use crate::Mask;
+use super::apply::{ApplyContext, WouldApplyContext};
+use super::layout::{TableIndex, MAX_CONTEXT_LENGTH};
 
 pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 
@@ -43,6 +43,7 @@ pub fn would_match_input(
         })
 }
 
+// TODO: Find out whether returning this by value is slow.
 pub struct Matched {
     pub len: usize,
     pub positions: [usize; MAX_CONTEXT_LENGTH],

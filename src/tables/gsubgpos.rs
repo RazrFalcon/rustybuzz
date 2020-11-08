@@ -1,15 +1,10 @@
-//! Common tables for OpenType layout.
+//! Common tables for GSUB and GPOS.
 
-use std::cmp::Ordering;
 use std::convert::TryFrom;
+use std::cmp::Ordering;
 
-use ttf_parser::parser::{
-    FromData, LazyArray16, LazyArray32, Offset, Offset16, Offset32, Offsets16, Stream, TryNumFrom,
-};
-use ttf_parser::GlyphId;
-
-use crate::font::Font;
-use crate::Tag;
+use super::*;
+use crate::{Font, Tag};
 
 /// A GSUB or GPOS table.
 #[derive(Clone, Copy, Debug)]
@@ -20,7 +15,6 @@ pub struct SubstPosTable<'a> {
     variations: Option<FeatureVariations<'a>>,
 }
 
-#[allow(dead_code)]
 impl<'a> SubstPosTable<'a> {
     pub fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
@@ -31,40 +25,24 @@ impl<'a> SubstPosTable<'a> {
             return None;
         }
 
-        let scripts = RecordList::parse(s.read_at_offset16()?)?;
-        let features = RecordList::parse(s.read_at_offset16()?)?;
-        let lookups = LookupList::parse(s.read_at_offset16()?)?;
+        let scripts = RecordList::parse(s.read_at_offset16(data)?)?;
+        let features = RecordList::parse(s.read_at_offset16(data)?)?;
+        let lookups = LookupList::parse(s.read_at_offset16(data)?)?;
 
         let mut variations = None;
         if minor_version >= 1 {
-            variations = FeatureVariations::parse(s.read_at_offset32()?);
+            variations = FeatureVariations::parse(s.read_at_offset32(data)?);
         }
 
         Some(Self { scripts, features, lookups, variations })
-    }
-
-    // Scripts
-
-    pub fn script_count(&self) -> u16 {
-        self.scripts.len()
     }
 
     pub fn get_script(&self, index: ScriptIndex) -> Option<Script<'a>> {
         Script::parse(self.scripts.get_data(index.0)?)
     }
 
-    pub fn get_script_tag(&self, index: ScriptIndex) -> Option<Tag> {
-        self.scripts.get_tag(index.0)
-    }
-
     pub fn find_script_index(&self, script_tag: Tag) -> Option<ScriptIndex> {
         self.scripts.find_index(script_tag).map(ScriptIndex)
-    }
-
-    // Features
-
-    pub fn feature_count(&self) -> u16 {
-        self.features.len()
     }
 
     pub fn get_feature(&self, index: FeatureIndex) -> Option<Feature<'a>> {
@@ -79,20 +57,12 @@ impl<'a> SubstPosTable<'a> {
         self.features.find_index(feature_tag).map(FeatureIndex)
     }
 
-    // Lookups
-
     pub fn lookup_count(&self) -> u16 {
         self.lookups.len()
     }
 
     pub fn get_lookup(&self, index: LookupIndex) -> Option<Lookup<'a>> {
         self.lookups.get(index)
-    }
-
-    // Feature variations
-
-    pub fn variation_count(&self) -> u32 {
-        self.variations.map_or(0, |var| var.len())
     }
 
     pub fn get_variation(
@@ -178,10 +148,6 @@ impl<'a> RecordList<'a> {
         let count = s.read::<u16>()?;
         let records = s.read_array16(count)?;
         Some(Self { data, records })
-    }
-
-    fn len(&self) -> u16 {
-        self.records.len()
     }
 
     fn get_tag(&self, index: u16) -> Option<Tag> {
@@ -426,10 +392,6 @@ impl<'a> FeatureVariations<'a> {
         let count = s.read::<u32>()?;
         let records = s.read_array32(count)?;
         Some(Self { data, records })
-    }
-
-    fn len(&self) -> u32 {
-        self.records.len()
     }
 
     fn find_index(&self, coords: &[i32]) -> Option<VariationIndex> {
@@ -778,13 +740,13 @@ pub struct HintingDevice<'a> {
 }
 
 impl HintingDevice<'_> {
-    pub fn get_x_delta(&self, font: &Font) -> Option<i32> {
+    fn get_x_delta(&self, font: &Font) -> Option<i32> {
         let ppem = font.pixels_per_em().map(|(x, _)| x)?;
         let scale = font.units_per_em();
         self.get_delta(ppem, scale)
     }
 
-    pub fn get_y_delta(&self, font: &Font) -> Option<i32> {
+    fn get_y_delta(&self, font: &Font) -> Option<i32> {
         let ppem = font.pixels_per_em().map(|(_, y)| y)?;
         let scale = font.units_per_em();
         self.get_delta(ppem, scale)
@@ -819,17 +781,243 @@ pub struct VariationDevice {
 }
 
 impl VariationDevice {
-    pub fn get_x_delta(&self, font: &Font) -> Option<i32> {
+    fn get_x_delta(&self, font: &Font) -> Option<i32> {
         self.get_delta(font)
     }
 
-    pub fn get_y_delta(&self, font: &Font) -> Option<i32> {
+    fn get_y_delta(&self, font: &Font) -> Option<i32> {
         self.get_delta(font)
     }
 
     fn get_delta(&self, font: &Font) -> Option<i32> {
         font.ttfp_face
-            .gdef_variation_delta(self.outer_index, self.inner_index)
+            .glyph_variation_delta(self.outer_index, self.inner_index)
             .and_then(|float| i32::try_num_from(float.round()))
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum ContextLookup<'a> {
+    Format1 {
+        coverage: Coverage<'a>,
+        sets: Offsets16<'a, Offset16>,
+    },
+    Format2 {
+        coverage: Coverage<'a>,
+        classes: ClassDef<'a>,
+        sets: Offsets16<'a, Offset16>,
+    },
+    Format3 {
+        data: &'a [u8],
+        coverage: Coverage<'a>,
+        coverages: LazyArray16<'a, u16>,
+        lookups: LazyArray16<'a, LookupRecord>,
+    },
+}
+
+impl<'a> ContextLookup<'a> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let format: u16 = s.read()?;
+        Some(match format {
+            1 => {
+                let coverage = Coverage::parse(s.read_at_offset16(data)?)?;
+                let count = s.read::<u16>()?;
+                let sets = s.read_offsets16(count, data)?;
+                Self::Format1 { coverage, sets }
+            }
+            2 => {
+                let coverage = Coverage::parse(s.read_at_offset16(data)?)?;
+                let classes = ClassDef::parse(s.read_at_offset16(data)?)?;
+                let count = s.read::<u16>()?;
+                let sets = s.read_offsets16(count, data)?;
+                Self::Format2 { coverage, classes, sets }
+            }
+            3 => {
+                let input_count = s.read::<u16>()?;
+                let lookup_count = s.read::<u16>()?;
+                let coverage = Coverage::parse(s.read_at_offset16(data)?)?;
+                let coverages = s.read_array16(input_count.checked_sub(1)?)?;
+                let lookups = s.read_array16(lookup_count)?;
+                Self::Format3 { data, coverage, coverages, lookups }
+            }
+            _ => return None,
+        })
+    }
+
+    pub fn coverage(&self) -> Coverage<'a> {
+        match *self {
+            Self::Format1 { coverage, .. } => coverage,
+            Self::Format2 { coverage, .. } => coverage,
+            Self::Format3 { coverage, .. } => coverage,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct RuleSet<'a> {
+    pub rules: Offsets16<'a, Offset16>,
+}
+
+impl<'a> RuleSet<'a> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let count = s.read::<u16>()?;
+        let rules = s.read_offsets16(count, data)?;
+        Some(Self { rules })
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Rule<'a> {
+    pub input: LazyArray16<'a, u16>,
+    pub lookups: LazyArray16<'a, LookupRecord>,
+}
+
+impl<'a> Rule<'a> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let input_count = s.read::<u16>()?;
+        let lookup_count = s.read::<u16>()?;
+        let input = s.read_array16(input_count.checked_sub(1)?)?;
+        let lookups = s.read_array16(lookup_count)?;
+        Some(Self { input, lookups })
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum ChainContextLookup<'a> {
+    Format1 {
+        coverage: Coverage<'a>,
+        sets: Offsets16<'a, Offset16>,
+    },
+    Format2 {
+        coverage: Coverage<'a>,
+        backtrack_classes: ClassDef<'a>,
+        input_classes: ClassDef<'a>,
+        lookahead_classes: ClassDef<'a>,
+        sets: Offsets16<'a, Offset16>,
+    },
+    Format3 {
+        data: &'a [u8],
+        coverage: Coverage<'a>,
+        backtrack_coverages: LazyArray16<'a, u16>,
+        input_coverages: LazyArray16<'a, u16>,
+        lookahead_coverages: LazyArray16<'a, u16>,
+        lookups: LazyArray16<'a, LookupRecord>,
+    },
+}
+
+impl<'a> ChainContextLookup<'a> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let format: u16 = s.read()?;
+        Some(match format {
+            1 => {
+                let coverage = Coverage::parse(s.read_at_offset16(data)?)?;
+                let count = s.read::<u16>()?;
+                let sets = s.read_offsets16(count, data)?;
+                Self::Format1 { coverage, sets }
+            }
+            2 => {
+                let coverage = Coverage::parse(s.read_at_offset16(data)?)?;
+                let backtrack_classes = ClassDef::parse(s.read_at_offset16(data)?)?;
+                let input_classes = ClassDef::parse(s.read_at_offset16(data)?)?;
+                let lookahead_classes = ClassDef::parse(s.read_at_offset16(data)?)?;
+                let count = s.read::<u16>()?;
+                let sets = s.read_offsets16(count, data)?;
+                Self::Format2 {
+                    coverage,
+                    backtrack_classes,
+                    input_classes,
+                    lookahead_classes,
+                    sets,
+                }
+            }
+            3 => {
+                let backtrack_count = s.read::<u16>()?;
+                let backtrack_coverages = s.read_array16(backtrack_count)?;
+                let input_count = s.read::<u16>()?;
+                let coverage = Coverage::parse(s.read_at_offset16(data)?)?;
+                let input_coverages = s.read_array16(input_count.checked_sub(1)?)?;
+                let lookahead_count = s.read::<u16>()?;
+                let lookahead_coverages = s.read_array16(lookahead_count)?;
+                let lookup_count = s.read::<u16>()?;
+                let lookups = s.read_array16(lookup_count)?;
+                Self::Format3 {
+                    data,
+                    coverage,
+                    backtrack_coverages,
+                    input_coverages,
+                    lookahead_coverages,
+                    lookups,
+                }
+            }
+            _ => return None,
+        })
+    }
+
+    pub fn coverage(&self) -> Coverage<'a> {
+        match *self {
+            Self::Format1 { coverage, .. } => coverage,
+            Self::Format2 { coverage, .. } => coverage,
+            Self::Format3 { coverage, .. } => coverage,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct ChainRuleSet<'a> {
+    pub rules: Offsets16<'a, Offset16>,
+}
+
+impl<'a> ChainRuleSet<'a> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let count = s.read::<u16>()?;
+        let rules = s.read_offsets16(count, data)?;
+        Some(Self { rules })
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct ChainRule<'a> {
+    pub backtrack: LazyArray16<'a, u16>,
+    pub input: LazyArray16<'a, u16>,
+    pub lookahead: LazyArray16<'a, u16>,
+    pub lookups: LazyArray16<'a, LookupRecord>,
+}
+
+impl<'a> ChainRule<'a> {
+    pub fn parse(data: &'a [u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        let backtrack_count = s.read::<u16>()?;
+        let backtrack = s.read_array16(backtrack_count)?;
+        let input_count = s.read::<u16>()?;
+        let input = s.read_array16(input_count.checked_sub(1)?)?;
+        let lookahead_count = s.read::<u16>()?;
+        let lookahead = s.read_array16(lookahead_count)?;
+        let lookup_count = s.read::<u16>()?;
+        let lookups = s.read_array16(lookup_count)?;
+        Some(Self { backtrack, input, lookahead, lookups })
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct LookupRecord {
+    pub sequence_index: u16,
+    pub lookup_index: LookupIndex,
+}
+
+impl FromData for LookupRecord {
+    const SIZE: usize = 4;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        Some(Self {
+            sequence_index: s.read::<u16>()?,
+            lookup_index: s.read::<LookupIndex>()?,
+        })
     }
 }

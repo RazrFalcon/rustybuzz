@@ -1,11 +1,11 @@
 use std::ffi::c_void;
 
-use super::apply::ApplyContext;
-use super::common::LookupFlags;
-use super::matching::SkippyIter;
+use crate::tables::gsubgpos::LookupFlags;
 use crate::buffer::{Buffer, BufferScratchFlags};
-use crate::ot::TableIndex;
 use crate::{ffi, Font, Mask};
+use super::apply::ApplyContext;
+use super::matching::SkippyIter;
+use super::layout::TableIndex;
 
 #[no_mangle]
 pub extern "C" fn rb_kern_machine_kern(

@@ -1,55 +1,16 @@
-//! The Glyph Positioning Table.
-
 use std::convert::TryFrom;
 
-use ttf_parser::parser::{
-    DynArray, FromData, LazyArray16, LazyArray32, NumFrom, Offset, Offset16, Offsets16, Stream,
-};
 use ttf_parser::GlyphId;
+use ttf_parser::parser::{Offset, Offset16};
 
-use super::apply::{Apply, ApplyContext};
-use super::common::{
-    parse_extension_lookup, Class, ClassDef, Coverage, Device, Lookup, LookupFlags, LookupIndex,
-    LookupType, SubstPosTable,
-};
-use super::context_lookups::{ChainContextLookup, ContextLookup};
-use super::matching::SkippyIter;
-use super::{LayoutLookup, LayoutTable};
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
 use crate::common::Direction;
-use crate::ot::TableIndex;
+use crate::tables::gpos::*;
+use crate::tables::gsubgpos::*;
 use crate::{Font, Tag};
-
-#[derive(Clone, Copy, Debug)]
-pub struct PosTable<'a>(pub SubstPosTable<'a>);
-
-impl<'a> PosTable<'a> {
-    pub fn parse(data: &'a [u8]) -> Option<Self> {
-        SubstPosTable::parse(data).map(Self)
-    }
-
-    pub(crate) fn position_start(_: &Font, buffer: &mut Buffer) {
-        let len = buffer.len;
-        for pos in &mut buffer.pos[..len] {
-            pos.set_attach_chain(0);
-            pos.set_attach_type(0);
-        }
-    }
-
-    pub(crate) fn position_finish_advances(_: &Font, _: &mut Buffer) {}
-
-    pub(crate) fn position_finish_offsets(_: &Font, buffer: &mut Buffer) {
-        let len = buffer.len;
-        let direction = buffer.direction;
-
-        // Handle attachments
-        if buffer.scratch_flags.contains(BufferScratchFlags::HAS_GPOS_ATTACHMENT) {
-            for i in 0..len {
-                propagate_attachment_offsets(&mut buffer.pos, len, i, direction);
-            }
-        }
-    }
-}
+use super::apply::{Apply, ApplyContext};
+use super::matching::SkippyIter;
+use super::layout::{LayoutLookup, LayoutTable, TableIndex};
 
 impl<'a> LayoutTable for PosTable<'a> {
     const TAG: Tag = Tag::from_bytes(b"GPOS");
@@ -62,9 +23,6 @@ impl<'a> LayoutTable for PosTable<'a> {
         self.0.get_lookup(index).map(PosLookup)
     }
 }
-
-#[derive(Clone, Copy, Debug)]
-pub struct PosLookup<'a>(Lookup<'a>);
 
 impl LayoutLookup for PosLookup<'_> {
     fn props(&self) -> u32 {
@@ -88,50 +46,6 @@ impl Apply for PosLookup<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-enum PosLookupSubtable<'a> {
-    Single(SinglePos<'a>),
-    Pair(PairPos<'a>),
-    Cursive(CursivePos<'a>),
-    MarkBase(MarkBasePos<'a>),
-    MarkLig(MarkLigPos<'a>),
-    MarkMark(MarkMarkPos<'a>),
-    Context(ContextLookup<'a>),
-    ChainContext(ChainContextLookup<'a>),
-}
-
-impl<'a> PosLookupSubtable<'a> {
-    fn parse(data: &'a [u8], kind: LookupType) -> Option<Self> {
-        match kind.0 {
-            1 => SinglePos::parse(data).map(Self::Single),
-            2 => PairPos::parse(data).map(Self::Pair),
-            3 => CursivePos::parse(data).map(Self::Cursive),
-            4 => MarkBasePos::parse(data).map(Self::MarkBase),
-            5 => MarkLigPos::parse(data).map(Self::MarkLig),
-            6 => MarkMarkPos::parse(data).map(Self::MarkMark),
-            7 => ContextLookup::parse(data).map(Self::Context),
-            8 => ChainContextLookup::parse(data).map(Self::ChainContext),
-            9 => parse_extension_lookup(data, Self::parse),
-            _ => None,
-        }
-    }
-
-    // Note: Could be used for lookup acceleration.
-    #[allow(dead_code)]
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Single(t) => t.coverage(),
-            Self::Pair(t) => t.coverage(),
-            Self::Cursive(t) => t.coverage(),
-            Self::MarkBase(t) => t.coverage(),
-            Self::MarkLig(t) => t.coverage(),
-            Self::MarkMark(t) => t.coverage(),
-            Self::Context(t) => t.coverage(),
-            Self::ChainContext(t) => t.coverage(),
-        }
-    }
-}
-
 impl Apply for PosLookupSubtable<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         match self {
@@ -143,51 +57,6 @@ impl Apply for PosLookupSubtable<'_> {
             Self::MarkMark(t) => t.apply(ctx),
             Self::Context(t) => t.apply(ctx),
             Self::ChainContext(t) => t.apply(ctx),
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-enum SinglePos<'a> {
-    Format1 {
-        data: &'a [u8],
-        coverage: Coverage<'a>,
-        value: ValueRecord<'a>,
-    },
-    Format2 {
-        data: &'a [u8],
-        coverage: Coverage<'a>,
-        flags: ValueFormatFlags,
-        values: DynArray<'a>,
-    },
-}
-
-impl<'a> SinglePos<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let flags = s.read::<ValueFormatFlags>()?;
-                let value = ValueRecord::read(&mut s, flags)?;
-                Self::Format1 { data, coverage, value }
-            }
-            2 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let flags = s.read::<ValueFormatFlags>()?;
-                let count = s.read::<u16>()?;
-                let values = DynArray::read(&mut s, usize::from(count), flags.size())?;
-                Self::Format2 { data, coverage, flags, values }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
-            Self::Format2 { coverage, .. } => coverage,
         }
     }
 }
@@ -214,66 +83,6 @@ impl Apply for SinglePos<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-enum PairPos<'a> {
-    Format1 {
-        coverage: Coverage<'a>,
-        flags: [ValueFormatFlags; 2],
-        sets: Offsets16<'a, Offset16>,
-    },
-    Format2 {
-        data: &'a [u8],
-        coverage: Coverage<'a>,
-        flags: [ValueFormatFlags; 2],
-        classes: [ClassDef<'a>; 2],
-        counts: [u16; 2],
-        matrix: DynArray<'a>,
-    },
-}
-
-impl<'a> PairPos<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let flags = [
-                    s.read::<ValueFormatFlags>()?,
-                    s.read::<ValueFormatFlags>()?,
-                ];
-                let count = s.read::<u16>()?;
-                let sets = s.read_offsets16(count, data)?;
-                Self::Format1 { coverage, flags, sets }
-            }
-            2 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let flags = [
-                    s.read::<ValueFormatFlags>()?,
-                    s.read::<ValueFormatFlags>()?,
-                ];
-                let classes = [
-                    ClassDef::parse(s.read_at_offset16()?)?,
-                    ClassDef::parse(s.read_at_offset16()?)?,
-                ];
-                let counts = [s.read::<u16>()?, s.read::<u16>()?];
-                let count = usize::num_from(u32::from(counts[0]) * u32::from(counts[1]));
-                let stride = flags[0].size() + flags[1].size();
-                let matrix = DynArray::read(&mut s, count, stride)?;
-                Self::Format2 { data, coverage, flags, classes, counts, matrix }
-            },
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
-            Self::Format2 { coverage, .. } => coverage,
-        }
-    }
-}
-
 impl Apply for PairPos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let first = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
@@ -287,37 +96,19 @@ impl Apply for PairPos<'_> {
         let pos = iter.index();
         let second = GlyphId(u16::try_from(ctx.buffer.info[pos].codepoint).unwrap());
 
-        let (base, flags, mut s) = match *self {
+        let (base, flags, records) = match *self {
             Self::Format1 { flags, sets, .. } => {
                 let data = sets.slice(index)?;
-                let mut s = Stream::new(data);
-                let count = s.read::<u16>()?;
-                let stride = GlyphId::SIZE + flags[0].size() + flags[1].size();
-                let records = DynArray::read(&mut s, usize::from(count), stride)?;
-                let record = records.binary_search_by(|data| {
-                    Stream::new(data).read::<GlyphId>().unwrap().cmp(&second)
-                })?.1;
-
-                let mut s = Stream::new(record);
-                s.skip::<GlyphId>();
-                (data, flags, s)
+                let set = PairSet::parse(data, flags)?;
+                let records = set.get(second)?;
+                (data, flags, records)
             }
-            Self::Format2 { data, flags, classes, counts, matrix, .. } => {
+            Self::Format2 { data, flags, classes, matrix, .. } => {
                 let classes = [classes[0].get(first).0, classes[1].get(second).0];
-                if classes[0] >= counts[0] || classes[1] >= counts[1] {
-                    return None;
-                }
-
-                let idx = usize::from(classes[0]) * usize::from(counts[1]) + usize::from(classes[1]);
-                let record = matrix.get(idx)?;
-                (data, flags, Stream::new(record))
+                let records = matrix.get(classes)?;
+                (data, flags, records)
             }
         };
-
-        let records = [
-            ValueRecord::read(&mut s, flags[0])?,
-            ValueRecord::read(&mut s, flags[1])?,
-        ];
 
         // Note the intentional use of "|" instead of short-circuit "||".
         if records[0].apply(ctx, base, ctx.buffer.idx) | records[1].apply(ctx, base, pos) {
@@ -326,37 +117,6 @@ impl Apply for PairPos<'_> {
 
         ctx.buffer.idx = pos + usize::from(!flags[1].is_empty());
         Some(())
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-enum CursivePos<'a> {
-    Format1 {
-        data: &'a [u8],
-        coverage: Coverage<'a>,
-        entry_exits: LazyArray16<'a, EntryExitRecord>,
-    }
-}
-
-impl<'a> CursivePos<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let count = s.read::<u16>()?;
-                let entry_exits = s.read_array16(count)?;
-                Self::Format1 { data, coverage, entry_exits }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
-        }
     }
 }
 
@@ -465,25 +225,6 @@ impl Apply for CursivePos<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-struct EntryExitRecord {
-    entry_anchor: Offset16,
-    exit_anchor: Offset16,
-}
-
-impl FromData for EntryExitRecord {
-    const SIZE: usize = 4;
-
-    #[inline]
-    fn parse(data: &[u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        Some(Self {
-            entry_anchor: s.read()?,
-            exit_anchor: s.read()?,
-        })
-    }
-}
-
 fn reverse_cursive_minor_offset(
     pos: &mut [GlyphPosition],
     i: usize,
@@ -514,40 +255,6 @@ fn reverse_cursive_minor_offset(
 
     pos[j].set_attach_chain(-chain);
     pos[j].set_attach_type(attach_type);
-}
-
-#[derive(Clone, Copy, Debug)]
-enum MarkBasePos<'a> {
-    Format1 {
-        mark_coverage: Coverage<'a>,
-        base_coverage: Coverage<'a>,
-        marks: MarkArray<'a>,
-        base_matrix: AnchorMatrix<'a>,
-    }
-}
-
-impl<'a> MarkBasePos<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let mark_coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let base_coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let class_count = s.read::<u16>()?;
-                let marks = MarkArray::parse(s.read_at_offset16()?)?;
-                let base_matrix = AnchorMatrix::parse(s.read_at_offset16()?, class_count)?;
-                Self::Format1 { mark_coverage, base_coverage, marks, base_matrix }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { mark_coverage, .. } => mark_coverage,
-        }
-    }
 }
 
 impl Apply for MarkBasePos<'_> {
@@ -596,40 +303,6 @@ impl Apply for MarkBasePos<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-enum MarkLigPos<'a> {
-    Format1 {
-        mark_coverage: Coverage<'a>,
-        lig_coverage: Coverage<'a>,
-        marks: MarkArray<'a>,
-        lig_array: LigatureArray<'a>,
-    }
-}
-
-impl<'a> MarkLigPos<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let mark_coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let lig_coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let class_count = s.read::<u16>()?;
-                let marks = MarkArray::parse(s.read_at_offset16()?)?;
-                let lig_array = LigatureArray::parse(s.read_at_offset16()?, class_count)?;
-                Self::Format1 { mark_coverage, lig_coverage, marks, lig_array }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { mark_coverage, .. } => mark_coverage,
-        }
-    }
-}
-
 impl Apply for MarkLigPos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let Self::Format1 { mark_coverage, lig_coverage, marks, lig_array } = *self;
@@ -669,59 +342,6 @@ impl Apply for MarkLigPos<'_> {
         let comp_index = if matches { mark_comp.min(comp_count) } else { comp_count } - 1;
 
         marks.apply(ctx, lig_attach, mark_index, comp_index, idx)
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-struct LigatureArray<'a> {
-    class_count: u16,
-    attach: Offsets16<'a, Offset16>,
-}
-
-impl<'a> LigatureArray<'a> {
-    fn parse(data: &'a [u8], class_count: u16) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let count = s.read::<u16>()?;
-        let attach = s.read_offsets16(count, data)?;
-        Some(Self { class_count, attach })
-    }
-
-    fn get(&self, idx: u16) -> Option<AnchorMatrix> {
-        AnchorMatrix::parse(self.attach.slice(idx)?, self.class_count)
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-enum MarkMarkPos<'a> {
-    Format1 {
-        mark1_coverage: Coverage<'a>,
-        mark2_coverage: Coverage<'a>,
-        marks: MarkArray<'a>,
-        mark2_matrix: AnchorMatrix<'a>,
-    }
-}
-
-impl<'a> MarkMarkPos<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let mark1_coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let mark2_coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let class_count = s.read::<u16>()?;
-                let marks = MarkArray::parse(s.read_at_offset16()?)?;
-                let mark2_matrix = AnchorMatrix::parse(s.read_at_offset16()?, class_count)?;
-                Self::Format1 { mark1_coverage, mark2_coverage, marks, mark2_matrix }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { mark1_coverage, .. } => mark1_coverage,
-        }
     }
 }
 
@@ -771,23 +391,9 @@ impl Apply for MarkMarkPos<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-struct ValueRecord<'a> {
-    data: &'a [u8],
-    flags: ValueFormatFlags,
-}
-
 impl<'a> ValueRecord<'a> {
-    fn new(data: &'a [u8], flags: ValueFormatFlags) -> Self {
-        Self { data, flags }
-    }
-
-    fn read(s: &mut Stream<'a>, flags: ValueFormatFlags) -> Option<Self> {
-        s.read_bytes(flags.size()).map(|data| Self { data, flags })
-    }
-
-    fn apply(&self, ctx: &mut ApplyContext, base: &[u8], idx: usize) -> bool {
-        let mut s = Stream::new(self.data);
+    pub fn apply(&self, ctx: &mut ApplyContext, base: &[u8], idx: usize) -> bool {
+        let mut s = ttf_parser::parser::Stream::new(self.data);
 
         let horizontal = ctx.buffer.direction.is_horizontal();
         let mut pos = ctx.buffer.pos[idx];
@@ -887,141 +493,7 @@ fn device(base: &[u8], offset: Offset16) -> Option<Device> {
     base.get(offset.to_usize()..).and_then(Device::parse)
 }
 
-bitflags::bitflags! {
-    #[derive(Default)]
-    pub struct ValueFormatFlags: u16 {
-        const X_PLACEMENT        = 0x0001;
-        const Y_PLACEMENT        = 0x0002;
-        const X_ADVANCE          = 0x0004;
-        const Y_ADVANCE          = 0x0008;
-        const X_PLACEMENT_DEVICE = 0x0010;
-        const Y_PLACEMENT_DEVICE = 0x0020;
-        const X_ADVANCE_DEVICE   = 0x0040;
-        const Y_ADVANCE_DEVICE   = 0x0080;
-        const DEVICES            = Self::X_PLACEMENT_DEVICE.bits
-                                 | Self::Y_PLACEMENT_DEVICE.bits
-                                 | Self::X_ADVANCE_DEVICE.bits
-                                 | Self::Y_ADVANCE_DEVICE.bits;
-    }
-}
-
-impl ValueFormatFlags {
-    fn size(self) -> usize {
-        u16::SIZE * usize::num_from(self.bits.count_ones())
-    }
-}
-
-impl FromData for ValueFormatFlags {
-    const SIZE: usize = 2;
-
-    #[inline]
-    fn parse(data: &[u8]) -> Option<Self> {
-        u16::parse(data).map(Self::from_bits_truncate)
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-struct Anchor<'a> {
-    x: i16,
-    y: i16,
-    x_device: Option<Device<'a>>,
-    y_device: Option<Device<'a>>,
-}
-
-impl<'a> Anchor<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        if !matches!(format, 1..=3) {
-            return None;
-        }
-
-        let mut table = Anchor {
-            x: s.read::<i16>()?,
-            y: s.read::<i16>()?,
-            x_device: None,
-            y_device: None,
-        };
-
-        // Note: Format 2 is not handled since there is currently no way to
-        // get a glyph contour point by index.
-
-        if format == 3 {
-            table.x_device = s.read::<Option<Offset16>>()?
-                .and_then(|offset| data.get(offset.to_usize()..))
-                .and_then(Device::parse);
-
-            table.y_device = s.read::<Option<Offset16>>()?
-                .and_then(|offset| data.get(offset.to_usize()..))
-                .and_then(Device::parse);
-        }
-
-        Some(table)
-    }
-
-    fn get(&self, font: &Font) -> (i32, i32) {
-        let mut x = i32::from(self.x);
-        let mut y = i32::from(self.y);
-
-        if self.x_device.is_some() || self.y_device.is_some() {
-            let (ppem_x, ppem_y) = font.pixels_per_em().unwrap_or((0, 0));
-            let coords = font.ttfp_face.variation_coordinates().len();
-
-            if let Some(device) = self.x_device {
-                if ppem_x != 0 || coords != 0 {
-                    x += device.get_x_delta(font).unwrap_or(0);
-                }
-            }
-
-            if let Some(device) = self.y_device {
-                if ppem_y != 0 || coords != 0 {
-                    y += device.get_y_delta(font).unwrap_or(0);
-                }
-            }
-        }
-
-        (x, y)
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-struct AnchorMatrix<'a> {
-    data: &'a [u8],
-    rows: u16,
-    cols: u16,
-    matrix: LazyArray32<'a, Offset16>,
-}
-
-impl<'a> AnchorMatrix<'a> {
-    fn parse(data: &'a [u8], cols: u16) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let rows = s.read::<u16>()?;
-        let count = u32::from(rows) * u32::from(cols);
-        let matrix = s.read_array32(count)?;
-        Some(Self { data, rows, cols, matrix })
-    }
-
-    fn get(&self, row: u16, col: u16) -> Option<Anchor> {
-        let idx = u32::from(row) * u32::from(self.cols) + u32::from(col);
-        let offset = self.matrix.get(idx)?.to_usize();
-        Anchor::parse(self.data.get(offset..)?)
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-struct MarkArray<'a> {
-    data: &'a [u8],
-    array: LazyArray16<'a, MarkRecord>,
-}
-
 impl<'a> MarkArray<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let count = s.read::<u16>()?;
-        let array = s.read_array16(count)?;
-        Some(Self { data, array })
-    }
-
     fn apply(
         &self,
         ctx: &mut ApplyContext,
@@ -1056,25 +528,6 @@ impl<'a> MarkArray<'a> {
 }
 
 #[derive(Clone, Copy, Debug)]
-struct MarkRecord {
-    class: Class,
-    mark_anchor: Offset16,
-}
-
-impl FromData for MarkRecord {
-    const SIZE: usize = 4;
-
-    #[inline]
-    fn parse(data: &[u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        Some(Self {
-            class: s.read()?,
-            mark_anchor: s.read()?,
-        })
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
 enum AttachType {
     Mark = 1,
     Cursive = 2,
@@ -1086,6 +539,28 @@ impl AttachType {
             1 => Some(Self::Mark),
             2 => Some(Self::Cursive),
             _ => None,
+        }
+    }
+}
+
+pub(crate) fn position_start(_: &Font, buffer: &mut Buffer) {
+    let len = buffer.len;
+    for pos in &mut buffer.pos[..len] {
+        pos.set_attach_chain(0);
+        pos.set_attach_type(0);
+    }
+}
+
+pub(crate) fn position_finish_advances(_: &Font, _: &mut Buffer) {}
+
+pub(crate) fn position_finish_offsets(_: &Font, buffer: &mut Buffer) {
+    let len = buffer.len;
+    let direction = buffer.direction;
+
+    // Handle attachments
+    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_GPOS_ATTACHMENT) {
+        for i in 0..len {
+            propagate_attachment_offsets(&mut buffer.pos, len, i, direction);
         }
     }
 }

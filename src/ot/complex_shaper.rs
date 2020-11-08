@@ -1,9 +1,9 @@
 use std::ptr::NonNull;
 
-use super::{ShapeNormalizationMode, ShapePlan};
 use crate::ffi;
 use crate::buffer::Buffer;
 use crate::Font;
+use super::{ShapeNormalizationMode, ShapePlan};
 
 pub const MAX_COMBINING_MARKS: usize = 32;
 

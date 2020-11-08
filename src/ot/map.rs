@@ -1,7 +1,7 @@
 use std::ptr::NonNull;
 
 use crate::{ffi, Tag, Mask};
-use super::TableIndex;
+use super::layout::TableIndex;
 
 
 #[repr(C)]

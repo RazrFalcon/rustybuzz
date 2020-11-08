@@ -1,27 +1,21 @@
 //! OpenType layout.
 
-mod apply;
-mod common;
-mod context_lookups;
-mod gpos;
-mod gsub;
-mod kern;
-mod matching;
-
 use std::convert::TryFrom;
 use std::slice;
 
 use ttf_parser::parser::{NumFrom, Offset, Offset16, Stream};
 use ttf_parser::GlyphId;
 
-use super::{Map, ShapePlan, TableIndex};
 use crate::buffer::Buffer;
 use crate::common::TagExt;
 use crate::{ffi, Font, Tag};
-use apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use common::{FeatureIndex, LangIndex, LookupIndex, ScriptIndex, SubstPosTable, VariationIndex};
-use gpos::PosTable;
-use gsub::SubstTable;
+use crate::tables::gpos::PosTable;
+use crate::tables::gsub::SubstTable;
+use crate::tables::gsubgpos::{
+    FeatureIndex, LangIndex, LookupIndex, ScriptIndex, SubstPosTable, VariationIndex
+};
+use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
+use super::{table_data, Map, ShapePlan};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -30,6 +24,12 @@ pub const SCRIPT_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const LANGUAGE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const FEATURE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const FEATURE_VARIATION_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum TableIndex {
+    GSUB = 0,
+    GPOS = 1,
+}
 
 /// A lookup-based layout table (GSUB or GPOS).
 pub trait LayoutTable {
@@ -62,40 +62,27 @@ pub trait LayoutLookup: Apply {
 // Note: GDEF blocklisting was removed for now because we use
 //       ttf_parser's GDEF parsing routines.
 
-/// rb_ot_layout_has_glyph_classes:
-/// @face: #rb_face_t to work upon
-///
 /// Tests whether a face has any glyph classes defined in its GDEF table.
-///
-/// Return value: true if data found, false otherwise
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_has_glyph_classes(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
     // TODO: Find out through ttfp_face when that's reachable.
-    (|| {
-        let data = table_data(face, Tag::from_bytes(b"GDEF"));
-        let mut s = Stream::new(data);
-        let major_version = s.read::<u16>()?;
-        if major_version != 1 {
-            return None;
-        }
-        s.skip::<u16>();
-        let glyph_class_offset = s.read::<Offset16>()?;
-        Some(!glyph_class_offset.is_null())
-    })().unwrap_or(false) as ffi::rb_bool_t
+    let gdef = table_data(face, Tag::from_bytes(b"GDEF"));
+    has_glyph_classes(gdef).unwrap_or(false) as ffi::rb_bool_t
+}
+
+fn has_glyph_classes(gdef: &[u8]) -> Option<bool> {
+    let mut s = Stream::new(gdef);
+    let major_version = s.read::<u16>()?;
+    if major_version != 1 {
+        return None;
+    }
+    s.skip::<u16>();
+    let glyph_class_offset = s.read::<Offset16>()?;
+    Some(!glyph_class_offset.is_null())
 }
 
 // GSUB/GPOS
 
-/// rb_ot_layout_table_select_script:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-/// @script_count: Number of script tags in the array
-/// @script_tags: Array of #rb_tag_t script tags
-/// @script_index: (out): The index of the requested script
-/// @chosen_script: (out): #rb_tag_t of the requested script
-///
-/// Since: 2.0.0
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_table_select_script(
     face: *const ffi::rb_face_t,
@@ -150,19 +137,10 @@ fn select_script(table: SubstPosTable, script_tags: &[Tag]) -> Option<(bool, Scr
     None
 }
 
-/// rb_ot_layout_language_find_feature:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-/// @script_index: The index of the requested script tag
-/// @language_index: The index of the requested language tag
-/// @feature_tag: #rb_tag_t of the feature tag requested
-/// @feature_index: (out): The index of the requested feature
-///
 /// Fetches the index of a given feature tag in the specified face's GSUB table
 /// or GPOS table, underneath the specified script and language.
 ///
-/// Return value: true if the feature is found, false otherwise
+/// Returns true if the feature is found, false otherwise.
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_language_find_feature(
     face: *const ffi::rb_face_t,
@@ -213,21 +191,10 @@ fn language_find_feature(
     None
 }
 
-/// rb_ot_layout_script_select_language:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-/// @script_index: The index of the requested script tag
-/// @language_count: The number of languages in the specified script
-/// @language_tags: The array of language tags
-/// @language_index: (out): The index of the requested language
-///
 /// Fetches the index of a given language tag in the specified face's GSUB table
 /// or GPOS table, underneath the specified script index.
 ///
-/// Return value: true if the language tag is found, false otherwise
-///
-/// Since: 2.0.0
+/// Returns true if the language tag is found, false otherwise.
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_script_select_language(
     face: *const ffi::rb_face_t,
@@ -272,21 +239,10 @@ fn script_select_language(
     None
 }
 
-/// rb_ot_layout_language_get_required_feature:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-/// @script_index: The index of the requested script tag
-/// @language_index: The index of the requested language tag
-/// @feature_index: (out): The index of the requested feature
-/// @feature_tag: (out): The #rb_tag_t of the requested feature
-///
 /// Fetches the tag of a requested feature index in the given face's GSUB or GPOS table,
 /// underneath the specified script and language.
 ///
-/// Return value: true if the feature is found, false otherwise
-///
-/// Since: 0.9.30
+/// Returns true if the feature is found, false otherwise.
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_language_get_required_feature(
     face: *const ffi::rb_face_t,
@@ -335,17 +291,10 @@ fn language_get_required_feature(
     Some((idx, tag))
 }
 
-/// rb_ot_layout_table_find_feature:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-/// @feature_tag: The #rb_tag_t og the requested feature tag
-/// @feature_index: (out): The index of the requested feature
-///
 /// Fetches the index for a given feature tag in the specified face's GSUB table
 /// or GPOS table.
 ///
-/// Return value: true if the feature is found, false otherwise
+/// Returns true if the feature is found, false otherwise.
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_table_find_feature(
     face: *const ffi::rb_face_t,
@@ -365,15 +314,8 @@ pub extern "C" fn rb_ot_layout_table_find_feature(
     0
 }
 
-/// rb_ot_layout_table_get_lookup_count:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-///
 /// Fetches the total number of lookups enumerated in the specified
 /// face's GSUB table or GPOS table.
-///
-/// Since: 0.9.22
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_table_get_lookup_count(
     face: *const ffi::rb_face_t,
@@ -385,14 +327,6 @@ pub extern "C" fn rb_ot_layout_table_get_lookup_count(
 
 // Variations support
 
-/// rb_ot_layout_table_find_feature_variations:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-/// @coords: The variation coordinates to query
-/// @num_coords: The number of variation coorinates
-/// @variations_index: (out): The array of feature variations found for the query
-///
 /// Fetches a list of feature variations in the specified face's GSUB table
 /// or GPOS table, at the specified variation coordinates.
 #[no_mangle]
@@ -416,17 +350,6 @@ pub extern "C" fn rb_ot_layout_table_find_feature_variations(
     0
 }
 
-/// rb_ot_layout_feature_with_variations_get_lookups:
-///
-/// @face: #rb_face_t to work upon
-/// @table_tag: RB_OT_TAG_GSUB or RB_OT_TAG_GPOS
-/// @feature_index: The index of the feature to query
-/// @var_index: The index of the feature variation to query
-/// @start: offset of the first lookup to retrieve
-/// @lookup_count: (inout) (allow-none): Input = the maximum number of lookups to return;
-///                Output = the actual number of lookups returned (may be zero)
-/// @lookup_indices: (out) (array length=lookup_count): The array of lookups found for the query
-///
 /// Fetches a list of all lookups enumerated for the specified feature, in
 /// the specified face's GSUB table or GPOS table, enabled at the specified
 /// variations index. The list returned will begin at the offset provided.
@@ -467,32 +390,18 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
 
 // GSUB
 
-/// rb_ot_layout_has_substitution:
-///
-/// @face: #rb_face_t to work upon
-///
 /// Tests whether the specified face includes any GSUB substitutions.
 ///
-/// Return value: true if data found, false otherwise
+/// Returns true if data found, false otherwise
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_has_substitution(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
     SubstTable::parse(table_data(face, SubstTable::TAG)).is_some() as ffi::rb_bool_t
 }
 
-/// rb_ot_layout_lookup_would_substitute:
-///
-/// @face: #rb_face_t to work upon
-/// @lookup_index: The index of the lookup to query
-/// @glyphs: The sequence of glyphs to query for substitution
-/// @glyphs_length: The length of the glyph sequence
-/// @zero_context: #rb_bool_t indicating whether substitutions should be context-free
-///
 /// Tests whether a specified lookup in the specified face would
 /// trigger a substitution on the given glyph sequence.
 ///
-/// Return value: true if a substitution would be triggered, false otherwise
-///
-/// Since: 0.9.7
+/// Returns true if a substitution would be triggered, false otherwise
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_lookup_would_substitute(
     face: *const ffi::rb_face_t,
@@ -509,11 +418,6 @@ pub extern "C" fn rb_ot_layout_lookup_would_substitute(
         .map_or(false, |lookup| lookup.would_apply(&ctx)) as ffi::rb_bool_t
 }
 
-/// rb_ot_layout_substitute_start:
-///
-/// @font: #rb_font_t to use
-/// @buffer: #rb_buffer_t buffer to work upon
-///
 /// Called before substitution lookups are performed, to ensure that glyph
 /// class and other properties are set on the glyphs in the buffer.
 #[no_mangle]
@@ -538,21 +442,12 @@ fn set_glyph_props(font: &Font, buffer: &mut Buffer) {
 
 // GPOS
 
-/// rb_ot_layout_has_positioning:
-///
-/// @face: #rb_face_t to work upon
-///
-/// Return value: true if the face has GPOS data, false otherwise
+/// Returns true if the face has GPOS data, false otherwise
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_has_positioning(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
     PosTable::parse(table_data(face, PosTable::TAG)).is_some() as ffi::rb_bool_t
 }
 
-/// rb_ot_layout_position_start:
-///
-/// @font: #rb_font_t to use
-/// @buffer: #rb_buffer_t buffer to work upon
-///
 /// Called before positioning lookups are performed, to ensure that glyph
 /// attachment types and glyph-attachment chains are set for the glyphs in the buffer.
 #[no_mangle]
@@ -562,14 +457,9 @@ pub extern "C" fn rb_ot_layout_position_start(
 ) {
     let font = Font::from_ptr(font);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    PosTable::position_start(font, &mut buffer);
+    super::position::position_start(font, &mut buffer);
 }
 
-/// rb_ot_layout_position_finish_advances:
-///
-/// @font: #rb_font_t to use
-/// @buffer: #rb_buffer_t buffer to work upon
-///
 /// Called after positioning lookups are performed, to finish glyph advances.
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_position_finish_advances(
@@ -578,14 +468,9 @@ pub extern "C" fn rb_ot_layout_position_finish_advances(
 ) {
     let font = Font::from_ptr(font);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    PosTable::position_finish_advances(font, &mut buffer);
+    super::position::position_finish_advances(font, &mut buffer);
 }
 
-/// rb_ot_layout_position_finish_offsets:
-///
-/// @font: #rb_font_t to use
-/// @buffer: #rb_buffer_t buffer to work upon
-///
 /// Called after positioning lookups are performed, to finish glyph offsets.
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_position_finish_offsets(
@@ -594,7 +479,7 @@ pub extern "C" fn rb_ot_layout_position_finish_offsets(
 ) {
     let font = Font::from_ptr(font);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    PosTable::position_finish_offsets(font, &mut buffer);
+    super::position::position_finish_offsets(font, &mut buffer);
 }
 
 // General
@@ -729,12 +614,4 @@ fn apply_backward(ctx: &mut ApplyContext, lookup: impl Apply) -> bool {
         ctx.buffer.idx -= 1;
     }
     ret
-}
-
-fn table_data(face: *const ffi::rb_face_t, table_tag: Tag) -> &'static [u8] {
-    unsafe {
-        let mut len = 0;
-        let data = ffi::rb_face_get_table_data(face, table_tag, &mut len);
-        slice::from_raw_parts(data, usize::num_from(len))
-    }
 }

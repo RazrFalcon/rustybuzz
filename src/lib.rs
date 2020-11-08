@@ -9,6 +9,7 @@ mod buffer;
 mod common;
 mod ffi;
 mod font;
+mod tables;
 mod tag;
 mod tag_table;
 mod text_parser;

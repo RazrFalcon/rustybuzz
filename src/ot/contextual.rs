@@ -1,94 +1,15 @@
-//! Contextual and chaining contextual lookups.
-
 use std::convert::TryFrom;
 
-use ttf_parser::parser::{FromData, LazyArray16, Offset, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
+use ttf_parser::parser::{LazyArray16, Offset};
 
+use crate::tables::gsubgpos::*;
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::common::{ClassDef, Coverage, LookupIndex};
+use super::layout::MAX_CONTEXT_LENGTH;
 use super::matching::{
     match_backtrack, match_class, match_coverage, match_glyph, match_input, match_lookahead,
     would_match_input, MatchFunc, Matched,
 };
-use super::MAX_CONTEXT_LENGTH;
-
-#[derive(Clone, Copy, Debug)]
-pub struct LookupRecord {
-    sequence_index: u16,
-    lookup_index: LookupIndex,
-}
-
-impl FromData for LookupRecord {
-    const SIZE: usize = 4;
-
-    #[inline]
-    fn parse(data: &[u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        Some(Self {
-            sequence_index: s.read::<u16>()?,
-            lookup_index: s.read::<LookupIndex>()?,
-        })
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum ContextLookup<'a> {
-    Format1 {
-        coverage: Coverage<'a>,
-        sets: Offsets16<'a, Offset16>,
-    },
-    Format2 {
-        coverage: Coverage<'a>,
-        classes: ClassDef<'a>,
-        sets: Offsets16<'a, Offset16>,
-    },
-    Format3 {
-        data: &'a [u8],
-        coverage: Coverage<'a>,
-        coverages: LazyArray16<'a, u16>,
-        lookups: LazyArray16<'a, LookupRecord>,
-    },
-}
-
-impl<'a> ContextLookup<'a> {
-    pub fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let count = s.read::<u16>()?;
-                let sets = s.read_offsets16(count, data)?;
-                Self::Format1 { coverage, sets }
-            }
-            2 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let classes = ClassDef::parse(s.read_at_offset16()?)?;
-                let count = s.read::<u16>()?;
-                let sets = s.read_offsets16(count, data)?;
-                Self::Format2 { coverage, classes, sets }
-            }
-            3 => {
-                let input_count = s.read::<u16>()?;
-                let lookup_count = s.read::<u16>()?;
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let coverages = s.read_array16(input_count.checked_sub(1)?)?;
-                let lookups = s.read_array16(lookup_count)?;
-                Self::Format3 { data, coverage, coverages, lookups }
-            }
-            _ => return None,
-        })
-    }
-
-    pub fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
-            Self::Format2 { coverage, .. } => coverage,
-            Self::Format3 { coverage, .. } => coverage,
-        }
-    }
-}
 
 impl WouldApply for ContextLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
@@ -142,24 +63,12 @@ impl Apply for ContextLookup<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-struct RuleSet<'a> {
-    rules: Offsets16<'a, Offset16>,
-}
-
 impl<'a> RuleSet<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let count = s.read::<u16>()?;
-        let rules = s.read_offsets16(count, data)?;
-        Some(Self { rules })
-    }
-
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
         self.rules
             .into_iter()
             .filter_map(|data| Rule::parse(data))
-            .any(|rules| rules.would_apply(ctx, match_func))
+            .any(|rule| rule.would_apply(ctx, match_func))
     }
 
     fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()> {
@@ -174,109 +83,13 @@ impl<'a> RuleSet<'a> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-struct Rule<'a> {
-    input: LazyArray16<'a, u16>,
-    lookups: LazyArray16<'a, LookupRecord>,
-}
-
 impl<'a> Rule<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let input_count = s.read::<u16>()?;
-        let lookup_count = s.read::<u16>()?;
-        let input = s.read_array16(input_count.checked_sub(1)?)?;
-        let lookups = s.read_array16(lookup_count)?;
-        Some(Self { input, lookups })
-    }
-
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
         would_apply_context(ctx, self.input, match_func)
     }
 
     fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()> {
         apply_context(ctx, self.input, match_func, self.lookups)
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum ChainContextLookup<'a> {
-    Format1 {
-        coverage: Coverage<'a>,
-        sets: Offsets16<'a, Offset16>,
-    },
-    Format2 {
-        coverage: Coverage<'a>,
-        backtrack_classes: ClassDef<'a>,
-        input_classes: ClassDef<'a>,
-        lookahead_classes: ClassDef<'a>,
-        sets: Offsets16<'a, Offset16>,
-    },
-    Format3 {
-        data: &'a [u8],
-        coverage: Coverage<'a>,
-        backtrack_coverages: LazyArray16<'a, u16>,
-        input_coverages: LazyArray16<'a, u16>,
-        lookahead_coverages: LazyArray16<'a, u16>,
-        lookups: LazyArray16<'a, LookupRecord>,
-    },
-}
-
-impl<'a> ChainContextLookup<'a> {
-    pub fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let count = s.read::<u16>()?;
-                let sets = s.read_offsets16(count, data)?;
-                Self::Format1 { coverage, sets }
-            }
-            2 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let backtrack_classes = ClassDef::parse(s.read_at_offset16()?)?;
-                let input_classes = ClassDef::parse(s.read_at_offset16()?)?;
-                let lookahead_classes = ClassDef::parse(s.read_at_offset16()?)?;
-                let count = s.read::<u16>()?;
-                let sets = s.read_offsets16(count, data)?;
-                Self::Format2 {
-                    coverage,
-                    backtrack_classes,
-                    input_classes,
-                    lookahead_classes,
-                    sets,
-                }
-            }
-            3 => {
-                let backtrack_count = s.read::<u16>()?;
-                let backtrack_coverages = s.read_array16(backtrack_count)?;
-                let input_count = s.read::<u16>()?;
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let input_coverages = s.read_array16(input_count.checked_sub(1)?)?;
-                let lookahead_count = s.read::<u16>()?;
-                let lookahead_coverages = s.read_array16(lookahead_count)?;
-                let lookup_count = s.read::<u16>()?;
-                let lookups = s.read_array16(lookup_count)?;
-                Self::Format3 {
-                    data,
-                    coverage,
-                    backtrack_coverages,
-                    input_coverages,
-                    lookahead_coverages,
-                    lookups,
-                }
-            }
-            _ => return None,
-        })
-    }
-
-    pub fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
-            Self::Format2 { coverage, .. } => coverage,
-            Self::Format3 { coverage, .. } => coverage,
-        }
     }
 }
 
@@ -366,24 +179,12 @@ impl Apply for ChainContextLookup<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-struct ChainRuleSet<'a> {
-    rules: Offsets16<'a, Offset16>,
-}
-
 impl<'a> ChainRuleSet<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let count = s.read::<u16>()?;
-        let rules = s.read_offsets16(count, data)?;
-        Some(Self { rules })
-    }
-
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
         self.rules
             .into_iter()
             .filter_map(|data| ChainRule::parse(data))
-            .any(|rules| rules.would_apply(ctx, match_func))
+            .any(|rule| rule.would_apply(ctx, match_func))
     }
 
     fn apply(&self, ctx: &mut ApplyContext, match_funcs: [&MatchFunc; 3]) -> Option<()> {
@@ -398,28 +199,7 @@ impl<'a> ChainRuleSet<'a> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-struct ChainRule<'a> {
-    backtrack: LazyArray16<'a, u16>,
-    input: LazyArray16<'a, u16>,
-    lookahead: LazyArray16<'a, u16>,
-    lookups: LazyArray16<'a, LookupRecord>,
-}
-
 impl<'a> ChainRule<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let backtrack_count = s.read::<u16>()?;
-        let backtrack = s.read_array16(backtrack_count)?;
-        let input_count = s.read::<u16>()?;
-        let input = s.read_array16(input_count.checked_sub(1)?)?;
-        let lookahead_count = s.read::<u16>()?;
-        let lookahead = s.read_array16(lookahead_count)?;
-        let lookup_count = s.read::<u16>()?;
-        let lookups = s.read_array16(lookup_count)?;
-        Some(Self { backtrack, input, lookahead, lookups })
-    }
-
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
         would_apply_chain_context(ctx, self.backtrack, self.input, self.lookahead, match_func)
     }

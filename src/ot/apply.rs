@@ -2,14 +2,13 @@ use std::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use super::common::{LookupFlags, LookupIndex};
-use super::gpos::PosTable;
-use super::gsub::SubstTable;
-use super::LayoutLookup;
-use super::{LayoutTable, TableIndex, MAX_NESTING_LEVEL};
 use crate::buffer::{Buffer, GlyphInfo, GlyphPropsFlags};
 use crate::font::Font;
+use crate::tables::gsubgpos::{LookupFlags, LookupIndex};
+use crate::tables::gpos::PosTable;
+use crate::tables::gsub::SubstTable;
 use crate::Mask;
+use super::layout::{LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
 
 /// Find out whether a lookup would be applied.
 pub trait WouldApply {

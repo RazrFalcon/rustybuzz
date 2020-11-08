@@ -1,33 +1,18 @@
-//! The Glyph Subsitution Table.
-
 use std::convert::TryFrom;
 
-use ttf_parser::parser::{LazyArray16, Offset16, Offsets16, Stream};
 use ttf_parser::GlyphId;
 
+use crate::buffer::GlyphPropsFlags;
+use crate::ot::Map;
+use crate::tables::gsub::*;
+use crate::tables::gsubgpos::*;
+use crate::unicode::GeneralCategory;
+use crate::Tag;
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::common::{
-    parse_extension_lookup, Coverage, Lookup, LookupIndex, LookupType, SubstPosTable,
-};
-use super::context_lookups::{ChainContextLookup, ContextLookup};
+use super::layout::{LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
 use super::matching::{
     match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
 };
-use super::MAX_NESTING_LEVEL;
-use super::{LayoutLookup, LayoutTable};
-use crate::buffer::GlyphPropsFlags;
-use crate::ot::{Map, TableIndex};
-use crate::unicode::GeneralCategory;
-use crate::Tag;
-
-#[derive(Clone, Copy, Debug)]
-pub struct SubstTable<'a>(pub SubstPosTable<'a>);
-
-impl<'a> SubstTable<'a> {
-    pub fn parse(data: &'a [u8]) -> Option<Self> {
-        SubstPosTable::parse(data).map(Self)
-    }
-}
 
 impl<'a> LayoutTable for SubstTable<'a> {
     const TAG: Tag = Tag::from_bytes(b"GSUB");
@@ -40,9 +25,6 @@ impl<'a> LayoutTable for SubstTable<'a> {
         self.0.get_lookup(index).map(SubstLookup)
     }
 }
-
-#[derive(Clone, Copy, Debug)]
-pub struct SubstLookup<'a>(Lookup<'a>);
 
 impl LayoutLookup for SubstLookup<'_> {
     fn props(&self) -> u32 {
@@ -78,51 +60,6 @@ impl Apply for SubstLookup<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-enum SubstLookupSubtable<'a> {
-    Single(SingleSubst<'a>),
-    Multiple(MultipleSubst<'a>),
-    Alternate(AlternateSubst<'a>),
-    Ligature(LigatureSubst<'a>),
-    Context(ContextLookup<'a>),
-    ChainContext(ChainContextLookup<'a>),
-    ReverseChainSingle(ReverseChainSingleSubst<'a>),
-}
-
-impl<'a> SubstLookupSubtable<'a> {
-    fn parse(data: &'a [u8], kind: LookupType) -> Option<Self> {
-        match kind.0 {
-            1 => SingleSubst::parse(data).map(Self::Single),
-            2 => MultipleSubst::parse(data).map(Self::Multiple),
-            3 => AlternateSubst::parse(data).map(Self::Alternate),
-            4 => LigatureSubst::parse(data).map(Self::Ligature),
-            5 => ContextLookup::parse(data).map(Self::Context),
-            6 => ChainContextLookup::parse(data).map(Self::ChainContext),
-            7 => parse_extension_lookup(data, Self::parse),
-            8 => ReverseChainSingleSubst::parse(data).map(Self::ReverseChainSingle),
-            _ => None,
-        }
-    }
-
-    // Note: Could be used for lookup acceleration.
-    #[allow(dead_code)]
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Single(t) => t.coverage(),
-            Self::Multiple(t) => t.coverage(),
-            Self::Alternate(t) => t.coverage(),
-            Self::Ligature(t) => t.coverage(),
-            Self::Context(t) => t.coverage(),
-            Self::ChainContext(t) => t.coverage(),
-            Self::ReverseChainSingle(t) => t.coverage(),
-        }
-    }
-
-    fn is_reverse(&self) -> bool {
-        matches!(self, Self::ReverseChainSingle(_))
-    }
-}
-
 impl WouldApply for SubstLookupSubtable<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         match self {
@@ -147,46 +84,6 @@ impl Apply for SubstLookupSubtable<'_> {
             Self::Context(t) => t.apply(ctx),
             Self::ChainContext(t) => t.apply(ctx),
             Self::ReverseChainSingle(t) => t.apply(ctx),
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-enum SingleSubst<'a> {
-    Format1 {
-        coverage: Coverage<'a>,
-        delta: i16,
-    },
-    Format2 {
-        coverage: Coverage<'a>,
-        substitutes: LazyArray16<'a, GlyphId>,
-    },
-}
-
-impl<'a> SingleSubst<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let delta = s.read::<i16>()?;
-                Self::Format1 { coverage, delta }
-            }
-            2 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let count = s.read::<u16>()?;
-                let substitutes = s.read_array16(count)?;
-                Self::Format2 { coverage, substitutes }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
-            Self::Format2 { coverage, .. } => coverage,
         }
     }
 }
@@ -219,36 +116,6 @@ impl Apply for SingleSubst<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-enum MultipleSubst<'a> {
-    Format1 {
-        coverage: Coverage<'a>,
-        sequences: Offsets16<'a, Offset16>,
-    },
-}
-
-impl<'a> MultipleSubst<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let count = s.read::<u16>()?;
-                let sequences = s.read_offsets16(count, data)?;
-                Self::Format1 { coverage, sequences }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
-        }
-    }
-}
-
 impl WouldApply for MultipleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
@@ -266,20 +133,6 @@ impl Apply for MultipleSubst<'_> {
                 seq.apply(ctx)
             }
         }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-struct Sequence<'a> {
-    substitutes: LazyArray16<'a, GlyphId>,
-}
-
-impl<'a> Sequence<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let count = s.read::<u16>()?;
-        let substitutes = s.read_array16(count)?;
-        Some(Self { substitutes })
     }
 }
 
@@ -314,36 +167,6 @@ impl Apply for Sequence<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-enum AlternateSubst<'a> {
-    Format1 {
-        coverage: Coverage<'a>,
-        alternate_sets: Offsets16<'a, Offset16>,
-    },
-}
-
-impl<'a> AlternateSubst<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let count = s.read::<u16>()?;
-                let alternate_sets = s.read_offsets16(count, data)?;
-                Self::Format1 { coverage, alternate_sets }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
-        }
-    }
-}
-
 impl WouldApply for AlternateSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
@@ -361,20 +184,6 @@ impl Apply for AlternateSubst<'_> {
                 set.apply(ctx)
             }
         }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-struct AlternateSet<'a> {
-    alternates: LazyArray16<'a, GlyphId>,
-}
-
-impl<'a> AlternateSet<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let count = s.read::<u16>()?;
-        let alternates = s.read_array16(count)?;
-        Some(Self { alternates })
     }
 }
 
@@ -400,36 +209,6 @@ impl Apply for AlternateSet<'_> {
         ctx.replace_glyph(self.alternates.get(idx)?);
 
         Some(())
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-enum LigatureSubst<'a> {
-    Format1 {
-        coverage: Coverage<'a>,
-        ligature_sets: Offsets16<'a, Offset16>,
-    },
-}
-
-impl<'a> LigatureSubst<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let count = s.read::<u16>()?;
-                let ligature_sets = s.read_offsets16(count, data)?;
-                Self::Format1 { coverage, ligature_sets }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
-        }
     }
 }
 
@@ -460,19 +239,6 @@ impl Apply for LigatureSubst<'_> {
     }
 }
 
-struct LigatureSet<'a> {
-    ligatures: Offsets16<'a, Offset16>,
-}
-
-impl<'a> LigatureSet<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let count = s.read::<u16>()?;
-        let ligatures = s.read_offsets16(count, data)?;
-        Some(Self { ligatures })
-    }
-}
-
 impl WouldApply for LigatureSet<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         self.ligatures
@@ -491,21 +257,6 @@ impl Apply for LigatureSet<'_> {
             }
         }
         None
-    }
-}
-
-struct Ligature<'a> {
-    lig_glyph: GlyphId,
-    components: LazyArray16<'a, u16>,
-}
-
-impl<'a> Ligature<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let lig_glyph = s.read::<GlyphId>()?;
-        let count = s.read::<u16>()?;
-        let components = s.read_array16(count.checked_sub(1)?)?;
-        Some(Self { lig_glyph, components })
     }
 }
 
@@ -636,49 +387,6 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
 
             let new_lig_comp = comps_so_far - last_num_comps + this_comp.min(last_num_comps);
             info.set_lig_props_for_mark(lig_id, new_lig_comp)
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-enum ReverseChainSingleSubst<'a> {
-    Format1 {
-        data: &'a [u8],
-        coverage: Coverage<'a>,
-        backtrack_coverages: LazyArray16<'a, u16>,
-        lookahead_coverages: LazyArray16<'a, u16>,
-        substitutes: LazyArray16<'a, GlyphId>,
-    },
-}
-
-impl<'a> ReverseChainSingleSubst<'a> {
-    fn parse(data: &'a [u8]) -> Option<Self> {
-        let mut s = Stream::new(data);
-        let format: u16 = s.read()?;
-        Some(match format {
-            1 => {
-                let coverage = Coverage::parse(s.read_at_offset16()?)?;
-                let backtrack_count = s.read::<u16>()?;
-                let backtrack_coverages = s.read_array16(backtrack_count)?;
-                let lookahead_count = s.read::<u16>()?;
-                let lookahead_coverages = s.read_array16(lookahead_count)?;
-                let substitute_count = s.read::<u16>()?;
-                let substitutes = s.read_array16(substitute_count)?;
-                Self::Format1 {
-                    data,
-                    coverage,
-                    backtrack_coverages,
-                    lookahead_coverages,
-                    substitutes,
-                }
-            }
-            _ => return None,
-        })
-    }
-
-    fn coverage(&self) -> &Coverage<'a> {
-        match self {
-            Self::Format1 { coverage, .. } => coverage,
         }
     }
 }
