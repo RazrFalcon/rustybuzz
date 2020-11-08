@@ -32,7 +32,6 @@ fn main() {
     build.file("harfbuzz/src/hb-ot-map.cc");
     build.file("harfbuzz/src/hb-ot-shape.cc");
     build.file("harfbuzz/src/hb-ot-shape-complex-default.cc");
-    build.file("harfbuzz/src/hb-set.cc");
     build.file("harfbuzz/src/hb-shape.cc");
     build.file("harfbuzz/src/hb-shape-plan.cc");
     build.file("harfbuzz/src/hb-static.cc");

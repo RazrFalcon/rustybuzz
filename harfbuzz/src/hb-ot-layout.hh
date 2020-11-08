@@ -34,7 +34,6 @@
 #include "hb-buffer.hh"
 #include "hb-open-type.hh"
 #include "hb-ot-shape.hh"
-#include "hb-set-digest.hh"
 
 #ifndef RB_MAX_CONTEXT_LENGTH
 #define RB_MAX_CONTEXT_LENGTH 64

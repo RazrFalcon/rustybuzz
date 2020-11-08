@@ -33,7 +33,6 @@
 
 #include "hb-common.h"
 #include "hb-blob.h"
-#include "hb-set.h"
 
 RB_BEGIN_DECLS
 

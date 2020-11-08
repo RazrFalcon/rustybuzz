@@ -35,8 +35,6 @@
 
 #include "hb-ot-face.hh"
 
-#include "hb-set.hh"
-
 #include "hb-aat-layout.hh"
 
 const rb_ot_complex_shaper_t *rb_ot_shape_plan_get_ot_complex_shaper(const rb_ot_shape_plan_t *plan)

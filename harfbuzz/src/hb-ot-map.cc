@@ -28,7 +28,6 @@
 
 #include "hb.hh"
 
-#include "hb-set.hh"
 #include "hb-ot-map.hh"
 #include "hb-ot-shape.hh"
 #include "hb-ot-layout.hh"
