@@ -27,8 +27,6 @@
 #include "hb-ot-face.hh"
 
 #include "hb-ot-kern-table.hh"
-#include "hb-ot-layout-gsub-table.hh"
-#include "hb-ot-layout-gpos-table.hh"
 
 extern "C" {
 const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag, unsigned int *len)
@@ -44,8 +42,6 @@ void rb_ot_face_t::init0(rb_face_t *face)
     this->face = face;
     head.init0();
     kern.init0();
-    GSUB.init0();
-    GPOS.init0();
     morx.init0();
     mort.init0();
     kerx.init0();
@@ -58,8 +54,6 @@ void rb_ot_face_t::fini()
 {
     head.fini();
     kern.fini();
-    GSUB.fini();
-    GPOS.fini();
     morx.fini();
     mort.fini();
     kerx.fini();

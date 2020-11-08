@@ -29,11 +29,9 @@
 
 #include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
-#include "hb-ot-layout-gpos-table.hh"
 
 extern "C" {
 RB_EXTERN void rb_kern_machine_kern(
-    const OT::rb_ot_apply_context_t *ctx,
     rb_font_t *font,
     rb_buffer_t *buffer,
     rb_mask_t kern_mask,
@@ -60,11 +58,7 @@ template <typename Driver> struct rb_kern_machine_t
     RB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
     void kern(rb_font_t *font, rb_buffer_t *buffer, rb_mask_t kern_mask) const
     {
-        OT::rb_ot_apply_context_t c(1, font, buffer);
-        c.set_lookup_mask(kern_mask);
-        c.set_lookup_props(OT::LookupFlag::IgnoreMarks);
         rb_kern_machine_kern(
-            &c,
             font,
             buffer,
             kern_mask,

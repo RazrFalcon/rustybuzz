@@ -58,6 +58,14 @@ unsigned int rb_ot_map_get_feature_stage(const rb_ot_map_t *map, unsigned int ta
     return map->get_feature_stage(table_index, feature_tag);
 }
 
+void rb_ot_map_get_stages(const rb_ot_map_t *map,
+                          unsigned int table_index,
+                          const struct rb_ot_map_stage_map_t **pstages,
+                          unsigned int *stage_count)
+{
+    map->get_stages(table_index, pstages, stage_count);
+}
+
 void rb_ot_map_get_stage_lookups(const rb_ot_map_t *map,
                                  unsigned int table_index,
                                  unsigned int stage,
@@ -347,7 +355,7 @@ void rb_ot_map_builder_t::compile(rb_ot_map_t &m, unsigned int *variations_index
             last_num_lookups = m.lookups[table_index].length;
 
             if (stage_index < stages[table_index].length && stages[table_index][stage_index].index == stage) {
-                rb_ot_map_t::stage_map_t *stage_map = m.stages[table_index].push();
+                rb_ot_map_stage_map_t *stage_map = m.stages[table_index].push();
                 stage_map->last_lookup = last_num_lookups;
                 stage_map->pause_func = stages[table_index][stage_index].pause_func;
 

@@ -8,8 +8,8 @@ use ttf_parser::parser::{
 };
 use ttf_parser::GlyphId;
 
-use crate::Tag;
 use crate::font::Font;
+use crate::Tag;
 
 /// A GSUB or GPOS table.
 #[derive(Clone, Copy, Debug)]
@@ -343,6 +343,17 @@ impl<'a> Lookup<'a> {
             subtables,
             mark_filtering_set,
         })
+    }
+
+    // lookup_props is a 32-bit integer where the lower 16-bit is LookupFlag and
+    // higher 16-bit is mark-filtering-set if the lookup uses one.
+    // Not to be confused with glyph_props which is very similar. */
+    pub fn props(&self) -> u32 {
+        let mut props = u32::from(self.flags.bits());
+        if let Some(set) = self.mark_filtering_set {
+            props |= u32::from(set) << 16;
+        }
+        props
     }
 }
 

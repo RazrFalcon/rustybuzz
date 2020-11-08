@@ -30,6 +30,7 @@
 
 #include "hb-kern.hh"
 #include "hb-aat-layout-ankr-table.hh"
+#include "hb-ot-layout.hh"
 
 /*
  * kerx -- Extended Kerning

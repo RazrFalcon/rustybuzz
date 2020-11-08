@@ -39,12 +39,7 @@
 
 /* Declare tables. */
 namespace OT { struct head; }
-
 namespace OT { struct kern; }
-
-namespace OT { struct GSUB_accelerator_t; }
-namespace OT { struct GPOS_accelerator_t; }
-
 namespace AAT { struct morx; }
 namespace AAT { struct mort; }
 namespace AAT { struct kerx; }
@@ -61,8 +56,6 @@ struct rb_ot_face_t
         ORDER_ZERO,
         ORDER_OT_head,
         ORDER_OT_kern,
-        ORDER_OT_GSUB,
-        ORDER_OT_GPOS,
         ORDER_AAT_morx,
         ORDER_AAT_mort,
         ORDER_AAT_kerx,
@@ -75,9 +68,6 @@ struct rb_ot_face_t
 
     rb_table_lazy_loader_t<OT::head, ORDER_OT_head> head;
     rb_table_lazy_loader_t<OT::kern, ORDER_OT_kern> kern;
-
-    rb_face_lazy_loader_t<OT::GSUB_accelerator_t, ORDER_OT_GSUB> GSUB;
-    rb_face_lazy_loader_t<OT::GPOS_accelerator_t, ORDER_OT_GPOS> GPOS;
 
     rb_table_lazy_loader_t<AAT::morx, ORDER_AAT_morx> morx;
     rb_table_lazy_loader_t<AAT::mort, ORDER_AAT_mort> mort;

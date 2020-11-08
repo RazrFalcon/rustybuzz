@@ -6,8 +6,8 @@ use ttf_parser::parser::LazyArray16;
 use ttf_parser::GlyphId;
 
 use super::apply::{ApplyContext, WouldApplyContext};
-use super::common::{ClassDef, Coverage, Class};
-use super::MAX_CONTEXT_LENGTH;
+use super::common::{Class, ClassDef, Coverage};
+use super::{TableIndex, MAX_CONTEXT_LENGTH};
 use crate::buffer::GlyphInfo;
 use crate::Mask;
 
@@ -88,18 +88,17 @@ pub fn match_input(
         return None;
     }
 
-    let buffer = ctx.buffer();
-    let mut iter = SkippyIter::new(ctx, buffer.idx, input.len(), false);
+    let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, input.len(), false);
     iter.enable_matching(input, match_func);
 
-    let first = buffer.cur(0);
+    let first = ctx.buffer.cur(0);
     let first_lig_id = first.lig_id();
     let first_lig_comp = first.lig_comp();
     let mut positions = [0; MAX_CONTEXT_LENGTH];
     let mut total_component_count = first.lig_num_comps();
     let mut ligbase = Ligbase::NotChecked;
 
-    positions[0] = buffer.idx;
+    positions[0] = ctx.buffer.idx;
 
     for i in 1..count {
         if !iter.next() {
@@ -108,7 +107,7 @@ pub fn match_input(
 
         positions[i] = iter.index();
 
-        let this = buffer.info[iter.index()];
+        let this = ctx.buffer.info[iter.index()];
         let this_lig_id = this.lig_id();
         let this_lig_comp = this.lig_comp();
 
@@ -120,8 +119,8 @@ pub fn match_input(
                 // ...unless, we are attached to a base ligature and that base
                 // ligature is ignorable.
                 if ligbase == Ligbase::NotChecked {
-                    let out = buffer.out_info();
-                    let mut j = buffer.out_len;
+                    let out = ctx.buffer.out_info();
+                    let mut j = ctx.buffer.out_len;
                     let mut found = false;
                     while j > 0 && out[j - 1].lig_id() == first_lig_id {
                         if out[j - 1].lig_comp() == 0 {
@@ -156,7 +155,7 @@ pub fn match_input(
     }
 
     Some(Matched {
-        len: iter.index() - buffer.idx + 1,
+        len: iter.index() - ctx.buffer.idx + 1,
         positions,
         total_component_count,
     })
@@ -167,7 +166,7 @@ pub fn match_backtrack(
     backtrack: LazyArray16<u16>,
     match_func: &MatchFunc,
 ) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, ctx.buffer().backtrack_len(), backtrack.len(), true);
+    let mut iter = SkippyIter::new(ctx, ctx.buffer.backtrack_len(), backtrack.len(), true);
     iter.enable_matching(backtrack, match_func);
 
     for _ in 0..backtrack.len() {
@@ -185,7 +184,7 @@ pub fn match_lookahead(
     match_func: &MatchFunc,
     offset: usize,
 ) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, ctx.buffer().idx + offset - 1, lookahead.len(), true);
+    let mut iter = SkippyIter::new(ctx, ctx.buffer.idx + offset - 1, lookahead.len(), true);
     iter.enable_matching(lookahead, match_func);
 
     for _ in 0..lookahead.len() {
@@ -198,7 +197,7 @@ pub fn match_lookahead(
 }
 
 pub struct SkippyIter<'a> {
-    ctx: &'a ApplyContext,
+    ctx: &'a ApplyContext<'a>,
     lookup_props: u32,
     ignore_zwnj: bool,
     ignore_zwj: bool,
@@ -217,18 +216,21 @@ impl<'a> SkippyIter<'a> {
         num_items: u16,
         context_match: bool,
     ) -> Self {
-        let buffer = ctx.buffer();
         SkippyIter {
             ctx,
-            lookup_props: ctx.lookup_props(),
+            lookup_props: ctx.lookup_props,
             // Ignore ZWNJ if we are matching GPOS, or matching GSUB context and asked to.
-            ignore_zwnj: ctx.table_index() == 1 || (context_match && ctx.auto_zwnj()),
+            ignore_zwnj: ctx.table_index == TableIndex::GPOS || (context_match && ctx.auto_zwnj),
             // Ignore ZWJ if we are matching context, or asked to.
-            ignore_zwj: context_match || ctx.auto_zwj(),
-            mask: if context_match { u32::MAX } else { ctx.lookup_mask() },
-            syllable: if buffer.idx == start_buf_index { buffer.cur(0).syllable() } else { 0 },
+            ignore_zwj: context_match || ctx.auto_zwj,
+            mask: if context_match { u32::MAX } else { ctx.lookup_mask },
+            syllable: if ctx.buffer.idx == start_buf_index {
+                ctx.buffer.cur(0).syllable()
+            } else {
+                0
+            },
             matching: None,
-            buf_len: buffer.len,
+            buf_len: ctx.buffer.len,
             buf_idx: start_buf_index,
             num_items
         }
@@ -250,7 +252,7 @@ impl<'a> SkippyIter<'a> {
         assert!(self.num_items > 0);
         while self.buf_idx + usize::from(self.num_items) < self.buf_len {
             self.buf_idx += 1;
-            let info = &self.ctx.buffer().info[self.buf_idx];
+            let info = &self.ctx.buffer.info[self.buf_idx];
 
             let skip = self.may_skip(info);
             if skip == Some(true) {
@@ -275,7 +277,7 @@ impl<'a> SkippyIter<'a> {
         assert!(self.num_items > 0);
         while self.buf_idx >= usize::from(self.num_items) {
             self.buf_idx -= 1;
-            let info = &self.ctx.buffer().out_info()[self.buf_idx];
+            let info = &self.ctx.buffer.out_info()[self.buf_idx];
 
             let skip = self.may_skip(info);
             if skip == Some(true) {

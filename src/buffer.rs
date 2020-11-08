@@ -498,7 +498,7 @@ pub(crate) struct Buffer {
     pub(crate) successful: bool,
     /// Whether we have an output buffer going on.
     have_output: bool,
-    have_separate_output: bool,
+    pub(crate) have_separate_output: bool,
     /// Whether we have positions
     have_positions: bool,
 
@@ -765,7 +765,7 @@ impl Buffer {
         self.idx = 0;
     }
 
-    fn remove_output(&mut self) {
+    pub(crate) fn remove_output(&mut self) {
         self.have_output = false;
         self.have_positions = false;
 
@@ -1416,6 +1416,7 @@ bitflags::bitflags! {
         const BASE_GLYPH    = 0x02;
         const LIGATURE      = 0x04;
         const MARK          = 0x08;
+        const CLASS_MASK    = Self::BASE_GLYPH.bits | Self::LIGATURE.bits | Self::MARK.bits;
 
         // The following are used internally; not derived from GDEF.
         const SUBSTITUTED   = 0x10;

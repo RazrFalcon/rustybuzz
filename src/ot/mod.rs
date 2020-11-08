@@ -15,7 +15,6 @@ pub use shape_plan::*;
 pub use shape_planner::*;
 pub use complex_shaper::*;
 
-#[allow(dead_code)]
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum TableIndex {
     GSUB = 0,

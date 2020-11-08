@@ -36,7 +36,9 @@
 #include "hb-ot-shape.hh"
 #include "hb-set-digest.hh"
 
-struct rb_ot_shape_plan_t;
+#ifndef RB_MAX_CONTEXT_LENGTH
+#define RB_MAX_CONTEXT_LENGTH 64
+#endif
 
 /*
  * kern
@@ -50,25 +52,13 @@ RB_INTERNAL bool rb_ot_layout_has_cross_kerning(rb_face_t *face);
 
 RB_INTERNAL void rb_ot_layout_kern(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
 
-/*
- * GDEF
- */
+enum attach_type_t {
+    ATTACH_TYPE_NONE = 0X00,
 
-enum rb_ot_layout_glyph_props_flags_t {
-    /* The following three match LookupFlags::Ignore* numbers. */
-    RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH = 0x02u,
-    RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE = 0x04u,
-    RB_OT_LAYOUT_GLYPH_PROPS_MARK = 0x08u,
-
-    RB_OT_LAYOUT_GLYPH_PROPS_CLASS_MASK =
-        RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH | RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE | RB_OT_LAYOUT_GLYPH_PROPS_MARK,
-
-    /* The following are used internally; not derived from GDEF. */
-    RB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED = 0x10u,
-    RB_OT_LAYOUT_GLYPH_PROPS_LIGATED = 0x20u,
-    RB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED = 0x40u,
+    /* Each attachment should be either a mark or a cursive; can't be both. */
+    ATTACH_TYPE_MARK = 0X01,
+    ATTACH_TYPE_CURSIVE = 0X02,
 };
-RB_MARK_AS_FLAG_T(rb_ot_layout_glyph_props_flags_t);
 
 /*
  * Buffer var routines.
@@ -81,6 +71,10 @@ RB_MARK_AS_FLAG_T(rb_ot_layout_glyph_props_flags_t);
 #define glyph_props() var1.u16[0] /* GDEF glyph properties */
 #define lig_props() var1.u8[2]    /* GSUB/GPOS ligature tracking */
 #define syllable() var1.u8[3]     /* GSUB/GPOS shaping boundaries */
+#define attach_chain() var.i16[0] /* Glyph to which this attaches to, relative to current glyphs; \
+                                     negative for going back, positive for forward. */
+#define attach_type() var.u8[2]   /* Attachment type. Note! if attach_chain() is zero, the \
+                                     value of attach_type() is irrelevant. */
 
 /* unicode_props */
 
@@ -127,20 +121,11 @@ static inline bool _rb_glyph_info_is_unicode_mark(const rb_glyph_info_t *info)
     return RB_UNICODE_GENERAL_CATEGORY_IS_MARK(info->unicode_props() & UPROPS_MASK_GEN_CAT);
 }
 
-static inline bool _rb_glyph_info_ligated(const rb_glyph_info_t *info)
-{
-    return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_LIGATED);
-}
+static inline bool _rb_glyph_info_ligated(const rb_glyph_info_t *info);
 
 static inline rb_bool_t _rb_glyph_info_is_default_ignorable(const rb_glyph_info_t *info)
 {
     return (info->unicode_props() & UPROPS_MASK_IGNORABLE) && !_rb_glyph_info_ligated(info);
-}
-
-static inline bool _rb_glyph_info_is_default_ignorable_and_not_hidden(const rb_glyph_info_t *info)
-{
-    return ((info->unicode_props() & (UPROPS_MASK_IGNORABLE | UPROPS_MASK_HIDDEN)) == UPROPS_MASK_IGNORABLE) &&
-           !_rb_glyph_info_ligated(info);
 }
 
 static inline void _rb_glyph_info_set_continuation(rb_glyph_info_t *info)
@@ -151,6 +136,21 @@ static inline void _rb_glyph_info_set_continuation(rb_glyph_info_t *info)
 static inline bool _rb_glyph_info_is_continuation(const rb_glyph_info_t *info)
 {
     return info->unicode_props() & UPROPS_MASK_CONTINUATION;
+}
+
+static inline bool _rb_glyph_info_is_unicode_format(const rb_glyph_info_t *info)
+{
+    return _rb_glyph_info_get_general_category(info) == RB_UNICODE_GENERAL_CATEGORY_FORMAT;
+}
+
+static inline bool _rb_glyph_info_is_zwnj(const rb_glyph_info_t *info)
+{
+    return _rb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWNJ);
+}
+
+static inline bool _rb_glyph_info_is_zwj(const rb_glyph_info_t *info)
+{
+    return _rb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
 }
 
 /* Loop over grapheme. Based on foreach_cluster(). */
@@ -172,22 +172,23 @@ static inline unsigned int rb_buffer_next_grapheme(rb_buffer_t *buffer, unsigned
     return start;
 }
 
-static inline bool _rb_glyph_info_is_unicode_format(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_get_general_category(info) == RB_UNICODE_GENERAL_CATEGORY_FORMAT;
-}
-
-static inline bool _rb_glyph_info_is_zwnj(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWNJ);
-}
-
-static inline bool _rb_glyph_info_is_zwj(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
-}
-
 /* glyph_props: */
+
+enum rb_ot_layout_glyph_props_flags_t {
+    /* The following three match LookupFlags::Ignore* numbers. */
+    RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH = 0x02u,
+    RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE = 0x04u,
+    RB_OT_LAYOUT_GLYPH_PROPS_MARK = 0x08u,
+
+    RB_OT_LAYOUT_GLYPH_PROPS_CLASS_MASK =
+        RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH | RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE | RB_OT_LAYOUT_GLYPH_PROPS_MARK,
+
+    /* The following are used internally; not derived from GDEF. */
+    RB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED = 0x10u,
+    RB_OT_LAYOUT_GLYPH_PROPS_LIGATED = 0x20u,
+    RB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED = 0x40u,
+};
+RB_MARK_AS_FLAG_T(rb_ot_layout_glyph_props_flags_t);
 
 static inline void _rb_glyph_info_set_glyph_props(rb_glyph_info_t *info, unsigned int props)
 {
@@ -197,6 +198,11 @@ static inline void _rb_glyph_info_set_glyph_props(rb_glyph_info_t *info, unsigne
 static inline bool _rb_glyph_info_is_mark(const rb_glyph_info_t *info)
 {
     return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_MARK);
+}
+
+static inline bool _rb_glyph_info_ligated(const rb_glyph_info_t *info)
+{
+    return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_LIGATED);
 }
 
 /* Make sure no one directly touches our props... */

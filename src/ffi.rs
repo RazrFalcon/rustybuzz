@@ -90,6 +90,13 @@ pub struct rb_ot_map_lookup_map_t {
 
 #[repr(C)]
 #[derive(Clone, Copy)]
+pub struct rb_ot_map_stage_map_t {
+    pub last_lookup: u32,
+    pub pause_func: rb_ot_pause_func_t,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
 pub struct rb_buffer_t {
     _unused: [u8; 0],
 }
@@ -202,8 +209,15 @@ extern "C" {
 
     pub fn rb_ot_map_get_feature_stage(map: *const rb_ot_map_t, table_index: u32, feature_tag: Tag) -> u32;
 
+    pub fn rb_ot_map_get_stages(
+        map: *const rb_ot_map_t,
+        table_index: u32,
+        pstages: *mut *const rb_ot_map_stage_map_t,
+        stage_count: *mut u32,
+    );
+
     pub fn rb_ot_map_get_stage_lookups(
-        plan: *const rb_ot_map_t,
+        map: *const rb_ot_map_t,
         table_index: u32,
         stage: u32,
         plookups: *mut *const rb_ot_map_lookup_map_t,
@@ -264,33 +278,6 @@ extern "C" {
         glyphs: *const rb_codepoint_t,
         glyphs_length: u32,
         zero_context: rb_bool_t,
-    ) -> rb_bool_t;
-
-    pub fn rb_ot_apply_context_get_font(ctx: *const rb_ot_apply_context_t) -> *const rb_font_t;
-
-    pub fn rb_ot_apply_context_get_buffer(ctx: *mut rb_ot_apply_context_t) -> *mut rb_buffer_t;
-
-    pub fn rb_ot_apply_context_get_lookup_mask(ctx: *const rb_ot_apply_context_t) -> rb_mask_t;
-
-    pub fn rb_ot_apply_context_get_table_index(ctx: *const rb_ot_apply_context_t) -> u32;
-
-    pub fn rb_ot_apply_context_get_lookup_index(ctx: *const rb_ot_apply_context_t) -> u32;
-
-    pub fn rb_ot_apply_context_get_lookup_props(ctx: *const rb_ot_apply_context_t) -> u32;
-
-    pub fn rb_ot_apply_context_get_nesting_level_left(ctx: *const rb_ot_apply_context_t) -> u32;
-
-    pub fn rb_ot_apply_context_get_auto_zwnj(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
-
-    pub fn rb_ot_apply_context_get_auto_zwj(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
-
-    pub fn rb_ot_apply_context_get_random(ctx: *const rb_ot_apply_context_t) -> rb_bool_t;
-
-    pub fn rb_ot_apply_context_random_number(ctx: *mut rb_ot_apply_context_t) -> u32;
-
-    pub fn rb_ot_apply_context_recurse(
-        ctx: *mut rb_ot_apply_context_t,
-        sub_lookup_index: u32,
     ) -> rb_bool_t;
 
     pub fn rb_clear_substitution_flags(

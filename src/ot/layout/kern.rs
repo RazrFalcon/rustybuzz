@@ -1,13 +1,14 @@
 use std::ffi::c_void;
 
 use super::apply::ApplyContext;
+use super::common::LookupFlags;
 use super::matching::SkippyIter;
 use crate::buffer::{Buffer, BufferScratchFlags};
+use crate::ot::TableIndex;
 use crate::{ffi, Font, Mask};
 
 #[no_mangle]
 pub extern "C" fn rb_kern_machine_kern(
-    ctx: *const ffi::rb_ot_apply_context_t,
     font: *const ffi::rb_font_t,
     buffer: *mut ffi::rb_buffer_t,
     kern_mask: ffi::rb_mask_t,
@@ -19,29 +20,30 @@ pub extern "C" fn rb_kern_machine_kern(
         ffi::rb_codepoint_t,
     ) -> ffi::rb_position_t,
 ) {
-    let ctx = ApplyContext::from_ptr(ctx);
     let font = Font::from_ptr(font);
     let mut buffer = Buffer::from_ptr_mut(buffer);
     let cross_stream = cross_stream != 0;
-    kern(&ctx, font, &mut buffer, kern_mask, cross_stream, |left, right| {
+    kern(font, &mut buffer, kern_mask, cross_stream, |left, right| {
         unsafe { machine_get_kerning(machine, left, right) }
     });
 }
 
 fn kern(
-    ctx: &ApplyContext,
-    _: &Font,
+    font: &Font,
     buffer: &mut Buffer,
     kern_mask: Mask,
     cross_stream: bool,
     get_kerning: impl Fn(u32, u32) -> i32,
 ) {
-    let len = buffer.len;
-    let horizontal = buffer.direction.is_horizontal();
+    let mut ctx = ApplyContext::new(TableIndex::GPOS, font, buffer);
+    ctx.lookup_mask = kern_mask;
+    ctx.lookup_props = u32::from(LookupFlags::IGNORE_MARKS.bits());
+
+    let horizontal = ctx.buffer.direction.is_horizontal();
 
     let mut i = 0;
-    while i < len {
-        if (buffer.info[i].mask & kern_mask) == 0 {
+    while i < ctx.buffer.len {
+        if (ctx.buffer.info[i].mask & kern_mask) == 0 {
             i += 1;
             continue;
         }
@@ -54,15 +56,15 @@ fn kern(
 
         let j = iter.index();
 
-        let info = &buffer.info;
+        let info = &ctx.buffer.info;
         let kern = get_kerning(info[i].codepoint, info[j].codepoint);
 
-        let pos = &mut buffer.pos;
+        let pos = &mut ctx.buffer.pos;
         if kern != 0 {
             if horizontal {
                 if cross_stream {
                     pos[j].y_offset = kern;
-                    buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+                    ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
                 } else {
                     let kern1 = kern >> 1;
                     let kern2 = kern - kern1;
@@ -73,7 +75,7 @@ fn kern(
             } else {
                 if cross_stream {
                     pos[j].x_offset = kern;
-                    buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+                    ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
                 } else {
                     let kern1 = kern >> 1;
                     let kern2 = kern - kern1;
@@ -83,7 +85,7 @@ fn kern(
                 }
             }
 
-            buffer.unsafe_to_break(i, j + 1)
+            ctx.buffer.unsafe_to_break(i, j + 1)
         }
 
         i = j;

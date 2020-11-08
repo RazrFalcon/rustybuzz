@@ -15,11 +15,12 @@ use std::slice;
 use ttf_parser::parser::{NumFrom, Offset, Offset16, Stream};
 use ttf_parser::GlyphId;
 
+use super::{Map, ShapePlan, TableIndex};
 use crate::buffer::Buffer;
 use crate::common::TagExt;
 use crate::{ffi, Font, Tag};
-use apply::{WouldApply, WouldApplyContext};
-use common::{SubstPosTable, FeatureIndex, LangIndex, LookupIndex, ScriptIndex, VariationIndex};
+use apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
+use common::{FeatureIndex, LangIndex, LookupIndex, ScriptIndex, SubstPosTable, VariationIndex};
 use gpos::PosTable;
 use gsub::SubstTable;
 
@@ -30,6 +31,33 @@ pub const SCRIPT_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const LANGUAGE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const FEATURE_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const FEATURE_VARIATION_NOT_FOUND_INDEX: u32 = 0xFFFFFFFF;
+
+/// A lookup-based layout table (GSUB or GPOS).
+pub trait LayoutTable {
+    /// The tag of this table.
+    const TAG: Tag;
+
+    /// The index of this table.
+    const INDEX: TableIndex;
+
+    /// Whether lookups in this table can be applied to the buffer in-place.
+    const IN_PLACE: bool;
+
+    /// The kind of lookup stored in this table.
+    type Lookup: LayoutLookup;
+
+    /// Get the lookup at the specified index.
+    fn get_lookup(&self, index: LookupIndex) -> Option<Self::Lookup>;
+}
+
+/// A lookup in a layout table.
+pub trait LayoutLookup: Apply {
+    /// The lookup's lookup_props.
+    fn props(&self) -> u32;
+
+    /// Whether the lookup has to be applied backwards.
+    fn is_reverse(&self) -> bool;
+}
 
 // GDEF
 // Note: GDEF blocklisting was removed for now because we use
@@ -571,6 +599,138 @@ pub extern "C" fn rb_ot_layout_position_finish_offsets(
 }
 
 // General
+
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_substitute(
+    map: *const ffi::rb_ot_map_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let map = Map::from_ptr(map);
+    let plan = ShapePlan::from_ptr(plan);
+    let font = Font::from_ptr(font);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    let table = SubstTable::parse(table_data(font.face_ptr(), SubstTable::TAG));
+    apply(&map, &plan, font, &mut buffer, table);
+}
+
+#[no_mangle]
+pub extern "C" fn rb_ot_layout_position(
+    map: *const ffi::rb_ot_map_t,
+    plan: *const ffi::rb_ot_shape_plan_t,
+    font: *mut ffi::rb_font_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let map = Map::from_ptr(map);
+    let plan = ShapePlan::from_ptr(plan);
+    let font = Font::from_ptr(font);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    let table = PosTable::parse(table_data(font.face_ptr(), PosTable::TAG));
+    apply(&map, &plan, font, &mut buffer, table);
+}
+
+fn apply<T: LayoutTable>(
+    map: &Map,
+    plan: &ShapePlan,
+    font: &Font,
+    buffer: &mut Buffer,
+    table: Option<T>,
+) {
+    let mut ctx = ApplyContext::new(T::INDEX, font, buffer);
+
+    for (stage_index, stage) in map.collect_stages(T::INDEX).into_iter().enumerate() {
+        for lookup in map.collect_stage_lookups(T::INDEX, stage_index) {
+            let lookup_index = LookupIndex(lookup.index as u16);
+
+            ctx.lookup_index = lookup_index;
+            ctx.lookup_mask = lookup.mask;
+            ctx.auto_zwj = lookup.auto_zwj;
+            ctx.auto_zwnj = lookup.auto_zwnj;
+
+            if lookup.random {
+                ctx.random = true;
+                ctx.buffer.unsafe_to_break(0, ctx.buffer.len);
+            }
+
+            if let Some(table) = &table {
+                if let Some(lookup) =  table.get_lookup(lookup_index) {
+                    apply_string::<T>(&mut ctx, lookup);
+                }
+            }
+        }
+
+        if let Some(func) = stage.pause_func {
+            ctx.buffer.clear_output();
+            unsafe { func(plan.as_ptr(), font.as_ptr() as *mut _, ctx.buffer.as_ptr()); }
+        }
+    }
+}
+
+fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: T::Lookup) {
+    if ctx.buffer.is_empty() || ctx.lookup_mask == 0 {
+        return;
+    }
+
+    ctx.lookup_props = lookup.props();
+
+    if !lookup.is_reverse() {
+        // in/out forward substitution/positioning
+        if T::INDEX == TableIndex::GSUB {
+            ctx.buffer.clear_output();
+        }
+        ctx.buffer.idx = 0;
+
+        if apply_forward(ctx, lookup) {
+            if !T::IN_PLACE {
+                ctx.buffer.swap_buffers();
+            } else {
+                assert!(!ctx.buffer.have_separate_output);
+            }
+        }
+    } else {
+        // in-place backward substitution/positioning
+        if T::INDEX == TableIndex::GSUB {
+            ctx.buffer.remove_output();
+        }
+
+        ctx.buffer.idx = ctx.buffer.len - 1;
+        apply_backward(ctx, lookup);
+    }
+}
+
+fn apply_forward(ctx: &mut ApplyContext, lookup: impl Apply) -> bool {
+    let mut ret = false;
+    while ctx.buffer.idx < ctx.buffer.len && ctx.buffer.successful {
+        let cur = ctx.buffer.cur(0);
+        if (cur.mask & ctx.lookup_mask) != 0
+            && ctx.check_glyph_property(cur, ctx.lookup_props)
+            && lookup.apply(ctx).is_some()
+        {
+            ret = true;
+        } else {
+            ctx.buffer.next_glyph();
+        }
+    }
+    ret
+}
+
+fn apply_backward(ctx: &mut ApplyContext, lookup: impl Apply) -> bool {
+    let mut ret = false;
+    loop {
+        let cur = ctx.buffer.cur(0);
+        ret |= (cur.mask & ctx.lookup_mask) != 0
+            && ctx.check_glyph_property(cur, ctx.lookup_props)
+            && lookup.apply(ctx).is_some();
+
+        if ctx.buffer.idx == 0 {
+            break;
+        }
+
+        ctx.buffer.idx -= 1;
+    }
+    ret
+}
 
 fn table_data(face: *const ffi::rb_face_t, table_tag: Tag) -> &'static [u8] {
     unsafe {

@@ -6,7 +6,7 @@ use ttf_parser::parser::{FromData, LazyArray16, Offset, Offset16, Offsets16, Str
 use ttf_parser::GlyphId;
 
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::common::{ClassDef, Coverage};
+use super::common::{ClassDef, Coverage, LookupIndex};
 use super::matching::{
     match_backtrack, match_class, match_coverage, match_glyph, match_input, match_lookahead,
     would_match_input, MatchFunc, Matched,
@@ -16,7 +16,7 @@ use super::MAX_CONTEXT_LENGTH;
 #[derive(Clone, Copy, Debug)]
 pub struct LookupRecord {
     sequence_index: u16,
-    lookup_list_index: u16,
+    lookup_index: LookupIndex,
 }
 
 impl FromData for LookupRecord {
@@ -27,7 +27,7 @@ impl FromData for LookupRecord {
         let mut s = Stream::new(data);
         Some(Self {
             sequence_index: s.read::<u16>()?,
-            lookup_list_index: s.read::<u16>()?,
+            lookup_index: s.read::<LookupIndex>()?,
         })
     }
 }
@@ -116,7 +116,7 @@ impl WouldApply for ContextLookup<'_> {
 
 impl Apply for ContextLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
                 let index = coverage.get(glyph_id)?;
@@ -312,7 +312,7 @@ impl WouldApply for ChainContextLookup<'_> {
 
 impl Apply for ChainContextLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
         match *self {
             Self::Format1 { coverage, sets } => {
                 let index = coverage.get(glyph_id)?;
@@ -462,8 +462,7 @@ fn apply_context(
     lookups: LazyArray16<LookupRecord>,
 ) -> Option<()> {
     match_input(ctx, input, match_func).map(|matched| {
-        let buffer = ctx.buffer_mut();
-        buffer.unsafe_to_break(buffer.idx, buffer.idx + matched.len);
+        ctx.buffer.unsafe_to_break(ctx.buffer.idx, ctx.buffer.idx + matched.len);
         apply_lookup(ctx, input, matched, lookups);
     })
 }
@@ -479,7 +478,7 @@ fn apply_chain_context(
     if let Some(matched) = match_input(ctx, input, match_funcs[1]) {
         if let Some(start_idx) = match_backtrack(ctx, backtrack, match_funcs[0]) {
             if let Some(end_idx) = match_lookahead(ctx, lookahead, match_funcs[2], matched.len) {
-                ctx.buffer_mut().unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                ctx.buffer.unsafe_to_break_from_outbuffer(start_idx, end_idx);
                 apply_lookup(ctx, input, matched, lookups);
                 return Some(());
             }
@@ -494,15 +493,13 @@ fn apply_lookup(
     mut matched: Matched,
     lookups: LazyArray16<LookupRecord>,
 ) {
-    let this_lookup_idx = ctx.lookup_index();
-    let mut buffer = ctx.buffer_mut();
     let mut count = 1 + usize::from(input.len());
 
     // All positions are distance from beginning of *output* buffer.
     // Adjust.
     let mut end = {
-        let backtrack_len = buffer.backtrack_len();
-        let delta = backtrack_len as isize - buffer.idx as isize;
+        let backtrack_len = ctx.buffer.backtrack_len();
+        let delta = backtrack_len as isize - ctx.buffer.idx as isize;
 
         // Convert positions to new indexing.
         for j in 0..count {
@@ -513,39 +510,35 @@ fn apply_lookup(
     };
 
     for record in lookups {
-        if !buffer.successful {
+        if !ctx.buffer.successful {
             break;
         }
 
         let idx = usize::from(record.sequence_index);
-        let lookup_idx = usize::from(record.lookup_list_index);
-
         if idx >= count {
             continue;
         }
 
         // Don't recurse to ourself at same position.
         // Note that this test is too naive, it doesn't catch longer loops.
-        if idx == 0 && lookup_idx == this_lookup_idx {
+        if idx == 0 && record.lookup_index == ctx.lookup_index {
             continue;
         }
 
-        if !buffer.move_to(matched.positions[idx]) {
+        if !ctx.buffer.move_to(matched.positions[idx]) {
             break;
         }
 
-        if buffer.max_ops <= 0 {
+        if ctx.buffer.max_ops <= 0 {
             break;
         }
 
-        let orig_len = buffer.backtrack_len() + buffer.lookahead_len();
-        if !ctx.recurse(lookup_idx) {
-            buffer = ctx.buffer_mut();
+        let orig_len = ctx.buffer.backtrack_len() + ctx.buffer.lookahead_len();
+        if ctx.recurse(record.lookup_index).is_none() {
             continue;
         }
 
-        buffer = ctx.buffer_mut();
-        let new_len = buffer.backtrack_len() + buffer.lookahead_len();
+        let new_len = ctx.buffer.backtrack_len() + ctx.buffer.lookahead_len();
         let mut delta = new_len as isize - orig_len as isize;
         if delta == 0 {
             continue;
@@ -616,5 +609,5 @@ fn apply_lookup(
         }
     }
 
-    buffer.move_to(end);
+    ctx.buffer.move_to(end);
 }

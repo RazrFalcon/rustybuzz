@@ -9,27 +9,34 @@ use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
 use super::common::{
     parse_extension_lookup, Coverage, Lookup, LookupIndex, LookupType, SubstPosTable,
 };
-use super::context_lookups::{ContextLookup, ChainContextLookup};
+use super::context_lookups::{ChainContextLookup, ContextLookup};
 use super::matching::{
     match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
 };
 use super::MAX_NESTING_LEVEL;
+use super::{LayoutLookup, LayoutTable};
 use crate::buffer::GlyphPropsFlags;
-use crate::ot::Map;
+use crate::ot::{Map, TableIndex};
 use crate::unicode::GeneralCategory;
 use crate::Tag;
 
 #[derive(Clone, Copy, Debug)]
-pub struct SubstTable<'a>(SubstPosTable<'a>);
+pub struct SubstTable<'a>(pub SubstPosTable<'a>);
 
 impl<'a> SubstTable<'a> {
-    pub const TAG: Tag = Tag::from_bytes(b"GSUB");
-
     pub fn parse(data: &'a [u8]) -> Option<Self> {
         SubstPosTable::parse(data).map(Self)
     }
+}
 
-    pub fn get_lookup(&self, index: LookupIndex) -> Option<SubstLookup<'a>> {
+impl<'a> LayoutTable for SubstTable<'a> {
+    const TAG: Tag = Tag::from_bytes(b"GSUB");
+    const INDEX: TableIndex = TableIndex::GSUB;
+    const IN_PLACE: bool = false;
+
+    type Lookup = SubstLookup<'a>;
+
+    fn get_lookup(&self, index: LookupIndex) -> Option<Self::Lookup> {
         self.0.get_lookup(index).map(SubstLookup)
     }
 }
@@ -37,12 +44,37 @@ impl<'a> SubstTable<'a> {
 #[derive(Clone, Copy, Debug)]
 pub struct SubstLookup<'a>(Lookup<'a>);
 
+impl LayoutLookup for SubstLookup<'_> {
+    fn props(&self) -> u32 {
+        self.0.props()
+    }
+
+    fn is_reverse(&self) -> bool {
+        self.0.subtables
+            .into_iter()
+            .filter_map(|data| SubstLookupSubtable::parse(data, self.0.kind))
+            .all(|subtable| subtable.is_reverse())
+    }
+}
+
 impl WouldApply for SubstLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         self.0.subtables
             .into_iter()
             .filter_map(|data| SubstLookupSubtable::parse(data, self.0.kind))
             .any(|subtable| subtable.would_apply(ctx))
+    }
+}
+
+impl Apply for SubstLookup<'_> {
+    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+        for data in self.0.subtables {
+            let subtable = SubstLookupSubtable::parse(data, self.0.kind)?;
+            if subtable.apply(ctx).is_some() {
+                return Some(());
+            }
+        }
+        None
     }
 }
 
@@ -167,7 +199,7 @@ impl WouldApply for SingleSubst<'_> {
 
 impl Apply for SingleSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
         let subst = match *self {
             Self::Format1 { coverage, delta } => {
                 coverage.get(glyph_id)?;
@@ -225,7 +257,7 @@ impl WouldApply for MultipleSubst<'_> {
 
 impl Apply for MultipleSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
         match self {
             Self::Format1 { coverage, sequences } => {
                 let index = coverage.get(glyph_id)?;
@@ -255,14 +287,14 @@ impl Apply for Sequence<'_> {
         match self.substitutes.len() {
             // Spec disallows this, but Uniscribe allows it.
             // https://github.com/harfbuzz/harfbuzz/issues/253
-            0 => ctx.buffer_mut().delete_glyph(),
+            0 => ctx.buffer.delete_glyph(),
 
             // Special-case to make it in-place and not consider this
             // as a "multiplied" substitution.
             1 => ctx.replace_glyph(self.substitutes.get(0)?),
 
             _ => {
-                let class = if ctx.buffer().cur(0).is_ligature() {
+                let class = if ctx.buffer.cur(0).is_ligature() {
                     GlyphPropsFlags::BASE_GLYPH
                 } else {
                     GlyphPropsFlags::empty()
@@ -270,11 +302,11 @@ impl Apply for Sequence<'_> {
 
                 for (i, subst) in self.substitutes.into_iter().enumerate() {
                     // Index is truncated to 4 bits anway, so we can safely cast to u8.
-                    ctx.buffer_mut().cur_mut(0).set_lig_props_for_component(i as u8);
+                    ctx.buffer.cur_mut(0).set_lig_props_for_component(i as u8);
                     ctx.output_glyph_for_component(subst, class);
                 }
 
-                ctx.buffer_mut().skip_glyph();
+                ctx.buffer.skip_glyph();
             }
         }
         Some(())
@@ -320,7 +352,7 @@ impl WouldApply for AlternateSubst<'_> {
 
 impl Apply for AlternateSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
         match self {
             Self::Format1 { coverage, alternate_sets } => {
                 let index = coverage.get(glyph_id)?;
@@ -352,15 +384,14 @@ impl Apply for AlternateSet<'_> {
             return None;
         }
 
-        let glyph_mask = ctx.buffer().cur(0).mask;
-        let lookup_mask = ctx.lookup_mask();
+        let glyph_mask = ctx.buffer.cur(0).mask;
 
         // Note: This breaks badly if two features enabled this lookup together.
-        let shift = lookup_mask.trailing_zeros();
-        let mut alt_index = (lookup_mask & glyph_mask) >> shift;
+        let shift = ctx.lookup_mask.trailing_zeros();
+        let mut alt_index = (ctx.lookup_mask & glyph_mask) >> shift;
 
         // If alt_index is MAX_VALUE, randomize feature if it is the rand feature.
-        if alt_index == Map::MAX_VALUE && ctx.random() {
+        if alt_index == Map::MAX_VALUE && ctx.random {
             alt_index = ctx.random_number() % u32::from(len) + 1;
         }
 
@@ -417,7 +448,7 @@ impl WouldApply for LigatureSubst<'_> {
 
 impl Apply for LigatureSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
         match self {
             Self::Format1 { coverage, ligature_sets } => {
                 let index = coverage.get(glyph_id)?;
@@ -536,7 +567,7 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     //   https://bugzilla.gnome.org/show_bug.cgi?id=437633
     //
 
-    let mut buffer = ctx.buffer_mut();
+    let mut buffer = &mut ctx.buffer;
     buffer.merge_clusters(buffer.idx, buffer.idx + matched.len);
 
     let mut is_base_ligature = buffer.info[matched.positions[0]].is_base_glyph();
@@ -564,7 +595,7 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     }
 
     ctx.replace_glyph_with_ligature(lig_glyph, class);
-    buffer = ctx.buffer_mut();
+    buffer = &mut ctx.buffer;
 
     for i in 1..count {
         while buffer.idx < matched.positions[i] && buffer.successful {
@@ -669,11 +700,11 @@ impl Apply for ReverseChainSingleSubst<'_> {
         } = *self;
 
         // No chaining to this type.
-        if ctx.nesting_level_left() != MAX_NESTING_LEVEL {
+        if ctx.nesting_level_left != MAX_NESTING_LEVEL {
             return None;
         }
 
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer().cur(0).codepoint).unwrap());
+        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
         let index = coverage.get(glyph_id)?;
         if index >= substitutes.len() {
             return None;
@@ -683,7 +714,7 @@ impl Apply for ReverseChainSingleSubst<'_> {
         let match_func = &match_coverage(data);
         if let Some(start_idx) = match_backtrack(ctx, backtrack_coverages, match_func) {
             if let Some(end_idx) = match_lookahead(ctx, lookahead_coverages, match_func, 1) {
-                ctx.buffer_mut().unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                ctx.buffer.unsafe_to_break_from_outbuffer(start_idx, end_idx);
                 ctx.replace_glyph_inplace(subst);
 
                 // Note: We DON'T decrease buffer.idx.  The main loop does it
@@ -695,26 +726,4 @@ impl Apply for ReverseChainSingleSubst<'_> {
 
         None
     }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_subst_lookup_apply(
-    data: *const u8,
-    ctx: *mut crate::ffi::rb_ot_apply_context_t,
-    kind: u32,
-) -> crate::ffi::rb_bool_t {
-    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
-    let mut ctx = ApplyContext::from_ptr_mut(ctx);
-    SubstLookupSubtable::parse(data, LookupType(kind as u16))
-        .map_or(false, |table| table.apply(&mut ctx).is_some()) as crate::ffi::rb_bool_t
-}
-
-#[no_mangle]
-pub extern "C" fn rb_subst_lookup_is_reverse(
-    data: *const u8,
-    kind: u32,
-) -> crate::ffi::rb_bool_t {
-    let data = unsafe { std::slice::from_raw_parts(data, isize::MAX as usize) };
-    SubstLookupSubtable::parse(data, LookupType(kind as u16))
-        .map_or(false, |table| table.is_reverse()) as crate::ffi::rb_bool_t
 }

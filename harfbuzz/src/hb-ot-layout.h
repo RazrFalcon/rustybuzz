@@ -37,7 +37,6 @@
 
 RB_BEGIN_DECLS
 
-#define RB_OT_TAG_GDEF RB_TAG('G', 'D', 'E', 'F')
 #define RB_OT_TAG_GSUB RB_TAG('G', 'S', 'U', 'B')
 #define RB_OT_TAG_GPOS RB_TAG('G', 'P', 'O', 'S')
 
@@ -46,7 +45,6 @@ RB_BEGIN_DECLS
  */
 
 #define RB_OT_TAG_DEFAULT_SCRIPT RB_TAG('D', 'F', 'L', 'T')
-#define RB_OT_TAG_DEFAULT_LANGUAGE RB_TAG('d', 'f', 'l', 't')
 
 /**
  * RB_OT_MAX_TAGS_PER_SCRIPT:
@@ -78,10 +76,7 @@ RB_EXTERN rb_bool_t rb_ot_layout_has_glyph_classes(rb_face_t *face);
  * GSUB/GPOS feature query and enumeration interface
  */
 
-#define RB_OT_LAYOUT_NO_SCRIPT_INDEX 0xFFFFu
 #define RB_OT_LAYOUT_NO_FEATURE_INDEX 0xFFFFu
-#define RB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX 0xFFFFu
-#define RB_OT_LAYOUT_NO_VARIATIONS_INDEX 0xFFFFFFFFu
 
 RB_EXTERN rb_bool_t rb_ot_layout_table_select_script(rb_face_t *face,
                                                      rb_tag_t table_tag,

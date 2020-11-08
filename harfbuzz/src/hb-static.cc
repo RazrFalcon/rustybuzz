@@ -31,7 +31,6 @@
 
 #include "hb-aat-layout-common.hh"
 #include "hb-aat-layout-feat-table.hh"
-#include "hb-ot-layout-common.hh"
 #include "hb-ot-head-table.hh"
 #include "hb-ot-maxp-table.hh"
 
