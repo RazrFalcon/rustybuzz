@@ -309,9 +309,9 @@ RB_EXTERN rb_tag_t rb_ot_map_get_chosen_script(const rb_ot_map_t *map, unsigned 
 RB_EXTERN unsigned int
 rb_ot_map_get_feature_stage(const rb_ot_map_t *map, unsigned int table_index, rb_tag_t feature_tag);
 RB_EXTERN void rb_ot_map_get_stages(const rb_ot_map_t *map,
-                                   unsigned int table_index,
-                                   const struct rb_ot_map_stage_map_t **pstages,
-                                   unsigned int *stage_count);
+                                    unsigned int table_index,
+                                    const struct rb_ot_map_stage_map_t **pstages,
+                                    unsigned int *stage_count);
 RB_EXTERN void rb_ot_map_get_stage_lookups(const rb_ot_map_t *map,
                                            unsigned int table_index,
                                            unsigned int stage,

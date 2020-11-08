@@ -175,10 +175,6 @@ pub type rb_ot_pause_func_t = Option<
     ),
 >;
 
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct rb_ot_apply_context_t { _unused: [u8; 0] }
-
 extern "C" {
     pub fn rb_blob_create(
         data: *const c_char,

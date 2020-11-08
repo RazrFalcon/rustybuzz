@@ -104,6 +104,7 @@ impl<'a> SubstLookupSubtable<'a> {
         }
     }
 
+    // Note: Could be used for lookup acceleration.
     #[allow(dead_code)]
     fn coverage(&self) -> &Coverage<'a> {
         match self {
