@@ -27,10 +27,10 @@ Embedded `harfbuzz` version: 2.7.0
 
 ## Roadmap
 
-- [ ] Port OpenType tables:
-  - [ ] `GDEF` (ttf-parser already supports it, but we have to integrate it with rustybuzz)
-  - [ ] `GPOS`
-  - [ ] `GSUB`
+- [x] Port OpenType tables:
+  - [x] `GDEF`
+  - [x] `GPOS`
+  - [x] `GSUB`
 - [ ] Port Apple tables:
   - [ ] Make macos tests OS-independent (ultra hard).
   - [ ] `ankr` (easy)
