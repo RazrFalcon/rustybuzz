@@ -168,12 +168,12 @@ impl<'a> SingleSubst<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let delta = s.read::<i16>()?;
                 Self::Format1 { coverage, delta }
             }
             2 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let count = s.read::<u16>()?;
                 let substitutes = s.read_array16(count)?;
                 Self::Format2 { coverage, substitutes }
@@ -232,7 +232,7 @@ impl<'a> MultipleSubst<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let count = s.read::<u16>()?;
                 let sequences = s.read_offsets16(count, data)?;
                 Self::Format1 { coverage, sequences }
@@ -327,7 +327,7 @@ impl<'a> AlternateSubst<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let count = s.read::<u16>()?;
                 let alternate_sets = s.read_offsets16(count, data)?;
                 Self::Format1 { coverage, alternate_sets }
@@ -416,7 +416,7 @@ impl<'a> LigatureSubst<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let count = s.read::<u16>()?;
                 let ligature_sets = s.read_offsets16(count, data)?;
                 Self::Format1 { coverage, ligature_sets }
@@ -656,7 +656,7 @@ impl<'a> ReverseChainSingleSubst<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let backtrack_count = s.read::<u16>()?;
                 let backtrack_coverages = s.read_array16(backtrack_count)?;
                 let lookahead_count = s.read::<u16>()?;

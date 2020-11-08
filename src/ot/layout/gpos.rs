@@ -3,7 +3,7 @@
 use std::convert::TryFrom;
 
 use ttf_parser::parser::{
-    FromData, LazyArray16, LazyArray32, NumFrom, Offset, Offset16, Offsets16, Stream,
+    DynArray, FromData, LazyArray16, LazyArray32, NumFrom, Offset, Offset16, Offsets16, Stream,
 };
 use ttf_parser::GlyphId;
 
@@ -13,7 +13,6 @@ use super::common::{
     LookupType, SubstPosTable,
 };
 use super::context_lookups::{ChainContextLookup, ContextLookup};
-use super::dyn_array::DynArray;
 use super::matching::SkippyIter;
 use super::{LayoutLookup, LayoutTable};
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
@@ -168,13 +167,13 @@ impl<'a> SinglePos<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let flags = s.read::<ValueFormatFlags>()?;
                 let value = ValueRecord::read(&mut s, flags)?;
                 Self::Format1 { data, coverage, value }
             }
             2 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let flags = s.read::<ValueFormatFlags>()?;
                 let count = s.read::<u16>()?;
                 let values = DynArray::read(&mut s, usize::from(count), flags.size())?;
@@ -237,7 +236,7 @@ impl<'a> PairPos<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let flags = [
                     s.read::<ValueFormatFlags>()?,
                     s.read::<ValueFormatFlags>()?,
@@ -247,14 +246,14 @@ impl<'a> PairPos<'a> {
                 Self::Format1 { coverage, flags, sets }
             }
             2 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let flags = [
                     s.read::<ValueFormatFlags>()?,
                     s.read::<ValueFormatFlags>()?,
                 ];
                 let classes = [
-                    ClassDef::parse(s.read_offset16_data()?)?,
-                    ClassDef::parse(s.read_offset16_data()?)?,
+                    ClassDef::parse(s.read_at_offset16()?)?,
+                    ClassDef::parse(s.read_at_offset16()?)?,
                 ];
                 let counts = [s.read::<u16>()?, s.read::<u16>()?];
                 let count = usize::num_from(u32::from(counts[0]) * u32::from(counts[1]));
@@ -296,7 +295,7 @@ impl Apply for PairPos<'_> {
                 let records = DynArray::read(&mut s, usize::from(count), stride)?;
                 let record = records.binary_search_by(|data| {
                     Stream::new(data).read::<GlyphId>().unwrap().cmp(&second)
-                })?;
+                })?.1;
 
                 let mut s = Stream::new(record);
                 s.skip::<GlyphId>();
@@ -344,7 +343,7 @@ impl<'a> CursivePos<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let count = s.read::<u16>()?;
                 let entry_exits = s.read_array16(count)?;
                 Self::Format1 { data, coverage, entry_exits }
@@ -532,11 +531,11 @@ impl<'a> MarkBasePos<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let mark_coverage = Coverage::parse(s.read_offset16_data()?)?;
-                let base_coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let mark_coverage = Coverage::parse(s.read_at_offset16()?)?;
+                let base_coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let class_count = s.read::<u16>()?;
-                let marks = MarkArray::parse(s.read_offset16_data()?)?;
-                let base_matrix = AnchorMatrix::parse(s.read_offset16_data()?, class_count)?;
+                let marks = MarkArray::parse(s.read_at_offset16()?)?;
+                let base_matrix = AnchorMatrix::parse(s.read_at_offset16()?, class_count)?;
                 Self::Format1 { mark_coverage, base_coverage, marks, base_matrix }
             }
             _ => return None,
@@ -612,11 +611,11 @@ impl<'a> MarkLigPos<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let mark_coverage = Coverage::parse(s.read_offset16_data()?)?;
-                let lig_coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let mark_coverage = Coverage::parse(s.read_at_offset16()?)?;
+                let lig_coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let class_count = s.read::<u16>()?;
-                let marks = MarkArray::parse(s.read_offset16_data()?)?;
-                let lig_array = LigatureArray::parse(s.read_offset16_data()?, class_count)?;
+                let marks = MarkArray::parse(s.read_at_offset16()?)?;
+                let lig_array = LigatureArray::parse(s.read_at_offset16()?, class_count)?;
                 Self::Format1 { mark_coverage, lig_coverage, marks, lig_array }
             }
             _ => return None,
@@ -707,11 +706,11 @@ impl<'a> MarkMarkPos<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let mark1_coverage = Coverage::parse(s.read_offset16_data()?)?;
-                let mark2_coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let mark1_coverage = Coverage::parse(s.read_at_offset16()?)?;
+                let mark2_coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let class_count = s.read::<u16>()?;
-                let marks = MarkArray::parse(s.read_offset16_data()?)?;
-                let mark2_matrix = AnchorMatrix::parse(s.read_offset16_data()?, class_count)?;
+                let marks = MarkArray::parse(s.read_at_offset16()?)?;
+                let mark2_matrix = AnchorMatrix::parse(s.read_at_offset16()?, class_count)?;
                 Self::Format1 { mark1_coverage, mark2_coverage, marks, mark2_matrix }
             }
             _ => return None,

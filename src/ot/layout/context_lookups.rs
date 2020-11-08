@@ -57,14 +57,14 @@ impl<'a> ContextLookup<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let count = s.read::<u16>()?;
                 let sets = s.read_offsets16(count, data)?;
                 Self::Format1 { coverage, sets }
             }
             2 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
-                let classes = ClassDef::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
+                let classes = ClassDef::parse(s.read_at_offset16()?)?;
                 let count = s.read::<u16>()?;
                 let sets = s.read_offsets16(count, data)?;
                 Self::Format2 { coverage, classes, sets }
@@ -72,7 +72,7 @@ impl<'a> ContextLookup<'a> {
             3 => {
                 let input_count = s.read::<u16>()?;
                 let lookup_count = s.read::<u16>()?;
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let coverages = s.read_array16(input_count.checked_sub(1)?)?;
                 let lookups = s.read_array16(lookup_count)?;
                 Self::Format3 { data, coverage, coverages, lookups }
@@ -228,16 +228,16 @@ impl<'a> ChainContextLookup<'a> {
         let format: u16 = s.read()?;
         Some(match format {
             1 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let count = s.read::<u16>()?;
                 let sets = s.read_offsets16(count, data)?;
                 Self::Format1 { coverage, sets }
             }
             2 => {
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
-                let backtrack_classes = ClassDef::parse(s.read_offset16_data()?)?;
-                let input_classes = ClassDef::parse(s.read_offset16_data()?)?;
-                let lookahead_classes = ClassDef::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
+                let backtrack_classes = ClassDef::parse(s.read_at_offset16()?)?;
+                let input_classes = ClassDef::parse(s.read_at_offset16()?)?;
+                let lookahead_classes = ClassDef::parse(s.read_at_offset16()?)?;
                 let count = s.read::<u16>()?;
                 let sets = s.read_offsets16(count, data)?;
                 Self::Format2 {
@@ -252,7 +252,7 @@ impl<'a> ChainContextLookup<'a> {
                 let backtrack_count = s.read::<u16>()?;
                 let backtrack_coverages = s.read_array16(backtrack_count)?;
                 let input_count = s.read::<u16>()?;
-                let coverage = Coverage::parse(s.read_offset16_data()?)?;
+                let coverage = Coverage::parse(s.read_at_offset16()?)?;
                 let input_coverages = s.read_array16(input_count.checked_sub(1)?)?;
                 let lookahead_count = s.read::<u16>()?;
                 let lookahead_coverages = s.read_array16(lookahead_count)?;

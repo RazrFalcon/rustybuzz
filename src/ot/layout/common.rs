@@ -31,13 +31,13 @@ impl<'a> SubstPosTable<'a> {
             return None;
         }
 
-        let scripts = RecordList::parse(s.read_offset16_data()?)?;
-        let features = RecordList::parse(s.read_offset16_data()?)?;
-        let lookups = LookupList::parse(s.read_offset16_data()?)?;
+        let scripts = RecordList::parse(s.read_at_offset16()?)?;
+        let features = RecordList::parse(s.read_at_offset16()?)?;
+        let lookups = LookupList::parse(s.read_at_offset16()?)?;
 
         let mut variations = None;
         if minor_version >= 1 {
-            variations = FeatureVariations::parse(s.read_offset32_data()?);
+            variations = FeatureVariations::parse(s.read_at_offset32()?);
         }
 
         Some(Self { scripts, features, lookups, variations })

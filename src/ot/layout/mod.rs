@@ -3,7 +3,6 @@
 mod apply;
 mod common;
 mod context_lookups;
-mod dyn_array;
 mod gpos;
 mod gsub;
 mod kern;
