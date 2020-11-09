@@ -1,5 +1,5 @@
 # rustybuzz
-[![Build Status](https://travis-ci.org/RazrFalcon/rustybuzz.svg?branch=master)](https://travis-ci.org/RazrFalcon/rustybuzz)
+![Build Status](https://github.com/RazrFalcon/rustybuzz/workflows/Rust/badge.svg)
 [![Crates.io](https://img.shields.io/crates/v/rustybuzz.svg)](https://crates.io/crates/rustybuzz)
 [![Documentation](https://docs.rs/rustybuzz/badge.svg)](https://docs.rs/rustybuzz)
 
