@@ -35,8 +35,6 @@
 
 #include "hb-ot-face.hh"
 
-#include "hb-set.hh"
-
 #include "hb-aat-layout.hh"
 
 const rb_ot_complex_shaper_t *rb_ot_shape_plan_get_ot_complex_shaper(const rb_ot_shape_plan_t *plan)
@@ -379,7 +377,7 @@ static void rb_set_unicode_props(rb_buffer_t *buffer)
     unsigned int count = rb_buffer_get_length(buffer);
     rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
     for (unsigned int i = 0; i < count; i++) {
-        _rb_glyph_info_set_unicode_props(&info[i], buffer);
+        rb_glyph_info_init_unicode_props(&info[i], buffer);
 
         /* Marks are already set as continuation by the above line.
          * Handle Emoji_Modifier and ZWJ-continuation. */
@@ -392,7 +390,7 @@ static void rb_set_unicode_props(rb_buffer_t *buffer)
             _rb_glyph_info_set_continuation(&info[i]);
             if (i + 1 < count && rb_ucd_is_emoji_extended_pictographic(info[i + 1].codepoint)) {
                 i++;
-                _rb_glyph_info_set_unicode_props(&info[i], buffer);
+                rb_glyph_info_init_unicode_props(&info[i], buffer);
                 _rb_glyph_info_set_continuation(&info[i]);
             }
         }
@@ -428,7 +426,7 @@ static void rb_insert_dotted_circle(rb_buffer_t *buffer, rb_font_t *font)
 
     rb_glyph_info_t dottedcircle = {0};
     dottedcircle.codepoint = 0x25CCu;
-    _rb_glyph_info_set_unicode_props(&dottedcircle, buffer);
+    rb_glyph_info_init_unicode_props(&dottedcircle, buffer);
 
     rb_buffer_clear_output(buffer);
 
@@ -707,7 +705,7 @@ static void rb_ot_hide_default_ignorables(rb_buffer_t *buffer, rb_font_t *font)
                 info[i].codepoint = invisible;
         }
     } else
-        rb_ot_layout_delete_glyphs_inplace(buffer, _rb_glyph_info_is_default_ignorable);
+        rb_buffer_delete_glyphs_inplace(buffer, _rb_glyph_info_is_default_ignorable);
 }
 
 static inline void rb_ot_map_glyphs_fast(rb_buffer_t *buffer)
@@ -980,16 +978,4 @@ void _rb_ot_shape(rb_shape_plan_t *shape_plan,
     rb_ot_shape_context_t c = {
         &shape_plan->ot, (rb_font_t *)font, rb_font_get_face(font), buffer, features, num_features};
     rb_ot_shape_internal(&c);
-}
-
-/**
- * rb_ot_shape_plan_collect_lookups:
- *
- * Since: 0.9.7
- **/
-void rb_ot_shape_plan_collect_lookups(rb_shape_plan_t *shape_plan,
-                                      rb_tag_t table_tag,
-                                      rb_set_t *lookup_indexes /* OUT */)
-{
-    shape_plan->ot.collect_lookups(table_tag, lookup_indexes);
 }

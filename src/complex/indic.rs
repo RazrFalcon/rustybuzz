@@ -593,7 +593,7 @@ fn collect_features(planner: &mut ShapePlanner) {
     planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::NONE, 1);
     planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
 
-    planner.ot_map.add_gsub_pause(Some(ffi::rb_layout_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
 }
 
 #[no_mangle]

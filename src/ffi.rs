@@ -90,6 +90,13 @@ pub struct rb_ot_map_lookup_map_t {
 
 #[repr(C)]
 #[derive(Clone, Copy)]
+pub struct rb_ot_map_stage_map_t {
+    pub last_lookup: u32,
+    pub pause_func: rb_ot_pause_func_t,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
 pub struct rb_buffer_t {
     _unused: [u8; 0],
 }
@@ -182,6 +189,12 @@ extern "C" {
 
     pub fn rb_face_destroy(face: *mut rb_face_t);
 
+    pub fn rb_face_get_table_data(
+        face: *const rb_face_t,
+        tag: Tag,
+        len: *mut u32,
+    ) -> *const u8;
+
     pub fn rb_ot_map_get_1_mask(map: *const rb_ot_map_t, tag: Tag) -> rb_mask_t;
 
     pub fn rb_ot_map_global_mask(map: *const rb_ot_map_t) -> rb_mask_t;
@@ -192,8 +205,15 @@ extern "C" {
 
     pub fn rb_ot_map_get_feature_stage(map: *const rb_ot_map_t, table_index: u32, feature_tag: Tag) -> u32;
 
+    pub fn rb_ot_map_get_stages(
+        map: *const rb_ot_map_t,
+        table_index: u32,
+        pstages: *mut *const rb_ot_map_stage_map_t,
+        stage_count: *mut u32,
+    );
+
     pub fn rb_ot_map_get_stage_lookups(
-        plan: *const rb_ot_map_t,
+        map: *const rb_ot_map_t,
         table_index: u32,
         stage: u32,
         plookups: *mut *const rb_ot_map_lookup_map_t,
@@ -255,12 +275,6 @@ extern "C" {
         glyphs_length: u32,
         zero_context: rb_bool_t,
     ) -> rb_bool_t;
-
-    pub fn rb_layout_clear_syllables(
-        plan: *const rb_ot_shape_plan_t,
-        font: *mut rb_font_t,
-        buffer: *mut rb_buffer_t,
-    );
 
     pub fn rb_clear_substitution_flags(
         plan: *const rb_ot_shape_plan_t,

@@ -34,11 +34,17 @@
 #define RB_OT_MAP_MAX_BITS 8u
 #define RB_OT_MAP_MAX_VALUE ((1u << RB_OT_MAP_MAX_BITS) - 1u)
 
+struct rb_ot_map_t;
 struct rb_ot_shape_plan_t;
+
+extern "C" {
+void rb_ot_layout_substitute(const rb_ot_map_t *map, const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
+void rb_ot_layout_position(const rb_ot_map_t *map, const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
+}
 
 static const rb_tag_t table_tags[2] = {RB_OT_TAG_GSUB, RB_OT_TAG_GPOS};
 
-typedef void (*rb_ot_pause_func_t)(const struct rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
+typedef void (*rb_ot_pause_func_t)(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
 
 struct rb_ot_map_lookup_map_t
 {
@@ -54,6 +60,12 @@ struct rb_ot_map_lookup_map_t
         const rb_ot_map_lookup_map_t *b = (const rb_ot_map_lookup_map_t *)pb;
         return a->index < b->index ? -1 : a->index > b->index ? 1 : 0;
     }
+};
+
+struct rb_ot_map_stage_map_t
+{
+    unsigned int last_lookup; /* Cumulative */
+    rb_ot_pause_func_t pause_func;
 };
 
 struct rb_ot_map_t
@@ -78,12 +90,6 @@ public:
         {
             return tag_ < tag ? -1 : tag_ > tag ? 1 : 0;
         }
-    };
-
-    struct stage_map_t
-    {
-        unsigned int last_lookup; /* Cumulative */
-        rb_ot_pause_func_t pause_func;
     };
 
     void init()
@@ -142,6 +148,15 @@ public:
         return map ? map->stage[table_index] : UINT_MAX;
     }
 
+    void get_stages(unsigned int table_index,
+                    const struct rb_ot_map_stage_map_t **pstages,
+                    unsigned int *stage_count) const
+    {
+        assert(table_index == 0 || table_index == 1);
+        *pstages = &stages[table_index][0];
+        *stage_count = stages[table_index].length;
+    }
+
     void get_stage_lookups(unsigned int table_index,
                            unsigned int stage,
                            const struct rb_ot_map_lookup_map_t **plookups,
@@ -160,12 +175,15 @@ public:
         *lookup_count = end - start;
     }
 
-    RB_INTERNAL void collect_lookups(unsigned int table_index, rb_set_t *lookups) const;
-    template <typename Proxy>
-    RB_INTERNAL void
-    apply(const Proxy &proxy, const struct rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const;
-    RB_INTERNAL void substitute(const struct rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const;
-    RB_INTERNAL void position(const struct rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const;
+    void substitute(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const
+    {
+        rb_ot_layout_substitute(this, plan, font, buffer);
+    }
+
+    void position(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const
+    {
+        rb_ot_layout_position(this, plan, font, buffer);
+    }
 
 public:
     rb_tag_t chosen_script[2];
@@ -176,7 +194,7 @@ private:
 
     rb_sorted_vector_t<feature_map_t> features;
     rb_vector_t<rb_ot_map_lookup_map_t> lookups[2]; /* GSUB/GPOS */
-    rb_vector_t<stage_map_t> stages[2];             /* GSUB/GPOS */
+    rb_vector_t<rb_ot_map_stage_map_t> stages[2];  /* GSUB/GPOS */
 };
 
 enum rb_ot_map_feature_flags_t {
@@ -290,6 +308,10 @@ RB_EXTERN bool rb_ot_map_get_found_script(const rb_ot_map_t *map, unsigned int i
 RB_EXTERN rb_tag_t rb_ot_map_get_chosen_script(const rb_ot_map_t *map, unsigned int index);
 RB_EXTERN unsigned int
 rb_ot_map_get_feature_stage(const rb_ot_map_t *map, unsigned int table_index, rb_tag_t feature_tag);
+RB_EXTERN void rb_ot_map_get_stages(const rb_ot_map_t *map,
+                                    unsigned int table_index,
+                                    const struct rb_ot_map_stage_map_t **pstages,
+                                    unsigned int *stage_count);
 RB_EXTERN void rb_ot_map_get_stage_lookups(const rb_ot_map_t *map,
                                            unsigned int table_index,
                                            unsigned int stage,

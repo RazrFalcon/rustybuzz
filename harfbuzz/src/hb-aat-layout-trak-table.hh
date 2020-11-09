@@ -29,7 +29,6 @@
 #define RB_AAT_LAYOUT_TRAK_TABLE_HH
 
 #include "hb-aat-layout-common.hh"
-#include "hb-ot-layout.hh"
 #include "hb-open-type.hh"
 
 /*

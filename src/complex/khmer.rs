@@ -118,7 +118,7 @@ fn collect_features(planner: &mut ShapePlanner) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 
-    planner.ot_map.add_gsub_pause(Some(ffi::rb_layout_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
 
     for feature in KHMER_FEATURES.iter().skip(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);

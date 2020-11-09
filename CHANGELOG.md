@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Ported
+- OpenType Layout (GSUB, GPOS).
 - Normalization.
 - Fallback shaper. Thanks to [laurmaedje](https://github.com/laurmaedje).
 

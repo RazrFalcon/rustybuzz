@@ -164,7 +164,7 @@ fn collect_features(planner: &mut ShapePlanner) {
     }
 
     planner.ot_map.add_gsub_pause(Some(reorder_raw));
-    planner.ot_map.add_gsub_pause(Some(ffi::rb_layout_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {

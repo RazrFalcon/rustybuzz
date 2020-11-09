@@ -1,7 +1,7 @@
 use std::ptr::NonNull;
 
 use crate::{ffi, Tag, Mask};
-use super::TableIndex;
+use super::layout::TableIndex;
 
 
 #[repr(C)]
@@ -19,6 +19,9 @@ pub struct MapLookup {
 pub struct Map(NonNull<ffi::rb_ot_map_t>);
 
 impl Map {
+    pub const MAX_BITS: u32 = 8;
+    pub const MAX_VALUE: u32 = (1 << Self::MAX_BITS) - 1;
+
     #[inline]
     pub fn from_ptr(ptr: *const ffi::rb_ot_map_t) -> Self {
         Map(NonNull::new(ptr as _).unwrap())
@@ -52,6 +55,22 @@ impl Map {
     pub fn feature_stage(&self, table_index: TableIndex, feature_tag: Tag) -> usize {
         unsafe {
             ffi::rb_ot_map_get_feature_stage(self.as_ptr(), table_index as u32, feature_tag) as usize
+        }
+    }
+
+    pub fn collect_stages(&self, table_index: TableIndex) -> &'static [ffi::rb_ot_map_stage_map_t] {
+        unsafe {
+            let mut pstages: *const ffi::rb_ot_map_stage_map_t = std::ptr::null();
+            let mut stage_count: u32 = 0;
+
+            ffi::rb_ot_map_get_stages(
+                self.as_ptr(),
+                table_index as u32,
+                &mut pstages as *mut _,
+                &mut stage_count as *mut _,
+            );
+
+            std::slice::from_raw_parts(pstages, stage_count as usize)
         }
     }
 

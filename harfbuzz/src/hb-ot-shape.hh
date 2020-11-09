@@ -60,22 +60,6 @@ struct rb_ot_shape_plan_t
     bool apply_morx : 1;
     bool apply_trak : 1;
 
-    void collect_lookups(rb_tag_t table_tag, rb_set_t *lookups) const
-    {
-        unsigned int table_index;
-        switch (table_tag) {
-        case RB_OT_TAG_GSUB:
-            table_index = 0;
-            break;
-        case RB_OT_TAG_GPOS:
-            table_index = 1;
-            break;
-        default:
-            return;
-        }
-        map.collect_lookups(table_index, lookups);
-    }
-
     RB_INTERNAL bool init0(rb_face_t *face,
                            const rb_segment_properties_t *props,
                            const rb_feature_t *user_features,

@@ -145,6 +145,8 @@ RB_EXTERN void rb_buffer_copy_glyph(rb_buffer_t *buffer);
 
 RB_EXTERN void rb_buffer_delete_glyph(rb_buffer_t *buffer);
 
+RB_EXTERN void rb_buffer_delete_glyphs_inplace(rb_buffer_t *buffer, rb_bool_t(*filter)(const rb_glyph_info_t *info));
+
 RB_EXTERN void rb_buffer_replace_glyph(rb_buffer_t *buffer, const rb_codepoint_t glyph_index);
 
 RB_EXTERN void rb_buffer_replace_glyphs(rb_buffer_t *buffer,

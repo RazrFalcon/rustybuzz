@@ -34,9 +34,10 @@
 #include "hb-buffer.hh"
 #include "hb-open-type.hh"
 #include "hb-ot-shape.hh"
-#include "hb-set-digest.hh"
 
-struct rb_ot_shape_plan_t;
+#ifndef RB_MAX_CONTEXT_LENGTH
+#define RB_MAX_CONTEXT_LENGTH 64
+#endif
 
 /*
  * kern
@@ -50,58 +51,13 @@ RB_INTERNAL bool rb_ot_layout_has_cross_kerning(rb_face_t *face);
 
 RB_INTERNAL void rb_ot_layout_kern(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
 
-/* Private API corresponding to hb-ot-layout.h: */
+enum attach_type_t {
+    ATTACH_TYPE_NONE = 0X00,
 
-RB_INTERNAL bool
-rb_ot_layout_table_find_feature(rb_face_t *face, rb_tag_t table_tag, rb_tag_t feature_tag, unsigned int *feature_index);
-
-/*
- * GDEF
- */
-
-enum rb_ot_layout_glyph_props_flags_t {
-    /* The following three match LookupFlags::Ignore* numbers. */
-    RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH = 0x02u,
-    RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE = 0x04u,
-    RB_OT_LAYOUT_GLYPH_PROPS_MARK = 0x08u,
-
-    RB_OT_LAYOUT_GLYPH_PROPS_CLASS_MASK =
-        RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH | RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE | RB_OT_LAYOUT_GLYPH_PROPS_MARK,
-
-    /* The following are used internally; not derived from GDEF. */
-    RB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED = 0x10u,
-    RB_OT_LAYOUT_GLYPH_PROPS_LIGATED = 0x20u,
-    RB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED = 0x40u,
+    /* Each attachment should be either a mark or a cursive; can't be both. */
+    ATTACH_TYPE_MARK = 0X01,
+    ATTACH_TYPE_CURSIVE = 0X02,
 };
-RB_MARK_AS_FLAG_T(rb_ot_layout_glyph_props_flags_t);
-
-/*
- * GSUB/GPOS
- */
-
-/* Should be called before all the substitute_lookup's are done. */
-RB_INTERNAL void rb_ot_layout_substitute_start(rb_font_t *font, rb_buffer_t *buffer);
-
-RB_INTERNAL void rb_ot_layout_delete_glyphs_inplace(rb_buffer_t *buffer, bool (*filter)(const rb_glyph_info_t *info));
-
-namespace OT {
-struct rb_ot_apply_context_t;
-struct SubstLookup;
-struct rb_ot_layout_lookup_accelerator_t;
-} // namespace OT
-
-RB_INTERNAL void rb_ot_layout_substitute_lookup(OT::rb_ot_apply_context_t *c,
-                                                const OT::SubstLookup &lookup,
-                                                const OT::rb_ot_layout_lookup_accelerator_t &accel);
-
-/* Should be called before all the position_lookup's are done. */
-RB_INTERNAL void rb_ot_layout_position_start(rb_font_t *font, rb_buffer_t *buffer);
-
-/* Should be called after all the position_lookup's are done, to fini advances. */
-RB_INTERNAL void rb_ot_layout_position_finish_advances(rb_font_t *font, rb_buffer_t *buffer);
-
-/* Should be called after rb_ot_layout_position_finish_advances, to fini offsets. */
-RB_INTERNAL void rb_ot_layout_position_finish_offsets(rb_font_t *font, rb_buffer_t *buffer);
 
 /*
  * Buffer var routines.
@@ -114,20 +70,10 @@ RB_INTERNAL void rb_ot_layout_position_finish_offsets(rb_font_t *font, rb_buffer
 #define glyph_props() var1.u16[0] /* GDEF glyph properties */
 #define lig_props() var1.u8[2]    /* GSUB/GPOS ligature tracking */
 #define syllable() var1.u8[3]     /* GSUB/GPOS shaping boundaries */
-
-/* Loop over syllables. Based on foreach_cluster(). */
-#define foreach_syllable(buffer, start, end)                                                                           \
-    for (unsigned int _count = rb_buffer_get_length(buffer),                                                           \
-                      start = 0,                                                                                       \
-                      end = _count ? rb_layout_next_syllable(buffer, 0) : 0;                                           \
-         start < _count;                                                                                               \
-         start = end, end = rb_layout_next_syllable(buffer, start))
-
-extern "C" {
-RB_EXTERN unsigned int rb_layout_next_syllable(rb_buffer_t *buffer, unsigned int start);
-
-RB_EXTERN void rb_layout_clear_syllables(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
-}
+#define attach_chain() var.i16[0] /* Glyph to which this attaches to, relative to current glyphs; \
+                                     negative for going back, positive for forward. */
+#define attach_type() var.u8[2]   /* Attachment type. Note! if attach_chain() is zero, the \
+                                     value of attach_type() is irrelevant. */
 
 /* unicode_props */
 
@@ -160,58 +106,8 @@ enum rb_unicode_props_flags_t {
 };
 RB_MARK_AS_FLAG_T(rb_unicode_props_flags_t);
 
-static inline void _rb_glyph_info_set_unicode_props(rb_glyph_info_t *info, rb_buffer_t *buffer)
-{
-    unsigned int u = info->codepoint;
-    unsigned int gen_cat = (unsigned int)rb_ucd_general_category(u);
-    unsigned int props = gen_cat;
-
-    auto scratch_flags = rb_buffer_get_scratch_flags(buffer);
-    if (u >= 0x80u) {
-        scratch_flags |= RB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
-
-        if (unlikely(rb_ucd_is_default_ignorable(u))) {
-            scratch_flags |= RB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
-            props |= UPROPS_MASK_IGNORABLE;
-            if (u == 0x200Cu)
-                props |= UPROPS_MASK_Cf_ZWNJ;
-            else if (u == 0x200Du)
-                props |= UPROPS_MASK_Cf_ZWJ;
-            /* Mongolian Free Variation Selectors need to be remembered
-             * because although we need to hide them like default-ignorables,
-             * they need to non-ignorable during shaping.  This is similar to
-             * what we do for joiners in Indic-like shapers, but since the
-             * FVSes are GC=Mn, we have use a separate bit to remember them.
-             * Fixes:
-             * https://github.com/harfbuzz/harfbuzz/issues/234 */
-            else if (unlikely(rb_in_range<rb_codepoint_t>(u, 0x180Bu, 0x180Du)))
-                props |= UPROPS_MASK_HIDDEN;
-            /* TAG characters need similar treatment. Fixes:
-             * https://github.com/harfbuzz/harfbuzz/issues/463 */
-            else if (unlikely(rb_in_range<rb_codepoint_t>(u, 0xE0020u, 0xE007Fu)))
-                props |= UPROPS_MASK_HIDDEN;
-            /* COMBINING GRAPHEME JOINER should not be skipped; at least some times.
-             * https://github.com/harfbuzz/harfbuzz/issues/554 */
-            else if (unlikely(u == 0x034Fu)) {
-                scratch_flags |= RB_BUFFER_SCRATCH_FLAG_HAS_CGJ;
-                props |= UPROPS_MASK_HIDDEN;
-            }
-        }
-
-        if (unlikely(RB_UNICODE_GENERAL_CATEGORY_IS_MARK(gen_cat))) {
-            props |= UPROPS_MASK_CONTINUATION;
-            props |= rb_ucd_modified_combining_class(u) << 8;
-        }
-    }
-
-    rb_buffer_set_scratch_flags(buffer, scratch_flags);
-    info->unicode_props() = props;
-}
-
-static inline void _rb_glyph_info_set_general_category(rb_glyph_info_t *info, rb_unicode_general_category_t gen_cat)
-{
-    /* Clears top-byte. */
-    info->unicode_props() = (unsigned int)gen_cat | (info->unicode_props() & (0xFF & ~UPROPS_MASK_GEN_CAT));
+extern "C" {
+RB_EXTERN void rb_glyph_info_init_unicode_props(rb_glyph_info_t *info, rb_buffer_t *buffer);
 }
 
 static inline rb_unicode_general_category_t _rb_glyph_info_get_general_category(const rb_glyph_info_t *info)
@@ -223,62 +119,39 @@ static inline bool _rb_glyph_info_is_unicode_mark(const rb_glyph_info_t *info)
 {
     return RB_UNICODE_GENERAL_CATEGORY_IS_MARK(info->unicode_props() & UPROPS_MASK_GEN_CAT);
 }
-static inline void _rb_glyph_info_set_modified_combining_class(rb_glyph_info_t *info, unsigned int modified_class)
-{
-    if (unlikely(!_rb_glyph_info_is_unicode_mark(info)))
-        return;
-    info->unicode_props() = (modified_class << 8) | (info->unicode_props() & 0xFF);
-}
-static inline unsigned int _rb_glyph_info_get_modified_combining_class(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_is_unicode_mark(info) ? info->unicode_props() >> 8 : 0;
-}
-#define info_cc(info) (_rb_glyph_info_get_modified_combining_class(&(info)))
-
-static inline bool _rb_glyph_info_is_unicode_space(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_get_general_category(info) == RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR;
-}
-static inline void _rb_glyph_info_set_unicode_space_fallback_type(rb_glyph_info_t *info, rb_space_t s)
-{
-    if (unlikely(!_rb_glyph_info_is_unicode_space(info)))
-        return;
-    info->unicode_props() = (((unsigned int)s) << 8) | (info->unicode_props() & 0xFF);
-}
-static inline rb_space_t _rb_glyph_info_get_unicode_space_fallback_type(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_is_unicode_space(info) ? (rb_space_t)(info->unicode_props() >> 8)
-                                                 : rb_space_t::RB_SPACE_NOT_SPACE;
-}
 
 static inline bool _rb_glyph_info_ligated(const rb_glyph_info_t *info);
 
-static inline bool _rb_glyph_info_is_default_ignorable(const rb_glyph_info_t *info)
+static inline rb_bool_t _rb_glyph_info_is_default_ignorable(const rb_glyph_info_t *info)
 {
     return (info->unicode_props() & UPROPS_MASK_IGNORABLE) && !_rb_glyph_info_ligated(info);
-}
-static inline bool _rb_glyph_info_is_default_ignorable_and_not_hidden(const rb_glyph_info_t *info)
-{
-    return ((info->unicode_props() & (UPROPS_MASK_IGNORABLE | UPROPS_MASK_HIDDEN)) == UPROPS_MASK_IGNORABLE) &&
-           !_rb_glyph_info_ligated(info);
-}
-static inline void _rb_glyph_info_unhide(rb_glyph_info_t *info)
-{
-    info->unicode_props() &= ~UPROPS_MASK_HIDDEN;
 }
 
 static inline void _rb_glyph_info_set_continuation(rb_glyph_info_t *info)
 {
     info->unicode_props() |= UPROPS_MASK_CONTINUATION;
 }
-static inline void _rb_glyph_info_reset_continuation(rb_glyph_info_t *info)
-{
-    info->unicode_props() &= ~UPROPS_MASK_CONTINUATION;
-}
+
 static inline bool _rb_glyph_info_is_continuation(const rb_glyph_info_t *info)
 {
     return info->unicode_props() & UPROPS_MASK_CONTINUATION;
 }
+
+static inline bool _rb_glyph_info_is_unicode_format(const rb_glyph_info_t *info)
+{
+    return _rb_glyph_info_get_general_category(info) == RB_UNICODE_GENERAL_CATEGORY_FORMAT;
+}
+
+static inline bool _rb_glyph_info_is_zwnj(const rb_glyph_info_t *info)
+{
+    return _rb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWNJ);
+}
+
+static inline bool _rb_glyph_info_is_zwj(const rb_glyph_info_t *info)
+{
+    return _rb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
+}
+
 /* Loop over grapheme. Based on foreach_cluster(). */
 #define foreach_grapheme(buffer, start, end)                                                                           \
     for (unsigned int _count = rb_buffer_get_length(buffer),                                                           \
@@ -298,133 +171,27 @@ static inline unsigned int rb_buffer_next_grapheme(rb_buffer_t *buffer, unsigned
     return start;
 }
 
-static inline bool _rb_glyph_info_is_unicode_format(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_get_general_category(info) == RB_UNICODE_GENERAL_CATEGORY_FORMAT;
-}
-static inline bool _rb_glyph_info_is_zwnj(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWNJ);
-}
-static inline bool _rb_glyph_info_is_zwj(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_is_unicode_format(info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
-}
-static inline bool _rb_glyph_info_is_joiner(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_is_unicode_format(info) &&
-           (info->unicode_props() & (UPROPS_MASK_Cf_ZWNJ | UPROPS_MASK_Cf_ZWJ));
-}
-static inline void _rb_glyph_info_flip_joiners(rb_glyph_info_t *info)
-{
-    if (!_rb_glyph_info_is_unicode_format(info))
-        return;
-    info->unicode_props() ^= UPROPS_MASK_Cf_ZWNJ | UPROPS_MASK_Cf_ZWJ;
-}
-
-/* lig_props: aka lig_id / lig_comp
- *
- * When a ligature is formed:
- *
- *   - The ligature glyph and any marks in between all the same newly allocated
- *     lig_id,
- *   - The ligature glyph will get lig_num_comps set to the number of components
- *   - The marks get lig_comp > 0, reflecting which component of the ligature
- *     they were applied to.
- *   - This is used in GPOS to attach marks to the right component of a ligature
- *     in MarkLigPos,
- *   - Note that when marks are ligated together, much of the above is skipped
- *     and the current lig_id reused.
- *
- * When a multiple-substitution is done:
- *
- *   - All resulting glyphs will have lig_id = 0,
- *   - The resulting glyphs will have lig_comp = 0, 1, 2, ... respectively.
- *   - This is used in GPOS to attach marks to the first component of a
- *     multiple substitution in MarkBasePos.
- *
- * The numbers are also used in GPOS to do mark-to-mark positioning only
- * to marks that belong to the same component of the same ligature.
- */
-
-static inline void _rb_glyph_info_clear_lig_props(rb_glyph_info_t *info)
-{
-    info->lig_props() = 0;
-}
-
-#define IS_LIG_BASE 0x10
-
-static inline void
-_rb_glyph_info_set_lig_props_for_ligature(rb_glyph_info_t *info, unsigned int lig_id, unsigned int lig_num_comps)
-{
-    info->lig_props() = (lig_id << 5) | IS_LIG_BASE | (lig_num_comps & 0x0F);
-}
-
-static inline void
-_rb_glyph_info_set_lig_props_for_mark(rb_glyph_info_t *info, unsigned int lig_id, unsigned int lig_comp)
-{
-    info->lig_props() = (lig_id << 5) | (lig_comp & 0x0F);
-}
-
-static inline void _rb_glyph_info_set_lig_props_for_component(rb_glyph_info_t *info, unsigned int comp)
-{
-    _rb_glyph_info_set_lig_props_for_mark(info, 0, comp);
-}
-
-static inline unsigned int _rb_glyph_info_get_lig_id(const rb_glyph_info_t *info)
-{
-    return info->lig_props() >> 5;
-}
-
-static inline bool _rb_glyph_info_ligated_internal(const rb_glyph_info_t *info)
-{
-    return !!(info->lig_props() & IS_LIG_BASE);
-}
-
-static inline unsigned int _rb_glyph_info_get_lig_comp(const rb_glyph_info_t *info)
-{
-    if (_rb_glyph_info_ligated_internal(info))
-        return 0;
-    else
-        return info->lig_props() & 0x0F;
-}
-
-static inline unsigned int _rb_glyph_info_get_lig_num_comps(const rb_glyph_info_t *info)
-{
-    if ((info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE) && _rb_glyph_info_ligated_internal(info))
-        return info->lig_props() & 0x0F;
-    else
-        return 1;
-}
-
-static inline uint8_t _rb_allocate_lig_id(rb_buffer_t *buffer)
-{
-    uint8_t lig_id = rb_buffer_next_serial(buffer) & 0x07;
-    if (unlikely(!lig_id))
-        lig_id = _rb_allocate_lig_id(buffer); /* in case of overflow */
-    return lig_id;
-}
-
 /* glyph_props: */
+
+enum rb_ot_layout_glyph_props_flags_t {
+    /* The following three match LookupFlags::Ignore* numbers. */
+    RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH = 0x02u,
+    RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE = 0x04u,
+    RB_OT_LAYOUT_GLYPH_PROPS_MARK = 0x08u,
+
+    RB_OT_LAYOUT_GLYPH_PROPS_CLASS_MASK =
+        RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH | RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE | RB_OT_LAYOUT_GLYPH_PROPS_MARK,
+
+    /* The following are used internally; not derived from GDEF. */
+    RB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED = 0x10u,
+    RB_OT_LAYOUT_GLYPH_PROPS_LIGATED = 0x20u,
+    RB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED = 0x40u,
+};
+RB_MARK_AS_FLAG_T(rb_ot_layout_glyph_props_flags_t);
 
 static inline void _rb_glyph_info_set_glyph_props(rb_glyph_info_t *info, unsigned int props)
 {
     info->glyph_props() = props;
-}
-
-static inline unsigned int _rb_glyph_info_get_glyph_props(const rb_glyph_info_t *info)
-{
-    return info->glyph_props();
-}
-
-static inline bool _rb_glyph_info_is_base_glyph(const rb_glyph_info_t *info)
-{
-    return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH);
-}
-
-static inline bool _rb_glyph_info_is_ligature(const rb_glyph_info_t *info)
-{
-    return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_LIGATURE);
 }
 
 static inline bool _rb_glyph_info_is_mark(const rb_glyph_info_t *info)
@@ -432,39 +199,12 @@ static inline bool _rb_glyph_info_is_mark(const rb_glyph_info_t *info)
     return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_MARK);
 }
 
-static inline bool _rb_glyph_info_substituted(const rb_glyph_info_t *info)
-{
-    return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
-}
-
 static inline bool _rb_glyph_info_ligated(const rb_glyph_info_t *info)
 {
     return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_LIGATED);
 }
 
-static inline bool _rb_glyph_info_multiplied(const rb_glyph_info_t *info)
-{
-    return !!(info->glyph_props() & RB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED);
-}
-
-static inline bool _rb_glyph_info_ligated_and_didnt_multiply(const rb_glyph_info_t *info)
-{
-    return _rb_glyph_info_ligated(info) && !_rb_glyph_info_multiplied(info);
-}
-
-static inline void _rb_glyph_info_clear_ligated_and_multiplied(rb_glyph_info_t *info)
-{
-    info->glyph_props() &= ~(RB_OT_LAYOUT_GLYPH_PROPS_LIGATED | RB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED);
-}
-
-static inline void _rb_glyph_info_clear_substituted(rb_glyph_info_t *info)
-{
-    info->glyph_props() &= ~(RB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
-}
-
 /* Make sure no one directly touches our props... */
-#undef unicode_props0
-#undef unicode_props1
 #undef lig_props
 #undef glyph_props
 

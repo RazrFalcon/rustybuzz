@@ -37,18 +37,14 @@
 
 RB_BEGIN_DECLS
 
-#define RB_OT_TAG_BASE RB_TAG('B', 'A', 'S', 'E')
-#define RB_OT_TAG_GDEF RB_TAG('G', 'D', 'E', 'F')
 #define RB_OT_TAG_GSUB RB_TAG('G', 'S', 'U', 'B')
 #define RB_OT_TAG_GPOS RB_TAG('G', 'P', 'O', 'S')
-#define RB_OT_TAG_JSTF RB_TAG('J', 'S', 'T', 'F')
 
 /*
  * Script & Language tags.
  */
 
 #define RB_OT_TAG_DEFAULT_SCRIPT RB_TAG('D', 'F', 'L', 'T')
-#define RB_OT_TAG_DEFAULT_LANGUAGE RB_TAG('d', 'f', 'l', 't')
 
 /**
  * RB_OT_MAX_TAGS_PER_SCRIPT:
@@ -76,33 +72,11 @@ RB_EXTERN void rb_ot_tags_from_script_and_language(rb_script_t script,
 
 RB_EXTERN rb_bool_t rb_ot_layout_has_glyph_classes(rb_face_t *face);
 
-/**
- * rb_ot_layout_glyph_class_t:
- * @RB_OT_LAYOUT_GLYPH_CLASS_UNCLASSIFIED: Glyphs not matching the other classifications
- * @RB_OT_LAYOUT_GLYPH_CLASS_BASE_GLYPH: Spacing, single characters, capable of accepting marks
- * @RB_OT_LAYOUT_GLYPH_CLASS_LIGATURE: Glyphs that represent ligation of multiple characters
- * @RB_OT_LAYOUT_GLYPH_CLASS_MARK: Non-spacing, combining glyphs that represent marks
- * @RB_OT_LAYOUT_GLYPH_CLASS_COMPONENT: Spacing glyphs that represent part of a single character
- *
- * The GDEF classes defined for glyphs.
- *
- **/
-typedef enum {
-    RB_OT_LAYOUT_GLYPH_CLASS_UNCLASSIFIED = 0,
-    RB_OT_LAYOUT_GLYPH_CLASS_BASE_GLYPH = 1,
-    RB_OT_LAYOUT_GLYPH_CLASS_LIGATURE = 2,
-    RB_OT_LAYOUT_GLYPH_CLASS_MARK = 3,
-    RB_OT_LAYOUT_GLYPH_CLASS_COMPONENT = 4
-} rb_ot_layout_glyph_class_t;
-
 /*
  * GSUB/GPOS feature query and enumeration interface
  */
 
-#define RB_OT_LAYOUT_NO_SCRIPT_INDEX 0xFFFFu
 #define RB_OT_LAYOUT_NO_FEATURE_INDEX 0xFFFFu
-#define RB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX 0xFFFFu
-#define RB_OT_LAYOUT_NO_VARIATIONS_INDEX 0xFFFFFFFFu
 
 RB_EXTERN rb_bool_t rb_ot_layout_table_select_script(rb_face_t *face,
                                                      rb_tag_t table_tag,
@@ -110,6 +84,11 @@ RB_EXTERN rb_bool_t rb_ot_layout_table_select_script(rb_face_t *face,
                                                      const rb_tag_t *script_tags,
                                                      unsigned int *script_index /* OUT */,
                                                      rb_tag_t *chosen_script /* OUT */);
+
+RB_EXTERN rb_bool_t rb_ot_layout_table_find_feature(rb_face_t *face,
+                                                    rb_tag_t table_tag,
+                                                    rb_tag_t feature_tag,
+                                                    unsigned int *feature_index /* OUT */);
 
 RB_EXTERN rb_bool_t rb_ot_layout_script_select_language(rb_face_t *face,
                                                         rb_tag_t table_tag,
@@ -142,13 +121,13 @@ RB_EXTERN rb_bool_t rb_ot_layout_table_find_feature_variations(rb_face_t *face,
                                                                unsigned int num_coords,
                                                                unsigned int *variations_index /* out */);
 
-RB_EXTERN unsigned int rb_ot_layout_feature_with_variations_get_lookups(rb_face_t *face,
-                                                                        rb_tag_t table_tag,
-                                                                        unsigned int feature_index,
-                                                                        unsigned int variations_index,
-                                                                        unsigned int start_offset,
-                                                                        unsigned int *lookup_count /* IN/OUT */,
-                                                                        unsigned int *lookup_indexes /* OUT */);
+RB_EXTERN void rb_ot_layout_feature_with_variations_get_lookups(rb_face_t *face,
+                                                                rb_tag_t table_tag,
+                                                                unsigned int feature_index,
+                                                                unsigned int variations_index,
+                                                                unsigned int start_offset,
+                                                                unsigned int *lookup_count /* IN/OUT */,
+                                                                unsigned int *lookup_indexes /* OUT */);
 
 /*
  * GSUB
@@ -162,11 +141,19 @@ RB_EXTERN rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
                                                          unsigned int glyphs_length,
                                                          rb_bool_t zero_context);
 
+RB_EXTERN void rb_ot_layout_substitute_start(rb_font_t *font, rb_buffer_t *buffer);
+
 /*
  * GPOS
  */
 
 RB_EXTERN rb_bool_t rb_ot_layout_has_positioning(rb_face_t *face);
+
+RB_EXTERN void rb_ot_layout_position_start(rb_font_t *font, rb_buffer_t *buffer);
+
+RB_EXTERN void rb_ot_layout_position_finish_advances(rb_font_t *font, rb_buffer_t *buffer);
+
+RB_EXTERN void rb_ot_layout_position_finish_offsets(rb_font_t *font, rb_buffer_t *buffer);
 
 RB_END_DECLS
 

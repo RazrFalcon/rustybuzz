@@ -173,10 +173,10 @@ fn normalize(plan: ot::ShapePlan, buffer: &'static mut Buffer, font: &'static Fo
                 let mut done = 0;
                 while done < len {
                     let cur = buffer.cur_mut(done);
-                    *cur.glyph_index() = match font.glyph_index(cur.codepoint) {
-                        Some(glyph_id) => glyph_id.0 as u32,
+                    cur.set_glyph_index(match font.glyph_index(cur.codepoint) {
+                        Some(glyph_id) => u32::from(glyph_id.0),
                         None => break,
-                    };
+                    });
                     done += 1;
                 }
                 buffer.next_glyphs(done);
@@ -299,7 +299,7 @@ fn normalize(plan: ot::ShapePlan, buffer: &'static mut Buffer, font: &'static Fo
                         let mut flags = buffer.scratch_flags;
                         let mut info = &mut buffer.out_info_mut()[starter];
                         info.codepoint = composed;
-                        *info.glyph_index() = glyph_id.0 as u32;
+                        info.set_glyph_index(u32::from(glyph_id.0));
                         info.init_unicode_props(&mut flags);
                         buffer.scratch_flags = flags;
 
@@ -346,7 +346,7 @@ fn handle_variation_selector_cluster(ctx: &mut ShapeNormalizeContext, end: usize
                 buffer.cur(0).as_char(),
                 buffer.cur(1).as_char(),
             ) {
-                *buffer.cur_mut(0).glyph_index() = glyph_id.0 as u32;
+                buffer.cur_mut(0).set_glyph_index(u32::from(glyph_id.0));
                 let unicode = buffer.cur(0).codepoint;
                 buffer.replace_glyphs(2, 1, &[unicode]);
             } else {
@@ -376,26 +376,26 @@ fn handle_variation_selector_cluster(ctx: &mut ShapeNormalizeContext, end: usize
 
 fn decompose_current_character(ctx: &mut ShapeNormalizeContext, shortest: bool) {
     let u = ctx.buffer.cur(0).as_char();
-    let glyph = ctx.font.glyph_index(u as u32);
+    let glyph = ctx.font.glyph_index(u32::from(u));
 
     if !shortest || glyph.is_none() {
-        if decompose(ctx, shortest, u as u32) > 0 {
+        if decompose(ctx, shortest, u32::from(u)) > 0 {
             ctx.buffer.skip_glyph();
             return;
         }
     }
 
     if let Some(glyph) = glyph {
-        ctx.buffer.next_char(glyph.0 as u32);
+        ctx.buffer.next_char(u32::from(glyph.0));
         return;
     }
 
     // Handle space characters.
     if ctx.buffer.cur(0).general_category() == GeneralCategory::SpaceSeparator {
         if let Some(space_type) = u.space_fallback() {
-            if let Some(space_glyph) = ctx.font.glyph_index(' ' as u32) {
+            if let Some(space_glyph) = ctx.font.glyph_index(u32::from(' ')) {
                 ctx.buffer.cur_mut(0).set_space_fallback(space_type);
-                ctx.buffer.next_char(space_glyph.0 as u32);
+                ctx.buffer.next_char(u32::from(space_glyph.0));
                 ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_SPACE_FALLBACK;
                 return;
             }
@@ -404,9 +404,9 @@ fn decompose_current_character(ctx: &mut ShapeNormalizeContext, shortest: bool) 
 
     // U+2011 is the only sensible character that is a no-break version of another character
     // and not a space.  The space ones are handled already.  Handle this lone one.
-    if u as u32 == 0x2011 {
+    if u32::from(u) == 0x2011 {
         if let Some(other_glyph) = ctx.font.glyph_index(0x2010) {
-            ctx.buffer.next_char(other_glyph.0 as u32);
+            ctx.buffer.next_char(u32::from(other_glyph.0));
             return;
         }
     }
@@ -436,7 +436,7 @@ fn decompose(ctx: &mut ShapeNormalizeContext, shortest: bool, ab: u32) -> u32 {
         let ret = decompose(ctx, shortest, a);
         if ret != 0 {
             if let Some(b_glyph) = b_glyph {
-                ctx.buffer.output_char(b, b_glyph.0 as u32);
+                ctx.buffer.output_char(b, u32::from(b_glyph.0));
                 return ret + 1;
             }
             return ret;
@@ -445,9 +445,9 @@ fn decompose(ctx: &mut ShapeNormalizeContext, shortest: bool, ab: u32) -> u32 {
 
     if let Some(a_glyph) = a_glyph {
         // Output a and b.
-        ctx.buffer.output_char(a, a_glyph.0 as u32);
+        ctx.buffer.output_char(a, u32::from(a_glyph.0));
         if let Some(b_glyph) = b_glyph {
-            ctx.buffer.output_char(b, b_glyph.0 as u32);
+            ctx.buffer.output_char(b, u32::from(b_glyph.0));
             return 2;
         }
         return 1;
@@ -480,6 +480,6 @@ fn compare_combining_class(pa: &GlyphInfo, pb: &GlyphInfo) -> bool {
 
 fn set_glyph(info: &mut GlyphInfo, font: &Font) {
     if let Some(glyph_id) = font.glyph_index(info.codepoint) {
-        *info.glyph_index() = glyph_id.0 as u32;
+        info.set_glyph_index(u32::from(glyph_id.0));
     }
 }

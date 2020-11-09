@@ -169,7 +169,7 @@ fn collect_features(planner: &mut ShapePlanner) {
         planner.ot_map.add_gsub_pause(None);
     }
 
-    planner.ot_map.add_gsub_pause(Some(ffi::rb_layout_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
 
     for feature in MYANMAR_FEATURES.iter().skip(4) {
         planner.ot_map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);

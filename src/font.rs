@@ -3,8 +3,9 @@ use std::marker::PhantomData;
 use std::os::raw::c_char;
 use std::ptr::NonNull;
 
-use ttf_parser::{Tag, GlyphId};
+use ttf_parser::{Tag, GlyphClass, GlyphId};
 
+use crate::buffer::GlyphPropsFlags;
 use crate::common::Variation;
 use crate::ffi;
 
@@ -87,7 +88,7 @@ impl Drop for Face<'_> {
 
 /// A font handle.
 pub struct Font<'a> {
-    ttfp_face: ttf_parser::Face<'a>,
+    pub(crate) ttfp_face: ttf_parser::Face<'a>,
     rb_face: Face<'a>,
     units_per_em: i32,
     pixels_per_em: Option<(u16, u16)>,
@@ -134,6 +135,11 @@ impl<'a> Font<'a> {
     #[inline]
     pub(crate) fn units_per_em(&self) -> i32 {
         self.units_per_em
+    }
+
+    #[inline]
+    pub(crate) fn pixels_per_em(&self) -> Option<(u16, u16)> {
+        self.pixels_per_em
     }
 
     /// Sets pixels per EM.
@@ -245,6 +251,18 @@ impl<'a> Font<'a> {
     pub(crate) fn glyph_name(&self, glyph: u32) -> Option<&str> {
         let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
         self.ttfp_face.glyph_name(glyph_id)
+    }
+
+    pub(crate) fn glyph_props(&self, glyph: GlyphId) -> u16 {
+        match self.ttfp_face.glyph_class(glyph) {
+            Some(GlyphClass::Base) => GlyphPropsFlags::BASE_GLYPH.bits(),
+            Some(GlyphClass::Ligature) => GlyphPropsFlags::LIGATURE.bits(),
+            Some(GlyphClass::Mark) => {
+                let class = self.ttfp_face.glyph_mark_attachment_class(glyph).0;
+                (class << 8) | GlyphPropsFlags::MARK.bits()
+            }
+            _ => 0,
+        }
     }
 }
 
@@ -473,6 +491,12 @@ pub extern "C" fn rb_font_has_vorg_data(font: *const ffi::rb_font_t) -> ffi::rb_
 pub extern "C" fn rb_font_get_y_origin(font: *const ffi::rb_font_t, glyph: ffi::rb_codepoint_t) -> i32 {
     let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
     Font::from_ptr(font).ttfp_face.glyph_y_origin(glyph_id).unwrap_or(0) as i32
+}
+
+#[no_mangle]
+pub extern "C" fn rb_font_get_glyph_props(font: *const ffi::rb_font_t, glyph: ffi::rb_codepoint_t) -> u32 {
+    let glyph_id = GlyphId(u16::try_from(glyph).unwrap());
+    Font::from_ptr(font).glyph_props(glyph_id) as u32
 }
 
 #[no_mangle]

@@ -54,6 +54,46 @@ pub struct GlyphPosition {
     var: u32,
 }
 
+impl GlyphPosition {
+    #[inline]
+    pub(crate) fn attach_chain(&mut self) -> i16 {
+        // glyph to which this attaches to, relative to current glyphs;
+        // negative for going back, positive for forward.
+        unsafe {
+            let v: ffi::rb_var_int_t = std::mem::transmute(self.var);
+            v.var_i16[0]
+        }
+    }
+
+    #[inline]
+    pub(crate) fn set_attach_chain(&mut self, n: i16) {
+        unsafe {
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var);
+            v.var_i16[0] = n;
+        }
+    }
+
+    #[inline]
+    pub(crate) fn attach_type(&mut self) -> u8 {
+        // attachment type
+        // Note! if attach_chain() is zero, the value of attach_type() is irrelevant.
+        unsafe {
+            let v: ffi::rb_var_int_t = std::mem::transmute(self.var);
+            v.var_u8[2]
+        }
+    }
+
+    #[inline]
+    pub(crate) fn set_attach_type(&mut self, n: u8) {
+        // attachment type
+        // Note! if attach_chain() is zero, the value of attach_type() is irrelevant.
+        unsafe {
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var);
+            v.var_u8[2] = n;
+        }
+    }
+}
+
 
 /// A glyph info.
 #[repr(C)]
@@ -68,27 +108,16 @@ pub struct GlyphInfo {
     pub(crate) var2: u32,
 }
 
+const IS_LIG_BASE: u8 = 0x10;
+
 impl GlyphInfo {
     #[inline]
     pub(crate) fn as_char(&self) -> char {
         char::try_from(self.codepoint).unwrap()
     }
 
-    #[inline]
-    fn glyph_props(&self) -> u16 {
-        unsafe {
-            let v: ffi::rb_var_int_t = std::mem::transmute(self.var1);
-            v.var_u16[0]
-        }
-    }
-
-    #[inline]
-    fn set_glyph_props(&mut self, n: u16) {
-        unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
-            v.var_u16[0] = n;
-        }
-    }
+    // Var allocation: unicode_props
+    // Used during the entire shaping process to store unicode properties
 
     #[inline]
     fn unicode_props(&self) -> u16 {
@@ -106,10 +135,6 @@ impl GlyphInfo {
         }
     }
 
-    // In the original sources, this function was called `_rb_glyph_info_set_unicode_props`.
-    // That would, however, clash with the existing `set_unicode_props`, so this is now called
-    // `init_unicode_props`.
-    #[inline]
     pub(crate) fn init_unicode_props(&mut self, scratch_flags: &mut BufferScratchFlags) {
         let u = self.as_char();
         let gc = u.general_category();
@@ -160,14 +185,6 @@ impl GlyphInfo {
     }
 
     #[inline]
-    pub(crate) fn lig_props(&self) -> u8 {
-        unsafe {
-            let v: ffi::rb_var_int_t = std::mem::transmute(self.var1);
-            v.var_u8[2]
-        }
-    }
-
-    #[inline]
     pub(crate) fn general_category(&self) -> GeneralCategory {
         let n = self.unicode_props() & UnicodeProps::GENERAL_CATEGORY.bits;
         GeneralCategory::from_rb(n as u32)
@@ -201,19 +218,20 @@ impl GlyphInfo {
     }
 
     #[inline]
-    pub(crate) fn is_default_ignorable(&self) -> bool {
-        let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
-        n != 0 && !self.is_ligated()
-    }
-
-    #[inline]
-    pub(crate) fn is_ligated(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::LIGATED.bits != 0
-    }
-
-    #[inline]
     pub(crate) fn is_unicode_mark(&self) -> bool {
         self.general_category().is_mark()
+    }
+
+    #[inline]
+    pub(crate) fn is_zwnj(&self) -> bool {
+        self.general_category() == GeneralCategory::Format
+            && (self.unicode_props() & UnicodeProps::CF_ZWNJ.bits != 0)
+    }
+
+    #[inline]
+    pub(crate) fn is_zwj(&self) -> bool {
+        self.general_category() == GeneralCategory::Format
+            && (self.unicode_props() & UnicodeProps::CF_ZWJ.bits != 0)
     }
 
     #[inline]
@@ -234,54 +252,8 @@ impl GlyphInfo {
     }
 
     #[inline]
-    pub(crate) fn is_multiplied(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::MULTIPLIED.bits != 0
-    }
-
-    #[inline]
-    pub(crate) fn clear_ligated_and_multiplied(&mut self) {
-        let mut n = self.glyph_props();
-        n &= !(GlyphPropsFlags::LIGATED | GlyphPropsFlags::MULTIPLIED).bits;
-        self.set_glyph_props(n);
-    }
-
-    #[inline]
-    pub(crate) fn is_substituted(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_ligated_and_didnt_multiply(&self) -> bool {
-        self.is_ligated() && !self.is_multiplied()
-    }
-
-    #[inline]
-    pub(crate) fn lig_id(&self) -> u8 {
-        self.lig_props() >> 5
-    }
-
-    #[inline]
-    pub(crate) fn is_ligated_internal(&self) -> bool {
-        const IS_LIG_BASE: u8 = 0x10;
-        self.lig_props() & IS_LIG_BASE != 0
-    }
-
-    #[inline]
-    pub(crate) fn lig_comp(&self) -> u8 {
-        if self.is_ligated_internal() {
-            0
-        } else {
-            self.lig_props() & 0x0F
-        }
-    }
-
-    #[inline]
-    pub(crate) fn lig_num_comps(&self) -> u8 {
-        if self.glyph_props() & GlyphPropsFlags::LIGATURE.bits != 0 && self.is_ligated_internal() {
-            self.lig_props() & 0x0F
-        } else {
-            1
-        }
+    pub(crate) fn is_hidden(&self) -> bool {
+        self.unicode_props() & UnicodeProps::HIDDEN.bits != 0
     }
 
     #[inline]
@@ -306,6 +278,164 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn is_default_ignorable(&self) -> bool {
+        let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
+        n != 0 && !self.is_ligated()
+    }
+
+    // Var allocation: lig_props (aka lig_id / lig_comp)
+    // Used during the GSUB/GPOS processing to track ligatures
+    //
+    // When a ligature is formed:
+    //
+    //   - The ligature glyph and any marks in between all the same newly allocated
+    //     lig_id,
+    //   - The ligature glyph will get lig_num_comps set to the number of components
+    //   - The marks get lig_comp > 0, reflecting which component of the ligature
+    //     they were applied to.
+    //   - This is used in GPOS to attach marks to the right component of a ligature
+    //     in MarkLigPos,
+    //   - Note that when marks are ligated together, much of the above is skipped
+    //     and the current lig_id reused.
+    //
+    // When a multiple-substitution is done:
+    //
+    //   - All resulting glyphs will have lig_id = 0,
+    //   - The resulting glyphs will have lig_comp = 0, 1, 2, ... respectively.
+    //   - This is used in GPOS to attach marks to the first component of a
+    //     multiple substitution in MarkBasePos.
+    //
+    // The numbers are also used in GPOS to do mark-to-mark positioning only
+    // to marks that belong to the same component of the same ligature.
+
+    #[inline]
+    pub(crate) fn lig_props(&self) -> u8 {
+        unsafe {
+            let v: ffi::rb_var_int_t = std::mem::transmute(self.var1);
+            v.var_u8[2]
+        }
+    }
+
+    #[inline]
+    pub(crate) fn set_lig_props(&mut self, n: u8) {
+        unsafe {
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
+            v.var_u8[2] = n;
+        }
+    }
+
+    pub(crate) fn set_lig_props_for_ligature(&mut self, lig_id: u8, lig_num_comps: u8) {
+        self.set_lig_props((lig_id << 5) | IS_LIG_BASE | (lig_num_comps & 0x0F));
+    }
+
+    pub(crate) fn set_lig_props_for_mark(&mut self, lig_id: u8, lig_comp: u8) {
+        self.set_lig_props((lig_id << 5) | (lig_comp & 0x0F));
+    }
+
+    pub(crate) fn set_lig_props_for_component(&mut self, lig_comp: u8) {
+        self.set_lig_props_for_mark(0, lig_comp)
+    }
+
+    #[inline]
+    pub(crate) fn lig_id(&self) -> u8 {
+        self.lig_props() >> 5
+    }
+
+    #[inline]
+    pub(crate) fn is_ligated_internal(&self) -> bool {
+        self.lig_props() & IS_LIG_BASE != 0
+    }
+
+    #[inline]
+    pub(crate) fn lig_comp(&self) -> u8 {
+        if self.is_ligated_internal() {
+            0
+        } else {
+            self.lig_props() & 0x0F
+        }
+    }
+
+    #[inline]
+    pub(crate) fn lig_num_comps(&self) -> u8 {
+        if self.glyph_props() & GlyphPropsFlags::LIGATURE.bits != 0 && self.is_ligated_internal() {
+            self.lig_props() & 0x0F
+        } else {
+            1
+        }
+    }
+
+    // Var allocation: glyph_props
+    // Used during the GSUB/GPOS processing to store GDEF glyph properties
+
+    #[inline]
+    pub(crate) fn glyph_props(&self) -> u16 {
+        unsafe {
+            let v: ffi::rb_var_int_t = std::mem::transmute(self.var1);
+            v.var_u16[0]
+        }
+    }
+
+    #[inline]
+    pub(crate) fn set_glyph_props(&mut self, n: u16) {
+        unsafe {
+            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
+            v.var_u16[0] = n;
+        }
+    }
+
+    #[inline]
+    pub(crate) fn is_base_glyph(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::BASE_GLYPH.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_ligature(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::LIGATURE.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_mark(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::MARK.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_substituted(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_ligated(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::LIGATED.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_multiplied(&self) -> bool {
+        self.glyph_props() & GlyphPropsFlags::MULTIPLIED.bits != 0
+    }
+
+    #[inline]
+    pub(crate) fn is_ligated_and_didnt_multiply(&self) -> bool {
+        self.is_ligated() && !self.is_multiplied()
+    }
+
+    #[inline]
+    pub(crate) fn clear_ligated_and_multiplied(&mut self) {
+        let mut n = self.glyph_props();
+        n &= !(GlyphPropsFlags::LIGATED | GlyphPropsFlags::MULTIPLIED).bits;
+        self.set_glyph_props(n);
+    }
+
+    #[inline]
+    pub(crate) fn clear_substituted(&mut self) {
+        let mut n = self.glyph_props();
+        n &= !GlyphPropsFlags::SUBSTITUTED.bits;
+        self.set_glyph_props(n);
+    }
+
+    // Var allocation: syllable
+    // Used during the GSUB/GPOS processing to store shaping boundaries
+
+    #[inline]
     pub(crate) fn syllable(&self) -> u8 {
         unsafe {
             let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var1);
@@ -321,10 +451,12 @@ impl GlyphInfo {
         }
     }
 
+    // Var allocation: glyph_index
+    // Used during the normalization process to store glyph indices
+
     #[inline]
-    pub(crate) fn glyph_index(&mut self) -> &mut u32 {
-        // buffer var allocations, used during the normalization process
-        &mut self.var1
+    pub(crate) fn set_glyph_index(&mut self, n: u32) {
+        self.var1 = n;
     }
 }
 
@@ -366,7 +498,7 @@ pub(crate) struct Buffer {
     pub(crate) successful: bool,
     /// Whether we have an output buffer going on.
     have_output: bool,
-    have_separate_output: bool,
+    pub(crate) have_separate_output: bool,
     /// Whether we have positions
     have_positions: bool,
 
@@ -415,7 +547,7 @@ impl Buffer {
     }
 
     #[inline]
-    fn from_ptr(buffer: *const ffi::rb_buffer_t) -> &'static Buffer {
+    pub(crate) fn from_ptr(buffer: *const ffi::rb_buffer_t) -> &'static Buffer {
         unsafe { &*(buffer as *const Buffer) }
     }
 
@@ -474,7 +606,7 @@ impl Buffer {
     }
 
     #[inline]
-    fn cur_pos_mut(&mut self) -> &mut GlyphPosition {
+    pub(crate) fn cur_pos_mut(&mut self) -> &mut GlyphPosition {
         let i = self.idx;
         &mut self.pos[i]
     }
@@ -515,12 +647,12 @@ impl Buffer {
     }
 
     #[inline]
-    fn backtrack_len(&self) -> usize {
+    pub(crate) fn backtrack_len(&self) -> usize {
         if self.have_output { self.out_len } else { self.idx }
     }
 
     #[inline]
-    fn lookahead_len(&self) -> usize {
+    pub(crate) fn lookahead_len(&self) -> usize {
         self.len - self.idx
     }
 
@@ -633,7 +765,7 @@ impl Buffer {
         self.idx = 0;
     }
 
-    fn remove_output(&mut self) {
+    pub(crate) fn remove_output(&mut self) {
         self.have_output = false;
         self.have_positions = false;
 
@@ -729,7 +861,7 @@ impl Buffer {
     }
 
     pub(crate) fn output_char(&mut self, unichar: u32, glyph: u32) {
-        *self.cur_mut(0).glyph_index() = glyph;
+        self.cur_mut(0).set_glyph_index(glyph);
         // This is very confusing indeed.
         self.output_glyph(unichar);
         let mut flags = self.scratch_flags;
@@ -788,7 +920,7 @@ impl Buffer {
     }
 
     pub(crate) fn next_char(&mut self, glyph: u32) {
-        *self.cur_mut(0).glyph_index() = glyph;
+        self.cur_mut(0).set_glyph_index(glyph);
         self.next_glyph();
     }
 
@@ -916,7 +1048,7 @@ impl Buffer {
     }
 
     /// Merge clusters for deleting current glyph, and skip it.
-    fn delete_glyph(&mut self) {
+    pub(crate) fn delete_glyph(&mut self) {
         let cluster = self.info[self.idx].cluster;
 
         if self.idx + 1 < self.len && cluster == self.info[self.idx + 1].cluster {
@@ -948,6 +1080,56 @@ impl Buffer {
         }
 
         self.skip_glyph();
+    }
+
+    pub(crate) fn delete_glyphs_inplace(&mut self, filter: impl Fn(&GlyphInfo) -> bool) {
+        // Merge clusters and delete filtered glyphs.
+        // NOTE! We can't use out-buffer as we have positioning data.
+        let mut j = 0;
+
+        for i in 0..self.len {
+            if filter(&self.info[i]) {
+                // Merge clusters.
+                // Same logic as delete_glyph(), but for in-place removal
+
+                let cluster = self.info[i].cluster;
+                if i + 1 < self.len && cluster == self.info[i + 1].cluster {
+                    // Cluster survives; do nothing.
+                    continue;
+                }
+
+                if j != 0 {
+                    // Merge cluster backward.
+                    if cluster < self.info[j - 1].cluster {
+                        let mask = self.info[i].mask;
+                        let old_cluster = self.info[j - 1].cluster;
+
+                        let mut k = j;
+                        while k > 0 && self.info[k - 1].cluster == old_cluster {
+                            Self::set_cluster(&mut self.info[k - 1], cluster, mask);
+                            k -= 1;
+                        }
+                    }
+                    continue;
+                }
+
+                if i + 1 < self.len {
+                    // Merge cluster forward.
+                    self.merge_clusters(i, i + 2);
+                }
+
+                continue;
+            }
+
+            if j != i {
+                self.info[j] = self.info[i];
+                self.pos[j] = self.pos[i];
+            }
+
+            j += 1;
+        }
+
+        self.len = j;
     }
 
     pub(crate) fn unsafe_to_break(&mut self, start: usize, end: usize) {
@@ -989,7 +1171,7 @@ impl Buffer {
         }
     }
 
-    fn move_to(&mut self, i: usize) -> bool {
+    pub(crate) fn move_to(&mut self, i: usize) -> bool {
         if !self.have_output {
             assert!(i <= self.len);
             self.idx = i;
@@ -1125,7 +1307,7 @@ impl Buffer {
         }
     }
 
-    fn set_cluster(info: &mut GlyphInfo, cluster: u32, mask: Mask) {
+    pub(crate) fn set_cluster(info: &mut GlyphInfo, cluster: u32, mask: Mask) {
         if info.cluster != cluster {
             if mask & glyph_flag::UNSAFE_TO_BREAK != 0 {
                 info.mask |= glyph_flag::UNSAFE_TO_BREAK;
@@ -1198,6 +1380,16 @@ impl Buffer {
 
         start
     }
+
+    #[inline]
+    pub(crate) fn allocate_lig_id(&mut self) -> u8 {
+        let mut lig_id = self.next_serial() & 0x07;
+        if lig_id == 0 {
+            // In case of overflow.
+            lig_id = self.next_serial() & 0x07;
+        }
+        lig_id as u8
+    }
 }
 
 
@@ -1224,6 +1416,7 @@ bitflags::bitflags! {
         const BASE_GLYPH    = 0x02;
         const LIGATURE      = 0x04;
         const MARK          = 0x08;
+        const CLASS_MASK    = Self::BASE_GLYPH.bits | Self::LIGATURE.bits | Self::MARK.bits;
 
         // The following are used internally; not derived from GDEF.
         const SUBSTITUTED   = 0x10;
@@ -1518,6 +1711,14 @@ impl fmt::Debug for GlyphBuffer {
 }
 
 #[no_mangle]
+pub extern "C" fn rb_glyph_info_init_unicode_props(info: *mut GlyphInfo, buffer: *mut ffi::rb_buffer_t) {
+    let buffer = Buffer::from_ptr_mut(buffer);
+    unsafe {
+        (*info).init_unicode_props(&mut buffer.scratch_flags);
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn rb_buffer_get_cluster_level(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).cluster_level as u32
 }
@@ -1707,6 +1908,14 @@ pub extern "C" fn rb_buffer_set_masks(buffer: *mut ffi::rb_buffer_t, value: Mask
 #[no_mangle]
 pub extern "C" fn rb_buffer_delete_glyph(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).delete_glyph();
+}
+
+#[no_mangle]
+pub extern "C" fn rb_buffer_delete_glyphs_inplace(
+    buffer: *mut ffi::rb_buffer_t,
+    filter: unsafe extern "C" fn(info: *const GlyphInfo) -> ffi::rb_bool_t,
+) {
+    Buffer::from_ptr_mut(buffer).delete_glyphs_inplace(|info| unsafe { filter(info) != 0 })
 }
 
 #[no_mangle]
