@@ -33,7 +33,10 @@ const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag, unsigned
 {
     rb_blob_t* blob = face->reference_table(tag);
     *len = blob->length;
-    return blob->data;
+    const char *data = blob->data;
+    // This blob was just pointing into it's parent's data, so we don't need it.
+    rb_blob_destroy(blob);
+    return data;
 }
 }
 
