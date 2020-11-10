@@ -33,11 +33,6 @@
  * C++ template meta-programming & fundamentals used with them.
  */
 
-/* Void!  For when we need a expression-type of void. */
-struct rb_empty_t
-{
-};
-
 /* https://en.cppreference.com/w/cpp/types/void_t */
 template <typename... Ts> struct _rb_void_t
 {
@@ -311,80 +306,6 @@ template <typename T> using rb_is_arithmetic = rb_bool_constant<rb_is_integral(T
 template <typename T>
 using rb_is_signed = rb_conditional<rb_is_arithmetic(T), rb_bool_constant<(T)-1 < (T)0>, rb_false_type>;
 #define rb_is_signed(T) rb_is_signed<T>::value
-template <typename T>
-using rb_is_unsigned = rb_conditional<rb_is_arithmetic(T), rb_bool_constant<(T)0 < (T)-1>, rb_false_type>;
-#define rb_is_unsigned(T) rb_is_unsigned<T>::value
-
-template <typename T> struct rb_int_min;
-template <> struct rb_int_min<char> : rb_integral_constant<char, CHAR_MIN>
-{
-};
-template <> struct rb_int_min<signed char> : rb_integral_constant<signed char, SCHAR_MIN>
-{
-};
-template <> struct rb_int_min<unsigned char> : rb_integral_constant<unsigned char, 0>
-{
-};
-template <> struct rb_int_min<signed short> : rb_integral_constant<signed short, SHRT_MIN>
-{
-};
-template <> struct rb_int_min<unsigned short> : rb_integral_constant<unsigned short, 0>
-{
-};
-template <> struct rb_int_min<signed int> : rb_integral_constant<signed int, INT_MIN>
-{
-};
-template <> struct rb_int_min<unsigned int> : rb_integral_constant<unsigned int, 0>
-{
-};
-template <> struct rb_int_min<signed long> : rb_integral_constant<signed long, LONG_MIN>
-{
-};
-template <> struct rb_int_min<unsigned long> : rb_integral_constant<unsigned long, 0>
-{
-};
-template <> struct rb_int_min<signed long long> : rb_integral_constant<signed long long, LLONG_MIN>
-{
-};
-template <> struct rb_int_min<unsigned long long> : rb_integral_constant<unsigned long long, 0>
-{
-};
-#define rb_int_min(T) rb_int_min<T>::value
-template <typename T> struct rb_int_max;
-template <> struct rb_int_max<char> : rb_integral_constant<char, CHAR_MAX>
-{
-};
-template <> struct rb_int_max<signed char> : rb_integral_constant<signed char, SCHAR_MAX>
-{
-};
-template <> struct rb_int_max<unsigned char> : rb_integral_constant<unsigned char, UCHAR_MAX>
-{
-};
-template <> struct rb_int_max<signed short> : rb_integral_constant<signed short, SHRT_MAX>
-{
-};
-template <> struct rb_int_max<unsigned short> : rb_integral_constant<unsigned short, USHRT_MAX>
-{
-};
-template <> struct rb_int_max<signed int> : rb_integral_constant<signed int, INT_MAX>
-{
-};
-template <> struct rb_int_max<unsigned int> : rb_integral_constant<unsigned int, UINT_MAX>
-{
-};
-template <> struct rb_int_max<signed long> : rb_integral_constant<signed long, LONG_MAX>
-{
-};
-template <> struct rb_int_max<unsigned long> : rb_integral_constant<unsigned long, ULONG_MAX>
-{
-};
-template <> struct rb_int_max<signed long long> : rb_integral_constant<signed long long, LLONG_MAX>
-{
-};
-template <> struct rb_int_max<unsigned long long> : rb_integral_constant<unsigned long long, ULLONG_MAX>
-{
-};
-#define rb_int_max(T) rb_int_max<T>::value
 
 template <typename T, typename> struct _rb_is_destructible : rb_false_type
 {
@@ -405,9 +326,6 @@ struct _rb_is_constructible<T, rb_void_t<decltype(T(rb_declval(Ts)...))>, Ts...>
 template <typename T, typename... Ts> using rb_is_constructible = _rb_is_constructible<T, void, Ts...>;
 #define rb_is_constructible(...) rb_is_constructible<__VA_ARGS__>::value
 
-template <typename T> using rb_is_default_constructible = rb_is_constructible<T>;
-#define rb_is_default_constructible(T) rb_is_default_constructible<T>::value
-
 template <typename T> using rb_is_copy_constructible = rb_is_constructible<T, rb_add_lvalue_reference<rb_add_const<T>>>;
 #define rb_is_copy_constructible(T) rb_is_copy_constructible<T>::value
 
@@ -422,7 +340,6 @@ struct _rb_is_assignable<T, U, rb_void_t<decltype(rb_declval(T) = rb_declval(U))
 {
 };
 template <typename T, typename U> using rb_is_assignable = _rb_is_assignable<T, U, void>;
-#define rb_is_assignable(T, U) rb_is_assignable<T, U>::value
 
 template <typename T>
 using rb_is_copy_assignable = rb_is_assignable<rb_add_lvalue_reference<T>, rb_add_lvalue_reference<rb_add_const<T>>>;
@@ -441,24 +358,11 @@ template <typename T> union rb_trivial {
 template <typename T> using rb_is_trivially_destructible = rb_is_destructible<rb_trivial<T>>;
 #define rb_is_trivially_destructible(T) rb_is_trivially_destructible<T>::value
 
-/* Don't know how to do the following. */
-// template <typename T, typename ...Ts>
-// using rb_is_trivially_constructible= rb_is_constructible<rb_trivial<T>, rb_trivial<Ts>...>;
-//#define rb_is_trivially_constructible(...) rb_is_trivially_constructible<__VA_ARGS__>::value
-
-template <typename T> using rb_is_trivially_default_constructible = rb_is_default_constructible<rb_trivial<T>>;
-#define rb_is_trivially_default_constructible(T) rb_is_trivially_default_constructible<T>::value
-
 template <typename T> using rb_is_trivially_copy_constructible = rb_is_copy_constructible<rb_trivial<T>>;
 #define rb_is_trivially_copy_constructible(T) rb_is_trivially_copy_constructible<T>::value
 
 template <typename T> using rb_is_trivially_move_constructible = rb_is_move_constructible<rb_trivial<T>>;
 #define rb_is_trivially_move_constructible(T) rb_is_trivially_move_constructible<T>::value
-
-/* Don't know how to do the following. */
-// template <typename T, typename U>
-// using rb_is_trivially_assignable= rb_is_assignable<rb_trivial<T>, rb_trivial<U>>;
-//#define rb_is_trivially_assignable(T,U) rb_is_trivially_assignable<T, U>::value
 
 template <typename T> using rb_is_trivially_copy_assignable = rb_is_copy_assignable<rb_trivial<T>>;
 #define rb_is_trivially_copy_assignable(T) rb_is_trivially_copy_assignable<T>::value
@@ -474,22 +378,5 @@ using rb_is_trivially_copyable =
                      (!rb_is_copy_assignable(T) || rb_is_trivially_copy_assignable(T)) &&
                      (!rb_is_copy_constructible(T) || rb_is_trivially_copy_constructible(T)) && true>;
 #define rb_is_trivially_copyable(T) rb_is_trivially_copyable<T>::value
-
-template <typename T>
-using rb_is_trivial = rb_bool_constant<rb_is_trivially_copyable(T) && rb_is_trivially_default_constructible(T)>;
-#define rb_is_trivial(T) rb_is_trivial<T>::value
-
-/* rb_unwrap_type (T)
- * If T has no T::type, returns T. Otherwise calls itself on T::type recursively.
- */
-
-template <typename T, typename> struct _rb_unwrap_type : rb_type_identity_t<T>
-{
-};
-template <typename T> struct _rb_unwrap_type<T, rb_void_t<typename T::type>> : _rb_unwrap_type<typename T::type, void>
-{
-};
-template <typename T> using rb_unwrap_type = _rb_unwrap_type<T, void>;
-#define rb_unwrap_type(T) typename rb_unwrap_type<T>::type
 
 #endif /* RB_META_HH */

@@ -43,7 +43,6 @@ const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag, unsigned
 void rb_ot_face_t::init0(rb_face_t *face)
 {
     this->face = face;
-    head.init0();
     kern.init0();
     morx.init0();
     mort.init0();
@@ -55,7 +54,6 @@ void rb_ot_face_t::init0(rb_face_t *face)
 
 void rb_ot_face_t::fini()
 {
-    head.fini();
     kern.fini();
     morx.fini();
     mort.fini();

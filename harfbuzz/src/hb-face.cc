@@ -49,18 +49,10 @@
  * rb_face_t
  */
 
-DEFINE_NULL_INSTANCE(rb_face_t) = {
-    RB_OBJECT_HEADER_STATIC,
-
-    nullptr, /* reference_table_func */
-    nullptr, /* user_data */
-    nullptr, /* destroy */
-
-    RB_ATOMIC_INT_INIT(1000), /* upem */
-    RB_ATOMIC_INT_INIT(0),    /* num_glyphs */
-
-    /* Zero for the rest is fine. */
-};
+static rb_face_t *rb_face_get_empty()
+{
+    return const_cast<rb_face_t *>(&Null(rb_face_t));
+}
 
 /**
  * rb_face_create_for_tables:
@@ -74,7 +66,7 @@ DEFINE_NULL_INSTANCE(rb_face_t) = {
  *
  * Since: 0.9.2
  **/
-rb_face_t *
+static rb_face_t *
 rb_face_create_for_tables(rb_reference_table_func_t reference_table_func, void *user_data, rb_destroy_func_t destroy)
 {
     rb_face_t *face;
@@ -175,35 +167,6 @@ rb_face_t *rb_face_create(rb_blob_t *blob, unsigned int index)
 }
 
 /**
- * rb_face_get_empty:
- *
- *
- *
- * Return value: (transfer full)
- *
- * Since: 0.9.2
- **/
-rb_face_t *rb_face_get_empty()
-{
-    return const_cast<rb_face_t *>(&Null(rb_face_t));
-}
-
-/**
- * rb_face_reference: (skip)
- * @face: a face.
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-rb_face_t *rb_face_reference(rb_face_t *face)
-{
-    return rb_object_reference(face);
-}
-
-/**
  * rb_face_destroy: (skip)
  * @face: a face.
  *
@@ -225,37 +188,6 @@ void rb_face_destroy(rb_face_t *face)
 }
 
 /**
- * rb_face_make_immutable:
- * @face: a face.
- *
- *
- *
- * Since: 0.9.2
- **/
-void rb_face_make_immutable(rb_face_t *face)
-{
-    if (rb_object_is_immutable(face))
-        return;
-
-    rb_object_make_immutable(face);
-}
-
-/**
- * rb_face_is_immutable:
- * @face: a face.
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-rb_bool_t rb_face_is_immutable(const rb_face_t *face)
-{
-    return rb_object_is_immutable(face);
-}
-
-/**
  * rb_face_reference_table:
  * @face: a face.
  * @tag:
@@ -272,21 +204,6 @@ rb_blob_t *rb_face_reference_table(const rb_face_t *face, rb_tag_t tag)
         return rb_blob_get_empty();
 
     return face->reference_table(tag);
-}
-
-/**
- * rb_face_reference_blob:
- * @face: a face.
- *
- *
- *
- * Return value: (transfer full):
- *
- * Since: 0.9.2
- **/
-rb_blob_t *rb_face_reference_blob(rb_face_t *face)
-{
-    return face->reference_table(RB_TAG_NONE);
 }
 
 /**

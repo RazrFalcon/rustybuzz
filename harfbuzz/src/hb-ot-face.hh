@@ -38,7 +38,6 @@
  */
 
 /* Declare tables. */
-namespace OT { struct head; }
 namespace OT { struct kern; }
 namespace AAT { struct morx; }
 namespace AAT { struct mort; }
@@ -54,7 +53,6 @@ struct rb_ot_face_t
 
     enum order_t {
         ORDER_ZERO,
-        ORDER_OT_head,
         ORDER_OT_kern,
         ORDER_AAT_morx,
         ORDER_AAT_mort,
@@ -66,9 +64,7 @@ struct rb_ot_face_t
 
     rb_face_t *face;
 
-    rb_table_lazy_loader_t<OT::head, ORDER_OT_head> head;
     rb_table_lazy_loader_t<OT::kern, ORDER_OT_kern> kern;
-
     rb_table_lazy_loader_t<AAT::morx, ORDER_AAT_morx> morx;
     rb_table_lazy_loader_t<AAT::mort, ORDER_AAT_mort> mort;
     rb_table_lazy_loader_t<AAT::kerx, ORDER_AAT_kerx> kerx;

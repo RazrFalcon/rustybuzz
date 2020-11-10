@@ -30,7 +30,6 @@
 #define RB_OPEN_FILE_HH
 
 #include "hb-open-type.hh"
-#include "hb-ot-head-table.hh"
 
 namespace OT {
 

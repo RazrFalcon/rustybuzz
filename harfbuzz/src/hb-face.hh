@@ -46,7 +46,6 @@ struct rb_face_t
     void *user_data;
     rb_destroy_func_t destroy;
 
-    mutable rb_atomic_int_t upem;       /* Units-per-EM. */
     mutable rb_atomic_int_t num_glyphs; /* Number of glyphs. */
 
     rb_ot_face_t table; /* All the face's tables. */
@@ -65,15 +64,6 @@ struct rb_face_t
         return blob;
     }
 
-    RB_PURE_FUNC unsigned int get_upem() const
-    {
-        unsigned int ret = upem.get_relaxed();
-        if (unlikely(!ret)) {
-            return load_upem();
-        }
-        return ret;
-    }
-
     unsigned int get_num_glyphs() const
     {
         unsigned int ret = num_glyphs.get_relaxed();
@@ -83,9 +73,7 @@ struct rb_face_t
     }
 
 private:
-    RB_INTERNAL unsigned int load_upem() const;
     RB_INTERNAL unsigned int load_num_glyphs() const;
 };
-DECLARE_NULL_INSTANCE(rb_face_t);
 
 #endif /* RB_FACE_HH */

@@ -33,47 +33,6 @@
 
 RB_BEGIN_DECLS
 
-/**
- * rb_ot_name_id_t:
- * @RB_OT_NAME_ID_INVALID: Value to represent a nonexistent name ID.
- *
- * An integral type representing an OpenType 'name' table name identifier.
- * There are predefined name IDs, as well as name IDs return from other
- * API.  These can be used to fetch name strings from a font face.
- *
- * Since: 2.0.0
- **/
-enum {
-    RB_OT_NAME_ID_COPYRIGHT = 0,
-    RB_OT_NAME_ID_FONT_FAMILY = 1,
-    RB_OT_NAME_ID_FONT_SUBFAMILY = 2,
-    RB_OT_NAME_ID_UNIQUE_ID = 3,
-    RB_OT_NAME_ID_FULL_NAME = 4,
-    RB_OT_NAME_ID_VERSION_STRING = 5,
-    RB_OT_NAME_ID_POSTSCRIPT_NAME = 6,
-    RB_OT_NAME_ID_TRADEMARK = 7,
-    RB_OT_NAME_ID_MANUFACTURER = 8,
-    RB_OT_NAME_ID_DESIGNER = 9,
-    RB_OT_NAME_ID_DESCRIPTION = 10,
-    RB_OT_NAME_ID_VENDOR_URL = 11,
-    RB_OT_NAME_ID_DESIGNER_URL = 12,
-    RB_OT_NAME_ID_LICENSE = 13,
-    RB_OT_NAME_ID_LICENSE_URL = 14,
-    /*RB_OT_NAME_ID_RESERVED		= 15,*/
-    RB_OT_NAME_ID_TYPOGRAPHIC_FAMILY = 16,
-    RB_OT_NAME_ID_TYPOGRAPHIC_SUBFAMILY = 17,
-    RB_OT_NAME_ID_MAC_FULL_NAME = 18,
-    RB_OT_NAME_ID_SAMPLE_TEXT = 19,
-    RB_OT_NAME_ID_CID_FINDFONT_NAME = 20,
-    RB_OT_NAME_ID_WWS_FAMILY = 21,
-    RB_OT_NAME_ID_WWS_SUBFAMILY = 22,
-    RB_OT_NAME_ID_LIGHT_BACKGROUND = 23,
-    RB_OT_NAME_ID_DARK_BACKGROUND = 24,
-    RB_OT_NAME_ID_VARIATIONS_PS_PREFIX = 25,
-
-    RB_OT_NAME_ID_INVALID = 0xFFFF
-};
-
 typedef unsigned int rb_ot_name_id_t;
 
 RB_END_DECLS

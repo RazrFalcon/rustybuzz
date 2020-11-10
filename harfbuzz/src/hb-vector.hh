@@ -107,11 +107,6 @@ public:
         return *this;
     }
 
-    rb_bytes_t as_bytes() const
-    {
-        return rb_bytes_t((const char *)arrayZ, length * item_size);
-    }
-
     bool operator==(const rb_vector_t &o) const
     {
         return as_array() == o.as_array();

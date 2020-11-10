@@ -33,7 +33,6 @@
 #include "hb-common.h"
 #include "hb-face.h"
 #include "hb-font.h"
-#include "hb-map.h"
 #include "hb-shape.h"
 #include "hb-unicode.h"
 

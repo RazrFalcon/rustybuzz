@@ -65,9 +65,6 @@ rb_shape_plan_t *rb_shape_plan_create(rb_face_t *face,
     if (!(shape_plan = rb_object_create<rb_shape_plan_t>()))
         goto bail;
 
-    if (unlikely(!face))
-        face = rb_face_get_empty();
-    rb_face_make_immutable(face);
     shape_plan->face_unsafe = face;
 
     if (unlikely(!shape_plan->ot.init0(face, props, user_features, num_user_features, variations_index)))

@@ -34,7 +34,6 @@
 #include "hb-ot-layout.hh"
 #include "hb-ot-face.hh"
 #include "hb-ot-map.hh"
-#include "hb-map.hh"
 
 #include "hb-ot-kern-table.hh"
 #include "hb-aat-layout-morx-table.hh"

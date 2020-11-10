@@ -31,7 +31,6 @@
 
 #include "hb-aat-layout-common.hh"
 #include "hb-aat-layout-feat-table.hh"
-#include "hb-ot-head-table.hh"
 #include "hb-ot-maxp-table.hh"
 
 #ifndef RB_NO_VISIBILITY
@@ -56,13 +55,6 @@ unsigned int rb_face_t::load_num_glyphs() const
     unsigned int ret = maxp_table->get_num_glyphs();
     num_glyphs.set_relaxed(ret);
     rb_blob_destroy(maxp_blob);
-    return ret;
-}
-
-unsigned int rb_face_t::load_upem() const
-{
-    unsigned int ret = table.head->get_upem();
-    upem.set_relaxed(ret);
     return ret;
 }
 #endif

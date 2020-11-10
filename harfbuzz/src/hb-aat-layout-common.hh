@@ -765,10 +765,6 @@ struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bo
     {
         return false;
     }
-    bool stop_sublookup_iteration(return_t r) const
-    {
-        return r;
-    }
 
     const rb_ot_shape_plan_t *plan;
     rb_font_t *font;

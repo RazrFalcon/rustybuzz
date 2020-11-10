@@ -123,35 +123,15 @@ struct rb_sanitize_context_t : rb_dispatch_context_t<rb_sanitize_context_t, bool
         , end(nullptr)
         , max_ops(0)
         , max_subtables(0)
-        , writable(false)
-        , edit_count(0)
         , blob(nullptr)
         , num_glyphs(65536)
         , num_glyphs_set(false)
     {
     }
 
-    template <typename T, typename F> bool may_dispatch(const T *obj RB_UNUSED, const F *format)
-    {
-        return format->sanitize(this);
-    }
     static return_t default_return_value()
     {
         return true;
-    }
-    static return_t no_dispatch_return_value()
-    {
-        return false;
-    }
-    bool stop_sublookup_iteration(const return_t r) const
-    {
-        return !r;
-    }
-
-    bool visit_subtables(unsigned count)
-    {
-        max_subtables += count;
-        return max_subtables < RB_SANITIZE_MAX_SUTABLES;
     }
 
 private:
@@ -166,7 +146,6 @@ private:
               void init(rb_blob_t *b)
     {
         this->blob = rb_blob_reference(b);
-        this->writable = false;
     }
 
     void set_num_glyphs(unsigned int num_glyphs_)
@@ -216,8 +195,6 @@ private:
             this->max_ops = rb_clamp((unsigned)(this->end - this->start) * RB_SANITIZE_MAX_OPS_FACTOR,
                                      (unsigned)RB_SANITIZE_MAX_OPS_MIN,
                                      (unsigned)RB_SANITIZE_MAX_OPS_MAX);
-        this->edit_count = 0;
-        this->debug_depth = 0;
     }
 
     void end_processing()
@@ -225,11 +202,6 @@ private:
         rb_blob_destroy(this->blob);
         this->blob = nullptr;
         this->start = this->end = nullptr;
-    }
-
-    unsigned get_edit_count()
-    {
-        return edit_count;
     }
 
     bool check_range(const void *base, unsigned int len) const
@@ -265,28 +237,8 @@ private:
         return likely(this->check_range(obj, obj->min_size));
     }
 
-    bool may_edit(const void *base, unsigned int len)
-    {
-        if (this->edit_count >= RB_SANITIZE_MAX_EDITS)
-            return false;
-
-        this->edit_count++;
-        return this->writable;
-    }
-
-    template <typename Type, typename ValueType> bool try_set(const Type *obj, const ValueType &v)
-    {
-        if (this->may_edit(obj, rb_static_size(Type))) {
-            *const_cast<Type *>(obj) = v;
-            return true;
-        }
-        return false;
-    }
-
     template <typename Type> rb_blob_t *sanitize_blob(rb_blob_t *blob)
     {
-        bool sane;
-
         init(blob);
 
         start_processing();
@@ -298,22 +250,11 @@ private:
 
         Type *t = reinterpret_cast<Type *>(const_cast<char *>(start));
 
-        sane = t->sanitize(this);
-        if (sane) {
-            if (edit_count) {
-                /* sanitize again to ensure no toe-stepping */
-                edit_count = 0;
-                sane = t->sanitize(this);
-                if (edit_count) {
-                    sane = false;
-                }
-            }
-        }
+        bool sane = t->sanitize(this);
 
         end_processing();
 
         if (sane) {
-            rb_blob_make_immutable(blob);
             return blob;
         } else {
             rb_blob_destroy(blob);
@@ -332,8 +273,6 @@ private:
     mutable int max_ops, max_subtables;
 
 private:
-    bool writable;
-    unsigned int edit_count;
     rb_blob_t *blob;
     unsigned int num_glyphs;
     bool num_glyphs_set;

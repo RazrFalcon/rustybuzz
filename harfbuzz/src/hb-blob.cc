@@ -110,8 +110,6 @@ rb_blob_t *rb_blob_create_sub_blob(rb_blob_t *parent, unsigned int offset, unsig
     if (!length || !parent || offset >= parent->length)
         return rb_blob_get_empty();
 
-    rb_blob_make_immutable(parent);
-
     blob = rb_blob_create(
         parent->data + offset, rb_min(length, parent->length - offset), rb_blob_reference(parent), _rb_blob_destroy);
 
@@ -171,69 +169,4 @@ void rb_blob_destroy(rb_blob_t *blob)
     blob->fini_shallow();
 
     free(blob);
-}
-
-/**
- * rb_blob_make_immutable:
- * @blob: a blob.
- *
- *
- *
- * Since: 0.9.2
- **/
-void rb_blob_make_immutable(rb_blob_t *blob)
-{
-    if (rb_object_is_immutable(blob))
-        return;
-
-    rb_object_make_immutable(blob);
-}
-
-/**
- * rb_blob_is_immutable:
- * @blob: a blob.
- *
- *
- *
- * Return value: TODO
- *
- * Since: 0.9.2
- **/
-rb_bool_t rb_blob_is_immutable(rb_blob_t *blob)
-{
-    return rb_object_is_immutable(blob);
-}
-
-/**
- * rb_blob_get_length:
- * @blob: a blob.
- *
- *
- *
- * Return value: the length of blob data in bytes.
- *
- * Since: 0.9.2
- **/
-unsigned int rb_blob_get_length(rb_blob_t *blob)
-{
-    return blob->length;
-}
-
-/**
- * rb_blob_get_data:
- * @blob: a blob.
- * @length: (out):
- *
- *
- *
- * Returns: (transfer none) (array length=length):
- *
- * Since: 0.9.2
- **/
-const char *rb_blob_get_data(rb_blob_t *blob, unsigned int *length)
-{
-    if (length)
-        *length = blob->length;
-
-    return blob->data;
 }

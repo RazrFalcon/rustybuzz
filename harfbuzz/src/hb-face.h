@@ -46,23 +46,9 @@ RB_EXTERN rb_face_t *rb_face_create(rb_blob_t *blob, unsigned int index);
 
 typedef rb_blob_t *(*rb_reference_table_func_t)(rb_face_t *face, rb_tag_t tag, void *user_data);
 
-/* calls destroy() when not needing user_data anymore */
-RB_EXTERN rb_face_t *
-rb_face_create_for_tables(rb_reference_table_func_t reference_table_func, void *user_data, rb_destroy_func_t destroy);
-
-RB_EXTERN rb_face_t *rb_face_get_empty(void);
-
-RB_EXTERN rb_face_t *rb_face_reference(rb_face_t *face);
-
 RB_EXTERN void rb_face_destroy(rb_face_t *face);
 
-RB_EXTERN void rb_face_make_immutable(rb_face_t *face);
-
-RB_EXTERN rb_bool_t rb_face_is_immutable(const rb_face_t *face);
-
 RB_EXTERN rb_blob_t *rb_face_reference_table(const rb_face_t *face, rb_tag_t tag);
-
-RB_EXTERN rb_blob_t *rb_face_reference_blob(rb_face_t *face);
 
 RB_EXTERN unsigned int rb_face_get_glyph_count(const rb_face_t *face);
 

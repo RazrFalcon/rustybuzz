@@ -128,13 +128,6 @@ template <typename Type, typename TObject> static inline Type &StructAfter(TObje
     static constexpr unsigned null_size = (size);                                                                      \
     static constexpr unsigned min_size = (size)
 
-#define DEFINE_SIZE_ARRAY_SIZED(size, array)                                                                           \
-    unsigned int get_size() const                                                                                      \
-    {                                                                                                                  \
-        return (size - (array).min_size + (array).get_size());                                                         \
-    }                                                                                                                  \
-    DEFINE_SIZE_ARRAY(size, array)
-
 /*
  * Lazy loaders.
  */
@@ -191,10 +184,7 @@ struct rb_lazy_loader_t : rb_data_wrapper_t<Data, WheresData>
         typename rb_non_void_t<Subclass, rb_lazy_loader_t<Returned, Subclass, Data, WheresData, Stored>>::value Funcs;
 
     void init0() {} /* Init, when memory is already set to 0. No-op for us. */
-    void init()
-    {
-        instance.set_relaxed(nullptr);
-    }
+
     void fini()
     {
         do_destroy(instance.get());
@@ -303,11 +293,6 @@ struct rb_lazy_loader_t : rb_data_wrapper_t<Data, WheresData>
 };
 
 /* Specializations. */
-
-template <typename T, unsigned int WheresFace>
-struct rb_face_lazy_loader_t : rb_lazy_loader_t<T, rb_face_lazy_loader_t<T, WheresFace>, rb_face_t, WheresFace>
-{
-};
 
 template <typename T, unsigned int WheresFace>
 struct rb_table_lazy_loader_t

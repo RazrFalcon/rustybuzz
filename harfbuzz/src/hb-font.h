@@ -69,21 +69,7 @@ typedef struct rb_glyph_extents_t
 
 /* func dispatch */
 
-RB_EXTERN rb_bool_t rb_font_get_h_extents(rb_font_t *font, rb_font_extents_t *extents);
-RB_EXTERN rb_bool_t rb_font_get_v_extents(rb_font_t *font, rb_font_extents_t *extents);
-
 RB_EXTERN rb_bool_t rb_font_get_nominal_glyph(rb_font_t *font, rb_codepoint_t unicode, rb_codepoint_t *glyph);
-RB_EXTERN rb_bool_t rb_font_get_variation_glyph(rb_font_t *font,
-                                                rb_codepoint_t unicode,
-                                                rb_codepoint_t variation_selector,
-                                                rb_codepoint_t *glyph);
-
-RB_EXTERN unsigned int rb_font_get_nominal_glyphs(rb_font_t *font,
-                                                  unsigned int count,
-                                                  const rb_codepoint_t *first_unicode,
-                                                  unsigned int unicode_stride,
-                                                  rb_codepoint_t *first_glyph,
-                                                  unsigned int glyph_stride);
 
 RB_EXTERN rb_position_t rb_font_get_glyph_h_advance(rb_font_t *font, rb_codepoint_t glyph);
 RB_EXTERN rb_position_t rb_font_get_glyph_v_advance(rb_font_t *font, rb_codepoint_t glyph);
@@ -100,8 +86,6 @@ RB_EXTERN void rb_font_get_glyph_v_advances(rb_font_t *font,
                                             unsigned glyph_stride,
                                             rb_position_t *first_advance,
                                             unsigned advance_stride);
-
-RB_EXTERN rb_bool_t rb_font_get_glyph_extents(rb_font_t *font, rb_codepoint_t glyph, rb_glyph_extents_t *extents);
 
 /* high-level funcs, with fallback */
 
@@ -130,25 +114,8 @@ RB_EXTERN unsigned int rb_font_get_num_coords(rb_font_t *font);
 
 RB_EXTERN rb_bool_t rb_font_has_glyph(rb_font_t *font, rb_codepoint_t unicode);
 
-RB_EXTERN void rb_font_get_h_extents_with_fallback(rb_font_t *font, rb_font_extents_t *extents);
-
-RB_EXTERN void
-rb_font_get_glyph_v_origin_with_fallback(rb_font_t *font, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y);
-
-RB_EXTERN rb_bool_t rb_font_get_glyph_h_origin(rb_font_t *font,
-                                               rb_codepoint_t glyph,
-                                               rb_position_t *x,
-                                               rb_position_t *y);
-RB_EXTERN rb_bool_t rb_font_get_glyph_v_origin(rb_font_t *font,
-                                               rb_codepoint_t glyph,
-                                               rb_position_t *x,
-                                               rb_position_t *y);
-
 RB_EXTERN void
 rb_font_subtract_glyph_v_origin(rb_font_t *font, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y);
-
-RB_EXTERN void
-rb_font_guess_v_origin_minus_h_origin(rb_font_t *font, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y);
 
 RB_EXTERN rb_bool_t rb_font_has_vorg_data(rb_font_t *font);
 RB_EXTERN int rb_font_get_y_origin(rb_font_t *font, rb_codepoint_t glyph);

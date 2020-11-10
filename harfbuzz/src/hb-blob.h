@@ -47,14 +47,6 @@ RB_EXTERN rb_blob_t *rb_blob_reference(rb_blob_t *blob);
 
 RB_EXTERN void rb_blob_destroy(rb_blob_t *blob);
 
-RB_EXTERN void rb_blob_make_immutable(rb_blob_t *blob);
-
-RB_EXTERN rb_bool_t rb_blob_is_immutable(rb_blob_t *blob);
-
-RB_EXTERN unsigned int rb_blob_get_length(rb_blob_t *blob);
-
-RB_EXTERN const char *rb_blob_get_data(rb_blob_t *blob, unsigned int *length);
-
 RB_END_DECLS
 
 #endif /* RB_BLOB_H */

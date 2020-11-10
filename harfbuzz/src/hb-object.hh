@@ -129,14 +129,6 @@ template <typename Type> static inline bool rb_object_is_valid(const Type *obj)
 {
     return likely(obj->header.ref_count.is_valid());
 }
-template <typename Type> static inline bool rb_object_is_immutable(const Type *obj)
-{
-    return !obj->header.writable.get_relaxed();
-}
-template <typename Type> static inline void rb_object_make_immutable(const Type *obj)
-{
-    obj->header.writable.set_relaxed(false);
-}
 template <typename Type> static inline Type *rb_object_reference(Type *obj)
 {
     rb_object_trace(obj, RB_FUNC);
