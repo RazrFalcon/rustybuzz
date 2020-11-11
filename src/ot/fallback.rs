@@ -1,4 +1,8 @@
-use crate::{ffi, Direction, Font};
+use std::convert::TryFrom;
+
+use ttf_parser::GlyphId;
+
+use crate::{ffi, Direction, Face};
 use crate::buffer::{Buffer, GlyphPosition};
 use crate::unicode::{modified_combining_class, CanonicalCombiningClass, GeneralCategory, Space};
 use crate::ot::*;
@@ -98,16 +102,16 @@ fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
 #[no_mangle]
 pub extern "C" fn _rb_ot_shape_fallback_mark_position_recategorize_marks(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    recategorize_marks(&plan, font, &mut buffer)
+    recategorize_marks(&plan, face, &mut buffer)
 }
 
-fn recategorize_marks(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         if info.general_category() == GeneralCategory::NonspacingMark {
@@ -138,21 +142,21 @@ fn zero_mark_advances(
 
 fn position_mark(
     _: &ShapePlan,
-    font: &Font,
+    face: &Face,
     direction: Direction,
-    codepoint: u32,
+    glyph: GlyphId,
     pos: &mut GlyphPosition,
     base_extents: &mut ffi::rb_glyph_extents_t,
     combining_class: CanonicalCombiningClass,
 ) {
     use CanonicalCombiningClass as Class;
 
-    let mark_extents = match font.glyph_extents(codepoint) {
+    let mark_extents = match face.glyph_extents(glyph) {
         Some(extents) => extents,
         None => return,
     };
 
-    let y_gap = font.units_per_em() / 16;
+    let y_gap = face.units_per_em() / 16;
     pos.x_offset = 0;
     pos.y_offset = 0;
 
@@ -260,7 +264,7 @@ fn position_mark(
 
 fn position_around_base(
     plan: &ShapePlan,
-    font: &Font,
+    face: &Face,
     buffer: &mut Buffer,
     base: usize,
     end: usize,
@@ -271,7 +275,9 @@ fn position_around_base(
 
     let base_info = &buffer.info[base];
     let base_pos = &buffer.pos[base];
-    let mut base_extents = match font.glyph_extents(base_info.codepoint) {
+    let base_glyph = GlyphId(u16::try_from(base_info.codepoint).unwrap());
+
+    let mut base_extents = match face.glyph_extents(base_glyph) {
         Some(extents) => extents,
         None => {
             // If extents don't work, zero marks and go home.
@@ -286,7 +292,7 @@ fn position_around_base(
     // Use horizontal advance for horizontal positioning.
     // Generally a better idea. Also works for zero-ink glyphs. See:
     // https://github.com/harfbuzz/harfbuzz/issues/1532
-    base_extents.width = font.glyph_h_advance(base_info.codepoint) as i32;
+    base_extents.width = face.glyph_h_advance(base_glyph) as i32;
 
     let lig_id = base_info.lig_id() as u32;
     let num_lig_components = base_info.lig_num_comps() as i32;
@@ -347,9 +353,9 @@ fn position_around_base(
 
             position_mark(
                 &plan,
-                font,
+                face,
                 buffer.direction,
-                info.codepoint,
+                GlyphId(u16::try_from(info.codepoint).unwrap()),
                 pos,
                 &mut cluster_extents,
                 unsafe { std::mem::transmute(this_combining_class) },
@@ -373,7 +379,7 @@ fn position_around_base(
 
 fn position_cluster(
     plan: &ShapePlan,
-    font: &Font,
+    face: &Face,
     buffer: &mut Buffer,
     start: usize,
     end: usize,
@@ -393,7 +399,7 @@ fn position_cluster(
                 j += 1;
             }
 
-            position_around_base(plan, font, buffer, i, j, adjust_offsets_when_zeroing);
+            position_around_base(plan, face, buffer, i, j, adjust_offsets_when_zeroing);
             i = j - 1;
         }
         i += 1;
@@ -403,20 +409,20 @@ fn position_cluster(
 #[no_mangle]
 pub extern "C" fn _rb_ot_shape_fallback_mark_position(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
     adjust_offsets_when_zeroing: ffi::rb_bool_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
     let adjust_offsets_when_zeroing = adjust_offsets_when_zeroing != 0;
-    mark_position(&plan, font, &mut buffer, adjust_offsets_when_zeroing)
+    mark_position(&plan, face, &mut buffer, adjust_offsets_when_zeroing)
 }
 
 fn mark_position(
     plan: &ShapePlan,
-    font: &Font,
+    face: &Face,
     buffer: &mut Buffer,
     adjust_offsets_when_zeroing: bool,
 ) {
@@ -424,19 +430,19 @@ fn mark_position(
     let len = buffer.len;
     for i in 1..len {
         if !buffer.info[i].is_unicode_mark() {
-            position_cluster(&plan, font, buffer, start, i, adjust_offsets_when_zeroing);
+            position_cluster(&plan, face, buffer, start, i, adjust_offsets_when_zeroing);
             start = i;
         }
     }
 
-    position_cluster(&plan, font, buffer, start, len, adjust_offsets_when_zeroing);
+    position_cluster(&plan, face, buffer, start, len, adjust_offsets_when_zeroing);
 }
 
-/// Performs font-assisted kerning.
+/// Performs face-assisted kerning.
 #[no_mangle]
 pub extern "C" fn _rb_ot_shape_fallback_kern(
     _: *const ffi::rb_ot_shape_plan_t,
-    _: *mut ffi::rb_font_t,
+    _: *const ffi::rb_face_t,
     _: *mut ffi::rb_buffer_t,
 ) {}
 
@@ -444,16 +450,16 @@ pub extern "C" fn _rb_ot_shape_fallback_kern(
 #[no_mangle]
 pub extern "C" fn _rb_ot_shape_fallback_spaces(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    spaces(&plan, &font, &mut buffer);
+    spaces(&plan, &face, &mut buffer);
 }
 
-fn spaces(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
+fn spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     let horizontal = buffer.direction.is_horizontal();
     for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
@@ -472,7 +478,7 @@ fn spaces(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
             Space::SpaceEm5 |
             Space::SpaceEm6 |
             Space::SpaceEm16 => {
-                let length = (font.units_per_em() + (space_type as i32) / 2) / space_type as i32;
+                let length = (face.units_per_em() + (space_type as i32) / 2) / space_type as i32;
                 if horizontal {
                     pos.x_advance = length;
                 } else {
@@ -481,7 +487,7 @@ fn spaces(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
             }
 
             Space::Space4Em18 => {
-                let length = ((font.units_per_em() as i64) * 4 / 18) as i32;
+                let length = ((face.units_per_em() as i64) * 4 / 18) as i32;
                 if horizontal {
                     pos.x_advance = length
                 } else {
@@ -491,11 +497,11 @@ fn spaces(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
 
             Space::SpaceFigure => {
                 for u in '0'..='9' {
-                    if let Some(glyph) = font.glyph_index(u as u32) {
+                    if let Some(glyph) = face.glyph_index(u as u32) {
                         if horizontal {
-                            pos.x_advance = font.glyph_h_advance(glyph.0 as u32) as i32;
+                            pos.x_advance = face.glyph_h_advance(glyph) as i32;
                         } else {
-                            pos.y_advance = font.glyph_v_advance(glyph.0 as u32);
+                            pos.y_advance = face.glyph_v_advance(glyph);
                         }
                         break;
                     }
@@ -503,15 +509,15 @@ fn spaces(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
             }
 
             Space::SpacePunctuation => {
-                let punct = font
+                let punct = face
                     .glyph_index('.' as u32)
-                    .or_else(|| font.glyph_index(',' as u32));
+                    .or_else(|| face.glyph_index(',' as u32));
 
                 if let Some(glyph) = punct {
                     if horizontal {
-                        pos.x_advance = font.glyph_h_advance(glyph.0 as u32) as i32;
+                        pos.x_advance = face.glyph_h_advance(glyph) as i32;
                     } else {
-                        pos.y_advance = font.glyph_v_advance(glyph.0 as u32);
+                        pos.y_advance = face.glyph_v_advance(glyph);
                     }
                 }
             }

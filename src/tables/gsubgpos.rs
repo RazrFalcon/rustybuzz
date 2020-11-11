@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 use std::cmp::Ordering;
 
 use super::*;
-use crate::{Font, Tag};
+use crate::{Face, Tag};
 
 /// A GSUB or GPOS table.
 #[derive(Clone, Copy, Debug)]
@@ -716,17 +716,17 @@ impl<'a> Device<'a> {
         })
     }
 
-    pub fn get_x_delta(&self, font: &Font) -> Option<i32> {
+    pub fn get_x_delta(&self, face: &Face) -> Option<i32> {
         match self {
-            Self::Hinting(hinting) => hinting.get_x_delta(font),
-            Self::Variation(variation) => variation.get_x_delta(font),
+            Self::Hinting(hinting) => hinting.get_x_delta(face),
+            Self::Variation(variation) => variation.get_x_delta(face),
         }
     }
 
-    pub fn get_y_delta(&self, font: &Font) -> Option<i32> {
+    pub fn get_y_delta(&self, face: &Face) -> Option<i32> {
         match self {
-            Self::Hinting(hinting) => hinting.get_y_delta(font),
-            Self::Variation(variation) => variation.get_y_delta(font),
+            Self::Hinting(hinting) => hinting.get_y_delta(face),
+            Self::Variation(variation) => variation.get_y_delta(face),
         }
     }
 }
@@ -740,15 +740,15 @@ pub struct HintingDevice<'a> {
 }
 
 impl HintingDevice<'_> {
-    fn get_x_delta(&self, font: &Font) -> Option<i32> {
-        let ppem = font.pixels_per_em().map(|(x, _)| x)?;
-        let scale = font.units_per_em();
+    fn get_x_delta(&self, face: &Face) -> Option<i32> {
+        let ppem = face.pixels_per_em().map(|(x, _)| x)?;
+        let scale = face.units_per_em();
         self.get_delta(ppem, scale)
     }
 
-    fn get_y_delta(&self, font: &Font) -> Option<i32> {
-        let ppem = font.pixels_per_em().map(|(_, y)| y)?;
-        let scale = font.units_per_em();
+    fn get_y_delta(&self, face: &Face) -> Option<i32> {
+        let ppem = face.pixels_per_em().map(|(_, y)| y)?;
+        let scale = face.units_per_em();
         self.get_delta(ppem, scale)
     }
 
@@ -781,16 +781,16 @@ pub struct VariationDevice {
 }
 
 impl VariationDevice {
-    fn get_x_delta(&self, font: &Font) -> Option<i32> {
-        self.get_delta(font)
+    fn get_x_delta(&self, face: &Face) -> Option<i32> {
+        self.get_delta(face)
     }
 
-    fn get_y_delta(&self, font: &Font) -> Option<i32> {
-        self.get_delta(font)
+    fn get_y_delta(&self, face: &Face) -> Option<i32> {
+        self.get_delta(face)
     }
 
-    fn get_delta(&self, font: &Font) -> Option<i32> {
-        font.ttfp_face
+    fn get_delta(&self, face: &Face) -> Option<i32> {
+        face.ttfp_face
             .glyph_variation_delta(self.outer_index, self.inner_index)
             .and_then(|float| i32::try_num_from(float.round()))
     }

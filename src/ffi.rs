@@ -118,12 +118,6 @@ pub struct rb_face_t {
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct rb_font_t {
-    _unused: [u8; 0],
-}
-
-#[repr(C)]
-#[derive(Clone, Copy)]
 pub struct rb_ot_map_t { _unused: [u8; 0] }
 
 #[repr(C)]
@@ -170,7 +164,7 @@ pub type rb_ot_compose_func_t = unsafe extern "C" fn(
 pub type rb_ot_pause_func_t = Option<
     unsafe extern "C" fn(
         plan: *const rb_ot_shape_plan_t,
-        font: *mut rb_font_t,
+        face: *const rb_face_t,
         buffer: *mut rb_buffer_t,
     ),
 >;
@@ -185,15 +179,7 @@ extern "C" {
 
     pub fn rb_blob_destroy(blob: *mut rb_blob_t);
 
-    pub fn rb_face_create(blob: *mut rb_blob_t, index: u32) -> *mut rb_face_t;
-
-    pub fn rb_face_destroy(face: *mut rb_face_t);
-
-    pub fn rb_face_get_table_data(
-        face: *const rb_face_t,
-        tag: Tag,
-        len: *mut u32,
-    ) -> *const u8;
+    pub fn rb_face_sanitize_table(blob: *mut rb_blob_t, tag: Tag, glyph_count: u32) -> *mut rb_blob_t;
 
     pub fn rb_ot_map_get_1_mask(map: *const rb_ot_map_t, tag: Tag) -> rb_mask_t;
 
@@ -269,7 +255,7 @@ extern "C" {
     );
 
     pub fn rb_ot_layout_lookup_would_substitute(
-        face: *mut rb_face_t,
+        face: *const rb_face_t,
         lookup_index: u32,
         glyphs: *const rb_codepoint_t,
         glyphs_length: u32,
@@ -278,12 +264,12 @@ extern "C" {
 
     pub fn rb_clear_substitution_flags(
         plan: *const rb_ot_shape_plan_t,
-        font: *mut rb_font_t,
+        face: *const rb_face_t,
         buffer: *mut rb_buffer_t,
     );
 
     pub fn rb_shape(
-        font: *const rb_font_t,
+        face: *const rb_face_t,
         buffer: *mut rb_buffer_t,
         features: *const crate::Feature,
         num_features: u32,

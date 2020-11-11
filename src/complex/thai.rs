@@ -1,4 +1,4 @@
-use crate::{ffi, script, Font};
+use crate::{ffi, script, Face};
 use crate::buffer::{Buffer, BufferClusterLevel};
 use crate::unicode::GeneralCategory;
 use crate::ot::*;
@@ -108,7 +108,7 @@ const RD_MAPPINGS: &[PuaMapping] = &[
     PuaMapping::new(0x0000, 0x0000, 0x0000)
 ];
 
-fn pua_shape(u: u32, action: Action, font: &Font) -> u32 {
+fn pua_shape(u: u32, action: Action, face: &Face) -> u32 {
     let mappings = match action {
         Action::NOP => return u,
         Action::SD => SD_MAPPINGS,
@@ -119,11 +119,11 @@ fn pua_shape(u: u32, action: Action, font: &Font) -> u32 {
 
     for m in mappings {
         if m.u == u {
-            if font.glyph_index(m.win_pua).is_some() {
+            if face.glyph_index(m.win_pua).is_some() {
                 return m.win_pua;
             }
 
-            if font.glyph_index(m.mac_pua).is_some() {
+            if face.glyph_index(m.mac_pua).is_some() {
                 return m.mac_pua;
             }
 
@@ -212,7 +212,7 @@ const BELOW_STATE_MACHINE: &[[BSME; 3]] = &[
     /* B2 */ [BSME::new(Action::NOP, BelowState::B2), BSME::new(Action::SD, BelowState::B2),  BSME::new(Action::NOP, BelowState::B2)],
 ];
 
-fn do_pua_shaping(font: &Font, buffer: &mut Buffer) {
+fn do_pua_shaping(face: &Face, buffer: &mut Buffer) {
     let mut above_state = ABOVE_START_STATE[Consonant::NotConsonant as usize];
     let mut below_state = BELOW_START_STATE[Consonant::NotConsonant as usize];
     let mut base = 0;
@@ -242,9 +242,9 @@ fn do_pua_shaping(font: &Font, buffer: &mut Buffer) {
 
         buffer.unsafe_to_break(base, i);
         if action == Action::RD {
-            buffer.info[base].codepoint = pua_shape(buffer.info[base].codepoint, action, font);
+            buffer.info[base].codepoint = pua_shape(buffer.info[base].codepoint, action, face);
         } else {
-            buffer.info[i].codepoint = pua_shape(buffer.info[i].codepoint, action, font);
+            buffer.info[i].codepoint = pua_shape(buffer.info[i].codepoint, action, face);
         }
     }
 }
@@ -252,7 +252,7 @@ fn do_pua_shaping(font: &Font, buffer: &mut Buffer) {
 // TODO: more tests
 fn preprocess_text(
     plan: &ShapePlan,
-    font: &Font,
+    face: &Face,
     buffer: &mut Buffer,
 ) {
     // This function implements the shaping logic documented here:
@@ -356,7 +356,7 @@ fn preprocess_text(
 
     // If font has Thai GSUB, we are done.
     if plan.script() == script::THAI && !plan.ot_map.found_script(TableIndex::GSUB) {
-        do_pua_shaping(font, buffer);
+        do_pua_shaping(face, buffer);
     }
 }
 
@@ -364,10 +364,10 @@ fn preprocess_text(
 pub extern "C" fn rb_ot_complex_preprocess_text_thai(
     plan: *const ffi::rb_ot_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    let font = Font::from_ptr(font);
-    preprocess_text(&plan, font, &mut buffer);
+    let face = Face::from_ptr(face);
+    preprocess_text(&plan, face, &mut buffer);
 }

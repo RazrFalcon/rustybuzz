@@ -46,7 +46,7 @@
 
 /**
  * rb_shape:
- * @font: an #rb_font_t to use for shaping
+ * @face: an #rb_face_t to use for shaping
  * @buffer: an #rb_buffer_t to shape
  * @features: (array length=num_features) (allow-none): an array of user
  *    specified #rb_feature_t or %NULL
@@ -62,18 +62,18 @@
  *
  * Since: 0.9.2
  **/
-rb_bool_t rb_shape(const rb_font_t *font, rb_buffer_t *buffer, const rb_feature_t *features, unsigned int num_features)
+rb_bool_t rb_shape(rb_face_t *face, rb_buffer_t *buffer, const rb_feature_t *features, unsigned int num_features)
 {
     rb_segment_properties_t props;
     rb_buffer_get_segment_properties(buffer, &props);
 
-    rb_shape_plan_t *shape_plan = rb_shape_plan_create(rb_font_get_face((rb_font_t *)font),
+    rb_shape_plan_t *shape_plan = rb_shape_plan_create(face,
                                                        &props,
                                                        features,
                                                        num_features,
-                                                       rb_font_get_coords((rb_font_t *)font),
-                                                       rb_font_get_num_coords((rb_font_t *)font));
-    rb_bool_t res = rb_shape_plan_execute(shape_plan, (rb_font_t *)font, buffer, features, num_features);
+                                                       rb_face_get_coords(face),
+                                                       rb_face_get_num_coords(face));
+    rb_bool_t res = rb_shape_plan_execute(shape_plan, face, buffer, features, num_features);
     rb_shape_plan_destroy(shape_plan);
     return res;
 }

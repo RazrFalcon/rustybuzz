@@ -2,7 +2,7 @@
 
 use super::gsubgpos::*;
 use super::*;
-use crate::Font;
+use crate::Face;
 
 #[derive(Clone, Copy, Debug)]
 pub struct PosTable<'a>(pub SubstPosTable<'a>);
@@ -481,23 +481,23 @@ impl<'a> Anchor<'a> {
         Some(table)
     }
 
-    pub fn get(&self, font: &Font) -> (i32, i32) {
+    pub fn get(&self, face: &Face) -> (i32, i32) {
         let mut x = i32::from(self.x);
         let mut y = i32::from(self.y);
 
         if self.x_device.is_some() || self.y_device.is_some() {
-            let (ppem_x, ppem_y) = font.pixels_per_em().unwrap_or((0, 0));
-            let coords = font.ttfp_face.variation_coordinates().len();
+            let (ppem_x, ppem_y) = face.pixels_per_em().unwrap_or((0, 0));
+            let coords = face.ttfp_face.variation_coordinates().len();
 
             if let Some(device) = self.x_device {
                 if ppem_x != 0 || coords != 0 {
-                    x += device.get_x_delta(font).unwrap_or(0);
+                    x += device.get_x_delta(face).unwrap_or(0);
                 }
             }
 
             if let Some(device) = self.y_device {
                 if ppem_y != 0 || coords != 0 {
-                    y += device.get_y_delta(font).unwrap_or(0);
+                    y += device.get_y_delta(face).unwrap_or(0);
                 }
             }
         }

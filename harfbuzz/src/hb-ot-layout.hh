@@ -49,7 +49,7 @@ RB_INTERNAL bool rb_ot_layout_has_machine_kerning(rb_face_t *face);
 
 RB_INTERNAL bool rb_ot_layout_has_cross_kerning(rb_face_t *face);
 
-RB_INTERNAL void rb_ot_layout_kern(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
+RB_INTERNAL void rb_ot_layout_kern(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
 
 enum attach_type_t {
     ATTACH_TYPE_NONE = 0X00,

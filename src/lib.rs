@@ -8,7 +8,7 @@
 mod buffer;
 mod common;
 mod ffi;
-mod font;
+mod face;
 mod tables;
 mod tag;
 mod tag_table;
@@ -25,7 +25,7 @@ pub use crate::buffer::{
     SerializeFlags, UnicodeBuffer, GlyphBuffer
 };
 pub use crate::common::{Direction, Script, Language, Feature, Variation, script};
-pub use crate::font::Font;
+pub use crate::face::Face;
 
 type Mask = u32;
 
@@ -34,11 +34,11 @@ type Mask = u32;
 ///
 /// Consumes the buffer. You can then run `GlyphBuffer::clear` to get the `UnicodeBuffer` back
 /// without allocating a new one.
-pub fn shape(font: &Font<'_>, features: &[Feature], mut buffer: UnicodeBuffer) -> GlyphBuffer {
+pub fn shape(face: &Face<'_>, features: &[Feature], mut buffer: UnicodeBuffer) -> GlyphBuffer {
     buffer.guess_segment_properties();
     unsafe {
         ffi::rb_shape(
-            font.as_ptr(),
+            face.as_ptr(),
             buffer.0.as_ptr(),
             features.as_ptr() as *mut _,
             features.len() as u32,

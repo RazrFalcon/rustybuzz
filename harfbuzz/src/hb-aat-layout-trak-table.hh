@@ -155,7 +155,7 @@ struct trak
     {
         rb_mask_t trak_mask = c->plan->trak_mask;
 
-        const float ptem = rb_font_get_ptem(c->font);
+        const float ptem = rb_face_get_ptem(c->face);
         if (unlikely(ptem <= 0.f))
             return false;
 

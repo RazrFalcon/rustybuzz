@@ -63,14 +63,14 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
     let args = parse_args(args).unwrap();
 
     let font_data = std::fs::read(font_path).unwrap();
-    let mut font = rustybuzz::Font::from_slice(&font_data, args.face_index).unwrap();
+    let mut face = rustybuzz::Face::from_slice(&font_data, args.face_index).unwrap();
 
-    font.set_points_per_em(args.font_ptem);
+    face.set_points_per_em(args.font_ptem);
 
     if !args.variations.is_empty() {
         let variations: Vec<_> = args.variations.iter()
             .map(|s| rustybuzz::Variation::from_str(s).unwrap()).collect();
-        font.set_variations(&variations);
+        face.set_variations(&variations);
     }
 
     let mut buffer = rustybuzz::UnicodeBuffer::new();
@@ -97,7 +97,7 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
         features.push(feature);
     }
 
-    let glyph_buffer = rustybuzz::shape(&font, &features, buffer);
+    let glyph_buffer = rustybuzz::shape(&face, &features, buffer);
 
     let mut format_flags = rustybuzz::SerializeFlags::default();
     if args.no_glyph_names {
@@ -124,5 +124,5 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
         format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
     }
 
-    glyph_buffer.serialize(&font, format_flags)
+    glyph_buffer.serialize(&face, format_flags)
 }

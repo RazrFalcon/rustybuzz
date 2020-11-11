@@ -130,12 +130,12 @@ fn main() {
     }
 
     let font_data = std::fs::read(font_path).unwrap();
-    let mut font = rustybuzz::Font::from_slice(&font_data, args.face_index).unwrap();
+    let mut face = rustybuzz::Face::from_slice(&font_data, args.face_index).unwrap();
 
-    font.set_points_per_em(args.font_ptem);
+    face.set_points_per_em(args.font_ptem);
 
     if !args.variations.is_empty() {
-        font.set_variations(&args.variations);
+        face.set_variations(&args.variations);
     }
 
     let text = if let Some(path) = args.text_file {
@@ -172,7 +172,7 @@ fn main() {
         buffer.reset_clusters();
     }
 
-    let glyph_buffer = rustybuzz::shape(&font, &args.features, buffer);
+    let glyph_buffer = rustybuzz::shape(&face, &args.features, buffer);
 
     let mut format_flags = rustybuzz::SerializeFlags::default();
     if args.no_glyph_names {
@@ -199,7 +199,7 @@ fn main() {
         format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
     }
 
-    println!("{}", glyph_buffer.serialize(&font,  format_flags));
+    println!("{}", glyph_buffer.serialize(&face,  format_flags));
 }
 
 fn parse_unicodes(s: &str) -> Result<String, String> {

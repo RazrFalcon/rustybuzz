@@ -262,13 +262,6 @@ private:
         }
     }
 
-    template <typename Type> rb_blob_t *reference_table(const rb_face_t *face, rb_tag_t tableTag = Type::tableTag)
-    {
-        if (!num_glyphs_set)
-            set_num_glyphs(rb_face_get_glyph_count(face));
-        return sanitize_blob<Type>(rb_face_reference_table(face, tableTag));
-    }
-
     const char *start, *end;
     mutable int max_ops, max_subtables;
 

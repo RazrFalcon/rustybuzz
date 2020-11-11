@@ -3,10 +3,8 @@ use std::convert::TryFrom;
 use ttf_parser::GlyphId;
 
 use crate::buffer::{Buffer, GlyphInfo, GlyphPropsFlags};
-use crate::font::Font;
+use crate::face::Face;
 use crate::tables::gsubgpos::{LookupFlags, LookupIndex};
-use crate::tables::gpos::PosTable;
-use crate::tables::gsub::SubstTable;
 use crate::Mask;
 use super::layout::{LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
 
@@ -27,9 +25,9 @@ pub struct WouldApplyContext<'a> {
     pub zero_context: bool,
 }
 
-pub struct ApplyContext<'a> {
+pub struct ApplyContext<'a, 'b> {
     pub table_index: TableIndex,
-    pub font: &'a Font<'a>,
+    pub face: &'a Face<'b>,
     pub(crate) buffer: &'a mut Buffer,
     pub lookup_mask: Mask,
     pub lookup_index: LookupIndex,
@@ -41,11 +39,11 @@ pub struct ApplyContext<'a> {
     pub random_state: u32,
 }
 
-impl<'a> ApplyContext<'a> {
-    pub(crate) fn new(table_index: TableIndex, font: &'a Font<'a>, buffer: &'a mut Buffer) -> Self {
+impl<'a, 'b> ApplyContext<'a, 'b> {
+    pub(crate) fn new(table_index: TableIndex, face: &'a Face<'b>, buffer: &'a mut Buffer) -> Self {
         Self {
             table_index,
-            font,
+            face,
             buffer,
             lookup_mask: 1,
             lookup_index: LookupIndex(u16::MAX),
@@ -81,7 +79,7 @@ impl<'a> ApplyContext<'a> {
         self.lookup_index = sub_lookup_index;
         let applied = match self.table_index {
             TableIndex::GSUB => {
-                SubstTable::parse(super::table_data(self.font.face_ptr(), SubstTable::TAG))
+                self.face.gsub
                     .and_then(|table| table.get_lookup(sub_lookup_index))
                     .and_then(|lookup| {
                         self.lookup_props = lookup.props();
@@ -89,7 +87,7 @@ impl<'a> ApplyContext<'a> {
                     })
             }
             TableIndex::GPOS => {
-                PosTable::parse(super::table_data(self.font.face_ptr(), PosTable::TAG))
+                self.face.gpos
                     .and_then(|table| table.get_lookup(sub_lookup_index))
                     .and_then(|lookup| {
                         self.lookup_props = lookup.props();
@@ -123,7 +121,7 @@ impl<'a> ApplyContext<'a> {
             if lookup_flags & LookupFlags::USE_MARK_FILTERING_SET.bits() != 0 {
                 let set_index = (match_props >> 16) as u16;
                 let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
-                return self.font.ttfp_face.is_mark_glyph(glyph, Some(set_index));
+                return self.face.ttfp_face.is_mark_glyph(glyph, Some(set_index));
             }
 
             // The second byte of match_props has the meaning
@@ -164,8 +162,8 @@ impl<'a> ApplyContext<'a> {
             props |= GlyphPropsFlags::MULTIPLIED.bits();
         }
 
-        if self.font.ttfp_face.has_glyph_classes() {
-            props = (props & !GlyphPropsFlags::CLASS_MASK.bits()) | self.font.glyph_props(glyph_id);
+        if self.face.ttfp_face.has_glyph_classes() {
+            props = (props & !GlyphPropsFlags::CLASS_MASK.bits()) | self.face.glyph_props(glyph_id);
         } else if !class_guess.is_empty() {
             props = (props & !GlyphPropsFlags::CLASS_MASK.bits()) | class_guess.bits();
         }

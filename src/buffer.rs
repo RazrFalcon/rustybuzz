@@ -2,7 +2,9 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::mem;
 
-use crate::{script, Font, Mask};
+use ttf_parser::GlyphId;
+
+use crate::{script, Face, Mask};
 use crate::common::{Direction, Language, Script};
 use crate::ffi;
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
@@ -1637,7 +1639,7 @@ impl GlyphBuffer {
     }
 
     /// Converts the glyph buffer content into a string.
-    pub fn serialize(&self, font: &Font, flags: SerializeFlags) -> String {
+    pub fn serialize(&self, face: &Face, flags: SerializeFlags) -> String {
         use std::fmt::Write;
 
         let mut s = String::with_capacity(64);
@@ -1648,7 +1650,8 @@ impl GlyphBuffer {
         let mut y = 0;
         for (info, pos) in info.iter().zip(pos) {
             if !flags.contains(SerializeFlags::NO_GLYPH_NAMES) {
-                match font.glyph_name(info.codepoint) {
+                let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
+                match face.glyph_name(glyph) {
                     Some(name) => s.push_str(name),
                     None => write!(&mut s, "gid{}", info.codepoint).unwrap(),
                 }
@@ -1680,7 +1683,8 @@ impl GlyphBuffer {
             }
 
             if flags.contains(SerializeFlags::GLYPH_EXTENTS) {
-                let extents = font.glyph_extents(info.codepoint).unwrap_or_default();
+                let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
+                let extents = face.glyph_extents(glyph).unwrap_or_default();
                 write!(&mut s, "<{},{},{},{}>", extents.x_bearing, extents.y_bearing, extents.width, extents.height).unwrap();
             }
 

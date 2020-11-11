@@ -67,8 +67,8 @@ struct rb_ot_shape_plan_t
                            unsigned int *variations_index);
     RB_INTERNAL void fini();
 
-    RB_INTERNAL void substitute(rb_font_t *font, rb_buffer_t *buffer) const;
-    RB_INTERNAL void position(rb_font_t *font, rb_buffer_t *buffer) const;
+    RB_INTERNAL void substitute(rb_face_t *face, rb_buffer_t *buffer) const;
+    RB_INTERNAL void position(rb_face_t *face, rb_buffer_t *buffer) const;
 };
 
 struct rb_shape_plan_t;

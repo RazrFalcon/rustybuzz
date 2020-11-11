@@ -30,13 +30,9 @@
 
 #include "hb.hh"
 
-#include "hb-open-type.hh"
 #include "hb-ot-layout.hh"
-#include "hb-ot-face.hh"
-#include "hb-ot-map.hh"
-
 #include "hb-ot-kern-table.hh"
-#include "hb-aat-layout-morx-table.hh"
+#include "hb-face.hh"
 
 /**
  * SECTION:hb-ot-layout
@@ -63,7 +59,7 @@
  **/
 bool rb_ot_layout_has_kerning(rb_face_t *face)
 {
-    return face->table.kern->has_data();
+    return rb_face_get_kern_table(face)->has_data();
 }
 
 /**
@@ -78,7 +74,7 @@ bool rb_ot_layout_has_kerning(rb_face_t *face)
  **/
 bool rb_ot_layout_has_machine_kerning(rb_face_t *face)
 {
-    return face->table.kern->has_state_machine();
+    return rb_face_get_kern_table(face)->has_state_machine();
 }
 
 /**
@@ -97,15 +93,13 @@ bool rb_ot_layout_has_machine_kerning(rb_face_t *face)
  **/
 bool rb_ot_layout_has_cross_kerning(rb_face_t *face)
 {
-    return face->table.kern->has_cross_stream();
+    return rb_face_get_kern_table(face)->has_cross_stream();
 }
 
-void rb_ot_layout_kern(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer)
+void rb_ot_layout_kern(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
 {
-    rb_blob_t *blob = rb_font_get_face(font)->table.kern.get_blob();
+    rb_blob_t *blob = rb_face_get_table_blob(face, RB_OT_TAG_kern);
     const AAT::kern &kern = *blob->as<AAT::kern>();
-
-    AAT::rb_aat_apply_context_t c(plan, font, buffer, blob);
-
+    AAT::rb_aat_apply_context_t c(plan, face, buffer, blob);
     kern.apply(&c);
 }

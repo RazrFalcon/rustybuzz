@@ -127,11 +127,6 @@ struct FeatureName
         return (rb_aat_layout_feature_type_t)(unsigned int)feature;
     }
 
-    rb_font_name_id_t get_feature_name_id() const
-    {
-        return nameIndex;
-    }
-
     bool is_exclusive() const
     {
         return featureFlags & Exclusive;
@@ -190,11 +185,6 @@ struct feat
     const FeatureName &get_feature(rb_aat_layout_feature_type_t feature_type) const
     {
         return namesZ.bsearch(featureNameCount, feature_type);
-    }
-
-    rb_font_name_id_t get_feature_name_id(rb_aat_layout_feature_type_t feature) const
-    {
-        return get_feature(feature).get_feature_name_id();
     }
 
     unsigned int get_selector_infos(rb_aat_layout_feature_type_t feature_type,

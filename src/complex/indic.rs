@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 use std::cmp;
 use std::os::raw::c_void;
 
-use crate::{ffi, script, Tag, Script, Mask, Font, GlyphInfo};
+use crate::{ffi, script, Tag, Script, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use crate::ot::*;
@@ -348,11 +348,11 @@ impl IndicWouldSubstituteFeature {
         }
     }
 
-    pub fn would_substitute(&self, glyphs: &[u32], font: &Font) -> bool {
+    pub fn would_substitute(&self, glyphs: &[u32], face: &Face) -> bool {
         for lookup in self.lookups {
             unsafe {
                 let ok = ffi::rb_ot_layout_lookup_would_substitute(
-                    font.face_ptr(),
+                    face.as_ptr(),
                     lookup.index as u32,
                     glyphs.as_ptr() as *const _,
                     glyphs.len() as u32,
@@ -414,7 +414,7 @@ impl IndicShapePlan {
 
         // let mut virama_glyph = None;
         // if config.virama != 0 {
-        //     if let Some(g) = font.glyph_index(char::try_from(config.virama).unwrap()) {
+        //     if let Some(g) = face.glyph_index(char::try_from(config.virama).unwrap()) {
         //         virama_glyph = Some(g.0 as u32);
         //     }
         // }
@@ -624,15 +624,15 @@ pub extern "C" fn rb_ot_complex_data_destroy_indic(data: *mut c_void) {
 pub extern "C" fn rb_ot_complex_preprocess_text_indic(
     plan: *const ffi::rb_ot_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    preprocess_text(&plan, font, &mut buffer)
+    preprocess_text(&plan, face, &mut buffer)
 }
 
-fn preprocess_text(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn preprocess_text(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
 
@@ -681,10 +681,10 @@ pub extern "C" fn rb_ot_complex_decompose_indic(
         //   https://docs.microsoft.com/en-us/typography/script-development/sinhala#shaping
 
         let mut ok = false;
-        if let Some(g) = ctx.font.glyph_index(ab) {
+        if let Some(g) = ctx.face.glyph_index(ab) {
             let g = g.0 as u32;
             let indic_plan = IndicShapePlan::from_ptr(ctx.plan.data() as _);
-            ok = indic_plan.pstf.would_substitute(&[g], ctx.font);
+            ok = indic_plan.pstf.would_substitute(&[g], ctx.face);
         }
 
         if ok {
@@ -737,15 +737,15 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
 pub extern "C" fn rb_ot_complex_setup_masks_indic(
     plan: *const ffi::rb_ot_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    let font = Font::from_ptr(font);
-    setup_masks(&plan, font, &mut buffer);
+    let face = Face::from_ptr(face);
+    setup_masks(&plan, face, &mut buffer);
 }
 
-fn setup_masks(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     // We cannot setup masks here.  We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {
@@ -755,16 +755,16 @@ fn setup_masks(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 
 extern "C" fn setup_syllables_raw(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_syllables(&plan, font, &mut buffer);
+    setup_syllables(&plan, face, &mut buffer);
 }
 
-fn setup_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::indic_machine::find_syllables_indic(buffer);
 
     let mut start = 0;
@@ -778,25 +778,25 @@ fn setup_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 
 extern "C" fn initial_reordering_raw(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    initial_reordering(&plan, font, &mut buffer);
+    initial_reordering(&plan, face, &mut buffer);
 }
 
-fn initial_reordering(plan: &ShapePlan, font: &Font, buffer: &mut Buffer) {
+fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     let indic_plan = IndicShapePlan::from_ptr(plan.data() as _);
 
-    update_consonant_positions(&indic_plan, font, buffer);
-    insert_dotted_circles(font, buffer);
+    update_consonant_positions(&indic_plan, face, buffer);
+    insert_dotted_circles(face, buffer);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
-        initial_reordering_syllable(indic_plan, font, start, end, buffer);
+        initial_reordering_syllable(indic_plan, face, start, end, buffer);
         start = end;
         end = buffer.next_syllable(start);
     }
@@ -804,7 +804,7 @@ fn initial_reordering(plan: &ShapePlan, font: &Font, buffer: &mut Buffer) {
 
 fn update_consonant_positions(
     indic_plan: &IndicShapePlan,
-    font: &Font,
+    face: &Face,
     buffer: &mut Buffer,
 ) {
     if indic_plan.config.base_pos != BasePosition::Last {
@@ -813,7 +813,7 @@ fn update_consonant_positions(
 
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {
-        if let Some(g) = font.glyph_index(indic_plan.config.virama) {
+        if let Some(g) = face.glyph_index(indic_plan.config.virama) {
             virama_glyph = Some(g.0 as u32);
         }
     }
@@ -822,7 +822,7 @@ fn update_consonant_positions(
         for info in buffer.info_slice_mut() {
             if info.indic_position() == Position::BaseC {
                 let consonant = info.codepoint;
-                info.set_indic_position(consonant_position_from_face(indic_plan, font, consonant, virama));
+                info.set_indic_position(consonant_position_from_face(indic_plan, face, consonant, virama));
             }
         }
     }
@@ -830,7 +830,7 @@ fn update_consonant_positions(
 
 fn consonant_position_from_face(
     plan: &IndicShapePlan,
-    font: &Font,
+    face: &Face,
     consonant: u32,
     virama: u32,
 ) -> Position {
@@ -848,26 +848,26 @@ fn consonant_position_from_face(
     // Vatu is done as well, for:
     // https://github.com/harfbuzz/harfbuzz/issues/1587
 
-    if  plan.blwf.would_substitute(&[virama, consonant], font) ||
-        plan.blwf.would_substitute(&[consonant, virama], font) ||
-        plan.vatu.would_substitute(&[virama, consonant], font) ||
-        plan.vatu.would_substitute(&[consonant, virama], font)
+    if  plan.blwf.would_substitute(&[virama, consonant], face) ||
+        plan.blwf.would_substitute(&[consonant, virama], face) ||
+        plan.vatu.would_substitute(&[virama, consonant], face) ||
+        plan.vatu.would_substitute(&[consonant, virama], face)
     {
         return Position::BelowC;
     }
 
-    if plan.pstf.would_substitute(&[virama, consonant], font) || plan.pstf.would_substitute(&[consonant, virama], font) {
+    if plan.pstf.would_substitute(&[virama, consonant], face) || plan.pstf.would_substitute(&[consonant, virama], face) {
         return Position::PostC;
     }
 
-    if plan.pref.would_substitute(&[virama, consonant], font) || plan.pref.would_substitute(&[consonant, virama], font) {
+    if plan.pref.would_substitute(&[virama, consonant], face) || plan.pref.would_substitute(&[consonant, virama], face) {
         return Position::PostC;
     }
 
     Position::BaseC
 }
 
-fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
+fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
     use super::indic_machine::SyllableType;
 
     if buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
@@ -883,7 +883,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
         return;
     }
 
-    let dottedcircle_glyph = match font.glyph_index(0x25CC) {
+    let dottedcircle_glyph = match face.glyph_index(0x25CC) {
         Some(g) => g.0 as u32,
         None => return,
     };
@@ -929,7 +929,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
 
 fn initial_reordering_syllable(
     plan: &IndicShapePlan,
-    font: &Font,
+    face: &Face,
     start: usize,
     end: usize,
     buffer: &mut Buffer,
@@ -949,11 +949,11 @@ fn initial_reordering_syllable(
     match syllable_type {
         // We made the vowels look like consonants.  So let's call the consonant logic!
         SyllableType::VowelSyllable | SyllableType::ConsonantSyllable => {
-            initial_reordering_consonant_syllable(plan, font, start, end, buffer);
+            initial_reordering_consonant_syllable(plan, face, start, end, buffer);
         }
         // We already inserted dotted-circles, so just call the standalone_cluster.
         SyllableType::BrokenCluster | SyllableType::StandaloneCluster => {
-            initial_reordering_standalone_cluster(plan, font, start, end, buffer);
+            initial_reordering_standalone_cluster(plan, face, start, end, buffer);
         }
         SyllableType::SymbolCluster | SyllableType::NonIndicCluster => {}
     }
@@ -963,7 +963,7 @@ fn initial_reordering_syllable(
 // https://docs.microsqoft.com/en-us/typography/script-development/devanagari */
 fn initial_reordering_consonant_syllable(
     plan: &IndicShapePlan,
-    font: &Font,
+    face: &Face,
     start: usize,
     end: usize,
     buffer: &mut Buffer,
@@ -1015,9 +1015,9 @@ fn initial_reordering_consonant_syllable(
                 buffer.info[start + 1].codepoint,
                 if plan.config.reph_mode == RephMode::Explicit { buffer.info[start + 2].codepoint } else { 0 }
             ];
-            if plan.rphf.would_substitute(&glyphs[0..2], font) ||
+            if plan.rphf.would_substitute(&glyphs[0..2], face) ||
                 (plan.config.reph_mode == RephMode::Explicit &&
-                    plan.rphf.would_substitute(glyphs, font))
+                    plan.rphf.would_substitute(glyphs, face))
             {
                 limit += 2;
                 while limit < end && buffer.info[limit].is_joiner() {
@@ -1426,7 +1426,7 @@ fn initial_reordering_consonant_syllable(
                 buffer.info[i + 0].codepoint,
                 buffer.info[i + 1].codepoint,
             ];
-            if plan.pref.would_substitute(glyphs, font) {
+            if plan.pref.would_substitute(glyphs, face) {
                 buffer.info[i + 0].mask = plan.mask_array[indic_feature::PREF];
                 buffer.info[i + 1].mask = plan.mask_array[indic_feature::PREF];
                 break;
@@ -1462,28 +1462,28 @@ fn initial_reordering_consonant_syllable(
 
 fn initial_reordering_standalone_cluster(
     plan: &IndicShapePlan,
-    font: &Font,
+    face: &Face,
     start: usize,
     end: usize,
     buffer: &mut Buffer,
 ) {
     // We treat placeholder/dotted-circle as if they are consonants, so we
     // should just chain.  Only if not in compatibility mode that is...
-    initial_reordering_consonant_syllable(plan, font, start, end, buffer);
+    initial_reordering_consonant_syllable(plan, face, start, end, buffer);
 }
 
 extern "C" fn final_reordering_raw(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    final_reordering(&plan, font, &mut buffer);
+    final_reordering(&plan, face, &mut buffer);
 }
 
-fn final_reordering(plan: &ShapePlan, font: &Font, buffer: &mut Buffer) {
+fn final_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     if buffer.is_empty() {
         return;
     }
@@ -1492,7 +1492,7 @@ fn final_reordering(plan: &ShapePlan, font: &Font, buffer: &mut Buffer) {
 
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {
-        if let Some(g) = font.glyph_index(indic_plan.config.virama) {
+        if let Some(g) = face.glyph_index(indic_plan.config.virama) {
             virama_glyph = Some(g.0 as u32);
         }
     }

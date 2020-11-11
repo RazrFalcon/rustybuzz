@@ -1,6 +1,9 @@
+use std::convert::TryFrom;
 use std::os::raw::c_void;
 
-use crate::{ffi, script, Tag, Font, GlyphInfo, Mask, Script};
+use ttf_parser::GlyphId;
+
+use crate::{ffi, script, Tag, Face, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::*;
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class};
@@ -220,7 +223,7 @@ fn collect_features(planner: &mut ShapePlanner) {
 
 extern "C" fn fallback_shape_raw(
     _: *const ffi::rb_ot_shape_plan_t,
-    _: *mut ffi::rb_font_t,
+    _: *const ffi::rb_face_t,
     _: *mut ffi::rb_buffer_t,
 ) {
 }
@@ -232,16 +235,16 @@ extern "C" fn fallback_shape_raw(
 // marks can use it as well.
 extern "C" fn record_stch_raw(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    record_stch(&plan, font, &mut buffer);
+    record_stch(&plan, face, &mut buffer);
 }
 
-fn record_stch(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn record_stch(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let arabic_plan = ArabicShapePlan::from_ptr(plan.data() as _);
     if !arabic_plan.has_stch {
         return;
@@ -277,19 +280,19 @@ fn record_stch(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 pub extern "C" fn rb_ot_complex_postprocess_glyphs_arabic(
     plan: *const ffi::rb_ot_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    let font = Font::from_ptr(font);
-    postprocess_glyphs(&plan, &font, &mut buffer)
+    let face = Face::from_ptr(face);
+    postprocess_glyphs(&plan, &face, &mut buffer)
 }
 
-fn postprocess_glyphs(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
-    apply_stch(font, buffer)
+fn postprocess_glyphs(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+    apply_stch(face, buffer)
 }
 
-fn apply_stch(font: &Font, buffer: &mut Buffer) {
+fn apply_stch(face: &Face, buffer: &mut Buffer) {
     if !buffer.scratch_flags.contains(ARABIC_HAS_STCH) {
         return;
     }
@@ -332,7 +335,8 @@ fn apply_stch(font: &Font, buffer: &mut Buffer) {
             let end = i;
             while i != 0 && buffer.info[i - 1].arabic_shaping_action().is_stch() {
                 i -= 1;
-                let width = font.glyph_h_advance(buffer.info[i].codepoint) as i32;
+                let glyph = GlyphId(u16::try_from(buffer.info[i].codepoint).unwrap());
+                let width = face.glyph_h_advance(glyph) as i32;
 
                 if buffer.info[i].arabic_shaping_action() == Action::StretchingFixed {
                     w_fixed += width;
@@ -380,7 +384,8 @@ fn apply_stch(font: &Font, buffer: &mut Buffer) {
                 buffer.unsafe_to_break(context, end);
                 let mut x_offset = 0;
                 for k in (start+1..=end).rev() {
-                    let width = font.glyph_h_advance(buffer.info[k - 1].codepoint) as i32;
+                    let glyph = GlyphId(u16::try_from(buffer.info[k - 1].codepoint).unwrap());
+                    let width = face.glyph_h_advance(glyph) as i32;
 
                     let mut repeat = 1;
                     if buffer.info[k - 1].arabic_shaping_action() == Action::StretchingRepeating {
@@ -440,7 +445,7 @@ fn is_word_category(gc: GeneralCategory) -> bool {
 pub extern "C" fn rb_ot_complex_setup_masks_arabic(
     plan: *const ffi::rb_ot_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
-    _: *mut ffi::rb_font_t,
+    _: *const ffi::rb_face_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let arabic_plan = ArabicShapePlan::from_ptr(plan.data() as _);

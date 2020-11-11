@@ -39,8 +39,6 @@ typedef struct rb_blob_t rb_blob_t;
 
 RB_EXTERN rb_blob_t *rb_blob_create(const char *data, unsigned int length, void *user_data, rb_destroy_func_t destroy);
 
-RB_EXTERN rb_blob_t *rb_blob_create_sub_blob(rb_blob_t *parent, unsigned int offset, unsigned int length);
-
 RB_EXTERN rb_blob_t *rb_blob_get_empty(void);
 
 RB_EXTERN rb_blob_t *rb_blob_reference(rb_blob_t *blob);

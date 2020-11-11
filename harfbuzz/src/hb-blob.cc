@@ -78,44 +78,6 @@ rb_blob_t *rb_blob_create(const char *data, unsigned int length, void *user_data
     return blob;
 }
 
-static void _rb_blob_destroy(void *data)
-{
-    rb_blob_destroy((rb_blob_t *)data);
-}
-
-/**
- * rb_blob_create_sub_blob:
- * @parent: Parent blob.
- * @offset: Start offset of sub-blob within @parent, in bytes.
- * @length: Length of sub-blob.
- *
- * Returns a blob that represents a range of bytes in @parent.  The new
- * blob is always created with %RB_MEMORY_MODE_READONLY, meaning that it
- * will never modify data in the parent blob.  The parent data is not
- * expected to be modified, and will result in undefined behavior if it
- * is.
- *
- * Makes @parent immutable.
- *
- * Return value: New blob, or the empty blob if something failed or if
- * @length is zero or @offset is beyond the end of @parent's data.  Destroy
- * with rb_blob_destroy().
- *
- * Since: 0.9.2
- **/
-rb_blob_t *rb_blob_create_sub_blob(rb_blob_t *parent, unsigned int offset, unsigned int length)
-{
-    rb_blob_t *blob;
-
-    if (!length || !parent || offset >= parent->length)
-        return rb_blob_get_empty();
-
-    blob = rb_blob_create(
-        parent->data + offset, rb_min(length, parent->length - offset), rb_blob_reference(parent), _rb_blob_destroy);
-
-    return blob;
-}
-
 /**
  * rb_blob_get_empty:
  *

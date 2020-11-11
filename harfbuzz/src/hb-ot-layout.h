@@ -139,7 +139,7 @@ RB_EXTERN rb_bool_t rb_ot_layout_lookup_would_substitute(rb_face_t *face,
                                                          unsigned int glyphs_length,
                                                          rb_bool_t zero_context);
 
-RB_EXTERN void rb_ot_layout_substitute_start(rb_font_t *font, rb_buffer_t *buffer);
+RB_EXTERN void rb_ot_layout_substitute_start(rb_face_t *face, rb_buffer_t *buffer);
 
 /*
  * GPOS
@@ -147,11 +147,11 @@ RB_EXTERN void rb_ot_layout_substitute_start(rb_font_t *font, rb_buffer_t *buffe
 
 RB_EXTERN rb_bool_t rb_ot_layout_has_positioning(rb_face_t *face);
 
-RB_EXTERN void rb_ot_layout_position_start(rb_font_t *font, rb_buffer_t *buffer);
+RB_EXTERN void rb_ot_layout_position_start(rb_face_t *face, rb_buffer_t *buffer);
 
-RB_EXTERN void rb_ot_layout_position_finish_advances(rb_font_t *font, rb_buffer_t *buffer);
+RB_EXTERN void rb_ot_layout_position_finish_advances(rb_face_t *face, rb_buffer_t *buffer);
 
-RB_EXTERN void rb_ot_layout_position_finish_offsets(rb_font_t *font, rb_buffer_t *buffer);
+RB_EXTERN void rb_ot_layout_position_finish_offsets(rb_face_t *face, rb_buffer_t *buffer);
 
 RB_END_DECLS
 

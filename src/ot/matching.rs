@@ -197,8 +197,8 @@ pub fn match_lookahead(
     Some(iter.index() + 1)
 }
 
-pub struct SkippyIter<'a> {
-    ctx: &'a ApplyContext<'a>,
+pub struct SkippyIter<'a, 'b> {
+    ctx: &'a ApplyContext<'a, 'b>,
     lookup_props: u32,
     ignore_zwnj: bool,
     ignore_zwj: bool,
@@ -210,9 +210,9 @@ pub struct SkippyIter<'a> {
     num_items: u16,
 }
 
-impl<'a> SkippyIter<'a> {
+impl<'a, 'b> SkippyIter<'a, 'b> {
     pub fn new(
-        ctx: &'a ApplyContext,
+        ctx: &'a ApplyContext<'a, 'b>,
         start_buf_index: usize,
         num_items: u16,
         context_match: bool,

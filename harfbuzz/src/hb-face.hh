@@ -31,20 +31,20 @@
 
 #include "hb.hh"
 
-#include "hb-shape-plan.hh"
-#include "hb-ot-face.hh"
+namespace OT { struct kern; }
+namespace AAT { struct morx; }
+namespace AAT { struct mort; }
+namespace AAT { struct kerx; }
+namespace AAT { struct ankr; }
+namespace AAT { struct trak; }
+namespace AAT { struct feat; }
 
-/*
- * rb_face_t
- */
-
-struct rb_face_t
-{
-    rb_object_header_t header;
-    rb_blob_t *blob;
-    unsigned int index;
-    mutable rb_atomic_int_t num_glyphs;
-    rb_ot_face_t table; /* All the face's tables. */
-};
+const OT::kern  *rb_face_get_kern_table(rb_face_t *face);
+const AAT::morx *rb_face_get_morx_table(rb_face_t *face);
+const AAT::mort *rb_face_get_mort_table(rb_face_t *face);
+const AAT::kerx *rb_face_get_kerx_table(rb_face_t *face);
+const AAT::ankr *rb_face_get_ankr_table(rb_face_t *face);
+const AAT::trak *rb_face_get_trak_table(rb_face_t *face);
+const AAT::feat *rb_face_get_feat_table(rb_face_t *face);
 
 #endif /* RB_FACE_HH */
