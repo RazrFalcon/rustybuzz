@@ -431,7 +431,7 @@ typedef enum {
 
 typedef struct rb_aat_layout_feature_selector_info_t
 {
-    rb_ot_name_id_t name_id;
+    rb_font_name_id_t name_id;
     rb_aat_layout_feature_selector_t enable;
     rb_aat_layout_feature_selector_t disable;
     /*< private >*/

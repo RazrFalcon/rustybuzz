@@ -1,6 +1,5 @@
 use std::convert::TryFrom;
 use std::marker::PhantomData;
-use std::os::raw::c_char;
 use std::ptr::NonNull;
 
 use ttf_parser::{Tag, GlyphClass, GlyphId};
@@ -335,7 +334,7 @@ pub extern "C" fn rb_font_get_num_coords(font: *const ffi::rb_font_t) -> u32 {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_glyph_extents(
+pub extern "C" fn rb_font_get_glyph_extents(
     font: *const ffi::rb_font_t,
     glyph: ffi::rb_codepoint_t,
     extents: *mut ffi::rb_glyph_extents_t,
@@ -417,13 +416,10 @@ mod metrics {
     pub const HORIZONTAL_ASCENDER: Tag  = Tag::from_bytes(b"hasc");
     pub const HORIZONTAL_DESCENDER: Tag = Tag::from_bytes(b"hdsc");
     pub const HORIZONTAL_LINE_GAP: Tag  = Tag::from_bytes(b"hlgp");
-    pub const VERTICAL_ASCENDER: Tag    = Tag::from_bytes(b"vasc");
-    pub const VERTICAL_DESCENDER: Tag   = Tag::from_bytes(b"vdsc");
-    pub const VERTICAL_LINE_GAP: Tag    = Tag::from_bytes(b"vlgp");
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_metrics_get_position_common(
+pub extern "C" fn rb_font_metrics_get_position_common(
     font: *const ffi::rb_font_t,
     tag: Tag,
     position: *mut i32,
@@ -439,47 +435,11 @@ pub extern "C" fn rb_ot_metrics_get_position_common(
         metrics::HORIZONTAL_LINE_GAP => {
             i32::from(face.line_gap())
         }
-        metrics::VERTICAL_ASCENDER if face.has_table(ttf_parser::TableName::VerticalHeader) => {
-            i32::from(face.vertical_ascender().unwrap_or(0))
-        }
-        metrics::VERTICAL_DESCENDER if face.has_table(ttf_parser::TableName::VerticalHeader) => {
-            -i32::from(face.vertical_descender().unwrap_or(0)).abs()
-        }
-        metrics::VERTICAL_LINE_GAP if face.has_table(ttf_parser::TableName::VerticalHeader) => {
-            i32::from(face.vertical_line_gap().unwrap_or(0))
-        }
         _ => return 0,
     };
 
     unsafe { *position = pos; }
     1
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_get_glyph_name(
-    font: *const ffi::rb_font_t,
-    glyph: ffi::rb_codepoint_t,
-    mut raw_name: *mut c_char,
-    len: u32,
-) -> i32 {
-    assert_ne!(len, 0);
-
-    let face = &Font::from_ptr(font).ttfp_face;
-    match face.glyph_name(GlyphId(u16::try_from(glyph).unwrap())) {
-        Some(name) => unsafe {
-            let len = std::cmp::min(name.len(), len as usize - 1);
-
-            for b in &name.as_bytes()[0..len] {
-                *raw_name = *b as c_char;
-                raw_name = raw_name.offset(1);
-            }
-
-            *raw_name = b'\0' as c_char;
-
-            1
-        }
-        _ => 0,
-    }
 }
 
 #[no_mangle]
@@ -500,30 +460,12 @@ pub extern "C" fn rb_font_get_glyph_props(font: *const ffi::rb_font_t, glyph: ff
 }
 
 #[no_mangle]
-pub extern "C" fn rb_ot_get_nominal_glyph(
+pub extern "C" fn rb_font_get_nominal_glyph(
     font: *const ffi::rb_font_t,
     u: ffi::rb_codepoint_t,
     glyph: *mut ffi::rb_codepoint_t,
 ) -> ffi::rb_bool_t {
     match Font::from_ptr(font).glyph_index(u) {
-        Some(gid) => {
-            unsafe { *glyph = gid.0 as u32 };
-            1
-        }
-        None => 0,
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_get_variation_glyph(
-    font: *const ffi::rb_font_t,
-    u: ffi::rb_codepoint_t,
-    variation: ffi::rb_codepoint_t,
-    glyph: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    let u = char::try_from(u).unwrap();
-    let variation = char::try_from(variation).unwrap();
-    match Font::from_ptr(font).glyph_variation_index(u, variation) {
         Some(gid) => {
             unsafe { *glyph = gid.0 as u32 };
             1
@@ -546,23 +488,13 @@ mod tests {
             let pos = &mut 0i32 as _;
 
             // Horizontal.
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
+            assert_eq!(rb_font_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
             assert_eq!(*pos, 967);
 
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
+            assert_eq!(rb_font_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
             assert_eq!(*pos, -253);
 
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
-            assert_eq!(*pos, 0);
-
-            // Vertical.
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_ASCENDER, pos), 1);
-            assert_eq!(*pos, 500);
-
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_DESCENDER, pos), 1);
-            assert_eq!(*pos, -500);
-
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_LINE_GAP, pos), 1);
+            assert_eq!(rb_font_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
             assert_eq!(*pos, 0);
 
             // TODO: find font with variable metrics
@@ -579,19 +511,14 @@ mod tests {
             let pos = &mut 0i32 as _;
 
             // Horizontal.
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
+            assert_eq!(rb_font_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
             assert_eq!(*pos, 800);
 
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
+            assert_eq!(rb_font_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
             assert_eq!(*pos, -200);
 
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
+            assert_eq!(rb_font_metrics_get_position_common(font.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
             assert_eq!(*pos, 90);
-
-            // Vertical.
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_ASCENDER, pos), 0);
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_DESCENDER, pos), 0);
-            assert_eq!(rb_ot_metrics_get_position_common(font.as_ptr(), metrics::VERTICAL_LINE_GAP, pos), 0);
         }
     }
 }

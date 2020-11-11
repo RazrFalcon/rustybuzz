@@ -32,7 +32,6 @@
 
 #include "hb-ot.h"
 #include "hb-face.hh"
-#include "hb-ot-font.h"
 
 /**
  * SECTION:hb-font
@@ -46,54 +45,22 @@
  * rb_shape() among other things.
  **/
 
-/* Public getters */
-
-/**
- * rb_font_get_h_extents:
- * @font: a font.
- * @extents: (out):
- *
- *
- *
- * Return value:
- *
- * Since: 1.1.3
- **/
-static rb_bool_t rb_font_get_h_extents(rb_font_t *font, rb_font_extents_t *extents)
-{
-    memset(extents, 0, sizeof(*extents));
-    return rb_ot_get_font_h_extents(font, extents);
+extern "C" {
+RB_EXTERN rb_bool_t rb_font_metrics_get_position_common(rb_font_t *font, rb_tag_t tag, int *position);
 }
 
-/**
- * rb_font_get_nominal_glyph:
- * @font: a font.
- * @unicode:
- * @glyph: (out):
- *
- *
- *
- * Return value:
- *
- * Since: 1.2.3
- **/
-rb_bool_t rb_font_get_nominal_glyph(rb_font_t *font, rb_codepoint_t unicode, rb_codepoint_t *glyph)
+enum rb_ot_metrics_tag_t {
+    RB_FONT_METRICS_TAG_HORIZONTAL_ASCENDER = RB_TAG('h', 'a', 's', 'c'),
+    RB_FONT_METRICS_TAG_HORIZONTAL_DESCENDER = RB_TAG('h', 'd', 's', 'c'),
+    RB_FONT_METRICS_TAG_HORIZONTAL_LINE_GAP = RB_TAG('h', 'l', 'g', 'p'),
+};
+
+rb_bool_t rb_font_has_glyph(rb_font_t *font, rb_codepoint_t unicode)
 {
-    *glyph = 0;
-    return rb_ot_get_nominal_glyph(font, unicode, glyph);
+    rb_codepoint_t glyph;
+    return rb_font_get_nominal_glyph(font, unicode, &glyph);
 }
 
-/**
- * rb_font_get_glyph_h_advance:
- * @font: a font.
- * @glyph:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
 rb_position_t rb_font_get_glyph_h_advance(rb_font_t *font, rb_codepoint_t glyph)
 {
     rb_position_t ret;
@@ -101,32 +68,6 @@ rb_position_t rb_font_get_glyph_h_advance(rb_font_t *font, rb_codepoint_t glyph)
     return ret;
 }
 
-/**
- * rb_font_get_glyph_v_advance:
- * @font: a font.
- * @glyph:
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
-rb_position_t rb_font_get_glyph_v_advance(rb_font_t *font, rb_codepoint_t glyph)
-{
-    rb_position_t ret;
-    rb_font_get_glyph_v_advances(font, 1, &glyph, 0, &ret, 0);
-    return ret;
-}
-
-/**
- * rb_font_get_glyph_h_advances:
- * @font: a font.
- *
- *
- *
- * Since: 1.8.6
- **/
 void rb_font_get_glyph_h_advances(rb_font_t *font,
                                   unsigned int count,
                                   const rb_codepoint_t *first_glyph,
@@ -134,44 +75,34 @@ void rb_font_get_glyph_h_advances(rb_font_t *font,
                                   rb_position_t *first_advance,
                                   unsigned advance_stride)
 {
-    return rb_ot_get_glyph_h_advances(font, count, first_glyph, glyph_stride, first_advance, advance_stride);
+    for (unsigned int i = 0; i < count; i++) {
+        *first_advance = rb_font_get_advance(font, *first_glyph, 0);
+        first_glyph = &StructAtOffsetUnaligned<rb_codepoint_t>(first_glyph, glyph_stride);
+        first_advance = &StructAtOffsetUnaligned<rb_position_t>(first_advance, advance_stride);
+    }
 }
 
-/**
- * rb_font_get_glyph_v_advances:
- * @font: a font.
- *
- *
- *
- * Since: 1.8.6
- **/
+rb_position_t rb_font_get_glyph_v_advance(rb_font_t *font, rb_codepoint_t glyph)
+{
+    rb_position_t ret;
+    rb_font_get_glyph_v_advances(font, 1, &glyph, 0, &ret, 0);
+    return ret;
+}
+
 void rb_font_get_glyph_v_advances(rb_font_t *font,
-                                  unsigned int count,
+                                  unsigned count,
                                   const rb_codepoint_t *first_glyph,
                                   unsigned glyph_stride,
                                   rb_position_t *first_advance,
                                   unsigned advance_stride)
 {
-    return rb_ot_get_glyph_v_advances(font, count, first_glyph, glyph_stride, first_advance, advance_stride);
+    for (unsigned int i = 0; i < count; i++) {
+        *first_advance = -rb_font_get_advance(font, *first_glyph, 1);
+        first_glyph = &StructAtOffsetUnaligned<rb_codepoint_t>(first_glyph, glyph_stride);
+        first_advance = &StructAtOffsetUnaligned<rb_position_t>(first_advance, advance_stride);
+    }
 }
 
-/* A bit higher-level, and with fallback */
-
-/**
- * rb_font_get_glyph_contour_point_for_origin:
- * @font: a font.
- * @glyph:
- * @point_index:
- * @direction:
- * @x: (out):
- * @y: (out):
- *
- *
- *
- * Return value:
- *
- * Since: 0.9.2
- **/
 rb_bool_t rb_font_get_glyph_contour_point_for_origin(rb_font_t *font,
                                                      rb_codepoint_t glyph,
                                                      unsigned int point_index,
@@ -183,14 +114,11 @@ rb_bool_t rb_font_get_glyph_contour_point_for_origin(rb_font_t *font,
     return false;
 }
 
-/*
- * rb_font_t
- */
-
-rb_bool_t rb_font_has_glyph(rb_font_t *font, rb_codepoint_t unicode)
+static rb_bool_t rb_font_get_h_extents(rb_font_t *font, rb_font_extents_t *extents)
 {
-    rb_codepoint_t glyph;
-    return rb_ot_get_nominal_glyph(font, unicode, &glyph);
+    return rb_font_metrics_get_position_common(font, RB_FONT_METRICS_TAG_HORIZONTAL_ASCENDER, &extents->ascender) &&
+           rb_font_metrics_get_position_common(font, RB_FONT_METRICS_TAG_HORIZONTAL_DESCENDER, &extents->descender) &&
+           rb_font_metrics_get_position_common(font, RB_FONT_METRICS_TAG_HORIZONTAL_LINE_GAP, &extents->line_gap);
 }
 
 static rb_bool_t rb_font_get_glyph_h_origin(rb_font_t *font, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y)
@@ -201,11 +129,20 @@ static rb_bool_t rb_font_get_glyph_h_origin(rb_font_t *font, rb_codepoint_t glyp
 
 static rb_bool_t rb_font_get_glyph_v_origin(rb_font_t *font, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y)
 {
-    *x = *y = 0;
-    return rb_ot_get_glyph_v_origin(font, glyph, x, y);
-}
+    *x = rb_font_get_glyph_h_advance(font, glyph) / 2;
 
-/* A bit higher-level, and with fallback */
+    if (rb_font_has_vorg_data(font)) {
+        *y = rb_font_get_y_origin(font, glyph);
+        return true;
+    }
+
+    rb_glyph_extents_t extents = {0};
+    rb_font_get_glyph_extents(font, glyph, &extents);
+
+    rb_position_t tsb = rb_font_get_side_bearing(font, glyph, true);
+    *y = extents.y_bearing + tsb;
+    return true;
+}
 
 static void rb_font_get_h_extents_with_fallback(rb_font_t *font, rb_font_extents_t *extents)
 {

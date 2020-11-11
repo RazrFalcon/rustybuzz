@@ -38,8 +38,6 @@ RB_BEGIN_DECLS
 
 typedef struct rb_font_t rb_font_t;
 
-/* font and glyph extents */
-
 /* Note that typically ascender is positive and descender negative in coordinate systems that grow up. */
 typedef struct rb_font_extents_t
 {
@@ -67,12 +65,39 @@ typedef struct rb_glyph_extents_t
     rb_position_t height;    /* distance from top to bottom side. */
 } rb_glyph_extents_t;
 
-/* func dispatch */
+typedef unsigned int rb_font_name_id_t;
+
+RB_EXTERN rb_face_t *rb_font_get_face(rb_font_t *font);
+
+RB_EXTERN int rb_font_get_upem(rb_font_t *font);
+
+RB_EXTERN float rb_font_get_ptem(rb_font_t *font);
+
+RB_EXTERN unsigned int rb_font_get_ppem_x(rb_font_t *font);
+
+RB_EXTERN unsigned int rb_font_get_ppem_y(rb_font_t *font);
+
+RB_EXTERN const int *rb_font_get_coords(rb_font_t *font);
+
+RB_EXTERN unsigned int rb_font_get_num_coords(rb_font_t *font);
+
+RB_EXTERN rb_bool_t rb_font_get_glyph_extents(rb_font_t *font, rb_codepoint_t glyph, rb_glyph_extents_t *extents);
+
+RB_EXTERN unsigned int rb_font_get_advance(rb_font_t *font, rb_codepoint_t glyph, rb_bool_t is_vertical);
+
+RB_EXTERN int rb_font_get_side_bearing(rb_font_t *font, rb_codepoint_t glyph, rb_bool_t is_vertical);
+
+RB_EXTERN rb_bool_t rb_font_has_vorg_data(rb_font_t *font);
+
+RB_EXTERN int rb_font_get_y_origin(rb_font_t *font, rb_codepoint_t glyph);
+
+RB_EXTERN unsigned int rb_font_get_glyph_props(rb_font_t *font, rb_codepoint_t glyph);
 
 RB_EXTERN rb_bool_t rb_font_get_nominal_glyph(rb_font_t *font, rb_codepoint_t unicode, rb_codepoint_t *glyph);
 
+RB_EXTERN rb_bool_t rb_font_has_glyph(rb_font_t *font, rb_codepoint_t unicode);
+
 RB_EXTERN rb_position_t rb_font_get_glyph_h_advance(rb_font_t *font, rb_codepoint_t glyph);
-RB_EXTERN rb_position_t rb_font_get_glyph_v_advance(rb_font_t *font, rb_codepoint_t glyph);
 
 RB_EXTERN void rb_font_get_glyph_h_advances(rb_font_t *font,
                                             unsigned int count,
@@ -80,14 +105,15 @@ RB_EXTERN void rb_font_get_glyph_h_advances(rb_font_t *font,
                                             unsigned glyph_stride,
                                             rb_position_t *first_advance,
                                             unsigned advance_stride);
+
+RB_EXTERN rb_position_t rb_font_get_glyph_v_advance(rb_font_t *font, rb_codepoint_t glyph);
+
 RB_EXTERN void rb_font_get_glyph_v_advances(rb_font_t *font,
                                             unsigned int count,
                                             const rb_codepoint_t *first_glyph,
                                             unsigned glyph_stride,
                                             rb_position_t *first_advance,
                                             unsigned advance_stride);
-
-/* high-level funcs, with fallback */
 
 RB_EXTERN rb_bool_t rb_font_get_glyph_contour_point_for_origin(rb_font_t *font,
                                                                rb_codepoint_t glyph,
@@ -96,31 +122,7 @@ RB_EXTERN rb_bool_t rb_font_get_glyph_contour_point_for_origin(rb_font_t *font,
                                                                rb_position_t *x,
                                                                rb_position_t *y);
 
-/*
- * rb_font_t
- */
-
-/* Fonts are very light-weight objects */
-
-RB_EXTERN rb_face_t *rb_font_get_face(rb_font_t *font);
-
-RB_EXTERN int rb_font_get_upem(rb_font_t *font);
-RB_EXTERN unsigned int rb_font_get_ppem_x(rb_font_t *font);
-RB_EXTERN unsigned int rb_font_get_ppem_y(rb_font_t *font);
-RB_EXTERN float rb_font_get_ptem(rb_font_t *font);
-
-RB_EXTERN const int *rb_font_get_coords(rb_font_t *font);
-RB_EXTERN unsigned int rb_font_get_num_coords(rb_font_t *font);
-
-RB_EXTERN rb_bool_t rb_font_has_glyph(rb_font_t *font, rb_codepoint_t unicode);
-
-RB_EXTERN void
-rb_font_subtract_glyph_v_origin(rb_font_t *font, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y);
-
-RB_EXTERN rb_bool_t rb_font_has_vorg_data(rb_font_t *font);
-RB_EXTERN int rb_font_get_y_origin(rb_font_t *font, rb_codepoint_t glyph);
-
-RB_EXTERN unsigned int rb_font_get_glyph_props(rb_font_t *font, rb_codepoint_t glyph);
+RB_EXTERN void rb_font_subtract_glyph_v_origin(rb_font_t *font, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y);
 
 RB_END_DECLS
 

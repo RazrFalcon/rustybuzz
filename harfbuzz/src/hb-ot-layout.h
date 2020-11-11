@@ -33,8 +33,6 @@
 
 #include "hb.h"
 
-#include "hb-ot-name.h"
-
 RB_BEGIN_DECLS
 
 #define RB_OT_TAG_GSUB RB_TAG('G', 'S', 'U', 'B')
