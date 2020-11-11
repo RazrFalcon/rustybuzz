@@ -52,7 +52,7 @@ AAT::rb_aat_apply_context_t::rb_aat_apply_context_t(const rb_ot_shape_plan_t *pl
     , lookup_index(0)
 {
     sanitizer.init(blob);
-    sanitizer.set_num_glyphs(face->get_num_glyphs());
+    sanitizer.set_num_glyphs(rb_face_get_glyph_count(face));
     sanitizer.start_processing();
     sanitizer.set_max_ops(RB_SANITIZE_MAX_OPS_MAX);
 }

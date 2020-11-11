@@ -41,39 +41,10 @@
 struct rb_face_t
 {
     rb_object_header_t header;
-
-    rb_reference_table_func_t reference_table_func;
-    void *user_data;
-    rb_destroy_func_t destroy;
-
-    mutable rb_atomic_int_t num_glyphs; /* Number of glyphs. */
-
+    rb_blob_t *blob;
+    unsigned int index;
+    mutable rb_atomic_int_t num_glyphs;
     rb_ot_face_t table; /* All the face's tables. */
-
-    rb_blob_t *reference_table(rb_tag_t tag) const
-    {
-        rb_blob_t *blob;
-
-        if (unlikely(!reference_table_func))
-            return rb_blob_get_empty();
-
-        blob = reference_table_func(/*XXX*/ const_cast<rb_face_t *>(this), tag, user_data);
-        if (unlikely(!blob))
-            return rb_blob_get_empty();
-
-        return blob;
-    }
-
-    unsigned int get_num_glyphs() const
-    {
-        unsigned int ret = num_glyphs.get_relaxed();
-        if (unlikely(ret == UINT_MAX))
-            return load_num_glyphs();
-        return ret;
-    }
-
-private:
-    RB_INTERNAL unsigned int load_num_glyphs() const;
 };
 
 #endif /* RB_FACE_HH */

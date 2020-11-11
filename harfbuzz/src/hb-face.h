@@ -44,11 +44,11 @@ typedef struct rb_face_t rb_face_t;
 
 RB_EXTERN rb_face_t *rb_face_create(rb_blob_t *blob, unsigned int index);
 
-typedef rb_blob_t *(*rb_reference_table_func_t)(rb_face_t *face, rb_tag_t tag, void *user_data);
-
 RB_EXTERN void rb_face_destroy(rb_face_t *face);
 
 RB_EXTERN rb_blob_t *rb_face_reference_table(const rb_face_t *face, rb_tag_t tag);
+
+RB_EXTERN const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag, unsigned int *len);
 
 RB_EXTERN unsigned int rb_face_get_glyph_count(const rb_face_t *face);
 

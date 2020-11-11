@@ -28,18 +28,6 @@
 
 #include "hb-ot-kern-table.hh"
 
-extern "C" {
-const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag, unsigned int *len)
-{
-    rb_blob_t* blob = face->reference_table(tag);
-    *len = blob->length;
-    const char *data = blob->data;
-    // This blob was just pointing into it's parent's data, so we don't need it.
-    rb_blob_destroy(blob);
-    return data;
-}
-}
-
 void rb_ot_face_t::init0(rb_face_t *face)
 {
     this->face = face;

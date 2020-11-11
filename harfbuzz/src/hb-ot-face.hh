@@ -73,8 +73,4 @@ struct rb_ot_face_t
     rb_table_lazy_loader_t<AAT::feat, ORDER_AAT_feat> feat;
 };
 
-extern "C" {
-RB_EXTERN const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag, unsigned int *len);
-}
-
 #endif /* RB_OT_FACE_HH */

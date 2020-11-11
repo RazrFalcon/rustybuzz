@@ -686,7 +686,7 @@ template <typename Types, typename EntryData> struct StateTableDriver
     StateTableDriver(const StateTable<Types, EntryData> &machine_, rb_buffer_t *buffer_, rb_face_t *face_)
         : machine(machine_)
         , buffer(buffer_)
-        , num_glyphs(face_->get_num_glyphs())
+        , num_glyphs(rb_face_get_glyph_count(face_))
     {
     }
 

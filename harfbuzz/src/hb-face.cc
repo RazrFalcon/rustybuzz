@@ -32,6 +32,7 @@
 #include "hb-blob.hh"
 #include "hb-open-file.hh"
 #include "hb-ot-face.hh"
+#include "hb-ot-maxp-table.hh"
 
 /**
  * SECTION:hb-face
@@ -44,95 +45,6 @@
  * Font faces are typically built from a binary blob and a face index.
  * Font faces are used to create fonts.
  **/
-
-/*
- * rb_face_t
- */
-
-static rb_face_t *rb_face_get_empty()
-{
-    return const_cast<rb_face_t *>(&Null(rb_face_t));
-}
-
-/**
- * rb_face_create_for_tables:
- * @reference_table_func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
- *
- *
- *
- * Return value: (transfer full)
- *
- * Since: 0.9.2
- **/
-static rb_face_t *
-rb_face_create_for_tables(rb_reference_table_func_t reference_table_func, void *user_data, rb_destroy_func_t destroy)
-{
-    rb_face_t *face;
-
-    if (!reference_table_func || !(face = rb_object_create<rb_face_t>())) {
-        if (destroy)
-            destroy(user_data);
-        return rb_face_get_empty();
-    }
-
-    face->reference_table_func = reference_table_func;
-    face->user_data = user_data;
-    face->destroy = destroy;
-
-    face->num_glyphs.set_relaxed(-1);
-
-    face->table.init0(face);
-
-    return face;
-}
-
-typedef struct rb_face_for_data_closure_t
-{
-    rb_blob_t *blob;
-    unsigned int index;
-} rb_face_for_data_closure_t;
-
-static rb_face_for_data_closure_t *_rb_face_for_data_closure_create(rb_blob_t *blob, unsigned int index)
-{
-    rb_face_for_data_closure_t *closure;
-
-    closure = (rb_face_for_data_closure_t *)calloc(1, sizeof(rb_face_for_data_closure_t));
-    if (unlikely(!closure))
-        return nullptr;
-
-    closure->blob = blob;
-    closure->index = index;
-
-    return closure;
-}
-
-static void _rb_face_for_data_closure_destroy(void *data)
-{
-    rb_face_for_data_closure_t *closure = (rb_face_for_data_closure_t *)data;
-
-    rb_blob_destroy(closure->blob);
-    free(closure);
-}
-
-static rb_blob_t *_rb_face_for_data_reference_table(rb_face_t *face RB_UNUSED, rb_tag_t tag, void *user_data)
-{
-    rb_face_for_data_closure_t *data = (rb_face_for_data_closure_t *)user_data;
-
-    if (tag == RB_TAG_NONE)
-        return rb_blob_reference(data->blob);
-
-    const OT::OpenTypeFontFile &ot_file = *data->blob->as<OT::OpenTypeFontFile>();
-    unsigned int base_offset;
-    const OT::OpenTypeFontFace &ot_face = ot_file.get_face(data->index, &base_offset);
-
-    const OT::OpenTypeTable &table = ot_face.get_table_by_tag(tag);
-
-    rb_blob_t *blob = rb_blob_create_sub_blob(data->blob, base_offset + table.offset, table.length);
-
-    return blob;
-}
 
 /**
  * rb_face_create: (Xconstructor)
@@ -154,14 +66,15 @@ rb_face_t *rb_face_create(rb_blob_t *blob, unsigned int index)
 
     blob = rb_sanitize_context_t().sanitize_blob<OT::OpenTypeFontFile>(rb_blob_reference(blob));
 
-    rb_face_for_data_closure_t *closure = _rb_face_for_data_closure_create(blob, index);
-
-    if (unlikely(!closure)) {
+    if (!(face = rb_object_create<rb_face_t>())) {
         rb_blob_destroy(blob);
-        return rb_face_get_empty();
+        return const_cast<rb_face_t *>(&Null(rb_face_t));
     }
 
-    face = rb_face_create_for_tables(_rb_face_for_data_reference_table, closure, _rb_face_for_data_closure_destroy);
+    face->blob = blob;
+    face->index = index;
+    face->num_glyphs.set_relaxed(UINT_MAX);
+    face->table.init0(face);
 
     return face;
 }
@@ -180,9 +93,7 @@ void rb_face_destroy(rb_face_t *face)
         return;
 
     face->table.fini();
-
-    if (face->destroy)
-        face->destroy(face->user_data);
+    rb_blob_destroy(face->blob);
 
     free(face);
 }
@@ -203,7 +114,22 @@ rb_blob_t *rb_face_reference_table(const rb_face_t *face, rb_tag_t tag)
     if (unlikely(tag == RB_TAG_NONE))
         return rb_blob_get_empty();
 
-    return face->reference_table(tag);
+    unsigned int base_offset;
+    const OT::OpenTypeFontFile &ot_file = *face->blob->as<OT::OpenTypeFontFile>();
+    const OT::OpenTypeFontFace &ot_face = ot_file.get_face(face->index, &base_offset);
+    const OT::OpenTypeTable &table = ot_face.get_table_by_tag(tag);
+
+    return rb_blob_create_sub_blob(face->blob, base_offset + table.offset, table.length);
+}
+
+const char *rb_face_get_table_data(const rb_face_t *face, rb_tag_t tag, unsigned int *len)
+{
+    rb_blob_t* blob = rb_face_reference_table(face, tag);
+    *len = blob->length;
+    const char *data = blob->data;
+    // This blob was just pointing into it's parent's data, so we don't need it.
+    rb_blob_destroy(blob);
+    return data;
 }
 
 /**
@@ -218,5 +144,16 @@ rb_blob_t *rb_face_reference_table(const rb_face_t *face, rb_tag_t tag)
  **/
 unsigned int rb_face_get_glyph_count(const rb_face_t *face)
 {
-    return face->get_num_glyphs();
+    unsigned int ret = face->num_glyphs.get_relaxed();
+    if (unlikely(ret == UINT_MAX)) {
+        rb_sanitize_context_t c = rb_sanitize_context_t();
+        c.set_num_glyphs(0); /* So we don't recurse ad infinitum. */
+        rb_blob_t *maxp_blob = c.reference_table<OT::maxp>(face);
+        const OT::maxp *maxp_table = maxp_blob->as<OT::maxp>();
+
+        unsigned int ret = maxp_table->get_num_glyphs();
+        face->num_glyphs.set_relaxed(ret);
+        rb_blob_destroy(maxp_blob);
+    }
+    return ret;
 }
