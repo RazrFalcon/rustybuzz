@@ -686,7 +686,7 @@ template <typename Types, typename EntryData> struct StateTableDriver
     StateTableDriver(const StateTable<Types, EntryData> &machine_, rb_buffer_t *buffer_, rb_face_t *face_)
         : machine(machine_)
         , buffer(buffer_)
-        , num_glyphs(face_->get_num_glyphs())
+        , num_glyphs(rb_face_get_glyph_count(face_))
     {
     }
 
@@ -765,13 +765,8 @@ struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bo
     {
         return false;
     }
-    bool stop_sublookup_iteration(return_t r) const
-    {
-        return r;
-    }
 
     const rb_ot_shape_plan_t *plan;
-    rb_font_t *font;
     rb_face_t *face;
     rb_buffer_t *buffer;
     rb_sanitize_context_t sanitizer;
@@ -781,7 +776,7 @@ struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bo
     unsigned int lookup_index;
 
     RB_INTERNAL rb_aat_apply_context_t(const rb_ot_shape_plan_t *plan_,
-                                       rb_font_t *font_,
+                                       rb_face_t *face_,
                                        rb_buffer_t *buffer_,
                                        rb_blob_t *blob = const_cast<rb_blob_t *>(&Null(rb_blob_t)));
 

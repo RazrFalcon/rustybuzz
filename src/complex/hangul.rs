@@ -1,6 +1,6 @@
 use std::os::raw::c_void;
 
-use crate::{ffi, Font, GlyphInfo, Mask};
+use crate::{ffi, Face, GlyphInfo, Mask};
 use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
 use crate::ot::*;
 
@@ -102,15 +102,15 @@ pub extern "C" fn rb_ot_complex_data_destroy_hangul(data: *mut c_void) {
 pub extern "C" fn rb_ot_complex_preprocess_text_hangul(
     plan: *const ffi::rb_ot_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    preprocess_text(&plan, font, &mut buffer)
+    preprocess_text(&plan, face, &mut buffer)
 }
 
-fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
+fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     // Hangul syllables come in two shapes: LV, and LVT.  Of those:
     //
     //   - LV can be precomposed, or decomposed.  Lets call those
@@ -175,7 +175,7 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
                 // Tone mark follows a valid syllable; move it in front, unless it's zero width.
                 buffer.unsafe_to_break_from_outbuffer(start, buffer.idx);
                 buffer.next_glyph();
-                if !is_zero_width_char(font, c) {
+                if !is_zero_width_char(face, c) {
                     buffer.merge_out_clusters(start, end + 1);
                     let out_info = buffer.out_info_mut();
                     let tone = out_info[end];
@@ -186,9 +186,9 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
                 }
             } else {
                 // No valid syllable as base for tone mark; try to insert dotted circle.
-                if !buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) && font_has_glyph(font, 0x25CC) {
+                if !buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) && face_has_glyph(face, 0x25CC) {
                     let mut chars = [0; 2];
-                    if !is_zero_width_char(font, c) {
+                    if !is_zero_width_char(face, c) {
                         chars[0] = u;
                         chars[1] = 0x25CC;
                     } else {
@@ -237,7 +237,7 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
                 if is_combining_l(l) && is_combining_v(v) && (t == 0 || is_combining_t(t)) {
                     // Try to compose; if this succeeds, end is set to start+1.
                     let s = S_BASE + (l - L_BASE) * N_COUNT + (v - V_BASE) * T_COUNT + tindex;
-                    if font_has_glyph(font, s) {
+                    if face_has_glyph(face, s) {
                         let n = if t != 0 { 3 } else { 2 };
                         buffer.replace_glyphs(n, 1, &[s]);
                         end = start + 1;
@@ -270,7 +270,7 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
         } else if is_combined_s(u) {
             // Have <LV>, <LVT>, or <LV,T>
             let s = u;
-            let has_glyph = font_has_glyph(font, s);
+            let has_glyph = face_has_glyph(face, s);
 
             let lindex = (s - S_BASE) / N_COUNT;
             let nindex = (s - S_BASE) % N_COUNT;
@@ -282,7 +282,7 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
                 let new_tindex = buffer.cur(1).codepoint - T_BASE;
                 let new_s = s + new_tindex;
 
-                if font_has_glyph(font, new_s) {
+                if face_has_glyph(face, new_s) {
                     buffer.replace_glyphs(2, 1, &[new_s]);
                     end = start + 1;
                     continue;
@@ -297,8 +297,8 @@ fn preprocess_text(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
             // combining <LV,T> above.
             if !has_glyph || (tindex == 0 && buffer.idx + 1 < buffer.len && is_t(buffer.cur(1).codepoint)) {
                 let decomposed = [L_BASE + lindex, V_BASE + vindex, T_BASE + tindex];
-                if font_has_glyph(font, decomposed[0]) && font_has_glyph(font, decomposed[1]) &&
-                    (tindex == 0 || font_has_glyph(font, decomposed[2]))
+                if face_has_glyph(face, decomposed[0]) && face_has_glyph(face, decomposed[1]) &&
+                    (tindex == 0 || face_has_glyph(face, decomposed[2]))
                 {
                     let mut s_len = if tindex != 0 { 3 } else { 2 };
                     buffer.replace_glyphs(1, s_len, &decomposed);
@@ -351,9 +351,9 @@ fn is_hangul_tone(u: u32) -> bool {
     (0x302E..=0x302F).contains(&u)
 }
 
-fn is_zero_width_char(font: &Font, c: char) -> bool {
-    if let Some(glyph) = font.glyph_index(c as u32).map(|gid| gid.0 as u32) {
-        font.glyph_h_advance(glyph) == 0
+fn is_zero_width_char(face: &Face, c: char) -> bool {
+    if let Some(glyph) = face.glyph_index(c as u32) {
+        face.glyph_h_advance(glyph) == 0
     } else {
         false
     }
@@ -387,23 +387,23 @@ fn is_combined_s(u: u32) -> bool {
     (S_BASE ..= S_BASE + S_COUNT - 1).contains(&u)
 }
 
-fn font_has_glyph(font: &Font, u: u32) -> bool {
-    font.glyph_index(u).is_some()
+fn face_has_glyph(face: &Face, u: u32) -> bool {
+    face.glyph_index(u).is_some()
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_complex_setup_masks_hangul(
     plan: *const ffi::rb_ot_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_masks(&plan, font, &mut buffer);
+    setup_masks(&plan, face, &mut buffer);
 }
 
-fn setup_masks(plan: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let hangul_plan = HangulShapePlan::from_ptr(plan.data() as _);
     for info in buffer.info_slice_mut() {
         info.mask |= hangul_plan.mask_array[info.hangul_shaping_feature() as usize];

@@ -35,12 +35,10 @@
  * Dispatch
  */
 
-template <typename Context, typename Return = rb_empty_t> struct rb_dispatch_context_t
+template <typename Context, typename Return> struct rb_dispatch_context_t
 {
     rb_dispatch_context_t()
-        : debug_depth(0)
-    {
-    }
+    {}
 
 private:
     /* https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern */
@@ -54,25 +52,11 @@ private:
     }
 
 public:
-    static constexpr unsigned max_debug_depth = 0;
     typedef Return return_t;
-    template <typename T, typename F> bool may_dispatch(const T *obj RB_UNUSED, const F *format RB_UNUSED)
-    {
-        return true;
-    }
     template <typename T, typename... Ts> return_t dispatch(const T &obj, Ts &&... ds)
     {
         return obj.dispatch(thiz(), rb_forward<Ts>(ds)...);
     }
-    static return_t no_dispatch_return_value()
-    {
-        return Context::default_return_value();
-    }
-    static bool stop_sublookup_iteration(const return_t r RB_UNUSED)
-    {
-        return false;
-    }
-    unsigned debug_depth;
 };
 
 #endif /* RB_DISPATCH_HH */

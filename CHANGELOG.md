@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Normalization.
 - Fallback shaper. Thanks to [laurmaedje](https://github.com/laurmaedje).
 
+### Changed
+- Rename `Font` to `Face`.
+
 ## [0.2.0] - 2020-07-25
 ### Ported
 - All complex shapers.

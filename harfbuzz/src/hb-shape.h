@@ -35,11 +35,11 @@
 
 #include "hb-common.h"
 #include "hb-buffer.h"
-#include "hb-font.h"
+#include "hb-face.h"
 
 RB_BEGIN_DECLS
 
-RB_EXTERN rb_bool_t rb_shape(const rb_font_t *font,
+RB_EXTERN rb_bool_t rb_shape(rb_face_t *face,
                              rb_buffer_t *buffer,
                              const rb_feature_t *features,
                              unsigned int num_features);

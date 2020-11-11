@@ -38,7 +38,7 @@ RB_BEGIN_DECLS
 typedef struct rb_shape_plan_t rb_shape_plan_t;
 
 RB_EXTERN void _rb_ot_shape(rb_shape_plan_t *shape_plan,
-                            rb_font_t *font,
+                            rb_face_t *face,
                             rb_buffer_t *buffer,
                             const rb_feature_t *features,
                             unsigned int num_features);

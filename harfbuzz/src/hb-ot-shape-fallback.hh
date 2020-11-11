@@ -33,16 +33,16 @@
 
 extern "C" {
 RB_EXTERN void _rb_ot_shape_fallback_mark_position(const rb_ot_shape_plan_t *plan,
-                                                   rb_font_t *font,
+                                                   rb_face_t *face,
                                                    rb_buffer_t *buffer,
                                                    bool adjust_offsets_when_zeroing);
 
 RB_EXTERN void _rb_ot_shape_fallback_mark_position_recategorize_marks(const rb_ot_shape_plan_t *plan,
-                                                                      rb_font_t *font,
+                                                                      rb_face_t *face,
                                                                       rb_buffer_t *buffer);
 
-RB_EXTERN void _rb_ot_shape_fallback_kern(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
-RB_EXTERN void _rb_ot_shape_fallback_spaces(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
+RB_EXTERN void _rb_ot_shape_fallback_kern(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
+RB_EXTERN void _rb_ot_shape_fallback_spaces(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
 }
 
 #endif /* RB_OT_SHAPE_FALLBACK_HH */

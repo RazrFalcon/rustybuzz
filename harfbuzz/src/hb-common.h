@@ -404,17 +404,6 @@ typedef struct rb_feature_t
     unsigned int end;
 } rb_feature_t;
 
-/**
- * rb_variation_t:
- *
- * Since: 1.4.2
- */
-typedef struct rb_variation_t
-{
-    rb_tag_t tag;
-    float value;
-} rb_variation_t;
-
 RB_END_DECLS
 
 #endif /* RB_COMMON_H */

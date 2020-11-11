@@ -78,46 +78,6 @@ rb_blob_t *rb_blob_create(const char *data, unsigned int length, void *user_data
     return blob;
 }
 
-static void _rb_blob_destroy(void *data)
-{
-    rb_blob_destroy((rb_blob_t *)data);
-}
-
-/**
- * rb_blob_create_sub_blob:
- * @parent: Parent blob.
- * @offset: Start offset of sub-blob within @parent, in bytes.
- * @length: Length of sub-blob.
- *
- * Returns a blob that represents a range of bytes in @parent.  The new
- * blob is always created with %RB_MEMORY_MODE_READONLY, meaning that it
- * will never modify data in the parent blob.  The parent data is not
- * expected to be modified, and will result in undefined behavior if it
- * is.
- *
- * Makes @parent immutable.
- *
- * Return value: New blob, or the empty blob if something failed or if
- * @length is zero or @offset is beyond the end of @parent's data.  Destroy
- * with rb_blob_destroy().
- *
- * Since: 0.9.2
- **/
-rb_blob_t *rb_blob_create_sub_blob(rb_blob_t *parent, unsigned int offset, unsigned int length)
-{
-    rb_blob_t *blob;
-
-    if (!length || !parent || offset >= parent->length)
-        return rb_blob_get_empty();
-
-    rb_blob_make_immutable(parent);
-
-    blob = rb_blob_create(
-        parent->data + offset, rb_min(length, parent->length - offset), rb_blob_reference(parent), _rb_blob_destroy);
-
-    return blob;
-}
-
 /**
  * rb_blob_get_empty:
  *
@@ -171,69 +131,4 @@ void rb_blob_destroy(rb_blob_t *blob)
     blob->fini_shallow();
 
     free(blob);
-}
-
-/**
- * rb_blob_make_immutable:
- * @blob: a blob.
- *
- *
- *
- * Since: 0.9.2
- **/
-void rb_blob_make_immutable(rb_blob_t *blob)
-{
-    if (rb_object_is_immutable(blob))
-        return;
-
-    rb_object_make_immutable(blob);
-}
-
-/**
- * rb_blob_is_immutable:
- * @blob: a blob.
- *
- *
- *
- * Return value: TODO
- *
- * Since: 0.9.2
- **/
-rb_bool_t rb_blob_is_immutable(rb_blob_t *blob)
-{
-    return rb_object_is_immutable(blob);
-}
-
-/**
- * rb_blob_get_length:
- * @blob: a blob.
- *
- *
- *
- * Return value: the length of blob data in bytes.
- *
- * Since: 0.9.2
- **/
-unsigned int rb_blob_get_length(rb_blob_t *blob)
-{
-    return blob->length;
-}
-
-/**
- * rb_blob_get_data:
- * @blob: a blob.
- * @length: (out):
- *
- *
- *
- * Returns: (transfer none) (array length=length):
- *
- * Since: 0.9.2
- **/
-const char *rb_blob_get_data(rb_blob_t *blob, unsigned int *length)
-{
-    if (length)
-        *length = blob->length;
-
-    return blob->data;
 }

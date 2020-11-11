@@ -108,7 +108,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat0
 
         accelerator_t accel(*this, c);
         rb_kern_machine_t<accelerator_t> machine(accel, header.coverage & header.CrossStream);
-        machine.kern(c->font, c->buffer, c->plan->kern_mask);
+        machine.kern(c->face, c->buffer, c->plan->kern_mask);
 
         return true;
     }
@@ -331,7 +331,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat1
 
         driver_context_t dc(this, c);
 
-        StateTableDriver<Types, EntryData> driver(machine, c->buffer, rb_font_get_face(c->font));
+        StateTableDriver<Types, EntryData> driver(machine, c->buffer, c->face);
         driver.drive(&dc);
 
         return true;
@@ -383,7 +383,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat2
 
         accelerator_t accel(*this, c);
         rb_kern_machine_t<accelerator_t> machine(accel, header.coverage & header.CrossStream);
-        machine.kern(c->font, c->buffer, c->plan->kern_mask);
+        machine.kern(c->face, c->buffer, c->plan->kern_mask);
 
         return true;
     }
@@ -489,14 +489,14 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
                     rb_position_t markY = 0;
                     rb_position_t currX = 0;
                     rb_position_t currY = 0;
-                    if (!rb_font_get_glyph_contour_point_for_origin(
-                            c->font,
+                    if (!rb_face_get_glyph_contour_point_for_origin(
+                            c->face,
                             rb_buffer_get_glyph_infos(c->buffer)[mark].codepoint,
                             markControlPoint,
                             RB_DIRECTION_LTR /*XXX*/,
                             &markX,
                             &markY) ||
-                        !rb_font_get_glyph_contour_point_for_origin(c->font,
+                        !rb_face_get_glyph_contour_point_for_origin(c->face,
                                                                     rb_buffer_get_cur(c->buffer, 0)->codepoint,
                                                                     currControlPoint,
                                                                     RB_DIRECTION_LTR /*XXX*/,
@@ -569,7 +569,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat4
     {
         driver_context_t dc(this, c);
 
-        StateTableDriver<Types, EntryData> driver(machine, c->buffer, rb_font_get_face(c->font));
+        StateTableDriver<Types, EntryData> driver(machine, c->buffer, c->face);
         driver.drive(&dc);
 
         return true;
@@ -639,7 +639,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat6
 
         accelerator_t accel(*this, c);
         rb_kern_machine_t<accelerator_t> machine(accel, header.coverage & header.CrossStream);
-        machine.kern(c->font, c->buffer, c->plan->kern_mask);
+        machine.kern(c->face, c->buffer, c->plan->kern_mask);
 
         return true;
     }

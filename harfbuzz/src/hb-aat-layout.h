@@ -429,6 +429,8 @@ typedef enum {
     _RB_AAT_LAYOUT_FEATURE_SELECTOR_MAX_VALUE = RB_TAG_MAX_SIGNED /*< skip >*/
 } rb_aat_layout_feature_selector_t;
 
+typedef unsigned int rb_ot_name_id_t;
+
 typedef struct rb_aat_layout_feature_selector_info_t
 {
     rb_ot_name_id_t name_id;

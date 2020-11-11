@@ -7,11 +7,11 @@ fn shape_latin_rb(bencher: &mut test::Bencher) {
     let font_data = std::fs::read("fonts/SourceSansPro-Regular.ttf").unwrap();
     bencher.iter(|| {
         test::black_box({
-            let font = rustybuzz::Font::from_slice(&font_data, 0).unwrap();
+            let face = rustybuzz::Face::from_slice(&font_data, 0).unwrap();
             let mut buffer = rustybuzz::UnicodeBuffer::new();
             buffer.push_str("Some dummy text.");
             buffer.reset_clusters();
-             rustybuzz::shape(&font, &[], buffer)
+             rustybuzz::shape(&face, &[], buffer)
          });
     })
 }
@@ -37,11 +37,11 @@ fn shape_zalgo_rb(bencher: &mut test::Bencher) {
     let text = std::fs::read_to_string("zalgo.txt").unwrap().trim().to_string();
     bencher.iter(|| {
         test::black_box({
-            let font = rustybuzz::Font::from_slice(&font_data, 0).unwrap();
+            let face = rustybuzz::Face::from_slice(&font_data, 0).unwrap();
             let mut buffer = rustybuzz::UnicodeBuffer::new();
             buffer.push_str(&text);
             buffer.reset_clusters();
-            rustybuzz::shape(&font, &[], buffer)
+            rustybuzz::shape(&face, &[], buffer)
         });
     })
 }
@@ -66,11 +66,11 @@ fn shape_arabic_rb(bencher: &mut test::Bencher) {
     let text = std::fs::read_to_string("arabic.txt").unwrap().trim().to_string();
     bencher.iter(|| {
         test::black_box({
-            let font = rustybuzz::Font::from_slice(&font_data, 0).unwrap();
+            let face = rustybuzz::Face::from_slice(&font_data, 0).unwrap();
             let mut buffer = rustybuzz::UnicodeBuffer::new();
             buffer.push_str(&text);
             buffer.reset_clusters();
-            rustybuzz::shape(&font, &[], buffer)
+            rustybuzz::shape(&face, &[], buffer)
         });
     })
 }

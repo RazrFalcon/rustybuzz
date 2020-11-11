@@ -32,7 +32,7 @@
 
 extern "C" {
 RB_EXTERN void rb_kern_machine_kern(
-    rb_font_t *font,
+    rb_face_t *face,
     rb_buffer_t *buffer,
     rb_mask_t kern_mask,
     rb_bool_t cross_stream,
@@ -56,10 +56,10 @@ template <typename Driver> struct rb_kern_machine_t
     }
 
     RB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
-    void kern(rb_font_t *font, rb_buffer_t *buffer, rb_mask_t kern_mask) const
+    void kern(rb_face_t *face, rb_buffer_t *buffer, rb_mask_t kern_mask) const
     {
         rb_kern_machine_kern(
-            font,
+            face,
             buffer,
             kern_mask,
             crossStream,

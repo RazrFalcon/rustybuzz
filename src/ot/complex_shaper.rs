@@ -2,7 +2,7 @@ use std::ptr::NonNull;
 
 use crate::ffi;
 use crate::buffer::Buffer;
-use crate::Font;
+use crate::Face;
 use super::{ShapeNormalizationMode, ShapePlan};
 
 pub const MAX_COMBINING_MARKS: usize = 32;
@@ -47,16 +47,16 @@ impl ComplexShaper {
 #[no_mangle]
 pub extern "C" fn rb_clear_substitution_flags(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    clear_substitution_flags(&plan, font, &mut buffer);
+    clear_substitution_flags(&plan, face, &mut buffer);
 }
 
-fn clear_substitution_flags(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn clear_substitution_flags(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         info.clear_substituted();
@@ -66,16 +66,16 @@ fn clear_substitution_flags(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 #[no_mangle]
 pub extern "C" fn rb_clear_syllables(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    clear_syllables(&plan, font, &mut buffer);
+    clear_syllables(&plan, face, &mut buffer);
 }
 
-fn clear_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn clear_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         info.set_syllable(0);

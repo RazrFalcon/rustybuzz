@@ -27,12 +27,9 @@
 #include "hb.hh"
 
 #include "hb-open-type.hh"
-#include "hb-face.hh"
 
 #include "hb-aat-layout-common.hh"
 #include "hb-aat-layout-feat-table.hh"
-#include "hb-ot-head-table.hh"
-#include "hb-ot-maxp-table.hh"
 
 #ifndef RB_NO_VISIBILITY
 
@@ -44,25 +41,4 @@ DEFINE_NULL_NAMESPACE_BYTES(AAT, SettingName) = {0xFF, 0xFF, 0xFF, 0xFF};
 /* Hand-coded because Lookup is a template.  Sad. */
 const unsigned char _rb_Null_AAT_Lookup[2] = {0xFF, 0xFF};
 
-/* rb_face_t */
-
-unsigned int rb_face_t::load_num_glyphs() const
-{
-    rb_sanitize_context_t c = rb_sanitize_context_t();
-    c.set_num_glyphs(0); /* So we don't recurse ad infinitum. */
-    rb_blob_t *maxp_blob = c.reference_table<OT::maxp>(this);
-    const OT::maxp *maxp_table = maxp_blob->as<OT::maxp>();
-
-    unsigned int ret = maxp_table->get_num_glyphs();
-    num_glyphs.set_relaxed(ret);
-    rb_blob_destroy(maxp_blob);
-    return ret;
-}
-
-unsigned int rb_face_t::load_upem() const
-{
-    unsigned int ret = table.head->get_upem();
-    upem.set_relaxed(ret);
-    return ret;
-}
 #endif

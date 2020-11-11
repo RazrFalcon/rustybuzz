@@ -65,11 +65,6 @@ rb_shape_plan_t *rb_shape_plan_create(rb_face_t *face,
     if (!(shape_plan = rb_object_create<rb_shape_plan_t>()))
         goto bail;
 
-    if (unlikely(!face))
-        face = rb_face_get_empty();
-    rb_face_make_immutable(face);
-    shape_plan->face_unsafe = face;
-
     if (unlikely(!shape_plan->ot.init0(face, props, user_features, num_user_features, variations_index)))
         goto bail3;
 
@@ -115,7 +110,7 @@ void rb_shape_plan_destroy(rb_shape_plan_t *shape_plan)
 /**
  * rb_shape_plan_execute:
  * @shape_plan: a shape plan.
- * @font: a font.
+ * @face: a font face.
  * @buffer: a buffer.
  * @features: (array length=num_features):
  * @num_features:
@@ -127,7 +122,7 @@ void rb_shape_plan_destroy(rb_shape_plan_t *shape_plan)
  * Since: 0.9.7
  **/
 rb_bool_t rb_shape_plan_execute(rb_shape_plan_t *shape_plan,
-                                rb_font_t *font,
+                                rb_face_t *face,
                                 rb_buffer_t *buffer,
                                 const rb_feature_t *features,
                                 unsigned int num_features)
@@ -138,8 +133,6 @@ rb_bool_t rb_shape_plan_execute(rb_shape_plan_t *shape_plan,
     if (unlikely(rb_object_is_inert(shape_plan)))
         return false;
 
-    assert(shape_plan->face_unsafe == rb_font_get_face(font));
-
-    _rb_ot_shape(shape_plan, font, buffer, features, num_features);
+    _rb_ot_shape(shape_plan, face, buffer, features, num_features);
     return true;
 }

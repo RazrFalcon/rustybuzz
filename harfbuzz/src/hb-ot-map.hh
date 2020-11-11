@@ -38,13 +38,13 @@ struct rb_ot_map_t;
 struct rb_ot_shape_plan_t;
 
 extern "C" {
-void rb_ot_layout_substitute(const rb_ot_map_t *map, const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
-void rb_ot_layout_position(const rb_ot_map_t *map, const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
+void rb_ot_layout_substitute(const rb_ot_map_t *map, const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
+void rb_ot_layout_position(const rb_ot_map_t *map, const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
 }
 
 static const rb_tag_t table_tags[2] = {RB_OT_TAG_GSUB, RB_OT_TAG_GPOS};
 
-typedef void (*rb_ot_pause_func_t)(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer);
+typedef void (*rb_ot_pause_func_t)(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
 
 struct rb_ot_map_lookup_map_t
 {
@@ -175,14 +175,14 @@ public:
         *lookup_count = end - start;
     }
 
-    void substitute(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const
+    void substitute(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer) const
     {
-        rb_ot_layout_substitute(this, plan, font, buffer);
+        rb_ot_layout_substitute(this, plan, face, buffer);
     }
 
-    void position(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer) const
+    void position(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer) const
     {
-        rb_ot_layout_position(this, plan, font, buffer);
+        rb_ot_layout_position(this, plan, face, buffer);
     }
 
 public:

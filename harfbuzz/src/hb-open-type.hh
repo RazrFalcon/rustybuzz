@@ -428,15 +428,7 @@ struct OffsetTo : Offset<OffsetType, has_null>
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, const void *base, Ts &&... ds) const
     {
         return sanitize_shallow(c, base) &&
-               (this->is_null() || c->dispatch(StructAtOffset<Type>(base, *this), rb_forward<Ts>(ds)...) || neuter(c));
-    }
-
-    /* Set the offset to Null */
-    bool neuter(rb_sanitize_context_t *c) const
-    {
-        if (!has_null)
-            return false;
-        return c->try_set(this, 0);
+               (this->is_null() || c->dispatch(StructAtOffset<Type>(base, *this), rb_forward<Ts>(ds)...));
     }
     DEFINE_SIZE_STATIC(sizeof(OffsetType));
 };
@@ -501,24 +493,6 @@ template <typename Type> struct UnsizedArrayOf
     operator rb_array_t<const Type>() const
     {
         return as_array();
-    }
-
-    template <typename T> Type &lsearch(unsigned int len, const T &x, Type &not_found = Crap(Type))
-    {
-        return *as_array(len).lsearch(x, &not_found);
-    }
-    template <typename T> const Type &lsearch(unsigned int len, const T &x, const Type &not_found = Null(Type)) const
-    {
-        return *as_array(len).lsearch(x, &not_found);
-    }
-    template <typename T> bool lfind(unsigned int len, const T &x, unsigned *pos = nullptr) const
-    {
-        return as_array(len).lfind(x, pos);
-    }
-
-    void qsort(unsigned int len, unsigned int start = 0, unsigned int end = (unsigned int)-1)
-    {
-        as_array(len).qsort(start, end);
     }
 
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, unsigned int count, Ts &&... ds) const
@@ -618,9 +592,6 @@ template <typename Type> struct SortedUnsizedArrayOf : UnsizedArrayOf<Type>
 /* An array with a number of elements. */
 template <typename Type, typename LenType = HBUINT16> struct ArrayOf
 {
-    typedef Type item_t;
-    static constexpr unsigned item_size = rb_static_size(Type);
-
     RB_DELETE_CREATE_COPY_ASSIGN(ArrayOf);
 
     const Type &operator[](int i_) const
@@ -643,62 +614,6 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOf
         return len.static_size + len * Type::static_size;
     }
 
-    explicit operator bool() const
-    {
-        return len;
-    }
-
-    void pop()
-    {
-        len--;
-    }
-
-    rb_array_t<Type> as_array()
-    {
-        return rb_array(arrayZ, len);
-    }
-    rb_array_t<const Type> as_array() const
-    {
-        return rb_array(arrayZ, len);
-    }
-
-    /* Iterator. */
-    typedef rb_array_t<const Type> iter_t;
-    typedef rb_array_t<Type> writer_t;
-    iter_t iter() const
-    {
-        return as_array();
-    }
-    writer_t writer()
-    {
-        return as_array();
-    }
-    operator iter_t() const
-    {
-        return iter();
-    }
-    operator writer_t()
-    {
-        return writer();
-    }
-
-    rb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int count) const
-    {
-        return as_array().sub_array(start_offset, count);
-    }
-    rb_array_t<const Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) const
-    {
-        return as_array().sub_array(start_offset, count);
-    }
-    rb_array_t<Type> sub_array(unsigned int start_offset, unsigned int count)
-    {
-        return as_array().sub_array(start_offset, count);
-    }
-    rb_array_t<Type> sub_array(unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */)
-    {
-        return as_array().sub_array(start_offset, count);
-    }
-
     template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
     {
         if (unlikely(!sanitize_shallow(c)))
@@ -710,24 +625,6 @@ template <typename Type, typename LenType = HBUINT16> struct ArrayOf
             if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
                 return false;
         return true;
-    }
-
-    template <typename T> Type &lsearch(const T &x, Type &not_found = Crap(Type))
-    {
-        return *as_array().lsearch(x, &not_found);
-    }
-    template <typename T> const Type &lsearch(const T &x, const Type &not_found = Null(Type)) const
-    {
-        return *as_array().lsearch(x, &not_found);
-    }
-    template <typename T> bool lfind(const T &x, unsigned *pos = nullptr) const
-    {
-        return as_array().lfind(x, pos);
-    }
-
-    void qsort(unsigned int start = 0, unsigned int end = (unsigned int)-1)
-    {
-        as_array().qsort(start, end);
     }
 
     bool sanitize_shallow(rb_sanitize_context_t *c) const
@@ -743,123 +640,6 @@ public:
     DEFINE_SIZE_ARRAY(sizeof(LenType), arrayZ);
 };
 template <typename Type> using LArrayOf = ArrayOf<Type, HBUINT32>;
-using PString = ArrayOf<HBUINT8, HBUINT8>;
-
-/* Array of Offset's */
-template <typename Type> using OffsetArrayOf = ArrayOf<OffsetTo<Type, HBUINT16>>;
-template <typename Type> using LOffsetArrayOf = ArrayOf<OffsetTo<Type, HBUINT32>>;
-template <typename Type> using LOffsetLArrayOf = ArrayOf<OffsetTo<Type, HBUINT32>, HBUINT32>;
-
-/* Array of offsets relative to the beginning of the array itself. */
-template <typename Type> struct OffsetListOf : OffsetArrayOf<Type>
-{
-    const Type &operator[](int i_) const
-    {
-        unsigned int i = (unsigned int)i_;
-        if (unlikely(i >= this->len))
-            return Null(Type);
-        return this + this->arrayZ[i];
-    }
-    const Type &operator[](int i_)
-    {
-        unsigned int i = (unsigned int)i_;
-        if (unlikely(i >= this->len))
-            return Crap(Type);
-        return this + this->arrayZ[i];
-    }
-
-    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
-    {
-        return OffsetArrayOf<Type>::sanitize(c, this, rb_forward<Ts>(ds)...);
-    }
-};
-
-/* An array starting at second element. */
-template <typename Type, typename LenType = HBUINT16> struct HeadlessArrayOf
-{
-    static constexpr unsigned item_size = Type::static_size;
-
-    RB_DELETE_CREATE_COPY_ASSIGN(HeadlessArrayOf);
-
-    const Type &operator[](int i_) const
-    {
-        unsigned int i = (unsigned int)i_;
-        if (unlikely(i >= lenP1 || !i))
-            return Null(Type);
-        return arrayZ[i - 1];
-    }
-    Type &operator[](int i_)
-    {
-        unsigned int i = (unsigned int)i_;
-        if (unlikely(i >= lenP1 || !i))
-            return Crap(Type);
-        return arrayZ[i - 1];
-    }
-    unsigned int get_size() const
-    {
-        return lenP1.static_size + get_length() * Type::static_size;
-    }
-
-    unsigned get_length() const
-    {
-        return lenP1 ? lenP1 - 1 : 0;
-    }
-
-    rb_array_t<Type> as_array()
-    {
-        return rb_array(arrayZ, get_length());
-    }
-    rb_array_t<const Type> as_array() const
-    {
-        return rb_array(arrayZ, get_length());
-    }
-
-    /* Iterator. */
-    typedef rb_array_t<const Type> iter_t;
-    typedef rb_array_t<Type> writer_t;
-    iter_t iter() const
-    {
-        return as_array();
-    }
-    writer_t writer()
-    {
-        return as_array();
-    }
-    operator iter_t() const
-    {
-        return iter();
-    }
-    operator writer_t()
-    {
-        return writer();
-    }
-
-    template <typename... Ts> bool sanitize(rb_sanitize_context_t *c, Ts &&... ds) const
-    {
-        if (unlikely(!sanitize_shallow(c)))
-            return false;
-        if (!sizeof...(Ts) && rb_is_trivially_copyable(Type))
-            return true;
-        unsigned int count = get_length();
-        for (unsigned int i = 0; i < count; i++)
-            if (unlikely(!c->dispatch(arrayZ[i], rb_forward<Ts>(ds)...)))
-                return false;
-        return true;
-    }
-
-private:
-    bool sanitize_shallow(rb_sanitize_context_t *c) const
-    {
-        return lenP1.sanitize(c) && (!lenP1 || c->check_array(arrayZ, lenP1 - 1));
-    }
-
-public:
-    LenType lenP1;
-    Type arrayZ[RB_VAR_ARRAY];
-
-public:
-    DEFINE_SIZE_ARRAY(sizeof(LenType), arrayZ);
-};
 
 /* An array storing length-1. */
 template <typename Type, typename LenType = HBUINT16> struct ArrayOfM1
@@ -920,26 +700,6 @@ template <typename Type, typename LenType = HBUINT16> struct SortedArrayOf : Arr
     rb_sorted_array_t<const Type> as_array() const
     {
         return rb_sorted_array(this->arrayZ, this->len);
-    }
-
-    /* Iterator. */
-    typedef rb_sorted_array_t<const Type> iter_t;
-    typedef rb_sorted_array_t<Type> writer_t;
-    iter_t iter() const
-    {
-        return as_array();
-    }
-    writer_t writer()
-    {
-        return as_array();
-    }
-    operator iter_t() const
-    {
-        return iter();
-    }
-    operator writer_t()
-    {
-        return writer();
     }
 
     rb_sorted_array_t<const Type> sub_array(unsigned int start_offset, unsigned int count) const

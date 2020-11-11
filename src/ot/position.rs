@@ -7,7 +7,7 @@ use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
 use crate::common::Direction;
 use crate::tables::gpos::*;
 use crate::tables::gsubgpos::*;
-use crate::{Font, Tag};
+use crate::{Face, Tag};
 use super::apply::{Apply, ApplyContext};
 use super::matching::SkippyIter;
 use super::layout::{LayoutLookup, LayoutTable, TableIndex};
@@ -142,8 +142,8 @@ impl Apply for CursivePos<'_> {
             return None;
         }
 
-        let (exit_x, exit_y) = Anchor::parse(data.get(exit.to_usize()..)?)?.get(ctx.font);
-        let (entry_x, entry_y) = Anchor::parse(data.get(entry.to_usize()..)?)?.get(ctx.font);
+        let (exit_x, exit_y) = Anchor::parse(data.get(exit.to_usize()..)?)?.get(ctx.face);
+        let (entry_x, entry_y) = Anchor::parse(data.get(entry.to_usize()..)?)?.get(ctx.face);
 
         let direction = ctx.buffer.direction;
         let j = ctx.buffer.idx;
@@ -433,15 +433,15 @@ impl<'a> ValueRecord<'a> {
         }
 
         if self.flags.intersects(ValueFormatFlags::DEVICES) {
-            let (ppem_x, ppem_y) = ctx.font.pixels_per_em().unwrap_or((0, 0));
-            let coords = ctx.font.ttfp_face.variation_coordinates().len();
+            let (ppem_x, ppem_y) = ctx.face.pixels_per_em().unwrap_or((0, 0));
+            let coords = ctx.face.ttfp_face.variation_coordinates().len();
             let use_x_device = ppem_x != 0 || coords != 0;
             let use_y_device = ppem_y != 0 || coords != 0;
 
             if self.flags.contains(ValueFormatFlags::X_PLACEMENT_DEVICE) {
                 if let Some(offset) = s.read::<Offset16>() {
                     if use_x_device && !offset.is_null() {
-                        pos.x_offset += device_x_delta(base, offset, ctx.font);
+                        pos.x_offset += device_x_delta(base, offset, ctx.face);
                         worked = true;
                     }
                 }
@@ -450,7 +450,7 @@ impl<'a> ValueRecord<'a> {
             if self.flags.contains(ValueFormatFlags::Y_PLACEMENT_DEVICE) {
                 if let Some(offset) = s.read::<Offset16>() {
                     if use_y_device && !offset.is_null() {
-                        pos.y_offset += device_y_delta(base, offset, ctx.font);
+                        pos.y_offset += device_y_delta(base, offset, ctx.face);
                         worked = true;
                     }
                 }
@@ -459,7 +459,7 @@ impl<'a> ValueRecord<'a> {
             if self.flags.contains(ValueFormatFlags::X_ADVANCE_DEVICE) {
                 if let Some(offset) = s.read::<Offset16>() {
                     if horizontal && use_x_device && !offset.is_null() {
-                        pos.x_advance += device_x_delta(base, offset, ctx.font);
+                        pos.x_advance += device_x_delta(base, offset, ctx.face);
                         worked = true;
                     }
                 }
@@ -468,8 +468,8 @@ impl<'a> ValueRecord<'a> {
             if self.flags.contains(ValueFormatFlags::Y_ADVANCE_DEVICE) {
                 if let Some(offset) = s.read::<Offset16>() {
                     if !horizontal && use_y_device && !offset.is_null() {
-                        // y_advance values grow downward but font-space grows upward, hence negation
-                        pos.y_advance -= device_y_delta(base, offset, ctx.font);
+                        // y_advance values grow downward but face-space grows upward, hence negation
+                        pos.y_advance -= device_y_delta(base, offset, ctx.face);
                         worked = true;
                     }
                 }
@@ -481,12 +481,12 @@ impl<'a> ValueRecord<'a> {
     }
 }
 
-fn device_x_delta(base: &[u8], offset: Offset16, font: &Font) -> i32 {
-    device(base, offset).and_then(|device| device.get_x_delta(font)).unwrap_or(0)
+fn device_x_delta(base: &[u8], offset: Offset16, face: &Face) -> i32 {
+    device(base, offset).and_then(|device| device.get_x_delta(face)).unwrap_or(0)
 }
 
-fn device_y_delta(base: &[u8], offset: Offset16, font: &Font) -> i32 {
-    device(base, offset).and_then(|device| device.get_y_delta(font)).unwrap_or(0)
+fn device_y_delta(base: &[u8], offset: Offset16, face: &Face) -> i32 {
+    device(base, offset).and_then(|device| device.get_y_delta(face)).unwrap_or(0)
 }
 
 fn device(base: &[u8], offset: Offset16) -> Option<Device> {
@@ -508,8 +508,8 @@ impl<'a> MarkArray<'a> {
         let mark_anchor = Anchor::parse(self.data.get(record.mark_anchor.to_usize()..)?)?;
         let base_anchor = anchors.get(glyph_index, record.class.0)?;
 
-        let (mark_x, mark_y) = mark_anchor.get(ctx.font);
-        let (base_x, base_y) = base_anchor.get(ctx.font);
+        let (mark_x, mark_y) = mark_anchor.get(ctx.face);
+        let (base_x, base_y) = base_anchor.get(ctx.face);
 
         ctx.buffer.unsafe_to_break(glyph_pos, ctx.buffer.idx);
 
@@ -543,7 +543,7 @@ impl AttachType {
     }
 }
 
-pub(crate) fn position_start(_: &Font, buffer: &mut Buffer) {
+pub(crate) fn position_start(_: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     for pos in &mut buffer.pos[..len] {
         pos.set_attach_chain(0);
@@ -551,9 +551,9 @@ pub(crate) fn position_start(_: &Font, buffer: &mut Buffer) {
     }
 }
 
-pub(crate) fn position_finish_advances(_: &Font, _: &mut Buffer) {}
+pub(crate) fn position_finish_advances(_: &Face, _: &mut Buffer) {}
 
-pub(crate) fn position_finish_offsets(_: &Font, buffer: &mut Buffer) {
+pub(crate) fn position_finish_offsets(_: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     let direction = buffer.direction;
 

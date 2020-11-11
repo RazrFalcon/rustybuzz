@@ -31,61 +31,20 @@
 
 #include "hb.hh"
 
-#include "hb-shape-plan.hh"
-#include "hb-ot-face.hh"
+namespace OT { struct kern; }
+namespace AAT { struct morx; }
+namespace AAT { struct mort; }
+namespace AAT { struct kerx; }
+namespace AAT { struct ankr; }
+namespace AAT { struct trak; }
+namespace AAT { struct feat; }
 
-/*
- * rb_face_t
- */
-
-struct rb_face_t
-{
-    rb_object_header_t header;
-
-    rb_reference_table_func_t reference_table_func;
-    void *user_data;
-    rb_destroy_func_t destroy;
-
-    mutable rb_atomic_int_t upem;       /* Units-per-EM. */
-    mutable rb_atomic_int_t num_glyphs; /* Number of glyphs. */
-
-    rb_ot_face_t table; /* All the face's tables. */
-
-    rb_blob_t *reference_table(rb_tag_t tag) const
-    {
-        rb_blob_t *blob;
-
-        if (unlikely(!reference_table_func))
-            return rb_blob_get_empty();
-
-        blob = reference_table_func(/*XXX*/ const_cast<rb_face_t *>(this), tag, user_data);
-        if (unlikely(!blob))
-            return rb_blob_get_empty();
-
-        return blob;
-    }
-
-    RB_PURE_FUNC unsigned int get_upem() const
-    {
-        unsigned int ret = upem.get_relaxed();
-        if (unlikely(!ret)) {
-            return load_upem();
-        }
-        return ret;
-    }
-
-    unsigned int get_num_glyphs() const
-    {
-        unsigned int ret = num_glyphs.get_relaxed();
-        if (unlikely(ret == UINT_MAX))
-            return load_num_glyphs();
-        return ret;
-    }
-
-private:
-    RB_INTERNAL unsigned int load_upem() const;
-    RB_INTERNAL unsigned int load_num_glyphs() const;
-};
-DECLARE_NULL_INSTANCE(rb_face_t);
+const OT::kern  *rb_face_get_kern_table(rb_face_t *face);
+const AAT::morx *rb_face_get_morx_table(rb_face_t *face);
+const AAT::mort *rb_face_get_mort_table(rb_face_t *face);
+const AAT::kerx *rb_face_get_kerx_table(rb_face_t *face);
+const AAT::ankr *rb_face_get_ankr_table(rb_face_t *face);
+const AAT::trak *rb_face_get_trak_table(rb_face_t *face);
+const AAT::feat *rb_face_get_feat_table(rb_face_t *face);
 
 #endif /* RB_FACE_HH */

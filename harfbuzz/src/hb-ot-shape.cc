@@ -28,12 +28,13 @@
 
 #include "hb.hh"
 
+#include "hb-shape-plan.hh"
 #include "hb-ot-shape.hh"
 #include "hb-ot-shape-complex.hh"
 #include "hb-ot-shape-fallback.hh"
 #include "hb-ot-shape-normalize.hh"
 
-#include "hb-ot-face.hh"
+#include "hb-face.hh"
 
 #include "hb-aat-layout.hh"
 
@@ -221,27 +222,27 @@ void rb_ot_shape_plan_t::fini()
     aat_map.fini();
 }
 
-void rb_ot_shape_plan_t::substitute(rb_font_t *font, rb_buffer_t *buffer) const
+void rb_ot_shape_plan_t::substitute(rb_face_t *face, rb_buffer_t *buffer) const
 {
     if (unlikely(apply_morx))
-        rb_aat_layout_substitute(this, font, buffer);
+        rb_aat_layout_substitute(this, face, buffer);
     else
-        map.substitute(this, font, buffer);
+        map.substitute(this, face, buffer);
 }
 
-void rb_ot_shape_plan_t::position(rb_font_t *font, rb_buffer_t *buffer) const
+void rb_ot_shape_plan_t::position(rb_face_t *face, rb_buffer_t *buffer) const
 {
     if (this->apply_gpos)
-        map.position(this, font, buffer);
+        map.position(this, face, buffer);
     else if (this->apply_kerx)
-        rb_aat_layout_position(this, font, buffer);
+        rb_aat_layout_position(this, face, buffer);
     else if (this->apply_kern)
-        rb_ot_layout_kern(this, font, buffer);
+        rb_ot_layout_kern(this, face, buffer);
     else
-        _rb_ot_shape_fallback_kern(this, font, buffer);
+        _rb_ot_shape_fallback_kern(this, face, buffer);
 
     if (this->apply_trak)
-        rb_aat_layout_track(this, font, buffer);
+        rb_aat_layout_track(this, face, buffer);
 }
 
 static const rb_ot_map_feature_t common_features[] = {
@@ -350,7 +351,6 @@ static void rb_ot_shape_collect_features(rb_ot_shape_planner_t *planner,
 struct rb_ot_shape_context_t
 {
     rb_ot_shape_plan_t *plan;
-    rb_font_t *font;
     rb_face_t *face;
     rb_buffer_t *buffer;
     const rb_feature_t *user_features;
@@ -412,7 +412,7 @@ static void rb_set_unicode_props(rb_buffer_t *buffer)
     }
 }
 
-static void rb_insert_dotted_circle(rb_buffer_t *buffer, rb_font_t *font)
+static void rb_insert_dotted_circle(rb_buffer_t *buffer, rb_face_t *face)
 {
     if (unlikely(rb_buffer_get_flags(buffer) & RB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
         return;
@@ -421,7 +421,7 @@ static void rb_insert_dotted_circle(rb_buffer_t *buffer, rb_font_t *font)
         !_rb_glyph_info_is_unicode_mark(&rb_buffer_get_glyph_infos(buffer)[0]))
         return;
 
-    if (!rb_font_has_glyph(font, 0x25CCu))
+    if (!rb_face_has_glyph(face, 0x25CCu))
         return;
 
     rb_glyph_info_t dottedcircle = {0};
@@ -585,7 +585,7 @@ static inline void rb_ot_rotate_chars(const rb_ot_shape_context_t *c)
 
         for (unsigned int i = 0; i < count; i++) {
             rb_codepoint_t codepoint = rb_ucd_mirroring(info[i].codepoint);
-            if (unlikely(codepoint != info[i].codepoint && rb_font_has_glyph(c->font, codepoint)))
+            if (unlikely(codepoint != info[i].codepoint && rb_face_has_glyph(c->face, codepoint)))
                 info[i].codepoint = codepoint;
             else
                 info[i].mask |= rtlm_mask;
@@ -595,7 +595,7 @@ static inline void rb_ot_rotate_chars(const rb_ot_shape_context_t *c)
     if (RB_DIRECTION_IS_VERTICAL(c->target_direction) && !c->plan->has_vert) {
         for (unsigned int i = 0; i < count; i++) {
             rb_codepoint_t codepoint = rb_vert_char_for(info[i].codepoint);
-            if (unlikely(codepoint != info[i].codepoint && rb_font_has_glyph(c->font, codepoint)))
+            if (unlikely(codepoint != info[i].codepoint && rb_face_has_glyph(c->face, codepoint)))
                 info[i].codepoint = codepoint;
         }
     }
@@ -659,7 +659,7 @@ static inline void rb_ot_shape_setup_masks(const rb_ot_shape_context_t *c)
     rb_ot_shape_setup_masks_fraction(c);
 
     if (c->plan->shaper->setup_masks)
-        c->plan->shaper->setup_masks(c->plan, buffer, c->font);
+        c->plan->shaper->setup_masks(c->plan, buffer, c->face);
 
     for (unsigned int i = 0; i < c->num_user_features; i++) {
         const rb_feature_t *feature = &c->user_features[i];
@@ -687,7 +687,7 @@ static void rb_ot_zero_width_default_ignorables(const rb_buffer_t *buffer)
             pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
 }
 
-static void rb_ot_hide_default_ignorables(rb_buffer_t *buffer, rb_font_t *font)
+static void rb_ot_hide_default_ignorables(rb_buffer_t *buffer, rb_face_t *face)
 {
     if (!(rb_buffer_get_scratch_flags(buffer) & RB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES) ||
         (rb_buffer_get_flags(buffer) & RB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES))
@@ -698,7 +698,7 @@ static void rb_ot_hide_default_ignorables(rb_buffer_t *buffer, rb_font_t *font)
 
     rb_codepoint_t invisible = rb_buffer_get_invisible_glyph(buffer);
     if (!(rb_buffer_get_flags(buffer) & RB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES) &&
-        (invisible || rb_font_get_nominal_glyph(font, ' ', &invisible))) {
+        (invisible || rb_face_get_nominal_glyph(face, ' ', &invisible))) {
         /* Replace default-ignorables with a zero-advance invisible glyph. */
         for (unsigned int i = 0; i < count; i++) {
             if (_rb_glyph_info_is_default_ignorable(&info[i]))
@@ -746,13 +746,13 @@ static inline void rb_ot_substitute_default(const rb_ot_shape_context_t *c)
 
     rb_ot_rotate_chars(c);
 
-    _rb_ot_shape_normalize(c->plan, buffer, c->font);
+    _rb_ot_shape_normalize(c->plan, buffer, c->face);
 
     rb_ot_shape_setup_masks(c);
 
     /* This is unfortunate to go here, but necessary... */
     if (c->plan->fallback_mark_positioning)
-        _rb_ot_shape_fallback_mark_position_recategorize_marks(c->plan, c->font, buffer);
+        _rb_ot_shape_fallback_mark_position_recategorize_marks(c->plan, c->face, buffer);
 
     rb_ot_map_glyphs_fast(buffer);
 }
@@ -761,12 +761,12 @@ static inline void rb_ot_substitute_complex(const rb_ot_shape_context_t *c)
 {
     rb_buffer_t *buffer = c->buffer;
 
-    rb_ot_layout_substitute_start(c->font, buffer);
+    rb_ot_layout_substitute_start(c->face, buffer);
 
     if (c->plan->fallback_glyph_classes)
         rb_synthesize_glyph_classes(c->buffer);
 
-    c->plan->substitute(c->font, buffer);
+    c->plan->substitute(c->face, buffer);
 }
 
 static inline void rb_ot_substitute_pre(const rb_ot_shape_context_t *c)
@@ -777,12 +777,12 @@ static inline void rb_ot_substitute_pre(const rb_ot_shape_context_t *c)
 
 static inline void rb_ot_substitute_post(const rb_ot_shape_context_t *c)
 {
-    rb_ot_hide_default_ignorables(c->buffer, c->font);
+    rb_ot_hide_default_ignorables(c->buffer, c->face);
     if (c->plan->apply_morx)
         rb_aat_layout_remove_deleted_glyphs(c->buffer);
 
     if (c->plan->shaper->postprocess_glyphs)
-        c->plan->shaper->postprocess_glyphs(c->plan, c->buffer, c->font);
+        c->plan->shaper->postprocess_glyphs(c->plan, c->buffer, c->face);
 }
 
 /*
@@ -821,17 +821,17 @@ static inline void rb_ot_position_default(const rb_ot_shape_context_t *c)
     rb_glyph_position_t *pos = rb_buffer_get_glyph_positions(c->buffer);
 
     if (RB_DIRECTION_IS_HORIZONTAL(direction)) {
-        rb_font_get_glyph_h_advances(
-            c->font, count, &info[0].codepoint, sizeof(info[0]), &pos[0].x_advance, sizeof(pos[0]));
+        rb_face_get_glyph_h_advances(
+            c->face, count, &info[0].codepoint, sizeof(info[0]), &pos[0].x_advance, sizeof(pos[0]));
     } else {
-        rb_font_get_glyph_v_advances(
-            c->font, count, &info[0].codepoint, sizeof(info[0]), &pos[0].y_advance, sizeof(pos[0]));
+        rb_face_get_glyph_v_advances(
+            c->face, count, &info[0].codepoint, sizeof(info[0]), &pos[0].y_advance, sizeof(pos[0]));
         for (unsigned int i = 0; i < count; i++) {
-            rb_font_subtract_glyph_v_origin(c->font, info[i].codepoint, &pos[i].x_offset, &pos[i].y_offset);
+            rb_face_subtract_glyph_v_origin(c->face, info[i].codepoint, &pos[i].x_offset, &pos[i].y_offset);
         }
     }
     if (rb_buffer_get_scratch_flags(c->buffer) & RB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK)
-        _rb_ot_shape_fallback_spaces(c->plan, c->font, c->buffer);
+        _rb_ot_shape_fallback_spaces(c->plan, c->face, c->buffer);
 }
 
 static inline void rb_ot_position_complex(const rb_ot_shape_context_t *c)
@@ -850,7 +850,7 @@ static inline void rb_ot_position_complex(const rb_ot_shape_context_t *c)
 
     /* We change glyph origin to what GPOS expects (horizontal), apply GPOS, change it back. */
 
-    rb_ot_layout_position_start(c->font, c->buffer);
+    rb_ot_layout_position_start(c->face, c->buffer);
 
     if (c->plan->zero_marks)
         switch (c->plan->shaper->zero_width_marks) {
@@ -864,7 +864,7 @@ static inline void rb_ot_position_complex(const rb_ot_shape_context_t *c)
             break;
         }
 
-    c->plan->position(c->font, c->buffer);
+    c->plan->position(c->face, c->buffer);
 
     if (c->plan->zero_marks)
         switch (c->plan->shaper->zero_width_marks) {
@@ -879,14 +879,14 @@ static inline void rb_ot_position_complex(const rb_ot_shape_context_t *c)
         }
 
     /* Finish off.  Has to follow a certain order. */
-    rb_ot_layout_position_finish_advances(c->font, c->buffer);
+    rb_ot_layout_position_finish_advances(c->face, c->buffer);
     rb_ot_zero_width_default_ignorables(c->buffer);
     if (c->plan->apply_morx)
         rb_aat_layout_zero_width_deleted_glyphs(c->buffer);
-    rb_ot_layout_position_finish_offsets(c->font, c->buffer);
+    rb_ot_layout_position_finish_offsets(c->face, c->buffer);
 
     if (c->plan->fallback_mark_positioning)
-        _rb_ot_shape_fallback_mark_position(c->plan, c->font, c->buffer, adjust_offsets_when_zeroing);
+        _rb_ot_shape_fallback_mark_position(c->plan, c->face, c->buffer, adjust_offsets_when_zeroing);
 }
 
 static inline void rb_ot_position(const rb_ot_shape_context_t *c)
@@ -948,14 +948,14 @@ static void rb_ot_shape_internal(rb_ot_shape_context_t *c)
 
     rb_ot_shape_initialize_masks(c);
     rb_set_unicode_props(c->buffer);
-    rb_insert_dotted_circle(c->buffer, c->font);
+    rb_insert_dotted_circle(c->buffer, c->face);
 
     rb_form_clusters(c->buffer);
 
     rb_ensure_native_direction(c->buffer);
 
     if (c->plan->shaper->preprocess_text)
-        c->plan->shaper->preprocess_text(c->plan, c->buffer, c->font);
+        c->plan->shaper->preprocess_text(c->plan, c->buffer, c->face);
 
     rb_ot_substitute_pre(c);
     rb_ot_position(c);
@@ -970,12 +970,11 @@ static void rb_ot_shape_internal(rb_ot_shape_context_t *c)
 }
 
 void _rb_ot_shape(rb_shape_plan_t *shape_plan,
-                  rb_font_t *font,
+                  rb_face_t *face,
                   rb_buffer_t *buffer,
                   const rb_feature_t *features,
                   unsigned int num_features)
 {
-    rb_ot_shape_context_t c = {
-        &shape_plan->ot, (rb_font_t *)font, rb_font_get_face(font), buffer, features, num_features};
+    rb_ot_shape_context_t c = {&shape_plan->ot, face, buffer, features, num_features};
     rb_ot_shape_internal(&c);
 }

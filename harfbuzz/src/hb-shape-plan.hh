@@ -33,7 +33,6 @@
 struct rb_shape_plan_t
 {
     rb_object_header_t header;
-    rb_face_t *face_unsafe; /* We don't carry a reference to face. */
     rb_ot_shape_plan_t ot;
 };
 
@@ -49,7 +48,7 @@ rb_shape_plan_t *rb_shape_plan_get_empty(void);
 void rb_shape_plan_destroy(rb_shape_plan_t *shape_plan);
 
 rb_bool_t rb_shape_plan_execute(rb_shape_plan_t *shape_plan,
-                                rb_font_t *font,
+                                rb_face_t *face,
                                 rb_buffer_t *buffer,
                                 const rb_feature_t *features,
                                 unsigned int num_features);

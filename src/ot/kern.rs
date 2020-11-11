@@ -2,14 +2,14 @@ use std::ffi::c_void;
 
 use crate::tables::gsubgpos::LookupFlags;
 use crate::buffer::{Buffer, BufferScratchFlags};
-use crate::{ffi, Font, Mask};
+use crate::{ffi, Face, Mask};
 use super::apply::ApplyContext;
 use super::matching::SkippyIter;
 use super::layout::TableIndex;
 
 #[no_mangle]
 pub extern "C" fn rb_kern_machine_kern(
-    font: *const ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
     kern_mask: ffi::rb_mask_t,
     cross_stream: ffi::rb_bool_t,
@@ -20,22 +20,22 @@ pub extern "C" fn rb_kern_machine_kern(
         ffi::rb_codepoint_t,
     ) -> ffi::rb_position_t,
 ) {
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
     let cross_stream = cross_stream != 0;
-    kern(font, &mut buffer, kern_mask, cross_stream, |left, right| {
+    kern(face, &mut buffer, kern_mask, cross_stream, |left, right| {
         unsafe { machine_get_kerning(machine, left, right) }
     });
 }
 
 fn kern(
-    font: &Font,
+    face: &Face,
     buffer: &mut Buffer,
     kern_mask: Mask,
     cross_stream: bool,
     get_kerning: impl Fn(u32, u32) -> i32,
 ) {
-    let mut ctx = ApplyContext::new(TableIndex::GPOS, font, buffer);
+    let mut ctx = ApplyContext::new(TableIndex::GPOS, face, buffer);
     ctx.lookup_mask = kern_mask;
     ctx.lookup_props = u32::from(LookupFlags::IGNORE_MARKS.bits());
 

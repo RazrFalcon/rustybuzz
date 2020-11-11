@@ -24,10 +24,6 @@ fn main() {
     build.file("harfbuzz/src/hb-blob.cc");
     build.file("harfbuzz/src/hb-common.cc");
     build.file("harfbuzz/src/hb-face.cc");
-    build.file("harfbuzz/src/hb-font.cc");
-    build.file("harfbuzz/src/hb-map.cc");
-    build.file("harfbuzz/src/hb-ot-face.cc");
-    build.file("harfbuzz/src/hb-ot-font.cc");
     build.file("harfbuzz/src/hb-ot-layout.cc");
     build.file("harfbuzz/src/hb-ot-map.cc");
     build.file("harfbuzz/src/hb-ot-shape.cc");

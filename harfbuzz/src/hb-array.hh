@@ -67,13 +67,6 @@ template <typename Type> struct rb_array_t : rb_iter_with_fallback_t<rb_array_t<
         , backwards_length(o.backwards_length)
     {
     }
-    template <typename U, rb_enable_if(rb_is_cr_convertible(U, Type))> rb_array_t &operator=(const rb_array_t<U> &o)
-    {
-        arrayZ = o.arrayZ;
-        length = o.length;
-        backwards_length = o.backwards_length;
-        return *this;
-    }
 
     /*
      * Iterator implementation.
@@ -146,20 +139,6 @@ template <typename Type> struct rb_array_t : rb_iter_with_fallback_t<rb_array_t<
      * Compare, Sort, and Search.
      */
 
-    /* Note: our compare is NOT lexicographic; it also does NOT call Type::cmp. */
-    int cmp(const rb_array_t &a) const
-    {
-        if (length != a.length)
-            return (int)a.length - (int)length;
-        return rb_memcmp(a.arrayZ, arrayZ, get_size());
-    }
-    RB_INTERNAL static int cmp(const void *pa, const void *pb)
-    {
-        rb_array_t *a = (rb_array_t *)pa;
-        rb_array_t *b = (rb_array_t *)pb;
-        return b->cmp(*a);
-    }
-
     template <typename T> Type *lsearch(const T &x, Type *not_found = nullptr)
     {
         unsigned i;
@@ -211,24 +190,6 @@ template <typename Type> struct rb_array_t : rb_iter_with_fallback_t<rb_array_t<
         return length * this->get_item_size();
     }
 
-    /*
-     * Reverse the order of items in this array in the range [start, end).
-     */
-    void reverse(unsigned start = 0, unsigned end = -1)
-    {
-        start = rb_min(start, length);
-        end = rb_min(end, length);
-
-        if (end < start + 2)
-            return;
-
-        for (unsigned lhs = start, rhs = end - 1; lhs < rhs; lhs++, rhs--) {
-            Type temp = arrayZ[rhs];
-            arrayZ[rhs] = arrayZ[lhs];
-            arrayZ[lhs] = temp;
-        }
-    }
-
     rb_array_t sub_array(unsigned int start_offset = 0, unsigned int *seg_count = nullptr /* IN/OUT */) const
     {
         if (!start_offset && !seg_count)
@@ -243,34 +204,10 @@ template <typename Type> struct rb_array_t : rb_iter_with_fallback_t<rb_array_t<
             count = *seg_count = rb_min(count, *seg_count);
         return rb_array_t(arrayZ + start_offset, count);
     }
-    rb_array_t sub_array(unsigned int start_offset, unsigned int seg_count) const
-    {
-        return sub_array(start_offset, &seg_count);
-    }
-
-    rb_array_t truncate(unsigned length) const
-    {
-        return sub_array(0, length);
-    }
 
     template <typename T, unsigned P = sizeof(Type), rb_enable_if(P == 1)> const T *as() const
     {
         return length < rb_null_size(T) ? &Null(T) : reinterpret_cast<const T *>(arrayZ);
-    }
-
-    template <typename T, unsigned P = sizeof(Type), rb_enable_if(P == 1)>
-    bool check_range(const T *p, unsigned int size = T::static_size) const
-    {
-        return arrayZ <= ((const char *)p) && ((const char *)p) <= arrayZ + length &&
-               (unsigned int)(arrayZ + length - (const char *)p) >= size;
-    }
-
-    /* Only call if you allocated the underlying array using malloc() or similar. */
-    void free()
-    {
-        ::free((void *)arrayZ);
-        arrayZ = nullptr;
-        length = 0;
     }
 
     template <typename rb_sanitize_context_t> bool sanitize(rb_sanitize_context_t *c) const
@@ -329,32 +266,6 @@ template <typename Type> struct rb_sorted_array_t : rb_iter_t<rb_sorted_array_t<
         , rb_array_t<Type>(o)
     {
     }
-    template <typename U, rb_enable_if(rb_is_cr_convertible(U, Type))>
-    rb_sorted_array_t &operator=(const rb_array_t<U> &o)
-    {
-        rb_array_t<Type>(*this) = o;
-        return *this;
-    }
-
-    /* Iterator implementation. */
-    bool operator!=(const rb_sorted_array_t &o) const
-    {
-        return this->arrayZ != o.arrayZ || this->length != o.length;
-    }
-
-    rb_sorted_array_t sub_array(unsigned int start_offset, unsigned int *seg_count /* IN/OUT */) const
-    {
-        return rb_sorted_array_t(((const rb_array_t<Type> *)(this))->sub_array(start_offset, seg_count));
-    }
-    rb_sorted_array_t sub_array(unsigned int start_offset, unsigned int seg_count) const
-    {
-        return sub_array(start_offset, &seg_count);
-    }
-
-    rb_sorted_array_t truncate(unsigned length) const
-    {
-        return sub_array(0, length);
-    }
 
     template <typename T> Type *bsearch(const T &x, Type *not_found = nullptr)
     {
@@ -410,36 +321,6 @@ template <typename T, unsigned int length_> inline rb_sorted_array_t<T> rb_sorte
     return rb_sorted_array_t<T>(array_);
 }
 
-template <typename T> bool rb_array_t<T>::operator==(const rb_array_t<T> &o) const
-{
-    if (o.length != this->length)
-        return false;
-    for (unsigned int i = 0; i < this->length; i++) {
-        if (this->arrayZ[i] != o.arrayZ[i])
-            return false;
-    }
-    return true;
-}
-
-/* TODO Specialize opeator== for rb_bytes_t and rb_ubytes_t. */
-
-template <> inline uint32_t rb_array_t<const char>::hash() const
-{
-    uint32_t current = 0;
-    for (unsigned int i = 0; i < this->length; i++)
-        current = current * 31 + (uint32_t)(this->arrayZ[i] * 2654435761u);
-    return current;
-}
-
-template <> inline uint32_t rb_array_t<const unsigned char>::hash() const
-{
-    uint32_t current = 0;
-    for (unsigned int i = 0; i < this->length; i++)
-        current = current * 31 + (uint32_t)(this->arrayZ[i] * 2654435761u);
-    return current;
-}
-
 typedef rb_array_t<const char> rb_bytes_t;
-typedef rb_array_t<const unsigned char> rb_ubytes_t;
 
 #endif /* RB_ARRAY_HH */

@@ -67,7 +67,7 @@ template <typename KernSubTableHeader> struct KernSubTableFormat3
             return false;
 
         rb_kern_machine_t<KernSubTableFormat3> machine(*this, header.coverage & header.CrossStream);
-        machine.kern(c->font, c->buffer, c->plan->kern_mask);
+        machine.kern(c->face, c->buffer, c->plan->kern_mask);
 
         return true;
     }
@@ -117,7 +117,7 @@ template <typename KernSubTableHeader> struct KernSubTable
     int get_kerning(rb_codepoint_t left, rb_codepoint_t right) const
     {
         switch (get_type()) {
-        /* This method hooks up to rb_font_t's get_h_kerning.  Only support Format0. */
+        /* This method hooks up to rb_face_t's get_h_kerning.  Only support Format0. */
         case 0:
             return u.format0.get_kerning(left, right);
         default:

@@ -40,19 +40,18 @@
 
 /* Note: This context is used for kerning, even without AAT, hence the condition. */
 AAT::rb_aat_apply_context_t::rb_aat_apply_context_t(const rb_ot_shape_plan_t *plan_,
-                                                    rb_font_t *font_,
+                                                    rb_face_t *face_,
                                                     rb_buffer_t *buffer_,
                                                     rb_blob_t *blob)
     : plan(plan_)
-    , font(font_)
-    , face(rb_font_get_face(font))
+    , face(face_)
     , buffer(buffer_)
     , sanitizer()
     , ankr_table(&Null(AAT::ankr))
     , lookup_index(0)
 {
     sanitizer.init(blob);
-    sanitizer.set_num_glyphs(face->get_num_glyphs());
+    sanitizer.set_num_glyphs(rb_face_get_glyph_count(face));
     sanitizer.start_processing();
     sanitizer.set_max_ops(RB_SANITIZE_MAX_OPS_MAX);
 }
@@ -396,13 +395,13 @@ const rb_aat_feature_mapping_t *rb_aat_layout_find_feature_mapping(rb_tag_t tag)
 
 void rb_aat_layout_compile_map(const rb_aat_map_builder_t *mapper, rb_aat_map_t *map)
 {
-    const AAT::morx &morx = *mapper->face->table.morx;
+    const AAT::morx &morx = *rb_face_get_morx_table(mapper->face);
     if (morx.has_data()) {
         morx.compile_flags(mapper, map);
         return;
     }
 
-    const AAT::mort &mort = *mapper->face->table.mort;
+    const AAT::mort &mort = *rb_face_get_mort_table(mapper->face);
     if (mort.has_data()) {
         mort.compile_flags(mapper, map);
         return;
@@ -418,23 +417,23 @@ void rb_aat_layout_compile_map(const rb_aat_map_builder_t *mapper, rb_aat_map_t 
  */
 rb_bool_t rb_aat_layout_has_substitution(rb_face_t *face)
 {
-    return face->table.morx->has_data() || face->table.mort->has_data();
+    return rb_face_get_morx_table(face)->has_data() || rb_face_get_mort_table(face)->has_data();
 }
 
-void rb_aat_layout_substitute(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer)
+void rb_aat_layout_substitute(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
 {
-    rb_blob_t *morx_blob = rb_font_get_face(font)->table.morx.get_blob();
+    rb_blob_t *morx_blob = rb_face_get_table_blob(face, RB_AAT_TAG_morx);
     const AAT::morx &morx = *morx_blob->as<AAT::morx>();
     if (morx.has_data()) {
-        AAT::rb_aat_apply_context_t c(plan, font, buffer, morx_blob);
+        AAT::rb_aat_apply_context_t c(plan, face, buffer, morx_blob);
         morx.apply(&c);
         return;
     }
 
-    rb_blob_t *mort_blob = rb_font_get_face(font)->table.mort.get_blob();
+    rb_blob_t *mort_blob = rb_face_get_table_blob(face, RB_AAT_TAG_mort);
     const AAT::mort &mort = *mort_blob->as<AAT::mort>();
     if (mort.has_data()) {
-        AAT::rb_aat_apply_context_t c(plan, font, buffer, mort_blob);
+        AAT::rb_aat_apply_context_t c(plan, face, buffer, mort_blob);
         mort.apply(&c);
         return;
     }
@@ -469,16 +468,16 @@ void rb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer)
  */
 rb_bool_t rb_aat_layout_has_positioning(rb_face_t *face)
 {
-    return face->table.kerx->has_data();
+    return rb_face_get_kerx_table(face)->has_data();
 }
 
-void rb_aat_layout_position(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer)
+void rb_aat_layout_position(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
 {
-    rb_blob_t *kerx_blob = rb_font_get_face(font)->table.kerx.get_blob();
+    rb_blob_t *kerx_blob = rb_face_get_table_blob(face, RB_AAT_TAG_kerx);
     const AAT::kerx &kerx = *kerx_blob->as<AAT::kerx>();
 
-    AAT::rb_aat_apply_context_t c(plan, font, buffer, kerx_blob);
-    c.set_ankr_table(rb_font_get_face(font)->table.ankr.get());
+    AAT::rb_aat_apply_context_t c(plan, face, buffer, kerx_blob);
+    c.set_ankr_table(rb_face_get_ankr_table(face));
     kerx.apply(&c);
 }
 
@@ -491,13 +490,12 @@ void rb_aat_layout_position(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_
  */
 rb_bool_t rb_aat_layout_has_tracking(rb_face_t *face)
 {
-    return face->table.trak->has_data();
+    return rb_face_get_trak_table(face)->has_data();
 }
 
-void rb_aat_layout_track(const rb_ot_shape_plan_t *plan, rb_font_t *font, rb_buffer_t *buffer)
+void rb_aat_layout_track(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
 {
-    const AAT::trak &trak = *rb_font_get_face(font)->table.trak;
-
-    AAT::rb_aat_apply_context_t c(plan, font, buffer);
+    const AAT::trak &trak = *rb_face_get_trak_table(face);
+    AAT::rb_aat_apply_context_t c(plan, face, buffer);
     trak.apply(&c);
 }

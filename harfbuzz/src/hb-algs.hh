@@ -33,54 +33,11 @@
 #include "hb-meta.hh"
 #include "hb-null.hh"
 
-/* Encodes three unsigned integers in one 64-bit number.  If the inputs have more than 21 bits,
- * values will be truncated / overlap, and might not decode exactly. */
-#define RB_CODEPOINT_ENCODE3(x, y, z) (((uint64_t)(x) << 42) | ((uint64_t)(y) << 21) | (uint64_t)(z))
-#define RB_CODEPOINT_DECODE3_1(v) ((rb_codepoint_t)((v) >> 42))
-#define RB_CODEPOINT_DECODE3_2(v) ((rb_codepoint_t)((v) >> 21) & 0x1FFFFFu)
-#define RB_CODEPOINT_DECODE3_3(v) ((rb_codepoint_t)(v)&0x1FFFFFu)
-
-/* Custom encoding used by hb-ucd. */
-#define RB_CODEPOINT_ENCODE3_11_7_14(x, y, z)                                                                          \
-    (((uint32_t)((x)&0x07FFu) << 21) | (((uint32_t)(y)&0x007Fu) << 14) | (uint32_t)((z)&0x3FFFu))
-#define RB_CODEPOINT_DECODE3_11_7_14_1(v) ((rb_codepoint_t)((v) >> 21))
-#define RB_CODEPOINT_DECODE3_11_7_14_2(v) ((rb_codepoint_t)(((v) >> 14) & 0x007Fu) | 0x0300)
-#define RB_CODEPOINT_DECODE3_11_7_14_3(v) ((rb_codepoint_t)(v)&0x3FFFu)
-
 struct
 {
     /* Note.  This is dangerous in that if it's passed an rvalue, it returns rvalue-reference. */
     template <typename T> constexpr auto operator()(T &&v) const RB_AUTO_RETURN(rb_forward<T>(v))
 } RB_FUNCOBJ(rb_identity);
-struct
-{
-    /* Like identity(), but only retains lvalue-references.  Rvalues are returned as rvalues. */
-    template <typename T> constexpr T &operator()(T &v) const
-    {
-        return v;
-    }
-
-    template <typename T> constexpr rb_remove_reference<T> operator()(T &&v) const
-    {
-        return v;
-    }
-} RB_FUNCOBJ(rb_lidentity);
-struct
-{
-    /* Like identity(), but always returns rvalue. */
-    template <typename T> constexpr rb_remove_reference<T> operator()(T &&v) const
-    {
-        return v;
-    }
-} RB_FUNCOBJ(rb_ridentity);
-
-struct
-{
-    template <typename T> constexpr bool operator()(T &&v) const
-    {
-        return bool(rb_forward<T>(v));
-    }
-} RB_FUNCOBJ(rb_bool);
 
 struct
 {
@@ -248,79 +205,6 @@ private:
         operator()(Proj &&f, Val &&v) const RB_AUTO_RETURN(impl(rb_forward<Proj>(f), rb_forward<Val>(v), rb_prioritize))
 } RB_FUNCOBJ(rb_get);
 
-template <typename T1, typename T2> struct rb_pair_t
-{
-    typedef T1 first_t;
-    typedef T2 second_t;
-    typedef rb_pair_t<T1, T2> pair_t;
-
-    rb_pair_t(T1 a, T2 b)
-        : first(a)
-        , second(b)
-    {
-    }
-
-    template <typename Q1, typename Q2, rb_enable_if(rb_is_convertible(T1, Q1) && rb_is_convertible(T2, T2))>
-    operator rb_pair_t<Q1, Q2>()
-    {
-        return rb_pair_t<Q1, Q2>(first, second);
-    }
-
-    rb_pair_t<T1, T2> reverse() const
-    {
-        return rb_pair_t<T1, T2>(second, first);
-    }
-
-    bool operator==(const pair_t &o) const
-    {
-        return first == o.first && second == o.second;
-    }
-    bool operator!=(const pair_t &o) const
-    {
-        return !(*this == o);
-    }
-    bool operator<(const pair_t &o) const
-    {
-        return first < o.first || (first == o.first && second < o.second);
-    }
-    bool operator>=(const pair_t &o) const
-    {
-        return !(*this < o);
-    }
-    bool operator>(const pair_t &o) const
-    {
-        return first > o.first || (first == o.first && second > o.second);
-    }
-    bool operator<=(const pair_t &o) const
-    {
-        return !(*this > o);
-    }
-
-    T1 first;
-    T2 second;
-};
-#define rb_pair_t(T1, T2) rb_pair_t<T1, T2>
-template <typename T1, typename T2> static inline rb_pair_t<T1, T2> rb_pair(T1 &&a, T2 &&b)
-{
-    return rb_pair_t<T1, T2>(a, b);
-}
-
-struct
-{
-    template <typename Pair> constexpr typename Pair::first_t operator()(const Pair &pair) const
-    {
-        return pair.first;
-    }
-} RB_FUNCOBJ(rb_first);
-
-struct
-{
-    template <typename Pair> constexpr typename Pair::second_t operator()(const Pair &pair) const
-    {
-        return pair.second;
-    }
-} RB_FUNCOBJ(rb_second);
-
 /* Note.  In min/max impl, we can use rb_type_identity<T> for second argument.
  * However, that would silently convert between different-signedness integers.
  * Instead we accept two different types, such that compiler can err if
@@ -450,158 +334,14 @@ template <typename T> static inline RB_CONST_FUNC unsigned int rb_bit_storage(T 
     return 0; /* Shut up stupid compiler. */
 }
 
-/* Returns the number of zero bits in the least significant side of v */
-template <typename T> static inline RB_CONST_FUNC unsigned int rb_ctz(T v)
-{
-    if (unlikely(!v))
-        return 8 * sizeof(T);
-
-#if (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)
-    if (sizeof(T) <= sizeof(unsigned int))
-        return __builtin_ctz(v);
-
-    if (sizeof(T) <= sizeof(unsigned long))
-        return __builtin_ctzl(v);
-
-    if (sizeof(T) <= sizeof(unsigned long long))
-        return __builtin_ctzll(v);
-#endif
-
-#if (defined(_MSC_VER) && _MSC_VER >= 1500) || (defined(__MINGW32__) && (__GNUC__ < 4))
-    if (sizeof(T) <= sizeof(unsigned int)) {
-        unsigned long where;
-        _BitScanForward(&where, v);
-        return where;
-    }
-#if defined(_WIN64)
-    if (sizeof(T) <= 8) {
-        unsigned long where;
-        _BitScanForward64(&where, v);
-        return where;
-    }
-#endif
-#endif
-
-    if (sizeof(T) <= 4) {
-        /* "bithacks" */
-        unsigned int c = 32;
-        v &= -(int32_t)v;
-        if (v)
-            c--;
-        if (v & 0x0000FFFF)
-            c -= 16;
-        if (v & 0x00FF00FF)
-            c -= 8;
-        if (v & 0x0F0F0F0F)
-            c -= 4;
-        if (v & 0x33333333)
-            c -= 2;
-        if (v & 0x55555555)
-            c -= 1;
-        return c;
-    }
-    if (sizeof(T) <= 8) {
-        /* "bithacks" */
-        unsigned int c = 64;
-        v &= -(int64_t)(v);
-        if (v)
-            c--;
-        if (v & 0x00000000FFFFFFFFULL)
-            c -= 32;
-        if (v & 0x0000FFFF0000FFFFULL)
-            c -= 16;
-        if (v & 0x00FF00FF00FF00FFULL)
-            c -= 8;
-        if (v & 0x0F0F0F0F0F0F0F0FULL)
-            c -= 4;
-        if (v & 0x3333333333333333ULL)
-            c -= 2;
-        if (v & 0x5555555555555555ULL)
-            c -= 1;
-        return c;
-    }
-    if (sizeof(T) == 16) {
-        unsigned int shift = 64;
-        return (uint64_t)v ? rb_bit_storage<uint64_t>((uint64_t)v)
-                           : rb_bit_storage<uint64_t>((uint64_t)(v >> shift)) + shift;
-    }
-
-    assert(0);
-    return 0; /* Shut up stupid compiler. */
-}
-
 /*
  * Tiny stuff.
  */
-
-/* ASCII tag/character handling */
-static inline bool ISALPHA(unsigned char c)
-{
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
-static inline bool ISALNUM(unsigned char c)
-{
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
-}
-static inline bool ISSPACE(unsigned char c)
-{
-    return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v';
-}
-static inline unsigned char TOUPPER(unsigned char c)
-{
-    return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
-}
-static inline unsigned char TOLOWER(unsigned char c)
-{
-    return (c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c;
-}
-static inline bool ISHEX(unsigned char c)
-{
-    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-}
-static inline unsigned char TOHEX(uint8_t c)
-{
-    return (c & 0xF) <= 9 ? (c & 0xF) + '0' : (c & 0xF) + 'a' - 10;
-}
-static inline uint8_t FROMHEX(unsigned char c)
-{
-    return (c >= '0' && c <= '9') ? c - '0' : TOLOWER(c) - 'a' + 10;
-}
-
-static inline unsigned int DIV_CEIL(const unsigned int a, unsigned int b)
-{
-    return (a + (b - 1)) / b;
-}
 
 #undef ARRAY_LENGTH
 template <typename Type, unsigned int n> static inline unsigned int ARRAY_LENGTH(const Type (&)[n])
 {
     return n;
-}
-/* A const version, but does not detect erratically being called on pointers. */
-#define ARRAY_LENGTH_CONST(__array) ((signed int)(sizeof(__array) / sizeof(__array[0])))
-
-static inline int rb_memcmp(const void *a, const void *b, unsigned int len)
-{
-    /* It's illegal to pass NULL to memcmp(), even if len is zero.
-     * So, wrap it.
-     * https://sourceware.org/bugzilla/show_bug.cgi?id=23878 */
-    if (unlikely(!len))
-        return 0;
-    return memcmp(a, b, len);
-}
-
-static inline void *rb_memset(void *s, int c, unsigned int n)
-{
-    /* It's illegal to pass NULL to memset(), even if n is zero. */
-    if (unlikely(!n))
-        return 0;
-    return memset(s, c, n);
-}
-
-static inline unsigned int rb_ceil_to_4(unsigned int v)
-{
-    return ((v - 1) | 3) + 1;
 }
 
 template <typename T> static inline bool rb_in_range(T u, T lo, T hi)
@@ -611,14 +351,6 @@ template <typename T> static inline bool rb_in_range(T u, T lo, T hi)
     /* The casts below are important as if T is smaller than int,
      * the subtract results will become a signed int! */
     return (T)(u - lo) <= (T)(hi - lo);
-}
-template <typename T> static inline bool rb_in_ranges(T u, T lo1, T hi1, T lo2, T hi2)
-{
-    return rb_in_range(u, lo1, hi1) || rb_in_range(u, lo2, hi2);
-}
-template <typename T> static inline bool rb_in_ranges(T u, T lo1, T hi1, T lo2, T hi2, T lo3, T hi3)
-{
-    return rb_in_range(u, lo1, hi1) || rb_in_range(u, lo2, hi2) || rb_in_range(u, lo3, hi3);
 }
 
 /*
@@ -711,20 +443,6 @@ static inline V *rb_bsearch(const K &key,
    Modified to support optional argument using templates */
 
 /* Isaac Turner 29 April 2014 Public Domain */
-
-/*
-rb_qsort function to be exported.
-Parameters:
-  base is the array to be sorted
-  nel is the number of elements in the array
-  width is the size in bytes of each element of the array
-  compar is the comparison function
-  arg (optional) is a pointer to be passed to the comparison function
-
-void rb_qsort(void *base, size_t nel, size_t width,
-              int (*compar)(const void *_a, const void *_b, [void *_arg]),
-              [void *arg]);
-*/
 
 #define SORT_R_SWAP(a, b, tmp) ((tmp) = (a), (a) = (b), (b) = (tmp))
 
@@ -924,166 +642,5 @@ rb_qsort(void *base, size_t nel, size_t width, int (*compar)(const void *_a, con
     sort_r_simple(base, nel, width, compar, arg);
 #endif
 }
-
-template <typename T, typename T2, typename T3>
-static inline void rb_stable_sort(T *array, unsigned int len, int (*compar)(const T2 *, const T2 *), T3 *array2)
-{
-    for (unsigned int i = 1; i < len; i++) {
-        unsigned int j = i;
-        while (j && compar(&array[j - 1], &array[i]) > 0)
-            j--;
-        if (i == j)
-            continue;
-        /* Move item i to occupy place for item j, shift what's in between. */
-        {
-            T t = array[i];
-            memmove(&array[j + 1], &array[j], (i - j) * sizeof(T));
-            array[j] = t;
-        }
-        if (array2) {
-            T3 t = array2[i];
-            memmove(&array2[j + 1], &array2[j], (i - j) * sizeof(T3));
-            array2[j] = t;
-        }
-    }
-}
-
-template <typename T> static inline void rb_stable_sort(T *array, unsigned int len, int (*compar)(const T *, const T *))
-{
-    rb_stable_sort(array, len, compar, (int *)nullptr);
-}
-
-/* Operators. */
-
-struct rb_bitwise_and
-{
-    RB_PARTIALIZE(2);
-    static constexpr bool passthru_left = false;
-    static constexpr bool passthru_right = false;
-    template <typename T> constexpr auto operator()(const T &a, const T &b) const RB_AUTO_RETURN(a &b)
-} RB_FUNCOBJ(rb_bitwise_and);
-struct rb_bitwise_or
-{
-    RB_PARTIALIZE(2);
-    static constexpr bool passthru_left = true;
-    static constexpr bool passthru_right = true;
-    template <typename T> constexpr auto operator()(const T &a, const T &b) const RB_AUTO_RETURN(a | b)
-} RB_FUNCOBJ(rb_bitwise_or);
-struct rb_bitwise_xor
-{
-    RB_PARTIALIZE(2);
-    static constexpr bool passthru_left = true;
-    static constexpr bool passthru_right = true;
-    template <typename T> constexpr auto operator()(const T &a, const T &b) const RB_AUTO_RETURN(a ^ b)
-} RB_FUNCOBJ(rb_bitwise_xor);
-struct rb_bitwise_sub
-{
-    RB_PARTIALIZE(2);
-    static constexpr bool passthru_left = true;
-    static constexpr bool passthru_right = false;
-    template <typename T> constexpr auto operator()(const T &a, const T &b) const RB_AUTO_RETURN(a & ~b)
-} RB_FUNCOBJ(rb_bitwise_sub);
-struct
-{
-    template <typename T> constexpr auto operator()(const T &a) const RB_AUTO_RETURN(~a)
-} RB_FUNCOBJ(rb_bitwise_neg);
-
-struct
-{
-    RB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a + b)
-} RB_FUNCOBJ(rb_add);
-struct
-{
-    RB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a - b)
-} RB_FUNCOBJ(rb_sub);
-struct
-{
-    RB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a *b)
-} RB_FUNCOBJ(rb_mul);
-struct
-{
-    RB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a / b)
-} RB_FUNCOBJ(rb_div);
-struct
-{
-    RB_PARTIALIZE(2);
-    template <typename T, typename T2> constexpr auto operator()(const T &a, const T2 &b) const RB_AUTO_RETURN(a % b)
-} RB_FUNCOBJ(rb_mod);
-struct
-{
-    template <typename T> constexpr auto operator()(const T &a) const RB_AUTO_RETURN(+a)
-} RB_FUNCOBJ(rb_pos);
-struct
-{
-    template <typename T> constexpr auto operator()(const T &a) const RB_AUTO_RETURN(-a)
-} RB_FUNCOBJ(rb_neg);
-struct
-{
-    template <typename T> constexpr auto operator()(T &a) const RB_AUTO_RETURN(++a)
-} RB_FUNCOBJ(rb_inc);
-struct
-{
-    template <typename T> constexpr auto operator()(T &a) const RB_AUTO_RETURN(--a)
-} RB_FUNCOBJ(rb_dec);
-
-/* Compiler-assisted vectorization. */
-
-/* Type behaving similar to vectorized vars defined using __attribute__((vector_size(...))),
- * basically a fixed-size bitset. */
-template <typename elt_t, unsigned int byte_size> struct rb_vector_size_t
-{
-    elt_t &operator[](unsigned int i)
-    {
-        return v[i];
-    }
-    const elt_t &operator[](unsigned int i) const
-    {
-        return v[i];
-    }
-
-    void clear(unsigned char v = 0)
-    {
-        memset(this, v, sizeof(*this));
-    }
-
-    template <typename Op> rb_vector_size_t process(const Op &op) const
-    {
-        rb_vector_size_t r;
-        for (unsigned int i = 0; i < ARRAY_LENGTH(v); i++)
-            r.v[i] = op(v[i]);
-        return r;
-    }
-    template <typename Op> rb_vector_size_t process(const Op &op, const rb_vector_size_t &o) const
-    {
-        rb_vector_size_t r;
-        for (unsigned int i = 0; i < ARRAY_LENGTH(v); i++)
-            r.v[i] = op(v[i], o.v[i]);
-        return r;
-    }
-    rb_vector_size_t operator|(const rb_vector_size_t &o) const
-    {
-        return process(rb_bitwise_or, o);
-    }
-    rb_vector_size_t operator&(const rb_vector_size_t &o) const
-    {
-        return process(rb_bitwise_and, o);
-    }
-    rb_vector_size_t operator^(const rb_vector_size_t &o) const
-    {
-        return process(rb_bitwise_xor, o);
-    }
-    rb_vector_size_t operator~() const
-    {
-        return process(rb_bitwise_neg);
-    }
-
-private:
-    static_assert(0 == byte_size % sizeof(elt_t), "");
-    elt_t v[byte_size / sizeof(elt_t)];
-};
 
 #endif /* RB_ALGS_HH */

@@ -35,11 +35,11 @@
 
 void rb_aat_map_builder_t::add_feature(rb_tag_t tag, unsigned value)
 {
-    if (!face->table.feat->has_data())
+    if (!rb_face_get_feat_table(face)->has_data())
         return;
 
     if (tag == RB_TAG('a', 'a', 'l', 't')) {
-        if (!face->table.feat->exposes_feature(RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES))
+        if (!rb_face_get_feat_table(face)->exposes_feature(RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES))
             return;
         feature_info_t *info = features.push();
         info->type = RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES;
@@ -53,14 +53,14 @@ void rb_aat_map_builder_t::add_feature(rb_tag_t tag, unsigned value)
     if (!mapping)
         return;
 
-    const AAT::FeatureName *feature = &face->table.feat->get_feature(mapping->aatFeatureType);
+    const AAT::FeatureName *feature = &rb_face_get_feat_table(face)->get_feature(mapping->aatFeatureType);
     if (!feature->has_data()) {
         /* Special case: Chain::compile_flags will fall back to the deprecated version of
          * small-caps if necessary, so we need to check for that possibility.
          * https://github.com/harfbuzz/harfbuzz/issues/2307 */
         if (mapping->aatFeatureType == RB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE &&
             mapping->selectorToEnable == RB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS) {
-            feature = &face->table.feat->get_feature(RB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE);
+            feature = &rb_face_get_feat_table(face)->get_feature(RB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE);
             if (!feature->has_data())
                 return;
         } else

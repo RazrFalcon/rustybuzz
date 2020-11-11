@@ -1,4 +1,4 @@
-use crate::{ffi, Tag, Font, GlyphInfo};
+use crate::{ffi, Tag, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::*;
 use super::indic::{Category, Position};
@@ -178,16 +178,16 @@ fn collect_features(planner: &mut ShapePlanner) {
 
 extern "C" fn setup_syllables_raw(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_syllables(&plan, font, &mut buffer);
+    setup_syllables(&plan, face, &mut buffer);
 }
 
-fn setup_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::myanmar_machine::find_syllables_myanmar(buffer);
 
     let mut start = 0;
@@ -201,17 +201,17 @@ fn setup_syllables(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
 
 extern "C" fn reorder_raw(
     plan: *const ffi::rb_ot_shape_plan_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
-    let font = Font::from_ptr(font);
+    let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    reorder(&plan, font, &mut buffer);
+    reorder(&plan, face, &mut buffer);
 }
 
-fn reorder(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
-    insert_dotted_circles(font, buffer);
+fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+    insert_dotted_circles(face, buffer);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -222,7 +222,7 @@ fn reorder(_: &ShapePlan, font: &Font, buffer: &mut Buffer) {
     }
 }
 
-fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
+fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
     use super::myanmar_machine::SyllableType;
 
     if buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
@@ -238,7 +238,7 @@ fn insert_dotted_circles(font: &Font, buffer: &mut Buffer) {
         return;
     }
 
-    let dottedcircle_glyph = match font.glyph_index(0x25CC) {
+    let dottedcircle_glyph = match face.glyph_index(0x25CC) {
         Some(g) => g.0 as u32,
         None => return,
     };
@@ -408,15 +408,15 @@ fn override_features(planner: &mut ShapePlanner) {
 pub extern "C" fn rb_ot_complex_setup_masks_myanmar(
     plan: *const ffi::rb_ot_shape_plan_t,
     buffer: *mut ffi::rb_buffer_t,
-    font: *mut ffi::rb_font_t,
+    face: *const ffi::rb_face_t,
 ) {
     let plan = ShapePlan::from_ptr(plan);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    let font = Font::from_ptr(font);
-    setup_masks(&plan, font, &mut buffer);
+    let face = Face::from_ptr(face);
+    setup_masks(&plan, face, &mut buffer);
 }
 
-fn setup_masks(_: &ShapePlan, _: &Font, buffer: &mut Buffer) {
+fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     // We cannot setup masks here.  We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {

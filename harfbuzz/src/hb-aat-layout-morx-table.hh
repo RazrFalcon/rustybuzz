@@ -566,7 +566,7 @@ template <typename Types> struct NoncontextualSubtable
     bool apply(rb_aat_apply_context_t *c) const
     {
         bool ret = false;
-        unsigned int num_glyphs = c->face->get_num_glyphs();
+        unsigned int num_glyphs = rb_face_get_glyph_count(c->face);
 
         rb_glyph_info_t *info = rb_buffer_get_glyph_infos(c->buffer);
         unsigned int count = rb_buffer_get_length(c->buffer);

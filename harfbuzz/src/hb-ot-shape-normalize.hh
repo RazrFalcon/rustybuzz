@@ -58,7 +58,7 @@ typedef rb_bool_t (*rb_ot_compose_func_t)(const rb_ot_shape_normalize_context_t 
                                           rb_codepoint_t *ab);
 
 extern "C" {
-RB_EXTERN void _rb_ot_shape_normalize(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, rb_font_t *font);
+RB_EXTERN void _rb_ot_shape_normalize(const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, rb_face_t *face);
 }
 
 #endif /* RB_OT_SHAPE_NORMALIZE_HH */
