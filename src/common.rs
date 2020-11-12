@@ -56,6 +56,11 @@ impl Direction {
     }
 
     #[inline]
+    pub(crate) fn is_vertical(self) -> bool {
+        !self.is_horizontal()
+    }
+
+    #[inline]
     pub(crate) fn is_forward(self) -> bool {
         match self {
             Direction::Invalid => false,
@@ -63,6 +68,17 @@ impl Direction {
             Direction::RightToLeft => false,
             Direction::TopToBottom => true,
             Direction::BottomToTop => false,
+        }
+    }
+
+    #[inline]
+    pub(crate) fn reverse(self) -> Self {
+        match self {
+            Direction::Invalid => Direction::Invalid,
+            Direction::LeftToRight => Direction::RightToLeft,
+            Direction::RightToLeft => Direction::LeftToRight,
+            Direction::TopToBottom => Direction::BottomToTop,
+            Direction::BottomToTop => Direction::TopToBottom,
         }
     }
 

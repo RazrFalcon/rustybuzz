@@ -74,22 +74,12 @@ enum rb_buffer_scratch_flags_t {
 };
 RB_MARK_AS_FLAG_T(rb_buffer_scratch_flags_t);
 
-/* Loop over clusters. Duplicated in foreach_syllable(). */
-#define foreach_cluster(buffer, start, end)                                                                            \
-    for (unsigned int _count = rb_buffer_get_length(buffer), start = 0, end = _count ? _next_cluster(buffer, 0) : 0;   \
+/* Loop over grapheme. */
+#define foreach_grapheme(buffer, start, end)                                                                           \
+    for (unsigned int _count = rb_buffer_get_length(buffer),                                                           \
+                      start = 0,                                                                                       \
+                      end = _count ? rb_buffer_next_grapheme(buffer, 0) : 0;                                           \
          start < _count;                                                                                               \
-         start = end, end = _next_cluster(buffer, start))
-
-static inline unsigned int _next_cluster(rb_buffer_t *buffer, unsigned int start)
-{
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-    unsigned int count = rb_buffer_get_length(buffer);
-
-    unsigned int cluster = info[start].cluster;
-    while (++start < count && cluster == info[start].cluster)
-        ;
-
-    return start;
-}
+         start = end, end = rb_buffer_next_grapheme(buffer, start))
 
 #endif /* RB_BUFFER_HH */

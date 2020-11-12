@@ -364,214 +364,19 @@ struct rb_ot_shape_context_t
 
 /* Prepare */
 
-static void rb_set_unicode_props(rb_buffer_t *buffer)
-{
-    /* Implement enough of Unicode Graphemes here that shaping
-     * in reverse-direction wouldn't break graphemes.  Namely,
-     * we mark all marks and ZWJ and ZWJ,Extended_Pictographic
-     * sequences as continuations.  The foreach_grapheme()
-     * macro uses this bit.
-     *
-     * https://www.unicode.org/reports/tr29/#Regex_Definitions
-     */
-    unsigned int count = rb_buffer_get_length(buffer);
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-    for (unsigned int i = 0; i < count; i++) {
-        rb_glyph_info_init_unicode_props(&info[i], buffer);
-
-        /* Marks are already set as continuation by the above line.
-         * Handle Emoji_Modifier and ZWJ-continuation. */
-        if (unlikely(_rb_glyph_info_get_general_category(&info[i]) == RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL &&
-                     rb_in_range<rb_codepoint_t>(info[i].codepoint, 0x1F3FBu, 0x1F3FFu))) {
-            _rb_glyph_info_set_continuation(&info[i]);
-        }
-#ifndef RB_NO_EMOJI_SEQUENCES
-        else if (unlikely(_rb_glyph_info_is_zwj(&info[i]))) {
-            _rb_glyph_info_set_continuation(&info[i]);
-            if (i + 1 < count && rb_ucd_is_emoji_extended_pictographic(info[i + 1].codepoint)) {
-                i++;
-                rb_glyph_info_init_unicode_props(&info[i], buffer);
-                _rb_glyph_info_set_continuation(&info[i]);
-            }
-        }
-#endif
-        /* Or part of the Other_Grapheme_Extend that is not marks.
-         * As of Unicode 11 that is just:
-         *
-         * 200C          ; Other_Grapheme_Extend # Cf       ZERO WIDTH NON-JOINER
-         * FF9E..FF9F    ; Other_Grapheme_Extend # Lm   [2] HALFWIDTH KATAKANA VOICED SOUND MARK..HALFWIDTH KATAKANA
-         * SEMI-VOICED SOUND MARK E0020..E007F  ; Other_Grapheme_Extend # Cf  [96] TAG SPACE..CANCEL TAG
-         *
-         * ZWNJ is special, we don't want to merge it as there's no need, and keeping
-         * it separate results in more granular clusters.  Ignore Katakana for now.
-         * Tags are used for Emoji sub-region flag sequences:
-         * https://github.com/harfbuzz/harfbuzz/issues/1556
-         */
-        else if (unlikely(rb_in_range<rb_codepoint_t>(info[i].codepoint, 0xE0020u, 0xE007Fu)))
-            _rb_glyph_info_set_continuation(&info[i]);
-    }
-}
-
-static void rb_insert_dotted_circle(rb_buffer_t *buffer, rb_face_t *face)
-{
-    if (unlikely(rb_buffer_get_flags(buffer) & RB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
-        return;
-
-    if (!(rb_buffer_get_flags(buffer) & RB_BUFFER_FLAG_BOT) || rb_buffer_get_context_len(buffer, 0) ||
-        !_rb_glyph_info_is_unicode_mark(&rb_buffer_get_glyph_infos(buffer)[0]))
-        return;
-
-    if (!rb_face_has_glyph(face, 0x25CCu))
-        return;
-
-    rb_glyph_info_t dottedcircle = {0};
-    dottedcircle.codepoint = 0x25CCu;
-    rb_glyph_info_init_unicode_props(&dottedcircle, buffer);
-
-    rb_buffer_clear_output(buffer);
-
-    rb_buffer_set_index(buffer, 0);
-    rb_glyph_info_t info = dottedcircle;
-    info.cluster = rb_buffer_get_cur(buffer, 0)->cluster;
-    info.mask = rb_buffer_get_cur(buffer, 0)->mask;
-    rb_buffer_output_info(buffer, info);
-    while (rb_buffer_get_index(buffer) < rb_buffer_get_length(buffer) && rb_buffer_is_allocation_successful(buffer))
-        rb_buffer_next_glyph(buffer);
-    rb_buffer_swap_buffers(buffer);
-}
-
-static void rb_form_clusters(rb_buffer_t *buffer)
-{
-    if (!(rb_buffer_get_scratch_flags(buffer) & RB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII))
-        return;
-
-    if (rb_buffer_get_cluster_level(buffer) == RB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
-        foreach_grapheme(buffer, start, end) rb_buffer_merge_clusters(buffer, start, end);
-    else
-        foreach_grapheme(buffer, start, end) rb_buffer_unsafe_to_break(buffer, start, end);
-}
-
-static void rb_ensure_native_direction(rb_buffer_t *buffer)
-{
-    rb_direction_t direction = rb_buffer_get_direction(buffer);
-    rb_direction_t horiz_dir = rb_script_get_horizontal_direction(rb_buffer_get_script(buffer));
-
-    /* TODO vertical:
-     * The only BTT vertical script is Ogham, but it's not clear to me whether OpenType
-     * Ogham fonts are supposed to be implemented BTT or not.  Need to research that
-     * first. */
-    if ((RB_DIRECTION_IS_HORIZONTAL(direction) && direction != horiz_dir && horiz_dir != RB_DIRECTION_INVALID) ||
-        (RB_DIRECTION_IS_VERTICAL(direction) && direction != RB_DIRECTION_TTB)) {
-
-        if (rb_buffer_get_cluster_level(buffer) == RB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS)
-            foreach_grapheme(buffer, start, end)
-            {
-                rb_buffer_merge_clusters(buffer, start, end);
-                rb_buffer_reverse_range(buffer, start, end);
-            }
-        else
-            foreach_grapheme(buffer, start, end)
-                /* form_clusters() merged clusters already, we don't merge. */
-                rb_buffer_reverse_range(buffer, start, end);
-
-        rb_buffer_reverse(buffer);
-
-        rb_buffer_set_direction(buffer, RB_DIRECTION_REVERSE(rb_buffer_get_direction(buffer)));
-    }
+extern "C" {
+void rb_set_unicode_props(rb_buffer_t *buffer);
+void rb_insert_dotted_circle(rb_buffer_t *buffer, rb_face_t *face);
+void rb_form_clusters(rb_buffer_t *buffer);
+void rb_ensure_native_direction(rb_buffer_t *buffer);
 }
 
 /*
  * Substitute
  */
 
-static rb_codepoint_t rb_vert_char_for(rb_codepoint_t u)
-{
-    switch (u >> 8) {
-    case 0x20:
-        switch (u) {
-        case 0x2013u:
-            return 0xfe32u; // EN DASH
-        case 0x2014u:
-            return 0xfe31u; // EM DASH
-        case 0x2025u:
-            return 0xfe30u; // TWO DOT LEADER
-        case 0x2026u:
-            return 0xfe19u; // HORIZONTAL ELLIPSIS
-        }
-        break;
-    case 0x30:
-        switch (u) {
-        case 0x3001u:
-            return 0xfe11u; // IDEOGRAPHIC COMMA
-        case 0x3002u:
-            return 0xfe12u; // IDEOGRAPHIC FULL STOP
-        case 0x3008u:
-            return 0xfe3fu; // LEFT ANGLE BRACKET
-        case 0x3009u:
-            return 0xfe40u; // RIGHT ANGLE BRACKET
-        case 0x300au:
-            return 0xfe3du; // LEFT DOUBLE ANGLE BRACKET
-        case 0x300bu:
-            return 0xfe3eu; // RIGHT DOUBLE ANGLE BRACKET
-        case 0x300cu:
-            return 0xfe41u; // LEFT CORNER BRACKET
-        case 0x300du:
-            return 0xfe42u; // RIGHT CORNER BRACKET
-        case 0x300eu:
-            return 0xfe43u; // LEFT WHITE CORNER BRACKET
-        case 0x300fu:
-            return 0xfe44u; // RIGHT WHITE CORNER BRACKET
-        case 0x3010u:
-            return 0xfe3bu; // LEFT BLACK LENTICULAR BRACKET
-        case 0x3011u:
-            return 0xfe3cu; // RIGHT BLACK LENTICULAR BRACKET
-        case 0x3014u:
-            return 0xfe39u; // LEFT TORTOISE SHELL BRACKET
-        case 0x3015u:
-            return 0xfe3au; // RIGHT TORTOISE SHELL BRACKET
-        case 0x3016u:
-            return 0xfe17u; // LEFT WHITE LENTICULAR BRACKET
-        case 0x3017u:
-            return 0xfe18u; // RIGHT WHITE LENTICULAR BRACKET
-        }
-        break;
-    case 0xfe:
-        switch (u) {
-        case 0xfe4fu:
-            return 0xfe34u; // WAVY LOW LINE
-        }
-        break;
-    case 0xff:
-        switch (u) {
-        case 0xff01u:
-            return 0xfe15u; // FULLWIDTH EXCLAMATION MARK
-        case 0xff08u:
-            return 0xfe35u; // FULLWIDTH LEFT PARENTHESIS
-        case 0xff09u:
-            return 0xfe36u; // FULLWIDTH RIGHT PARENTHESIS
-        case 0xff0cu:
-            return 0xfe10u; // FULLWIDTH COMMA
-        case 0xff1au:
-            return 0xfe13u; // FULLWIDTH COLON
-        case 0xff1bu:
-            return 0xfe14u; // FULLWIDTH SEMICOLON
-        case 0xff1fu:
-            return 0xfe16u; // FULLWIDTH QUESTION MARK
-        case 0xff3bu:
-            return 0xfe47u; // FULLWIDTH LEFT SQUARE BRACKET
-        case 0xff3du:
-            return 0xfe48u; // FULLWIDTH RIGHT SQUARE BRACKET
-        case 0xff3fu:
-            return 0xfe33u; // FULLWIDTH LOW LINE
-        case 0xff5bu:
-            return 0xfe37u; // FULLWIDTH LEFT CURLY BRACKET
-        case 0xff5du:
-            return 0xfe38u; // FULLWIDTH RIGHT CURLY BRACKET
-        }
-        break;
-    }
-
-    return u;
+extern "C" {
+rb_codepoint_t rb_vert_char_for(rb_codepoint_t u);
 }
 
 static inline void rb_ot_rotate_chars(const rb_ot_shape_context_t *c)
@@ -671,73 +476,11 @@ static inline void rb_ot_shape_setup_masks(const rb_ot_shape_context_t *c)
     }
 }
 
-static void rb_ot_zero_width_default_ignorables(const rb_buffer_t *buffer)
-{
-    if (!(rb_buffer_get_scratch_flags(buffer) & RB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES) ||
-        (rb_buffer_get_flags(buffer) & RB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES) ||
-        (rb_buffer_get_flags(buffer) & RB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES))
-        return;
-
-    unsigned int count = rb_buffer_get_length(buffer);
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos((rb_buffer_t *)buffer);
-    rb_glyph_position_t *pos = rb_buffer_get_glyph_positions((rb_buffer_t *)buffer);
-    unsigned int i = 0;
-    for (i = 0; i < count; i++)
-        if (unlikely(_rb_glyph_info_is_default_ignorable(&info[i])))
-            pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
-}
-
-static void rb_ot_hide_default_ignorables(rb_buffer_t *buffer, rb_face_t *face)
-{
-    if (!(rb_buffer_get_scratch_flags(buffer) & RB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES) ||
-        (rb_buffer_get_flags(buffer) & RB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES))
-        return;
-
-    unsigned int count = rb_buffer_get_length(buffer);
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-
-    rb_codepoint_t invisible = rb_buffer_get_invisible_glyph(buffer);
-    if (!(rb_buffer_get_flags(buffer) & RB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES) &&
-        (invisible || rb_face_get_nominal_glyph(face, ' ', &invisible))) {
-        /* Replace default-ignorables with a zero-advance invisible glyph. */
-        for (unsigned int i = 0; i < count; i++) {
-            if (_rb_glyph_info_is_default_ignorable(&info[i]))
-                info[i].codepoint = invisible;
-        }
-    } else
-        rb_buffer_delete_glyphs_inplace(buffer, _rb_glyph_info_is_default_ignorable);
-}
-
-static inline void rb_ot_map_glyphs_fast(rb_buffer_t *buffer)
-{
-    /* Normalization process sets up glyph_index(), we just copy it. */
-    unsigned int count = rb_buffer_get_length(buffer);
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-    for (unsigned int i = 0; i < count; i++)
-        info[i].codepoint = info[i].glyph_index();
-}
-
-static inline void rb_synthesize_glyph_classes(rb_buffer_t *buffer)
-{
-    unsigned int count = rb_buffer_get_length(buffer);
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-    for (unsigned int i = 0; i < count; i++) {
-        rb_ot_layout_glyph_props_flags_t klass;
-
-        /* Never mark default-ignorables as marks.
-         * They won't get in the way of lookups anyway,
-         * but having them as mark will cause them to be skipped
-         * over if the lookup-flag says so, but at least for the
-         * Mongolian variation selectors, looks like Uniscribe
-         * marks them as non-mark.  Some Mongolian fonts without
-         * GDEF rely on this.  Another notable character that
-         * this applies to is COMBINING GRAPHEME JOINER. */
-        klass = (_rb_glyph_info_get_general_category(&info[i]) != RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK ||
-                 _rb_glyph_info_is_default_ignorable(&info[i]))
-                    ? RB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH
-                    : RB_OT_LAYOUT_GLYPH_PROPS_MARK;
-        _rb_glyph_info_set_glyph_props(&info[i], klass);
-    }
+extern "C" {
+void rb_ot_zero_width_default_ignorables(const rb_buffer_t *buffer);
+void rb_ot_hide_default_ignorables(rb_buffer_t *buffer, rb_face_t *face);
+void rb_ot_map_glyphs_fast(rb_buffer_t *buffer);
+void rb_synthesize_glyph_classes(rb_buffer_t *buffer);
 }
 
 static inline void rb_ot_substitute_default(const rb_ot_shape_context_t *c)
@@ -789,28 +532,9 @@ static inline void rb_ot_substitute_post(const rb_ot_shape_context_t *c)
  * Position
  */
 
-static inline void adjust_mark_offsets(rb_glyph_position_t *pos)
-{
-    pos->x_offset -= pos->x_advance;
-    pos->y_offset -= pos->y_advance;
-}
-
-static inline void zero_mark_width(rb_glyph_position_t *pos)
-{
-    pos->x_advance = 0;
-    pos->y_advance = 0;
-}
-
-static inline void zero_mark_widths_by_gdef(rb_buffer_t *buffer, bool adjust_offsets)
-{
-    unsigned int count = rb_buffer_get_length(buffer);
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-    for (unsigned int i = 0; i < count; i++)
-        if (_rb_glyph_info_is_mark(&info[i])) {
-            if (adjust_offsets)
-                adjust_mark_offsets(&rb_buffer_get_glyph_positions(buffer)[i]);
-            zero_mark_width(&rb_buffer_get_glyph_positions(buffer)[i]);
-        }
+extern "C" {
+void rb_zero_mark_widths_by_gdef(rb_buffer_t *buffer, bool adjust_offsets);
+void rb_propagate_flags(rb_buffer_t *buffer);
 }
 
 static inline void rb_ot_position_default(const rb_ot_shape_context_t *c)
@@ -855,7 +579,7 @@ static inline void rb_ot_position_complex(const rb_ot_shape_context_t *c)
     if (c->plan->zero_marks)
         switch (c->plan->shaper->zero_width_marks) {
         case RB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY:
-            zero_mark_widths_by_gdef(c->buffer, adjust_offsets_when_zeroing);
+            rb_zero_mark_widths_by_gdef(c->buffer, adjust_offsets_when_zeroing);
             break;
 
         default:
@@ -869,7 +593,7 @@ static inline void rb_ot_position_complex(const rb_ot_shape_context_t *c)
     if (c->plan->zero_marks)
         switch (c->plan->shaper->zero_width_marks) {
         case RB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE:
-            zero_mark_widths_by_gdef(c->buffer, adjust_offsets_when_zeroing);
+            rb_zero_mark_widths_by_gdef(c->buffer, adjust_offsets_when_zeroing);
             break;
 
         default:
@@ -899,30 +623,6 @@ static inline void rb_ot_position(const rb_ot_shape_context_t *c)
 
     if (RB_DIRECTION_IS_BACKWARD(rb_buffer_get_direction(c->buffer)))
         rb_buffer_reverse(c->buffer);
-}
-
-static inline void rb_propagate_flags(rb_buffer_t *buffer)
-{
-    /* Propagate cluster-level glyph flags to be the same on all cluster glyphs.
-     * Simplifies using them. */
-
-    if (!(rb_buffer_get_scratch_flags(buffer) & RB_BUFFER_SCRATCH_FLAG_HAS_UNSAFE_TO_BREAK))
-        return;
-
-    rb_glyph_info_t *info = rb_buffer_get_glyph_infos(buffer);
-
-    foreach_cluster(buffer, start, end)
-    {
-        unsigned int mask = 0;
-        for (unsigned int i = start; i < end; i++)
-            if (info[i].mask & RB_GLYPH_FLAG_UNSAFE_TO_BREAK) {
-                mask = RB_GLYPH_FLAG_UNSAFE_TO_BREAK;
-                break;
-            }
-        if (mask)
-            for (unsigned int i = start; i < end; i++)
-                info[i].mask |= mask;
-    }
 }
 
 /* Pull it all together! */

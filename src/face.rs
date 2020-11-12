@@ -173,6 +173,10 @@ impl<'a> Face<'a> {
         }
     }
 
+    pub(crate) fn has_glyph(&self, c: u32) -> bool {
+        self.glyph_index(c).is_some()
+    }
+
     pub(crate) fn glyph_index(&self, c: u32) -> Option<GlyphId> {
         let subtable_idx = self.prefered_cmap_encoding_subtable?;
         let subtable = self.ttfp_face.character_mapping_subtables().nth(subtable_idx as usize)?;
@@ -391,16 +395,6 @@ pub extern "C" fn rb_face_get_ptem(face: *const ffi::rb_face_t) -> f32 {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_face_get_ppem_x(face: *const ffi::rb_face_t) -> u32 {
-    Face::from_ptr(face).pixels_per_em.map(|ppem| ppem.0).unwrap_or(0) as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_ppem_y(face: *const ffi::rb_face_t) -> u32 {
-    Face::from_ptr(face).pixels_per_em.map(|ppem| ppem.1).unwrap_or(0) as u32
-}
-
-#[no_mangle]
 pub extern "C" fn rb_face_get_coords(face: *const ffi::rb_face_t) -> *const i32 {
     Face::from_ptr(face).coords.as_ptr() as _
 }
@@ -487,12 +481,6 @@ pub extern "C" fn rb_face_has_vorg_data(face: *const ffi::rb_face_t) -> ffi::rb_
 pub extern "C" fn rb_face_get_y_origin(face: *const ffi::rb_face_t, glyph: ffi::rb_codepoint_t) -> i32 {
     let glyph = GlyphId(u16::try_from(glyph).unwrap());
     Face::from_ptr(face).ttfp_face.glyph_y_origin(glyph).unwrap_or(0) as i32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_glyph_props(face: *const ffi::rb_face_t, glyph: ffi::rb_codepoint_t) -> u32 {
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    Face::from_ptr(face).glyph_props(glyph) as u32
 }
 
 #[no_mangle]

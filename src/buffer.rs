@@ -27,7 +27,6 @@ pub(crate) mod glyph_flag {
     /// of each line after line-breaking, or limiting
     /// the reshaping to a small piece around the
     /// breaking point only.
-    #[allow(dead_code)]
     pub const UNSAFE_TO_BREAK: u32 = 0x00000001;
 
     /// All the currently defined flags.
@@ -280,6 +279,11 @@ impl GlyphInfo {
     }
 
     #[inline]
+    pub(crate) fn is_continuation(&self) -> bool {
+        self.unicode_props() & UnicodeProps::CONTINUATION.bits != 0
+    }
+
+    #[inline]
     pub(crate) fn is_default_ignorable(&self) -> bool {
         let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
         n != 0 && !self.is_ligated()
@@ -457,6 +461,11 @@ impl GlyphInfo {
     // Used during the normalization process to store glyph indices
 
     #[inline]
+    pub(crate) fn glyph_index(&mut self) -> u32 {
+        self.var1
+    }
+
+    #[inline]
     pub(crate) fn set_glyph_index(&mut self, n: u32) {
         self.var1 = n;
     }
@@ -484,7 +493,7 @@ pub(crate) struct Buffer {
     // Information about how the text in the buffer should be treated.
     pub(crate) flags: BufferFlags,
     pub(crate) cluster_level: BufferClusterLevel,
-    invisible: Option<char>,
+    pub(crate) invisible: Option<GlyphId>,
     pub(crate) scratch_flags: BufferScratchFlags,
     // Maximum allowed len.
     max_len: u32,
@@ -680,7 +689,7 @@ impl Buffer {
     }
 
     #[inline]
-    fn reverse(&mut self) {
+    pub(crate) fn reverse(&mut self) {
         if self.is_empty() {
             return;
         }
@@ -688,7 +697,7 @@ impl Buffer {
         self.reverse_range(0, self.len);
     }
 
-    fn reverse_range(&mut self, start: usize, end: usize) {
+    pub(crate) fn reverse_range(&mut self, start: usize, end: usize) {
         if end - start < 2 {
             return;
         }
@@ -1354,20 +1363,19 @@ impl Buffer {
         }
     }
 
-    // fn next_cluster(&self, mut start: usize) -> usize {
-    //     if start >= self.len {
-    //         return start;
-    //     }
-    //
-    //     // TODO: to iter
-    //     let cluster = self.info[start].cluster;
-    //     start += 1;
-    //     while start < self.len && cluster == self.info[start].cluster {
-    //         start += 1;
-    //     }
-    //
-    //     start
-    // }
+    pub(crate) fn next_cluster(&self, mut start: usize) -> usize {
+        if start >= self.len {
+            return start;
+        }
+
+        let cluster = self.info[start].cluster;
+        start += 1;
+        while start < self.len && cluster == self.info[start].cluster {
+            start += 1;
+        }
+
+        start
+    }
 
     pub(crate) fn next_syllable(&self, mut start: usize) -> usize {
         if start >= self.len {
@@ -1383,6 +1391,19 @@ impl Buffer {
         start
     }
 
+    pub(crate) fn next_grapheme(&self, mut start: usize) -> usize {
+        if start >= self.len {
+            return start;
+        }
+
+        start += 1;
+        while start < self.len && self.info[start].is_continuation() {
+            start += 1;
+        }
+
+        start
+    }
+
     #[inline]
     pub(crate) fn allocate_lig_id(&mut self) -> u8 {
         let mut lig_id = self.next_serial() & 0x07;
@@ -1392,6 +1413,44 @@ impl Buffer {
         }
         lig_id as u8
     }
+}
+
+// TODO: to iter if possible
+
+macro_rules! foreach_cluster {
+    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {{
+        let mut $start = 0;
+        let mut $end = $buffer.next_cluster(0);
+        while $start < $buffer.len {
+            $($body)*;
+            $start = $end;
+            $end = $buffer.next_cluster($start);
+        }
+    }};
+}
+
+macro_rules! foreach_syllable {
+    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {{
+        let mut $start = 0;
+        let mut $end = $buffer.next_syllable(0);
+        while $start < $buffer.len {
+            $($body)*;
+            $start = $end;
+            $end = $buffer.next_syllable($start);
+        }
+    }};
+}
+
+macro_rules! foreach_grapheme {
+    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {{
+        let mut $start = 0;
+        let mut $end = $buffer.next_grapheme(0);
+        while $start < $buffer.len {
+            $($body)*;
+            $start = $end;
+            $end = $buffer.next_grapheme($start);
+        }
+    }};
 }
 
 
@@ -1715,14 +1774,6 @@ impl fmt::Debug for GlyphBuffer {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_glyph_info_init_unicode_props(info: *mut GlyphInfo, buffer: *mut ffi::rb_buffer_t) {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    unsafe {
-        (*info).init_unicode_props(&mut buffer.scratch_flags);
-    }
-}
-
-#[no_mangle]
 pub extern "C" fn rb_buffer_get_cluster_level(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).cluster_level as u32
 }
@@ -1734,7 +1785,7 @@ pub extern "C" fn rb_buffer_get_direction(buffer: *const ffi::rb_buffer_t) -> ff
 
 #[no_mangle]
 pub extern "C" fn rb_buffer_get_invisible_glyph(buffer: *const ffi::rb_buffer_t) -> ffi::rb_codepoint_t {
-    Buffer::from_ptr(buffer).invisible.unwrap_or('\0') as u32
+    Buffer::from_ptr(buffer).invisible.map_or(0, |g| u32::from(g.0))
 }
 
 #[no_mangle]
@@ -2077,4 +2128,9 @@ pub extern "C" fn rb_buffer_sort(buffer: *mut ffi::rb_buffer_t, start: u32, end:
             buffer.info[j] = t;
         }
     }
+}
+
+#[no_mangle]
+pub extern "C" fn rb_buffer_next_grapheme(buffer: *const ffi::rb_buffer_t, start: u32) -> u32 {
+    Buffer::from_ptr(buffer).next_grapheme(start as usize) as u32
 }

@@ -10,6 +10,7 @@ mod map_builder;
 mod matching;
 mod normalize;
 mod position;
+mod shape;
 mod shape_plan;
 mod shape_planner;
 mod substitute;

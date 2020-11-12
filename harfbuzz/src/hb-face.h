@@ -71,10 +71,6 @@ RB_EXTERN int rb_face_get_upem(rb_face_t *face);
 
 RB_EXTERN float rb_face_get_ptem(rb_face_t *face);
 
-RB_EXTERN unsigned int rb_face_get_ppem_x(rb_face_t *face);
-
-RB_EXTERN unsigned int rb_face_get_ppem_y(rb_face_t *face);
-
 RB_EXTERN const int *rb_face_get_coords(rb_face_t *face);
 
 RB_EXTERN unsigned int rb_face_get_num_coords(rb_face_t *face);
@@ -88,8 +84,6 @@ RB_EXTERN int rb_face_get_side_bearing(rb_face_t *face, rb_codepoint_t glyph, rb
 RB_EXTERN rb_bool_t rb_face_has_vorg_data(rb_face_t *face);
 
 RB_EXTERN int rb_face_get_y_origin(rb_face_t *face, rb_codepoint_t glyph);
-
-RB_EXTERN unsigned int rb_face_get_glyph_props(rb_face_t *face, rb_codepoint_t glyph);
 
 RB_EXTERN rb_bool_t rb_face_get_nominal_glyph(rb_face_t *face, rb_codepoint_t unicode, rb_codepoint_t *glyph);
 

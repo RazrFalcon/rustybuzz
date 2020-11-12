@@ -216,6 +216,8 @@ RB_EXTERN void rb_buffer_remove_output(rb_buffer_t *buffer);
 
 RB_EXTERN bool rb_buffer_is_allocation_successful(const rb_buffer_t *buffer);
 
+RB_EXTERN unsigned int rb_buffer_next_grapheme(const rb_buffer_t *buffer, unsigned int start);
+
 RB_END_DECLS
 
 #endif /* RB_BUFFER_H */

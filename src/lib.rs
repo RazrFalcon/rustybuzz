@@ -5,6 +5,7 @@
 #![doc(html_root_url = "https://docs.rs/rustybuzz/0.2.0")]
 #![warn(missing_docs)]
 
+#[macro_use]
 mod buffer;
 mod common;
 mod ffi;

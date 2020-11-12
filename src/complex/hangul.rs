@@ -186,7 +186,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 }
             } else {
                 // No valid syllable as base for tone mark; try to insert dotted circle.
-                if !buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) && face_has_glyph(face, 0x25CC) {
+                if !buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) && face.has_glyph(0x25CC) {
                     let mut chars = [0; 2];
                     if !is_zero_width_char(face, c) {
                         chars[0] = u;
@@ -237,7 +237,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 if is_combining_l(l) && is_combining_v(v) && (t == 0 || is_combining_t(t)) {
                     // Try to compose; if this succeeds, end is set to start+1.
                     let s = S_BASE + (l - L_BASE) * N_COUNT + (v - V_BASE) * T_COUNT + tindex;
-                    if face_has_glyph(face, s) {
+                    if face.has_glyph(s) {
                         let n = if t != 0 { 3 } else { 2 };
                         buffer.replace_glyphs(n, 1, &[s]);
                         end = start + 1;
@@ -270,7 +270,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         } else if is_combined_s(u) {
             // Have <LV>, <LVT>, or <LV,T>
             let s = u;
-            let has_glyph = face_has_glyph(face, s);
+            let has_glyph = face.has_glyph(s);
 
             let lindex = (s - S_BASE) / N_COUNT;
             let nindex = (s - S_BASE) % N_COUNT;
@@ -282,7 +282,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 let new_tindex = buffer.cur(1).codepoint - T_BASE;
                 let new_s = s + new_tindex;
 
-                if face_has_glyph(face, new_s) {
+                if face.has_glyph(new_s) {
                     buffer.replace_glyphs(2, 1, &[new_s]);
                     end = start + 1;
                     continue;
@@ -297,8 +297,8 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             // combining <LV,T> above.
             if !has_glyph || (tindex == 0 && buffer.idx + 1 < buffer.len && is_t(buffer.cur(1).codepoint)) {
                 let decomposed = [L_BASE + lindex, V_BASE + vindex, T_BASE + tindex];
-                if face_has_glyph(face, decomposed[0]) && face_has_glyph(face, decomposed[1]) &&
-                    (tindex == 0 || face_has_glyph(face, decomposed[2]))
+                if face.has_glyph(decomposed[0]) && face.has_glyph(decomposed[1]) &&
+                    (tindex == 0 || face.has_glyph(decomposed[2]))
                 {
                     let mut s_len = if tindex != 0 { 3 } else { 2 };
                     buffer.replace_glyphs(1, s_len, &decomposed);
@@ -385,10 +385,6 @@ fn is_combining_t(u: u32) -> bool {
 
 fn is_combined_s(u: u32) -> bool {
     (S_BASE ..= S_BASE + S_COUNT - 1).contains(&u)
-}
-
-fn face_has_glyph(face: &Face, u: u32) -> bool {
-    face.glyph_index(u).is_some()
 }
 
 #[no_mangle]

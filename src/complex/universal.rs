@@ -192,17 +192,9 @@ extern "C" fn setup_syllables_raw(
 fn setup_syllables(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::universal_machine::find_syllables(buffer);
 
-    // TODO: optimize to original:
-    // foreach_syllable(buffer, start, end) buffer->unsafe_to_break(start, end);
-    {
-        let mut start = 0;
-        let mut end = buffer.next_syllable(0);
-        while start < buffer.len {
-            buffer.unsafe_to_break(start, end);
-            start = end;
-            end = buffer.next_syllable(start);
-        }
-    }
+    foreach_syllable!(buffer, start, end, {
+        buffer.unsafe_to_break(start, end);
+    });
 
     setup_rphf_mask(plan, buffer);
     setup_topographical_masks(plan, buffer);
