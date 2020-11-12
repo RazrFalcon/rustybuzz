@@ -127,7 +127,7 @@ pub extern "C" fn rb_ot_shape_complex_categorize(
 
 fn complex_categorize(planner: &ShapePlanner) -> &'static ComplexShaper {
     let script = planner.script();
-    let chosen = planner.map.chosen_script(TableIndex::GSUB);
+    let chosen = planner.map.chosen_script[TableIndex::GSUB as usize];
     match script {
         // Unicode-1.1 additions
         script::ARABIC

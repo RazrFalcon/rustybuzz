@@ -96,7 +96,7 @@ fn data_create(plan: &ShapePlan) -> *mut c_void {
 }
 
 fn data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data) };
+    unsafe { Box::from_raw(data as *mut HangulShapePlan) };
 }
 
 fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {

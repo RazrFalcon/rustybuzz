@@ -36,7 +36,7 @@ struct rb_ot_shape_plan_t
 {
     rb_segment_properties_t props;
     const struct rb_ot_complex_shaper_t *shaper;
-    rb_ot_map_t map;
+    rb_ot_map_t *map;
     rb_aat_map_t aat_map;
     void *data;
     rb_mask_t frac_mask, numr_mask, dnom_mask;
@@ -78,7 +78,7 @@ struct rb_ot_shape_planner_t
     /* In the order that they are filled in. */
     rb_face_t *face;
     rb_segment_properties_t props;
-    rb_ot_map_builder_t map;
+    rb_ot_map_builder_t *map;
     rb_aat_map_builder_t aat_map;
     bool apply_morx : 1;
     bool script_zero_marks : 1;
@@ -86,6 +86,7 @@ struct rb_ot_shape_planner_t
     const struct rb_ot_complex_shaper_t *shaper;
 
     RB_INTERNAL rb_ot_shape_planner_t(rb_face_t *face, const rb_segment_properties_t *props);
+    RB_INTERNAL ~rb_ot_shape_planner_t();
 
     RB_INTERNAL void compile(rb_ot_shape_plan_t &plan, unsigned int *variations_index);
 };

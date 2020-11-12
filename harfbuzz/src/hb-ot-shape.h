@@ -66,6 +66,9 @@ RB_EXTERN rb_script_t rb_ot_shape_planner_get_script(const rb_ot_shape_planner_t
 RB_EXTERN rb_direction_t rb_ot_shape_planner_get_direction(const rb_ot_shape_planner_t *planner);
 
 // Rust -> C++
+RB_EXTERN void rb_ot_layout_substitute(const rb_ot_shape_plan_t *plan, const rb_ot_map_t *map, rb_face_t *face, rb_buffer_t *buffer);
+RB_EXTERN void rb_ot_layout_position(const rb_ot_shape_plan_t *plan, const rb_ot_map_t *map, rb_face_t *face, rb_buffer_t *buffer);
+
 RB_EXTERN const rb_ot_complex_shaper_t *rb_ot_shape_complex_categorize(const rb_ot_shape_planner_t *planner);
 RB_EXTERN const rb_ot_complex_shaper_t *rb_ot_complex_shaper_reconsider_shaper_if_applying_morx(const rb_ot_complex_shaper_t * shaper);
 RB_EXTERN void rb_ot_complex_shaper_collect_features(const rb_ot_complex_shaper_t *shaper, rb_ot_shape_planner_t *planner);

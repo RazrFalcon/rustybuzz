@@ -17,6 +17,8 @@ use super::{Map, ShapePlan};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
+pub const MAX_TAGS_PER_SCRIPT: usize = 3;
+pub const MAX_TAGS_PER_LANGUAGE: usize = 3;
 
 pub const SCRIPT_NOT_FOUND_INDEX: u32 = 0xFFFF;
 pub const LANGUAGE_NOT_FOUND_INDEX: u32 = 0xFFFF;
@@ -476,43 +478,43 @@ pub extern "C" fn rb_ot_layout_position_finish_offsets(
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_substitute(
-    map: *const ffi::rb_ot_map_t,
     plan: *const ffi::rb_ot_shape_plan_t,
+    map: *const ffi::rb_ot_map_t,
     face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
-    let map = Map::from_ptr(map);
     let plan = ShapePlan::from_ptr(plan);
+    let map = Map::from_ptr(map);
     let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    apply(&map, &plan, face, &mut buffer, face.gsub);
+    apply(&plan, &map, face, &mut buffer, face.gsub);
 }
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_position(
-    map: *const ffi::rb_ot_map_t,
     plan: *const ffi::rb_ot_shape_plan_t,
+    map: *const ffi::rb_ot_map_t,
     face: *const ffi::rb_face_t,
     buffer: *mut ffi::rb_buffer_t,
 ) {
-    let map = Map::from_ptr(map);
     let plan = ShapePlan::from_ptr(plan);
+    let map = Map::from_ptr(map);
     let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
-    apply(&map, &plan, face, &mut buffer, face.gpos);
+    apply(&plan, &map, face, &mut buffer, face.gpos);
 }
 
 fn apply<T: LayoutTable>(
-    map: &Map,
     plan: &ShapePlan,
+    map: &Map,
     face: &Face,
     buffer: &mut Buffer,
     table: Option<T>,
 ) {
     let mut ctx = ApplyContext::new(T::INDEX, face, buffer);
 
-    for (stage_index, stage) in map.collect_stages(T::INDEX).into_iter().enumerate() {
-        for lookup in map.collect_stage_lookups(T::INDEX, stage_index) {
+    for (stage_index, stage) in map.get_stages(T::INDEX).into_iter().enumerate() {
+        for lookup in map.get_stage_lookups(T::INDEX, stage_index) {
             let lookup_index = LookupIndex(lookup.index as u16);
 
             ctx.lookup_index = lookup_index;

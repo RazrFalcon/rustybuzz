@@ -584,7 +584,7 @@ fn has_arabic_joining(script: Script) -> bool {
 }
 
 fn data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data) };
+    unsafe { Box::from_raw(data as *mut UniversalShapePlan) };
 }
 
 fn preprocess_text(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {

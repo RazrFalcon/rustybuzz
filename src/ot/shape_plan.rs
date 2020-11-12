@@ -6,7 +6,7 @@ use super::{Map, ComplexShaper};
 
 pub struct ShapePlan {
     plan: NonNull<ffi::rb_ot_shape_plan_t>,
-    pub map: Map,
+    pub map: &'static Map,
     pub shaper: &'static ComplexShaper,
 }
 

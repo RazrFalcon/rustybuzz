@@ -160,31 +160,6 @@ extern "C" {
 
     pub fn rb_face_sanitize_table(blob: *mut rb_blob_t, tag: Tag, glyph_count: u32) -> *mut rb_blob_t;
 
-    pub fn rb_ot_map_get_1_mask(map: *const rb_ot_map_t, tag: Tag) -> rb_mask_t;
-
-    pub fn rb_ot_map_global_mask(map: *const rb_ot_map_t) -> rb_mask_t;
-
-    pub fn rb_ot_map_get_found_script(map: *const rb_ot_map_t, index: u32) -> bool;
-
-    pub fn rb_ot_map_get_chosen_script(map: *const rb_ot_map_t, index: u32) -> Tag;
-
-    pub fn rb_ot_map_get_feature_stage(map: *const rb_ot_map_t, table_index: u32, feature_tag: Tag) -> u32;
-
-    pub fn rb_ot_map_get_stages(
-        map: *const rb_ot_map_t,
-        table_index: u32,
-        pstages: *mut *const rb_ot_map_stage_map_t,
-        stage_count: *mut u32,
-    );
-
-    pub fn rb_ot_map_get_stage_lookups(
-        map: *const rb_ot_map_t,
-        table_index: u32,
-        stage: u32,
-        plookups: *mut *const rb_ot_map_lookup_map_t,
-        lookup_count: *mut u32,
-    );
-
     pub fn rb_ot_shape_plan_get_ot_complex_shaper(plan: *const rb_ot_shape_plan_t) -> *const rb_ot_complex_shaper_t;
 
     pub fn rb_ot_shape_plan_get_ot_map(plan: *const rb_ot_shape_plan_t) -> *const rb_ot_map_t;
@@ -204,20 +179,6 @@ extern "C" {
     pub fn rb_ot_shape_planner_get_script(planner: *const rb_ot_shape_planner_t) -> rb_script_t;
 
     pub fn rb_ot_shape_planner_get_direction(planner: *const rb_ot_shape_planner_t) -> rb_direction_t;
-
-    pub fn rb_ot_map_builder_add_feature(
-        builder: *mut rb_ot_map_builder_t,
-        tag: Tag,
-        flags: rb_ot_map_feature_flags_t,
-        value: u32,
-    );
-
-    pub fn rb_ot_map_builder_add_gsub_pause(
-        builder: *mut rb_ot_map_builder_t,
-        pause: rb_ot_pause_func_t,
-    );
-
-    pub fn rb_ot_map_builder_get_chosen_script(map: *const rb_ot_map_builder_t, index: u32) -> Tag;
 
     pub fn rb_ot_layout_lookup_would_substitute(
         face: *const rb_face_t,

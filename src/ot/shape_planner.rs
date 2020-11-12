@@ -5,7 +5,7 @@ use crate::{ffi, Direction, Script};
 
 pub struct ShapePlanner {
     planner: NonNull<ffi::rb_ot_shape_planner_t>,
-    pub map: MapBuilder,
+    pub map: &'static mut MapBuilder,
 }
 
 impl ShapePlanner {

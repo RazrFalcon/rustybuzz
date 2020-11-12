@@ -56,12 +56,12 @@ void rb_ot_shape_fallback_spaces(const rb_ot_shape_plan_t *plan, rb_face_t *face
 }
 
 const rb_ot_complex_shaper_t *rb_ot_shape_plan_get_ot_complex_shaper(const rb_ot_shape_plan_t *plan) { return plan->shaper; }
-const rb_ot_map_t *rb_ot_shape_plan_get_ot_map(const rb_ot_shape_plan_t *plan) { return &plan->map; }
+const rb_ot_map_t *rb_ot_shape_plan_get_ot_map(const rb_ot_shape_plan_t *plan) { return plan->map; }
 const void *rb_ot_shape_plan_get_data(const rb_ot_shape_plan_t *plan) { return plan->data; }
 rb_script_t rb_ot_shape_plan_get_script(const rb_ot_shape_plan_t *plan) { return plan->props.script; }
 rb_direction_t rb_ot_shape_plan_get_direction(const rb_ot_shape_plan_t *plan) { return plan->props.direction; }
 bool rb_ot_shape_plan_has_gpos_mark(const rb_ot_shape_plan_t *plan) { return plan->has_gpos_mark; }
-rb_ot_map_builder_t *rb_ot_shape_planner_get_ot_map(rb_ot_shape_planner_t *planner) { return &planner->map; }
+rb_ot_map_builder_t *rb_ot_shape_planner_get_ot_map(rb_ot_shape_planner_t *planner) { return planner->map; }
 rb_script_t rb_ot_shape_planner_get_script(const rb_ot_shape_planner_t *planner) { return planner->props.script; }
 rb_direction_t rb_ot_shape_planner_get_direction(const rb_ot_shape_planner_t *planner) { return planner->props.direction; }
 
@@ -88,7 +88,7 @@ static void rb_ot_shape_collect_features(rb_ot_shape_planner_t *planner,
 rb_ot_shape_planner_t::rb_ot_shape_planner_t(rb_face_t *face, const rb_segment_properties_t *props)
     : face(face)
     , props(*props)
-    , map(face, props)
+    , map(rb_ot_map_builder_create(face, props))
     , aat_map(face, props)
     , apply_morx(rb_apply_morx(face, props))
 {
@@ -104,32 +104,37 @@ rb_ot_shape_planner_t::rb_ot_shape_planner_t(rb_face_t *face, const rb_segment_p
     }
 }
 
+rb_ot_shape_planner_t::~rb_ot_shape_planner_t()
+{
+    rb_ot_map_builder_destroy(map);
+}
+
 void rb_ot_shape_planner_t::compile(rb_ot_shape_plan_t &plan, unsigned int *variations_index)
 {
     plan.props = props;
     plan.shaper = shaper;
-    map.compile(plan.map, variations_index);
+    rb_ot_map_builder_compile(map, plan.map, variations_index);
     if (apply_morx)
         aat_map.compile(plan.aat_map);
 
-    plan.frac_mask = plan.map.get_1_mask(RB_TAG('f', 'r', 'a', 'c'));
-    plan.numr_mask = plan.map.get_1_mask(RB_TAG('n', 'u', 'm', 'r'));
-    plan.dnom_mask = plan.map.get_1_mask(RB_TAG('d', 'n', 'o', 'm'));
+    plan.frac_mask = rb_ot_map_get_1_mask(plan.map, RB_TAG('f', 'r', 'a', 'c'));
+    plan.numr_mask = rb_ot_map_get_1_mask(plan.map, RB_TAG('n', 'u', 'm', 'r'));
+    plan.dnom_mask = rb_ot_map_get_1_mask(plan.map, RB_TAG('d', 'n', 'o', 'm'));
     plan.has_frac = plan.frac_mask || (plan.numr_mask && plan.dnom_mask);
 
-    plan.rtlm_mask = plan.map.get_1_mask(RB_TAG('r', 't', 'l', 'm'));
-    plan.has_vert = !!plan.map.get_1_mask(RB_TAG('v', 'e', 'r', 't'));
+    plan.rtlm_mask = rb_ot_map_get_1_mask(plan.map, RB_TAG('r', 't', 'l', 'm'));
+    plan.has_vert = !!rb_ot_map_get_1_mask(plan.map, RB_TAG('v', 'e', 'r', 't'));
 
-    rb_tag_t kern_tag =
-        RB_DIRECTION_IS_HORIZONTAL(props.direction) ? RB_TAG('k', 'e', 'r', 'n') : RB_TAG('v', 'k', 'r', 'n');
-    plan.kern_mask = plan.map.get_mask(kern_tag);
+    unsigned int shift;
+    rb_tag_t kern_tag = RB_DIRECTION_IS_HORIZONTAL(props.direction) ? RB_TAG('k', 'e', 'r', 'n') : RB_TAG('v', 'k', 'r', 'n');
+    plan.kern_mask = rb_ot_map_get_mask(plan.map, kern_tag, &shift);
     plan.requested_kerning = !!plan.kern_mask;
-    plan.trak_mask = plan.map.get_mask(RB_TAG('t', 'r', 'a', 'k'));
+    plan.trak_mask = rb_ot_map_get_mask(plan.map, RB_TAG('t', 'r', 'a', 'k'), &shift);
     plan.requested_tracking = !!plan.trak_mask;
 
     rb_tag_t gpos_tag = rb_ot_complex_shaper_get_gpos_tag(plan.shaper);
-    bool has_gpos_kern = plan.map.get_feature_index(1, kern_tag) != RB_OT_LAYOUT_NO_FEATURE_INDEX;
-    bool disable_gpos = gpos_tag && gpos_tag != plan.map.chosen_script[1];
+    bool has_gpos_kern = rb_ot_map_get_feature_index(plan.map, 1, kern_tag) != RB_OT_LAYOUT_NO_FEATURE_INDEX;
+    bool disable_gpos = gpos_tag && gpos_tag != rb_ot_map_get_chosen_script(plan.map, 1);
 
     /*
      * Decide who provides glyph classes. GDEF or Unicode.
@@ -148,9 +153,7 @@ void rb_ot_shape_planner_t::compile(rb_ot_shape_plan_t &plan, unsigned int *vari
      * Decide who does positioning. GPOS, kerx, kern, or fallback.
      */
 
-    if (0)
-        ;
-    else if (rb_aat_layout_has_positioning(face))
+    if (rb_aat_layout_has_positioning(face))
         plan.apply_kerx = true;
     else if (!apply_morx && !disable_gpos && rb_ot_layout_has_positioning(face))
         plan.apply_gpos = true;
@@ -163,9 +166,8 @@ void rb_ot_shape_planner_t::compile(rb_ot_shape_plan_t &plan, unsigned int *vari
             plan.apply_kern = true;
     }
 
-    plan.zero_marks =
-        script_zero_marks && !plan.apply_kerx && (!plan.apply_kern || !rb_ot_layout_has_machine_kerning(face));
-    plan.has_gpos_mark = !!plan.map.get_1_mask(RB_TAG('m', 'a', 'r', 'k'));
+    plan.zero_marks = script_zero_marks && !plan.apply_kerx && (!plan.apply_kern || !rb_ot_layout_has_machine_kerning(face));
+    plan.has_gpos_mark = !!rb_ot_map_get_1_mask(plan.map, RB_TAG('m', 'a', 'r', 'k'));
 
     plan.adjust_mark_positioning_when_zeroing =
         !plan.apply_gpos && !plan.apply_kerx && (!plan.apply_kern || !rb_ot_layout_has_cross_kerning(face));
@@ -182,7 +184,7 @@ bool rb_ot_shape_plan_t::init0(rb_face_t *face,
                                unsigned int num_user_features,
                                unsigned int *variations_index)
 {
-    map.init();
+    map = rb_ot_map_create();
     aat_map.init();
 
     rb_ot_shape_planner_t planner(face, props);
@@ -192,7 +194,7 @@ bool rb_ot_shape_plan_t::init0(rb_face_t *face,
     planner.compile(*this, variations_index);
 
     if (unlikely(!rb_ot_complex_shaper_data_create(shaper, this, &data))) {
-        map.fini();
+        rb_ot_map_destroy(map);
         aat_map.fini();
         return false;
     }
@@ -204,7 +206,7 @@ void rb_ot_shape_plan_t::fini()
 {
     rb_ot_complex_shaper_data_destroy(shaper, const_cast<void *>(data));
 
-    map.fini();
+    rb_ot_map_destroy(map);
     aat_map.fini();
 }
 
@@ -213,13 +215,13 @@ void rb_ot_shape_plan_t::substitute(rb_face_t *face, rb_buffer_t *buffer) const
     if (unlikely(apply_morx))
         rb_aat_layout_substitute(this, face, buffer);
     else
-        map.substitute(this, face, buffer);
+        rb_ot_layout_substitute(this, map, face, buffer);
 }
 
 void rb_ot_shape_plan_t::position(rb_face_t *face, rb_buffer_t *buffer) const
 {
     if (this->apply_gpos)
-        map.position(this, face, buffer);
+        rb_ot_layout_position(this, map, face, buffer);
     else if (this->apply_kerx)
         rb_aat_layout_position(this, face, buffer);
     else if (this->apply_kern)
@@ -255,19 +257,19 @@ static void rb_ot_shape_collect_features(rb_ot_shape_planner_t *planner,
                                          const rb_feature_t *user_features,
                                          unsigned int num_user_features)
 {
-    rb_ot_map_builder_t *map = &planner->map;
+    rb_ot_map_builder_t *map = planner->map;
 
-    map->enable_feature(RB_TAG('r', 'v', 'r', 'n'));
-    map->add_gsub_pause(nullptr);
+    rb_ot_map_builder_enable_feature(map, RB_TAG('r', 'v', 'r', 'n'), F_NONE, 1);
+    rb_ot_map_builder_add_gsub_pause(map, nullptr);
 
     switch (planner->props.direction) {
     case RB_DIRECTION_LTR:
-        map->enable_feature(RB_TAG('l', 't', 'r', 'a'));
-        map->enable_feature(RB_TAG('l', 't', 'r', 'm'));
+        rb_ot_map_builder_enable_feature(map, RB_TAG('l', 't', 'r', 'a'), F_NONE, 1);
+        rb_ot_map_builder_enable_feature(map, RB_TAG('l', 't', 'r', 'm'), F_NONE, 1);
         break;
     case RB_DIRECTION_RTL:
-        map->enable_feature(RB_TAG('r', 't', 'l', 'a'));
-        map->add_feature(RB_TAG('r', 't', 'l', 'm'));
+        rb_ot_map_builder_enable_feature(map, RB_TAG('r', 't', 'l', 'a'), F_NONE, 1);
+        rb_ot_map_builder_add_feature(map, RB_TAG('r', 't', 'l', 'm'), F_NONE, 1);
         break;
     case RB_DIRECTION_TTB:
     case RB_DIRECTION_BTT:
@@ -277,44 +279,44 @@ static void rb_ot_shape_collect_features(rb_ot_shape_planner_t *planner,
     }
 
     /* Automatic fractions. */
-    map->add_feature(RB_TAG('f', 'r', 'a', 'c'));
-    map->add_feature(RB_TAG('n', 'u', 'm', 'r'));
-    map->add_feature(RB_TAG('d', 'n', 'o', 'm'));
+    rb_ot_map_builder_add_feature(map, RB_TAG('f', 'r', 'a', 'c'), F_NONE, 1);
+    rb_ot_map_builder_add_feature(map, RB_TAG('n', 'u', 'm', 'r'), F_NONE, 1);
+    rb_ot_map_builder_add_feature(map, RB_TAG('d', 'n', 'o', 'm'), F_NONE, 1);
 
     /* Random! */
-    map->enable_feature(RB_TAG('r', 'a', 'n', 'd'), F_RANDOM, RB_OT_MAP_MAX_VALUE);
+    rb_ot_map_builder_enable_feature(map, RB_TAG('r', 'a', 'n', 'd'), F_RANDOM, RB_OT_MAP_MAX_VALUE);
 
     /* Tracking.  We enable dummy feature here just to allow disabling
      * AAT 'trak' table using features.
      * https://github.com/harfbuzz/harfbuzz/issues/1303 */
-    map->enable_feature(RB_TAG('t', 'r', 'a', 'k'), F_HAS_FALLBACK);
+    rb_ot_map_builder_enable_feature(map, RB_TAG('t', 'r', 'a', 'k'), F_HAS_FALLBACK, 1);
 
-    map->enable_feature(RB_TAG('H', 'A', 'R', 'F'));
+    rb_ot_map_builder_enable_feature(map, RB_TAG('H', 'A', 'R', 'F'), F_NONE, 1);
 
     rb_ot_complex_shaper_collect_features(planner->shaper, planner);
 
-    map->enable_feature(RB_TAG('B', 'U', 'Z', 'Z'));
+    rb_ot_map_builder_enable_feature(map, RB_TAG('B', 'U', 'Z', 'Z'), F_NONE, 1);
 
     for (unsigned int i = 0; i < ARRAY_LENGTH(common_features); i++)
-        map->add_feature(common_features[i]);
+        rb_ot_map_builder_add_feature(map, common_features[i].tag, common_features[i].flags, 1);
 
     if (RB_DIRECTION_IS_HORIZONTAL(planner->props.direction))
         for (unsigned int i = 0; i < ARRAY_LENGTH(horizontal_features); i++)
-            map->add_feature(horizontal_features[i]);
+            rb_ot_map_builder_add_feature(map, horizontal_features[i].tag, horizontal_features[i].flags, 1);
     else {
         /* We really want to find a 'vert' feature if there's any in the font, no
          * matter which script/langsys it is listed (or not) under.
          * See various bugs referenced from:
          * https://github.com/harfbuzz/harfbuzz/issues/63 */
-        map->enable_feature(RB_TAG('v', 'e', 'r', 't'), F_GLOBAL_SEARCH);
+        rb_ot_map_builder_enable_feature(map, RB_TAG('v', 'e', 'r', 't'), F_GLOBAL_SEARCH, 1);
     }
 
     for (unsigned int i = 0; i < num_user_features; i++) {
         const rb_feature_t *feature = &user_features[i];
-        map->add_feature(feature->tag,
-                         (feature->start == RB_FEATURE_GLOBAL_START && feature->end == RB_FEATURE_GLOBAL_END) ? F_GLOBAL
-                                                                                                              : F_NONE,
-                         feature->value);
+        rb_ot_map_builder_add_feature(map,
+                                      feature->tag,
+                                      (feature->start == RB_FEATURE_GLOBAL_START && feature->end == RB_FEATURE_GLOBAL_END) ? F_GLOBAL : F_NONE,
+                                      feature->value);
     }
 
     if (planner->apply_morx) {
@@ -419,15 +421,15 @@ static inline void rb_ot_shape_setup_masks_fraction(const rb_ot_shape_context_t 
 
 static inline void rb_ot_shape_initialize_masks(const rb_ot_shape_context_t *c)
 {
-    rb_ot_map_t *map = &c->plan->map;
+    rb_ot_map_t *map = c->plan->map;
 
-    rb_mask_t global_mask = map->get_global_mask();
+    rb_mask_t global_mask = rb_ot_map_get_global_mask(map);
     rb_buffer_reset_masks(c->buffer, global_mask);
 }
 
 static inline void rb_ot_shape_setup_masks(const rb_ot_shape_context_t *c)
 {
-    rb_ot_map_t *map = &c->plan->map;
+    rb_ot_map_t *map = c->plan->map;
     rb_buffer_t *buffer = c->buffer;
 
     rb_ot_shape_setup_masks_fraction(c);
@@ -438,7 +440,7 @@ static inline void rb_ot_shape_setup_masks(const rb_ot_shape_context_t *c)
         const rb_feature_t *feature = &c->user_features[i];
         if (!(feature->start == RB_FEATURE_GLOBAL_START && feature->end == RB_FEATURE_GLOBAL_END)) {
             unsigned int shift;
-            rb_mask_t mask = map->get_mask(feature->tag, &shift);
+            rb_mask_t mask = rb_ot_map_get_mask(map, feature->tag, &shift);
             rb_buffer_set_masks(buffer, feature->value << shift, mask, feature->start, feature->end);
         }
     }

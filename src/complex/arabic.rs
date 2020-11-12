@@ -548,7 +548,7 @@ pub fn data_create_inner(plan: &ShapePlan) -> ArabicShapePlan {
 }
 
 fn data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data) };
+    unsafe { Box::from_raw(data as *mut ArabicShapePlan) };
 }
 
 fn get_joining_type(u: char, gc: GeneralCategory) -> JoiningType {

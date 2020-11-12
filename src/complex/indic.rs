@@ -352,16 +352,16 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
 
 
 struct IndicWouldSubstituteFeature {
-    lookups: &'static [ffi::rb_ot_map_lookup_map_t],
+    lookups: &'static [LookupMap],
     zero_context: bool,
 }
 
 impl IndicWouldSubstituteFeature {
-    pub fn new(map: &Map, feature_tag: Tag, zero_context: bool) -> Self {
+    pub fn new(map: &'static Map, feature_tag: Tag, zero_context: bool) -> Self {
         IndicWouldSubstituteFeature {
-            lookups: map.collect_stage_lookups(
+            lookups: map.get_stage_lookups(
                 TableIndex::GSUB,
-                map.feature_stage(TableIndex::GSUB, feature_tag),
+                map.get_feature_stage(TableIndex::GSUB, feature_tag),
             ),
             zero_context,
         }
@@ -410,7 +410,7 @@ impl IndicShapePlan {
             INDIC_CONFIGS[0]
         };
 
-        let is_old_spec = config.has_old_spec && plan.map.chosen_script(TableIndex::GSUB).to_bytes()[3] != b'2';
+        let is_old_spec = config.has_old_spec && plan.map.chosen_script[TableIndex::GSUB as usize].to_bytes()[3] != b'2';
 
         // Use zero-context would_substitute() matching for new-spec of the main
         // Indic scripts, and scripts with one spec only, but not for old-specs.
@@ -619,7 +619,7 @@ fn data_create(plan: &ShapePlan) -> *mut c_void {
 }
 
 fn data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data) };
+    unsafe { Box::from_raw(data as *mut IndicShapePlan) };
 }
 
 fn preprocess_text(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {

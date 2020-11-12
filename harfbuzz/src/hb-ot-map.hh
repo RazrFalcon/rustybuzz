@@ -31,173 +31,19 @@
 
 #include "hb-buffer.hh"
 
+RB_BEGIN_DECLS
+
 #define RB_OT_MAP_MAX_BITS 8u
 #define RB_OT_MAP_MAX_VALUE ((1u << RB_OT_MAP_MAX_BITS) - 1u)
 
-struct rb_ot_map_t;
-struct rb_ot_shape_plan_t;
-
-extern "C" {
-void rb_ot_layout_substitute(const rb_ot_map_t *map, const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
-void rb_ot_layout_position(const rb_ot_map_t *map, const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
-}
-
 static const rb_tag_t table_tags[2] = {RB_TAG('G', 'S', 'U', 'B'), RB_TAG('G', 'P', 'O', 'S')};
+
+typedef struct rb_ot_map_t rb_ot_map_t;
+typedef struct rb_ot_map_builder_t rb_ot_map_builder_t;
 
 typedef void (*rb_ot_pause_func_t)(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
 
-struct rb_ot_map_lookup_map_t
-{
-    unsigned short index;
-    bool auto_zwnj;
-    bool auto_zwj;
-    bool random;
-    rb_mask_t mask;
-
-    RB_INTERNAL static int cmp(const void *pa, const void *pb)
-    {
-        const rb_ot_map_lookup_map_t *a = (const rb_ot_map_lookup_map_t *)pa;
-        const rb_ot_map_lookup_map_t *b = (const rb_ot_map_lookup_map_t *)pb;
-        return a->index < b->index ? -1 : a->index > b->index ? 1 : 0;
-    }
-};
-
-struct rb_ot_map_stage_map_t
-{
-    unsigned int last_lookup; /* Cumulative */
-    rb_ot_pause_func_t pause_func;
-};
-
-struct rb_ot_map_t
-{
-    friend struct rb_ot_map_builder_t;
-
-public:
-    struct feature_map_t
-    {
-        rb_tag_t tag;          /* should be first for our bsearch to work */
-        unsigned int index[2]; /* GSUB/GPOS */
-        unsigned int stage[2]; /* GSUB/GPOS */
-        unsigned int shift;
-        rb_mask_t mask;
-        rb_mask_t _1_mask; /* mask for value=1, for quick access */
-        unsigned int needs_fallback : 1;
-        unsigned int auto_zwnj : 1;
-        unsigned int auto_zwj : 1;
-        unsigned int random : 1;
-
-        int cmp(const rb_tag_t tag_) const
-        {
-            return tag_ < tag ? -1 : tag_ > tag ? 1 : 0;
-        }
-    };
-
-    void init()
-    {
-        memset(this, 0, sizeof(*this));
-
-        features.init();
-        for (unsigned int table_index = 0; table_index < 2; table_index++) {
-            lookups[table_index].init();
-            stages[table_index].init();
-        }
-    }
-    void fini()
-    {
-        features.fini();
-        for (unsigned int table_index = 0; table_index < 2; table_index++) {
-            lookups[table_index].fini();
-            stages[table_index].fini();
-        }
-    }
-
-    rb_mask_t get_global_mask() const
-    {
-        return global_mask;
-    }
-
-    rb_mask_t get_mask(rb_tag_t feature_tag, unsigned int *shift = nullptr) const
-    {
-        const feature_map_t *map = features.bsearch(feature_tag);
-        if (shift)
-            *shift = map ? map->shift : 0;
-        return map ? map->mask : 0;
-    }
-
-    bool needs_fallback(rb_tag_t feature_tag) const
-    {
-        const feature_map_t *map = features.bsearch(feature_tag);
-        return map ? map->needs_fallback : false;
-    }
-
-    rb_mask_t get_1_mask(rb_tag_t feature_tag) const
-    {
-        const feature_map_t *map = features.bsearch(feature_tag);
-        return map ? map->_1_mask : 0;
-    }
-
-    unsigned int get_feature_index(unsigned int table_index, rb_tag_t feature_tag) const
-    {
-        const feature_map_t *map = features.bsearch(feature_tag);
-        return map ? map->index[table_index] : RB_OT_LAYOUT_NO_FEATURE_INDEX;
-    }
-
-    unsigned int get_feature_stage(unsigned int table_index, rb_tag_t feature_tag) const
-    {
-        const feature_map_t *map = features.bsearch(feature_tag);
-        return map ? map->stage[table_index] : UINT_MAX;
-    }
-
-    void get_stages(unsigned int table_index,
-                    const struct rb_ot_map_stage_map_t **pstages,
-                    unsigned int *stage_count) const
-    {
-        assert(table_index == 0 || table_index == 1);
-        *pstages = &stages[table_index][0];
-        *stage_count = stages[table_index].length;
-    }
-
-    void get_stage_lookups(unsigned int table_index,
-                           unsigned int stage,
-                           const struct rb_ot_map_lookup_map_t **plookups,
-                           unsigned int *lookup_count) const
-    {
-        if (unlikely(stage == UINT_MAX)) {
-            *plookups = nullptr;
-            *lookup_count = 0;
-            return;
-        }
-        assert(stage <= stages[table_index].length);
-        unsigned int start = stage ? stages[table_index][stage - 1].last_lookup : 0;
-        unsigned int end =
-            stage < stages[table_index].length ? stages[table_index][stage].last_lookup : lookups[table_index].length;
-        *plookups = end == start ? nullptr : &lookups[table_index][start];
-        *lookup_count = end - start;
-    }
-
-    void substitute(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer) const
-    {
-        rb_ot_layout_substitute(this, plan, face, buffer);
-    }
-
-    void position(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer) const
-    {
-        rb_ot_layout_position(this, plan, face, buffer);
-    }
-
-public:
-    rb_tag_t chosen_script[2];
-    bool found_script[2];
-
-private:
-    rb_mask_t global_mask;
-
-    rb_sorted_vector_t<feature_map_t> features;
-    rb_vector_t<rb_ot_map_lookup_map_t> lookups[2]; /* GSUB/GPOS */
-    rb_vector_t<rb_ot_map_stage_map_t> stages[2];  /* GSUB/GPOS */
-};
-
-enum rb_ot_map_feature_flags_t {
+typedef enum rb_ot_map_feature_flags_t {
     F_NONE = 0x0000u,
     F_GLOBAL = 0x0001u,       /* Feature applies to all characters; results in no mask allocated for it. */
     F_HAS_FALLBACK = 0x0002u, /* Has fallback implementation, so include mask bit even if feature not found. */
@@ -208,123 +54,29 @@ enum rb_ot_map_feature_flags_t {
     F_GLOBAL_HAS_FALLBACK = F_GLOBAL | F_HAS_FALLBACK,
     F_GLOBAL_SEARCH = 0x0010u, /* If feature not found in LangSys, look for it in global feature list and pick one. */
     F_RANDOM = 0x0020u         /* Randomly select a glyph from an AlternateSubstFormat1 subtable. */
-};
+} rb_ot_map_feature_flags_t;
 RB_MARK_AS_FLAG_T(rb_ot_map_feature_flags_t);
 
-struct rb_ot_map_feature_t
-{
+typedef struct rb_ot_map_feature_t {
     rb_tag_t tag;
     rb_ot_map_feature_flags_t flags;
-};
+} rb_ot_map_feature_t;
 
-struct rb_ot_map_builder_t
-{
-public:
-    RB_INTERNAL rb_ot_map_builder_t(rb_face_t *face_, const rb_segment_properties_t *props_);
+RB_EXTERN rb_ot_map_t *rb_ot_map_create();
+RB_EXTERN void rb_ot_map_destroy(rb_ot_map_t *map);
+RB_EXTERN rb_mask_t rb_ot_map_get_global_mask(const rb_ot_map_t *map);
+RB_EXTERN rb_mask_t rb_ot_map_get_mask(const rb_ot_map_t *map, rb_tag_t feature_tag, unsigned int *shift);
+RB_EXTERN rb_mask_t rb_ot_map_get_1_mask(const rb_ot_map_t *map, rb_tag_t feature_tag);
+RB_EXTERN unsigned int rb_ot_map_get_feature_index(const rb_ot_map_t *map, unsigned int table_index, rb_tag_t feature_tag);
+RB_EXTERN rb_tag_t rb_ot_map_get_chosen_script(const rb_ot_map_t *map, unsigned int table_index);
 
-    RB_INTERNAL ~rb_ot_map_builder_t();
+RB_EXTERN rb_ot_map_builder_t *rb_ot_map_builder_create(rb_face_t *face, const rb_segment_properties_t *props);
+RB_EXTERN void rb_ot_map_builder_destroy(rb_ot_map_builder_t *builder);
+RB_EXTERN void rb_ot_map_builder_compile(rb_ot_map_builder_t *builder, rb_ot_map_t *map, unsigned int *variation_index);
+RB_EXTERN void rb_ot_map_builder_add_feature(rb_ot_map_builder_t *builder, rb_tag_t tag, rb_ot_map_feature_flags_t flags, unsigned int value);
+RB_EXTERN void rb_ot_map_builder_enable_feature(rb_ot_map_builder_t *builder, rb_tag_t tag, rb_ot_map_feature_flags_t flags, unsigned int value);
+RB_EXTERN void rb_ot_map_builder_add_gsub_pause(rb_ot_map_builder_t *builder, rb_ot_pause_func_t pause);
 
-    RB_INTERNAL void add_feature(rb_tag_t tag, rb_ot_map_feature_flags_t flags = F_NONE, unsigned int value = 1);
-
-    void add_feature(const rb_ot_map_feature_t &feat)
-    {
-        add_feature(feat.tag, feat.flags);
-    }
-
-    void enable_feature(rb_tag_t tag, rb_ot_map_feature_flags_t flags = F_NONE, unsigned int value = 1)
-    {
-        add_feature(tag, F_GLOBAL | flags, value);
-    }
-
-    void disable_feature(rb_tag_t tag)
-    {
-        add_feature(tag, F_GLOBAL, 0);
-    }
-
-    void add_gsub_pause(rb_ot_pause_func_t pause_func)
-    {
-        add_pause(0, pause_func);
-    }
-    void add_gpos_pause(rb_ot_pause_func_t pause_func)
-    {
-        add_pause(1, pause_func);
-    }
-
-    RB_INTERNAL void compile(rb_ot_map_t &m, unsigned int *variations_index);
-
-private:
-    RB_INTERNAL void add_lookups(rb_ot_map_t &m,
-                                 unsigned int table_index,
-                                 unsigned int feature_index,
-                                 unsigned int variations_index,
-                                 rb_mask_t mask,
-                                 bool auto_zwnj = true,
-                                 bool auto_zwj = true,
-                                 bool random = false);
-
-    struct feature_info_t
-    {
-        rb_tag_t tag;
-        unsigned int seq; /* sequence#, used for stable sorting only */
-        unsigned int max_value;
-        rb_ot_map_feature_flags_t flags;
-        unsigned int default_value; /* for non-global features, what should the unset glyphs take */
-        unsigned int stage[2];      /* GSUB/GPOS */
-
-        RB_INTERNAL static int cmp(const void *pa, const void *pb)
-        {
-            const feature_info_t *a = (const feature_info_t *)pa;
-            const feature_info_t *b = (const feature_info_t *)pb;
-            return (a->tag != b->tag) ? (a->tag < b->tag ? -1 : 1) : (a->seq < b->seq ? -1 : a->seq > b->seq ? 1 : 0);
-        }
-    };
-
-    struct stage_info_t
-    {
-        unsigned int index;
-        rb_ot_pause_func_t pause_func;
-    };
-
-    RB_INTERNAL void add_pause(unsigned int table_index, rb_ot_pause_func_t pause_func);
-
-public:
-    rb_face_t *face;
-    rb_segment_properties_t props;
-
-    rb_tag_t chosen_script[2];
-    bool found_script[2];
-    unsigned int script_index[2], language_index[2];
-
-private:
-    unsigned int current_stage[2]; /* GSUB/GPOS */
-    rb_vector_t<feature_info_t> feature_infos;
-    rb_vector_t<stage_info_t> stages[2]; /* GSUB/GPOS */
-};
-
-extern "C" {
-RB_EXTERN rb_mask_t rb_ot_map_get_1_mask(const rb_ot_map_t *map, rb_tag_t tag);
-RB_EXTERN rb_mask_t rb_ot_map_global_mask(const rb_ot_map_t *map);
-RB_EXTERN bool rb_ot_map_get_found_script(const rb_ot_map_t *map, unsigned int index);
-RB_EXTERN rb_tag_t rb_ot_map_get_chosen_script(const rb_ot_map_t *map, unsigned int index);
-RB_EXTERN unsigned int
-rb_ot_map_get_feature_stage(const rb_ot_map_t *map, unsigned int table_index, rb_tag_t feature_tag);
-RB_EXTERN void rb_ot_map_get_stages(const rb_ot_map_t *map,
-                                    unsigned int table_index,
-                                    const struct rb_ot_map_stage_map_t **pstages,
-                                    unsigned int *stage_count);
-RB_EXTERN void rb_ot_map_get_stage_lookups(const rb_ot_map_t *map,
-                                           unsigned int table_index,
-                                           unsigned int stage,
-                                           const struct rb_ot_map_lookup_map_t **plookups,
-                                           unsigned int *lookup_count);
-
-RB_EXTERN void rb_ot_map_builder_add_feature(rb_ot_map_builder_t *builder,
-                                             rb_tag_t tag,
-                                             rb_ot_map_feature_flags_t flags,
-                                             unsigned int value);
-RB_EXTERN void rb_ot_map_builder_add_gsub_pause(rb_ot_map_builder_t *builder, rb_ot_pause_func_t pause_func);
-RB_EXTERN void rb_ot_map_builder_add_gpos_pause(rb_ot_map_builder_t *builder, rb_ot_pause_func_t pause_func);
-RB_EXTERN rb_tag_t rb_ot_map_builder_get_chosen_script(const rb_ot_map_builder_t *builder, unsigned int index);
-}
+RB_END_DECLS
 
 #endif /* RB_OT_MAP_HH */
