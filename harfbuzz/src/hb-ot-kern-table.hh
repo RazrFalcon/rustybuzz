@@ -27,6 +27,7 @@
 #ifndef RB_OT_KERN_TABLE_HH
 #define RB_OT_KERN_TABLE_HH
 
+#include "hb-open-type.hh"
 #include "hb-aat-layout-kerx-table.hh"
 
 /*

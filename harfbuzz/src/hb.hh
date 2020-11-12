@@ -224,11 +224,9 @@ extern "C" void rb_free_impl(void *ptr);
 #endif
 
 #if defined(__GNUC__) && (__GNUC__ >= 3)
-#define RB_PURE_FUNC __attribute__((pure))
 #define RB_CONST_FUNC __attribute__((const))
 #define RB_PRINTF_FUNC(format_idx, arg_idx) __attribute__((__format__(__printf__, format_idx, arg_idx)))
 #else
-#define RB_PURE_FUNC
 #define RB_CONST_FUNC
 #define RB_PRINTF_FUNC(format_idx, arg_idx)
 #endif
@@ -275,51 +273,6 @@ extern "C" void rb_free_impl(void *ptr);
 /* https://github.com/harfbuzz/harfbuzz/issues/630 */
 #define __restrict
 #endif
-
-/*
- * Borrowed from https://bugzilla.mozilla.org/show_bug.cgi?id=1215411
- * RB_FALLTHROUGH is an annotation to suppress compiler warnings about switch
- * cases that fall through without a break or return statement. RB_FALLTHROUGH
- * is only needed on cases that have code:
- *
- * switch (foo) {
- *   case 1: // These cases have no code. No fallthrough annotations are needed.
- *   case 2:
- *   case 3:
- *     foo = 4; // This case has code, so a fallthrough annotation is needed:
- *     RB_FALLTHROUGH;
- *   default:
- *     return foo;
- * }
- */
-#if defined(__clang__) && __cplusplus >= 201103L
-/* clang's fallthrough annotations are only available starting in C++11. */
-#define RB_FALLTHROUGH [[clang::fallthrough]]
-#elif defined(__GNUC__) && (__GNUC__ >= 7)
-/* GNU fallthrough attribute is available from GCC7 */
-#define RB_FALLTHROUGH __attribute__((fallthrough))
-#elif defined(_MSC_VER)
-/*
- * MSVC's __fallthrough annotations are checked by /analyze (Code Analysis):
- * https://msdn.microsoft.com/en-us/library/ms235402%28VS.80%29.aspx
- */
-#include <sal.h>
-#define RB_FALLTHROUGH __fallthrough
-#else
-#define RB_FALLTHROUGH /* FALLTHROUGH */
-#endif
-
-/* A tag to enforce use of return value for a function */
-#if __cplusplus >= 201703L
-#define RB_NODISCARD [[nodiscard]]
-#elif defined(__GNUC__) || defined(__clang__)
-#define RB_NODISCARD __attribute__((warn_unused_result))
-#elif defined(_MSC_VER)
-#define RB_NODISCARD _Check_return_
-#else
-#define RB_NODISCARD
-#endif
-#define rb_success_t RB_NODISCARD bool
 
 /* https://github.com/harfbuzz/harfbuzz/issues/1852 */
 #if defined(__clang__) && !(defined(_AIX) && (defined(__IBMCPP__) || defined(__ibmxl__)))
@@ -428,16 +381,6 @@ static_assert((sizeof(rb_var_int_t) == 4), "");
     }                                                                                                                  \
     static_assert(true, "")
 
-/* Useful for set-operations on small enums.
- * For example, for testing "x ∈ {x1, x2, x3}" use:
- * (FLAG_UNSAFE(x) & (FLAG(x1) | FLAG(x2) | FLAG(x3)))
- */
-#define FLAG(x) (ASSERT_STATIC_EXPR_ZERO((unsigned)(x) < 32) + (((uint32_t)1U) << (unsigned)(x)))
-#define FLAG_UNSAFE(x) ((unsigned)(x) < 32 ? (((uint32_t)1U) << (unsigned)(x)) : 0)
-#define FLAG_RANGE(x, y) (ASSERT_STATIC_EXPR_ZERO((x) < (y)) + FLAG(y + 1) - FLAG(x))
-#define FLAG64(x) (ASSERT_STATIC_EXPR_ZERO((unsigned)(x) < 64) + (((uint64_t)1ULL) << (unsigned)(x)))
-#define FLAG64_UNSAFE(x) ((unsigned)(x) < 64 ? (((uint64_t)1ULL) << (unsigned)(x)) : 0)
-
 /* Size signifying variable-sized array */
 #ifndef RB_VAR_ARRAY
 #define RB_VAR_ARRAY 1
@@ -448,16 +391,6 @@ static inline float _rb_roundf(float x)
     return floorf(x + .5f);
 }
 #define roundf(x) _rb_roundf(x)
-
-/* Endian swap, used in Windows related backends */
-static inline uint16_t rb_uint16_swap(const uint16_t v)
-{
-    return (v >> 8) | (v << 8);
-}
-static inline uint32_t rb_uint32_swap(const uint32_t v)
-{
-    return (rb_uint16_swap(v) << 16) | rb_uint16_swap(v >> 16);
-}
 
 /*
  * Big-endian integers.  Here because fundamental.
@@ -549,13 +482,6 @@ public:
 private:
     uint8_t v[4];
 };
-
-/*
- * For lack of a better place, put Zawgyi script hack here.
- * https://github.com/harfbuzz/harfbuzz/issues/1162
- */
-
-#define RB_SCRIPT_MYANMAR_ZAWGYI ((rb_script_t)RB_TAG('Q', 'a', 'a', 'g'))
 
 /* Headers we include for everyone.  Keep topologically sorted by dependency.
  * They express dependency amongst themselves, but no other file should include

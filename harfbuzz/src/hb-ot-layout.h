@@ -35,27 +35,10 @@
 
 RB_BEGIN_DECLS
 
-#define RB_OT_TAG_GSUB RB_TAG('G', 'S', 'U', 'B')
-#define RB_OT_TAG_GPOS RB_TAG('G', 'P', 'O', 'S')
-
-/*
- * Script & Language tags.
- */
-
-#define RB_OT_TAG_DEFAULT_SCRIPT RB_TAG('D', 'F', 'L', 'T')
-
-/**
- * RB_OT_MAX_TAGS_PER_SCRIPT:
- *
- * Since: 2.0.0
- **/
 #define RB_OT_MAX_TAGS_PER_SCRIPT 3u
-/**
- * RB_OT_MAX_TAGS_PER_LANGUAGE:
- *
- * Since: 2.0.0
- **/
 #define RB_OT_MAX_TAGS_PER_LANGUAGE 3u
+
+typedef struct rb_ot_shape_plan_t rb_ot_shape_plan_t;
 
 RB_EXTERN void rb_ot_tags_from_script_and_language(rb_script_t script,
                                                    const char *language,
@@ -63,6 +46,18 @@ RB_EXTERN void rb_ot_tags_from_script_and_language(rb_script_t script,
                                                    rb_tag_t *script_tags /* OUT */,
                                                    unsigned int *language_count /* IN/OUT */,
                                                    rb_tag_t *language_tags /* OUT */);
+
+/*
+ * kern
+ */
+
+RB_EXTERN bool rb_ot_layout_has_kerning(rb_face_t *face);
+
+RB_EXTERN bool rb_ot_layout_has_machine_kerning(rb_face_t *face);
+
+RB_EXTERN bool rb_ot_layout_has_cross_kerning(rb_face_t *face);
+
+RB_EXTERN void rb_ot_layout_kern(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
 
 /*
  * GDEF

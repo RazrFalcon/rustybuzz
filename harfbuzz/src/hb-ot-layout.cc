@@ -30,9 +30,9 @@
 
 #include "hb.hh"
 
+#include "hb-face.hh"
 #include "hb-ot-layout.hh"
 #include "hb-ot-kern-table.hh"
-#include "hb-face.hh"
 
 /**
  * SECTION:hb-ot-layout

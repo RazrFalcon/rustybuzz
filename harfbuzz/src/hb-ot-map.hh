@@ -42,7 +42,7 @@ void rb_ot_layout_substitute(const rb_ot_map_t *map, const rb_ot_shape_plan_t *p
 void rb_ot_layout_position(const rb_ot_map_t *map, const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
 }
 
-static const rb_tag_t table_tags[2] = {RB_OT_TAG_GSUB, RB_OT_TAG_GPOS};
+static const rb_tag_t table_tags[2] = {RB_TAG('G', 'S', 'U', 'B'), RB_TAG('G', 'P', 'O', 'S')};
 
 typedef void (*rb_ot_pause_func_t)(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
 

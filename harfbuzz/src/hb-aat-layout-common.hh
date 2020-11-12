@@ -34,6 +34,10 @@ namespace AAT {
 
 using namespace OT;
 
+#ifndef RB_MAX_CONTEXT_LENGTH
+#define RB_MAX_CONTEXT_LENGTH 64
+#endif
+
 /*
  * Lookup Table
  */

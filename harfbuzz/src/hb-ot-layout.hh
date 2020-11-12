@@ -35,43 +35,6 @@
 #include "hb-open-type.hh"
 #include "hb-ot-shape.hh"
 
-#ifndef RB_MAX_CONTEXT_LENGTH
-#define RB_MAX_CONTEXT_LENGTH 64
-#endif
-
-/*
- * kern
- */
-
-RB_INTERNAL bool rb_ot_layout_has_kerning(rb_face_t *face);
-
-RB_INTERNAL bool rb_ot_layout_has_machine_kerning(rb_face_t *face);
-
-RB_INTERNAL bool rb_ot_layout_has_cross_kerning(rb_face_t *face);
-
-RB_INTERNAL void rb_ot_layout_kern(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
-
-enum attach_type_t {
-    ATTACH_TYPE_NONE = 0X00,
-
-    /* Each attachment should be either a mark or a cursive; can't be both. */
-    ATTACH_TYPE_MARK = 0X01,
-    ATTACH_TYPE_CURSIVE = 0X02,
-};
-
-/*
- * Buffer var routines.
- */
-
-/* buffer var allocations, used during the entire shaping process */
-#define unicode_props() var2.u16[0]
-
-/* buffer var allocations, used during the GSUB/GPOS processing */
-#define attach_chain() var.i16[0] /* Glyph to which this attaches to, relative to current glyphs; \
-                                     negative for going back, positive for forward. */
-#define attach_type() var.u8[2]   /* Attachment type. Note! if attach_chain() is zero, the \
-                                     value of attach_type() is irrelevant. */
-
 /* unicode_props */
 
 /* Design:
@@ -90,6 +53,9 @@ enum attach_type_t {
  * - For Ws: index of which space character this is, if space fallback
  *   is needed, ie. we don't set this by default, only if asked to.
  */
+
+/* buffer var allocations, used during the entire shaping process */
+#define unicode_props() var2.u16[0]
 
 enum rb_unicode_props_flags_t {
     UPROPS_MASK_GEN_CAT = 0x001Fu,

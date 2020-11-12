@@ -42,6 +42,20 @@ namespace AAT {
 
 using namespace OT;
 
+enum attach_type_t {
+    ATTACH_TYPE_NONE = 0X00,
+
+    /* Each attachment should be either a mark or a cursive; can't be both. */
+    ATTACH_TYPE_MARK = 0X01,
+    ATTACH_TYPE_CURSIVE = 0X02,
+};
+
+/* buffer var allocations, used during the GSUB/GPOS processing */
+#define attach_chain() var.i16[0] /* Glyph to which this attaches to, relative to current glyphs; \
+                                     negative for going back, positive for forward. */
+#define attach_type() var.u8[2]   /* Attachment type. Note! if attach_chain() is zero, the \
+                                     value of attach_type() is irrelevant. */
+
 static inline int kerxTupleKern(int value, unsigned int tupleCount, const void *base, rb_aat_apply_context_t *c)
 {
     if (likely(!tupleCount || !c))
