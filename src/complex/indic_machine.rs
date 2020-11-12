@@ -354,7 +354,7 @@ pub enum SyllableType {
     NonIndicCluster,
 }
 
-pub(crate) fn find_syllables_indic(buffer: &mut Buffer) {
+pub fn find_syllables_indic(buffer: &mut Buffer) {
     let mut cs = 39usize;
     let mut ts = 0;
     let mut te = 0;

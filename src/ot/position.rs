@@ -542,7 +542,7 @@ impl AttachType {
     }
 }
 
-pub(crate) fn position_start(_: &Face, buffer: &mut Buffer) {
+pub fn position_start(_: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     for pos in &mut buffer.pos[..len] {
         pos.set_attach_chain(0);
@@ -550,9 +550,9 @@ pub(crate) fn position_start(_: &Face, buffer: &mut Buffer) {
     }
 }
 
-pub(crate) fn position_finish_advances(_: &Face, _: &mut Buffer) {}
+pub fn position_finish_advances(_: &Face, _: &mut Buffer) {}
 
-pub(crate) fn position_finish_offsets(_: &Face, buffer: &mut Buffer) {
+pub fn position_finish_offsets(_: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     let direction = buffer.direction;
 

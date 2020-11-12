@@ -68,7 +68,7 @@ pub extern "C" fn rb_ot_tags_from_script_and_language(
 }
 
 /// Converts an `Script` and an `Language` to script and language tags.
-pub(crate) fn tags_from_script_and_language(
+pub fn tags_from_script_and_language(
     script: Option<Script>,
     language: Option<&Language>,
 ) -> (ThreeTags, ThreeTags) {

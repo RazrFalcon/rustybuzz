@@ -448,7 +448,7 @@ fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     setup_masks_inner(arabic_plan, script, buffer)
 }
 
-pub(crate) fn setup_masks_inner(arabic_plan: &ArabicShapePlan, script: Script, buffer: &mut Buffer) {
+pub fn setup_masks_inner(arabic_plan: &ArabicShapePlan, script: Script, buffer: &mut Buffer) {
     arabic_joining(buffer);
     if script == script::MONGOLIAN {
         mongolian_variation_selectors(buffer);

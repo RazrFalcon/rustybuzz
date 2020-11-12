@@ -45,7 +45,7 @@ use crate::unicode::{CharExt, GeneralCategory};
 
 pub struct ShapeNormalizeContext {
     pub plan: ot::ShapePlan,
-    pub(crate) buffer: &'static mut Buffer,
+    pub buffer: &'static mut Buffer,
     pub face: &'static Face<'static>,
     pub decompose: fn(&ShapeNormalizeContext, char) -> Option<(char, char)>,
     pub compose: fn(&ShapeNormalizeContext, char, char) -> Option<char>,

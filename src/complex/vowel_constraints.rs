@@ -16,7 +16,7 @@ fn output_with_dotted_circle(buffer: &mut Buffer) {
     buffer.next_glyph();
 }
 
-pub(crate) fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
+pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
     if buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
     {
         return;

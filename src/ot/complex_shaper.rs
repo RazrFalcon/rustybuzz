@@ -65,11 +65,11 @@ pub struct ComplexShaper {
 
     /// Called during `shape()`.
     /// Shapers can use to modify text before shaping starts.
-    pub(crate) preprocess_text: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
+    pub preprocess_text: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
 
     /// Called during `shape()`.
     /// Shapers can use to modify text before shaping starts.
-    pub(crate) postprocess_glyphs: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
+    pub postprocess_glyphs: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
 
     /// How to normalize.
     pub normalization_mode: Option<ShapeNormalizationMode>,
@@ -83,7 +83,7 @@ pub struct ComplexShaper {
     /// Called during `shape()`.
     /// Shapers should use map to get feature masks and set on buffer.
     /// Shapers may NOT modify characters.
-    pub(crate) setup_masks: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
+    pub setup_masks: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
 
     /// If not `Tag(0)`, then must match found GPOS script tag for
     /// GPOS to be applied.  Otherwise, fallback positioning will be used.
@@ -91,7 +91,7 @@ pub struct ComplexShaper {
 
     /// Called during `shape()`.
     /// Shapers can use to modify ordering of combining marks.
-    pub(crate) reorder_marks: Option<fn(&ShapePlan, &mut Buffer, usize, usize)>,
+    pub reorder_marks: Option<fn(&ShapePlan, &mut Buffer, usize, usize)>,
 
     /// If and when to zero-width marks.
     pub zero_width_marks: Option<ZeroWidthMarksMode>,

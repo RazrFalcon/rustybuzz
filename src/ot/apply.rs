@@ -27,7 +27,7 @@ pub struct WouldApplyContext<'a> {
 pub struct ApplyContext<'a, 'b> {
     pub table_index: TableIndex,
     pub face: &'a Face<'b>,
-    pub(crate) buffer: &'a mut Buffer,
+    pub buffer: &'a mut Buffer,
     pub lookup_mask: Mask,
     pub lookup_index: LookupIndex,
     pub lookup_props: u32,
@@ -39,7 +39,7 @@ pub struct ApplyContext<'a, 'b> {
 }
 
 impl<'a, 'b> ApplyContext<'a, 'b> {
-    pub(crate) fn new(table_index: TableIndex, face: &'a Face<'b>, buffer: &'a mut Buffer) -> Self {
+    pub fn new(table_index: TableIndex, face: &'a Face<'b>, buffer: &'a mut Buffer) -> Self {
         Self {
             table_index,
             face,

@@ -340,7 +340,7 @@ pub enum SyllableType {
     NonCluster,
 }
 
-pub(crate) fn find_syllables(buffer: &mut Buffer) {
+pub fn find_syllables(buffer: &mut Buffer) {
     let mut cs = 5usize;
     let mut ts = 0;
     let mut te = 0;
