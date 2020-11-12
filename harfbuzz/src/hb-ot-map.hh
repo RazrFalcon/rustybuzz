@@ -324,6 +324,7 @@ RB_EXTERN void rb_ot_map_builder_add_feature(rb_ot_map_builder_t *builder,
                                              unsigned int value);
 RB_EXTERN void rb_ot_map_builder_add_gsub_pause(rb_ot_map_builder_t *builder, rb_ot_pause_func_t pause_func);
 RB_EXTERN void rb_ot_map_builder_add_gpos_pause(rb_ot_map_builder_t *builder, rb_ot_pause_func_t pause_func);
+RB_EXTERN rb_tag_t rb_ot_map_builder_get_chosen_script(const rb_ot_map_builder_t *builder, unsigned int index);
 }
 
 #endif /* RB_OT_MAP_HH */

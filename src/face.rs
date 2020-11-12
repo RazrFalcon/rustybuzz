@@ -8,8 +8,7 @@ use crate::tables::gpos::PosTable;
 use crate::tables::gsub::SubstTable;
 use crate::tables::gsubgpos::SubstPosTable;
 use crate::buffer::GlyphPropsFlags;
-use crate::common::Variation;
-use crate::ffi;
+use crate::{ffi, Variation};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3

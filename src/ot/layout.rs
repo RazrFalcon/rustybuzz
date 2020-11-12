@@ -472,7 +472,7 @@ pub extern "C" fn rb_ot_layout_position_finish_offsets(
     super::position::position_finish_offsets(face, &mut buffer);
 }
 
-// General
+// Substitution and positioning
 
 #[no_mangle]
 pub extern "C" fn rb_ot_layout_substitute(
@@ -602,4 +602,42 @@ fn apply_backward(ctx: &mut ApplyContext, lookup: impl Apply) -> bool {
         ctx.buffer.idx -= 1;
     }
     ret
+}
+
+// General
+
+pub extern "C" fn rb_clear_substitution_flags(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    face: *const ffi::rb_face_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let plan = ShapePlan::from_ptr(plan);
+    let face = Face::from_ptr(face);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    clear_substitution_flags(&plan, face, &mut buffer);
+}
+
+fn clear_substitution_flags(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
+        info.clear_substituted();
+    }
+}
+
+pub extern "C" fn rb_clear_syllables(
+    plan: *const ffi::rb_ot_shape_plan_t,
+    face: *const ffi::rb_face_t,
+    buffer: *mut ffi::rb_buffer_t,
+) {
+    let plan = ShapePlan::from_ptr(plan);
+    let face = Face::from_ptr(face);
+    let mut buffer = Buffer::from_ptr_mut(buffer);
+    clear_syllables(&plan, face, &mut buffer);
+}
+
+fn clear_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
+        info.set_syllable(0);
+    }
 }

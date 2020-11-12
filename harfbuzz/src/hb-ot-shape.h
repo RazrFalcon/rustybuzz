@@ -36,27 +36,49 @@
 RB_BEGIN_DECLS
 
 typedef struct rb_shape_plan_t rb_shape_plan_t;
+typedef struct rb_ot_map_t rb_ot_map_t;
+typedef struct rb_ot_map_builder_t rb_ot_map_builder_t;
+typedef struct rb_ot_shape_plan_t rb_ot_shape_plan_t;
+typedef struct rb_ot_shape_planner_t rb_ot_shape_planner_t;
+typedef struct rb_ot_complex_shaper_t rb_ot_complex_shaper_t;
 
-RB_EXTERN void _rb_ot_shape(rb_shape_plan_t *shape_plan,
+typedef enum {
+    RB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE = 0,
+    RB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY = 1,
+    RB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE = 2
+} rb_ot_shape_zero_width_marks_mode_t;
+
+RB_EXTERN void rb_ot_shape(rb_shape_plan_t *shape_plan,
                             rb_face_t *face,
                             rb_buffer_t *buffer,
                             const rb_feature_t *features,
                             unsigned int num_features);
 
-typedef struct rb_ot_shape_plan_t rb_ot_shape_plan_t;
-typedef struct rb_ot_complex_shaper_t rb_ot_complex_shaper_t;
-typedef struct rb_ot_map_t rb_ot_map_t;
+// C++ -> Rust
 RB_EXTERN const rb_ot_complex_shaper_t *rb_ot_shape_plan_get_ot_complex_shaper(const rb_ot_shape_plan_t *plan);
 RB_EXTERN const rb_ot_map_t *rb_ot_shape_plan_get_ot_map(const rb_ot_shape_plan_t *plan);
 RB_EXTERN const void *rb_ot_shape_plan_get_data(const rb_ot_shape_plan_t *plan);
 RB_EXTERN rb_script_t rb_ot_shape_plan_get_script(const rb_ot_shape_plan_t *plan);
 RB_EXTERN rb_direction_t rb_ot_shape_plan_get_direction(const rb_ot_shape_plan_t *plan);
 RB_EXTERN bool rb_ot_shape_plan_has_gpos_mark(const rb_ot_shape_plan_t *plan);
-
-typedef struct rb_ot_shape_planner_t rb_ot_shape_planner_t;
-typedef struct rb_ot_map_builder_t rb_ot_map_builder_t;
 RB_EXTERN rb_ot_map_builder_t *rb_ot_shape_planner_get_ot_map(rb_ot_shape_planner_t *planner);
 RB_EXTERN rb_script_t rb_ot_shape_planner_get_script(const rb_ot_shape_planner_t *planner);
+RB_EXTERN rb_direction_t rb_ot_shape_planner_get_direction(const rb_ot_shape_planner_t *planner);
+
+// Rust -> C++
+RB_EXTERN const rb_ot_complex_shaper_t *rb_ot_shape_complex_categorize(const rb_ot_shape_planner_t *planner);
+RB_EXTERN const rb_ot_complex_shaper_t *rb_ot_complex_shaper_reconsider_shaper_if_applying_morx(const rb_ot_complex_shaper_t * shaper);
+RB_EXTERN void rb_ot_complex_shaper_collect_features(const rb_ot_complex_shaper_t *shaper, rb_ot_shape_planner_t *planner);
+RB_EXTERN void rb_ot_complex_shaper_override_features(const rb_ot_complex_shaper_t *shaper, rb_ot_shape_planner_t *planner);
+RB_EXTERN rb_bool_t rb_ot_complex_shaper_data_create(const rb_ot_complex_shaper_t *shaper, const rb_ot_shape_plan_t *plan, void **data);
+RB_EXTERN void rb_ot_complex_shaper_data_destroy(const rb_ot_complex_shaper_t *shaper, void *data);
+RB_EXTERN void rb_ot_complex_shaper_preprocess_text(const rb_ot_complex_shaper_t *shaper, rb_ot_shape_plan_t *planner, rb_buffer_t *buffer, rb_face_t *face);
+RB_EXTERN void rb_ot_complex_shaper_postprocess_glyphs(const rb_ot_complex_shaper_t *shaper, rb_ot_shape_plan_t *planner, rb_buffer_t *buffer, rb_face_t *face);
+RB_EXTERN void rb_ot_complex_shaper_setup_masks(const rb_ot_complex_shaper_t *shaper, rb_ot_shape_plan_t *planner, rb_buffer_t *buffer, rb_face_t *face);
+RB_EXTERN rb_tag_t rb_ot_complex_shaper_get_gpos_tag(const rb_ot_complex_shaper_t *shaper);
+RB_EXTERN void rb_ot_complex_shaper_reorder_marks(const rb_ot_complex_shaper_t *shaper, const rb_ot_shape_plan_t *plan, rb_buffer_t *buffer, unsigned int start, unsigned int end);
+RB_EXTERN rb_ot_shape_zero_width_marks_mode_t rb_ot_complex_shaper_get_zero_width_marks_mode(const rb_ot_complex_shaper_t *shaper);
+RB_EXTERN rb_bool_t rb_ot_complex_shaper_get_fallback_position(const rb_ot_complex_shaper_t *shaper);
 
 RB_END_DECLS
 

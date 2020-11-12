@@ -469,6 +469,9 @@ pub mod script {
     pub const DIVES_AKURU: Script               = Script::from_bytes(b"Diak");
     pub const KHITAN_SMALL_SCRIPT: Script       = Script::from_bytes(b"Kits");
     pub const YEZIDI: Script                    = Script::from_bytes(b"Yezi");
+
+    // https://github.com/harfbuzz/harfbuzz/issues/1162
+    pub const MYANMAR_ZAWGYI: Script            = Script::from_bytes(b"Qaag");
 }
 
 

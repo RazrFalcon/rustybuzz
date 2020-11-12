@@ -5,6 +5,24 @@ use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
 use crate::ot::*;
 
 
+pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: Some(collect_features),
+    override_features: Some(override_features),
+    data_create: Some(data_create),
+    data_destroy: Some(data_destroy),
+    preprocess_text: Some(preprocess_text),
+    postprocess_glyphs: None,
+    normalization_mode: None,
+    decompose: None,
+    compose: None,
+    setup_masks: Some(setup_masks),
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: None,
+    fallback_position: false,
+};
+
+
 const L_BASE: u32 = 0x1100;
 const V_BASE: u32 = 0x1161;
 const T_BASE: u32 = 0x11A7;
@@ -59,55 +77,26 @@ impl HangulShapePlan {
 }
 
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_collect_features_hangul(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    collect_features(&mut planner)
-}
-
 fn collect_features(planner: &mut ShapePlanner) {
-    planner.ot_map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::NONE, 1);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_override_features_hangul(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    override_features(&mut planner)
+    planner.map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::NONE, 1);
+    planner.map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::NONE, 1);
+    planner.map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::NONE, 1);
 }
 
 fn override_features(planner: &mut ShapePlanner) {
     // Uniscribe does not apply 'calt' for Hangul, and certain fonts
     // (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
     // in calt, which is not desirable.
-    planner.ot_map.disable_feature(feature::CONTEXTUAL_ALTERNATES);
+    planner.map.disable_feature(feature::CONTEXTUAL_ALTERNATES);
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_create_hangul(
-    plan: *const ffi::rb_ot_shape_plan_t,
-) -> *mut c_void {
-    let plan = ShapePlan::from_ptr(plan);
-    let hangul_plan = HangulShapePlan::new(&plan.ot_map);
+fn data_create(plan: &ShapePlan) -> *mut c_void {
+    let hangul_plan = HangulShapePlan::new(&plan.map);
     Box::into_raw(Box::new(hangul_plan)) as _
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_destroy_hangul(data: *mut c_void) {
+fn data_destroy(data: *mut c_void) {
     unsafe { Box::from_raw(data) };
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_preprocess_text_hangul(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    preprocess_text(&plan, face, &mut buffer)
 }
 
 fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
@@ -385,18 +374,6 @@ fn is_combining_t(u: u32) -> bool {
 
 fn is_combined_s(u: u32) -> bool {
     (S_BASE ..= S_BASE + S_COUNT - 1).contains(&u)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_setup_masks_hangul(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_masks(&plan, face, &mut buffer);
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {

@@ -3,6 +3,45 @@ use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::*;
 use super::indic::{Category, Position};
 
+
+pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: Some(collect_features),
+    override_features: Some(override_features),
+    data_create: None,
+    data_destroy: None,
+    preprocess_text: None,
+    postprocess_glyphs: None,
+    normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
+    decompose: None,
+    compose: None,
+    setup_masks: Some(setup_masks),
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: Some(ZeroWidthMarksMode::ByGdefEarly),
+    fallback_position: false,
+};
+
+// Ugly Zawgyi encoding.
+// Disable all auto processing.
+// https://github.com/harfbuzz/harfbuzz/issues/1162
+pub const MYANMAR_ZAWGYI_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: None,
+    override_features: None,
+    data_create: None,
+    data_destroy: None,
+    preprocess_text: None,
+    postprocess_glyphs: None,
+    normalization_mode: None,
+    decompose: None,
+    compose: None,
+    setup_masks: None,
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: None,
+    fallback_position: false,
+};
+
+
 const MYANMAR_FEATURES: &[Tag] = &[
     // Basic features.
     // These features are applied in order, one at a time, after reordering.
@@ -147,32 +186,26 @@ impl GlyphInfo {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_collect_features_myanmar(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    collect_features(&mut planner)
-}
-
 fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
-    planner.ot_map.add_gsub_pause(Some(setup_syllables_raw));
+    planner.map.add_gsub_pause(Some(setup_syllables_raw));
 
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
 
-    planner.ot_map.add_gsub_pause(Some(reorder_raw));
+    planner.map.add_gsub_pause(Some(reorder_raw));
 
     for feature in MYANMAR_FEATURES.iter().take(4) {
-        planner.ot_map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
-        planner.ot_map.add_gsub_pause(None);
+        planner.map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner.map.add_gsub_pause(None);
     }
 
-    planner.ot_map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
+    planner.map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
 
     for feature in MYANMAR_FEATURES.iter().skip(4) {
-        planner.ot_map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner.map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
     }
 }
 
@@ -394,26 +427,8 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     buffer.sort(start, end, |a, b| a.indic_position().cmp(&b.indic_position()) == std::cmp::Ordering::Greater);
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_override_features_myanmar(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    override_features(&mut planner)
-}
-
 fn override_features(planner: &mut ShapePlanner) {
-    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_setup_masks_myanmar(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    let face = Face::from_ptr(face);
-    setup_masks(&plan, face, &mut buffer);
+    planner.map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
 fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {

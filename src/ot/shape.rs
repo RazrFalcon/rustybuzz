@@ -1,12 +1,10 @@
 use std::convert::TryFrom;
 
-use crate::ffi;
+use crate::{ffi, Direction, Face};
 use crate::buffer::{
     glyph_flag, Buffer, BufferClusterLevel, BufferFlags, BufferScratchFlags, GlyphInfo,
     GlyphPropsFlags,
 };
-use crate::common::Direction;
-use crate::face::Face;
 use crate::unicode::{CharExt, GeneralCategory};
 
 #[no_mangle]

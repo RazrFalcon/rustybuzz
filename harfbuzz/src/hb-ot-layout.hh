@@ -103,7 +103,7 @@ enum rb_unicode_props_flags_t {
 };
 RB_MARK_AS_FLAG_T(rb_unicode_props_flags_t);
 
-static inline rb_unicode_general_category_t _rb_glyph_info_get_general_category(const rb_glyph_info_t *info)
+static inline rb_unicode_general_category_t rb_glyph_info_get_general_category(const rb_glyph_info_t *info)
 {
     return (rb_unicode_general_category_t)(info->unicode_props() & UPROPS_MASK_GEN_CAT);
 }

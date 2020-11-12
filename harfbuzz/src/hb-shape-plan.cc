@@ -133,6 +133,6 @@ rb_bool_t rb_shape_plan_execute(rb_shape_plan_t *shape_plan,
     if (unlikely(rb_object_is_inert(shape_plan)))
         return false;
 
-    _rb_ot_shape(shape_plan, face, buffer, features, num_features);
+    rb_ot_shape(shape_plan, face, buffer, features, num_features);
     return true;
 }

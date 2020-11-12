@@ -38,7 +38,7 @@ struct rb_ot_shape_plan_t
     const struct rb_ot_complex_shaper_t *shaper;
     rb_ot_map_t map;
     rb_aat_map_t aat_map;
-    const void *data;
+    void *data;
     rb_mask_t frac_mask, numr_mask, dnom_mask;
     rb_mask_t rtlm_mask;
     rb_mask_t kern_mask;

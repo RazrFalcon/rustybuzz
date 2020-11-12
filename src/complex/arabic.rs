@@ -9,6 +9,25 @@ use crate::ot::*;
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class};
 use super::{rb_flag, rb_flag_unsafe};
 
+
+pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: Some(collect_features),
+    override_features: None,
+    data_create: Some(data_create),
+    data_destroy: Some(data_destroy),
+    preprocess_text: None,
+    postprocess_glyphs: Some(postprocess_glyphs),
+    normalization_mode: Some(ShapeNormalizationMode::Auto),
+    decompose: None,
+    compose: None,
+    setup_masks: Some(setup_masks),
+    gpos_tag: None,
+    reorder_marks: Some(reorder_marks),
+    zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
+    fallback_position: true,
+};
+
+
 const ARABIC_HAS_STCH: BufferScratchFlags = BufferScratchFlags::COMPLEX0;
 
 const ARABIC_FEATURES: &[Tag] = &[
@@ -148,12 +167,6 @@ impl ArabicShapePlan {
 }
 
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_collect_features_arabic(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    collect_features(&mut planner)
-}
-
 fn collect_features(planner: &mut ShapePlanner) {
     // We apply features according to the Arabic spec, with pauses
     // in between most.
@@ -176,37 +189,37 @@ fn collect_features(planner: &mut ShapePlanner) {
     // A pause after calt is required to make KFGQPC Uthmanic Script HAFS
     // work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
 
-    planner.ot_map.enable_feature(feature::STRETCHING_GLYPH_DECOMPOSITION, FeatureFlags::NONE, 1);
-    planner.ot_map.add_gsub_pause(Some(record_stch_raw));
+    planner.map.enable_feature(feature::STRETCHING_GLYPH_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.map.add_gsub_pause(Some(record_stch_raw));
 
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
 
-    planner.ot_map.add_gsub_pause(None);
+    planner.map.add_gsub_pause(None);
 
     for feature in ARABIC_FEATURES {
         let has_fallback = planner.script() == script::ARABIC && !feature_is_syriac(*feature);
         let flags = if has_fallback { FeatureFlags::HAS_FALLBACK } else { FeatureFlags::NONE };
-        planner.ot_map.add_feature(*feature, flags, 1);
-        planner.ot_map.add_gsub_pause(None);
+        planner.map.add_feature(*feature, flags, 1);
+        planner.map.add_gsub_pause(None);
     }
 
     // Normally, Unicode says a ZWNJ means "don't ligate".  In Arabic script
     // however, it says a ZWJ should also mean "don't ligate".  So we run
     // the main ligating features as MANUAL_ZWJ.
 
-    planner.ot_map.enable_feature(feature::REQUIRED_LIGATURES,
+    planner.map.enable_feature(feature::REQUIRED_LIGATURES,
                                   FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK, 1);
 
     if planner.script() == script::ARABIC {
-        planner.ot_map.add_gsub_pause(Some(fallback_shape_raw));
+        planner.map.add_gsub_pause(Some(fallback_shape_raw));
     }
 
     // No pause after rclt.
     // See 98460779bae19e4d64d29461ff154b3527bf8420
-    planner.ot_map.enable_feature(feature::REQUIRED_CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
-    planner.ot_map.add_gsub_pause(None);
+    planner.map.enable_feature(feature::REQUIRED_CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
+    planner.map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
+    planner.map.add_gsub_pause(None);
 
     // The spec includes 'cswh'.  Earlier versions of Windows
     // used to enable this by default, but testing suggests
@@ -217,8 +230,8 @@ fn collect_features(planner: &mut ShapePlanner) {
     // to fixup broken glyph sequences.  Oh well...
     // Test case: U+0643,U+0640,U+0631.
 
-    // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::MARK_POSITIONING_VIA_SUBSTITUTION, FeatureFlags::NONE, 1);
+    // planner.map.enable_feature(feature::CONTEXTUAL_SWASH, FeatureFlags::NONE, 1);
+    planner.map.enable_feature(feature::MARK_POSITIONING_VIA_SUBSTITUTION, FeatureFlags::NONE, 1);
 }
 
 extern "C" fn fallback_shape_raw(
@@ -274,18 +287,6 @@ fn record_stch(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     if has_stch {
         buffer.scratch_flags |= ARABIC_HAS_STCH;
     }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_postprocess_glyphs_arabic(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    let face = Face::from_ptr(face);
-    postprocess_glyphs(&plan, &face, &mut buffer)
 }
 
 fn postprocess_glyphs(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
@@ -441,37 +442,20 @@ fn is_word_category(gc: GeneralCategory) -> bool {
         )) != 0
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_setup_masks_arabic(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    _: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
+fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let arabic_plan = ArabicShapePlan::from_ptr(plan.data() as _);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_masks(arabic_plan, plan.script(), &mut buffer)
+    let script = plan.script();
+    setup_masks_inner(arabic_plan, script, buffer)
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_setup_masks_arabic_plan(
-    arabic_plan: *const c_void,
-    buffer: *mut ffi::rb_buffer_t,
-    script: ffi::rb_script_t,
-) {
-    let arabic_plan = ArabicShapePlan::from_ptr(arabic_plan);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_masks(arabic_plan, Script::from_raw(script), &mut buffer)
-}
-
-pub(crate) fn setup_masks(plan: &ArabicShapePlan, script: Script, buffer: &mut Buffer) {
+pub(crate) fn setup_masks_inner(arabic_plan: &ArabicShapePlan, script: Script, buffer: &mut Buffer) {
     arabic_joining(buffer);
     if script == script::MONGOLIAN {
         mongolian_variation_selectors(buffer);
     }
 
     for info in buffer.info_slice_mut() {
-        info.mask |= plan.mask_array[info.arabic_shaping_action() as usize];
+        info.mask |= arabic_plan.mask_array[info.arabic_shaping_action() as usize];
     }
 }
 
@@ -545,30 +529,25 @@ fn mongolian_variation_selectors(buffer: &mut Buffer) {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_create_arabic(
-    plan: *const ffi::rb_ot_shape_plan_t,
-) -> *mut c_void {
-    let plan = ShapePlan::from_ptr(plan);
-    Box::into_raw(Box::new(data_create(&plan))) as _
+fn data_create(plan: &ShapePlan) -> *mut c_void {
+    Box::into_raw(Box::new(data_create_inner(plan))) as _
 }
 
-pub fn data_create(plan: &ShapePlan) -> ArabicShapePlan {
+pub fn data_create_inner(plan: &ShapePlan) -> ArabicShapePlan {
     let mut arabic_plan = ArabicShapePlan {
         mask_array: [0; ARABIC_FEATURES.len() + 1],
         has_stch: false,
     };
 
-    arabic_plan.has_stch = plan.ot_map.get_1_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
+    arabic_plan.has_stch = plan.map.get_1_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
     for i in 0..ARABIC_FEATURES.len() {
-        arabic_plan.mask_array[i] = plan.ot_map.get_1_mask(ARABIC_FEATURES[i]);
+        arabic_plan.mask_array[i] = plan.map.get_1_mask(ARABIC_FEATURES[i]);
     }
 
     arabic_plan
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_destroy_arabic(data: *mut c_void) {
+fn data_destroy(data: *mut c_void) {
     unsafe { Box::from_raw(data) };
 }
 
@@ -586,17 +565,6 @@ fn get_joining_type(u: char, gc: GeneralCategory) -> JoiningType {
     if ok != 0 { JoiningType::T } else { JoiningType::U }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_reorder_marks_arabic(
-    _: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    start: u32,
-    end: u32,
-) {
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    reorder_marks(start as usize, end as usize, &mut buffer)
-}
-
 // http://www.unicode.org/reports/tr53/
 const MODIFIER_COMBINING_MARKS: &[u32] = &[
     0x0654, // ARABIC HAMZA ABOVE
@@ -610,7 +578,7 @@ const MODIFIER_COMBINING_MARKS: &[u32] = &[
     0x08F3, // ARABIC SMALL HIGH WAW
 ];
 
-fn reorder_marks(mut start: usize, end: usize, buffer: &mut Buffer) {
+fn reorder_marks(_: &ShapePlan, buffer: &mut Buffer, mut start: usize, end: usize) {
     const MAX_COMBINING_MARKS: usize = 32;
 
     let mut i = start;

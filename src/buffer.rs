@@ -4,9 +4,7 @@ use std::mem;
 
 use ttf_parser::GlyphId;
 
-use crate::{script, Face, Mask};
-use crate::common::{Direction, Language, Script};
-use crate::ffi;
+use crate::{ffi, script, Direction, Face, Language, Mask, Script};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
 
 const CONTEXT_LENGTH: usize = 5;
@@ -1291,7 +1289,7 @@ impl Buffer {
         self.idx += count;
     }
 
-    pub(crate) fn sort(&mut self, start: usize, end: usize, cmp: fn(&GlyphInfo, &GlyphInfo) -> bool) {
+    pub(crate) fn sort(&mut self, start: usize, end: usize, cmp: impl Fn(&GlyphInfo, &GlyphInfo) -> bool) {
         assert!(!self.have_positions);
 
         for i in start+1..end {

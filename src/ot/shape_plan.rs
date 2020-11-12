@@ -1,24 +1,24 @@
 use std::os::raw::c_void;
 use std::ptr::NonNull;
 
-use crate::{ffi, ot, Script, Direction};
+use crate::{ffi, Script, Direction};
+use super::{Map, ComplexShaper};
 
 pub struct ShapePlan {
-    #[allow(dead_code)]
     plan: NonNull<ffi::rb_ot_shape_plan_t>,
-    pub ot_map: ot::Map,
-    pub ot_shaper: ot::ComplexShaper,
+    pub map: Map,
+    pub shaper: &'static ComplexShaper,
 }
 
 impl ShapePlan {
     #[inline]
-    pub fn from_ptr(ptr: *const ffi::rb_ot_shape_plan_t) -> Self {
-        assert!(!ptr.is_null());
+    pub fn from_ptr(plan: *const ffi::rb_ot_shape_plan_t) -> Self {
+        assert!(!plan.is_null());
         unsafe {
             ShapePlan {
-                plan: NonNull::new(ptr as _).unwrap(),
-                ot_map: ot::Map::from_ptr(ffi::rb_ot_shape_plan_get_ot_map(ptr)),
-                ot_shaper: ot::ComplexShaper::from_ptr(ffi::rb_ot_shape_plan_get_ot_complex_shaper(ptr)),
+                plan: NonNull::new(plan as _).unwrap(),
+                map: Map::from_ptr(ffi::rb_ot_shape_plan_get_ot_map(plan)),
+                shaper: ComplexShaper::from_ptr(ffi::rb_ot_shape_plan_get_ot_complex_shaper(plan)),
             }
         }
     }

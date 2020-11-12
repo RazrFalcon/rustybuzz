@@ -16,7 +16,7 @@ mod shape_planner;
 mod substitute;
 
 pub use complex_shaper::*;
-pub use layout::TableIndex;
+pub use layout::*;
 pub use map::*;
 pub use map_builder::*;
 pub use normalize::*;

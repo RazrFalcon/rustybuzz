@@ -1,7 +1,24 @@
-use std::convert::TryFrom;
-
-use crate::{ffi, unicode};
+use crate::{unicode, Tag};
 use crate::ot::*;
+
+
+pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: None,
+    override_features: None,
+    data_create: None,
+    data_destroy: None,
+    preprocess_text: None,
+    postprocess_glyphs: None,
+    normalization_mode: Some(ShapeNormalizationMode::Auto),
+    decompose: None,
+    compose: Some(compose),
+    setup_masks: None,
+    gpos_tag: Some(Tag::from_bytes(b"hebr")),
+    reorder_marks: None,
+    zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
+    fallback_position: true,
+};
+
 
 const S_DAGESH_FORMS: &[char] = &[
     '\u{FB30}', // ALEF
@@ -32,25 +49,6 @@ const S_DAGESH_FORMS: &[char] = &[
     '\u{FB49}', // SHIN
     '\u{FB4A}', // TAV
 ];
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_compose_hebrew(
-    ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    a: ffi::rb_codepoint_t,
-    b: ffi::rb_codepoint_t,
-    ab: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    let ctx = ShapeNormalizeContext::from_ptr(ctx);
-    let a = char::try_from(a).unwrap();
-    let b = char::try_from(b).unwrap();
-
-    if let Some(new_ab) = compose(&ctx, a, b) {
-        unsafe { *ab = new_ab as u32; }
-        1
-    } else {
-        0
-    }
-}
 
 fn compose(ctx: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     // Hebrew presentation-form shaping.

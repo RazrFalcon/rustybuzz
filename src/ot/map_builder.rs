@@ -1,6 +1,7 @@
 use std::ptr::NonNull;
 
 use crate::{ffi, Tag};
+use crate::ot::TableIndex;
 
 bitflags::bitflags! {
     /// Flags used for serialization with a `BufferSerializer`.
@@ -58,5 +59,10 @@ impl MapBuilder {
     #[inline]
     pub fn add_gsub_pause(&mut self, pause: ffi::rb_ot_pause_func_t) {
         unsafe { ffi::rb_ot_map_builder_add_gsub_pause(self.0.as_ptr(), pause) }
+    }
+
+    #[inline]
+    pub fn chosen_script(&self, table_index: TableIndex) -> Tag {
+        unsafe { ffi::rb_ot_map_builder_get_chosen_script(self.0.as_ptr(), table_index as u32) }
     }
 }

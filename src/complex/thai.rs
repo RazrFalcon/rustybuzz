@@ -1,7 +1,26 @@
-use crate::{ffi, script, Face};
+use crate::{script, Face};
 use crate::buffer::{Buffer, BufferClusterLevel};
 use crate::unicode::GeneralCategory;
 use crate::ot::*;
+
+
+pub const THAI_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: None,
+    override_features: None,
+    data_create: None,
+    data_destroy: None,
+    preprocess_text: Some(preprocess_text),
+    postprocess_glyphs: None,
+    normalization_mode: Some(ShapeNormalizationMode::Auto),
+    decompose: None,
+    compose: None,
+    setup_masks: None,
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
+    fallback_position: false,
+};
+
 
 #[derive(Clone, Copy, PartialEq)]
 enum Consonant {
@@ -355,19 +374,7 @@ fn preprocess_text(
     buffer.swap_buffers();
 
     // If font has Thai GSUB, we are done.
-    if plan.script() == script::THAI && !plan.ot_map.found_script(TableIndex::GSUB) {
+    if plan.script() == script::THAI && !plan.map.found_script(TableIndex::GSUB) {
         do_pua_shaping(face, buffer);
     }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_preprocess_text_thai(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    let face = Face::from_ptr(face);
-    preprocess_text(&plan, face, &mut buffer);
 }

@@ -4,10 +4,9 @@ use ttf_parser::GlyphId;
 use ttf_parser::parser::{Offset, Offset16};
 
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
-use crate::common::Direction;
 use crate::tables::gpos::*;
 use crate::tables::gsubgpos::*;
-use crate::{Face, Tag};
+use crate::{Direction, Face, Tag};
 use super::apply::{Apply, ApplyContext};
 use super::matching::SkippyIter;
 use super::layout::{LayoutLookup, LayoutTable, TableIndex};

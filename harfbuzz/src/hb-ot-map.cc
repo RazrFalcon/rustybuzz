@@ -189,6 +189,11 @@ void rb_ot_map_builder_add_gpos_pause(rb_ot_map_builder_t *builder, rb_ot_pause_
     builder->add_gpos_pause(pause_func);
 }
 
+rb_tag_t rb_ot_map_builder_get_chosen_script(const rb_ot_map_builder_t *builder, unsigned int index)
+{
+    return builder->chosen_script[index];
+}
+
 void rb_ot_map_builder_t::compile(rb_ot_map_t &m, unsigned int *variations_index)
 {
     static_assert((!(RB_GLYPH_FLAG_DEFINED & (RB_GLYPH_FLAG_DEFINED + 1))), "");

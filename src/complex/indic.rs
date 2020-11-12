@@ -8,6 +8,25 @@ use crate::unicode::{CharExt, GeneralCategoryExt};
 use crate::ot::*;
 use super::{rb_flag, rb_flag_unsafe, rb_flag_range};
 
+
+pub const INDIC_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: Some(collect_features),
+    override_features: Some(override_features),
+    data_create: Some(data_create),
+    data_destroy: Some(data_destroy),
+    preprocess_text: Some(preprocess_text),
+    postprocess_glyphs: None,
+    normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
+    decompose: Some(decompose),
+    compose: Some(compose),
+    setup_masks: Some(setup_masks),
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: None,
+    fallback_position: false,
+};
+
+
 #[allow(dead_code)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum Category {
@@ -391,7 +410,7 @@ impl IndicShapePlan {
             INDIC_CONFIGS[0]
         };
 
-        let is_old_spec = config.has_old_spec && plan.ot_map.chosen_script(TableIndex::GSUB).to_bytes()[3] != b'2';
+        let is_old_spec = config.has_old_spec && plan.map.chosen_script(TableIndex::GSUB).to_bytes()[3] != b'2';
 
         // Use zero-context would_substitute() matching for new-spec of the main
         // Indic scripts, and scripts with one spec only, but not for old-specs.
@@ -408,7 +427,7 @@ impl IndicShapePlan {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
                 0
             } else {
-                plan.ot_map.get_1_mask(feature.0)
+                plan.map.get_1_mask(feature.0)
             }
         }
 
@@ -423,11 +442,11 @@ impl IndicShapePlan {
             config,
             is_old_spec,
             // virama_glyph,
-            rphf: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::REPH_FORMS, zero_context),
-            pref: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::PRE_BASE_FORMS, zero_context),
-            blwf: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::BELOW_BASE_FORMS, zero_context),
-            pstf: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::POST_BASE_FORMS, zero_context),
-            vatu: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::VATTU_VARIANTS, zero_context),
+            rphf: IndicWouldSubstituteFeature::new(&plan.map, feature::REPH_FORMS, zero_context),
+            pref: IndicWouldSubstituteFeature::new(&plan.map, feature::PRE_BASE_FORMS, zero_context),
+            blwf: IndicWouldSubstituteFeature::new(&plan.map, feature::BELOW_BASE_FORMS, zero_context),
+            pstf: IndicWouldSubstituteFeature::new(&plan.map, feature::POST_BASE_FORMS, zero_context),
+            vatu: IndicWouldSubstituteFeature::new(&plan.map, feature::VATTU_VARIANTS, zero_context),
             mask_array,
         }
     }
@@ -562,100 +581,63 @@ impl GlyphInfo {
 }
 
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_collect_features_indic(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    collect_features(&mut planner)
-}
-
 fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
-    planner.ot_map.add_gsub_pause(Some(setup_syllables_raw));
+    planner.map.add_gsub_pause(Some(setup_syllables_raw));
 
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
 
-    planner.ot_map.add_gsub_pause(Some(initial_reordering_raw));
+    planner.map.add_gsub_pause(Some(initial_reordering_raw));
 
     for feature in INDIC_FEATURES.iter().take(10) {
-        planner.ot_map.add_feature(feature.0, feature.1, 1);
-        planner.ot_map.add_gsub_pause(None);
+        planner.map.add_feature(feature.0, feature.1, 1);
+        planner.map.add_gsub_pause(None);
     }
 
-    planner.ot_map.add_gsub_pause(Some(final_reordering_raw));
+    planner.map.add_gsub_pause(Some(final_reordering_raw));
 
     for feature in INDIC_FEATURES.iter().skip(10) {
-        planner.ot_map.add_feature(feature.0, feature.1, 1);
+        planner.map.add_feature(feature.0, feature.1, 1);
     }
 
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
+    planner.map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::NONE, 1);
+    planner.map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
 
-    planner.ot_map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_override_features_indic(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    override_features(&mut planner)
+    planner.map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
 }
 
 fn override_features(planner: &mut ShapePlanner) {
-    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
+    planner.map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_create_indic(
-    plan: *const ffi::rb_ot_shape_plan_t,
-) -> *mut c_void {
-    let plan = ShapePlan::from_ptr(plan);
+fn data_create(plan: &ShapePlan) -> *mut c_void {
     let indic_plan = IndicShapePlan::new(&plan);
     Box::into_raw(Box::new(indic_plan)) as _
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_destroy_indic(data: *mut c_void) {
+fn data_destroy(data: *mut c_void) {
     unsafe { Box::from_raw(data) };
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_preprocess_text_indic(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    preprocess_text(&plan, face, &mut buffer)
 }
 
 fn preprocess_text(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_decompose_indic(
-    ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    ab: ffi::rb_codepoint_t,
-    a: *mut ffi::rb_codepoint_t,
-    b: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    let ctx = ShapeNormalizeContext::from_ptr(ctx);
-
+fn decompose(ctx: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
     // Don't decompose these.
     match ab {
-        0x0931 => return 0, // DEVANAGARI LETTER RRA
+        '\u{0931}' |               // DEVANAGARI LETTER RRA
         // https://github.com/harfbuzz/harfbuzz/issues/779
-        0x09DC => return 0, // BENGALI LETTER RRA
-        0x09DD => return 0, // BENGALI LETTER RHA
-        0x0B94 => return 0, // TAMIL LETTER AU
+        '\u{09DC}' |               // BENGALI LETTER RRA
+        '\u{09DD}' |               // BENGALI LETTER RHA
+        '\u{0B94}' => return None, // TAMIL LETTER AU
         _ => {}
     }
 
-    if ab == 0x0DDA || (0x0DDC..=0x0DDE).contains(&ab) {
+    if ab == '\u{0DDA}' || ('\u{0DDC}'..='\u{0DDE}').contains(&ab) {
         // Sinhala split matras...  Let the fun begin.
         //
         // These four characters have Unicode decompositions.  However, Uniscribe
@@ -681,7 +663,7 @@ pub extern "C" fn rb_ot_complex_decompose_indic(
         //   https://docs.microsoft.com/en-us/typography/script-development/sinhala#shaping
 
         let mut ok = false;
-        if let Some(g) = ctx.face.glyph_index(ab) {
+        if let Some(g) = ctx.face.glyph_index(u32::from(ab)) {
             let g = g.0 as u32;
             let indic_plan = IndicShapePlan::from_ptr(ctx.plan.data() as _);
             ok = indic_plan.pstf.would_substitute(&[g], ctx.face);
@@ -689,34 +671,11 @@ pub extern "C" fn rb_ot_complex_decompose_indic(
 
         if ok {
             // Ok, safe to use Uniscribe-style decomposition.
-            unsafe {
-                *a = 0x0DD9;
-                *b = ab;
-                return 1;
-            }
+            return Some(('\u{0DD9}', ab));
         }
     }
 
-    crate::unicode::rb_ucd_decompose(ab, a, b)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_compose_indic(
-    ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    a: ffi::rb_codepoint_t,
-    b: ffi::rb_codepoint_t,
-    ab: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    let ctx = ShapeNormalizeContext::from_ptr(ctx);
-    let a = char::try_from(a).unwrap();
-    let b = char::try_from(b).unwrap();
-    match compose(&ctx, a, b) {
-        Some(c) => unsafe {
-            *ab = c as u32;
-            1
-        }
-        None => 0,
-    }
+    crate::unicode::decompose(ab)
 }
 
 fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
@@ -731,18 +690,6 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     }
 
     crate::unicode::compose(a, b)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_setup_masks_indic(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    let face = Face::from_ptr(face);
-    setup_masks(&plan, face, &mut buffer);
 }
 
 fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {

@@ -3,9 +3,8 @@ use std::convert::TryFrom;
 use ttf_parser::GlyphId;
 
 use crate::buffer::{Buffer, GlyphInfo, GlyphPropsFlags};
-use crate::face::Face;
 use crate::tables::gsubgpos::{LookupFlags, LookupIndex};
-use crate::Mask;
+use crate::{Face, Mask};
 use super::layout::{LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
 
 /// Find out whether a lookup would be applied.
