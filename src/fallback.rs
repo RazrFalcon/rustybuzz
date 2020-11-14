@@ -5,7 +5,18 @@ use ttf_parser::GlyphId;
 use crate::{ffi, Direction, Face};
 use crate::buffer::{Buffer, GlyphPosition};
 use crate::unicode::{modified_combining_class, CanonicalCombiningClass, GeneralCategory, Space};
-use crate::ot::*;
+use crate::plan::ShapePlan;
+
+pub fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
+        if info.general_category() == GeneralCategory::NonspacingMark {
+            let mut class = info.modified_combining_class();
+            class = recategorize_combining_class(info.codepoint, class);
+            info.set_modified_combining_class(class);
+        }
+    }
+}
 
 fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
     use CanonicalCombiningClass as Class;
@@ -99,25 +110,165 @@ fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn _rb_ot_shape_fallback_mark_position_recategorize_marks(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
+pub fn position_marks(
+    plan: &ShapePlan,
+    face: &Face,
+    buffer: &mut Buffer,
+    adjust_offsets_when_zeroing: bool,
 ) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    recategorize_marks(&plan, face, &mut buffer)
+    let mut start = 0;
+    let len = buffer.len;
+    for i in 1..len {
+        if !buffer.info[i].is_unicode_mark() {
+            position_cluster(&plan, face, buffer, start, i, adjust_offsets_when_zeroing);
+            start = i;
+        }
+    }
+
+    position_cluster(&plan, face, buffer, start, len, adjust_offsets_when_zeroing);
 }
 
-fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let len = buffer.len;
-    for info in &mut buffer.info[..len] {
-        if info.general_category() == GeneralCategory::NonspacingMark {
-            let mut class = info.modified_combining_class();
-            class = recategorize_combining_class(info.codepoint, class);
-            info.set_modified_combining_class(class);
+fn position_cluster(
+    plan: &ShapePlan,
+    face: &Face,
+    buffer: &mut Buffer,
+    start: usize,
+    end: usize,
+    adjust_offsets_when_zeroing: bool,
+) {
+    if end - start < 2 {
+        return;
+    }
+
+    // Find the base glyph
+    let mut i = start;
+    while i < end {
+        if !buffer.info[i].is_unicode_mark() {
+            // Find mark glyphs
+            let mut j = i + 1;
+            while j < end && buffer.info[j].is_unicode_mark() {
+                j += 1;
+            }
+
+            position_around_base(plan, face, buffer, i, j, adjust_offsets_when_zeroing);
+            i = j - 1;
+        }
+        i += 1;
+    }
+}
+
+fn position_around_base(
+    plan: &ShapePlan,
+    face: &Face,
+    buffer: &mut Buffer,
+    base: usize,
+    end: usize,
+    adjust_offsets_when_zeroing: bool,
+) {
+    let mut horizontal_dir = Direction::Invalid;
+    buffer.unsafe_to_break(base, end);
+
+    let base_info = &buffer.info[base];
+    let base_pos = &buffer.pos[base];
+    let base_glyph = GlyphId(u16::try_from(base_info.codepoint).unwrap());
+
+    let mut base_extents = match face.glyph_extents(base_glyph) {
+        Some(extents) => extents,
+        None => {
+            // If extents don't work, zero marks and go home.
+            zero_mark_advances(buffer, base + 1, end, adjust_offsets_when_zeroing);
+            return;
+        }
+    };
+
+    base_extents.y_bearing += base_pos.y_offset;
+    base_extents.x_bearing = 0;
+
+    // Use horizontal advance for horizontal positioning.
+    // Generally a better idea. Also works for zero-ink glyphs. See:
+    // https://github.com/harfbuzz/harfbuzz/issues/1532
+    base_extents.width = face.glyph_h_advance(base_glyph) as i32;
+
+    let lig_id = base_info.lig_id() as u32;
+    let num_lig_components = base_info.lig_num_comps() as i32;
+
+    let mut x_offset = 0;
+    let mut y_offset = 0;
+    if buffer.direction.is_forward() {
+        x_offset -= base_pos.x_advance;
+        y_offset -= base_pos.y_advance;
+    }
+
+    let mut last_lig_component: i32 = -1;
+    let mut last_combining_class: u8 = 255;
+    let mut component_extents = base_extents;
+    let mut cluster_extents = base_extents;
+
+    for (info, pos) in buffer.info[base+1..end].iter().zip(&mut buffer.pos[base+1..end]) {
+        if info.modified_combining_class() != 0 {
+            if num_lig_components > 1 {
+                let this_lig_id = info.lig_id() as u32;
+                let mut this_lig_component = info.lig_comp() as i32 - 1;
+
+                // Conditions for attaching to the last component.
+                if lig_id == 0 || lig_id != this_lig_id || this_lig_component >= num_lig_components {
+                    this_lig_component = num_lig_components - 1;
+                }
+
+                if last_lig_component != this_lig_component {
+                    last_lig_component = this_lig_component;
+                    last_combining_class = 255;
+                    component_extents = base_extents;
+
+                    if horizontal_dir == Direction::Invalid {
+                        horizontal_dir = if plan.direction.is_horizontal() {
+                            plan.direction
+                        } else {
+                            plan.script
+                                .and_then(Direction::from_script)
+                                .unwrap_or(Direction::LeftToRight)
+                        };
+                    }
+
+                    component_extents.x_bearing +=
+                        (if horizontal_dir == Direction::LeftToRight {
+                            this_lig_component
+                        } else {
+                            num_lig_components - 1 - this_lig_component
+                        } * component_extents.width) / num_lig_components;
+
+                    component_extents.width /= num_lig_components;
+                }
+            }
+
+            let this_combining_class = info.modified_combining_class();
+            if last_combining_class != this_combining_class {
+                last_combining_class = this_combining_class;
+                cluster_extents = component_extents;
+            }
+
+            position_mark(
+                &plan,
+                face,
+                buffer.direction,
+                GlyphId(u16::try_from(info.codepoint).unwrap()),
+                pos,
+                &mut cluster_extents,
+                unsafe { std::mem::transmute(this_combining_class) },
+            );
+
+            pos.x_advance = 0;
+            pos.y_advance = 0;
+            pos.x_offset += x_offset;
+            pos.y_offset += y_offset;
+        } else {
+            if buffer.direction.is_forward() {
+                x_offset -= pos.x_advance;
+                y_offset -= pos.y_advance;
+            } else {
+                x_offset += pos.x_advance;
+                y_offset += pos.y_advance;
+            }
         }
     }
 }
@@ -262,204 +413,7 @@ fn position_mark(
     }
 }
 
-fn position_around_base(
-    plan: &ShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
-    base: usize,
-    end: usize,
-    adjust_offsets_when_zeroing: bool,
-) {
-    let mut horizontal_dir = Direction::Invalid;
-    buffer.unsafe_to_break(base, end);
-
-    let base_info = &buffer.info[base];
-    let base_pos = &buffer.pos[base];
-    let base_glyph = GlyphId(u16::try_from(base_info.codepoint).unwrap());
-
-    let mut base_extents = match face.glyph_extents(base_glyph) {
-        Some(extents) => extents,
-        None => {
-            // If extents don't work, zero marks and go home.
-            zero_mark_advances(buffer, base + 1, end, adjust_offsets_when_zeroing);
-            return;
-        }
-    };
-
-    base_extents.y_bearing += base_pos.y_offset;
-    base_extents.x_bearing = 0;
-
-    // Use horizontal advance for horizontal positioning.
-    // Generally a better idea. Also works for zero-ink glyphs. See:
-    // https://github.com/harfbuzz/harfbuzz/issues/1532
-    base_extents.width = face.glyph_h_advance(base_glyph) as i32;
-
-    let lig_id = base_info.lig_id() as u32;
-    let num_lig_components = base_info.lig_num_comps() as i32;
-
-    let mut x_offset = 0;
-    let mut y_offset = 0;
-    if buffer.direction.is_forward() {
-        x_offset -= base_pos.x_advance;
-        y_offset -= base_pos.y_advance;
-    }
-
-    let mut last_lig_component: i32 = -1;
-    let mut last_combining_class: u8 = 255;
-    let mut component_extents = base_extents;
-    let mut cluster_extents = base_extents;
-
-    for (info, pos) in buffer.info[base+1..end].iter().zip(&mut buffer.pos[base+1..end]) {
-        if info.modified_combining_class() != 0 {
-            if num_lig_components > 1 {
-                let this_lig_id = info.lig_id() as u32;
-                let mut this_lig_component = info.lig_comp() as i32 - 1;
-
-                // Conditions for attaching to the last component.
-                if lig_id == 0 || lig_id != this_lig_id || this_lig_component >= num_lig_components {
-                    this_lig_component = num_lig_components - 1;
-                }
-
-                if last_lig_component != this_lig_component {
-                    last_lig_component = this_lig_component;
-                    last_combining_class = 255;
-                    component_extents = base_extents;
-
-                    if horizontal_dir == Direction::Invalid {
-                        let plan_dir = plan.direction();
-                        horizontal_dir = if plan_dir.is_horizontal() {
-                            plan_dir
-                        } else {
-                            Direction::from_script(plan.script()).unwrap_or_default()
-                        };
-                    }
-
-                    component_extents.x_bearing +=
-                        (if horizontal_dir == Direction::LeftToRight {
-                            this_lig_component
-                        } else {
-                            num_lig_components - 1 - this_lig_component
-                        } * component_extents.width) / num_lig_components;
-
-                    component_extents.width /= num_lig_components;
-                }
-            }
-
-            let this_combining_class = info.modified_combining_class();
-            if last_combining_class != this_combining_class {
-                last_combining_class = this_combining_class;
-                cluster_extents = component_extents;
-            }
-
-            position_mark(
-                &plan,
-                face,
-                buffer.direction,
-                GlyphId(u16::try_from(info.codepoint).unwrap()),
-                pos,
-                &mut cluster_extents,
-                unsafe { std::mem::transmute(this_combining_class) },
-            );
-
-            pos.x_advance = 0;
-            pos.y_advance = 0;
-            pos.x_offset += x_offset;
-            pos.y_offset += y_offset;
-        } else {
-            if buffer.direction.is_forward() {
-                x_offset -= pos.x_advance;
-                y_offset -= pos.y_advance;
-            } else {
-                x_offset += pos.x_advance;
-                y_offset += pos.y_advance;
-            }
-        }
-    }
-}
-
-fn position_cluster(
-    plan: &ShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
-    start: usize,
-    end: usize,
-    adjust_offsets_when_zeroing: bool,
-) {
-    if end - start < 2 {
-        return;
-    }
-
-    // Find the base glyph
-    let mut i = start;
-    while i < end {
-        if !buffer.info[i].is_unicode_mark() {
-            // Find mark glyphs
-            let mut j = i + 1;
-            while j < end && buffer.info[j].is_unicode_mark() {
-                j += 1;
-            }
-
-            position_around_base(plan, face, buffer, i, j, adjust_offsets_when_zeroing);
-            i = j - 1;
-        }
-        i += 1;
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn _rb_ot_shape_fallback_mark_position(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-    adjust_offsets_when_zeroing: ffi::rb_bool_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    let adjust_offsets_when_zeroing = adjust_offsets_when_zeroing != 0;
-    mark_position(&plan, face, &mut buffer, adjust_offsets_when_zeroing)
-}
-
-fn mark_position(
-    plan: &ShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
-    adjust_offsets_when_zeroing: bool,
-) {
-    let mut start = 0;
-    let len = buffer.len;
-    for i in 1..len {
-        if !buffer.info[i].is_unicode_mark() {
-            position_cluster(&plan, face, buffer, start, i, adjust_offsets_when_zeroing);
-            start = i;
-        }
-    }
-
-    position_cluster(&plan, face, buffer, start, len, adjust_offsets_when_zeroing);
-}
-
-/// Performs face-assisted kerning.
-#[no_mangle]
-pub extern "C" fn _rb_ot_shape_fallback_kern(
-    _: *const ffi::rb_ot_shape_plan_t,
-    _: *const ffi::rb_face_t,
-    _: *mut ffi::rb_buffer_t,
-) {}
-
-/// Adjusts width of various spaces.
-#[no_mangle]
-pub extern "C" fn _rb_ot_shape_fallback_spaces(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    spaces(&plan, &face, &mut buffer);
-}
-
-fn spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     let horizontal = buffer.direction.is_horizontal();
     for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {

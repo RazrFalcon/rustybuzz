@@ -261,7 +261,7 @@ pub enum SyllableType {
     NonMyanmarCluster,
 }
 
-pub(crate) fn find_syllables_myanmar(buffer: &mut Buffer) {
+pub fn find_syllables_myanmar(buffer: &mut Buffer) {
     let mut cs = 0usize;
     let mut ts = 0;
     let mut te;

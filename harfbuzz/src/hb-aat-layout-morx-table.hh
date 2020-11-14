@@ -27,7 +27,6 @@
 #ifndef RB_AAT_LAYOUT_MORX_TABLE_HH
 #define RB_AAT_LAYOUT_MORX_TABLE_HH
 
-#include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
 #include "hb-aat-map.hh"
 
@@ -1056,7 +1055,7 @@ template <typename Types, rb_tag_t TAG> struct mortmorx
         const Chain<Types> *chain = &firstChain;
         unsigned int count = chainCount;
         for (unsigned int i = 0; i < count; i++) {
-            chain->apply(c, c->plan->aat_map.chain_flags[i]);
+            chain->apply(c, rb_shape_plan_aat_map(c->plan)->chain_flags[i]);
             if (!rb_buffer_is_allocation_successful(c->buffer))
                 return;
             chain = &StructAfter<Chain<Types>>(*chain);

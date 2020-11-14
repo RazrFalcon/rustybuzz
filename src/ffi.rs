@@ -9,7 +9,6 @@ pub type rb_codepoint_t = u32;
 pub type rb_mask_t = u32;
 pub type rb_position_t = i32;
 pub type rb_script_t = u32;
-pub type rb_ot_shape_normalization_mode_t = u32;
 
 pub const RB_DIRECTION_INVALID: rb_direction_t = 0;
 pub const RB_DIRECTION_LTR: rb_direction_t = 4;
@@ -80,29 +79,11 @@ pub struct rb_glyph_extents_t {
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct rb_ot_map_lookup_map_t {
-    pub index: u16,
-    pub auto_zwnj: bool,
-    pub auto_zwj: bool,
-    pub random: bool,
-    pub mask: rb_mask_t,
-}
-
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct rb_ot_map_stage_map_t {
-    pub last_lookup: u32,
-    pub pause_func: rb_ot_pause_func_t,
-}
-
-#[repr(C)]
-#[derive(Clone, Copy)]
 pub struct rb_buffer_t {
     _unused: [u8; 0],
 }
 
 pub type rb_destroy_func_t = Option<unsafe extern "C" fn(user_data: *mut c_void)>;
-pub type rb_ot_map_feature_flags_t = u32;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -118,56 +99,38 @@ pub struct rb_face_t {
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct rb_ot_map_t { _unused: [u8; 0] }
+pub struct rb_shape_plan_t { _unused: [u8; 0] }
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct rb_ot_map_builder_t { _unused: [u8; 0] }
+pub struct rb_aat_map_t {
+    pub _chain_flags: rb_vector_t,
+}
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct rb_ot_shape_plan_t { _unused: [u8; 0] }
+pub struct rb_aat_map_builder_t {
+    pub _face: *const rb_face_t,
+    pub _features: rb_vector_t,
+}
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct rb_ot_shape_planner_t { _unused: [u8; 0] }
+pub struct rb_vector_t {
+    pub _allocated: i32,
+    pub _length: u32,
+    pub _array_z: *mut c_void,
+}
 
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct rb_ot_complex_shaper_t { _unused: [u8; 0] }
-
-pub type rb_ot_reorder_marks_func_t = unsafe extern "C" fn(
-    plan: *const rb_ot_shape_plan_t,
-    buffer: *mut rb_buffer_t,
-    start: u32,
-    end: u32,
-);
-
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct rb_ot_shape_normalize_context_t { _unused: [u8; 0] }
-
-pub type rb_ot_decompose_func_t = unsafe extern "C" fn(
-    ctx: *const rb_ot_shape_normalize_context_t,
-    ab: rb_codepoint_t,
-    a: *mut rb_codepoint_t,
-    b: *mut rb_codepoint_t,
-) -> rb_bool_t;
-
-pub type rb_ot_compose_func_t = unsafe extern "C" fn(
-    ctx: *const rb_ot_shape_normalize_context_t,
-    a: rb_codepoint_t,
-    b: rb_codepoint_t,
-    ab: *mut rb_codepoint_t,
-) -> rb_bool_t;
-
-pub type rb_ot_pause_func_t = Option<
-    unsafe extern "C" fn(
-        plan: *const rb_ot_shape_plan_t,
-        face: *const rb_face_t,
-        buffer: *mut rb_buffer_t,
-    ),
->;
+impl rb_vector_t {
+    pub fn zero() -> Self {
+        Self {
+            _allocated: 0,
+            _length: 0,
+            _array_z: std::ptr::null_mut(),
+        }
+    }
+}
 
 extern "C" {
     pub fn rb_blob_create(
@@ -181,97 +144,59 @@ extern "C" {
 
     pub fn rb_face_sanitize_table(blob: *mut rb_blob_t, tag: Tag, glyph_count: u32) -> *mut rb_blob_t;
 
-    pub fn rb_ot_map_get_1_mask(map: *const rb_ot_map_t, tag: Tag) -> rb_mask_t;
+    pub fn rb_ot_layout_has_kerning(face: *const rb_face_t) -> rb_bool_t;
 
-    pub fn rb_ot_map_global_mask(map: *const rb_ot_map_t) -> rb_mask_t;
+    pub fn rb_ot_layout_has_machine_kerning(face: *const rb_face_t) -> rb_bool_t;
 
-    pub fn rb_ot_map_get_found_script(map: *const rb_ot_map_t, index: u32) -> bool;
+    pub fn rb_ot_layout_has_cross_kerning(face: *const rb_face_t) -> rb_bool_t;
 
-    pub fn rb_ot_map_get_chosen_script(map: *const rb_ot_map_t, index: u32) -> Tag;
-
-    pub fn rb_ot_map_get_feature_stage(map: *const rb_ot_map_t, table_index: u32, feature_tag: Tag) -> u32;
-
-    pub fn rb_ot_map_get_stages(
-        map: *const rb_ot_map_t,
-        table_index: u32,
-        pstages: *mut *const rb_ot_map_stage_map_t,
-        stage_count: *mut u32,
+    pub fn rb_ot_layout_kern(
+        plan: *const rb_shape_plan_t,
+        face: *const rb_face_t,
+        buffer: *mut rb_buffer_t,
     );
 
-    pub fn rb_ot_map_get_stage_lookups(
-        map: *const rb_ot_map_t,
-        table_index: u32,
-        stage: u32,
-        plookups: *mut *const rb_ot_map_lookup_map_t,
-        lookup_count: *mut u32,
-    );
+    pub fn rb_aat_map_init(map: *mut rb_aat_map_t);
 
-    pub fn rb_ot_shape_plan_get_ot_complex_shaper(plan: *const rb_ot_shape_plan_t) -> *const rb_ot_complex_shaper_t;
+    pub fn rb_aat_map_fini(map: *mut rb_aat_map_t);
 
-    pub fn rb_ot_shape_plan_get_ot_map(plan: *const rb_ot_shape_plan_t) -> *const rb_ot_map_t;
+    pub fn rb_aat_map_builder_init(builder: *mut rb_aat_map_builder_t, face: *const rb_face_t);
 
-    pub fn rb_ot_shape_plan_get_data(plan: *const rb_ot_shape_plan_t) -> *const c_void;
+    pub fn rb_aat_map_builder_fini(builder: *mut rb_aat_map_builder_t);
 
-    pub fn rb_ot_shape_plan_get_script(plan: *const rb_ot_shape_plan_t) -> rb_script_t;
-
-    pub fn rb_ot_shape_plan_get_direction(plan: *const rb_ot_shape_plan_t) -> rb_direction_t;
-
-    pub fn rb_ot_shape_plan_has_gpos_mark(plan: *const rb_ot_shape_plan_t) -> bool;
-
-    pub fn rb_ot_shape_planner_get_ot_map(
-        planner: *mut rb_ot_shape_planner_t,
-    ) -> *mut rb_ot_map_builder_t;
-
-    pub fn rb_ot_shape_planner_get_script(
-        planner: *const rb_ot_shape_planner_t,
-    ) -> rb_script_t;
-
-    pub fn rb_ot_complex_shaper_get_normalization_preference(
-        shaper: *const rb_ot_complex_shaper_t,
-    ) -> rb_ot_shape_normalization_mode_t;
-
-    pub fn rb_ot_complex_shaper_get_decompose(
-        shaper: *const rb_ot_complex_shaper_t,
-    ) -> Option<rb_ot_decompose_func_t>;
-
-    pub fn rb_ot_complex_shaper_get_compose(
-        shaper: *const rb_ot_complex_shaper_t,
-    ) -> Option<rb_ot_compose_func_t>;
-
-    pub fn rb_ot_complex_shaper_get_reorder_marks(
-        shaper: *const rb_ot_complex_shaper_t,
-    ) -> Option<rb_ot_reorder_marks_func_t>;
-
-    pub fn rb_ot_map_builder_add_feature(
-        builder: *mut rb_ot_map_builder_t,
+    pub fn rb_aat_map_builder_add_feature(
+        builder: *mut rb_aat_map_builder_t,
         tag: Tag,
-        flags: rb_ot_map_feature_flags_t,
         value: u32,
     );
 
-    pub fn rb_ot_map_builder_add_gsub_pause(
-        builder: *mut rb_ot_map_builder_t,
-        pause: rb_ot_pause_func_t,
-    );
+    pub fn rb_aat_map_builder_compile(builder: *mut rb_aat_map_builder_t, map: *mut rb_aat_map_t);
 
-    pub fn rb_ot_layout_lookup_would_substitute(
-        face: *const rb_face_t,
-        lookup_index: u32,
-        glyphs: *const rb_codepoint_t,
-        glyphs_length: u32,
-        zero_context: rb_bool_t,
-    ) -> rb_bool_t;
+    pub fn rb_aat_layout_has_substitution(face: *const rb_face_t) -> rb_bool_t;
 
-    pub fn rb_clear_substitution_flags(
-        plan: *const rb_ot_shape_plan_t,
+    pub fn rb_aat_layout_has_positioning(face: *const rb_face_t) -> rb_bool_t;
+
+    pub fn rb_aat_layout_has_tracking(face: *const rb_face_t) -> rb_bool_t;
+
+    pub fn rb_aat_layout_substitute(
+        plan: *const rb_shape_plan_t,
         face: *const rb_face_t,
         buffer: *mut rb_buffer_t,
     );
 
-    pub fn rb_shape(
+    pub fn rb_aat_layout_zero_width_deleted_glyphs(buffer: *mut rb_buffer_t);
+
+    pub fn rb_aat_layout_remove_deleted_glyphs(buffer: *mut rb_buffer_t);
+
+    pub fn rb_aat_layout_position(
+        plan: *const rb_shape_plan_t,
         face: *const rb_face_t,
         buffer: *mut rb_buffer_t,
-        features: *const crate::Feature,
-        num_features: u32,
-    ) -> rb_bool_t;
+    );
+
+    pub fn rb_aat_layout_track(
+        plan: *const rb_shape_plan_t,
+        face: *const rb_face_t,
+        buffer: *mut rb_buffer_t,
+    );
 }

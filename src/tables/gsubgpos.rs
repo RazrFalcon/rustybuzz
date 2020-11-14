@@ -3,6 +3,8 @@
 use std::convert::TryFrom;
 use std::cmp::Ordering;
 
+use ttf_parser::NormalizedCoordinate;
+
 use super::*;
 use crate::{Face, Tag};
 
@@ -68,14 +70,14 @@ impl<'a> SubstPosTable<'a> {
     pub fn get_variation(
         &self,
         feature_index: FeatureIndex,
-        var_index: VariationIndex,
+        variation_index: VariationIndex,
     ) -> Option<Feature<'a>> {
         self.variations
-            .and_then(|var| var.find_substitute(feature_index, var_index))
+            .and_then(|var| var.find_substitute(feature_index, variation_index))
             .or_else(|| self.get_feature(feature_index))
     }
 
-    pub fn find_variation_index(&self, coords: &[i32]) -> Option<VariationIndex> {
+    pub fn find_variation_index(&self, coords: &[NormalizedCoordinate]) -> Option<VariationIndex> {
         self.variations?.find_index(coords)
     }
 }
@@ -394,7 +396,7 @@ impl<'a> FeatureVariations<'a> {
         Some(Self { data, records })
     }
 
-    fn find_index(&self, coords: &[i32]) -> Option<VariationIndex> {
+    fn find_index(&self, coords: &[NormalizedCoordinate]) -> Option<VariationIndex> {
         for i in 0..self.records.len() {
             let record = self.records.get(i)?;
             let offset = record.conditions.to_usize();
@@ -409,9 +411,9 @@ impl<'a> FeatureVariations<'a> {
     fn find_substitute(
         &self,
         feature_index: FeatureIndex,
-        var_index: VariationIndex,
+        variation_index: VariationIndex,
     ) -> Option<Feature<'a>> {
-        let offset = self.records.get(var_index.0)?.substitutions.to_usize();
+        let offset = self.records.get(variation_index.0)?.substitutions.to_usize();
         let subst = FeatureTableSubstitution::parse(self.data.get(offset..)?)?;
         subst.find_substitute(feature_index)
     }
@@ -450,7 +452,7 @@ impl<'a> ConditionSet<'a> {
         Some(Self { data, conditions })
     }
 
-    fn evaluate(&self, coords: &[i32]) -> bool {
+    fn evaluate(&self, coords: &[NormalizedCoordinate]) -> bool {
         self.conditions.into_iter().all(|offset| {
             self.data.get(offset.to_usize()..)
                 .and_then(Condition::parse)
@@ -483,10 +485,10 @@ impl Condition {
         })
     }
 
-    fn evaluate(&self, coords: &[i32]) -> bool {
+    fn evaluate(&self, coords: &[NormalizedCoordinate]) -> bool {
         let Self::Format1 { axis_index, filter_range_min, filter_range_max } = *self;
-        let coord = coords.get(usize::from(axis_index)).copied().unwrap_or(0);
-        i32::from(filter_range_min) <= coord && coord <= i32::from(filter_range_max)
+        let coord = coords.get(usize::from(axis_index)).map(|c| c.get()).unwrap_or(0);
+        filter_range_min <= coord && coord <= filter_range_max
     }
 }
 

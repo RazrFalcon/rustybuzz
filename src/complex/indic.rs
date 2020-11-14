@@ -1,12 +1,32 @@
 use std::convert::TryFrom;
 use std::cmp;
-use std::os::raw::c_void;
+use std::ops::Range;
 
 use crate::{ffi, script, Tag, Script, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
+use crate::ot::{feature, FeatureFlags, LayoutTable, Map, TableIndex, WouldApply, WouldApplyContext};
+use crate::plan::{ShapePlan, ShapePlanner};
+use crate::normalize::ShapeNormalizationMode;
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use crate::ot::*;
-use super::{rb_flag, rb_flag_unsafe, rb_flag_range};
+use super::*;
+
+
+pub const INDIC_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: Some(collect_features),
+    override_features: Some(override_features),
+    create_data: Some(|plan| Box::new(IndicShapePlan::new(&plan))),
+    preprocess_text: Some(preprocess_text),
+    postprocess_glyphs: None,
+    normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
+    decompose: Some(decompose),
+    compose: Some(compose),
+    setup_masks: Some(setup_masks),
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: None,
+    fallback_position: false,
+};
+
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, PartialEq)]
@@ -333,35 +353,30 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
 
 
 struct IndicWouldSubstituteFeature {
-    lookups: &'static [ffi::rb_ot_map_lookup_map_t],
+    lookups: Range<usize>,
     zero_context: bool,
 }
 
 impl IndicWouldSubstituteFeature {
     pub fn new(map: &Map, feature_tag: Tag, zero_context: bool) -> Self {
         IndicWouldSubstituteFeature {
-            lookups: map.collect_stage_lookups(
-                TableIndex::GSUB,
-                map.feature_stage(TableIndex::GSUB, feature_tag),
-            ),
+            lookups: match map.feature_stage(TableIndex::GSUB, feature_tag) {
+                Some(stage) => map.stage_lookup_range(TableIndex::GSUB, stage),
+                None => 0..0,
+            },
             zero_context,
         }
     }
 
-    pub fn would_substitute(&self, glyphs: &[u32], face: &Face) -> bool {
-        for lookup in self.lookups {
-            unsafe {
-                let ok = ffi::rb_ot_layout_lookup_would_substitute(
-                    face.as_ptr(),
-                    lookup.index as u32,
-                    glyphs.as_ptr() as *const _,
-                    glyphs.len() as u32,
-                    self.zero_context as i32,
-                );
-
-                if ok != 0 {
-                    return true;
-                }
+    pub fn would_substitute(&self, map: &Map, face: &Face, glyphs: &[u32]) -> bool {
+        for index in self.lookups.clone() {
+            let lookup = map.lookup(TableIndex::GSUB, index);
+            let ctx = WouldApplyContext { glyphs, zero_context: self.zero_context };
+            if face.gsub
+                .and_then(|table| table.get_lookup(lookup.index))
+                .map_or(false, |lookup| lookup.would_apply(&ctx))
+            {
+                return true;
             }
         }
 
@@ -384,14 +399,16 @@ struct IndicShapePlan {
 
 impl IndicShapePlan {
     fn new(plan: &ShapePlan) -> Self {
-        let script = plan.script();
-        let config = if let Some(c) = INDIC_CONFIGS.iter().skip(1).find(|c| c.script == Some(script)) {
+        let script = plan.script;
+        let config = if let Some(c) = INDIC_CONFIGS.iter().skip(1).find(|c| c.script == script) {
             *c
         } else {
             INDIC_CONFIGS[0]
         };
 
-        let is_old_spec = config.has_old_spec && plan.ot_map.chosen_script(TableIndex::GSUB).to_bytes()[3] != b'2';
+        let is_old_spec = config.has_old_spec
+            && plan.ot_map.chosen_script(TableIndex::GSUB)
+                .map_or(false, |tag| tag.to_bytes()[3] != b'2');
 
         // Use zero-context would_substitute() matching for new-spec of the main
         // Indic scripts, and scripts with one spec only, but not for old-specs.
@@ -401,14 +418,14 @@ impl IndicShapePlan {
         // context.  Testing with Bengali new-spec however shows that it doesn't.
         // So, the heuristic here is the way it is.  It should *only* be changed,
         // as we discover more cases of what Windows does.  DON'T TOUCH OTHERWISE.
-        let zero_context = is_old_spec && script != script::MALAYALAM;
+        let zero_context = is_old_spec && script != Some(script::MALAYALAM);
 
         let mut mask_array = [0; INDIC_FEATURES.len()];
         for (i, feature) in INDIC_FEATURES.iter().enumerate() {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
                 0
             } else {
-                plan.ot_map.get_1_mask(feature.0)
+                plan.ot_map.one_mask(feature.0)
             }
         }
 
@@ -430,10 +447,6 @@ impl IndicShapePlan {
             vatu: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::VATTU_VARIANTS, zero_context),
             mask_array,
         }
-    }
-
-    fn from_ptr(plan: *const c_void) -> &'static IndicShapePlan {
-        unsafe { &*(plan as *const IndicShapePlan) }
     }
 }
 
@@ -562,100 +575,54 @@ impl GlyphInfo {
 }
 
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_collect_features_indic(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    collect_features(&mut planner)
-}
-
 fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
-    planner.ot_map.add_gsub_pause(Some(setup_syllables_raw));
+    planner.ot_map.add_gsub_pause(Some(setup_syllables));
 
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::empty(), 1);
 
-    planner.ot_map.add_gsub_pause(Some(initial_reordering_raw));
+    planner.ot_map.add_gsub_pause(Some(initial_reordering));
 
     for feature in INDIC_FEATURES.iter().take(10) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
         planner.ot_map.add_gsub_pause(None);
     }
 
-    planner.ot_map.add_gsub_pause(Some(final_reordering_raw));
+    planner.ot_map.add_gsub_pause(Some(final_reordering));
 
     for feature in INDIC_FEATURES.iter().skip(10) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
 
-    planner.ot_map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_override_features_indic(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    override_features(&mut planner)
+    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_syllables));
 }
 
 fn override_features(planner: &mut ShapePlanner) {
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_create_indic(
-    plan: *const ffi::rb_ot_shape_plan_t,
-) -> *mut c_void {
-    let plan = ShapePlan::from_ptr(plan);
-    let indic_plan = IndicShapePlan::new(&plan);
-    Box::into_raw(Box::new(indic_plan)) as _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_destroy_indic(data: *mut c_void) {
-    unsafe { Box::from_raw(data) };
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_preprocess_text_indic(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    preprocess_text(&plan, face, &mut buffer)
-}
-
 fn preprocess_text(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_decompose_indic(
-    ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    ab: ffi::rb_codepoint_t,
-    a: *mut ffi::rb_codepoint_t,
-    b: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    let ctx = ShapeNormalizeContext::from_ptr(ctx);
-
+fn decompose(ctx: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
     // Don't decompose these.
     match ab {
-        0x0931 => return 0, // DEVANAGARI LETTER RRA
+        '\u{0931}' |               // DEVANAGARI LETTER RRA
         // https://github.com/harfbuzz/harfbuzz/issues/779
-        0x09DC => return 0, // BENGALI LETTER RRA
-        0x09DD => return 0, // BENGALI LETTER RHA
-        0x0B94 => return 0, // TAMIL LETTER AU
+        '\u{09DC}' |               // BENGALI LETTER RRA
+        '\u{09DD}' |               // BENGALI LETTER RHA
+        '\u{0B94}' => return None, // TAMIL LETTER AU
         _ => {}
     }
 
-    if ab == 0x0DDA || (0x0DDC..=0x0DDE).contains(&ab) {
+    if ab == '\u{0DDA}' || ('\u{0DDC}'..='\u{0DDE}').contains(&ab) {
         // Sinhala split matras...  Let the fun begin.
         //
         // These four characters have Unicode decompositions.  However, Uniscribe
@@ -681,42 +648,19 @@ pub extern "C" fn rb_ot_complex_decompose_indic(
         //   https://docs.microsoft.com/en-us/typography/script-development/sinhala#shaping
 
         let mut ok = false;
-        if let Some(g) = ctx.face.glyph_index(ab) {
+        if let Some(g) = ctx.face.glyph_index(u32::from(ab)) {
             let g = g.0 as u32;
-            let indic_plan = IndicShapePlan::from_ptr(ctx.plan.data() as _);
-            ok = indic_plan.pstf.would_substitute(&[g], ctx.face);
+            let indic_plan = ctx.plan.data::<IndicShapePlan>();
+            ok = indic_plan.pstf.would_substitute(&ctx.plan.ot_map, ctx.face, &[g]);
         }
 
         if ok {
             // Ok, safe to use Uniscribe-style decomposition.
-            unsafe {
-                *a = 0x0DD9;
-                *b = ab;
-                return 1;
-            }
+            return Some(('\u{0DD9}', ab));
         }
     }
 
-    crate::unicode::rb_ucd_decompose(ab, a, b)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_compose_indic(
-    ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    a: ffi::rb_codepoint_t,
-    b: ffi::rb_codepoint_t,
-    ab: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    let ctx = ShapeNormalizeContext::from_ptr(ctx);
-    let a = char::try_from(a).unwrap();
-    let b = char::try_from(b).unwrap();
-    match compose(&ctx, a, b) {
-        Some(c) => unsafe {
-            *ab = c as u32;
-            1
-        }
-        None => 0,
-    }
+    crate::unicode::decompose(ab)
 }
 
 fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
@@ -733,35 +677,12 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     crate::unicode::compose(a, b)
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_setup_masks_indic(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    let face = Face::from_ptr(face);
-    setup_masks(&plan, face, &mut buffer);
-}
-
 fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     // We cannot setup masks here.  We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {
         info.set_indic_properties();
     }
-}
-
-extern "C" fn setup_syllables_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_syllables(&plan, face, &mut buffer);
 }
 
 fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
@@ -776,33 +697,23 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-extern "C" fn initial_reordering_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    initial_reordering(&plan, face, &mut buffer);
-}
-
 fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    let indic_plan = IndicShapePlan::from_ptr(plan.data() as _);
+    let indic_plan = plan.data::<IndicShapePlan>();
 
-    update_consonant_positions(&indic_plan, face, buffer);
+    update_consonant_positions(plan, &indic_plan, face, buffer);
     insert_dotted_circles(face, buffer);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
-        initial_reordering_syllable(indic_plan, face, start, end, buffer);
+        initial_reordering_syllable(plan, indic_plan, face, start, end, buffer);
         start = end;
         end = buffer.next_syllable(start);
     }
 }
 
 fn update_consonant_positions(
+    plan: &ShapePlan,
     indic_plan: &IndicShapePlan,
     face: &Face,
     buffer: &mut Buffer,
@@ -822,14 +733,15 @@ fn update_consonant_positions(
         for info in buffer.info_slice_mut() {
             if info.indic_position() == Position::BaseC {
                 let consonant = info.codepoint;
-                info.set_indic_position(consonant_position_from_face(indic_plan, face, consonant, virama));
+                info.set_indic_position(consonant_position_from_face(plan, indic_plan, face, consonant, virama));
             }
         }
     }
 }
 
 fn consonant_position_from_face(
-    plan: &IndicShapePlan,
+    plan: &ShapePlan,
+    indic_plan: &IndicShapePlan,
     face: &Face,
     consonant: u32,
     virama: u32,
@@ -848,19 +760,23 @@ fn consonant_position_from_face(
     // Vatu is done as well, for:
     // https://github.com/harfbuzz/harfbuzz/issues/1587
 
-    if  plan.blwf.would_substitute(&[virama, consonant], face) ||
-        plan.blwf.would_substitute(&[consonant, virama], face) ||
-        plan.vatu.would_substitute(&[virama, consonant], face) ||
-        plan.vatu.would_substitute(&[consonant, virama], face)
+    if  indic_plan.blwf.would_substitute(&plan.ot_map, face, &[virama, consonant]) ||
+        indic_plan.blwf.would_substitute(&plan.ot_map, face, &[consonant, virama]) ||
+        indic_plan.vatu.would_substitute(&plan.ot_map, face, &[virama, consonant]) ||
+        indic_plan.vatu.would_substitute(&plan.ot_map, face, &[consonant, virama])
     {
         return Position::BelowC;
     }
 
-    if plan.pstf.would_substitute(&[virama, consonant], face) || plan.pstf.would_substitute(&[consonant, virama], face) {
+    if indic_plan.pstf.would_substitute(&plan.ot_map, face, &[virama, consonant]) ||
+       indic_plan.pstf.would_substitute(&plan.ot_map, face, &[consonant, virama])
+    {
         return Position::PostC;
     }
 
-    if plan.pref.would_substitute(&[virama, consonant], face) || plan.pref.would_substitute(&[consonant, virama], face) {
+    if indic_plan.pref.would_substitute(&plan.ot_map, face, &[virama, consonant]) ||
+       indic_plan.pref.would_substitute(&plan.ot_map, face, &[consonant, virama])
+    {
         return Position::PostC;
     }
 
@@ -928,7 +844,8 @@ fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
 }
 
 fn initial_reordering_syllable(
-    plan: &IndicShapePlan,
+    plan: &ShapePlan,
+    indic_plan: &IndicShapePlan,
     face: &Face,
     start: usize,
     end: usize,
@@ -949,11 +866,11 @@ fn initial_reordering_syllable(
     match syllable_type {
         // We made the vowels look like consonants.  So let's call the consonant logic!
         SyllableType::VowelSyllable | SyllableType::ConsonantSyllable => {
-            initial_reordering_consonant_syllable(plan, face, start, end, buffer);
+            initial_reordering_consonant_syllable(plan, indic_plan, face, start, end, buffer);
         }
         // We already inserted dotted-circles, so just call the standalone_cluster.
         SyllableType::BrokenCluster | SyllableType::StandaloneCluster => {
-            initial_reordering_standalone_cluster(plan, face, start, end, buffer);
+            initial_reordering_standalone_cluster(plan, indic_plan, face, start, end, buffer);
         }
         SyllableType::SymbolCluster | SyllableType::NonIndicCluster => {}
     }
@@ -962,7 +879,8 @@ fn initial_reordering_syllable(
 // Rules from:
 // https://docs.microsqoft.com/en-us/typography/script-development/devanagari */
 fn initial_reordering_consonant_syllable(
-    plan: &IndicShapePlan,
+    plan: &ShapePlan,
+    indic_plan: &IndicShapePlan,
     face: &Face,
     start: usize,
     end: usize,
@@ -1004,20 +922,20 @@ fn initial_reordering_consonant_syllable(
         //    and has more than one consonant, Ra is excluded from candidates for
         //    base consonants.
         let mut limit = start;
-        if plan.mask_array[indic_feature::RPHF] != 0 &&
+        if indic_plan.mask_array[indic_feature::RPHF] != 0 &&
             start + 3 <= end &&
-            ((plan.config.reph_mode == RephMode::Implicit && !buffer.info[start + 2].is_joiner()) ||
-                (plan.config.reph_mode == RephMode::Explicit && buffer.info[start + 2].indic_category() == Category::ZWJ))
+            ((indic_plan.config.reph_mode == RephMode::Implicit && !buffer.info[start + 2].is_joiner()) ||
+                (indic_plan.config.reph_mode == RephMode::Explicit && buffer.info[start + 2].indic_category() == Category::ZWJ))
         {
             // See if it matches the 'rphf' feature.
             let glyphs = &[
                 buffer.info[start].codepoint,
                 buffer.info[start + 1].codepoint,
-                if plan.config.reph_mode == RephMode::Explicit { buffer.info[start + 2].codepoint } else { 0 }
+                if indic_plan.config.reph_mode == RephMode::Explicit { buffer.info[start + 2].codepoint } else { 0 }
             ];
-            if plan.rphf.would_substitute(&glyphs[0..2], face) ||
-                (plan.config.reph_mode == RephMode::Explicit &&
-                    plan.rphf.would_substitute(glyphs, face))
+            if indic_plan.rphf.would_substitute(&plan.ot_map, face, &glyphs[0..2]) ||
+                (indic_plan.config.reph_mode == RephMode::Explicit &&
+                    indic_plan.rphf.would_substitute(&plan.ot_map, face, glyphs))
             {
                 limit += 2;
                 while limit < end && buffer.info[limit].is_joiner() {
@@ -1026,7 +944,7 @@ fn initial_reordering_consonant_syllable(
                 base = start;
                 has_reph = true;
             }
-        } else if plan.config.reph_mode == RephMode::LogRepha &&
+        } else if indic_plan.config.reph_mode == RephMode::LogRepha &&
             buffer.info[start].indic_category() == Category::Repha
         {
             limit += 1;
@@ -1037,7 +955,7 @@ fn initial_reordering_consonant_syllable(
             has_reph = true;
         }
 
-        match plan.config.base_pos {
+        match indic_plan.config.base_pos {
             BasePosition::Last => {
                 // -> starting from the end of the syllable, move backwards
                 let mut i = end;
@@ -1213,7 +1131,7 @@ fn initial_reordering_consonant_syllable(
     // U+091F,U+094D,U+0930,U+094D
     // With chandas.ttf
     // https://github.com/harfbuzz/harfbuzz/issues/1071
-    if plan.is_old_spec {
+    if indic_plan.is_old_spec {
         let disallow_double_halants = buffer.script == Some(script::KANNADA);
         for i in base+1..end {
             if buffer.info[i].indic_category() == Category::H {
@@ -1324,7 +1242,7 @@ fn initial_reordering_consonant_syllable(
         // reordering of pre-base stuff happening later...
         // We don't want to merge_clusters all of that, which buffer->sort()
         // would.
-        if plan.is_old_spec || end - start > 127 {
+        if indic_plan.is_old_spec || end - start > 127 {
             buffer.merge_clusters(base, end);
         } else {
             // Note! syllable() is a one-byte field.
@@ -1361,13 +1279,13 @@ fn initial_reordering_consonant_syllable(
                 break;
             }
 
-            info.mask |= plan.mask_array[indic_feature::RPHF];
+            info.mask |= indic_plan.mask_array[indic_feature::RPHF];
         }
 
         // Pre-base
-        let mut mask = plan.mask_array[indic_feature::HALF];
-        if !plan.is_old_spec && plan.config.blwf_mode == BlwfMode::PreAndPost {
-            mask |= plan.mask_array[indic_feature::BLWF];
+        let mut mask = indic_plan.mask_array[indic_feature::HALF];
+        if !indic_plan.is_old_spec && indic_plan.config.blwf_mode == BlwfMode::PreAndPost {
+            mask |= indic_plan.mask_array[indic_feature::BLWF];
         }
 
         for info in &mut buffer.info[start..base] {
@@ -1381,15 +1299,15 @@ fn initial_reordering_consonant_syllable(
         }
 
         // Post-base
-        mask = plan.mask_array[indic_feature::BLWF] |
-            plan.mask_array[indic_feature::ABVF] |
-            plan.mask_array[indic_feature::PSTF];
+        mask = indic_plan.mask_array[indic_feature::BLWF] |
+            indic_plan.mask_array[indic_feature::ABVF] |
+            indic_plan.mask_array[indic_feature::PSTF];
         for i in base+1..end {
             buffer.info[i].mask |= mask;
         }
     }
 
-    if plan.is_old_spec && buffer.script == Some(script::DEVANAGARI) {
+    if indic_plan.is_old_spec && buffer.script == Some(script::DEVANAGARI) {
         // Old-spec eye-lash Ra needs special handling.  From the
         // spec:
         //
@@ -1412,23 +1330,23 @@ fn initial_reordering_consonant_syllable(
                 buffer.info[i + 1].indic_category() == Category::H &&
                 (i + 2 == base || buffer.info[i + 2].indic_category() != Category::ZWJ)
             {
-                buffer.info[i].mask |= plan.mask_array[indic_feature::BLWF];
-                buffer.info[i + 1].mask |= plan.mask_array[indic_feature::BLWF];
+                buffer.info[i].mask |= indic_plan.mask_array[indic_feature::BLWF];
+                buffer.info[i + 1].mask |= indic_plan.mask_array[indic_feature::BLWF];
             }
         }
     }
 
     let pref_len = 2;
-    if plan.mask_array[indic_feature::PREF] != 0 && base + pref_len < end {
+    if indic_plan.mask_array[indic_feature::PREF] != 0 && base + pref_len < end {
         // Find a Halant,Ra sequence and mark it for pre-base-reordering processing.
         for i in base+1..end-pref_len+1 {
             let glyphs = &[
                 buffer.info[i + 0].codepoint,
                 buffer.info[i + 1].codepoint,
             ];
-            if plan.pref.would_substitute(glyphs, face) {
-                buffer.info[i + 0].mask = plan.mask_array[indic_feature::PREF];
-                buffer.info[i + 1].mask = plan.mask_array[indic_feature::PREF];
+            if indic_plan.pref.would_substitute(&plan.ot_map, face, glyphs) {
+                buffer.info[i + 0].mask = indic_plan.mask_array[indic_feature::PREF];
+                buffer.info[i + 1].mask = indic_plan.mask_array[indic_feature::PREF];
                 break;
             }
         }
@@ -1449,7 +1367,7 @@ fn initial_reordering_consonant_syllable(
 
                 // A ZWNJ disables HALF.
                 if non_joiner {
-                    buffer.info[j].mask &= !plan.mask_array[indic_feature::HALF];
+                    buffer.info[j].mask &= !indic_plan.mask_array[indic_feature::HALF];
                 }
 
                 if j <= start || buffer.info[j].is_consonant() {
@@ -1461,7 +1379,8 @@ fn initial_reordering_consonant_syllable(
 }
 
 fn initial_reordering_standalone_cluster(
-    plan: &IndicShapePlan,
+    plan: &ShapePlan,
+    indic_plan: &IndicShapePlan,
     face: &Face,
     start: usize,
     end: usize,
@@ -1469,18 +1388,7 @@ fn initial_reordering_standalone_cluster(
 ) {
     // We treat placeholder/dotted-circle as if they are consonants, so we
     // should just chain.  Only if not in compatibility mode that is...
-    initial_reordering_consonant_syllable(plan, face, start, end, buffer);
-}
-
-extern "C" fn final_reordering_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    final_reordering(&plan, face, &mut buffer);
+    initial_reordering_consonant_syllable(plan, indic_plan, face, start, end, buffer);
 }
 
 fn final_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
@@ -1488,7 +1396,7 @@ fn final_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         return;
     }
 
-    let indic_plan = IndicShapePlan::from_ptr(plan.data() as _);
+    let indic_plan = plan.data::<IndicShapePlan>();
 
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {

@@ -1,15 +1,14 @@
-use std::convert::TryFrom;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 
 use ttf_parser::{Tag, GlyphClass, GlyphId};
 
+use crate::buffer::GlyphPropsFlags;
 use crate::tables::gpos::PosTable;
 use crate::tables::gsub::SubstTable;
 use crate::tables::gsubgpos::SubstPosTable;
-use crate::buffer::GlyphPropsFlags;
-use crate::common::Variation;
-use crate::ffi;
+use crate::ot::TableIndex;
+use crate::{ffi, Variation};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -72,7 +71,6 @@ pub struct Face<'a> {
     units_per_em: i32,
     pixels_per_em: Option<(u16, u16)>,
     points_per_em: Option<f32>,
-    coords: Vec<i32>,
     prefered_cmap_encoding_subtable: Option<u16>,
     pub(crate) gsub: Option<SubstTable<'a>>,
     pub(crate) gpos: Option<PosTable<'a>>,
@@ -107,7 +105,6 @@ impl<'a> Face<'a> {
             units_per_em: upem,
             pixels_per_em: None,
             points_per_em: None,
-            coords: Vec::new(),
             prefered_cmap_encoding_subtable,
             gsub,
             gpos,
@@ -166,11 +163,10 @@ impl<'a> Face<'a> {
         for variation in variations {
             self.ttfp_face.set_variation(variation.tag, variation.value);
         }
+    }
 
-        self.coords.clear();
-        for c in self.ttfp_face.variation_coordinates() {
-            self.coords.push(c.get() as i32)
-        }
+    pub(crate) fn has_glyph(&self, c: u32) -> bool {
+        self.glyph_index(c).is_some()
     }
 
     pub(crate) fn glyph_index(&self, c: u32) -> Option<GlyphId> {
@@ -209,8 +205,8 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub(crate) fn glyph_h_advance(&self, glyph: GlyphId) -> u32 {
-        self.glyph_advance(glyph, false)
+    pub(crate) fn glyph_h_advance(&self, glyph: GlyphId) -> i32 {
+        self.glyph_advance(glyph, false) as i32
     }
 
     pub(crate) fn glyph_v_advance(&self, glyph: GlyphId) -> i32 {
@@ -245,7 +241,19 @@ impl<'a> Face<'a> {
         }
     }
 
-    fn glyph_side_bearing(&self, glyph: GlyphId, is_vertical: bool) -> i32 {
+    pub(crate) fn glyph_h_origin(&self, glyph: GlyphId) -> i32 {
+        self.glyph_h_advance(glyph) / 2
+    }
+
+    pub(crate) fn glyph_v_origin(&self, glyph: GlyphId) -> i32 {
+        match self.ttfp_face.glyph_y_origin(glyph) {
+            Some(y) => i32::from(y),
+            None => self.glyph_extents(glyph).map_or(0, |ext| ext.y_bearing)
+                + self.glyph_side_bearing(glyph, true)
+        }
+    }
+
+    pub(crate) fn glyph_side_bearing(&self, glyph: GlyphId, is_vertical: bool) -> i32 {
         let face = &self.ttfp_face;
         if  face.is_variable() &&
            !face.has_table(ttf_parser::TableName::HorizontalMetricsVariations) &&
@@ -308,12 +316,15 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub(crate) fn layout_table(&self, tag: Tag) -> Option<SubstPosTable<'a>> {
-        match &tag.to_bytes() {
-            b"GSUB" => self.gsub.map(|table| table.0),
-            b"GPOS" => self.gpos.map(|table| table.0),
-            _ => None,
+    pub(crate) fn layout_table(&self, table_index: TableIndex) -> Option<SubstPosTable<'a>> {
+        match table_index {
+            TableIndex::GSUB => self.gsub.map(|table| table.0),
+            TableIndex::GPOS => self.gpos.map(|table| table.0),
         }
+    }
+
+    pub(crate) fn layout_tables(&self) -> impl Iterator<Item = (TableIndex, SubstPosTable<'a>)> + '_ {
+        TableIndex::iter().filter_map(move |idx| self.layout_table(idx).map(|table| (idx, table)))
     }
 
     fn get_table_blob(&self, tag: Tag) -> &Blob<'a> {
@@ -381,133 +392,8 @@ pub extern "C" fn rb_face_get_glyph_count(face: *const ffi::rb_face_t) -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_face_get_upem(face: *const ffi::rb_face_t) -> i32 {
-    Face::from_ptr(face).units_per_em
-}
-
-#[no_mangle]
 pub extern "C" fn rb_face_get_ptem(face: *const ffi::rb_face_t) -> f32 {
     Face::from_ptr(face).points_per_em.unwrap_or(0.0)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_ppem_x(face: *const ffi::rb_face_t) -> u32 {
-    Face::from_ptr(face).pixels_per_em.map(|ppem| ppem.0).unwrap_or(0) as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_ppem_y(face: *const ffi::rb_face_t) -> u32 {
-    Face::from_ptr(face).pixels_per_em.map(|ppem| ppem.1).unwrap_or(0) as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_coords(face: *const ffi::rb_face_t) -> *const i32 {
-    Face::from_ptr(face).coords.as_ptr() as _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_num_coords(face: *const ffi::rb_face_t) -> u32 {
-    Face::from_ptr(face).coords.len() as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_glyph_extents(
-    face: *const ffi::rb_face_t,
-    glyph: ffi::rb_codepoint_t,
-    extents: *mut ffi::rb_glyph_extents_t,
-) -> ffi::rb_bool_t {
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    match Face::from_ptr(face).glyph_extents(glyph) {
-        Some(bbox) => {
-            unsafe { *extents = bbox; }
-            1
-        }
-        None => 0,
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_advance(
-    face: *const ffi::rb_face_t,
-    glyph: ffi::rb_codepoint_t,
-    is_vertical: ffi::rb_bool_t,
-) -> u32 {
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    Face::from_ptr(face).glyph_advance(glyph, is_vertical != 0)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_side_bearing(
-    face: *const ffi::rb_face_t,
-    glyph: ffi::rb_codepoint_t,
-    is_vertical: ffi::rb_bool_t,
-) -> i32 {
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    Face::from_ptr(face).glyph_side_bearing(glyph, is_vertical != 0)
-}
-
-mod metrics {
-    use crate::Tag;
-
-    pub const HORIZONTAL_ASCENDER: Tag  = Tag::from_bytes(b"hasc");
-    pub const HORIZONTAL_DESCENDER: Tag = Tag::from_bytes(b"hdsc");
-    pub const HORIZONTAL_LINE_GAP: Tag  = Tag::from_bytes(b"hlgp");
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_metrics_get_position_common(
-    face: *const ffi::rb_face_t,
-    tag: Tag,
-    position: *mut i32,
-) -> ffi::rb_bool_t {
-    let face = &Face::from_ptr(face).ttfp_face;
-    let pos = match tag {
-        metrics::HORIZONTAL_ASCENDER => {
-            i32::from(face.ascender())
-        }
-        metrics::HORIZONTAL_DESCENDER => {
-            -i32::from(face.descender()).abs()
-        }
-        metrics::HORIZONTAL_LINE_GAP => {
-            i32::from(face.line_gap())
-        }
-        _ => return 0,
-    };
-
-    unsafe { *position = pos; }
-    1
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_has_vorg_data(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
-    Face::from_ptr(face).ttfp_face.has_table(ttf_parser::TableName::VerticalOrigin) as i32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_y_origin(face: *const ffi::rb_face_t, glyph: ffi::rb_codepoint_t) -> i32 {
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    Face::from_ptr(face).ttfp_face.glyph_y_origin(glyph).unwrap_or(0) as i32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_glyph_props(face: *const ffi::rb_face_t, glyph: ffi::rb_codepoint_t) -> u32 {
-    let glyph = GlyphId(u16::try_from(glyph).unwrap());
-    Face::from_ptr(face).glyph_props(glyph) as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_nominal_glyph(
-    face: *const ffi::rb_face_t,
-    u: ffi::rb_codepoint_t,
-    glyph: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    match Face::from_ptr(face).glyph_index(u) {
-        Some(gid) => {
-            unsafe { *glyph = gid.0 as u32 };
-            1
-        }
-        None => 0,
-    }
 }
 
 #[no_mangle]
@@ -515,51 +401,18 @@ pub extern "C" fn rb_face_get_table_blob(face: *const ffi::rb_face_t, tag: Tag) 
     Face::from_ptr(face).get_table_blob(tag).as_ptr()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn metrics_get_position_common_vertical() {
-        // Vertical font.
-        let font_data = std::fs::read("tests/fonts/text-rendering-tests/TestGVAROne.ttf").unwrap();
-        let face = Face::from_slice(&font_data, 0).unwrap();
-
-        unsafe {
-            let pos = &mut 0i32 as _;
-
-            // Horizontal.
-            assert_eq!(rb_face_metrics_get_position_common(face.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
-            assert_eq!(*pos, 967);
-
-            assert_eq!(rb_face_metrics_get_position_common(face.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
-            assert_eq!(*pos, -253);
-
-            assert_eq!(rb_face_metrics_get_position_common(face.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
-            assert_eq!(*pos, 0);
-
-            // TODO: find font with variable metrics
-        }
+#[no_mangle]
+pub extern "C" fn rb_face_get_glyph_contour_point_for_origin(
+    _: *const ffi::rb_face_t,
+    _: ffi::rb_codepoint_t ,
+    _: u32,
+    _: ffi::rb_direction_t ,
+    x: *mut ffi::rb_position_t,
+    y: *mut ffi::rb_position_t,
+) -> ffi::rb_bool_t {
+    unsafe {
+        *x = 0;
+        *y = 0;
     }
-
-    #[test]
-    fn metrics_get_position_common_use_typo() {
-        // A font with OS/2.useTypographicMetrics flag set.
-        let font_data = std::fs::read("tests/fonts/in-house/1a3d8f381387dd29be1e897e4b5100ac8b4829e1.ttf").unwrap();
-        let face = Face::from_slice(&font_data, 0).unwrap();
-
-        unsafe {
-            let pos = &mut 0i32 as _;
-
-            // Horizontal.
-            assert_eq!(rb_face_metrics_get_position_common(face.as_ptr(), metrics::HORIZONTAL_ASCENDER, pos), 1);
-            assert_eq!(*pos, 800);
-
-            assert_eq!(rb_face_metrics_get_position_common(face.as_ptr(), metrics::HORIZONTAL_DESCENDER, pos), 1);
-            assert_eq!(*pos, -200);
-
-            assert_eq!(rb_face_metrics_get_position_common(face.as_ptr(), metrics::HORIZONTAL_LINE_GAP, pos), 1);
-            assert_eq!(*pos, 90);
-        }
-    }
+    0
 }

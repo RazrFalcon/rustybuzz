@@ -2,17 +2,38 @@ use std::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use crate::buffer::GlyphPropsFlags;
-use crate::ot::Map;
+use crate::{Face, Tag};
+use crate::buffer::{Buffer, GlyphPropsFlags};
+use crate::plan::ShapePlan;
 use crate::tables::gsub::*;
 use crate::tables::gsubgpos::*;
 use crate::unicode::GeneralCategory;
-use crate::Tag;
+
+use super::{Map, LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::layout::{LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
 use super::matching::{
     match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
 };
+
+/// Called before substitution lookups are performed, to ensure that glyph
+/// class and other properties are set on the glyphs in the buffer.
+pub fn substitute_start(face: &Face, buffer: &mut Buffer) {
+    set_glyph_props(face, buffer)
+}
+
+pub fn substitute(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+    super::apply_layout_table(plan, face, buffer, face.gsub);
+}
+
+fn set_glyph_props(face: &Face, buffer: &mut Buffer) {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
+        let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
+        info.set_glyph_props(face.glyph_props(glyph));
+        info.set_lig_props(0);
+        info.set_syllable(0);
+    }
+}
 
 impl<'a> LayoutTable for SubstTable<'a> {
     const TAG: Tag = Tag::from_bytes(b"GSUB");

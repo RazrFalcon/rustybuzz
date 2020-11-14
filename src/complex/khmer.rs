@@ -1,11 +1,28 @@
-use std::convert::TryFrom;
-use std::os::raw::c_void;
-
-use crate::{ffi, Tag, Mask, Face, GlyphInfo};
+use crate::{Tag, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
+use crate::ot::{feature, FeatureFlags};
+use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use crate::ot::*;
 use super::indic::{Category, Position};
+use super::*;
+
+
+pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: Some(collect_features),
+    override_features: Some(override_features),
+    create_data: Some(|plan| Box::new(KhmerShapePlan::new(&plan))),
+    preprocess_text: None,
+    postprocess_glyphs: None,
+    normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
+    decompose: Some(decompose),
+    compose: Some(compose),
+    setup_masks: Some(setup_masks),
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: None,
+    fallback_position: false,
+};
+
 
 const KHMER_FEATURES: &[(Tag, FeatureFlags)] = &[
     // Basic features.
@@ -77,7 +94,7 @@ impl KhmerShapePlan {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
                 0
             } else {
-                plan.ot_map.get_1_mask(feature.0)
+                plan.ot_map.one_mask(feature.0)
             }
         }
 
@@ -85,22 +102,12 @@ impl KhmerShapePlan {
             mask_array,
         }
     }
-
-    fn from_ptr(plan: *const c_void) -> &'static KhmerShapePlan {
-        unsafe { &*(plan as *const KhmerShapePlan) }
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_collect_features_khmer(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    collect_features(&mut planner)
 }
 
 fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
-    planner.ot_map.add_gsub_pause(Some(setup_syllables_raw));
-    planner.ot_map.add_gsub_pause(Some(reorder_raw));
+    planner.ot_map.add_gsub_pause(Some(setup_syllables));
+    planner.ot_map.add_gsub_pause(Some(reorder));
 
     // Testing suggests that Uniscribe does NOT pause between basic
     // features.  Test with KhmerUI.ttf and the following three
@@ -111,29 +118,18 @@ fn collect_features(planner: &mut ShapePlanner) {
     //   U+1789,U+17D2,U+1789,U+17BC
     //
     // https://github.com/harfbuzz/harfbuzz/issues/974
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::empty(), 1);
 
     for feature in KHMER_FEATURES.iter().take(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 
-    planner.ot_map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_syllables));
 
     for feature in KHMER_FEATURES.iter().skip(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
-}
-
-extern "C" fn setup_syllables_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_syllables(&plan, face, &mut buffer);
 }
 
 fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
@@ -148,21 +144,10 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-extern "C" fn reorder_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    reorder(&plan, face, &mut buffer);
-}
-
 fn reorder(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     insert_dotted_circles(face, buffer);
 
-    let khmer_plan = KhmerShapePlan::from_ptr(plan.data() as _);
+    let khmer_plan = plan.data::<KhmerShapePlan>();
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -332,92 +317,24 @@ fn reorder_consonant_syllable(
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_override_features_khmer(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    override_features(&mut planner)
-}
-
 fn override_features(planner: &mut ShapePlanner) {
     // Khmer spec has 'clig' as part of required shaping features:
     // "Apply feature 'clig' to form ligatures that are desired for
     // typographical correctness.", hence in overrides...
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
 
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_create_khmer(
-    plan: *const ffi::rb_ot_shape_plan_t,
-) -> *mut c_void {
-    let plan = ShapePlan::from_ptr(plan);
-    let indic_plan = KhmerShapePlan::new(&plan);
-    Box::into_raw(Box::new(indic_plan)) as _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_destroy_khmer(data: *mut c_void) {
-    unsafe { Box::from_raw(data) };
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_decompose_khmer(
-    _: *const ffi::rb_ot_shape_normalize_context_t,
-    ab: ffi::rb_codepoint_t,
-    a: *mut ffi::rb_codepoint_t,
-    b: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
+fn decompose(_: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
     // Decompose split matras that don't have Unicode decompositions.
-
     match ab {
-        0x17BE => {
-            unsafe { *a = 0x17C1; }
-            unsafe { *b = 0x17BE; }
-            return 1;
-        }
-        0x17BF => {
-            unsafe { *a = 0x17C1; }
-            unsafe { *b = 0x17BF; }
-            return 1;
-        }
-        0x17C0 => {
-            unsafe { *a = 0x17C1; }
-            unsafe { *b = 0x17C0; }
-            return 1;
-        }
-        0x17C4 => {
-            unsafe { *a = 0x17C1; }
-            unsafe { *b = 0x17C4; }
-            return 1;
-        }
-        0x17C5 => {
-            unsafe { *a = 0x17C1; }
-            unsafe { *b = 0x17C5; }
-            return 1;
-        }
-        _ => {}
-    }
-
-    crate::unicode::rb_ucd_decompose(ab, a, b)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_compose_khmer(
-    ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    a: ffi::rb_codepoint_t,
-    b: ffi::rb_codepoint_t,
-    ab: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    let ctx = ShapeNormalizeContext::from_ptr(ctx);
-    let a = char::try_from(a).unwrap();
-    let b = char::try_from(b).unwrap();
-    match compose(&ctx, a, b) {
-        Some(c) => unsafe {
-            *ab = c as u32;
-            1
-        }
-        None => 0,
+        '\u{17BE}' |
+        '\u{17BF}' |
+        '\u{17C0}' |
+        '\u{17C4}' |
+        '\u{17C5}' => Some(('\u{17C1}', ab)),
+        _ => crate::unicode::decompose(ab)
     }
 }
 
@@ -428,18 +345,6 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     }
 
     crate::unicode::compose(a, b)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_setup_masks_khmer(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    let face = Face::from_ptr(face);
-    setup_masks(&plan, face, &mut buffer);
 }
 
 fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {

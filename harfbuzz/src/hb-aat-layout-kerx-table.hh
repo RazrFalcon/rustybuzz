@@ -29,8 +29,8 @@
 #define RB_AAT_LAYOUT_KERX_TABLE_HH
 
 #include "hb-kern.hh"
+#include "hb-aat-layout-common.hh"
 #include "hb-aat-layout-ankr-table.hh"
-#include "hb-ot-layout.hh"
 
 /*
  * kerx -- Extended Kerning
@@ -41,6 +41,20 @@
 namespace AAT {
 
 using namespace OT;
+
+enum attach_type_t {
+    ATTACH_TYPE_NONE = 0X00,
+
+    /* Each attachment should be either a mark or a cursive; can't be both. */
+    ATTACH_TYPE_MARK = 0X01,
+    ATTACH_TYPE_CURSIVE = 0X02,
+};
+
+/* buffer var allocations, used during the GSUB/GPOS processing */
+#define attach_chain() var.i16[0] /* Glyph to which this attaches to, relative to current glyphs; \
+                                     negative for going back, positive for forward. */
+#define attach_type() var.u8[2]   /* Attachment type. Note! if attach_chain() is zero, the \
+                                     value of attach_type() is irrelevant. */
 
 static inline int kerxTupleKern(int value, unsigned int tupleCount, const void *base, rb_aat_apply_context_t *c)
 {
@@ -100,7 +114,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat0
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        if (!c->plan->requested_kerning)
+        if (!rb_shape_plan_requested_kerning(c->plan))
             return false;
 
         if (header.coverage & header.Backwards)
@@ -108,7 +122,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat0
 
         accelerator_t accel(*this, c);
         rb_kern_machine_t<accelerator_t> machine(accel, header.coverage & header.CrossStream);
-        machine.kern(c->face, c->buffer, c->plan->kern_mask);
+        machine.kern(c->face, c->buffer, rb_shape_plan_kern_mask(c->plan));
 
         return true;
     }
@@ -256,7 +270,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat1
                     return;
                 }
 
-                rb_mask_t kern_mask = c->plan->kern_mask;
+                rb_mask_t kern_mask = rb_shape_plan_kern_mask(c->plan);
 
                 /* From Apple 'kern' spec:
                  * "Each pops one glyph from the kerning stack and applies the kerning value to it.
@@ -326,7 +340,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat1
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        if (!c->plan->requested_kerning && !(header.coverage & header.CrossStream))
+        if (!rb_shape_plan_requested_kerning(c->plan) && !(header.coverage & header.CrossStream))
             return false;
 
         driver_context_t dc(this, c);
@@ -375,7 +389,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat2
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        if (!c->plan->requested_kerning)
+        if (!rb_shape_plan_requested_kerning(c->plan))
             return false;
 
         if (header.coverage & header.Backwards)
@@ -383,7 +397,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat2
 
         accelerator_t accel(*this, c);
         rb_kern_machine_t<accelerator_t> machine(accel, header.coverage & header.CrossStream);
-        machine.kern(c->face, c->buffer, c->plan->kern_mask);
+        machine.kern(c->face, c->buffer, rb_shape_plan_kern_mask(c->plan));
 
         return true;
     }
@@ -631,7 +645,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat6
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        if (!c->plan->requested_kerning)
+        if (!rb_shape_plan_requested_kerning(c->plan))
             return false;
 
         if (header.coverage & header.Backwards)
@@ -639,7 +653,7 @@ template <typename KernSubTableHeader> struct KerxSubTableFormat6
 
         accelerator_t accel(*this, c);
         rb_kern_machine_t<accelerator_t> machine(accel, header.coverage & header.CrossStream);
-        machine.kern(c->face, c->buffer, c->plan->kern_mask);
+        machine.kern(c->face, c->buffer, rb_shape_plan_kern_mask(c->plan));
 
         return true;
     }

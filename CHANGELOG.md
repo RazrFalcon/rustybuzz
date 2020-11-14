@@ -6,12 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Ported
+- Main shaping logic.
+- `hb_shape_plan_t` and `hb_ot_shape_plan_t`
+- `hb_ot_map_t`
+- `hb_ot_complex_shaper_t`
 - OpenType Layout (GSUB, GPOS).
 - Normalization.
-- Fallback shaper. Thanks to [laurmaedje](https://github.com/laurmaedje).
+- Fallback shaper.
 
 ### Changed
 - Rename `Font` to `Face`.
+
+Thanks to [laurmaedje](https://github.com/laurmaedje).
 
 ## [0.2.0] - 2020-07-25
 ### Ported

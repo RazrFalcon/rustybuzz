@@ -38,80 +38,13 @@ RB_BEGIN_DECLS
 
 typedef struct rb_face_t rb_face_t;
 
-/* Note that typically ascender is positive and descender negative in coordinate systems that grow up. */
-typedef struct rb_face_extents_t
-{
-    rb_position_t ascender;  /* typographic ascender. */
-    rb_position_t descender; /* typographic descender. */
-    rb_position_t line_gap;  /* suggested line spacing gap. */
-    /*< private >*/
-    rb_position_t reserved9;
-    rb_position_t reserved8;
-    rb_position_t reserved7;
-    rb_position_t reserved6;
-    rb_position_t reserved5;
-    rb_position_t reserved4;
-    rb_position_t reserved3;
-    rb_position_t reserved2;
-    rb_position_t reserved1;
-} rb_face_extents_t;
+RB_EXTERN rb_blob_t *rb_face_get_table_blob(rb_face_t *face, rb_tag_t tag);
 
-/* Note that height is negative in coordinate systems that grow up. */
-typedef struct rb_glyph_extents_t
-{
-    rb_position_t x_bearing; /* left side of glyph from origin. */
-    rb_position_t y_bearing; /* top side of glyph from origin. */
-    rb_position_t width;     /* distance from left to right side. */
-    rb_position_t height;    /* distance from top to bottom side. */
-} rb_glyph_extents_t;
+RB_EXTERN rb_blob_t *rb_face_sanitize_table(rb_blob_t *blob, rb_tag_t tag, unsigned int glyph_count);
 
 RB_EXTERN unsigned int rb_face_get_glyph_count(const rb_face_t *face);
 
-RB_EXTERN int rb_face_get_upem(rb_face_t *face);
-
 RB_EXTERN float rb_face_get_ptem(rb_face_t *face);
-
-RB_EXTERN unsigned int rb_face_get_ppem_x(rb_face_t *face);
-
-RB_EXTERN unsigned int rb_face_get_ppem_y(rb_face_t *face);
-
-RB_EXTERN const int *rb_face_get_coords(rb_face_t *face);
-
-RB_EXTERN unsigned int rb_face_get_num_coords(rb_face_t *face);
-
-RB_EXTERN rb_bool_t rb_face_get_glyph_extents(rb_face_t *face, rb_codepoint_t glyph, rb_glyph_extents_t *extents);
-
-RB_EXTERN unsigned int rb_face_get_advance(rb_face_t *face, rb_codepoint_t glyph, rb_bool_t is_vertical);
-
-RB_EXTERN int rb_face_get_side_bearing(rb_face_t *face, rb_codepoint_t glyph, rb_bool_t is_vertical);
-
-RB_EXTERN rb_bool_t rb_face_has_vorg_data(rb_face_t *face);
-
-RB_EXTERN int rb_face_get_y_origin(rb_face_t *face, rb_codepoint_t glyph);
-
-RB_EXTERN unsigned int rb_face_get_glyph_props(rb_face_t *face, rb_codepoint_t glyph);
-
-RB_EXTERN rb_bool_t rb_face_get_nominal_glyph(rb_face_t *face, rb_codepoint_t unicode, rb_codepoint_t *glyph);
-
-RB_EXTERN rb_bool_t rb_face_has_glyph(rb_face_t *face, rb_codepoint_t unicode);
-
-RB_EXTERN rb_position_t rb_face_get_glyph_h_advance(rb_face_t *face, rb_codepoint_t glyph);
-
-RB_EXTERN void rb_face_get_glyph_h_advances(rb_face_t *face,
-                                            unsigned int count,
-                                            const rb_codepoint_t *first_glyph,
-                                            unsigned glyph_stride,
-                                            rb_position_t *first_advance,
-                                            unsigned advance_stride);
-
-RB_EXTERN rb_position_t rb_face_get_glyph_v_advance(rb_face_t *face, rb_codepoint_t glyph);
-
-RB_EXTERN void rb_face_get_glyph_v_advances(rb_face_t *face,
-                                            unsigned int count,
-                                            const rb_codepoint_t *first_glyph,
-                                            unsigned glyph_stride,
-                                            rb_position_t *first_advance,
-                                            unsigned advance_stride);
 
 RB_EXTERN rb_bool_t rb_face_get_glyph_contour_point_for_origin(rb_face_t *face,
                                                                rb_codepoint_t glyph,
@@ -119,12 +52,6 @@ RB_EXTERN rb_bool_t rb_face_get_glyph_contour_point_for_origin(rb_face_t *face,
                                                                rb_direction_t direction,
                                                                rb_position_t *x,
                                                                rb_position_t *y);
-
-RB_EXTERN void rb_face_subtract_glyph_v_origin(rb_face_t *face, rb_codepoint_t glyph, rb_position_t *x, rb_position_t *y);
-
-RB_EXTERN rb_blob_t *rb_face_get_table_blob(rb_face_t *face, rb_tag_t tag);
-
-RB_EXTERN rb_blob_t *rb_face_sanitize_table(rb_blob_t *blob, rb_tag_t tag, unsigned int glyph_count);
 
 RB_END_DECLS
 

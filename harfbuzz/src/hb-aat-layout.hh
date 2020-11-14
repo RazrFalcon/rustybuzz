@@ -29,7 +29,7 @@
 
 #include "hb.hh"
 
-#include "hb-ot-shape.hh"
+#include "hb-aat-map.hh"
 
 struct rb_aat_feature_mapping_t
 {
@@ -47,15 +47,5 @@ struct rb_aat_feature_mapping_t
 RB_INTERNAL const rb_aat_feature_mapping_t *rb_aat_layout_find_feature_mapping(rb_tag_t tag);
 
 RB_INTERNAL void rb_aat_layout_compile_map(const rb_aat_map_builder_t *mapper, rb_aat_map_t *map);
-
-RB_INTERNAL void rb_aat_layout_substitute(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
-
-RB_INTERNAL void rb_aat_layout_zero_width_deleted_glyphs(rb_buffer_t *buffer);
-
-RB_INTERNAL void rb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer);
-
-RB_INTERNAL void rb_aat_layout_position(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
-
-RB_INTERNAL void rb_aat_layout_track(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
 
 #endif /* RB_AAT_LAYOUT_HH */

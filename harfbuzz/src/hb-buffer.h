@@ -35,8 +35,6 @@
 #define RB_BUFFER_H
 
 #include "hb-common.h"
-#include "hb-unicode.h"
-#include "hb-face.h"
 
 RB_BEGIN_DECLS
 
@@ -215,6 +213,8 @@ RB_EXTERN bool rb_buffer_has_separate_output(rb_buffer_t *buffer);
 RB_EXTERN void rb_buffer_remove_output(rb_buffer_t *buffer);
 
 RB_EXTERN bool rb_buffer_is_allocation_successful(const rb_buffer_t *buffer);
+
+RB_EXTERN unsigned int rb_buffer_next_grapheme(const rb_buffer_t *buffer, unsigned int start);
 
 RB_END_DECLS
 

@@ -39,7 +39,7 @@
  */
 
 /* Note: This context is used for kerning, even without AAT, hence the condition. */
-AAT::rb_aat_apply_context_t::rb_aat_apply_context_t(const rb_ot_shape_plan_t *plan_,
+AAT::rb_aat_apply_context_t::rb_aat_apply_context_t(const rb_shape_plan_t *plan_,
                                                     rb_face_t *face_,
                                                     rb_buffer_t *buffer_,
                                                     rb_blob_t *blob)
@@ -420,7 +420,7 @@ rb_bool_t rb_aat_layout_has_substitution(rb_face_t *face)
     return rb_face_get_morx_table(face)->has_data() || rb_face_get_mort_table(face)->has_data();
 }
 
-void rb_aat_layout_substitute(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
+void rb_aat_layout_substitute(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
 {
     rb_blob_t *morx_blob = rb_face_get_table_blob(face, RB_AAT_TAG_morx);
     const AAT::morx &morx = *morx_blob->as<AAT::morx>();
@@ -471,7 +471,7 @@ rb_bool_t rb_aat_layout_has_positioning(rb_face_t *face)
     return rb_face_get_kerx_table(face)->has_data();
 }
 
-void rb_aat_layout_position(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
+void rb_aat_layout_position(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
 {
     rb_blob_t *kerx_blob = rb_face_get_table_blob(face, RB_AAT_TAG_kerx);
     const AAT::kerx &kerx = *kerx_blob->as<AAT::kerx>();
@@ -493,7 +493,7 @@ rb_bool_t rb_aat_layout_has_tracking(rb_face_t *face)
     return rb_face_get_trak_table(face)->has_data();
 }
 
-void rb_aat_layout_track(const rb_ot_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
+void rb_aat_layout_track(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
 {
     const AAT::trak &trak = *rb_face_get_trak_table(face);
     AAT::rb_aat_apply_context_t c(plan, face, buffer);

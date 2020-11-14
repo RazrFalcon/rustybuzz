@@ -30,7 +30,16 @@
 #include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
 
-extern "C" {
+RB_BEGIN_DECLS
+
+RB_EXTERN rb_bool_t rb_ot_layout_has_kerning(rb_face_t *face);
+
+RB_EXTERN rb_bool_t rb_ot_layout_has_machine_kerning(rb_face_t *face);
+
+RB_EXTERN rb_bool_t rb_ot_layout_has_cross_kerning(rb_face_t *face);
+
+RB_EXTERN void rb_ot_layout_kern(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
+
 RB_EXTERN void rb_kern_machine_kern(
     rb_face_t *face,
     rb_buffer_t *buffer,
@@ -39,7 +48,8 @@ RB_EXTERN void rb_kern_machine_kern(
     const void *machine,
     rb_position_t (*machine_get_kerning)(const void *machine, rb_codepoint_t left, rb_codepoint_t right)
 );
-}
+
+RB_END_DECLS
 
 namespace OT {
 

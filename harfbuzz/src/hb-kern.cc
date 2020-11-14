@@ -1,5 +1,8 @@
 /*
- * Copyright © 2009  Red Hat, Inc.
+ * Copyright © 1998-2004  David Turner and Werner Lemberg
+ * Copyright © 2006  Behdad Esfahbod
+ * Copyright © 2007,2008,2009  Red Hat, Inc.
+ * Copyright © 2012,2013  Google, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -22,20 +25,34 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  * Red Hat Author(s): Behdad Esfahbod
+ * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef RB_OT_H
-#define RB_OT_H
-#define RB_OT_H_IN
+#include "hb.hh"
 
-#include "hb.h"
+#include "hb-face.hh"
+#include "hb-ot-kern-table.hh"
 
-#include "hb-ot-layout.h"
-#include "hb-ot-shape.h"
 
-RB_BEGIN_DECLS
+rb_bool_t rb_ot_layout_has_kerning(rb_face_t *face)
+{
+    return rb_face_get_kern_table(face)->has_data();
+}
 
-RB_END_DECLS
+rb_bool_t rb_ot_layout_has_machine_kerning(rb_face_t *face)
+{
+    return rb_face_get_kern_table(face)->has_state_machine();
+}
 
-#undef RB_OT_H_IN
-#endif /* RB_OT_H */
+rb_bool_t rb_ot_layout_has_cross_kerning(rb_face_t *face)
+{
+    return rb_face_get_kern_table(face)->has_cross_stream();
+}
+
+void rb_ot_layout_kern(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
+{
+    rb_blob_t *blob = rb_face_get_table_blob(face, RB_OT_TAG_kern);
+    const AAT::kern &kern = *blob->as<AAT::kern>();
+    AAT::rb_aat_apply_context_t c(plan, face, buffer, blob);
+    kern.apply(&c);
+}

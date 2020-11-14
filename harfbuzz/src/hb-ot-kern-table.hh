@@ -27,6 +27,7 @@
 #ifndef RB_OT_KERN_TABLE_HH
 #define RB_OT_KERN_TABLE_HH
 
+#include "hb-open-type.hh"
 #include "hb-aat-layout-kerx-table.hh"
 
 /*
@@ -60,14 +61,14 @@ template <typename KernSubTableHeader> struct KernSubTableFormat3
 
     bool apply(AAT::rb_aat_apply_context_t *c) const
     {
-        if (!c->plan->requested_kerning)
+        if (!rb_shape_plan_requested_kerning(c->plan))
             return false;
 
         if (header.coverage & header.Backwards)
             return false;
 
         rb_kern_machine_t<KernSubTableFormat3> machine(*this, header.coverage & header.CrossStream);
-        machine.kern(c->face, c->buffer, c->plan->kern_mask);
+        machine.kern(c->face, c->buffer, rb_shape_plan_kern_mask(c->plan));
 
         return true;
     }

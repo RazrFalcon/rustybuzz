@@ -56,6 +56,11 @@ impl Direction {
     }
 
     #[inline]
+    pub(crate) fn is_vertical(self) -> bool {
+        !self.is_horizontal()
+    }
+
+    #[inline]
     pub(crate) fn is_forward(self) -> bool {
         match self {
             Direction::Invalid => false,
@@ -63,6 +68,22 @@ impl Direction {
             Direction::RightToLeft => false,
             Direction::TopToBottom => true,
             Direction::BottomToTop => false,
+        }
+    }
+
+    #[inline]
+    pub(crate) fn is_backward(self) -> bool {
+        !self.is_forward()
+    }
+
+    #[inline]
+    pub(crate) fn reverse(self) -> Self {
+        match self {
+            Direction::Invalid => Direction::Invalid,
+            Direction::LeftToRight => Direction::RightToLeft,
+            Direction::RightToLeft => Direction::LeftToRight,
+            Direction::TopToBottom => Direction::BottomToTop,
+            Direction::BottomToTop => Direction::TopToBottom,
         }
     }
 
@@ -173,11 +194,6 @@ impl std::str::FromStr for Direction {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_script_get_horizontal_direction(script: ffi::rb_script_t) -> ffi::rb_direction_t {
-    Direction::from_script(Script(Tag(script))).unwrap_or_default().to_raw()
-}
-
 
 /// A script language.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
@@ -214,11 +230,6 @@ impl std::str::FromStr for Language {
 pub struct Script(pub(crate) Tag);
 
 impl Script {
-    #[inline]
-    pub(crate) const fn from_raw(script: ffi::rb_script_t) -> Self {
-        Script(Tag(script))
-    }
-
     #[inline]
     pub(crate) const fn from_bytes(bytes: &[u8; 4]) -> Self {
         Script(Tag::from_bytes(bytes))
@@ -453,6 +464,9 @@ pub mod script {
     pub const DIVES_AKURU: Script               = Script::from_bytes(b"Diak");
     pub const KHITAN_SMALL_SCRIPT: Script       = Script::from_bytes(b"Kits");
     pub const YEZIDI: Script                    = Script::from_bytes(b"Yezi");
+
+    // https://github.com/harfbuzz/harfbuzz/issues/1162
+    pub const MYANMAR_ZAWGYI: Script            = Script::from_bytes(b"Qaag");
 }
 
 
@@ -471,7 +485,7 @@ pub struct Feature {
 impl Feature {
     /// Create a new `Feature` struct.
     pub fn new(tag: Tag, value: u32, range: impl RangeBounds<usize>) -> Feature {
-        let max = std::u32::MAX as usize;
+        let max = u32::MAX as usize;
         let start = match range.start_bound() {
             Bound::Included(&included) => included.min(max) as u32,
             Bound::Excluded(&excluded) => excluded.min(max - 1) as u32 + 1,
@@ -489,6 +503,10 @@ impl Feature {
             start,
             end,
         }
+    }
+
+    pub(crate) fn is_global(&self) -> bool {
+        self.start == 0 && self.end == u32::MAX
     }
 }
 

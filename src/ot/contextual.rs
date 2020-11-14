@@ -4,8 +4,8 @@ use ttf_parser::GlyphId;
 use ttf_parser::parser::{LazyArray16, Offset};
 
 use crate::tables::gsubgpos::*;
+use super::MAX_CONTEXT_LENGTH;
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::layout::MAX_CONTEXT_LENGTH;
 use super::matching::{
     match_backtrack, match_class, match_coverage, match_glyph, match_input, match_lookahead,
     would_match_input, MatchFunc, Matched,

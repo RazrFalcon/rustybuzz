@@ -360,10 +360,6 @@ typedef enum {
 
 /* Script functions */
 
-extern "C" {
-rb_direction_t rb_script_get_horizontal_direction(rb_script_t script);
-}
-
 typedef void (*rb_destroy_func_t)(void *user_data);
 
 /* Font features and variations. */

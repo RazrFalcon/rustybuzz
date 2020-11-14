@@ -51,14 +51,20 @@ public:
 struct rb_aat_map_builder_t
 {
 public:
-    RB_INTERNAL rb_aat_map_builder_t(rb_face_t *face_, const rb_segment_properties_t *props_ RB_UNUSED)
-        : face(face_)
+    void init(rb_face_t *face_)
     {
+        memset(this, 0, sizeof(*this));
+        face = face_;
+        features.init();
+    }
+    void fini()
+    {
+        features.fini();
     }
 
     RB_INTERNAL void add_feature(rb_tag_t tag, unsigned int value = 1);
 
-    RB_INTERNAL void compile(rb_aat_map_t &m);
+    RB_INTERNAL void compile(rb_aat_map_t *m);
 
 public:
     struct feature_info_t
@@ -93,5 +99,21 @@ public:
 public:
     rb_sorted_vector_t<feature_info_t> features;
 };
+
+RB_BEGIN_DECLS
+
+RB_EXTERN void rb_aat_map_init(rb_aat_map_t *map);
+
+RB_EXTERN void rb_aat_map_fini(rb_aat_map_t *map);
+
+RB_EXTERN void rb_aat_map_builder_init(rb_aat_map_builder_t *builder, rb_face_t *face);
+
+RB_EXTERN void rb_aat_map_builder_fini(rb_aat_map_builder_t *builder);
+
+RB_EXTERN void rb_aat_map_builder_add_feature(rb_aat_map_builder_t *builder, rb_tag_t tag, unsigned int value);
+
+RB_EXTERN void rb_aat_map_builder_compile(rb_aat_map_builder_t *builder, rb_aat_map_t *map);
+
+RB_END_DECLS
 
 #endif /* RB_AAT_MAP_HH */

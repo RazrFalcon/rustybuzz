@@ -3,8 +3,7 @@ use std::convert::TryFrom;
 pub use unicode_general_category::GeneralCategory;
 pub use unicode_ccc::CanonicalCombiningClass; // TODO: prefer unic-ucd-normal::CanonicalCombiningClass
 
-use crate::Script;
-use crate::ffi::{self, rb_codepoint_t};
+use crate::{ffi, Script};
 
 // Space estimates based on:
 // https://unicode.org/charts/PDF/U2000.pdf
@@ -703,52 +702,6 @@ impl CharExt for char {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ucd_combining_class(u: rb_codepoint_t) -> i32 {
-    char::try_from(u).unwrap().combining_class() as i32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_modified_combining_class(u: rb_codepoint_t) -> u32 {
-    char::try_from(u).unwrap().modified_combining_class() as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_general_category(u: rb_codepoint_t) -> u32 {
-    char::try_from(u).unwrap().general_category().to_rb()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_script(u: rb_codepoint_t) -> ffi::rb_script_t {
-    let c = char::try_from(u).unwrap();
-    c.script().tag().as_u32()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_is_default_ignorable(u: rb_codepoint_t) -> ffi::rb_bool_t {
-    char::try_from(u).unwrap().is_default_ignorable() as i32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_mirroring(u: rb_codepoint_t) -> rb_codepoint_t {
-    char::try_from(u).unwrap().mirrored().map(u32::from).unwrap_or(0)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_is_emoji_extended_pictographic(u: rb_codepoint_t) -> ffi::rb_bool_t {
-    char::try_from(u).unwrap().is_emoji_extended_pictographic() as i32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_space_fallback_type(u: rb_codepoint_t) -> i32 {
-    char::try_from(u).unwrap().space_fallback().map(|s| s as i32).unwrap_or(0)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_is_variation_selector(u: rb_codepoint_t) -> ffi::rb_bool_t {
-    char::try_from(u).unwrap().is_variation_selector() as i32
-}
-
 const S_BASE: u32 = 0xAC00;
 const L_BASE: u32 = 0x1100;
 const V_BASE: u32 = 0x1161;
@@ -759,9 +712,21 @@ const T_COUNT: u32 = 28;
 const N_COUNT: u32 = V_COUNT * T_COUNT;
 const S_COUNT: u32 = L_COUNT * N_COUNT;
 
+pub fn compose(a: char, b: char) -> Option<char> {
+    if let Some(ab) = compose_hangul(a, b) {
+        return Some(ab);
+    }
+
+    let needle = (a as u64) << 32 | (b as u64);
+    crate::unicode_norm::COMPOSITION_TABLE
+        .binary_search_by(|item| item.0.cmp(&needle))
+        .map(|idx| crate::unicode_norm::COMPOSITION_TABLE[idx].1)
+        .ok()
+}
+
 fn compose_hangul(a: char, b: char) -> Option<char> {
-    let l = a as u32;
-    let v = b as u32;
+    let l = u32::from(a);
+    let v = u32::from(b);
     if L_BASE <= l && l < (L_BASE + L_COUNT) && V_BASE <= v && v < (V_BASE + V_COUNT) {
         let r = S_BASE + (l - L_BASE) * N_COUNT + (v - V_BASE) * T_COUNT;
         Some(char::try_from(r).unwrap())
@@ -776,86 +741,35 @@ fn compose_hangul(a: char, b: char) -> Option<char> {
     }
 }
 
-pub fn compose(a: char, b: char) -> Option<char> {
-    if let Some(ab) = compose_hangul(a, b) {
+pub fn decompose(ab: char) -> Option<(char, char)> {
+    if let Some(ab) = decompose_hangul(ab) {
         return Some(ab);
     }
 
-    let needle = (a as u64) << 32 | (b as u64);
-    crate::unicode_norm::COMPOSITION_TABLE.binary_search_by(|item| item.0.cmp(&needle)).ok()
-        .map(|idx| crate::unicode_norm::COMPOSITION_TABLE[idx].1)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_compose(a: rb_codepoint_t, b: rb_codepoint_t, ab: *mut rb_codepoint_t) -> ffi::rb_bool_t {
-    unsafe {
-        let new = compose(
-            char::try_from(a).unwrap(),
-            char::try_from(b).unwrap(),
-        );
-
-        if let Some(c) = new {
-            *ab = c as u32;
-            1
-        } else {
-            0
-        }
-    }
-}
-
-fn rb_ucd_decompose_hangul(ab: rb_codepoint_t, a: *mut rb_codepoint_t, b: *mut rb_codepoint_t) -> bool {
-    let si = ab.wrapping_sub(S_BASE);
-    if si >= S_COUNT {
-        return false;
-    }
-
-    unsafe {
-        if si % T_COUNT != 0 {
-            // LV,T
-            *a = S_BASE + (si / T_COUNT) * T_COUNT;
-            *b = T_BASE + (si % T_COUNT);
-        } else {
-            // L,V
-            *a = L_BASE + (si / N_COUNT);
-            *b = V_BASE + (si % N_COUNT) / T_COUNT;
-        }
-    }
-
-    true
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_decompose(
-    ab: rb_codepoint_t,
-    a: *mut rb_codepoint_t,
-    b: *mut rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    unsafe {
-        *a = ab as u32;
-        *b = 0;
-    }
-
-    if rb_ucd_decompose_hangul(ab, a, b) {
-        return 1;
-    }
-
-    let ab = char::try_from(ab).unwrap();
-    match crate::unicode_norm::DECOMPOSITION_TABLE.binary_search_by(|item| item.0.cmp(&ab)) {
-        Ok(idx) => {
+    crate::unicode_norm::DECOMPOSITION_TABLE
+        .binary_search_by(|item| item.0.cmp(&ab))
+        .map(|idx| {
             let chars = &crate::unicode_norm::DECOMPOSITION_TABLE[idx];
-            unsafe {
-                if let Some(rb) = chars.2 {
-                    *a = chars.1 as u32;
-                    *b = rb as u32;
-                } else {
-                    *a = chars.1 as u32;
-                }
-            }
+            (chars.1, chars.2.unwrap_or('\0'))
+        })
+        .ok()
+}
 
-            1
-        }
-        Err(_) => 0,
+pub fn decompose_hangul(ab: char) -> Option<(char, char)> {
+    let si = u32::from(ab).wrapping_sub(S_BASE);
+    if si >= S_COUNT {
+        return None;
     }
+
+    let (a, b) = if si % T_COUNT != 0 {
+        // LV,T
+        (S_BASE + (si / T_COUNT) * T_COUNT, T_BASE + (si % T_COUNT))
+    } else {
+        // L,V
+        (L_BASE + (si / N_COUNT), V_BASE + (si % N_COUNT) / T_COUNT)
+    };
+
+    Some((char::try_from(a).unwrap(), char::try_from(b).unwrap()))
 }
 
 #[cfg(test)]

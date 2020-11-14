@@ -1,8 +1,25 @@
-use std::os::raw::c_void;
-
 use crate::{ffi, Face, GlyphInfo, Mask};
 use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
-use crate::ot::*;
+use crate::ot::{feature, FeatureFlags, Map};
+use crate::plan::{ShapePlan, ShapePlanner};
+use super::*;
+
+
+pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: Some(collect_features),
+    override_features: Some(override_features),
+    create_data: Some(|plan| Box::new(HangulShapePlan::new(&plan.ot_map))),
+    preprocess_text: Some(preprocess_text),
+    postprocess_glyphs: None,
+    normalization_mode: None,
+    decompose: None,
+    compose: None,
+    setup_masks: Some(setup_masks),
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: None,
+    fallback_position: false,
+};
 
 
 const L_BASE: u32 = 0x1100;
@@ -46,35 +63,19 @@ impl HangulShapePlan {
         HangulShapePlan {
             mask_array: [
                 0,
-                map.get_1_mask(feature::LEADING_JAMO_FORMS),
-                map.get_1_mask(feature::VOWEL_JAMO_FORMS),
-                map.get_1_mask(feature::TRAILING_JAMO_FORMS),
+                map.one_mask(feature::LEADING_JAMO_FORMS),
+                map.one_mask(feature::VOWEL_JAMO_FORMS),
+                map.one_mask(feature::TRAILING_JAMO_FORMS),
             ]
         }
     }
-
-    fn from_ptr(plan: *const c_void) -> &'static HangulShapePlan {
-        unsafe { &*(plan as *const HangulShapePlan) }
-    }
 }
 
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_collect_features_hangul(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    collect_features(&mut planner)
-}
 
 fn collect_features(planner: &mut ShapePlanner) {
-    planner.ot_map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::NONE, 1);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_override_features_hangul(planner: *mut ffi::rb_ot_shape_planner_t) {
-    let mut planner = ShapePlanner::from_ptr_mut(planner);
-    override_features(&mut planner)
+    planner.ot_map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::empty(), 1);
+    planner.ot_map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::empty(), 1);
+    planner.ot_map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::empty(), 1);
 }
 
 fn override_features(planner: &mut ShapePlanner) {
@@ -82,32 +83,6 @@ fn override_features(planner: &mut ShapePlanner) {
     // (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
     // in calt, which is not desirable.
     planner.ot_map.disable_feature(feature::CONTEXTUAL_ALTERNATES);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_create_hangul(
-    plan: *const ffi::rb_ot_shape_plan_t,
-) -> *mut c_void {
-    let plan = ShapePlan::from_ptr(plan);
-    let hangul_plan = HangulShapePlan::new(&plan.ot_map);
-    Box::into_raw(Box::new(hangul_plan)) as _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_data_destroy_hangul(data: *mut c_void) {
-    unsafe { Box::from_raw(data) };
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_preprocess_text_hangul(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    preprocess_text(&plan, face, &mut buffer)
 }
 
 fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
@@ -186,7 +161,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 }
             } else {
                 // No valid syllable as base for tone mark; try to insert dotted circle.
-                if !buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) && face_has_glyph(face, 0x25CC) {
+                if !buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) && face.has_glyph(0x25CC) {
                     let mut chars = [0; 2];
                     if !is_zero_width_char(face, c) {
                         chars[0] = u;
@@ -237,7 +212,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 if is_combining_l(l) && is_combining_v(v) && (t == 0 || is_combining_t(t)) {
                     // Try to compose; if this succeeds, end is set to start+1.
                     let s = S_BASE + (l - L_BASE) * N_COUNT + (v - V_BASE) * T_COUNT + tindex;
-                    if face_has_glyph(face, s) {
+                    if face.has_glyph(s) {
                         let n = if t != 0 { 3 } else { 2 };
                         buffer.replace_glyphs(n, 1, &[s]);
                         end = start + 1;
@@ -270,7 +245,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         } else if is_combined_s(u) {
             // Have <LV>, <LVT>, or <LV,T>
             let s = u;
-            let has_glyph = face_has_glyph(face, s);
+            let has_glyph = face.has_glyph(s);
 
             let lindex = (s - S_BASE) / N_COUNT;
             let nindex = (s - S_BASE) % N_COUNT;
@@ -282,7 +257,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 let new_tindex = buffer.cur(1).codepoint - T_BASE;
                 let new_s = s + new_tindex;
 
-                if face_has_glyph(face, new_s) {
+                if face.has_glyph(new_s) {
                     buffer.replace_glyphs(2, 1, &[new_s]);
                     end = start + 1;
                     continue;
@@ -297,8 +272,8 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             // combining <LV,T> above.
             if !has_glyph || (tindex == 0 && buffer.idx + 1 < buffer.len && is_t(buffer.cur(1).codepoint)) {
                 let decomposed = [L_BASE + lindex, V_BASE + vindex, T_BASE + tindex];
-                if face_has_glyph(face, decomposed[0]) && face_has_glyph(face, decomposed[1]) &&
-                    (tindex == 0 || face_has_glyph(face, decomposed[2]))
+                if face.has_glyph(decomposed[0]) && face.has_glyph(decomposed[1]) &&
+                    (tindex == 0 || face.has_glyph(decomposed[2]))
                 {
                     let mut s_len = if tindex != 0 { 3 } else { 2 };
                     buffer.replace_glyphs(1, s_len, &decomposed);
@@ -387,24 +362,8 @@ fn is_combined_s(u: u32) -> bool {
     (S_BASE ..= S_BASE + S_COUNT - 1).contains(&u)
 }
 
-fn face_has_glyph(face: &Face, u: u32) -> bool {
-    face.glyph_index(u).is_some()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_setup_masks_hangul(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_masks(&plan, face, &mut buffer);
-}
-
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let hangul_plan = HangulShapePlan::from_ptr(plan.data() as _);
+    let hangul_plan = plan.data::<HangulShapePlan>();
     for info in buffer.info_slice_mut() {
         info.mask |= hangul_plan.mask_array[info.hangul_shaping_feature() as usize];
     }

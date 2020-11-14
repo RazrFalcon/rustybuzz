@@ -182,7 +182,7 @@ pub enum SyllableType {
     NonKhmerCluster,
 }
 
-pub(crate) fn find_syllables_khmer(buffer: &mut Buffer) {
+pub fn find_syllables_khmer(buffer: &mut Buffer) {
     let mut cs = 20usize;
     let mut ts = 0;
     let mut te = 0;

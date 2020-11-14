@@ -1,7 +1,23 @@
-use std::convert::TryFrom;
+use crate::{unicode, Tag};
+use super::*;
 
-use crate::{ffi, unicode};
-use crate::ot::*;
+
+pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
+    collect_features: None,
+    override_features: None,
+    create_data: None,
+    preprocess_text: None,
+    postprocess_glyphs: None,
+    normalization_mode: Some(ShapeNormalizationMode::Auto),
+    decompose: None,
+    compose: Some(compose),
+    setup_masks: None,
+    gpos_tag: Some(Tag::from_bytes(b"hebr")),
+    reorder_marks: None,
+    zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
+    fallback_position: true,
+};
+
 
 const S_DAGESH_FORMS: &[char] = &[
     '\u{FB30}', // ALEF
@@ -33,25 +49,6 @@ const S_DAGESH_FORMS: &[char] = &[
     '\u{FB4A}', // TAV
 ];
 
-#[no_mangle]
-pub extern "C" fn rb_ot_complex_compose_hebrew(
-    ctx: *const ffi::rb_ot_shape_normalize_context_t,
-    a: ffi::rb_codepoint_t,
-    b: ffi::rb_codepoint_t,
-    ab: *mut ffi::rb_codepoint_t,
-) -> ffi::rb_bool_t {
-    let ctx = ShapeNormalizeContext::from_ptr(ctx);
-    let a = char::try_from(a).unwrap();
-    let b = char::try_from(b).unwrap();
-
-    if let Some(new_ab) = compose(&ctx, a, b) {
-        unsafe { *ab = new_ab as u32; }
-        1
-    } else {
-        0
-    }
-}
-
 fn compose(ctx: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     // Hebrew presentation-form shaping.
     // https://bugzilla.mozilla.org/show_bug.cgi?id=728866
@@ -59,7 +56,7 @@ fn compose(ctx: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     // Note that some letters do not have a dagesh presForm encoded.
     match unicode::compose(a, b) {
         Some(c) => Some(c),
-        None if !ctx.plan.has_gpos_mark() => {
+        None if !ctx.plan.has_gpos_mark => {
             // Special-case Hebrew presentation forms that are excluded from
             // standard normalization, but wanted for old fonts.
             let a = a as u32;
