@@ -1,13 +1,13 @@
-use std::os::raw::c_char;
 use std::ffi::c_void;
 
-use crate::{aat, feature, ffi, Direction, Face, Feature, Mask, Tag, Script};
+use crate::{aat, feature, ffi, Direction, Face, Feature, Language, Mask, Tag, Script};
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
-use crate::ot::{self, FeatureFlags, Map, TableIndex, FEATURE_NOT_FOUND_INDEX};
+use crate::ot::{self, FeatureFlags, Map, TableIndex};
+use crate::tables::gsubgpos::VariationIndex;
 
 pub struct ShapePlan {
     pub direction: Direction,
-    pub script: Script,
+    pub script: Option<Script>,
     pub shaper: &'static ComplexShaper,
     pub ot_map: ot::Map,
     pub aat_map: aat::Map,
@@ -41,23 +41,17 @@ impl ShapePlan {
     pub fn new(
         face: &Face,
         direction: Direction,
-        script: Script,
-        language: *const c_char,
+        script: Option<Script>,
+        language: Option<&Language>,
         user_features: &[Feature],
-        coords: &[i32],
     ) -> Option<Self> {
         assert_ne!(direction, Direction::Invalid);
 
-        let mut variations_index = [0u32; 2];
-        for table_index in 0..2 {
-            crate::ot::rb_ot_layout_table_find_feature_variations(
-                face.as_ptr(),
-                crate::ot::TABLE_TAGS[table_index],
-                coords.as_ptr(),
-                coords.len() as u32,
-                &mut variations_index[table_index],
-            );
-        }
+        let variation_indices = TableIndex::array(|index| {
+            let coords = face.ttfp_face.variation_coordinates();
+            face.layout_table(index)
+                .and_then(|table| table.find_variation_index(coords))
+        });
 
         let mut plan = Self {
             direction,
@@ -90,7 +84,7 @@ impl ShapePlan {
 
         let mut planner = ShapePlanner::new(face, direction, script, language);
         collect_features(&mut planner, user_features);
-        planner.compile(&mut plan, &variations_index);
+        planner.compile(&mut plan, variation_indices);
 
         if let Some(func) = plan.shaper.data_create {
             let ptr = func(&plan);
@@ -144,25 +138,25 @@ const HORIZONTAL_FEATURES: &[(Tag, FeatureFlags)] = &[
 ];
 
 fn collect_features(planner: &mut ShapePlanner, user_features: &[Feature]) {
-    planner.ot_map.enable_feature(feature::REQUIRED_VARIATION_ALTERNATES, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::REQUIRED_VARIATION_ALTERNATES, FeatureFlags::empty(), 1);
     planner.ot_map.add_gsub_pause(None);
 
     match planner.direction {
         Direction::LeftToRight => {
-            planner.ot_map.enable_feature(feature::LEFT_TO_RIGHT_ALTERNATES, FeatureFlags::NONE, 1);
-            planner.ot_map.enable_feature(feature::LEFT_TO_RIGHT_MIRRORED_FORMS, FeatureFlags::NONE, 1);
+            planner.ot_map.enable_feature(feature::LEFT_TO_RIGHT_ALTERNATES, FeatureFlags::empty(), 1);
+            planner.ot_map.enable_feature(feature::LEFT_TO_RIGHT_MIRRORED_FORMS, FeatureFlags::empty(), 1);
         }
         Direction::RightToLeft => {
-            planner.ot_map.enable_feature(feature::RIGHT_TO_LEFT_ALTERNATES, FeatureFlags::NONE, 1);
-            planner.ot_map.add_feature(feature::RIGHT_TO_LEFT_MIRRORED_FORMS, FeatureFlags::NONE, 1);
+            planner.ot_map.enable_feature(feature::RIGHT_TO_LEFT_ALTERNATES, FeatureFlags::empty(), 1);
+            planner.ot_map.add_feature(feature::RIGHT_TO_LEFT_MIRRORED_FORMS, FeatureFlags::empty(), 1);
         }
         _ => {}
     }
 
     // Automatic fractions.
-    planner.ot_map.add_feature(feature::FRACTIONS, FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(feature::NUMERATORS, FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(feature::DENOMINATORS, FeatureFlags::NONE, 1);
+    planner.ot_map.add_feature(feature::FRACTIONS, FeatureFlags::empty(), 1);
+    planner.ot_map.add_feature(feature::NUMERATORS, FeatureFlags::empty(), 1);
+    planner.ot_map.add_feature(feature::DENOMINATORS, FeatureFlags::empty(), 1);
 
     // Random!
     planner.ot_map.enable_feature(feature::RANDOMIZE, FeatureFlags::RANDOM, ot::Map::MAX_VALUE);
@@ -172,13 +166,13 @@ fn collect_features(planner: &mut ShapePlanner, user_features: &[Feature]) {
     // https://github.com/harfbuzz/harfbuzz/issues/1303
     planner.ot_map.enable_feature(Tag::from_bytes(b"trak"), FeatureFlags::HAS_FALLBACK, 1);
 
-    planner.ot_map.enable_feature(Tag::from_bytes(b"HARF"), FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(Tag::from_bytes(b"HARF"), FeatureFlags::empty(), 1);
 
     if let Some(func) = planner.shaper.collect_features {
         func(planner);
     }
 
-    planner.ot_map.enable_feature(Tag::from_bytes(b"BUZZ"), FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(Tag::from_bytes(b"BUZZ"), FeatureFlags::empty(), 1);
 
     for &(tag, flags) in COMMON_FEATURES {
         planner.ot_map.add_feature(tag, flags, 1);
@@ -197,7 +191,7 @@ fn collect_features(planner: &mut ShapePlanner, user_features: &[Feature]) {
     }
 
     for feature in user_features {
-        let mut flags = FeatureFlags::NONE;
+        let mut flags = FeatureFlags::empty();
         if feature.start == 0 && feature.end == u32::MAX {
             flags |= FeatureFlags::GLOBAL;
         }
@@ -218,7 +212,7 @@ fn collect_features(planner: &mut ShapePlanner, user_features: &[Feature]) {
 pub struct ShapePlanner<'a> {
     pub face: &'a Face<'a>,
     pub direction: Direction,
-    pub script: Script,
+    pub script: Option<Script>,
     pub ot_map: ot::MapBuilder<'a>,
     pub aat_map: aat::MapBuilder<'a>,
     pub apply_morx: bool,
@@ -231,8 +225,8 @@ impl<'a> ShapePlanner<'a> {
     pub fn new(
         face: &'a Face<'a>,
         direction: Direction,
-        script: Script,
-        language: *const c_char,
+        script: Option<Script>,
+        language: Option<&Language>,
     ) -> Self {
         // https://github.com/harfbuzz/harfbuzz/issues/2124
         let apply_morx = unsafe { ffi::rb_aat_layout_has_substitution(face.as_ptr()) != 0 }
@@ -240,11 +234,15 @@ impl<'a> ShapePlanner<'a> {
 
         let ot_map = ot::MapBuilder::new(face, script, language);
         let aat_map = aat::MapBuilder::new(face);
-        let mut shaper = complex_categorize(
-            script,
-            direction,
-            ot_map.chosen_script(TableIndex::GSUB),
-        );
+
+        let mut shaper = match script {
+            Some(script) => complex_categorize(
+                script,
+                direction,
+                ot_map.chosen_script(TableIndex::GSUB),
+            ),
+            None => &DEFAULT_SHAPER,
+        };
 
         // https://github.com/harfbuzz/harfbuzz/issues/1528
         if apply_morx && shaper as *const _ != &DEFAULT_SHAPER as *const _ {
@@ -264,23 +262,23 @@ impl<'a> ShapePlanner<'a> {
         }
     }
 
-    pub fn compile(&mut self, plan: &mut ShapePlan, variations_index: &[u32]) {
+    pub fn compile(&mut self, plan: &mut ShapePlan, variation_indices: [Option<VariationIndex>; 2]) {
         plan.direction = self.direction;
         plan.script = self.script;
         plan.shaper = self.shaper;
 
-        self.ot_map.compile(&mut plan.ot_map, variations_index);
+        self.ot_map.compile(&mut plan.ot_map, variation_indices);
         if self.apply_morx {
             self.aat_map.compile(&mut plan.aat_map);
         }
 
-        plan.frac_mask = plan.ot_map._1_mask(feature::FRACTIONS);
-        plan.numr_mask = plan.ot_map._1_mask(feature::NUMERATORS);
-        plan.dnom_mask = plan.ot_map._1_mask(feature::DENOMINATORS);
+        plan.frac_mask = plan.ot_map.one_mask(feature::FRACTIONS);
+        plan.numr_mask = plan.ot_map.one_mask(feature::NUMERATORS);
+        plan.dnom_mask = plan.ot_map.one_mask(feature::DENOMINATORS);
         plan.has_frac = plan.frac_mask != 0 || (plan.numr_mask != 0 && plan.dnom_mask != 0);
 
-        plan.rtlm_mask = plan.ot_map._1_mask(feature::RIGHT_TO_LEFT_MIRRORED_FORMS);
-        plan.has_vert = plan.ot_map._1_mask(feature::VERTICAL_WRITING) != 0;
+        plan.rtlm_mask = plan.ot_map.one_mask(feature::RIGHT_TO_LEFT_MIRRORED_FORMS);
+        plan.has_vert = plan.ot_map.one_mask(feature::VERTICAL_WRITING) != 0;
 
         let horizontal = self.direction.is_horizontal();
         let kern_tag = if horizontal { feature::KERNING } else { feature::VERTICAL_KERNING };
@@ -289,9 +287,9 @@ impl<'a> ShapePlanner<'a> {
         plan.trak_mask = plan.ot_map.mask(Tag::from_bytes(b"trak")).0;
         plan.requested_tracking = plan.trak_mask != 0;
 
-        let gpos_tag = plan.shaper.gpos_tag;
-        let has_gpos_kern = plan.ot_map.feature_index(TableIndex::GPOS, kern_tag) != FEATURE_NOT_FOUND_INDEX;
-        let disable_gpos = gpos_tag.is_some() && gpos_tag != Some(plan.ot_map.chosen_script(TableIndex::GPOS));
+        let has_gpos_kern = plan.ot_map.feature_index(TableIndex::GPOS, kern_tag).is_some();
+        let disable_gpos = plan.shaper.gpos_tag.is_some()
+            && plan.shaper.gpos_tag != plan.ot_map.chosen_script(TableIndex::GPOS);
 
         // Decide who provides glyph classes. GDEF or Unicode.
         if !self.face.ttfp_face.has_glyph_classes() {
@@ -322,7 +320,7 @@ impl<'a> ShapePlanner<'a> {
             && !plan.apply_kerx
             && (!plan.apply_kern || unsafe { ffi::rb_ot_layout_has_machine_kerning(self.face.as_ptr()) == 0 });
 
-        plan.has_gpos_mark = plan.ot_map._1_mask(feature::MARK_POSITIONING) != 0;
+        plan.has_gpos_mark = plan.ot_map.one_mask(feature::MARK_POSITIONING) != 0;
 
         plan.adjust_mark_positioning_when_zeroing =
             !plan.apply_gpos

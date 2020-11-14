@@ -7,6 +7,7 @@ mod matching;
 mod position;
 mod substitute;
 
+pub use apply::*;
 pub use layout::*;
 pub use map::*;
 pub use position::*;

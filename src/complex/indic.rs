@@ -4,7 +4,7 @@ use std::os::raw::c_void;
 
 use crate::{feature, ffi, script, Tag, Script, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
-use crate::ot::{FeatureFlags, LookupMap, Map, TableIndex};
+use crate::ot::{FeatureFlags, LookupMap, LayoutTable, Map, TableIndex, WouldApply, WouldApplyContext};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::normalize::ShapeNormalizationMode;
 use crate::unicode::{CharExt, GeneralCategoryExt};
@@ -361,25 +361,21 @@ struct IndicWouldSubstituteFeature<'a> {
 impl<'a> IndicWouldSubstituteFeature<'a> {
     pub fn new(map: &'a Map, feature_tag: Tag, zero_context: bool) -> Self {
         IndicWouldSubstituteFeature {
-            lookups: map.stage_lookups(
-                TableIndex::GSUB,
-                map.feature_stage(TableIndex::GSUB, feature_tag),
-            ),
+            lookups: match map.feature_stage(TableIndex::GSUB, feature_tag) {
+                Some(stage) => map.stage_lookups(TableIndex::GSUB, stage),
+                None => &[],
+            },
             zero_context,
         }
     }
 
     pub fn would_substitute(&self, glyphs: &[u32], face: &Face) -> bool {
         for lookup in self.lookups {
-            let ok = crate::ot::rb_ot_layout_lookup_would_substitute(
-                face.as_ptr(),
-                lookup.index as u32,
-                glyphs.as_ptr() as *const _,
-                glyphs.len() as u32,
-                self.zero_context as i32,
-            );
-
-            if ok != 0 {
+            let ctx = WouldApplyContext { glyphs, zero_context: self.zero_context };
+            if face.gsub
+                .and_then(|table| table.get_lookup(lookup.index))
+                .map_or(false, |lookup| lookup.would_apply(&ctx))
+            {
                 return true;
             }
         }
@@ -404,13 +400,15 @@ struct IndicShapePlan<'a> {
 impl<'a> IndicShapePlan<'a> {
     fn new(plan: &'a ShapePlan) -> Self {
         let script = plan.script;
-        let config = if let Some(c) = INDIC_CONFIGS.iter().skip(1).find(|c| c.script == Some(script)) {
+        let config = if let Some(c) = INDIC_CONFIGS.iter().skip(1).find(|c| c.script == script) {
             *c
         } else {
             INDIC_CONFIGS[0]
         };
 
-        let is_old_spec = config.has_old_spec && plan.ot_map.chosen_script(TableIndex::GSUB).to_bytes()[3] != b'2';
+        let is_old_spec = config.has_old_spec
+            && plan.ot_map.chosen_script(TableIndex::GSUB)
+                .map_or(false, |tag| tag.to_bytes()[3] != b'2');
 
         // Use zero-context would_substitute() matching for new-spec of the main
         // Indic scripts, and scripts with one spec only, but not for old-specs.
@@ -420,14 +418,14 @@ impl<'a> IndicShapePlan<'a> {
         // context.  Testing with Bengali new-spec however shows that it doesn't.
         // So, the heuristic here is the way it is.  It should *only* be changed,
         // as we discover more cases of what Windows does.  DON'T TOUCH OTHERWISE.
-        let zero_context = is_old_spec && script != script::MALAYALAM;
+        let zero_context = is_old_spec && script != Some(script::MALAYALAM);
 
         let mut mask_array = [0; INDIC_FEATURES.len()];
         for (i, feature) in INDIC_FEATURES.iter().enumerate() {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
                 0
             } else {
-                plan.ot_map._1_mask(feature.0)
+                plan.ot_map.one_mask(feature.0)
             }
         }
 
@@ -585,10 +583,10 @@ fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
     planner.ot_map.add_gsub_pause(Some(setup_syllables));
 
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::empty(), 1);
 
     planner.ot_map.add_gsub_pause(Some(initial_reordering));
 
@@ -603,8 +601,8 @@ fn collect_features(planner: &mut ShapePlanner) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
 
     planner.ot_map.add_gsub_pause(Some(crate::ot::clear_syllables));
 }

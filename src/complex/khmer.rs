@@ -97,7 +97,7 @@ impl KhmerShapePlan {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
                 0
             } else {
-                plan.ot_map._1_mask(feature.0)
+                plan.ot_map.one_mask(feature.0)
             }
         }
 
@@ -125,8 +125,8 @@ fn collect_features(planner: &mut ShapePlanner) {
     //   U+1789,U+17D2,U+1789,U+17BC
     //
     // https://github.com/harfbuzz/harfbuzz/issues/974
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::empty(), 1);
 
     for feature in KHMER_FEATURES.iter().take(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
@@ -328,7 +328,7 @@ fn override_features(planner: &mut ShapePlanner) {
     // Khmer spec has 'clig' as part of required shaping features:
     // "Apply feature 'clig' to form ligatures that are desired for
     // typographical correctness.", hence in overrides...
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
 
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }

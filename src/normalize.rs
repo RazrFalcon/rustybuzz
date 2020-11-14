@@ -8,7 +8,7 @@ use crate::unicode::{CharExt, GeneralCategory};
 
 // HIGHLEVEL DESIGN:
 //
-// This file exports one main function: rb_ot_shape_normalize().
+// This file exports one main function: normalize().
 //
 // This function closely reflects the Unicode Normalization Algorithm,
 // yet it's different.
@@ -53,7 +53,7 @@ pub struct ShapeNormalizeContext<'a> {
     pub compose: fn(&ShapeNormalizeContext, char, char) -> Option<char>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ShapeNormalizationMode {
     #[allow(dead_code)]
     Decomposed,

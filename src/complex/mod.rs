@@ -102,7 +102,7 @@ pub struct ComplexShaper {
     /// Shapers may NOT modify characters.
     pub setup_masks: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
 
-    /// If not `Tag(0)`, then must match found GPOS script tag for
+    /// If not `None`, then must match found GPOS script tag for
     /// GPOS to be applied.  Otherwise, fallback positioning will be used.
     pub gpos_tag: Option<Tag>,
 
@@ -117,12 +117,17 @@ pub struct ComplexShaper {
     pub fallback_position: bool,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ZeroWidthMarksMode {
     ByGdefEarly,
     ByGdefLate,
 }
 
-pub fn complex_categorize(script: Script, direction: Direction, chosen: Tag) -> &'static ComplexShaper {
+pub fn complex_categorize(
+    script: Script,
+    direction: Direction,
+    chosen: Option<Tag>,
+) -> &'static ComplexShaper {
     match script {
         // Unicode-1.1 additions
         script::ARABIC
@@ -154,7 +159,7 @@ pub fn complex_categorize(script: Script, direction: Direction, chosen: Tag) -> 
             // vertical text, just use the generic shaper instead.
             //
             // TODO: Does this still apply? Arabic fallback shaping was removed.
-            if (chosen != Tag::default_script() || script == script::ARABIC)
+            if (chosen != Some(Tag::default_script()) || script == script::ARABIC)
                 && direction.is_horizontal()
             {
                 &arabic::ARABIC_SHAPER
@@ -191,9 +196,9 @@ pub fn complex_categorize(script: Script, direction: Direction, chosen: Tag) -> 
             // Otherwise, use the specific shaper.
             //
             // If it's indy3 tag, send to USE.
-            if chosen == Tag::default_script() || chosen == Tag::from_bytes(b"latn") {
+            if chosen == Some(Tag::default_script()) || chosen == Some(Tag::from_bytes(b"latn")) {
                 &DEFAULT_SHAPER
-            } else if chosen.0 as u8 == b'3' {
+            } else if chosen.map_or(false, |tag| tag.to_bytes()[3] == b'3') {
                 &universal::UNIVERSAL_SHAPER
             } else {
                 &indic::INDIC_SHAPER
@@ -210,9 +215,9 @@ pub fn complex_categorize(script: Script, direction: Direction, chosen: Tag) -> 
             // If designer designed for 'mymr' tag, also send to default
             // shaper.  That's tag used from before Myanmar shaping spec
             // was developed.  The shaping spec uses 'mym2' tag.
-            if chosen == Tag::default_script()
-                || chosen == Tag::from_bytes(b"latn")
-                || chosen == Tag::from_bytes(b"mymr")
+            if chosen == Some(Tag::default_script())
+                || chosen == Some(Tag::from_bytes(b"latn"))
+                || chosen == Some(Tag::from_bytes(b"mymr"))
             {
                 &DEFAULT_SHAPER
             } else {
@@ -322,7 +327,7 @@ pub fn complex_categorize(script: Script, direction: Direction, chosen: Tag) -> 
             // Otherwise, use the specific shaper.
             // Note that for some simple scripts, there may not be *any*
             // GSUB/GPOS needed, so there may be no scripts found!
-            if chosen == Tag::default_script() || chosen == Tag::from_bytes(b"latn") {
+            if chosen == Some(Tag::default_script()) || chosen == Some(Tag::from_bytes(b"latn")) {
                 &DEFAULT_SHAPER
             } else {
                 &universal::UNIVERSAL_SHAPER

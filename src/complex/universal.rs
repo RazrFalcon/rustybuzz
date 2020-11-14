@@ -158,9 +158,9 @@ fn collect_features(planner: &mut ShapePlanner) {
     planner.ot_map.add_gsub_pause(Some(setup_syllables));
 
     // Default glyph pre-processing group
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::NUKTA_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(feature::NUKTA_FORMS, FeatureFlags::empty(), 1);
     planner.ot_map.enable_feature(feature::AKHANDS, FeatureFlags::MANUAL_ZWJ, 1);
 
     // Reordering group
@@ -181,13 +181,13 @@ fn collect_features(planner: &mut ShapePlanner) {
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {
-        planner.ot_map.add_feature(*feature, FeatureFlags::NONE, 1);
+        planner.ot_map.add_feature(*feature, FeatureFlags::empty(), 1);
     }
     planner.ot_map.add_gsub_pause(None);
 
     // Standard typographic presentation
     for feature in OTHER_FEATURES {
-        planner.ot_map.enable_feature(*feature, FeatureFlags::NONE, 1);
+        planner.ot_map.enable_feature(*feature, FeatureFlags::empty(), 1);
     }
 }
 
@@ -234,7 +234,7 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
     let mut masks = [0; 4];
     let mut all_masks = 0;
     for i in 0..4 {
-        masks[i] = plan.ot_map._1_mask(TOPOGRAPHICAL_FEATURES[i]);
+        masks[i] = plan.ot_map.one_mask(TOPOGRAPHICAL_FEATURES[i]);
         if masks[i] == plan.ot_map.global_mask() {
             masks[i] = 0;
         }
@@ -500,12 +500,12 @@ fn record_pref(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 fn data_create(plan: &ShapePlan) -> *mut c_void {
     let mut arabic_plan = None;
 
-    if has_arabic_joining(plan.script) {
+    if plan.script.map_or(false, has_arabic_joining) {
         arabic_plan = Some(super::arabic::data_create_inner(plan));
     }
 
     let universal_plan = UniversalShapePlan {
-        rphf_mask: plan.ot_map._1_mask(feature::REPH_FORMS),
+        rphf_mask: plan.ot_map.one_mask(feature::REPH_FORMS),
         arabic_plan,
     };
 

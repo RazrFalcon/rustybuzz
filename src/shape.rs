@@ -2,10 +2,7 @@ use std::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use crate::{
-    ffi, ot, fallback, normalize, Direction, Face, Feature, GlyphBuffer, Script, Tag,
-    UnicodeBuffer,
-};
+use crate::{ffi, ot, fallback, normalize, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
 use crate::buffer::{
     glyph_flag, Buffer, BufferClusterLevel, BufferFlags, BufferScratchFlags, GlyphInfo,
     GlyphPropsFlags,
@@ -23,10 +20,13 @@ pub fn shape(face: &Face, features: &[Feature], buffer: UnicodeBuffer) -> GlyphB
     buffer.guess_segment_properties();
 
     if buffer.len > 0 {
-        let direction = buffer.direction;
-        let script = buffer.script.unwrap_or(Script(Tag(0)));
-        let language = buffer.language.as_ref().map_or(std::ptr::null(), |s| s.0.as_ptr());
-        let plan = ShapePlan::new(face, direction, script, language, features, &face.coords);
+        let plan = ShapePlan::new(
+            face,
+            buffer.direction,
+            buffer.script,
+            buffer.language.as_ref(),
+            features,
+        );
 
         if let Some(plan) = &plan {
             // Save the original direction, we use it later.
@@ -155,26 +155,23 @@ fn position(ctx: &mut ShapeContext) {
 }
 
 fn position_default(ctx: &mut ShapeContext) {
-    let face = &ctx.face;
-    let buffer = &mut ctx.buffer;
-    let len = buffer.len;
-    let direction = buffer.direction;
+    let len = ctx.buffer.len;
 
-    if direction.is_horizontal() {
-        for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
+    if ctx.buffer.direction.is_horizontal() {
+        for (info, pos) in ctx.buffer.info[..len].iter().zip(&mut ctx.buffer.pos[..len]) {
             let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
-            pos.x_advance = face.glyph_h_advance(glyph);
+            pos.x_advance = ctx.face.glyph_h_advance(glyph);
         }
     } else {
-        for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
+        for (info, pos) in ctx.buffer.info[..len].iter().zip(&mut ctx.buffer.pos[..len]) {
             let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
-            pos.y_advance = face.glyph_v_advance(glyph);
-            pos.x_offset -= face.glyph_h_origin(glyph);
-            pos.y_offset -= face.glyph_v_origin(glyph);
+            pos.y_advance = ctx.face.glyph_v_advance(glyph);
+            pos.x_offset -= ctx.face.glyph_h_origin(glyph);
+            pos.y_offset -= ctx.face.glyph_v_origin(glyph);
         }
     }
 
-    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_SPACE_FALLBACK) {
+    if ctx.buffer.scratch_flags.contains(BufferScratchFlags::HAS_SPACE_FALLBACK) {
         fallback::adjust_spaces(ctx.plan, ctx.face, ctx.buffer);
     }
 }
@@ -195,24 +192,14 @@ fn position_complex(ctx: &mut ShapeContext) {
 
     ot::position_start(ctx.face, ctx.buffer);
 
-    if ctx.plan.zero_marks {
-        match ctx.plan.shaper.zero_width_marks {
-            Some(ZeroWidthMarksMode::ByGdefEarly) => {
-                zero_mark_widths_by_gdef(ctx.buffer, adjust_offsets_when_zeroing);
-            }
-            _ => {}
-        }
+    if ctx.plan.zero_marks && ctx.plan.shaper.zero_width_marks == Some(ZeroWidthMarksMode::ByGdefEarly) {
+        zero_mark_widths_by_gdef(ctx.buffer, adjust_offsets_when_zeroing);
     }
 
     position_by_plan(ctx.plan, ctx.face, ctx.buffer);
 
-    if ctx.plan.zero_marks {
-        match ctx.plan.shaper.zero_width_marks {
-            Some(ZeroWidthMarksMode::ByGdefLate) => {
-                zero_mark_widths_by_gdef(ctx.buffer, adjust_offsets_when_zeroing);
-            }
-            _ => {}
-        }
+    if ctx.plan.zero_marks && ctx.plan.shaper.zero_width_marks == Some(ZeroWidthMarksMode::ByGdefLate) {
+        zero_mark_widths_by_gdef(ctx.buffer, adjust_offsets_when_zeroing);
     }
 
     // Finish off.  Has to follow a certain order.
@@ -257,8 +244,7 @@ fn setup_masks(ctx: &mut ShapeContext) {
     }
 
     for feature in ctx.user_features {
-        // TODO: Function on `Feature`
-        if !(feature.start == 0 && feature.end == u32::MAX) {
+        if !feature.is_global() {
             let (mask, shift) = ctx.plan.ot_map.mask(feature.tag);
             ctx.buffer.set_masks(feature.value << shift, mask, feature.start, feature.end);
         }
@@ -266,44 +252,42 @@ fn setup_masks(ctx: &mut ShapeContext) {
 }
 
 fn setup_masks_fraction(ctx: &mut ShapeContext) {
-    if !ctx.buffer.scratch_flags.contains(BufferScratchFlags::HAS_NON_ASCII) || !ctx.plan.has_frac {
+    let buffer = &mut ctx.buffer;
+    if !buffer.scratch_flags.contains(BufferScratchFlags::HAS_NON_ASCII) || !ctx.plan.has_frac {
         return;
     }
 
-    let pre_mask;
-    let post_mask;
-    if ctx.buffer.direction.is_forward() {
-        pre_mask = ctx.plan.numr_mask | ctx.plan.frac_mask;
-        post_mask = ctx.plan.frac_mask | ctx.plan.dnom_mask;
+    let (pre_mask, post_mask) = if buffer.direction.is_forward() {
+        (ctx.plan.numr_mask | ctx.plan.frac_mask, ctx.plan.frac_mask | ctx.plan.dnom_mask)
     } else {
-        pre_mask = ctx.plan.frac_mask | ctx.plan.dnom_mask;
-        post_mask = ctx.plan.numr_mask | ctx.plan.frac_mask;
-    }
+        (ctx.plan.frac_mask | ctx.plan.dnom_mask, ctx.plan.numr_mask | ctx.plan.frac_mask)
+    };
 
+    let len = buffer.len;
     let mut i = 0;
-    let len = ctx.buffer.len;
-
     while i < len {
         // FRACTION SLASH
-        if ctx.buffer.info[i].codepoint == 0x2044 {
+        if buffer.info[i].codepoint == 0x2044 {
             let mut start = i;
-            while start > 0 && ctx.buffer.info[start - 1].general_category() == GeneralCategory::DecimalNumber {
+            while start > 0 && buffer.info[start - 1].general_category() == GeneralCategory::DecimalNumber {
                 start -= 1;
             }
 
             let mut end = i + 1;
-            while end < len && ctx.buffer.info[end].general_category() == GeneralCategory::DecimalNumber {
+            while end < len && buffer.info[end].general_category() == GeneralCategory::DecimalNumber {
                 end += 1;
             }
 
-            ctx.buffer.unsafe_to_break(start, end);
+            buffer.unsafe_to_break(start, end);
 
-            for j in start..i {
-                ctx.buffer.info[j].mask |= pre_mask;
+            for info in &mut buffer.info[start..i] {
+                info.mask |= pre_mask;
             }
-            ctx.buffer.info[i].mask |= ctx.plan.frac_mask;
-            for j in i+1..end {
-                ctx.buffer.info[j].mask |= post_mask;
+
+            buffer.info[i].mask |= ctx.plan.frac_mask;
+
+            for info in &mut buffer.info[i+1..end] {
+                info.mask |= post_mask;
             }
 
             i = end;
@@ -323,8 +307,8 @@ fn set_unicode_props(buffer: &mut Buffer) {
     // https://www.unicode.org/reports/tr29/#Regex_Definitions
 
     let len = buffer.len;
-    let mut i = 0;
 
+    let mut i = 0;
     while i < len {
         let info = &mut buffer.info[i];
         info.init_unicode_props(&mut buffer.scratch_flags);

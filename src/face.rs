@@ -3,10 +3,11 @@ use std::ptr::NonNull;
 
 use ttf_parser::{Tag, GlyphClass, GlyphId};
 
+use crate::buffer::GlyphPropsFlags;
 use crate::tables::gpos::PosTable;
 use crate::tables::gsub::SubstTable;
 use crate::tables::gsubgpos::SubstPosTable;
-use crate::buffer::GlyphPropsFlags;
+use crate::ot::TableIndex;
 use crate::{ffi, Variation};
 
 
@@ -70,7 +71,6 @@ pub struct Face<'a> {
     units_per_em: i32,
     pixels_per_em: Option<(u16, u16)>,
     points_per_em: Option<f32>,
-    pub(crate) coords: Vec<i32>,
     prefered_cmap_encoding_subtable: Option<u16>,
     pub(crate) gsub: Option<SubstTable<'a>>,
     pub(crate) gpos: Option<PosTable<'a>>,
@@ -105,7 +105,6 @@ impl<'a> Face<'a> {
             units_per_em: upem,
             pixels_per_em: None,
             points_per_em: None,
-            coords: Vec::new(),
             prefered_cmap_encoding_subtable,
             gsub,
             gpos,
@@ -163,11 +162,6 @@ impl<'a> Face<'a> {
     pub fn set_variations(&mut self, variations: &[Variation]) {
         for variation in variations {
             self.ttfp_face.set_variation(variation.tag, variation.value);
-        }
-
-        self.coords.clear();
-        for c in self.ttfp_face.variation_coordinates() {
-            self.coords.push(c.get() as i32)
         }
     }
 
@@ -322,11 +316,10 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub(crate) fn layout_table(&self, tag: Tag) -> Option<SubstPosTable<'a>> {
-        match &tag.to_bytes() {
-            b"GSUB" => self.gsub.map(|table| table.0),
-            b"GPOS" => self.gpos.map(|table| table.0),
-            _ => None,
+    pub(crate) fn layout_table(&self, table_index: TableIndex) -> Option<SubstPosTable<'a>> {
+        match table_index {
+            TableIndex::GSUB => self.gsub.map(|table| table.0),
+            TableIndex::GPOS => self.gpos.map(|table| table.0),
         }
     }
 

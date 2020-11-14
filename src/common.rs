@@ -231,11 +231,6 @@ pub struct Script(pub(crate) Tag);
 
 impl Script {
     #[inline]
-    pub(crate) const fn from_raw(script: ffi::rb_script_t) -> Self {
-        Script(Tag(script))
-    }
-
-    #[inline]
     pub(crate) const fn from_bytes(bytes: &[u8; 4]) -> Self {
         Script(Tag::from_bytes(bytes))
     }
@@ -490,7 +485,7 @@ pub struct Feature {
 impl Feature {
     /// Create a new `Feature` struct.
     pub fn new(tag: Tag, value: u32, range: impl RangeBounds<usize>) -> Feature {
-        let max = std::u32::MAX as usize;
+        let max = u32::MAX as usize;
         let start = match range.start_bound() {
             Bound::Included(&included) => included.min(max) as u32,
             Bound::Excluded(&excluded) => excluded.min(max - 1) as u32 + 1,
@@ -508,6 +503,10 @@ impl Feature {
             start,
             end,
         }
+    }
+
+    pub(crate) fn is_global(&self) -> bool {
+        self.start == 0 && self.end == u32::MAX
     }
 }
 

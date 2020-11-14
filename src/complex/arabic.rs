@@ -190,17 +190,17 @@ fn collect_features(planner: &mut ShapePlanner) {
     // A pause after calt is required to make KFGQPC Uthmanic Script HAFS
     // work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
 
-    planner.ot_map.enable_feature(feature::STRETCHING_GLYPH_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::STRETCHING_GLYPH_DECOMPOSITION, FeatureFlags::empty(), 1);
     planner.ot_map.add_gsub_pause(Some(record_stch));
 
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
 
     planner.ot_map.add_gsub_pause(None);
 
     for feature in ARABIC_FEATURES {
-        let has_fallback = planner.script == script::ARABIC && !feature_is_syriac(*feature);
-        let flags = if has_fallback { FeatureFlags::HAS_FALLBACK } else { FeatureFlags::NONE };
+        let has_fallback = planner.script == Some(script::ARABIC) && !feature_is_syriac(*feature);
+        let flags = if has_fallback { FeatureFlags::HAS_FALLBACK } else { FeatureFlags::empty() };
         planner.ot_map.add_feature(*feature, flags, 1);
         planner.ot_map.add_gsub_pause(None);
     }
@@ -212,7 +212,7 @@ fn collect_features(planner: &mut ShapePlanner) {
     planner.ot_map.enable_feature(feature::REQUIRED_LIGATURES,
                                   FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK, 1);
 
-    if planner.script == script::ARABIC {
+    if planner.script == Some(script::ARABIC) {
         planner.ot_map.add_gsub_pause(Some(fallback_shape));
     }
 
@@ -231,8 +231,8 @@ fn collect_features(planner: &mut ShapePlanner) {
     // to fixup broken glyph sequences.  Oh well...
     // Test case: U+0643,U+0640,U+0631.
 
-    // planner.map.enable_feature(feature::CONTEXTUAL_SWASH, FeatureFlags::NONE, 1);
-    planner.ot_map.enable_feature(feature::MARK_POSITIONING_VIA_SUBSTITUTION, FeatureFlags::NONE, 1);
+    // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(feature::MARK_POSITIONING_VIA_SUBSTITUTION, FeatureFlags::empty(), 1);
 }
 
 fn fallback_shape(_: &ShapePlan, _: &Face, _: &mut Buffer) {}
@@ -432,9 +432,9 @@ fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     setup_masks_inner(arabic_plan, plan.script, buffer)
 }
 
-pub fn setup_masks_inner(arabic_plan: &ArabicShapePlan, script: Script, buffer: &mut Buffer) {
+pub fn setup_masks_inner(arabic_plan: &ArabicShapePlan, script: Option<Script>, buffer: &mut Buffer) {
     arabic_joining(buffer);
-    if script == script::MONGOLIAN {
+    if script == Some(script::MONGOLIAN) {
         mongolian_variation_selectors(buffer);
     }
 
@@ -523,9 +523,9 @@ pub fn data_create_inner(plan: &ShapePlan) -> ArabicShapePlan {
         has_stch: false,
     };
 
-    arabic_plan.has_stch = plan.ot_map._1_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
+    arabic_plan.has_stch = plan.ot_map.one_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
     for i in 0..ARABIC_FEATURES.len() {
-        arabic_plan.mask_array[i] = plan.ot_map._1_mask(ARABIC_FEATURES[i]);
+        arabic_plan.mask_array[i] = plan.ot_map.one_mask(ARABIC_FEATURES[i]);
     }
 
     arabic_plan

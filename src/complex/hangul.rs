@@ -66,9 +66,9 @@ impl HangulShapePlan {
         HangulShapePlan {
             mask_array: [
                 0,
-                map._1_mask(feature::LEADING_JAMO_FORMS),
-                map._1_mask(feature::VOWEL_JAMO_FORMS),
-                map._1_mask(feature::TRAILING_JAMO_FORMS),
+                map.one_mask(feature::LEADING_JAMO_FORMS),
+                map.one_mask(feature::VOWEL_JAMO_FORMS),
+                map.one_mask(feature::TRAILING_JAMO_FORMS),
             ]
         }
     }
@@ -80,9 +80,9 @@ impl HangulShapePlan {
 
 
 fn collect_features(planner: &mut ShapePlanner) {
-    planner.ot_map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::NONE, 1);
-    planner.ot_map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::empty(), 1);
+    planner.ot_map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::empty(), 1);
+    planner.ot_map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::empty(), 1);
 }
 
 fn override_features(planner: &mut ShapePlanner) {

@@ -1,9 +1,8 @@
-use std::os::raw::c_char;
 use std::str::FromStr;
 
 use smallvec::SmallVec;
 
-use crate::{Tag, Script, Language, script, tag_table, ffi};
+use crate::{Tag, Script, Language, script, tag_table};
 use crate::common::TagExt;
 
 type ThreeTags = SmallVec<[Tag; 3]>;
@@ -20,49 +19,6 @@ impl<A: smallvec::Array> SmallVecExt for SmallVec<A> {
 
     fn is_full(&self) -> bool {
         self.len() == self.inline_size()
-    }
-}
-
-pub fn rb_ot_tags_from_script_and_language(
-    script: ffi::rb_script_t,
-    language: *const c_char,
-    script_count: *mut u32,
-    script_tags: *mut Tag,
-    language_count: *mut u32,
-    language_tags: *mut Tag,
-) {
-    assert!(!script_count.is_null());
-    assert!(!script_tags.is_null());
-    assert!(!language_count.is_null());
-    assert!(!language_tags.is_null());
-
-    let language = if language.is_null() {
-        None
-    } else {
-        let language = unsafe { std::ffi::CStr::from_ptr(language) };
-        let language = language.to_str().expect("language must be ASCII");
-        Language::from_str(language).ok()
-    };
-
-    let script = Script::from_raw(script);
-
-    let (scripts, languages) = tags_from_script_and_language(Some(script), language.as_ref());
-
-    unsafe {
-        *script_count = scripts.len() as u32;
-        *language_count = languages.len() as u32;
-
-        let mut script_tags_ptr = script_tags;
-        for script in scripts {
-            *script_tags_ptr = script;
-            script_tags_ptr = script_tags_ptr.offset(1);
-        }
-
-        let mut language_tags_ptr = language_tags;
-        for language in languages {
-            *language_tags_ptr = language;
-            language_tags_ptr = language_tags_ptr.offset(1);
-        }
     }
 }
 

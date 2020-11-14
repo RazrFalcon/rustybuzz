@@ -221,11 +221,12 @@ fn position_around_base(
                     component_extents = base_extents;
 
                     if horizontal_dir == Direction::Invalid {
-                        let plan_dir = plan.direction;
-                        horizontal_dir = if plan_dir.is_horizontal() {
-                            plan_dir
+                        horizontal_dir = if plan.direction.is_horizontal() {
+                            plan.direction
                         } else {
-                            Direction::from_script(plan.script).unwrap_or_default()
+                            plan.script
+                                .and_then(Direction::from_script)
+                                .unwrap_or(Direction::LeftToRight)
                         };
                     }
 

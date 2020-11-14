@@ -1,41 +1,38 @@
-use std::os::raw::c_char;
-
-use crate::{Face, Mask, Tag, Script};
+use crate::{tag, Face, Language, Mask, Tag, Script};
 use crate::buffer::{glyph_flag, Buffer};
 use crate::plan::ShapePlan;
+use crate::tables::gsubgpos::{FeatureIndex, LangIndex, LookupIndex, VariationIndex, ScriptIndex};
 use super::TableIndex;
-
-pub const TABLE_TAGS: [Tag; 2] = [Tag::from_bytes(b"GSUB"), Tag::from_bytes(b"GPOS")];
 
 pub type PauseFunc = fn(&ShapePlan, &Face, &mut Buffer);
 
 pub struct Map {
-    chosen_script: [Tag; 2],
     found_script: [bool; 2],
+    chosen_script: [Option<Tag>; 2],
     global_mask: Mask,
     features: Vec<FeatureMap>,
     lookups: [Vec<LookupMap>; 2],
     stages: [Vec<StageMap>; 2],
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FeatureMap {
     tag: Tag,
     // GSUB/GPOS
-    index: [u32; 2],
-    stage: [u32; 2],
+    index: [Option<FeatureIndex>; 2],
+    stage: [usize; 2],
     shift: u32,
     mask: Mask,
     // mask for value=1, for quick access
-    _1_mask: Mask,
+    one_mask: Mask,
     auto_zwnj: bool,
     auto_zwj: bool,
     random: bool,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LookupMap {
-    pub index: u16,
+    pub index: LookupIndex,
     // TODO: to bitflags
     pub auto_zwnj: bool,
     pub auto_zwj: bool,
@@ -46,7 +43,7 @@ pub struct LookupMap {
 #[derive(Clone, Copy)]
 pub struct StageMap {
     // Cumulative
-    pub last_lookup: u32,
+    pub last_lookup: usize,
     pub pause_func: Option<PauseFunc>,
 }
 
@@ -56,8 +53,8 @@ impl Map {
 
     pub fn new() -> Self {
         Self {
-            chosen_script: [Tag(0); 2],
             found_script: [false; 2],
+            chosen_script: [None; 2],
             global_mask: 0,
             features: vec![],
             lookups: [vec![], vec![]],
@@ -66,13 +63,13 @@ impl Map {
     }
 
     #[inline]
-    pub fn chosen_script(&self, table_index: TableIndex) -> Tag {
-        self.chosen_script[table_index as usize]
+    pub fn found_script(&self, table_index: TableIndex) -> bool {
+        self.found_script[table_index]
     }
 
     #[inline]
-    pub fn found_script(&self, table_index: TableIndex) -> bool {
-        self.found_script[table_index as usize]
+    pub fn chosen_script(&self, table_index: TableIndex) -> Option<Tag> {
+        self.chosen_script[table_index]
     }
 
     #[inline]
@@ -88,55 +85,40 @@ impl Map {
     }
 
     #[inline]
-    pub fn _1_mask(&self, feature_tag: Tag) -> Mask {
+    pub fn one_mask(&self, feature_tag: Tag) -> Mask {
         self.features
             .binary_search_by_key(&feature_tag, |f| f.tag)
-            .map_or(0, |idx| self.features[idx]._1_mask)
+            .map_or(0, |idx| self.features[idx].one_mask)
     }
 
     #[inline]
-    pub fn feature_index(&self, table_index: TableIndex, feature_tag: Tag) -> u32 {
-        use crate::ot::layout::*;
+    pub fn feature_index(&self, table_index: TableIndex, feature_tag: Tag) -> Option<FeatureIndex> {
         self.features
             .binary_search_by_key(&feature_tag, |f| f.tag)
-            .map_or(FEATURE_NOT_FOUND_INDEX, |idx| self.features[idx].index[table_index as usize])
+            .ok()
+            .and_then(|idx| self.features[idx].index[table_index])
     }
 
     #[inline]
-    pub fn feature_stage(&self, table_index: TableIndex, feature_tag: Tag) -> usize {
+    pub fn feature_stage(&self, table_index: TableIndex, feature_tag: Tag) -> Option<usize> {
         self.features
             .binary_search_by_key(&feature_tag, |f| f.tag)
-            .map_or(usize::MAX, |idx| self.features[idx].stage[table_index as usize] as usize)
+            .map(|idx| self.features[idx].stage[table_index])
+            .ok()
     }
 
     #[inline]
     pub fn stages(&self, table_index: TableIndex) -> &[StageMap] {
-        &self.stages[table_index as usize]
+        &self.stages[table_index]
     }
 
     #[inline]
     pub fn stage_lookups(&self, table_index: TableIndex, stage: usize) -> &[LookupMap] {
-        if stage == usize::MAX {
-            return &[];
-        }
-
-        // TODO
-        // let stages = self.stages[table_index as usize];
-        // let start = stage.checked_sub(1).map_or(0, |prev| stages[prev]);
-
-        let start = if stage != 0 {
-            self.stages[table_index as usize][stage - 1].last_lookup as usize
-        } else {
-            0
-        };
-
-        let end = if stage < self.stages[table_index as usize].len() {
-            self.stages[table_index as usize][stage].last_lookup as usize
-        } else {
-            self.lookups[table_index as usize].len()
-        };
-
-        &self.lookups[table_index as usize][start..end]
+        let stages = &self.stages[table_index];
+        let lookups = &self.lookups[table_index];
+        let start = stage.checked_sub(1).map_or(0, |prev| stages[prev].last_lookup);
+        let end = stages.get(stage).map_or(lookups.len(), |curr| curr.last_lookup);
+        &lookups[start..end]
     }
 }
 
@@ -144,116 +126,89 @@ bitflags::bitflags! {
     /// Flags used for serialization with a `BufferSerializer`.
     #[derive(Default)]
     pub struct FeatureFlags: u32 {
-        const NONE = 0x00;
-
         /// Feature applies to all characters; results in no mask allocated for it.
         const GLOBAL = 0x01;
-
         /// Has fallback implementation, so include mask bit even if feature not found.
         const HAS_FALLBACK = 0x02;
-
         /// Don't skip over ZWNJ when matching **context**.
         const MANUAL_ZWNJ = 0x04;
-
         /// Don't skip over ZWJ when matching **input**.
         const MANUAL_ZWJ = 0x08;
+        /// If feature not found in LangSys, look for it in global feature list and pick one.
+        const GLOBAL_SEARCH = 0x10;
+        /// Randomly select a glyph from an AlternateSubstFormat1 subtable.
+        const RANDOM = 0x20;
 
         const MANUAL_JOINERS        = Self::MANUAL_ZWNJ.bits | Self::MANUAL_ZWJ.bits;
         const GLOBAL_MANUAL_JOINERS = Self::GLOBAL.bits | Self::MANUAL_JOINERS.bits;
         const GLOBAL_HAS_FALLBACK   = Self::GLOBAL.bits | Self::HAS_FALLBACK.bits;
-
-        /// If feature not found in LangSys, look for it in global feature list and pick one.
-        const GLOBAL_SEARCH = 0x10;
-
-        /// Randomly select a glyph from an AlternateSubstFormat1 subtable.
-        const RANDOM = 0x20;
     }
 }
 
 pub struct MapBuilder<'a> {
     face: &'a Face<'a>,
-    chosen_script: [Tag; 2],
     found_script: [bool; 2],
-    script_index: [u32; 2],
-    language_index: [u32; 2],
-    current_stage: [u32; 2],
+    script_index: [Option<ScriptIndex>; 2],
+    chosen_script: [Option<Tag>; 2],
+    lang_index: [Option<LangIndex>; 2],
+    current_stage: [usize; 2],
     feature_infos: Vec<FeatureInfo>,
     stages: [Vec<StageInfo>; 2],
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct FeatureInfo {
     tag: Tag,
-    // sequence#, used for stable sorting only
-    seq: u32,
+    // sequence number, used for stable sorting only
+    seq: usize,
     max_value: u32,
     flags: FeatureFlags,
     // for non-global features, what should the unset glyphs take
     default_value: u32,
     // GSUB/GPOS
-    stage: [u32; 2],
+    stage: [usize; 2],
 }
 
 #[derive(Clone, Copy)]
 struct StageInfo {
-    index: u32,
+    index: usize,
     pause_func: Option<PauseFunc>,
 }
 
 impl<'a> MapBuilder<'a> {
-    pub fn new(face: &'a Face<'a>, script: Script, language: *const c_char) -> Self {
+    pub fn new(face: &'a Face<'a>, script: Option<Script>, language: Option<&Language>) -> Self {
         use crate::ot::layout::*;
 
         // Fetch script/language indices for GSUB/GPOS.  We need these later to skip
         // features not available in either table and not waste precious bits for them.
 
-        let mut script_count = MAX_TAGS_PER_SCRIPT as u32;
-        let mut language_count = MAX_TAGS_PER_LANGUAGE as u32;
-        let mut script_tags = [Tag(0); MAX_TAGS_PER_SCRIPT];
-        let mut language_tags = [Tag(0); MAX_TAGS_PER_LANGUAGE];
+        let (script_tags, lang_tags) = tag::tags_from_script_and_language(script, language);
 
-        crate::tag::rb_ot_tags_from_script_and_language(
-            script.0.0,
-            language,
-            (&mut script_count) as *mut _,
-            script_tags.as_mut_ptr(),
-            (&mut language_count) as *mut _,
-            language_tags.as_mut_ptr(),
-        );
-
-        let mut chosen_script = [Tag(0); 2];
         let mut found_script = [false; 2];
-        let mut script_index = [0u32; 2];
-        let mut language_index = [0u32; 2];
+        let mut script_index = [None; 2];
+        let mut chosen_script = [None; 2];
+        let mut lang_index = [None; 2];
 
-        for table_index in 0..2 {
-            let table_tag = TABLE_TAGS[table_index];
+        for table_index in TableIndex::iter() {
+            if let Some(table) = face.layout_table(table_index) {
+                if let Some((found, idx, tag)) = table.select_script(&script_tags) {
+                    chosen_script[table_index] = Some(tag);
+                    found_script[table_index] = found;
+                    script_index[table_index] = Some(idx);
 
-            found_script[table_index] = 0 != rb_ot_layout_table_select_script(
-                face.as_ptr(),
-                table_tag,
-                script_count,
-                script_tags.as_ptr(),
-                (&mut script_index[table_index]) as *mut _,
-                (&mut chosen_script[table_index]) as *mut _,
-            );
-
-            rb_ot_layout_script_select_language(
-                face.as_ptr(),
-                table_tag,
-                script_index[table_index],
-                language_count,
-                language_tags.as_ptr(),
-                (&mut language_index[table_index]) as *mut _,
-            );
+                    if let Some(idx) = table.select_script_language(idx, &lang_tags) {
+                        lang_index[table_index] = Some(idx);
+                    }
+                }
+            }
         }
 
         Self {
             face,
-            chosen_script,
             found_script,
             script_index,
-            language_index,
+            chosen_script,
+            lang_index,
             current_stage: [0, 0],
             feature_infos: vec![],
             stages: [vec![], vec![]],
@@ -261,27 +216,23 @@ impl<'a> MapBuilder<'a> {
     }
 
     #[inline]
-    pub fn chosen_script(&self, table_index: TableIndex) -> Tag {
-        self.chosen_script[table_index as usize]
+    pub fn chosen_script(&self, table_index: TableIndex) -> Option<Tag> {
+        self.chosen_script[table_index]
     }
 
     #[inline]
     pub fn add_feature(&mut self, tag: Tag, flags: FeatureFlags, value: u32) {
-        // TODO: Flip into if.
-        if tag == Tag(0) {
-            return;
+        if !tag.is_null() {
+            let seq = self.feature_infos.len();
+            self.feature_infos.push(FeatureInfo {
+                tag,
+                seq,
+                max_value: value,
+                flags,
+                default_value: if flags.contains(FeatureFlags::GLOBAL) { value } else { 0 },
+                stage: self.current_stage,
+            });
         }
-
-        let seq = self.feature_infos.len() as u32 + 1;
-        self.feature_infos.push(FeatureInfo {
-            tag,
-            // TODO: make usize
-            seq,
-            max_value: value,
-            flags,
-            default_value: if flags.contains(FeatureFlags::GLOBAL) { value } else { 0 },
-            stage: self.current_stage,
-        });
     }
 
     #[inline]
@@ -306,16 +257,16 @@ impl<'a> MapBuilder<'a> {
 
     // TODO: clean up
     fn add_pause(&mut self, table_index: TableIndex, pause: Option<PauseFunc>) {
-        self.stages[table_index as usize].push(StageInfo {
-            index: self.current_stage[table_index as usize],
+        self.stages[table_index].push(StageInfo {
+            index: self.current_stage[table_index],
             pause_func: pause,
         });
 
-        self.current_stage[table_index as usize] += 1;
+        self.current_stage[table_index] += 1;
     }
 
     // TODO: clean up
-    pub fn compile(&mut self, map: &mut Map, variation_index: &[u32]) {
+    pub fn compile(&mut self, map: &mut Map, variation_indices: [Option<VariationIndex>; 2]) {
         use crate::ot::layout::*;
 
         let global_bit_mask = glyph_flag::DEFINED + 1;
@@ -326,22 +277,24 @@ impl<'a> MapBuilder<'a> {
         // We default to applying required feature in stage 0.  If the required
         // feature has a tag that is known to the shaper, we apply required feature
         // in the stage for that tag.
-        let mut required_feature_stage = [0u32; 2];
-        let mut required_feature_index = [0u32; 2];
-        let mut required_feature_tag = [Tag(0); 2];
+        let mut required_feature_stage = [0; 2];
+        let mut required_feature_index = [None; 2];
+        let mut required_feature_tag = [None; 2];
 
-        for table_index in 0..2 {
-            map.chosen_script[table_index] = self.chosen_script[table_index];
-            map.found_script[table_index] = self.found_script[table_index];
+        map.chosen_script = self.chosen_script;
+        map.found_script = self.found_script;
 
-            rb_ot_layout_language_get_required_feature(
-                self.face.as_ptr(),
-                TABLE_TAGS[table_index],
-                self.script_index[table_index],
-                self.language_index[table_index],
-                (&mut required_feature_index[table_index]) as *mut _,
-                (&mut required_feature_tag[table_index]) as *mut _,
-            );
+        for table_index in TableIndex::iter() {
+            if let Some(script) = self.script_index[table_index] {
+                let lang = self.lang_index[table_index];
+                if let Some((idx, tag)) = self.face
+                    .layout_table(table_index)
+                    .and_then(|table| table.get_required_language_feature(script, lang))
+                {
+                    required_feature_index[table_index] = Some(idx);
+                    required_feature_tag[table_index] = Some(tag);
+                }
+            }
         }
 
         // Sort features and merge duplicates.
@@ -388,8 +341,8 @@ impl<'a> MapBuilder<'a> {
                 bits_needed = 0;
             } else {
                 // Limit bits per feature.
-                let bit_storage = |v: u32| 8 * std::mem::size_of_val(&v) as u32 - v.leading_zeros();
-                bits_needed = Map::MAX_BITS.min(bit_storage(info.max_value));
+                let num_bits = |v: u32| 8 * std::mem::size_of_val(&v) as u32 - v.leading_zeros();
+                bits_needed = Map::MAX_BITS.min(num_bits(info.max_value));
             }
 
             if info.max_value == 0 || next_bit + bits_needed > 8 * std::mem::size_of::<Mask>() as u32 {
@@ -398,30 +351,33 @@ impl<'a> MapBuilder<'a> {
             }
 
             let mut found = false;
-            let mut feature_index = [0u32; 2];
-            for table_index in 0..2 {
-                if required_feature_tag[table_index] == info.tag {
+            let mut feature_index = [None; 2];
+            for table_index in TableIndex::iter() {
+                if required_feature_tag[table_index] == Some(info.tag) {
                     required_feature_stage[table_index] = info.stage[table_index];
                 }
 
-                found |= 0 != rb_ot_layout_language_find_feature(
-                    self.face.as_ptr(),
-                    TABLE_TAGS[table_index],
-                    self.script_index[table_index],
-                    self.language_index[table_index],
-                    info.tag,
-                    &mut feature_index[table_index],
-                );
+                if let Some(script) = self.script_index[table_index] {
+                    let lang = self.lang_index[table_index];
+                    if let Some(idx) = self.face
+                        .layout_table(table_index)
+                        .and_then(|table| table.find_language_feature(script, lang, info.tag))
+                    {
+                        feature_index[table_index] = Some(idx);
+                        found = true;
+                    }
+                }
             }
 
             if !found && info.flags.contains(FeatureFlags::GLOBAL_SEARCH) {
-                for table_index in 0..2 {
-                    found |= 0 != rb_ot_layout_table_find_feature(
-                        self.face.as_ptr(),
-                        TABLE_TAGS[table_index],
-                        info.tag,
-                        &mut feature_index[table_index],
-                    );
+                for table_index in TableIndex::iter() {
+                    if let Some(idx) = self.face
+                        .layout_table(table_index)
+                        .and_then(|table| table.find_feature_index(info.tag))
+                    {
+                        feature_index[table_index] = Some(idx);
+                        found = true;
+                    }
                 }
             }
 
@@ -440,17 +396,16 @@ impl<'a> MapBuilder<'a> {
                 (shift, mask)
             };
 
-            // TODO: order
             map.features.push(FeatureMap {
                 tag: info.tag,
                 index: feature_index,
                 stage: info.stage,
+                shift,
+                mask,
+                one_mask: (1 << shift) & mask,
                 auto_zwnj: !info.flags.contains(FeatureFlags::MANUAL_ZWNJ),
                 auto_zwj: !info.flags.contains(FeatureFlags::MANUAL_ZWJ),
                 random: info.flags.contains(FeatureFlags::RANDOM),
-                shift,
-                mask,
-                _1_mask: (1 << shift) & mask,
             });
         }
 
@@ -460,71 +415,74 @@ impl<'a> MapBuilder<'a> {
         self.add_gsub_pause(None);
         self.add_gpos_pause(None);
 
-        for table_index in 0..2 {
+        for table_index in TableIndex::iter() {
             // Collect lookup indices for features.
 
             let mut stage_index = 0;
             let mut last_num_lookups = 0;
 
             for stage in 0..self.current_stage[table_index] {
-                if required_feature_index[table_index] != FEATURE_NOT_FOUND_INDEX
-                    && required_feature_stage[table_index] == stage
-                {
-                    self.add_lookups(
-                        map,
-                        table_index,
-                        required_feature_index[table_index],
-                        variation_index[table_index],
-                        global_bit_mask,
-                        true,
-                        true,
-                        false,
-                    );
-                }
-
-                for i in 0..map.features.len() {
-                    if map.features[i].stage[table_index] == stage {
+                if required_feature_stage[table_index] == stage {
+                    if let Some(feature_index) = required_feature_index[table_index] {
                         self.add_lookups(
-                            map,
+                            &mut map.lookups[table_index],
                             table_index,
-                            map.features[i].index[table_index],
-                            variation_index[table_index],
-                            map.features[i].mask,
-                            map.features[i].auto_zwnj,
-                            map.features[i].auto_zwj,
-                            map.features[i].random,
+                            feature_index,
+                            variation_indices[table_index],
+                            global_bit_mask,
+                            true,
+                            true,
+                            false,
                         );
                     }
                 }
 
+                for feature in &map.features {
+                    if feature.stage[table_index] == stage {
+                        if let Some(feature_index) = feature.index[table_index] {
+                            self.add_lookups(
+                                &mut map.lookups[table_index],
+                                table_index,
+                                feature_index,
+                                variation_indices[table_index],
+                                feature.mask,
+                                feature.auto_zwnj,
+                                feature.auto_zwj,
+                                feature.random,
+                            );
+                        }
+                    }
+                }
+
                 // Sort lookups and merge duplicates.
-                if last_num_lookups < map.lookups[table_index].len() {
-                    let len = map.lookups[table_index].len();
-                    map.lookups[table_index][last_num_lookups..len].sort();
+                let lookups = &mut map.lookups[table_index];
+                let len = lookups.len();
+
+                if last_num_lookups < len {
+                    lookups[last_num_lookups..len].sort();
 
                     let mut j = last_num_lookups;
-                    for i in j+1..map.lookups[table_index].len() {
-                        if map.lookups[table_index][i].index != map.lookups[table_index][j].index {
+                    for i in j+1..len {
+                        if lookups[i].index != lookups[j].index {
                             j += 1;
-                            map.lookups[table_index][j] = map.lookups[table_index][i];
+                            lookups[j] = lookups[i];
                         } else {
-                            map.lookups[table_index][j].mask |= map.lookups[table_index][i].mask;
-                            map.lookups[table_index][j].auto_zwnj &= map.lookups[table_index][i].auto_zwnj;
-                            map.lookups[table_index][j].auto_zwj &= map.lookups[table_index][i].auto_zwj;
+                            lookups[j].mask |= lookups[i].mask;
+                            lookups[j].auto_zwnj &= lookups[i].auto_zwnj;
+                            lookups[j].auto_zwj &= lookups[i].auto_zwj;
                         }
                     }
 
-                    map.lookups[table_index].truncate(j + 1);
+                    lookups.truncate(j + 1);
                 }
 
-                last_num_lookups = map.lookups[table_index].len();
+                last_num_lookups = lookups.len();
 
-                if stage_index < self.stages[table_index].len()
-                    && self.stages[table_index][stage_index].index == stage
-                {
+                let stages = &self.stages[table_index];
+                if stage_index < stages.len() && stages[stage_index].index == stage {
                     map.stages[table_index].push(StageMap {
-                        last_lookup: last_num_lookups as u32,
-                        pause_func: self.stages[table_index][stage_index].pause_func,
+                        last_lookup: last_num_lookups,
+                        pause_func: stages[stage_index].pause_func,
                     });
 
                     stage_index += 1;
@@ -533,60 +491,37 @@ impl<'a> MapBuilder<'a> {
         }
     }
 
-    // TODO: clean up
     fn add_lookups(
         &self,
-        map: &mut Map,
-        table_index: usize, // TODO: enum
-        feature_index: u32,
-        variations_index: u32,
+        lookups: &mut Vec<LookupMap>,
+        table_index: TableIndex,
+        feature_index: FeatureIndex,
+        variation_index: Option<VariationIndex>,
         mask: Mask,
         auto_zwnj: bool,
         auto_zwj: bool,
         random: bool,
-    ) {
-        use crate::ot::layout::*;
+    ) -> Option<()> {
+        let table = self.face.layout_table(table_index)?;
+        let lookup_count = table.lookup_count();
 
-        let mut lookup_indices = [0u32; 32];
-        let mut offset = 0;
-        let mut len;
+        let feature = match variation_index {
+            Some(idx) => table.get_variation(feature_index, idx)?,
+            None => table.get_feature(feature_index)?,
+        };
 
-        let table_lookup_count = rb_ot_layout_table_get_lookup_count(
-            self.face.as_ptr(),
-            TABLE_TAGS[table_index],
-        );
-
-        loop {
-            len = lookup_indices.len() as u32;
-            rb_ot_layout_feature_with_variations_get_lookups(
-                self.face.as_ptr(),
-                TABLE_TAGS[table_index],
-                feature_index,
-                variations_index,
-                offset,
-                (&mut len) as *mut _,
-                lookup_indices.as_mut_ptr(),
-            );
-
-            for i in 0..len {
-                if lookup_indices[i as usize] >= table_lookup_count {
-                    continue;
-                }
-
-                map.lookups[table_index].push(LookupMap {
+        for index in feature.lookup_indices {
+            if index.0 < lookup_count {
+                lookups.push(LookupMap {
                     mask,
-                    index: lookup_indices[i as usize] as u16,
+                    index,
                     auto_zwnj,
                     auto_zwj,
                     random,
                 });
             }
-
-            offset += len;
-
-            if len != lookup_indices.len() as u32 {
-                break;
-            }
         }
+
+        Some(())
     }
 }
