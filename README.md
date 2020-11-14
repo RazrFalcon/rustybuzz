@@ -31,6 +31,9 @@ Embedded `harfbuzz` version: 2.7.0
   - [x] `GDEF`
   - [x] `GPOS`
   - [x] `GSUB`
+- [x] Port text normalization (`hb-ot-shape-normalize.cc`, easy).
+- [x] Port fallback shaper (`hb-ot-shape-fallback.cc`, easy).
+- [x] Port shaper logic (`hb-ot-shape.cc`).
 - [ ] Port Apple tables:
   - [ ] Make macos tests OS-independent (ultra hard).
   - [ ] `ankr` (easy)
@@ -40,15 +43,12 @@ Embedded `harfbuzz` version: 2.7.0
   - [ ] `mort`
   - [ ] `morx`
   - [ ] `trak`
-- [x] Port text normalization (`hb-ot-shape-normalize.cc`, easy).
-- [x] Port fallback shaper (`hb-ot-shape-fallback.cc`, easy).
-- [ ] Port shaper logic (`hb-ot-shape.cc`).
 - [ ] Remove C++ sources.
 - [ ] Remove `unsafe`.
 
 ## Performance
 
-At the moment, performance itsn't that great. We're 1.5-2x slower than harfbuzz.
+At the moment, performance isn't that great. We're 1.5-2x slower than harfbuzz.
 Mainly because we have a lot of FFI glue code, which doesn't work well with inlining.
 And we have to constanly convert between C++ and Rust types (like `char` for example).
 And also, because rustybuzz doesn't support shaping plan caching at the moment.
