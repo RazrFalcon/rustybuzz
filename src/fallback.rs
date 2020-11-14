@@ -5,21 +5,9 @@ use ttf_parser::GlyphId;
 use crate::{ffi, Direction, Face};
 use crate::buffer::{Buffer, GlyphPosition};
 use crate::unicode::{modified_combining_class, CanonicalCombiningClass, GeneralCategory, Space};
-use crate::ot::*;
+use crate::plan::ShapePlan;
 
-#[no_mangle]
-pub extern "C" fn rb_ot_shape_fallback_mark_position_recategorize_marks(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    recategorize_marks(&plan, face, &mut buffer)
-}
-
-fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+pub fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         if info.general_category() == GeneralCategory::NonspacingMark {
@@ -122,21 +110,7 @@ fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_shape_fallback_mark_position(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-    adjust_offsets_when_zeroing: ffi::rb_bool_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    let adjust_offsets_when_zeroing = adjust_offsets_when_zeroing != 0;
-    mark_position(&plan, face, &mut buffer, adjust_offsets_when_zeroing)
-}
-
-fn mark_position(
+pub fn position_marks(
     plan: &ShapePlan,
     face: &Face,
     buffer: &mut Buffer,
@@ -247,11 +221,11 @@ fn position_around_base(
                     component_extents = base_extents;
 
                     if horizontal_dir == Direction::Invalid {
-                        let plan_dir = plan.direction();
+                        let plan_dir = plan.direction;
                         horizontal_dir = if plan_dir.is_horizontal() {
                             plan_dir
                         } else {
-                            Direction::from_script(plan.script()).unwrap_or_default()
+                            Direction::from_script(plan.script).unwrap_or_default()
                         };
                     }
 
@@ -438,28 +412,7 @@ fn position_mark(
     }
 }
 
-/// Performs face-assisted kerning.
-#[no_mangle]
-pub extern "C" fn rb_ot_shape_fallback_kern(
-    _: *const ffi::rb_ot_shape_plan_t,
-    _: *const ffi::rb_face_t,
-    _: *mut ffi::rb_buffer_t,
-) {}
-
-/// Adjusts width of various spaces.
-#[no_mangle]
-pub extern "C" fn rb_ot_shape_fallback_spaces(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    spaces(&plan, &face, &mut buffer);
-}
-
-fn spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     let horizontal = buffer.direction.is_horizontal();
     for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {

@@ -27,8 +27,9 @@
 #ifndef RB_AAT_LAYOUT_COMMON_HH
 #define RB_AAT_LAYOUT_COMMON_HH
 
-#include "hb-aat-layout.hh"
+#include "hb-buffer.hh"
 #include "hb-open-type.hh"
+#include "hb-aat-layout.hh"
 
 namespace AAT {
 
@@ -770,7 +771,7 @@ struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bo
         return false;
     }
 
-    const rb_ot_shape_plan_t *plan;
+    const rb_shape_plan_t *plan;
     rb_face_t *face;
     rb_buffer_t *buffer;
     rb_sanitize_context_t sanitizer;
@@ -779,7 +780,7 @@ struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bo
     /* Unused. For debug tracing only. */
     unsigned int lookup_index;
 
-    RB_INTERNAL rb_aat_apply_context_t(const rb_ot_shape_plan_t *plan_,
+    RB_INTERNAL rb_aat_apply_context_t(const rb_shape_plan_t *plan_,
                                        rb_face_t *face_,
                                        rb_buffer_t *buffer_,
                                        rb_blob_t *blob = const_cast<rb_blob_t *>(&Null(rb_blob_t)));

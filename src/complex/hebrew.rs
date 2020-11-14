@@ -1,5 +1,5 @@
 use crate::{unicode, Tag};
-use crate::ot::*;
+use super::*;
 
 
 pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
@@ -57,7 +57,7 @@ fn compose(ctx: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     // Note that some letters do not have a dagesh presForm encoded.
     match unicode::compose(a, b) {
         Some(c) => Some(c),
-        None if !ctx.plan.has_gpos_mark() => {
+        None if !ctx.plan.has_gpos_mark => {
             // Special-case Hebrew presentation forms that are excluded from
             // standard normalization, but wanted for old fonts.
             let a = a as u32;

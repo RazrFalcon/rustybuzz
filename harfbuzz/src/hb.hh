@@ -164,8 +164,6 @@
 
 #include "hb.h"
 #define RB_H_IN
-#include "hb-ot.h"
-#define RB_OT_H_IN
 #include "hb-aat.h"
 #define RB_AAT_H_IN
 

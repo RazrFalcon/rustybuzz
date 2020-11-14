@@ -1,22 +1,13 @@
-pub mod feature;
 mod apply;
-mod complex_shaper;
 mod contextual;
-mod fallback;
 mod kern;
 mod layout;
 mod map;
 mod matching;
-mod normalize;
 mod position;
-mod shape;
-mod shape_plan;
-mod shape_planner;
 mod substitute;
 
-pub use complex_shaper::*;
 pub use layout::*;
 pub use map::*;
-pub use normalize::*;
-pub use shape_plan::*;
-pub use shape_planner::*;
+pub use position::*;
+pub use substitute::*;

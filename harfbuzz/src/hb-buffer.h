@@ -35,8 +35,6 @@
 #define RB_BUFFER_H
 
 #include "hb-common.h"
-#include "hb-unicode.h"
-#include "hb-face.h"
 
 RB_BEGIN_DECLS
 

@@ -3,8 +3,7 @@ use std::convert::TryFrom;
 pub use unicode_general_category::GeneralCategory;
 pub use unicode_ccc::CanonicalCombiningClass; // TODO: prefer unic-ucd-normal::CanonicalCombiningClass
 
-use crate::Script;
-use crate::ffi::{self, rb_codepoint_t};
+use crate::{ffi, Script};
 
 // Space estimates based on:
 // https://unicode.org/charts/PDF/U2000.pdf
@@ -701,11 +700,6 @@ impl CharExt for char {
         (0x0FE00..=0x0FE0F).contains(&ch) || // VARIATION SELECTOR - 1..16
         (0xE0100..=0xE01EF).contains(&ch)    // VARIATION SELECTOR - 17..256
     }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ucd_mirroring(u: rb_codepoint_t) -> rb_codepoint_t {
-    char::try_from(u).unwrap().mirrored().map(u32::from).unwrap_or(0)
 }
 
 const S_BASE: u32 = 0xAC00;

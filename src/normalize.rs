@@ -1,7 +1,9 @@
 use std::convert::TryFrom;
 
-use crate::{ffi, ot, Face};
+use crate::Face;
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphInfo};
+use crate::complex::MAX_COMBINING_MARKS;
+use crate::plan::ShapePlan;
 use crate::unicode::{CharExt, GeneralCategory};
 
 // HIGHLEVEL DESIGN:
@@ -43,10 +45,10 @@ use crate::unicode::{CharExt, GeneralCategory};
 //     offload some of their requirements to the normalizer.  For example, the
 //     Indic shaper may want to disallow recomposing of two matras.
 
-pub struct ShapeNormalizeContext {
-    pub plan: ot::ShapePlan,
-    pub buffer: &'static mut Buffer,
-    pub face: &'static Face<'static>,
+pub struct ShapeNormalizeContext<'a> {
+    pub plan: &'a ShapePlan,
+    pub buffer: &'a mut Buffer,
+    pub face: &'a Face<'a>,
     pub decompose: fn(&ShapeNormalizeContext, char) -> Option<(char, char)>,
     pub compose: fn(&ShapeNormalizeContext, char, char) -> Option<char>,
 }
@@ -68,19 +70,7 @@ impl Default for ShapeNormalizationMode {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_shape_normalize(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    buffer: *mut ffi::rb_buffer_t,
-    face: *const ffi::rb_face_t,
-) {
-    let plan = ot::ShapePlan::from_ptr(plan);
-    let buffer = Buffer::from_ptr_mut(buffer);
-    let face = Face::from_ptr(face);
-    normalize(plan, buffer, face);
-}
-
-fn normalize(plan: ot::ShapePlan, buffer: &'static mut Buffer, face: &'static Face<'static>) {
+pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     if buffer.is_empty() {
         return;
     }
@@ -189,7 +179,7 @@ fn normalize(plan: ot::ShapePlan, buffer: &'static mut Buffer, face: &'static Fa
             }
 
             // We are going to do a O(n^2).  Only do this if the sequence is short.
-            if end - i <= ot::MAX_COMBINING_MARKS {
+            if end - i <= MAX_COMBINING_MARKS {
                 buffer.sort(i, end, |a, b| a.modified_combining_class() > b.modified_combining_class());
 
                 if let Some(reorder_marks) = ctx.plan.shaper.reorder_marks {

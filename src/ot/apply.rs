@@ -2,10 +2,10 @@ use std::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
+use crate::{Face, Mask};
 use crate::buffer::{Buffer, GlyphInfo, GlyphPropsFlags};
 use crate::tables::gsubgpos::{LookupFlags, LookupIndex};
-use crate::{Face, Mask};
-use super::layout::{LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
+use super::{LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
 
 /// Find out whether a lookup would be applied.
 pub trait WouldApply {

@@ -1,19 +1,17 @@
 //! OpenType layout.
 
-use std::convert::TryFrom;
 use std::slice;
 
 use ttf_parser::parser::NumFrom;
-use ttf_parser::GlyphId;
 
+use crate::{ffi, Face, Tag};
 use crate::buffer::Buffer;
 use crate::common::TagExt;
-use crate::{ffi, Face, Tag};
+use crate::plan::ShapePlan;
 use crate::tables::gsubgpos::{
     FeatureIndex, LangIndex, LookupIndex, ScriptIndex, SubstPosTable, VariationIndex
 };
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::{Map, ShapePlan};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -58,18 +56,9 @@ pub trait LayoutLookup: Apply {
     fn is_reverse(&self) -> bool;
 }
 
-// GDEF
-
-/// Tests whether a face has any glyph classes defined in its GDEF table.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_has_glyph_classes(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
-    Face::from_ptr(face).ttfp_face.has_glyph_classes() as ffi::rb_bool_t
-}
-
 // GSUB/GPOS
 
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_table_select_script(
+pub fn rb_ot_layout_table_select_script(
     face: *const ffi::rb_face_t,
     table_tag: Tag,
     script_count: u32,
@@ -98,8 +87,6 @@ pub extern "C" fn rb_ot_layout_table_select_script(
 }
 
 fn select_script(table: SubstPosTable, script_tags: &[Tag]) -> Option<(bool, ScriptIndex, Tag)> {
-    const LATIN_SCRIPT: Tag = Tag::from_bytes(b"latn");
-
     for &tag in script_tags {
         if let Some(index) = table.find_script_index(tag) {
             return Some((true, index, tag));
@@ -113,7 +100,7 @@ fn select_script(table: SubstPosTable, script_tags: &[Tag]) -> Option<(bool, Scr
         Tag::default_language(),
         // try with 'latn'; some old fonts put their features there even though
         // they're really trying to support Thai, for example :(
-        LATIN_SCRIPT,
+        Tag::from_bytes(b"latn"),
     ] {
         if let Some(index) = table.find_script_index(tag) {
             return Some((false, index, tag));
@@ -127,8 +114,7 @@ fn select_script(table: SubstPosTable, script_tags: &[Tag]) -> Option<(bool, Scr
 /// or GPOS table, underneath the specified script and language.
 ///
 /// Returns true if the feature is found, false otherwise.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_language_find_feature(
+pub fn rb_ot_layout_language_find_feature(
     face: *const ffi::rb_face_t,
     table_tag: Tag,
     script_index: u32,
@@ -182,8 +168,7 @@ fn language_find_feature(
 /// or GPOS table, underneath the specified script index.
 ///
 /// Returns true if the language tag is found, false otherwise.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_script_select_language(
+pub fn rb_ot_layout_script_select_language(
     face: *const ffi::rb_face_t,
     table_tag: Tag,
     script_index: u32,
@@ -231,8 +216,7 @@ fn script_select_language(
 /// underneath the specified script and language.
 ///
 /// Returns true if the feature is found, false otherwise.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_language_get_required_feature(
+pub fn rb_ot_layout_language_get_required_feature(
     face: *const ffi::rb_face_t,
     table_tag: Tag,
     script_index: u32,
@@ -284,8 +268,7 @@ fn language_get_required_feature(
 /// or GPOS table.
 ///
 /// Returns true if the feature is found, false otherwise.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_table_find_feature(
+pub fn rb_ot_layout_table_find_feature(
     face: *const ffi::rb_face_t,
     table_tag: Tag,
     feature_tag: Tag,
@@ -306,8 +289,7 @@ pub extern "C" fn rb_ot_layout_table_find_feature(
 
 /// Fetches the total number of lookups enumerated in the specified
 /// face's GSUB table or GPOS table.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_table_get_lookup_count(
+pub fn rb_ot_layout_table_get_lookup_count(
     face: *const ffi::rb_face_t,
     table_tag: Tag,
 ) -> u32 {
@@ -320,8 +302,7 @@ pub extern "C" fn rb_ot_layout_table_get_lookup_count(
 
 /// Fetches a list of feature variations in the specified face's GSUB table
 /// or GPOS table, at the specified variation coordinates.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_table_find_feature_variations(
+pub fn rb_ot_layout_table_find_feature_variations(
     face: *const ffi::rb_face_t,
     table_tag: Tag,
     coords: *const i32,
@@ -344,8 +325,7 @@ pub extern "C" fn rb_ot_layout_table_find_feature_variations(
 /// Fetches a list of all lookups enumerated for the specified feature, in
 /// the specified face's GSUB table or GPOS table, enabled at the specified
 /// variations index. The list returned will begin at the offset provided.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
+pub fn rb_ot_layout_feature_with_variations_get_lookups(
     face: *const ffi::rb_face_t,
     table_tag: Tag,
     feature_index: u32,
@@ -382,20 +362,11 @@ pub extern "C" fn rb_ot_layout_feature_with_variations_get_lookups(
 
 // GSUB
 
-/// Tests whether the specified face includes any GSUB substitutions.
-///
-/// Returns true if data found, false otherwise
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_has_substitution(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
-    Face::from_ptr(face).gsub.is_some() as ffi::rb_bool_t
-}
-
 /// Tests whether a specified lookup in the specified face would
 /// trigger a substitution on the given glyph sequence.
 ///
 /// Returns true if a substitution would be triggered, false otherwise
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_lookup_would_substitute(
+pub fn rb_ot_layout_lookup_would_substitute(
     face: *const ffi::rb_face_t,
     lookup_index: u32,
     glyphs: *const u32,
@@ -410,111 +381,18 @@ pub extern "C" fn rb_ot_layout_lookup_would_substitute(
         .map_or(false, |lookup| lookup.would_apply(&ctx)) as ffi::rb_bool_t
 }
 
-/// Called before substitution lookups are performed, to ensure that glyph
-/// class and other properties are set on the glyphs in the buffer.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_substitute_start(
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    set_glyph_props(face, &mut buffer);
-}
-
-fn set_glyph_props(face: &Face, buffer: &mut Buffer) {
-    let len = buffer.len;
-    for info in &mut buffer.info[..len] {
-        let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
-        info.set_glyph_props(face.glyph_props(glyph));
-        info.set_lig_props(0);
-        info.set_syllable(0);
-    }
-}
-
-// GPOS
-
-/// Returns true if the face has GPOS data, false otherwise
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_has_positioning(face: *const ffi::rb_face_t) -> ffi::rb_bool_t {
-    Face::from_ptr(face).gpos.is_some() as ffi::rb_bool_t
-}
-
-/// Called before positioning lookups are performed, to ensure that glyph
-/// attachment types and glyph-attachment chains are set for the glyphs in the buffer.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_position_start(
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    super::position::position_start(face, &mut buffer);
-}
-
-/// Called after positioning lookups are performed, to finish glyph advances.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_position_finish_advances(
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    super::position::position_finish_advances(face, &mut buffer);
-}
-
-/// Called after positioning lookups are performed, to finish glyph offsets.
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_position_finish_offsets(
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    super::position::position_finish_offsets(face, &mut buffer);
-}
-
 // Substitution and positioning
 
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_substitute(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    map: *const ffi::rb_ot_map_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let map = Map::from_ptr(map);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    apply(&plan, &map, face, &mut buffer, face.gsub);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_layout_position(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    map: *const ffi::rb_ot_map_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let map = Map::from_ptr(map);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    apply(&plan, &map, face, &mut buffer, face.gpos);
-}
-
-fn apply<T: LayoutTable>(
+pub fn apply_layout_table<T: LayoutTable>(
     plan: &ShapePlan,
-    map: &Map,
     face: &Face,
     buffer: &mut Buffer,
     table: Option<T>,
 ) {
     let mut ctx = ApplyContext::new(T::INDEX, face, buffer);
 
-    for (stage_index, stage) in map.get_stages(T::INDEX).into_iter().enumerate() {
-        for lookup in map.get_stage_lookups(T::INDEX, stage_index) {
+    for (stage_index, stage) in plan.ot_map.stages(T::INDEX).into_iter().enumerate() {
+        for lookup in plan.ot_map.stage_lookups(T::INDEX, stage_index) {
             let lookup_index = LookupIndex(lookup.index as u16);
 
             ctx.lookup_index = lookup_index;
@@ -536,7 +414,7 @@ fn apply<T: LayoutTable>(
 
         if let Some(func) = stage.pause_func {
             ctx.buffer.clear_output();
-            unsafe { func(plan.as_ptr(), face.as_ptr() as *mut _, ctx.buffer.as_ptr()); }
+            func(plan, face, ctx.buffer);
         }
     }
 }
@@ -608,36 +486,14 @@ fn apply_backward(ctx: &mut ApplyContext, lookup: impl Apply) -> bool {
 
 // General
 
-pub extern "C" fn rb_clear_substitution_flags(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    clear_substitution_flags(&plan, face, &mut buffer);
-}
-
-fn clear_substitution_flags(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+pub fn clear_substitution_flags(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         info.clear_substituted();
     }
 }
 
-pub extern "C" fn rb_clear_syllables(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    clear_syllables(&plan, face, &mut buffer);
-}
-
-fn clear_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+pub fn clear_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         info.set_syllable(0);

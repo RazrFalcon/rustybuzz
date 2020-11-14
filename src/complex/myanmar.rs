@@ -1,7 +1,9 @@
-use crate::{ffi, Tag, Face, GlyphInfo};
+use crate::{feature, Tag, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
-use crate::ot::*;
+use crate::ot::FeatureFlags;
+use crate::plan::{ShapePlan, ShapePlanner};
 use super::indic::{Category, Position};
+use super::*;
 
 
 pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
@@ -188,36 +190,25 @@ impl GlyphInfo {
 
 fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
-    planner.map.add_gsub_pause(Some(setup_syllables_raw));
+    planner.ot_map.add_gsub_pause(Some(setup_syllables));
 
-    planner.map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
 
-    planner.map.add_gsub_pause(Some(reorder_raw));
+    planner.ot_map.add_gsub_pause(Some(reorder));
 
     for feature in MYANMAR_FEATURES.iter().take(4) {
-        planner.map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
-        planner.map.add_gsub_pause(None);
+        planner.ot_map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner.ot_map.add_gsub_pause(None);
     }
 
-    planner.map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_syllables));
 
     for feature in MYANMAR_FEATURES.iter().skip(4) {
-        planner.map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner.ot_map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
     }
-}
-
-extern "C" fn setup_syllables_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_syllables(&plan, face, &mut buffer);
 }
 
 fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
@@ -230,17 +221,6 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
         start = end;
         end = buffer.next_syllable(start);
     }
-}
-
-extern "C" fn reorder_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    reorder(&plan, face, &mut buffer);
 }
 
 fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
@@ -428,7 +408,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
 }
 
 fn override_features(planner: &mut ShapePlanner) {
-    planner.map.disable_feature(feature::STANDARD_LIGATURES);
+    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
 fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {

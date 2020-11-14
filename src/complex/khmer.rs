@@ -1,10 +1,12 @@
 use std::os::raw::c_void;
 
-use crate::{ffi, Tag, Mask, Face, GlyphInfo};
+use crate::{feature, Tag, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
+use crate::ot::FeatureFlags;
+use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use crate::ot::*;
 use super::indic::{Category, Position};
+use super::*;
 
 
 pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
@@ -95,7 +97,7 @@ impl KhmerShapePlan {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
                 0
             } else {
-                plan.map.get_1_mask(feature.0)
+                plan.ot_map._1_mask(feature.0)
             }
         }
 
@@ -111,8 +113,8 @@ impl KhmerShapePlan {
 
 fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
-    planner.map.add_gsub_pause(Some(setup_syllables_raw));
-    planner.map.add_gsub_pause(Some(reorder_raw));
+    planner.ot_map.add_gsub_pause(Some(setup_syllables));
+    planner.ot_map.add_gsub_pause(Some(reorder));
 
     // Testing suggests that Uniscribe does NOT pause between basic
     // features.  Test with KhmerUI.ttf and the following three
@@ -123,29 +125,18 @@ fn collect_features(planner: &mut ShapePlanner) {
     //   U+1789,U+17D2,U+1789,U+17BC
     //
     // https://github.com/harfbuzz/harfbuzz/issues/974
-    planner.map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
-    planner.map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
 
     for feature in KHMER_FEATURES.iter().take(5) {
-        planner.map.add_feature(feature.0, feature.1, 1);
+        planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 
-    planner.map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_syllables));
 
     for feature in KHMER_FEATURES.iter().skip(5) {
-        planner.map.add_feature(feature.0, feature.1, 1);
+        planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
-}
-
-extern "C" fn setup_syllables_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_syllables(&plan, face, &mut buffer);
 }
 
 fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
@@ -160,21 +151,10 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-extern "C" fn reorder_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    reorder(&plan, face, &mut buffer);
-}
-
 fn reorder(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     insert_dotted_circles(face, buffer);
 
-    let khmer_plan = KhmerShapePlan::from_ptr(plan.data() as _);
+    let khmer_plan = KhmerShapePlan::from_ptr(plan.data as _);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -348,9 +328,9 @@ fn override_features(planner: &mut ShapePlanner) {
     // Khmer spec has 'clig' as part of required shaping features:
     // "Apply feature 'clig' to form ligatures that are desired for
     // typographical correctness.", hence in overrides...
-    planner.map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
 
-    planner.map.disable_feature(feature::STANDARD_LIGATURES);
+    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
 fn data_create(plan: &ShapePlan) -> *mut c_void {

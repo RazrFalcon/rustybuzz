@@ -1,14 +1,17 @@
 use std::os::raw::c_char;
 
-use crate::buffer::glyph_flag;
-use crate::{ffi, Face, Mask, Tag, Script};
-use super::layout::TableIndex;
+use crate::{Face, Mask, Tag, Script};
+use crate::buffer::{glyph_flag, Buffer};
+use crate::plan::ShapePlan;
+use super::TableIndex;
 
-const TABLE_TAGS: [Tag; 2] = [Tag::from_bytes(b"GSUB"), Tag::from_bytes(b"GPOS")];
+pub const TABLE_TAGS: [Tag; 2] = [Tag::from_bytes(b"GSUB"), Tag::from_bytes(b"GPOS")];
+
+pub type PauseFunc = fn(&ShapePlan, &Face, &mut Buffer);
 
 pub struct Map {
-    pub chosen_script: [Tag; 2],
-    pub found_script: [bool; 2],
+    chosen_script: [Tag; 2],
+    found_script: [bool; 2],
     global_mask: Mask,
     features: Vec<FeatureMap>,
     lookups: [Vec<LookupMap>; 2],
@@ -40,18 +43,18 @@ pub struct LookupMap {
     pub mask: Mask,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy)]
 pub struct StageMap {
     // Cumulative
     pub last_lookup: u32,
-    pub pause_func: ffi::rb_ot_pause_func_t,
+    pub pause_func: Option<PauseFunc>,
 }
 
 impl Map {
     pub const MAX_BITS: u32 = 8;
     pub const MAX_VALUE: u32 = (1 << Self::MAX_BITS) - 1;
 
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             chosen_script: [Tag(0); 2],
             found_script: [false; 2],
@@ -63,13 +66,13 @@ impl Map {
     }
 
     #[inline]
-    pub fn from_ptr(map: *const ffi::rb_ot_map_t) -> &'static Map {
-        unsafe { &*(map as *const Map) }
+    pub fn chosen_script(&self, table_index: TableIndex) -> Tag {
+        self.chosen_script[table_index as usize]
     }
 
     #[inline]
-    pub fn from_ptr_mut(map: *mut ffi::rb_ot_map_t) -> &'static mut Map {
-        unsafe { &mut *(map as *mut Map) }
+    pub fn found_script(&self, table_index: TableIndex) -> bool {
+        self.found_script[table_index as usize]
     }
 
     #[inline]
@@ -78,21 +81,21 @@ impl Map {
     }
 
     #[inline]
-    pub fn get_mask(&self, feature_tag: Tag) -> (Mask, u32) {
+    pub fn mask(&self, feature_tag: Tag) -> (Mask, u32) {
         self.features
             .binary_search_by_key(&feature_tag, |f| f.tag)
             .map_or((0, 0), |idx| (self.features[idx].mask, self.features[idx].shift))
     }
 
     #[inline]
-    pub fn get_1_mask(&self, feature_tag: Tag) -> Mask {
+    pub fn _1_mask(&self, feature_tag: Tag) -> Mask {
         self.features
             .binary_search_by_key(&feature_tag, |f| f.tag)
             .map_or(0, |idx| self.features[idx]._1_mask)
     }
 
     #[inline]
-    pub fn get_feature_index(&self, table_index: TableIndex, feature_tag: Tag) -> u32 {
+    pub fn feature_index(&self, table_index: TableIndex, feature_tag: Tag) -> u32 {
         use crate::ot::layout::*;
         self.features
             .binary_search_by_key(&feature_tag, |f| f.tag)
@@ -100,19 +103,19 @@ impl Map {
     }
 
     #[inline]
-    pub fn get_feature_stage(&self, table_index: TableIndex, feature_tag: Tag) -> usize {
+    pub fn feature_stage(&self, table_index: TableIndex, feature_tag: Tag) -> usize {
         self.features
             .binary_search_by_key(&feature_tag, |f| f.tag)
             .map_or(usize::MAX, |idx| self.features[idx].stage[table_index as usize] as usize)
     }
 
     #[inline]
-    pub fn get_stages(&self, table_index: TableIndex) -> &[StageMap] {
+    pub fn stages(&self, table_index: TableIndex) -> &[StageMap] {
         &self.stages[table_index as usize]
     }
 
     #[inline]
-    pub fn get_stage_lookups(&self, table_index: TableIndex, stage: usize) -> &[LookupMap] {
+    pub fn stage_lookups(&self, table_index: TableIndex, stage: usize) -> &[LookupMap] {
         if stage == usize::MAX {
             return &[];
         }
@@ -157,6 +160,7 @@ bitflags::bitflags! {
 
         const MANUAL_JOINERS        = Self::MANUAL_ZWNJ.bits | Self::MANUAL_ZWJ.bits;
         const GLOBAL_MANUAL_JOINERS = Self::GLOBAL.bits | Self::MANUAL_JOINERS.bits;
+        const GLOBAL_HAS_FALLBACK   = Self::GLOBAL.bits | Self::HAS_FALLBACK.bits;
 
         /// If feature not found in LangSys, look for it in global feature list and pick one.
         const GLOBAL_SEARCH = 0x10;
@@ -166,21 +170,15 @@ bitflags::bitflags! {
     }
 }
 
-pub struct MapBuilder {
-    pub face: &'static Face<'static>,
-    pub chosen_script: [Tag; 2],
-    pub found_script: [bool; 2],
-    pub script_index: [u32; 2],
-    pub language_index: [u32; 2],
+pub struct MapBuilder<'a> {
+    face: &'a Face<'a>,
+    chosen_script: [Tag; 2],
+    found_script: [bool; 2],
+    script_index: [u32; 2],
+    language_index: [u32; 2],
     current_stage: [u32; 2],
     feature_infos: Vec<FeatureInfo>,
     stages: [Vec<StageInfo>; 2],
-}
-
-#[allow(dead_code)]
-pub struct MapFeature {
-    pub tag: Tag,
-    pub flags: FeatureFlags,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
@@ -196,13 +194,14 @@ struct FeatureInfo {
     stage: [u32; 2],
 }
 
+#[derive(Clone, Copy)]
 struct StageInfo {
     index: u32,
-    pause_func: ffi::rb_ot_pause_func_t,
+    pause_func: Option<PauseFunc>,
 }
 
-impl MapBuilder {
-    fn new(face: &'static Face<'static>, script: Script, language: *const c_char) -> Self {
+impl<'a> MapBuilder<'a> {
+    pub fn new(face: &'a Face<'a>, script: Script, language: *const c_char) -> Self {
         use crate::ot::layout::*;
 
         // Fetch script/language indices for GSUB/GPOS.  We need these later to skip
@@ -262,10 +261,11 @@ impl MapBuilder {
     }
 
     #[inline]
-    pub fn from_ptr_mut(builder: *mut ffi::rb_ot_map_builder_t) -> &'static mut MapBuilder {
-        unsafe { &mut *(builder as *mut MapBuilder) }
+    pub fn chosen_script(&self, table_index: TableIndex) -> Tag {
+        self.chosen_script[table_index as usize]
     }
 
+    #[inline]
     pub fn add_feature(&mut self, tag: Tag, flags: FeatureFlags, value: u32) {
         // TODO: Flip into if.
         if tag == Tag(0) {
@@ -295,17 +295,17 @@ impl MapBuilder {
     }
 
     #[inline]
-    pub fn add_gsub_pause(&mut self, pause: ffi::rb_ot_pause_func_t) {
+    pub fn add_gsub_pause(&mut self, pause: Option<PauseFunc>) {
         self.add_pause(TableIndex::GSUB, pause);
     }
 
     #[inline]
-    pub fn add_gpos_pause(&mut self, pause: ffi::rb_ot_pause_func_t) {
+    pub fn add_gpos_pause(&mut self, pause: Option<PauseFunc>) {
         self.add_pause(TableIndex::GPOS, pause);
     }
 
     // TODO: clean up
-    fn add_pause(&mut self, table_index: TableIndex, pause: ffi::rb_ot_pause_func_t) {
+    fn add_pause(&mut self, table_index: TableIndex, pause: Option<PauseFunc>) {
         self.stages[table_index as usize].push(StageInfo {
             index: self.current_stage[table_index as usize],
             pause_func: pause,
@@ -589,119 +589,4 @@ impl MapBuilder {
             }
         }
     }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_create() -> *mut ffi::rb_ot_map_t {
-    Box::into_raw(Box::new(Map::new())) as _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_destroy(map: *mut ffi::rb_ot_map_t) {
-    unsafe { Box::from_raw(map as *mut Map); }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_get_global_mask(map: *mut ffi::rb_ot_map_t) -> ffi::rb_mask_t {
-    Map::from_ptr(map).global_mask()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_get_mask(
-    map: *mut ffi::rb_ot_map_t,
-    feature_tag: Tag,
-    pshift: *mut u32,
-) -> ffi::rb_mask_t {
-    let (mask, shift) = Map::from_ptr(map).get_mask(feature_tag);
-    unsafe { *pshift = shift; }
-    mask
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_get_1_mask(
-    map: *mut ffi::rb_ot_map_t,
-    feature_tag: Tag,
-) -> ffi::rb_mask_t {
-    Map::from_ptr(map).get_1_mask(feature_tag)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_get_feature_index(
-    map: *mut ffi::rb_ot_map_t,
-    table_index: u32,
-    feature_tag: Tag,
-) -> u32 {
-    let table_index = unsafe { std::mem::transmute(table_index as u8) };
-    Map::from_ptr(map).get_feature_index(table_index, feature_tag)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_get_chosen_script(
-    map: *mut ffi::rb_ot_map_t,
-    table_index: u32,
-) -> Tag {
-    Map::from_ptr(map).chosen_script[table_index as usize]
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_builder_create(
-    face: *const ffi::rb_face_t,
-    props: *const ffi::rb_segment_properties_t,
-) -> *mut ffi::rb_ot_map_builder_t {
-    let face = Face::from_ptr(face);
-    let builder = unsafe {
-        let script = Script::from_raw((*props).script);
-        let language = (*props).language;
-        MapBuilder::new(face, script, language)
-    };
-    Box::into_raw(Box::new(builder)) as _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_builder_destroy(builder: *mut ffi::rb_ot_map_builder_t) {
-    unsafe { Box::from_raw(builder as *mut MapBuilder); }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_builder_compile(
-    builder: *mut ffi::rb_ot_map_builder_t,
-    map: *mut ffi::rb_ot_map_t,
-    variation_index: *const u32,
-) {
-    let builder = MapBuilder::from_ptr_mut(builder);
-    let mut map = Map::from_ptr_mut(map);
-    let variation_index = unsafe { std::slice::from_raw_parts(variation_index, 2) };
-    builder.compile(&mut map, variation_index)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_builder_add_feature(
-    builder: *mut ffi::rb_ot_map_builder_t,
-    tag: Tag,
-    flags: ffi::rb_ot_map_feature_flags_t,
-    value: u32,
-) {
-    let builder = MapBuilder::from_ptr_mut(builder);
-    let flags = unsafe { FeatureFlags::from_bits_unchecked(flags) };
-    builder.add_feature(tag, flags, value);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_builder_enable_feature(
-    builder: *mut ffi::rb_ot_map_builder_t,
-    tag: Tag,
-    flags: ffi::rb_ot_map_feature_flags_t,
-    value: u32,
-) {
-    let builder = MapBuilder::from_ptr_mut(builder);
-    let flags = unsafe { FeatureFlags::from_bits_unchecked(flags) };
-    builder.enable_feature(tag, flags, value);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_ot_map_builder_add_gsub_pause(
-    builder: *mut ffi::rb_ot_map_builder_t,
-    pause: ffi::rb_ot_pause_func_t,
-) {
-    MapBuilder::from_ptr_mut(builder).add_gsub_pause(pause);
 }

@@ -494,7 +494,7 @@ pub struct Buffer {
     pub invisible: Option<GlyphId>,
     pub scratch_flags: BufferScratchFlags,
     // Maximum allowed len.
-    max_len: u32,
+    pub max_len: usize,
     /// Maximum allowed operations.
     pub max_ops: i32,
 
@@ -528,6 +528,16 @@ pub struct Buffer {
 }
 
 impl Buffer {
+    pub const MAX_LEN_FACTOR: usize = 32;
+    pub const MAX_LEN_MIN: usize = 8192;
+    // Shaping more than a billion chars? Let us know!
+    pub const MAX_LEN_DEFAULT: usize = 0x3FFFFFFF;
+
+    pub const MAX_OPS_FACTOR: i32 = 64;
+    pub const MAX_OPS_MIN: i32 = 1024;
+    // Shaping more than a billion operations? Let us know!
+    pub const MAX_OPS_DEFAULT: i32 = 0x1FFFFFFF;
+
     /// Creates a new `Buffer`.
     pub fn new() -> Self {
         Buffer {
@@ -535,8 +545,8 @@ impl Buffer {
             cluster_level: BufferClusterLevel::default(),
             invisible: None,
             scratch_flags: BufferScratchFlags::default(),
-            max_len: 0x3FFFFFFF,
-            max_ops: 0x1FFFFFFF,
+            max_len: Self::MAX_LEN_DEFAULT,
+            max_ops: Self::MAX_OPS_DEFAULT,
             direction: Direction::Invalid,
             script: None,
             language: None,
@@ -726,7 +736,7 @@ impl Buffer {
         }
     }
 
-    fn guess_segment_properties(&mut self) {
+    pub fn guess_segment_properties(&mut self) {
         if self.script.is_none() {
             for info in &self.info {
                 let c = char::try_from(info.codepoint).unwrap();
@@ -790,7 +800,7 @@ impl Buffer {
         self.have_separate_output = false;
     }
 
-    fn clear_positions(&mut self) {
+    pub fn clear_positions(&mut self) {
         self.have_output = false;
         self.have_positions = true;
 
@@ -938,13 +948,13 @@ impl Buffer {
         self.idx += 1;
     }
 
-    fn reset_masks(&mut self, mask: Mask) {
+    pub fn reset_masks(&mut self, mask: Mask) {
         for info in &mut self.info[..self.len] {
             info.mask = mask;
         }
     }
 
-    fn set_masks(
+    pub fn set_masks(
         &mut self,
         mut value: Mask,
         mask: Mask,
@@ -1239,7 +1249,7 @@ impl Buffer {
             return true;
         }
 
-        if size > self.max_len as usize {
+        if size > self.max_len {
             self.successful = false;
             return false;
         }
@@ -2000,7 +2010,7 @@ pub extern "C" fn rb_buffer_decrement_max_ops(buffer: *mut ffi::rb_buffer_t, cou
 
 #[no_mangle]
 pub extern "C" fn rb_buffer_set_max_len(buffer: *mut ffi::rb_buffer_t, len: u32) {
-    Buffer::from_ptr_mut(buffer).max_len = len;
+    Buffer::from_ptr_mut(buffer).max_len = len as usize;
 }
 
 #[no_mangle]

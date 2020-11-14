@@ -5,11 +5,11 @@ use std::convert::TryFrom;
 use ttf_parser::parser::LazyArray16;
 use ttf_parser::GlyphId;
 
+use crate::Mask;
 use crate::buffer::GlyphInfo;
 use crate::tables::gsubgpos::{Class, ClassDef, Coverage};
-use crate::Mask;
+use super::{TableIndex, MAX_CONTEXT_LENGTH};
 use super::apply::{ApplyContext, WouldApplyContext};
-use super::layout::{TableIndex, MAX_CONTEXT_LENGTH};
 
 pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 

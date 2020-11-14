@@ -1,8 +1,10 @@
 use std::os::raw::c_void;
 
-use crate::{ffi, Face, GlyphInfo, Mask};
+use crate::{feature, ffi, Face, GlyphInfo, Mask};
 use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
-use crate::ot::*;
+use crate::ot::{FeatureFlags, Map};
+use crate::plan::{ShapePlan, ShapePlanner};
+use super::*;
 
 
 pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
@@ -64,9 +66,9 @@ impl HangulShapePlan {
         HangulShapePlan {
             mask_array: [
                 0,
-                map.get_1_mask(feature::LEADING_JAMO_FORMS),
-                map.get_1_mask(feature::VOWEL_JAMO_FORMS),
-                map.get_1_mask(feature::TRAILING_JAMO_FORMS),
+                map._1_mask(feature::LEADING_JAMO_FORMS),
+                map._1_mask(feature::VOWEL_JAMO_FORMS),
+                map._1_mask(feature::TRAILING_JAMO_FORMS),
             ]
         }
     }
@@ -78,20 +80,20 @@ impl HangulShapePlan {
 
 
 fn collect_features(planner: &mut ShapePlanner) {
-    planner.map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::NONE, 1);
-    planner.map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::NONE, 1);
-    planner.map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::NONE, 1);
 }
 
 fn override_features(planner: &mut ShapePlanner) {
     // Uniscribe does not apply 'calt' for Hangul, and certain fonts
     // (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
     // in calt, which is not desirable.
-    planner.map.disable_feature(feature::CONTEXTUAL_ALTERNATES);
+    planner.ot_map.disable_feature(feature::CONTEXTUAL_ALTERNATES);
 }
 
 fn data_create(plan: &ShapePlan) -> *mut c_void {
-    let hangul_plan = HangulShapePlan::new(&plan.map);
+    let hangul_plan = HangulShapePlan::new(&plan.ot_map);
     Box::into_raw(Box::new(hangul_plan)) as _
 }
 
@@ -377,7 +379,7 @@ fn is_combined_s(u: u32) -> bool {
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let hangul_plan = HangulShapePlan::from_ptr(plan.data() as _);
+    let hangul_plan = HangulShapePlan::from_ptr(plan.data as _);
     for info in buffer.info_slice_mut() {
         info.mask |= hangul_plan.mask_array[info.hangul_shaping_feature() as usize];
     }

@@ -32,9 +32,7 @@
 #include "hb-buffer.h"
 #include "hb-common.h"
 #include "hb-face.h"
-#include "hb-face.h"
-#include "hb-shape.h"
-#include "hb-unicode.h"
+#include "hb-shape-plan.h"
 
 RB_BEGIN_DECLS
 RB_END_DECLS

@@ -29,7 +29,6 @@
 #include "hb.hh"
 
 #include "hb-aat-map.hh"
-
 #include "hb-aat-layout.hh"
 #include "hb-aat-layout-feat-table.hh"
 
@@ -74,7 +73,7 @@ void rb_aat_map_builder_t::add_feature(rb_tag_t tag, unsigned value)
     info->is_exclusive = feature->is_exclusive();
 }
 
-void rb_aat_map_builder_t::compile(rb_aat_map_t &m)
+void rb_aat_map_builder_t::compile(rb_aat_map_t *m)
 {
     /* Sort features and merge duplicates */
     if (features.length) {
@@ -90,5 +89,35 @@ void rb_aat_map_builder_t::compile(rb_aat_map_t &m)
         features.shrink(j + 1);
     }
 
-    rb_aat_layout_compile_map(this, &m);
+    rb_aat_layout_compile_map(this, m);
+}
+
+void rb_aat_map_init(rb_aat_map_t *map)
+{
+    map->init();
+}
+
+void rb_aat_map_fini(rb_aat_map_t *map)
+{
+    map->fini();
+}
+
+void rb_aat_map_builder_init(rb_aat_map_builder_t *builder, rb_face_t *face)
+{
+    builder->init(face);
+}
+
+void rb_aat_map_builder_fini(rb_aat_map_builder_t *builder)
+{
+    builder->fini();
+}
+
+void rb_aat_map_builder_add_feature(rb_aat_map_builder_t *builder, rb_tag_t tag, unsigned int value)
+{
+    builder->add_feature(tag, value);
+}
+
+void rb_aat_map_builder_compile(rb_aat_map_builder_t *builder, rb_aat_map_t *map)
+{
+    builder->compile(map);
 }

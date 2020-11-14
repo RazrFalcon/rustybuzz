@@ -3,11 +3,12 @@ use std::os::raw::c_void;
 
 use ttf_parser::GlyphId;
 
-use crate::{ffi, script, Tag, Face, GlyphInfo, Mask, Script};
+use crate::{feature, ffi, script, Tag, Face, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferScratchFlags};
-use crate::ot::*;
+use crate::ot::FeatureFlags;
+use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class};
-use super::{rb_flag, rb_flag_unsafe};
+use super::*;
 
 
 pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
@@ -189,37 +190,37 @@ fn collect_features(planner: &mut ShapePlanner) {
     // A pause after calt is required to make KFGQPC Uthmanic Script HAFS
     // work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
 
-    planner.map.enable_feature(feature::STRETCHING_GLYPH_DECOMPOSITION, FeatureFlags::NONE, 1);
-    planner.map.add_gsub_pause(Some(record_stch_raw));
+    planner.ot_map.enable_feature(feature::STRETCHING_GLYPH_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.add_gsub_pause(Some(record_stch));
 
-    planner.map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
-    planner.map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
 
-    planner.map.add_gsub_pause(None);
+    planner.ot_map.add_gsub_pause(None);
 
     for feature in ARABIC_FEATURES {
-        let has_fallback = planner.script() == script::ARABIC && !feature_is_syriac(*feature);
+        let has_fallback = planner.script == script::ARABIC && !feature_is_syriac(*feature);
         let flags = if has_fallback { FeatureFlags::HAS_FALLBACK } else { FeatureFlags::NONE };
-        planner.map.add_feature(*feature, flags, 1);
-        planner.map.add_gsub_pause(None);
+        planner.ot_map.add_feature(*feature, flags, 1);
+        planner.ot_map.add_gsub_pause(None);
     }
 
     // Normally, Unicode says a ZWNJ means "don't ligate".  In Arabic script
     // however, it says a ZWJ should also mean "don't ligate".  So we run
     // the main ligating features as MANUAL_ZWJ.
 
-    planner.map.enable_feature(feature::REQUIRED_LIGATURES,
+    planner.ot_map.enable_feature(feature::REQUIRED_LIGATURES,
                                   FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK, 1);
 
-    if planner.script() == script::ARABIC {
-        planner.map.add_gsub_pause(Some(fallback_shape_raw));
+    if planner.script == script::ARABIC {
+        planner.ot_map.add_gsub_pause(Some(fallback_shape));
     }
 
     // No pause after rclt.
     // See 98460779bae19e4d64d29461ff154b3527bf8420
-    planner.map.enable_feature(feature::REQUIRED_CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
-    planner.map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
-    planner.map.add_gsub_pause(None);
+    planner.ot_map.enable_feature(feature::REQUIRED_CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.add_gsub_pause(None);
 
     // The spec includes 'cswh'.  Earlier versions of Windows
     // used to enable this by default, but testing suggests
@@ -231,34 +232,18 @@ fn collect_features(planner: &mut ShapePlanner) {
     // Test case: U+0643,U+0640,U+0631.
 
     // planner.map.enable_feature(feature::CONTEXTUAL_SWASH, FeatureFlags::NONE, 1);
-    planner.map.enable_feature(feature::MARK_POSITIONING_VIA_SUBSTITUTION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::MARK_POSITIONING_VIA_SUBSTITUTION, FeatureFlags::NONE, 1);
 }
 
-extern "C" fn fallback_shape_raw(
-    _: *const ffi::rb_ot_shape_plan_t,
-    _: *const ffi::rb_face_t,
-    _: *mut ffi::rb_buffer_t,
-) {
-}
+fn fallback_shape(_: &ShapePlan, _: &Face, _: &mut Buffer) {}
 
 // Stretch feature: "stch".
 // See example here:
 // https://docs.microsoft.com/en-us/typography/script-development/syriac
 // We implement this in a generic way, such that the Arabic subtending
 // marks can use it as well.
-extern "C" fn record_stch_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    record_stch(&plan, face, &mut buffer);
-}
-
 fn record_stch(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let arabic_plan = ArabicShapePlan::from_ptr(plan.data() as _);
+    let arabic_plan = ArabicShapePlan::from_ptr(plan.data as _);
     if !arabic_plan.has_stch {
         return;
     }
@@ -443,9 +428,8 @@ fn is_word_category(gc: GeneralCategory) -> bool {
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let arabic_plan = ArabicShapePlan::from_ptr(plan.data() as _);
-    let script = plan.script();
-    setup_masks_inner(arabic_plan, script, buffer)
+    let arabic_plan = ArabicShapePlan::from_ptr(plan.data as _);
+    setup_masks_inner(arabic_plan, plan.script, buffer)
 }
 
 pub fn setup_masks_inner(arabic_plan: &ArabicShapePlan, script: Script, buffer: &mut Buffer) {
@@ -539,9 +523,9 @@ pub fn data_create_inner(plan: &ShapePlan) -> ArabicShapePlan {
         has_stch: false,
     };
 
-    arabic_plan.has_stch = plan.map.get_1_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
+    arabic_plan.has_stch = plan.ot_map._1_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
     for i in 0..ARABIC_FEATURES.len() {
-        arabic_plan.mask_array[i] = plan.map.get_1_mask(ARABIC_FEATURES[i]);
+        arabic_plan.mask_array[i] = plan.ot_map._1_mask(ARABIC_FEATURES[i]);
     }
 
     arabic_plan
@@ -579,8 +563,6 @@ const MODIFIER_COMBINING_MARKS: &[u32] = &[
 ];
 
 fn reorder_marks(_: &ShapePlan, buffer: &mut Buffer, mut start: usize, end: usize) {
-    const MAX_COMBINING_MARKS: usize = 32;
-
     let mut i = start;
     for cc in [220u8, 230].iter().cloned() {
         while i < end && buffer.info[i].modified_combining_class() < cc {

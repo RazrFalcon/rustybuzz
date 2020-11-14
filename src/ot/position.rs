@@ -3,13 +3,93 @@ use std::convert::TryFrom;
 use ttf_parser::GlyphId;
 use ttf_parser::parser::{Offset, Offset16};
 
+use crate::{Direction, Face, Tag};
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
+use crate::plan::ShapePlan;
 use crate::tables::gpos::*;
 use crate::tables::gsubgpos::*;
-use crate::{Direction, Face, Tag};
+
+use super::{LayoutLookup, LayoutTable, TableIndex};
 use super::apply::{Apply, ApplyContext};
 use super::matching::SkippyIter;
-use super::layout::{LayoutLookup, LayoutTable, TableIndex};
+
+pub fn position_start(_: &Face, buffer: &mut Buffer) {
+    let len = buffer.len;
+    for pos in &mut buffer.pos[..len] {
+        pos.set_attach_chain(0);
+        pos.set_attach_type(0);
+    }
+}
+
+pub fn position(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+    super::apply_layout_table(plan, face, buffer, face.gpos);
+}
+
+pub fn position_finish_advances(_: &Face, _: &mut Buffer) {}
+
+pub fn position_finish_offsets(_: &Face, buffer: &mut Buffer) {
+    let len = buffer.len;
+    let direction = buffer.direction;
+
+    // Handle attachments
+    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_GPOS_ATTACHMENT) {
+        for i in 0..len {
+            propagate_attachment_offsets(&mut buffer.pos, len, i, direction);
+        }
+    }
+}
+
+fn propagate_attachment_offsets(
+    pos: &mut [GlyphPosition],
+    len: usize,
+    i: usize,
+    direction: Direction,
+) {
+    // Adjusts offsets of attached glyphs (both cursive and mark) to accumulate
+    // offset of glyph they are attached to.
+    let chain = pos[i].attach_chain();
+    let kind = pos[i].attach_type();
+    if chain == 0 {
+        return;
+    }
+
+    pos[i].set_attach_chain(0);
+
+    let j = (i as isize + isize::from(chain)) as _;
+    if j >= len {
+        return;
+    }
+
+    propagate_attachment_offsets(pos, len, j, direction);
+
+    match AttachType::from_raw(kind).unwrap() {
+        AttachType::Mark => {
+            pos[i].x_offset += pos[j].x_offset;
+            pos[i].y_offset += pos[j].y_offset;
+
+            assert!(j < i);
+            if direction.is_forward() {
+                for k in j..i {
+                    pos[i].x_offset -= pos[k].x_advance;
+                    pos[i].y_offset -= pos[k].y_advance;
+                }
+            } else {
+                for k in j+1..i+1 {
+                    pos[i].x_offset += pos[k].x_advance;
+                    pos[i].y_offset += pos[k].y_advance;
+                }
+            }
+        }
+
+        AttachType::Cursive => {
+            if direction.is_horizontal() {
+                pos[i].y_offset += pos[j].y_offset;
+            } else {
+                pos[i].x_offset += pos[j].x_offset;
+            }
+        }
+    }
+}
 
 impl<'a> LayoutTable for PosTable<'a> {
     const TAG: Tag = Tag::from_bytes(b"GPOS");
@@ -538,80 +618,6 @@ impl AttachType {
             1 => Some(Self::Mark),
             2 => Some(Self::Cursive),
             _ => None,
-        }
-    }
-}
-
-pub fn position_start(_: &Face, buffer: &mut Buffer) {
-    let len = buffer.len;
-    for pos in &mut buffer.pos[..len] {
-        pos.set_attach_chain(0);
-        pos.set_attach_type(0);
-    }
-}
-
-pub fn position_finish_advances(_: &Face, _: &mut Buffer) {}
-
-pub fn position_finish_offsets(_: &Face, buffer: &mut Buffer) {
-    let len = buffer.len;
-    let direction = buffer.direction;
-
-    // Handle attachments
-    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_GPOS_ATTACHMENT) {
-        for i in 0..len {
-            propagate_attachment_offsets(&mut buffer.pos, len, i, direction);
-        }
-    }
-}
-
-fn propagate_attachment_offsets(
-    pos: &mut [GlyphPosition],
-    len: usize,
-    i: usize,
-    direction: Direction,
-) {
-    // Adjusts offsets of attached glyphs (both cursive and mark) to accumulate
-    // offset of glyph they are attached to.
-    let chain = pos[i].attach_chain();
-    let kind = pos[i].attach_type();
-    if chain == 0 {
-        return;
-    }
-
-    pos[i].set_attach_chain(0);
-
-    let j = (i as isize + isize::from(chain)) as _;
-    if j >= len {
-        return;
-    }
-
-    propagate_attachment_offsets(pos, len, j, direction);
-
-    match AttachType::from_raw(kind).unwrap() {
-        AttachType::Mark => {
-            pos[i].x_offset += pos[j].x_offset;
-            pos[i].y_offset += pos[j].y_offset;
-
-            assert!(j < i);
-            if direction.is_forward() {
-                for k in j..i {
-                    pos[i].x_offset -= pos[k].x_advance;
-                    pos[i].y_offset -= pos[k].y_advance;
-                }
-            } else {
-                for k in j+1..i+1 {
-                    pos[i].x_offset += pos[k].x_advance;
-                    pos[i].y_offset += pos[k].y_advance;
-                }
-            }
-        }
-
-        AttachType::Cursive => {
-            if direction.is_horizontal() {
-                pos[i].y_offset += pos[j].y_offset;
-            } else {
-                pos[i].x_offset += pos[j].x_offset;
-            }
         }
     }
 }

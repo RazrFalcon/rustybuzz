@@ -72,6 +72,11 @@ impl Direction {
     }
 
     #[inline]
+    pub(crate) fn is_backward(self) -> bool {
+        !self.is_forward()
+    }
+
+    #[inline]
     pub(crate) fn reverse(self) -> Self {
         match self {
             Direction::Invalid => Direction::Invalid,
@@ -187,11 +192,6 @@ impl std::str::FromStr for Direction {
             _ => Err("invalid direction"),
         }
     }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_script_get_horizontal_direction(script: ffi::rb_script_t) -> ffi::rb_direction_t {
-    Direction::from_script(Script(Tag(script))).unwrap_or_default().to_raw()
 }
 
 

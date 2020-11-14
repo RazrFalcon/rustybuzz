@@ -1,10 +1,11 @@
 use std::os::raw::c_void;
 
-use crate::{ffi, script, Tag, Face, GlyphInfo, Mask, Script};
+use crate::{feature, ffi, script, Tag, Face, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferFlags};
+use crate::ot::FeatureFlags;
+use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use crate::ot::*;
-use super::{rb_flag, rb_flag_unsafe, rb_flag64, rb_flag64_unsafe};
+use super::*;
 use super::arabic::ArabicShapePlan;
 
 
@@ -154,51 +155,40 @@ impl UniversalShapePlan {
 
 fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
-    planner.map.add_gsub_pause(Some(setup_syllables_raw));
+    planner.ot_map.add_gsub_pause(Some(setup_syllables));
 
     // Default glyph pre-processing group
-    planner.map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
-    planner.map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
-    planner.map.enable_feature(feature::NUKTA_FORMS, FeatureFlags::NONE, 1);
-    planner.map.enable_feature(feature::AKHANDS, FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::NUKTA_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::AKHANDS, FeatureFlags::MANUAL_ZWJ, 1);
 
     // Reordering group
-    planner.map.add_gsub_pause(Some(crate::ot::rb_clear_substitution_flags));
-    planner.map.add_feature(feature::REPH_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
-    planner.map.add_gsub_pause(Some(record_rphf_raw));
-    planner.map.add_gsub_pause(Some(crate::ot::rb_clear_substitution_flags));
-    planner.map.enable_feature(feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
-    planner.map.add_gsub_pause(Some(record_pref_raw));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_substitution_flags));
+    planner.ot_map.add_feature(feature::REPH_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.add_gsub_pause(Some(record_rphf));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_substitution_flags));
+    planner.ot_map.enable_feature(feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.add_gsub_pause(Some(record_pref));
 
     // Orthographic unit shaping group
     for feature in BASIC_FEATURES {
-        planner.map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner.ot_map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
     }
 
-    planner.map.add_gsub_pause(Some(reorder_raw));
-    planner.map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(reorder));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_syllables));
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {
-        planner.map.add_feature(*feature, FeatureFlags::NONE, 1);
+        planner.ot_map.add_feature(*feature, FeatureFlags::NONE, 1);
     }
-    planner.map.add_gsub_pause(None);
+    planner.ot_map.add_gsub_pause(None);
 
     // Standard typographic presentation
     for feature in OTHER_FEATURES {
-        planner.map.enable_feature(*feature, FeatureFlags::NONE, 1);
+        planner.ot_map.enable_feature(*feature, FeatureFlags::NONE, 1);
     }
-}
-
-extern "C" fn setup_syllables_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_syllables(&plan, face, &mut buffer);
 }
 
 fn setup_syllables(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
@@ -213,7 +203,7 @@ fn setup_syllables(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 }
 
 fn setup_rphf_mask(plan: &ShapePlan, buffer: &mut Buffer) {
-    let universal_plan = UniversalShapePlan::from_ptr(plan.data() as _);
+    let universal_plan = UniversalShapePlan::from_ptr(plan.data as _);
 
     let mask = universal_plan.rphf_mask;
     if mask == 0 {
@@ -244,8 +234,8 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
     let mut masks = [0; 4];
     let mut all_masks = 0;
     for i in 0..4 {
-        masks[i] = plan.map.get_1_mask(TOPOGRAPHICAL_FEATURES[i]);
-        if masks[i] == plan.map.global_mask() {
+        masks[i] = plan.ot_map._1_mask(TOPOGRAPHICAL_FEATURES[i]);
+        if masks[i] == plan.ot_map.global_mask() {
             masks[i] = 0;
         }
 
@@ -299,19 +289,8 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
     }
 }
 
-extern "C" fn record_rphf_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    record_rphf(&plan, face, &mut buffer);
-}
-
 fn record_rphf(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let universal_plan = UniversalShapePlan::from_ptr(plan.data() as _);
+    let universal_plan = UniversalShapePlan::from_ptr(plan.data as _);
 
     let mask = universal_plan.rphf_mask;
     if mask == 0 {
@@ -336,17 +315,6 @@ fn record_rphf(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
         start = end;
         end = buffer.next_syllable(start);
     }
-}
-
-extern "C" fn reorder_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    reorder(&plan, face, &mut buffer);
 }
 
 fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
@@ -512,17 +480,6 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
     }
 }
 
-extern "C" fn record_pref_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    record_pref(&plan, face, &mut buffer);
-}
-
 fn record_pref(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -543,12 +500,12 @@ fn record_pref(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 fn data_create(plan: &ShapePlan) -> *mut c_void {
     let mut arabic_plan = None;
 
-    if has_arabic_joining(plan.script()) {
+    if has_arabic_joining(plan.script) {
         arabic_plan = Some(super::arabic::data_create_inner(plan));
     }
 
     let universal_plan = UniversalShapePlan {
-        rphf_mask: plan.map.get_1_mask(feature::REPH_FORMS),
+        rphf_mask: plan.ot_map._1_mask(feature::REPH_FORMS),
         arabic_plan,
     };
 
@@ -601,11 +558,11 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let universal_plan = UniversalShapePlan::from_ptr(plan.data() as _);
+    let universal_plan = UniversalShapePlan::from_ptr(plan.data as _);
 
     // Do this before allocating use_category().
     if let Some(ref arabic_plan) = universal_plan.arabic_plan {
-        super::arabic::setup_masks_inner(arabic_plan, plan.script(), buffer);
+        super::arabic::setup_masks_inner(arabic_plan, plan.script, buffer);
     }
 
     // We cannot setup masks here. We save information about characters

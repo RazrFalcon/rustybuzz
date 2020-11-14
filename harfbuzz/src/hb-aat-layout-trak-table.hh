@@ -29,7 +29,6 @@
 #define RB_AAT_LAYOUT_TRAK_TABLE_HH
 
 #include "hb-aat-layout-common.hh"
-#include "hb-open-type.hh"
 
 /*
  * trak -- Tracking
@@ -153,7 +152,7 @@ struct trak
 
     bool apply(rb_aat_apply_context_t *c) const
     {
-        rb_mask_t trak_mask = c->plan->trak_mask;
+        rb_mask_t trak_mask = rb_shape_plan_trak_mask(c->plan);
 
         const float ptem = rb_face_get_ptem(c->face);
         if (unlikely(ptem <= 0.f))

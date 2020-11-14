@@ -26,24 +26,25 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef RB_H_IN
-#error "Include <hb.h> instead."
-#endif
-
-#ifndef RB_SHAPE_H
-#define RB_SHAPE_H
+#ifndef RB_SHAPE_PLAN_H
+#define RB_SHAPE_PLAN_H
 
 #include "hb-common.h"
 #include "hb-buffer.h"
-#include "hb-face.h"
 
 RB_BEGIN_DECLS
 
-RB_EXTERN rb_bool_t rb_shape(rb_face_t *face,
-                             rb_buffer_t *buffer,
-                             const rb_feature_t *features,
-                             unsigned int num_features);
+typedef struct rb_aat_map_t rb_aat_map_t;
+typedef struct rb_shape_plan_t rb_shape_plan_t;
+
+RB_EXTERN const rb_aat_map_t *rb_shape_plan_aat_map(const rb_shape_plan_t *plan);
+
+RB_EXTERN rb_mask_t rb_shape_plan_kern_mask(const rb_shape_plan_t *plan);
+
+RB_EXTERN rb_mask_t rb_shape_plan_trak_mask(const rb_shape_plan_t *plan);
+
+RB_EXTERN rb_bool_t rb_shape_plan_requested_kerning(const rb_shape_plan_t *plan);
 
 RB_END_DECLS
 
-#endif /* RB_SHAPE_H */
+#endif /* RB_SHAPE_PLAN_H */

@@ -23,8 +23,7 @@ impl<A: smallvec::Array> SmallVecExt for SmallVec<A> {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_ot_tags_from_script_and_language(
+pub fn rb_ot_tags_from_script_and_language(
     script: ffi::rb_script_t,
     language: *const c_char,
     script_count: *mut u32,

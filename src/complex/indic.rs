@@ -2,11 +2,13 @@ use std::convert::TryFrom;
 use std::cmp;
 use std::os::raw::c_void;
 
-use crate::{ffi, script, Tag, Script, Mask, Face, GlyphInfo};
+use crate::{feature, ffi, script, Tag, Script, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
+use crate::ot::{FeatureFlags, LookupMap, Map, TableIndex};
+use crate::plan::{ShapePlan, ShapePlanner};
+use crate::normalize::ShapeNormalizationMode;
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use crate::ot::*;
-use super::{rb_flag, rb_flag_unsafe, rb_flag_range};
+use super::*;
 
 
 pub const INDIC_SHAPER: ComplexShaper = ComplexShaper {
@@ -351,17 +353,17 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
 ];
 
 
-struct IndicWouldSubstituteFeature {
-    lookups: &'static [LookupMap],
+struct IndicWouldSubstituteFeature<'a> {
+    lookups: &'a [LookupMap],
     zero_context: bool,
 }
 
-impl IndicWouldSubstituteFeature {
-    pub fn new(map: &'static Map, feature_tag: Tag, zero_context: bool) -> Self {
+impl<'a> IndicWouldSubstituteFeature<'a> {
+    pub fn new(map: &'a Map, feature_tag: Tag, zero_context: bool) -> Self {
         IndicWouldSubstituteFeature {
-            lookups: map.get_stage_lookups(
+            lookups: map.stage_lookups(
                 TableIndex::GSUB,
-                map.get_feature_stage(TableIndex::GSUB, feature_tag),
+                map.feature_stage(TableIndex::GSUB, feature_tag),
             ),
             zero_context,
         }
@@ -369,18 +371,16 @@ impl IndicWouldSubstituteFeature {
 
     pub fn would_substitute(&self, glyphs: &[u32], face: &Face) -> bool {
         for lookup in self.lookups {
-            unsafe {
-                let ok = ffi::rb_ot_layout_lookup_would_substitute(
-                    face.as_ptr(),
-                    lookup.index as u32,
-                    glyphs.as_ptr() as *const _,
-                    glyphs.len() as u32,
-                    self.zero_context as i32,
-                );
+            let ok = crate::ot::rb_ot_layout_lookup_would_substitute(
+                face.as_ptr(),
+                lookup.index as u32,
+                glyphs.as_ptr() as *const _,
+                glyphs.len() as u32,
+                self.zero_context as i32,
+            );
 
-                if ok != 0 {
-                    return true;
-                }
+            if ok != 0 {
+                return true;
             }
         }
 
@@ -389,28 +389,28 @@ impl IndicWouldSubstituteFeature {
 }
 
 
-struct IndicShapePlan {
+struct IndicShapePlan<'a> {
     config: IndicConfig,
     is_old_spec: bool,
     // virama_glyph: Option<u32>,
-    rphf: IndicWouldSubstituteFeature,
-    pref: IndicWouldSubstituteFeature,
-    blwf: IndicWouldSubstituteFeature,
-    pstf: IndicWouldSubstituteFeature,
-    vatu: IndicWouldSubstituteFeature,
+    rphf: IndicWouldSubstituteFeature<'a>,
+    pref: IndicWouldSubstituteFeature<'a>,
+    blwf: IndicWouldSubstituteFeature<'a>,
+    pstf: IndicWouldSubstituteFeature<'a>,
+    vatu: IndicWouldSubstituteFeature<'a>,
     mask_array: [Mask; INDIC_FEATURES.len()],
 }
 
-impl IndicShapePlan {
-    fn new(plan: &ShapePlan) -> Self {
-        let script = plan.script();
+impl<'a> IndicShapePlan<'a> {
+    fn new(plan: &'a ShapePlan) -> Self {
+        let script = plan.script;
         let config = if let Some(c) = INDIC_CONFIGS.iter().skip(1).find(|c| c.script == Some(script)) {
             *c
         } else {
             INDIC_CONFIGS[0]
         };
 
-        let is_old_spec = config.has_old_spec && plan.map.chosen_script[TableIndex::GSUB as usize].to_bytes()[3] != b'2';
+        let is_old_spec = config.has_old_spec && plan.ot_map.chosen_script(TableIndex::GSUB).to_bytes()[3] != b'2';
 
         // Use zero-context would_substitute() matching for new-spec of the main
         // Indic scripts, and scripts with one spec only, but not for old-specs.
@@ -427,7 +427,7 @@ impl IndicShapePlan {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
                 0
             } else {
-                plan.map.get_1_mask(feature.0)
+                plan.ot_map._1_mask(feature.0)
             }
         }
 
@@ -442,16 +442,16 @@ impl IndicShapePlan {
             config,
             is_old_spec,
             // virama_glyph,
-            rphf: IndicWouldSubstituteFeature::new(&plan.map, feature::REPH_FORMS, zero_context),
-            pref: IndicWouldSubstituteFeature::new(&plan.map, feature::PRE_BASE_FORMS, zero_context),
-            blwf: IndicWouldSubstituteFeature::new(&plan.map, feature::BELOW_BASE_FORMS, zero_context),
-            pstf: IndicWouldSubstituteFeature::new(&plan.map, feature::POST_BASE_FORMS, zero_context),
-            vatu: IndicWouldSubstituteFeature::new(&plan.map, feature::VATTU_VARIANTS, zero_context),
+            rphf: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::REPH_FORMS, zero_context),
+            pref: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::PRE_BASE_FORMS, zero_context),
+            blwf: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::BELOW_BASE_FORMS, zero_context),
+            pstf: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::POST_BASE_FORMS, zero_context),
+            vatu: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::VATTU_VARIANTS, zero_context),
             mask_array,
         }
     }
 
-    fn from_ptr(plan: *const c_void) -> &'static IndicShapePlan {
+    fn from_ptr(plan: *const c_void) -> &'static IndicShapePlan<'static> {
         unsafe { &*(plan as *const IndicShapePlan) }
     }
 }
@@ -583,34 +583,34 @@ impl GlyphInfo {
 
 fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
-    planner.map.add_gsub_pause(Some(setup_syllables_raw));
+    planner.ot_map.add_gsub_pause(Some(setup_syllables));
 
-    planner.map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::NONE, 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::NONE, 1);
 
-    planner.map.add_gsub_pause(Some(initial_reordering_raw));
+    planner.ot_map.add_gsub_pause(Some(initial_reordering));
 
     for feature in INDIC_FEATURES.iter().take(10) {
-        planner.map.add_feature(feature.0, feature.1, 1);
-        planner.map.add_gsub_pause(None);
+        planner.ot_map.add_feature(feature.0, feature.1, 1);
+        planner.ot_map.add_gsub_pause(None);
     }
 
-    planner.map.add_gsub_pause(Some(final_reordering_raw));
+    planner.ot_map.add_gsub_pause(Some(final_reordering));
 
     for feature in INDIC_FEATURES.iter().skip(10) {
-        planner.map.add_feature(feature.0, feature.1, 1);
+        planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 
-    planner.map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::NONE, 1);
-    planner.map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::NONE, 1);
+    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::NONE, 1);
 
-    planner.map.add_gsub_pause(Some(crate::ot::rb_clear_syllables));
+    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_syllables));
 }
 
 fn override_features(planner: &mut ShapePlanner) {
-    planner.map.disable_feature(feature::STANDARD_LIGATURES);
+    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
 fn data_create(plan: &ShapePlan) -> *mut c_void {
@@ -665,7 +665,7 @@ fn decompose(ctx: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
         let mut ok = false;
         if let Some(g) = ctx.face.glyph_index(u32::from(ab)) {
             let g = g.0 as u32;
-            let indic_plan = IndicShapePlan::from_ptr(ctx.plan.data() as _);
+            let indic_plan = IndicShapePlan::from_ptr(ctx.plan.data as _);
             ok = indic_plan.pstf.would_substitute(&[g], ctx.face);
         }
 
@@ -700,17 +700,6 @@ fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-extern "C" fn setup_syllables_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    setup_syllables(&plan, face, &mut buffer);
-}
-
 fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::indic_machine::find_syllables_indic(buffer);
 
@@ -723,19 +712,8 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-extern "C" fn initial_reordering_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    initial_reordering(&plan, face, &mut buffer);
-}
-
 fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    let indic_plan = IndicShapePlan::from_ptr(plan.data() as _);
+    let indic_plan = IndicShapePlan::from_ptr(plan.data as _);
 
     update_consonant_positions(&indic_plan, face, buffer);
     insert_dotted_circles(face, buffer);
@@ -1419,23 +1397,12 @@ fn initial_reordering_standalone_cluster(
     initial_reordering_consonant_syllable(plan, face, start, end, buffer);
 }
 
-extern "C" fn final_reordering_raw(
-    plan: *const ffi::rb_ot_shape_plan_t,
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-) {
-    let plan = ShapePlan::from_ptr(plan);
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    final_reordering(&plan, face, &mut buffer);
-}
-
 fn final_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     if buffer.is_empty() {
         return;
     }
 
-    let indic_plan = IndicShapePlan::from_ptr(plan.data() as _);
+    let indic_plan = IndicShapePlan::from_ptr(plan.data as _);
 
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {

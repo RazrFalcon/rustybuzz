@@ -1,7 +1,9 @@
 use crate::{script, Face};
 use crate::buffer::{Buffer, BufferClusterLevel};
+use crate::ot::TableIndex;
+use crate::plan::ShapePlan;
 use crate::unicode::GeneralCategory;
-use crate::ot::*;
+use super::*;
 
 
 pub const THAI_SHAPER: ComplexShaper = ComplexShaper {
@@ -374,7 +376,7 @@ fn preprocess_text(
     buffer.swap_buffers();
 
     // If font has Thai GSUB, we are done.
-    if plan.script() == script::THAI && !plan.map.found_script[TableIndex::GSUB as usize] {
+    if plan.script == script::THAI && !plan.ot_map.found_script(TableIndex::GSUB) {
         do_pua_shaping(face, buffer);
     }
 }
