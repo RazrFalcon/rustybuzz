@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use crate::{ffi, ot, fallback, normalize, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
+use crate::{aat, ot, fallback, normalize, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
 use crate::buffer::{
     glyph_flag, Buffer, BufferClusterLevel, BufferFlags, BufferScratchFlags, GlyphInfo,
     GlyphPropsFlags,
@@ -28,17 +28,15 @@ pub fn shape(face: &Face, features: &[Feature], buffer: UnicodeBuffer) -> GlyphB
             features,
         );
 
-        if let Some(plan) = &plan {
-            // Save the original direction, we use it later.
-            let target_direction = buffer.direction;
-            shape_internal(&mut ShapeContext {
-                plan,
-                face,
-                buffer: &mut buffer,
-                user_features: features,
-                target_direction,
-            });
-        }
+        // Save the original direction, we use it later.
+        let target_direction = buffer.direction;
+        shape_internal(&mut ShapeContext {
+            plan: &plan,
+            face,
+            buffer: &mut buffer,
+            user_features: features,
+            target_direction,
+        });
     }
 
     GlyphBuffer(buffer)
@@ -101,7 +99,7 @@ fn substitute_post(ctx: &mut ShapeContext) {
     hide_default_ignorables(ctx.buffer, ctx.face);
 
     if ctx.plan.apply_morx {
-        unsafe { ffi::rb_aat_layout_remove_deleted_glyphs(ctx.buffer.as_ptr()); }
+        aat::remove_deleted_glyphs(ctx.buffer);
     }
 
     if let Some(func) = ctx.plan.shaper.postprocess_glyphs {
@@ -136,7 +134,7 @@ fn substitute_complex(ctx: &mut ShapeContext) {
 
 fn substitute_by_plan(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     if plan.apply_morx {
-        unsafe { ffi::rb_aat_layout_substitute(plan.as_ptr(), face.as_ptr(), buffer.as_ptr()); }
+        aat::substitute(plan, face, buffer);
     } else {
         ot::substitute(plan, face, buffer);
     }
@@ -207,7 +205,7 @@ fn position_complex(ctx: &mut ShapeContext) {
     zero_width_default_ignorables(ctx.buffer);
 
     if ctx.plan.apply_morx {
-        unsafe { ffi::rb_aat_layout_zero_width_deleted_glyphs(ctx.buffer.as_ptr()); }
+        aat::zero_width_deleted_glyphs(ctx.buffer);
     }
 
     ot::position_finish_offsets(ctx.face, ctx.buffer);
@@ -221,13 +219,13 @@ fn position_by_plan(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     if plan.apply_gpos {
         ot::position(plan, face, buffer);
     } else if plan.apply_kerx {
-        unsafe { ffi::rb_aat_layout_position(plan.as_ptr(), face.as_ptr(), buffer.as_ptr()); }
+        aat::position(plan, face, buffer);
     } else if plan.apply_kern {
-        unsafe { ffi::rb_ot_layout_kern(plan.as_ptr(), face.as_ptr(), buffer.as_ptr()); }
+        ot::kern(plan, face, buffer);
     }
 
     if plan.apply_trak {
-        unsafe { ffi::rb_aat_layout_track(plan.as_ptr(), face.as_ptr(), buffer.as_ptr()); }
+        aat::track(plan, face, buffer);
     }
 }
 

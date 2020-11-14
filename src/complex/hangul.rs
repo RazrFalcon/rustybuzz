@@ -1,6 +1,6 @@
-use crate::{feature, ffi, Face, GlyphInfo, Mask};
+use crate::{ffi, Face, GlyphInfo, Mask};
 use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
-use crate::ot::{FeatureFlags, Map};
+use crate::ot::{feature, FeatureFlags, Map};
 use crate::plan::{ShapePlan, ShapePlanner};
 use super::*;
 
@@ -363,7 +363,7 @@ fn is_combined_s(u: u32) -> bool {
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let hangul_plan = plan.get_data::<HangulShapePlan>();
+    let hangul_plan = plan.data::<HangulShapePlan>();
     for info in buffer.info_slice_mut() {
         info.mask |= hangul_plan.mask_array[info.hangul_shaping_feature() as usize];
     }

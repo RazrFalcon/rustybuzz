@@ -1,6 +1,6 @@
-use crate::{feature, ffi, script, Tag, Face, GlyphInfo, Mask, Script};
+use crate::{ffi, script, Tag, Face, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferFlags};
-use crate::ot::FeatureFlags;
+use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use super::*;
@@ -209,7 +209,7 @@ fn setup_syllables(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 }
 
 fn setup_rphf_mask(plan: &ShapePlan, buffer: &mut Buffer) {
-    let universal_plan = plan.get_data::<UniversalShapePlan>();
+    let universal_plan = plan.data::<UniversalShapePlan>();
 
     let mask = universal_plan.rphf_mask;
     if mask == 0 {
@@ -296,7 +296,7 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
 }
 
 fn record_rphf(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let universal_plan = plan.get_data::<UniversalShapePlan>();
+    let universal_plan = plan.data::<UniversalShapePlan>();
 
     let mask = universal_plan.rphf_mask;
     if mask == 0 {
@@ -545,7 +545,7 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let universal_plan = plan.get_data::<UniversalShapePlan>();
+    let universal_plan = plan.data::<UniversalShapePlan>();
 
     // Do this before allocating use_category().
     if let Some(ref arabic_plan) = universal_plan.arabic_plan {

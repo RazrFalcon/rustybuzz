@@ -22,10 +22,6 @@ impl TableIndex {
     pub fn iter() -> impl Iterator<Item = TableIndex> {
         [Self::GSUB, Self::GPOS].iter().copied()
     }
-
-    pub fn array<T>(mut f: impl FnMut(TableIndex) -> T) -> [T; 2] {
-        [f(Self::GSUB), f(Self::GPOS)]
-    }
 }
 
 impl<T> Index<TableIndex> for [T] {

@@ -323,6 +323,10 @@ impl<'a> Face<'a> {
         }
     }
 
+    pub(crate) fn layout_tables(&self) -> impl Iterator<Item = (TableIndex, SubstPosTable<'a>)> + '_ {
+        TableIndex::iter().filter_map(move |idx| self.layout_table(idx).map(|table| (idx, table)))
+    }
+
     fn get_table_blob(&self, tag: Tag) -> &Blob<'a> {
         match &tag.to_bytes() {
             b"kern" => &self.kern,
@@ -395,4 +399,20 @@ pub extern "C" fn rb_face_get_ptem(face: *const ffi::rb_face_t) -> f32 {
 #[no_mangle]
 pub extern "C" fn rb_face_get_table_blob(face: *const ffi::rb_face_t, tag: Tag) -> *mut ffi::rb_blob_t {
     Face::from_ptr(face).get_table_blob(tag).as_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn rb_face_get_glyph_contour_point_for_origin(
+    _: *const ffi::rb_face_t,
+    _: ffi::rb_codepoint_t ,
+    _: u32,
+    _: ffi::rb_direction_t ,
+    x: *mut ffi::rb_position_t,
+    y: *mut ffi::rb_position_t,
+) -> ffi::rb_bool_t {
+    unsafe {
+        *x = 0;
+        *y = 0;
+    }
+    0
 }

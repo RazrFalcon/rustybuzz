@@ -1,6 +1,6 @@
-use crate::{feature, Tag, Mask, Face, GlyphInfo};
+use crate::{Tag, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
-use crate::ot::FeatureFlags;
+use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use super::indic::{Category, Position};
@@ -147,7 +147,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 fn reorder(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     insert_dotted_circles(face, buffer);
 
-    let khmer_plan = plan.get_data::<KhmerShapePlan>();
+    let khmer_plan = plan.data::<KhmerShapePlan>();
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);

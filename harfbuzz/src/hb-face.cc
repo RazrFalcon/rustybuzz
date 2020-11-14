@@ -115,14 +115,3 @@ const AAT::feat *rb_face_get_feat_table(rb_face_t *face)
 {
     return rb_face_get_table_blob(face, RB_AAT_TAG_feat)->as<AAT::feat>();
 }
-
-rb_bool_t rb_face_get_glyph_contour_point_for_origin(rb_face_t *face,
-                                                     rb_codepoint_t glyph,
-                                                     unsigned int point_index,
-                                                     rb_direction_t direction,
-                                                     rb_position_t *x,
-                                                     rb_position_t *y)
-{
-    *x = *y = 0;
-    return false;
-}

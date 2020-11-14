@@ -2,9 +2,9 @@ use std::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use crate::{feature, ffi, script, Tag, Face, GlyphInfo, Mask, Script};
+use crate::{ffi, script, Tag, Face, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferScratchFlags};
-use crate::ot::FeatureFlags;
+use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class};
 use super::*;
@@ -247,7 +247,7 @@ fn fallback_shape(_: &ShapePlan, _: &Face, _: &mut Buffer) {}
 // We implement this in a generic way, such that the Arabic subtending
 // marks can use it as well.
 fn record_stch(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let arabic_plan = plan.get_data::<ArabicShapePlan>();
+    let arabic_plan = plan.data::<ArabicShapePlan>();
     if !arabic_plan.has_stch {
         return;
     }
@@ -432,7 +432,7 @@ fn is_word_category(gc: GeneralCategory) -> bool {
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let arabic_plan = plan.get_data::<ArabicShapePlan>();
+    let arabic_plan = plan.data::<ArabicShapePlan>();
     setup_masks_inner(arabic_plan, plan.script, buffer)
 }
 

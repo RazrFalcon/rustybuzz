@@ -2,10 +2,15 @@ use std::ffi::c_void;
 
 use crate::{ffi, Face, Mask};
 use crate::buffer::{Buffer, BufferScratchFlags};
+use crate::plan::ShapePlan;
 use crate::tables::gsubgpos::LookupFlags;
 use super::TableIndex;
 use super::apply::ApplyContext;
 use super::matching::SkippyIter;
+
+pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+    unsafe { ffi::rb_ot_layout_kern(plan.as_ptr(), face.as_ptr(), buffer.as_ptr()); }
+}
 
 #[no_mangle]
 pub extern "C" fn rb_kern_machine_kern(
@@ -23,12 +28,12 @@ pub extern "C" fn rb_kern_machine_kern(
     let face = Face::from_ptr(face);
     let mut buffer = Buffer::from_ptr_mut(buffer);
     let cross_stream = cross_stream != 0;
-    kern(face, &mut buffer, kern_mask, cross_stream, |left, right| {
+    machine_kern(face, &mut buffer, kern_mask, cross_stream, |left, right| {
         unsafe { machine_get_kerning(machine, left, right) }
     });
 }
 
-fn kern(
+fn machine_kern(
     face: &Face,
     buffer: &mut Buffer,
     kern_mask: Mask,

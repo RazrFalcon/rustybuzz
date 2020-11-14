@@ -53,17 +53,6 @@ impl Map {
     pub const MAX_BITS: u32 = 8;
     pub const MAX_VALUE: u32 = (1 << Self::MAX_BITS) - 1;
 
-    pub fn new() -> Self {
-        Self {
-            found_script: [false; 2],
-            chosen_script: [None; 2],
-            global_mask: 0,
-            features: vec![],
-            lookups: [vec![], vec![]],
-            stages: [vec![], vec![]],
-        }
-    }
-
     #[inline]
     pub fn found_script(&self, table_index: TableIndex) -> bool {
         self.found_script[table_index]
@@ -115,7 +104,7 @@ impl Map {
     }
 
     #[inline]
-    pub fn stage_lookup(&self, table_index: TableIndex, index: usize) -> &LookupMap {
+    pub fn lookup(&self, table_index: TableIndex, index: usize) -> &LookupMap {
         &self.lookups[table_index][index]
     }
 
@@ -189,11 +178,8 @@ struct StageInfo {
 
 impl<'a> MapBuilder<'a> {
     pub fn new(face: &'a Face<'a>, script: Option<Script>, language: Option<&Language>) -> Self {
-        use crate::ot::layout::*;
-
         // Fetch script/language indices for GSUB/GPOS.  We need these later to skip
         // features not available in either table and not waste precious bits for them.
-
         let (script_tags, lang_tags) = tag::tags_from_script_and_language(script, language);
 
         let mut found_script = [false; 2];
@@ -201,16 +187,14 @@ impl<'a> MapBuilder<'a> {
         let mut chosen_script = [None; 2];
         let mut lang_index = [None; 2];
 
-        for table_index in TableIndex::iter() {
-            if let Some(table) = face.layout_table(table_index) {
-                if let Some((found, idx, tag)) = table.select_script(&script_tags) {
-                    chosen_script[table_index] = Some(tag);
-                    found_script[table_index] = found;
-                    script_index[table_index] = Some(idx);
+        for (table_index, table) in face.layout_tables() {
+            if let Some((found, idx, tag)) = table.select_script(&script_tags) {
+                chosen_script[table_index] = Some(tag);
+                found_script[table_index] = found;
+                script_index[table_index] = Some(idx);
 
-                    if let Some(idx) = table.select_script_language(idx, &lang_tags) {
-                        lang_index[table_index] = Some(idx);
-                    }
+                if let Some(idx) = table.select_script_language(idx, &lang_tags) {
+                    lang_index[table_index] = Some(idx);
                 }
             }
         }
@@ -267,7 +251,6 @@ impl<'a> MapBuilder<'a> {
         self.add_pause(TableIndex::GPOS, pause);
     }
 
-    // TODO: clean up
     fn add_pause(&mut self, table_index: TableIndex, pause: Option<PauseFunc>) {
         self.stages[table_index].push(StageInfo {
             index: self.current_stage[table_index],
@@ -277,104 +260,83 @@ impl<'a> MapBuilder<'a> {
         self.current_stage[table_index] += 1;
     }
 
-    // TODO: clean up
-    pub fn compile(&mut self, map: &mut Map, variation_indices: [Option<VariationIndex>; 2]) {
-        use crate::ot::layout::*;
+    const GLOBAL_BIT_MASK: Mask = glyph_flag::DEFINED + 1;
+    const GLOBAL_BIT_SHIFT: u32 = glyph_flag::DEFINED.count_ones();
 
-        let global_bit_mask = glyph_flag::DEFINED + 1;
-        let global_bit_shift = glyph_flag::DEFINED.count_ones();
-
-        map.global_mask = global_bit_mask;
-
+    pub fn compile(&mut self) -> Map {
         // We default to applying required feature in stage 0.  If the required
         // feature has a tag that is known to the shaper, we apply required feature
         // in the stage for that tag.
-        let mut required_feature_stage = [0; 2];
-        let mut required_feature_index = [None; 2];
-        let mut required_feature_tag = [None; 2];
+        let mut required_index = [None; 2];
+        let mut required_tag = [None; 2];
 
-        map.chosen_script = self.chosen_script;
-        map.found_script = self.found_script;
-
-        for table_index in TableIndex::iter() {
+        for (table_index, table) in self.face.layout_tables() {
             if let Some(script) = self.script_index[table_index] {
                 let lang = self.lang_index[table_index];
-                if let Some((idx, tag)) = self.face
-                    .layout_table(table_index)
-                    .and_then(|table| table.get_required_language_feature(script, lang))
-                {
-                    required_feature_index[table_index] = Some(idx);
-                    required_feature_tag[table_index] = Some(tag);
+                if let Some((idx, tag)) = table.get_required_language_feature(script, lang) {
+                    required_index[table_index] = Some(idx);
+                    required_tag[table_index] = Some(tag);
                 }
             }
         }
+
+        let (features, required_stage, global_mask) = self.collect_feature_maps(required_tag);
+
+        self.add_gsub_pause(None);
+        self.add_gpos_pause(None);
+
+        let (lookups, stages) = self.collect_lookup_stages(&features, required_index, required_stage);
+
+        Map {
+            found_script: self.found_script,
+            chosen_script: self.chosen_script,
+            global_mask,
+            features,
+            lookups,
+            stages,
+        }
+    }
+
+    fn collect_feature_maps(
+        &mut self,
+        required_tag: [Option<Tag>; 2],
+    ) -> (Vec<FeatureMap>, [usize; 2], Mask) {
+        let mut map_features = vec![];
+        let mut required_stage = [0; 2];
+        let mut global_mask = Self::GLOBAL_BIT_MASK;
+        let mut next_bit = Self::GLOBAL_BIT_SHIFT + 1;
 
         // Sort features and merge duplicates.
-        if !self.feature_infos.is_empty() {
-            let feature_infos = &mut self.feature_infos;
-            feature_infos.sort();
+        self.dedup_feature_infos();
 
-            let mut j = 0;
-            for i in 1..feature_infos.len() {
-                if feature_infos[i].tag != feature_infos[j].tag {
-                    j += 1;
-                    feature_infos[j] = feature_infos[i];
-                } else {
-                    if feature_infos[i].flags.contains(FeatureFlags::GLOBAL) {
-                        feature_infos[j].flags |= FeatureFlags::GLOBAL;
-                        feature_infos[j].max_value = feature_infos[i].max_value;
-                        feature_infos[j].default_value = feature_infos[i].default_value;
-                    } else {
-                        if feature_infos[j].flags.contains(FeatureFlags::GLOBAL) {
-                            feature_infos[j].flags ^= FeatureFlags::GLOBAL;
-                        }
-                        feature_infos[j].max_value = feature_infos[j].max_value.max(feature_infos[i].max_value);
-                        // Inherit default_value from j
-                    }
-                    let f = feature_infos[i].flags & FeatureFlags::HAS_FALLBACK;
-                    feature_infos[j].flags |= f;
-                    feature_infos[j].stage[0] = feature_infos[j].stage[0].min(feature_infos[i].stage[0]);
-                    feature_infos[j].stage[1] = feature_infos[j].stage[1].min(feature_infos[i].stage[1]);
-                }
-            }
-
-            feature_infos.truncate(j + 1);
-        }
-
-        // Allocate bits now.
-        let mut next_bit = global_bit_shift + 1;
-
-        for i in 0..self.feature_infos.len() {
-            let info = &self.feature_infos[i];
-
-            let bits_needed;
-            if info.flags.contains(FeatureFlags::GLOBAL) && info.max_value == 1 {
+        for info in &self.feature_infos {
+            let bits_needed = if info.flags.contains(FeatureFlags::GLOBAL) && info.max_value == 1 {
                 // Uses the global bit.
-                bits_needed = 0;
+                0
             } else {
                 // Limit bits per feature.
-                let num_bits = |v: u32| 8 * std::mem::size_of_val(&v) as u32 - v.leading_zeros();
-                bits_needed = Map::MAX_BITS.min(num_bits(info.max_value));
-            }
+                let v = info.max_value;
+                let num_bits = 8 * std::mem::size_of_val(&v) as u32 - v.leading_zeros();
+                Map::MAX_BITS.min(num_bits)
+            };
 
-            if info.max_value == 0 || next_bit + bits_needed > 8 * std::mem::size_of::<Mask>() as u32 {
+            let bits_available = 8 * std::mem::size_of::<Mask>() as u32;
+            if info.max_value == 0 || next_bit + bits_needed > bits_available {
                  // Feature disabled, or not enough bits.
                 continue;
             }
 
             let mut found = false;
             let mut feature_index = [None; 2];
-            for table_index in TableIndex::iter() {
-                if required_feature_tag[table_index] == Some(info.tag) {
-                    required_feature_stage[table_index] = info.stage[table_index];
+
+            for (table_index, table) in self.face.layout_tables() {
+                if required_tag[table_index] == Some(info.tag) {
+                    required_stage[table_index] = info.stage[table_index];
                 }
 
                 if let Some(script) = self.script_index[table_index] {
                     let lang = self.lang_index[table_index];
-                    if let Some(idx) = self.face
-                        .layout_table(table_index)
-                        .and_then(|table| table.find_language_feature(script, lang, info.tag))
-                    {
+                    if let Some(idx) = table.find_language_feature(script, lang, info.tag) {
                         feature_index[table_index] = Some(idx);
                         found = true;
                     }
@@ -382,11 +344,8 @@ impl<'a> MapBuilder<'a> {
             }
 
             if !found && info.flags.contains(FeatureFlags::GLOBAL_SEARCH) {
-                for table_index in TableIndex::iter() {
-                    if let Some(idx) = self.face
-                        .layout_table(table_index)
-                        .and_then(|table| table.find_feature_index(info.tag))
-                    {
+                for (table_index, table) in self.face.layout_tables() {
+                    if let Some(idx) = table.find_feature_index(info.tag) {
                         feature_index[table_index] = Some(idx);
                         found = true;
                     }
@@ -399,16 +358,16 @@ impl<'a> MapBuilder<'a> {
 
             let (shift, mask) = if info.flags.contains(FeatureFlags::GLOBAL) && info.max_value == 1 {
                 // Uses the global bit
-                (global_bit_shift, global_bit_mask)
+                (Self::GLOBAL_BIT_SHIFT, Self::GLOBAL_BIT_MASK)
             } else {
                 let shift = next_bit;
                 let mask = (1 << (next_bit + bits_needed)) - (1 << next_bit);
                 next_bit += bits_needed;
-                map.global_mask |= (info.default_value << shift) & mask;
+                global_mask |= (info.default_value << shift) & mask;
                 (shift, mask)
             };
 
-            map.features.push(FeatureMap {
+            map_features.push(FeatureMap {
                 tag: info.tag,
                 index: feature_index,
                 stage: info.stage,
@@ -421,27 +380,72 @@ impl<'a> MapBuilder<'a> {
             });
         }
 
-        // Done with these.
-        self.feature_infos.clear();
+        (map_features, required_stage, global_mask)
+    }
 
-        self.add_gsub_pause(None);
-        self.add_gpos_pause(None);
+    fn dedup_feature_infos(&mut self) {
+        let feature_infos = &mut self.feature_infos;
+        if feature_infos.is_empty() {
+            return;
+        }
+
+        feature_infos.sort();
+
+        let mut j = 0;
+        for i in 1..feature_infos.len() {
+            if feature_infos[i].tag != feature_infos[j].tag {
+                j += 1;
+                feature_infos[j] = feature_infos[i];
+            } else {
+                if feature_infos[i].flags.contains(FeatureFlags::GLOBAL) {
+                    feature_infos[j].flags |= FeatureFlags::GLOBAL;
+                    feature_infos[j].max_value = feature_infos[i].max_value;
+                    feature_infos[j].default_value = feature_infos[i].default_value;
+                } else {
+                    if feature_infos[j].flags.contains(FeatureFlags::GLOBAL) {
+                        feature_infos[j].flags ^= FeatureFlags::GLOBAL;
+                    }
+                    feature_infos[j].max_value = feature_infos[j].max_value.max(feature_infos[i].max_value);
+                    // Inherit default_value from j
+                }
+                let flags = feature_infos[i].flags & FeatureFlags::HAS_FALLBACK;
+                feature_infos[j].flags |= flags;
+                feature_infos[j].stage[0] = feature_infos[j].stage[0].min(feature_infos[i].stage[0]);
+                feature_infos[j].stage[1] = feature_infos[j].stage[1].min(feature_infos[i].stage[1]);
+            }
+        }
+
+        feature_infos.truncate(j + 1);
+    }
+
+    fn collect_lookup_stages(
+        &self,
+        map_features: &[FeatureMap],
+        required_feature_index: [Option<FeatureIndex>; 2],
+        required_feature_stage: [usize; 2],
+    ) -> ([Vec<LookupMap>; 2], [Vec<StageMap>; 2]) {
+        let mut map_lookups = [vec![], vec![]];
+        let mut map_stages = [vec![], vec![]];
 
         for table_index in TableIndex::iter() {
             // Collect lookup indices for features.
-
             let mut stage_index = 0;
-            let mut last_num_lookups = 0;
+            let mut last_lookup = 0;
+
+            let coords = self.face.ttfp_face.variation_coordinates();
+            let variation_index = self.face
+                .layout_table(table_index)
+                .and_then(|t| t.find_variation_index(coords));
 
             for stage in 0..self.current_stage[table_index] {
-                if required_feature_stage[table_index] == stage {
-                    if let Some(feature_index) = required_feature_index[table_index] {
+                if let Some(feature_index) = required_feature_index[table_index] {
+                    if required_feature_stage[table_index] == stage {
                         self.add_lookups(
-                            &mut map.lookups[table_index],
+                            &mut map_lookups[table_index],
                             table_index,
                             feature_index,
-                            variation_indices[table_index],
-                            global_bit_mask,
+                            variation_index,
+                            Self::GLOBAL_BIT_MASK,
                             true,
                             true,
                             false,
@@ -449,14 +453,14 @@ impl<'a> MapBuilder<'a> {
                     }
                 }
 
-                for feature in &map.features {
-                    if feature.stage[table_index] == stage {
-                        if let Some(feature_index) = feature.index[table_index] {
+                for feature in map_features {
+                    if let Some(feature_index) = feature.index[table_index] {
+                        if feature.stage[table_index] == stage {
                             self.add_lookups(
-                                &mut map.lookups[table_index],
+                                &mut map_lookups[table_index],
                                 table_index,
                                 feature_index,
-                                variation_indices[table_index],
+                                variation_index,
                                 feature.mask,
                                 feature.auto_zwnj,
                                 feature.auto_zwj,
@@ -467,13 +471,13 @@ impl<'a> MapBuilder<'a> {
                 }
 
                 // Sort lookups and merge duplicates.
-                let lookups = &mut map.lookups[table_index];
+                let lookups = &mut map_lookups[table_index];
                 let len = lookups.len();
 
-                if last_num_lookups < len {
-                    lookups[last_num_lookups..len].sort();
+                if last_lookup < len {
+                    lookups[last_lookup..].sort();
 
-                    let mut j = last_num_lookups;
+                    let mut j = last_lookup;
                     for i in j+1..len {
                         if lookups[i].index != lookups[j].index {
                             j += 1;
@@ -488,19 +492,22 @@ impl<'a> MapBuilder<'a> {
                     lookups.truncate(j + 1);
                 }
 
-                last_num_lookups = lookups.len();
+                last_lookup = lookups.len();
 
-                let stages = &self.stages[table_index];
-                if stage_index < stages.len() && stages[stage_index].index == stage {
-                    map.stages[table_index].push(StageMap {
-                        last_lookup: last_num_lookups,
-                        pause_func: stages[stage_index].pause_func,
-                    });
+                if let Some(info) = self.stages[table_index].get(stage_index) {
+                    if info.index == stage {
+                        map_stages[table_index].push(StageMap {
+                            last_lookup,
+                            pause_func: info.pause_func,
+                        });
 
-                    stage_index += 1;
+                        stage_index += 1;
+                    }
                 }
             }
         }
+
+        (map_lookups, map_stages)
     }
 
     fn add_lookups(
@@ -515,8 +522,8 @@ impl<'a> MapBuilder<'a> {
         random: bool,
     ) -> Option<()> {
         let table = self.face.layout_table(table_index)?;
-        let lookup_count = table.lookup_count();
 
+        let lookup_count = table.lookup_count();
         let feature = match variation_index {
             Some(idx) => table.get_variation(feature_index, idx)?,
             None => table.get_feature(feature_index)?,
@@ -524,13 +531,7 @@ impl<'a> MapBuilder<'a> {
 
         for index in feature.lookup_indices {
             if index.0 < lookup_count {
-                lookups.push(LookupMap {
-                    mask,
-                    index,
-                    auto_zwnj,
-                    auto_zwj,
-                    random,
-                });
+                lookups.push(LookupMap { mask, index, auto_zwnj, auto_zwj, random });
             }
         }
 

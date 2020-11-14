@@ -1,6 +1,6 @@
-use crate::{feature, Tag, Face, GlyphInfo};
+use crate::{Tag, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
-use crate::ot::FeatureFlags;
+use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use super::indic::{Category, Position};
 use super::*;

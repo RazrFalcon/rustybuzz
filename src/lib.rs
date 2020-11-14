@@ -11,7 +11,6 @@ mod aat;
 mod common;
 mod ffi;
 mod fallback;
-mod feature;
 mod normalize;
 mod shape;
 mod plan;

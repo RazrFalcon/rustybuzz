@@ -2,9 +2,9 @@ use std::convert::TryFrom;
 use std::cmp;
 use std::ops::Range;
 
-use crate::{feature, ffi, script, Tag, Script, Mask, Face, GlyphInfo};
+use crate::{ffi, script, Tag, Script, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
-use crate::ot::{FeatureFlags, LayoutTable, Map, TableIndex, WouldApply, WouldApplyContext};
+use crate::ot::{feature, FeatureFlags, LayoutTable, Map, TableIndex, WouldApply, WouldApplyContext};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::normalize::ShapeNormalizationMode;
 use crate::unicode::{CharExt, GeneralCategoryExt};
@@ -370,7 +370,7 @@ impl IndicWouldSubstituteFeature {
 
     pub fn would_substitute(&self, map: &Map, face: &Face, glyphs: &[u32]) -> bool {
         for index in self.lookups.clone() {
-            let lookup = map.stage_lookup(TableIndex::GSUB, index);
+            let lookup = map.lookup(TableIndex::GSUB, index);
             let ctx = WouldApplyContext { glyphs, zero_context: self.zero_context };
             if face.gsub
                 .and_then(|table| table.get_lookup(lookup.index))
@@ -650,7 +650,7 @@ fn decompose(ctx: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
         let mut ok = false;
         if let Some(g) = ctx.face.glyph_index(u32::from(ab)) {
             let g = g.0 as u32;
-            let indic_plan = ctx.plan.get_data::<IndicShapePlan>();
+            let indic_plan = ctx.plan.data::<IndicShapePlan>();
             ok = indic_plan.pstf.would_substitute(&ctx.plan.ot_map, ctx.face, &[g]);
         }
 
@@ -698,7 +698,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 }
 
 fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    let indic_plan = plan.get_data::<IndicShapePlan>();
+    let indic_plan = plan.data::<IndicShapePlan>();
 
     update_consonant_positions(plan, &indic_plan, face, buffer);
     insert_dotted_circles(face, buffer);
@@ -1396,7 +1396,7 @@ fn final_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         return;
     }
 
-    let indic_plan = plan.get_data::<IndicShapePlan>();
+    let indic_plan = plan.data::<IndicShapePlan>();
 
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {

@@ -68,8 +68,10 @@ impl<'a> MapBuilder<'a> {
         unsafe { ffi::rb_aat_map_builder_add_feature(self.as_ptr(), tag, value); }
     }
 
-    pub fn compile(&mut self, map: &mut Map) {
+    pub fn compile(&mut self) -> Map {
+        let mut map = Map::new();
         unsafe { ffi::rb_aat_map_builder_compile(self.as_ptr(), map.as_ptr_mut()); }
+        map
     }
 }
 
