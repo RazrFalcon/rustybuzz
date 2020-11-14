@@ -2,7 +2,8 @@ use std::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use crate::{ffi, Direction, Face};
+use crate::{Direction, Face};
+use crate::face::GlyphExtents;
 use crate::buffer::{Buffer, GlyphPosition};
 use crate::unicode::{modified_combining_class, CanonicalCombiningClass, GeneralCategory, Space};
 use crate::plan::ShapePlan;
@@ -297,7 +298,7 @@ fn position_mark(
     direction: Direction,
     glyph: GlyphId,
     pos: &mut GlyphPosition,
-    base_extents: &mut ffi::rb_glyph_extents_t,
+    base_extents: &mut GlyphExtents,
     combining_class: CanonicalCombiningClass,
 ) {
     use CanonicalCombiningClass as Class;
