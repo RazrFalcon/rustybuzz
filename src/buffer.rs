@@ -84,8 +84,6 @@ impl GlyphPosition {
 
     #[inline]
     pub(crate) fn set_attach_type(&mut self, n: u8) {
-        // attachment type
-        // Note! if attach_chain() is zero, the value of attach_type() is irrelevant.
         unsafe {
             let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var);
             v.var_u8[2] = n;
@@ -113,6 +111,11 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn as_char(&self) -> char {
         char::try_from(self.codepoint).unwrap()
+    }
+
+    #[inline]
+    pub(crate) fn as_glyph(&self) -> GlyphId {
+        GlyphId(u16::try_from(self.codepoint).unwrap())
     }
 
     // Var allocation: unicode_props
@@ -739,8 +742,7 @@ impl Buffer {
     pub fn guess_segment_properties(&mut self) {
         if self.script.is_none() {
             for info in &self.info {
-                let c = char::try_from(info.codepoint).unwrap();
-                match c.script() {
+                match info.as_char().script() {
                       crate::script::COMMON
                     | crate::script::INHERITED
                     | crate::script::UNKNOWN => {}
@@ -1717,8 +1719,7 @@ impl GlyphBuffer {
         let mut y = 0;
         for (info, pos) in info.iter().zip(pos) {
             if !flags.contains(SerializeFlags::NO_GLYPH_NAMES) {
-                let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
-                match face.glyph_name(glyph) {
+                match face.glyph_name(info.as_glyph()) {
                     Some(name) => s.push_str(name),
                     None => write!(&mut s, "gid{}", info.codepoint).unwrap(),
                 }
@@ -1750,8 +1751,7 @@ impl GlyphBuffer {
             }
 
             if flags.contains(SerializeFlags::GLYPH_EXTENTS) {
-                let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
-                let extents = face.glyph_extents(glyph).unwrap_or_default();
+                let extents = face.glyph_extents(info.as_glyph()).unwrap_or_default();
                 write!(&mut s, "<{},{},{},{}>", extents.x_bearing, extents.y_bearing, extents.width, extents.height).unwrap();
             }
 

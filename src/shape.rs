@@ -1,7 +1,5 @@
 use std::convert::TryFrom;
 
-use ttf_parser::GlyphId;
-
 use crate::{aat, ot, fallback, normalize, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
 use crate::buffer::{
     glyph_flag, Buffer, BufferClusterLevel, BufferFlags, BufferScratchFlags, GlyphInfo,
@@ -157,12 +155,11 @@ fn position_default(ctx: &mut ShapeContext) {
 
     if ctx.buffer.direction.is_horizontal() {
         for (info, pos) in ctx.buffer.info[..len].iter().zip(&mut ctx.buffer.pos[..len]) {
-            let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
-            pos.x_advance = ctx.face.glyph_h_advance(glyph);
+            pos.x_advance = ctx.face.glyph_h_advance(info.as_glyph());
         }
     } else {
         for (info, pos) in ctx.buffer.info[..len].iter().zip(&mut ctx.buffer.pos[..len]) {
-            let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
+            let glyph = info.as_glyph();
             pos.y_advance = ctx.face.glyph_v_advance(glyph);
             pos.x_offset -= ctx.face.glyph_h_origin(glyph);
             pos.y_offset -= ctx.face.glyph_v_origin(glyph);
@@ -320,8 +317,7 @@ fn set_unicode_props(buffer: &mut Buffer) {
         } else if info.is_zwj() {
             info.set_continuation();
             if let Some(next) = buffer.info[..len].get_mut(i + 1) {
-                let c = char::try_from(next.codepoint).unwrap();
-                if c.is_emoji_extended_pictographic() {
+                if next.as_char().is_emoji_extended_pictographic() {
                     next.init_unicode_props(&mut buffer.scratch_flags);
                     next.set_continuation();
                     i += 1;
@@ -418,7 +414,7 @@ fn rotate_chars(ctx: &mut ShapeContext) {
         let rtlm_mask = ctx.plan.rtlm_mask;
 
         for info in &mut ctx.buffer.info[..len] {
-            let c = char::try_from(info.codepoint).unwrap().mirrored().map_or(0, u32::from);
+            let c = info.as_char().mirrored().map_or(0, u32::from);
             if c != info.codepoint && ctx.face.has_glyph(c) {
                 info.codepoint = c;
             } else {

@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use ttf_parser::GlyphId;
 
 use crate::{Direction, Face};
@@ -171,7 +169,7 @@ fn position_around_base(
 
     let base_info = &buffer.info[base];
     let base_pos = &buffer.pos[base];
-    let base_glyph = GlyphId(u16::try_from(base_info.codepoint).unwrap());
+    let base_glyph = base_info.as_glyph();
 
     let mut base_extents = match face.glyph_extents(base_glyph) {
         Some(extents) => extents,
@@ -252,7 +250,7 @@ fn position_around_base(
                 &plan,
                 face,
                 buffer.direction,
-                GlyphId(u16::try_from(info.codepoint).unwrap()),
+                info.as_glyph(),
                 pos,
                 &mut cluster_extents,
                 unsafe { std::mem::transmute(this_combining_class) },

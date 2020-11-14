@@ -1,6 +1,3 @@
-use std::convert::TryFrom;
-
-use ttf_parser::GlyphId;
 use ttf_parser::parser::{Offset, Offset16};
 
 use crate::{Direction, Face, Tag};
@@ -142,14 +139,14 @@ impl Apply for PosLookupSubtable<'_> {
 
 impl Apply for SinglePos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
+        let glyph = ctx.buffer.cur(0).as_glyph();
         let (base, value) = match *self {
             Self::Format1 { data, coverage, value } => {
-                coverage.get(glyph_id)?;
+                coverage.get(glyph)?;
                 (data, value)
             }
             Self::Format2 { data, coverage, flags, values } => {
-                let index = coverage.get(glyph_id)?;
+                let index = coverage.get(glyph)?;
                 let record = ValueRecord::new(values.get(usize::from(index))?, flags);
                 (data, record)
             }
@@ -164,7 +161,7 @@ impl Apply for SinglePos<'_> {
 
 impl Apply for PairPos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let first = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
+        let first = ctx.buffer.cur(0).as_glyph();
         let index = self.coverage().get(first)?;
 
         let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
@@ -173,7 +170,7 @@ impl Apply for PairPos<'_> {
         }
 
         let pos = iter.index();
-        let second = GlyphId(u16::try_from(ctx.buffer.info[pos].codepoint).unwrap());
+        let second = ctx.buffer.info[pos].as_glyph();
 
         let (base, flags, records) = match *self {
             Self::Format1 { flags, sets, .. } => {
@@ -203,7 +200,7 @@ impl Apply for CursivePos<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let Self::Format1 { data, coverage, entry_exits } = *self;
 
-        let this = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
+        let this = ctx.buffer.cur(0).as_glyph();
         let entry = entry_exits.get(coverage.get(this)?)?.entry_anchor;
         if entry.is_null() {
             return None;
@@ -215,7 +212,7 @@ impl Apply for CursivePos<'_> {
         }
 
         let i = iter.index();
-        let prev = GlyphId(u16::try_from(ctx.buffer.info[i].codepoint).unwrap());
+        let prev = ctx.buffer.info[i].as_glyph();
         let exit = entry_exits.get(coverage.get(prev)?)?.exit_anchor;
         if exit.is_null() {
             return None;
@@ -341,7 +338,7 @@ impl Apply for MarkBasePos<'_> {
         let Self::Format1 { mark_coverage, base_coverage, marks, base_matrix } = *self;
 
         let buffer = &ctx.buffer;
-        let mark_glyph = GlyphId(u16::try_from(buffer.cur(0).codepoint).unwrap());
+        let mark_glyph = ctx.buffer.cur(0).as_glyph();
         let mark_index = mark_coverage.get(mark_glyph)?;
 
         // Now we search backwards for a non-mark glyph
@@ -375,7 +372,7 @@ impl Apply for MarkBasePos<'_> {
         // Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled
 
         let idx = iter.index();
-        let base_glyph = GlyphId(u16::try_from(info[idx].codepoint).unwrap());
+        let base_glyph = info[idx].as_glyph();
         let base_index = base_coverage.get(base_glyph)?;
 
         marks.apply(ctx, base_matrix, mark_index, base_index, idx)
@@ -387,7 +384,7 @@ impl Apply for MarkLigPos<'_> {
         let Self::Format1 { mark_coverage, lig_coverage, marks, lig_array } = *self;
 
         let buffer = &ctx.buffer;
-        let mark_glyph = GlyphId(u16::try_from(buffer.cur(0).codepoint).unwrap());
+        let mark_glyph = ctx.buffer.cur(0).as_glyph();
         let mark_index = mark_coverage.get(mark_glyph)?;
 
         // Now we search backwards for a non-mark glyph
@@ -400,7 +397,7 @@ impl Apply for MarkLigPos<'_> {
         // Checking that matched glyph is actually a ligature by GDEF is too strong; disabled
 
         let idx = iter.index();
-        let lig_glyph = GlyphId(u16::try_from(buffer.info[idx].codepoint).unwrap());
+        let lig_glyph = buffer.info[idx].as_glyph();
         let lig_index = lig_coverage.get(lig_glyph)?;
         let lig_attach = lig_array.get(lig_index)?;
 
@@ -429,7 +426,7 @@ impl Apply for MarkMarkPos<'_> {
         let Self::Format1 { mark1_coverage, mark2_coverage, marks, mark2_matrix } = *self;
 
         let buffer = &ctx.buffer;
-        let mark1_glyph = GlyphId(u16::try_from(buffer.cur(0).codepoint).unwrap());
+        let mark1_glyph = ctx.buffer.cur(0).as_glyph();
         let mark1_index = mark1_coverage.get(mark1_glyph)?;
 
         // Now we search backwards for a suitable mark glyph until a non-mark glyph
@@ -463,7 +460,7 @@ impl Apply for MarkMarkPos<'_> {
             return None;
         }
 
-        let mark2_glyph = GlyphId(u16::try_from(buffer.info[idx].codepoint).unwrap());
+        let mark2_glyph = buffer.info[idx].as_glyph();
         let mark2_index = mark2_coverage.get(mark2_glyph)?;
 
         marks.apply(ctx, mark2_matrix, mark1_index, mark2_index, idx)

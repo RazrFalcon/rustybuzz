@@ -308,7 +308,7 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
             self.matching.map(|(input, func)| {
                 let index = input.len() - self.num_items;
                 let value = input.get(index).unwrap();
-                func(GlyphId(u16::try_from(info.codepoint).unwrap()), value)
+                func(info.as_glyph(), value)
             })
         } else {
             Some(false)

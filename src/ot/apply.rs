@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use ttf_parser::GlyphId;
 
 use crate::{Face, Mask};
@@ -119,8 +117,7 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
             // match_props has the set index.
             if lookup_flags & LookupFlags::USE_MARK_FILTERING_SET.bits() != 0 {
                 let set_index = (match_props >> 16) as u16;
-                let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
-                return self.face.ttfp_face.is_mark_glyph(glyph, Some(set_index));
+                return self.face.ttfp_face.is_mark_glyph(info.as_glyph(), Some(set_index));
             }
 
             // The second byte of match_props has the meaning

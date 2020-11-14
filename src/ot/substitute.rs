@@ -28,8 +28,7 @@ pub fn substitute(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 fn set_glyph_props(face: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
-        let glyph = GlyphId(u16::try_from(info.codepoint).unwrap());
-        info.set_glyph_props(face.glyph_props(glyph));
+        info.set_glyph_props(face.glyph_props(info.as_glyph()));
         info.set_lig_props(0);
         info.set_syllable(0);
     }
@@ -111,23 +110,23 @@ impl Apply for SubstLookupSubtable<'_> {
 
 impl WouldApply for SingleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
-        ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
+        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        ctx.glyphs.len() == 1 && self.coverage().get(glyph).is_some()
     }
 }
 
 impl Apply for SingleSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
+        let glyph = ctx.buffer.cur(0).as_glyph();
         let subst = match *self {
             Self::Format1 { coverage, delta } => {
-                coverage.get(glyph_id)?;
+                coverage.get(glyph)?;
                 // According to the Adobe Annotated OpenType Suite, result is always
                 // limited to 16bit, so we explicitly want to truncate.
-                GlyphId((i32::from(glyph_id.0) + i32::from(delta)) as u16)
+                GlyphId((i32::from(glyph.0) + i32::from(delta)) as u16)
             }
             Self::Format2 { coverage, substitutes } => {
-                let index = coverage.get(glyph_id)?;
+                let index = coverage.get(glyph)?;
                 substitutes.get(index)?
             }
         };
@@ -139,17 +138,17 @@ impl Apply for SingleSubst<'_> {
 
 impl WouldApply for MultipleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
-        ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
+        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        ctx.glyphs.len() == 1 && self.coverage().get(glyph).is_some()
     }
 }
 
 impl Apply for MultipleSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
+        let glyph = ctx.buffer.cur(0).as_glyph();
         match self {
             Self::Format1 { coverage, sequences } => {
-                let index = coverage.get(glyph_id)?;
+                let index = coverage.get(glyph)?;
                 let seq = Sequence::parse(sequences.slice(index)?)?;
                 seq.apply(ctx)
             }
@@ -190,17 +189,17 @@ impl Apply for Sequence<'_> {
 
 impl WouldApply for AlternateSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
-        ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
+        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        ctx.glyphs.len() == 1 && self.coverage().get(glyph).is_some()
     }
 }
 
 impl Apply for AlternateSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
+        let glyph = ctx.buffer.cur(0).as_glyph();
         match self {
             Self::Format1 { coverage, alternate_sets } => {
-                let index = coverage.get(glyph_id)?;
+                let index = coverage.get(glyph)?;
                 let set = AlternateSet::parse(alternate_sets.slice(index)?)?;
                 set.apply(ctx)
             }
@@ -235,10 +234,10 @@ impl Apply for AlternateSet<'_> {
 
 impl WouldApply for LigatureSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         match self {
             Self::Format1 { coverage, ligature_sets } => {
-                coverage.get(glyph_id)
+                coverage.get(glyph)
                     .and_then(|index| ligature_sets.slice(index))
                     .and_then(LigatureSet::parse)
                     .map_or(false, |set| set.would_apply(ctx))
@@ -249,10 +248,10 @@ impl WouldApply for LigatureSubst<'_> {
 
 impl Apply for LigatureSubst<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
+        let glyph = ctx.buffer.cur(0).as_glyph();
         match self {
             Self::Format1 { coverage, ligature_sets } => {
-                let index = coverage.get(glyph_id)?;
+                let index = coverage.get(glyph)?;
                 let set = LigatureSet::parse(ligature_sets.slice(index)?)?;
                 set.apply(ctx)
             }
@@ -414,8 +413,8 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
 
 impl WouldApply for ReverseChainSingleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
-        ctx.glyphs.len() == 1 && self.coverage().get(glyph_id).is_some()
+        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        ctx.glyphs.len() == 1 && self.coverage().get(glyph).is_some()
     }
 }
 
@@ -434,8 +433,8 @@ impl Apply for ReverseChainSingleSubst<'_> {
             return None;
         }
 
-        let glyph_id = GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap());
-        let index = coverage.get(glyph_id)?;
+        let glyph = ctx.buffer.cur(0).as_glyph();
+        let index = coverage.get(glyph)?;
         if index >= substitutes.len() {
             return None;
         }
