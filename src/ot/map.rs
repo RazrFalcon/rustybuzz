@@ -1,10 +1,10 @@
+use std::ops::Range;
+
 use crate::{tag, Face, Language, Mask, Tag, Script};
 use crate::buffer::{glyph_flag, Buffer};
 use crate::plan::ShapePlan;
 use crate::tables::gsubgpos::{FeatureIndex, LangIndex, LookupIndex, VariationIndex, ScriptIndex};
 use super::TableIndex;
-
-pub type PauseFunc = fn(&ShapePlan, &Face, &mut Buffer);
 
 pub struct Map {
     found_script: [bool; 2],
@@ -46,6 +46,8 @@ pub struct StageMap {
     pub last_lookup: usize,
     pub pause_func: Option<PauseFunc>,
 }
+
+pub type PauseFunc = fn(&ShapePlan, &Face, &mut Buffer);
 
 impl Map {
     pub const MAX_BITS: u32 = 8;
@@ -113,12 +115,22 @@ impl Map {
     }
 
     #[inline]
+    pub fn stage_lookup(&self, table_index: TableIndex, index: usize) -> &LookupMap {
+        &self.lookups[table_index][index]
+    }
+
+    #[inline]
     pub fn stage_lookups(&self, table_index: TableIndex, stage: usize) -> &[LookupMap] {
+        &self.lookups[table_index][self.stage_lookup_range(table_index, stage)]
+    }
+
+    #[inline]
+    pub fn stage_lookup_range(&self, table_index: TableIndex, stage: usize) -> Range<usize> {
         let stages = &self.stages[table_index];
         let lookups = &self.lookups[table_index];
         let start = stage.checked_sub(1).map_or(0, |prev| stages[prev].last_lookup);
         let end = stages.get(stage).map_or(lookups.len(), |curr| curr.last_lookup);
-        &lookups[start..end]
+        start..end
     }
 }
 
