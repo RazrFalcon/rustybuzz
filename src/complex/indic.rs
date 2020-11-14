@@ -1,7 +1,6 @@
 use std::convert::TryFrom;
 use std::cmp;
 use std::ops::Range;
-use std::os::raw::c_void;
 
 use crate::{feature, ffi, script, Tag, Script, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
@@ -15,8 +14,7 @@ use super::*;
 pub const INDIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
     override_features: Some(override_features),
-    data_create: Some(data_create),
-    data_destroy: Some(data_destroy),
+    create_data: Some(|plan| Box::new(IndicShapePlan::new(&plan))),
     preprocess_text: Some(preprocess_text),
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
@@ -450,10 +448,6 @@ impl IndicShapePlan {
             mask_array,
         }
     }
-
-    fn from_ptr(plan: *const c_void) -> &'static IndicShapePlan {
-        unsafe { &*(plan as *const IndicShapePlan) }
-    }
 }
 
 
@@ -613,15 +607,6 @@ fn override_features(planner: &mut ShapePlanner) {
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
-fn data_create(plan: &ShapePlan) -> *mut c_void {
-    let indic_plan = IndicShapePlan::new(&plan);
-    Box::into_raw(Box::new(indic_plan)) as _
-}
-
-fn data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data as *mut IndicShapePlan) };
-}
-
 fn preprocess_text(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
@@ -665,7 +650,7 @@ fn decompose(ctx: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
         let mut ok = false;
         if let Some(g) = ctx.face.glyph_index(u32::from(ab)) {
             let g = g.0 as u32;
-            let indic_plan = IndicShapePlan::from_ptr(ctx.plan.data as _);
+            let indic_plan = ctx.plan.get_data::<IndicShapePlan>();
             ok = indic_plan.pstf.would_substitute(&ctx.plan.ot_map, ctx.face, &[g]);
         }
 
@@ -713,7 +698,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 }
 
 fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    let indic_plan = IndicShapePlan::from_ptr(plan.data as _);
+    let indic_plan = plan.get_data::<IndicShapePlan>();
 
     update_consonant_positions(plan, &indic_plan, face, buffer);
     insert_dotted_circles(face, buffer);
@@ -1411,7 +1396,7 @@ fn final_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         return;
     }
 
-    let indic_plan = IndicShapePlan::from_ptr(plan.data as _);
+    let indic_plan = plan.get_data::<IndicShapePlan>();
 
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {

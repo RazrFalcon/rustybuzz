@@ -1,4 +1,4 @@
-use std::ffi::c_void;
+use std::any::Any;
 
 use crate::{aat, feature, ffi, Direction, Face, Feature, Language, Mask, Tag, Script};
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
@@ -11,7 +11,7 @@ pub struct ShapePlan {
     pub shaper: &'static ComplexShaper,
     pub ot_map: ot::Map,
     pub aat_map: aat::Map,
-    pub data: *mut c_void,
+    pub data: Option<Box<dyn Any>>,
 
     pub frac_mask: Mask,
     pub numr_mask: Mask,
@@ -56,10 +56,10 @@ impl ShapePlan {
         let mut plan = Self {
             direction,
             script,
-            shaper: &DEFAULT_SHAPER, // FIXME
+            shaper: &DEFAULT_SHAPER,
             ot_map: Map::new(),
             aat_map: aat::Map::new(),
-            data: std::ptr::null_mut(),
+            data: None,
             frac_mask: 0,
             numr_mask: 0,
             dnom_mask: 0,
@@ -86,12 +86,8 @@ impl ShapePlan {
         collect_features(&mut planner, user_features);
         planner.compile(&mut plan, variation_indices);
 
-        if let Some(func) = plan.shaper.data_create {
-            let ptr = func(&plan);
-            if ptr.is_null() {
-                return None;
-            }
-            plan.data = ptr;
+        if let Some(func) = plan.shaper.create_data {
+            plan.data = Some(func(&plan));
         }
 
         Some(plan)
@@ -106,13 +102,9 @@ impl ShapePlan {
     pub fn as_ptr(&self) -> *const ffi::rb_shape_plan_t {
         self as *const _ as *const ffi::rb_shape_plan_t
     }
-}
 
-impl Drop for ShapePlan {
-    fn drop(&mut self) {
-        if let Some(func) = self.shaper.data_destroy {
-            func(self.data);
-        }
+    pub fn get_data<T: 'static>(&self) -> &T {
+        self.data.as_ref().unwrap().downcast_ref().unwrap()
     }
 }
 

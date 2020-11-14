@@ -1,5 +1,3 @@
-use std::os::raw::c_void;
-
 use crate::{feature, ffi, Face, GlyphInfo, Mask};
 use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
 use crate::ot::{FeatureFlags, Map};
@@ -10,8 +8,7 @@ use super::*;
 pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
     override_features: Some(override_features),
-    data_create: Some(data_create),
-    data_destroy: Some(data_destroy),
+    create_data: Some(|plan| Box::new(HangulShapePlan::new(&plan.ot_map))),
     preprocess_text: Some(preprocess_text),
     postprocess_glyphs: None,
     normalization_mode: None,
@@ -72,10 +69,6 @@ impl HangulShapePlan {
             ]
         }
     }
-
-    fn from_ptr(plan: *const c_void) -> &'static HangulShapePlan {
-        unsafe { &*(plan as *const HangulShapePlan) }
-    }
 }
 
 
@@ -90,15 +83,6 @@ fn override_features(planner: &mut ShapePlanner) {
     // (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
     // in calt, which is not desirable.
     planner.ot_map.disable_feature(feature::CONTEXTUAL_ALTERNATES);
-}
-
-fn data_create(plan: &ShapePlan) -> *mut c_void {
-    let hangul_plan = HangulShapePlan::new(&plan.ot_map);
-    Box::into_raw(Box::new(hangul_plan)) as _
-}
-
-fn data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data as *mut HangulShapePlan) };
 }
 
 fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
@@ -379,7 +363,7 @@ fn is_combined_s(u: u32) -> bool {
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let hangul_plan = HangulShapePlan::from_ptr(plan.data as _);
+    let hangul_plan = plan.get_data::<HangulShapePlan>();
     for info in buffer.info_slice_mut() {
         info.mask |= hangul_plan.mask_array[info.hangul_shaping_feature() as usize];
     }

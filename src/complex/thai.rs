@@ -9,8 +9,7 @@ use super::*;
 pub const THAI_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: None,
     override_features: None,
-    data_create: None,
-    data_destroy: None,
+    create_data: None,
     preprocess_text: Some(preprocess_text),
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::Auto),

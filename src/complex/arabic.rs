@@ -1,5 +1,4 @@
 use std::convert::TryFrom;
-use std::os::raw::c_void;
 
 use ttf_parser::GlyphId;
 
@@ -14,8 +13,7 @@ use super::*;
 pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
     override_features: None,
-    data_create: Some(data_create),
-    data_destroy: Some(data_destroy),
+    create_data: Some(|plan| Box::new(ArabicShapePlan::new(plan))),
     preprocess_text: None,
     postprocess_glyphs: Some(postprocess_glyphs),
     normalization_mode: Some(ShapeNormalizationMode::Auto),
@@ -157,13 +155,19 @@ pub struct ArabicShapePlan {
     // having to do a "if (... < NONE) ..." and just rely on the fact that
     // mask_array[NONE] == 0.
     mask_array: [Mask; ARABIC_FEATURES.len() + 1],
-
     has_stch: bool,
 }
 
 impl ArabicShapePlan {
-    fn from_ptr(plan: *const c_void) -> &'static ArabicShapePlan {
-        unsafe { &*(plan as *const ArabicShapePlan) }
+    pub fn new(plan: &ShapePlan) -> ArabicShapePlan {
+        let has_stch = plan.ot_map.one_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
+
+        let mut mask_array = [0; ARABIC_FEATURES.len() + 1];
+        for i in 0..ARABIC_FEATURES.len() {
+            mask_array[i] = plan.ot_map.one_mask(ARABIC_FEATURES[i]);
+        }
+
+        ArabicShapePlan { mask_array, has_stch }
     }
 }
 
@@ -243,7 +247,7 @@ fn fallback_shape(_: &ShapePlan, _: &Face, _: &mut Buffer) {}
 // We implement this in a generic way, such that the Arabic subtending
 // marks can use it as well.
 fn record_stch(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let arabic_plan = ArabicShapePlan::from_ptr(plan.data as _);
+    let arabic_plan = plan.get_data::<ArabicShapePlan>();
     if !arabic_plan.has_stch {
         return;
     }
@@ -428,7 +432,7 @@ fn is_word_category(gc: GeneralCategory) -> bool {
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let arabic_plan = ArabicShapePlan::from_ptr(plan.data as _);
+    let arabic_plan = plan.get_data::<ArabicShapePlan>();
     setup_masks_inner(arabic_plan, plan.script, buffer)
 }
 
@@ -511,28 +515,6 @@ fn mongolian_variation_selectors(buffer: &mut Buffer) {
             info[i].set_arabic_shaping_action(a);
         }
     }
-}
-
-fn data_create(plan: &ShapePlan) -> *mut c_void {
-    Box::into_raw(Box::new(data_create_inner(plan))) as _
-}
-
-pub fn data_create_inner(plan: &ShapePlan) -> ArabicShapePlan {
-    let mut arabic_plan = ArabicShapePlan {
-        mask_array: [0; ARABIC_FEATURES.len() + 1],
-        has_stch: false,
-    };
-
-    arabic_plan.has_stch = plan.ot_map.one_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
-    for i in 0..ARABIC_FEATURES.len() {
-        arabic_plan.mask_array[i] = plan.ot_map.one_mask(ARABIC_FEATURES[i]);
-    }
-
-    arabic_plan
-}
-
-fn data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data as *mut ArabicShapePlan) };
 }
 
 fn get_joining_type(u: char, gc: GeneralCategory) -> JoiningType {

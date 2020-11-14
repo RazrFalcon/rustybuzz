@@ -1,5 +1,3 @@
-use std::os::raw::c_void;
-
 use crate::{feature, Tag, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::FeatureFlags;
@@ -12,8 +10,7 @@ use super::*;
 pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
     override_features: Some(override_features),
-    data_create: Some(data_create),
-    data_destroy: Some(data_destroy),
+    create_data: Some(|plan| Box::new(KhmerShapePlan::new(&plan))),
     preprocess_text: None,
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
@@ -105,10 +102,6 @@ impl KhmerShapePlan {
             mask_array,
         }
     }
-
-    fn from_ptr(plan: *const c_void) -> &'static KhmerShapePlan {
-        unsafe { &*(plan as *const KhmerShapePlan) }
-    }
 }
 
 fn collect_features(planner: &mut ShapePlanner) {
@@ -154,7 +147,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 fn reorder(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     insert_dotted_circles(face, buffer);
 
-    let khmer_plan = KhmerShapePlan::from_ptr(plan.data as _);
+    let khmer_plan = plan.get_data::<KhmerShapePlan>();
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -331,15 +324,6 @@ fn override_features(planner: &mut ShapePlanner) {
     planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
 
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
-}
-
-fn data_create(plan: &ShapePlan) -> *mut c_void {
-    let indic_plan = KhmerShapePlan::new(&plan);
-    Box::into_raw(Box::new(indic_plan)) as _
-}
-
-fn data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data as *mut KhmerShapePlan) };
 }
 
 fn decompose(_: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {

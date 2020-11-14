@@ -9,8 +9,7 @@ use super::*;
 pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
     override_features: Some(override_features),
-    data_create: None,
-    data_destroy: None,
+    create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
@@ -29,8 +28,7 @@ pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
 pub const MYANMAR_ZAWGYI_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: None,
     override_features: None,
-    data_create: None,
-    data_destroy: None,
+    create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
     normalization_mode: None,

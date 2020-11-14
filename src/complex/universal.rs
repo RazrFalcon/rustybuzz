@@ -1,5 +1,3 @@
-use std::os::raw::c_void;
-
 use crate::{feature, ffi, script, Tag, Face, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::FeatureFlags;
@@ -12,8 +10,7 @@ use super::arabic::ArabicShapePlan;
 pub const UNIVERSAL_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
     override_features: None,
-    data_create: Some(data_create),
-    data_destroy: Some(data_destroy),
+    create_data: Some(|plan| Box::new(UniversalShapePlan::new(plan))),
     preprocess_text: Some(preprocess_text),
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
@@ -148,8 +145,17 @@ struct UniversalShapePlan {
 }
 
 impl UniversalShapePlan {
-    fn from_ptr(plan: *const c_void) -> &'static UniversalShapePlan {
-        unsafe { &*(plan as *const UniversalShapePlan) }
+    fn new(plan: &ShapePlan) -> UniversalShapePlan {
+        let mut arabic_plan = None;
+
+        if plan.script.map_or(false, has_arabic_joining) {
+            arabic_plan = Some(super::arabic::ArabicShapePlan::new(plan));
+        }
+
+        UniversalShapePlan {
+            rphf_mask: plan.ot_map.one_mask(feature::REPH_FORMS),
+            arabic_plan,
+        }
     }
 }
 
@@ -203,7 +209,7 @@ fn setup_syllables(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 }
 
 fn setup_rphf_mask(plan: &ShapePlan, buffer: &mut Buffer) {
-    let universal_plan = UniversalShapePlan::from_ptr(plan.data as _);
+    let universal_plan = plan.get_data::<UniversalShapePlan>();
 
     let mask = universal_plan.rphf_mask;
     if mask == 0 {
@@ -290,7 +296,7 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
 }
 
 fn record_rphf(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let universal_plan = UniversalShapePlan::from_ptr(plan.data as _);
+    let universal_plan = plan.get_data::<UniversalShapePlan>();
 
     let mask = universal_plan.rphf_mask;
     if mask == 0 {
@@ -497,21 +503,6 @@ fn record_pref(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-fn data_create(plan: &ShapePlan) -> *mut c_void {
-    let mut arabic_plan = None;
-
-    if plan.script.map_or(false, has_arabic_joining) {
-        arabic_plan = Some(super::arabic::data_create_inner(plan));
-    }
-
-    let universal_plan = UniversalShapePlan {
-        rphf_mask: plan.ot_map.one_mask(feature::REPH_FORMS),
-        arabic_plan,
-    };
-
-    Box::into_raw(Box::new(universal_plan)) as _
-}
-
 fn has_arabic_joining(script: Script) -> bool {
     // List of scripts that have data in arabic-table.
     match script {
@@ -540,10 +531,6 @@ fn has_arabic_joining(script: Script) -> bool {
     }
 }
 
-fn data_destroy(data: *mut c_void) {
-    unsafe { Box::from_raw(data as *mut UniversalShapePlan) };
-}
-
 fn preprocess_text(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
@@ -558,7 +545,7 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
-    let universal_plan = UniversalShapePlan::from_ptr(plan.data as _);
+    let universal_plan = plan.get_data::<UniversalShapePlan>();
 
     // Do this before allocating use_category().
     if let Some(ref arabic_plan) = universal_plan.arabic_plan {

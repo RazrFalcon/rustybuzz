@@ -15,7 +15,7 @@ mod universal_machine;
 mod universal_table;
 mod vowel_constraints;
 
-use std::ffi::c_void;
+use std::any::Any;
 
 use crate::{script, Direction, Face, Script, Tag};
 use crate::buffer::Buffer;
@@ -28,8 +28,7 @@ pub const MAX_COMBINING_MARKS: usize = 32;
 pub const DEFAULT_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: None,
     override_features: None,
-    data_create: None,
-    data_destroy: None,
+    create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::Auto),
@@ -47,8 +46,7 @@ pub const DEFAULT_SHAPER: ComplexShaper = ComplexShaper {
 pub const DUMBER_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: None,
     override_features: None,
-    data_create: None,
-    data_destroy: None,
+    create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::Auto),
@@ -73,12 +71,7 @@ pub struct ComplexShaper {
 
     /// Called at the end of `shape_plan()`.
     /// Whatever shapers return will be accessible through plan.data later.
-    pub data_create: Option<fn(&ShapePlan) -> *mut c_void>,
-
-    /// Called when the shape plan is being destroyed.
-    /// plan.data is passed here for destruction.
-    /// If nullptr is returned, means a plan failure.
-    pub data_destroy: Option<fn(*mut c_void)>,
+    pub create_data: Option<fn(&ShapePlan) -> Box<dyn Any>>,
 
     /// Called during `shape()`.
     /// Shapers can use to modify text before shaping starts.

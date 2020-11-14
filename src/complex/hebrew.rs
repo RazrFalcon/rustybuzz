@@ -5,8 +5,7 @@ use super::*;
 pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: None,
     override_features: None,
-    data_create: None,
-    data_destroy: None,
+    create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::Auto),
