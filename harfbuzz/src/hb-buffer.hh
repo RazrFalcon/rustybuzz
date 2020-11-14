@@ -32,30 +32,8 @@
 
 #include "hb.hh"
 
-#ifndef RB_BUFFER_MAX_LEN_FACTOR
-#define RB_BUFFER_MAX_LEN_FACTOR 32
-#endif
-#ifndef RB_BUFFER_MAX_LEN_MIN
-#define RB_BUFFER_MAX_LEN_MIN 8192
-#endif
-#ifndef RB_BUFFER_MAX_LEN_DEFAULT
-#define RB_BUFFER_MAX_LEN_DEFAULT 0x3FFFFFFF /* Shaping more than a billion chars? Let us know! */
-#endif
-
-#ifndef RB_BUFFER_MAX_OPS_FACTOR
-#define RB_BUFFER_MAX_OPS_FACTOR 64
-#endif
-#ifndef RB_BUFFER_MAX_OPS_MIN
-#define RB_BUFFER_MAX_OPS_MIN 1024
-#endif
-#ifndef RB_BUFFER_MAX_OPS_DEFAULT
-#define RB_BUFFER_MAX_OPS_DEFAULT 0x1FFFFFFF /* Shaping more than a billion operations? Let us know! */
-#endif
-
 static_assert((sizeof(rb_glyph_info_t) == 20), "");
 static_assert((sizeof(rb_glyph_info_t) == sizeof(rb_glyph_position_t)), "");
-
-RB_MARK_AS_FLAG_T(rb_buffer_flags_t);
 
 enum rb_buffer_scratch_flags_t {
     RB_BUFFER_SCRATCH_FLAG_DEFAULT = 0x00000000u,

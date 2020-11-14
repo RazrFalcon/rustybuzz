@@ -100,7 +100,7 @@ impl GlyphPosition {
 pub struct GlyphInfo {
     /// A selected glyph.
     pub codepoint: u32,
-    pub(crate) mask: ffi::rb_mask_t,
+    pub(crate) mask: Mask,
     /// An original cluster index.
     pub cluster: u32,
     pub(crate) var1: u32,
@@ -1782,23 +1782,8 @@ impl fmt::Debug for GlyphBuffer {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_buffer_get_cluster_level(buffer: *const ffi::rb_buffer_t) -> u32 {
-    Buffer::from_ptr(buffer).cluster_level as u32
-}
-
-#[no_mangle]
 pub extern "C" fn rb_buffer_get_direction(buffer: *const ffi::rb_buffer_t) -> ffi::rb_direction_t {
     Buffer::from_ptr(buffer).direction.to_raw()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_invisible_glyph(buffer: *const ffi::rb_buffer_t) -> ffi::rb_codepoint_t {
-    Buffer::from_ptr(buffer).invisible.map_or(0, |g| u32::from(g.0))
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_pre_allocate(buffer: *mut ffi::rb_buffer_t, size: u32) {
-    Buffer::from_ptr_mut(buffer).ensure(size as usize);
 }
 
 #[no_mangle]
@@ -1807,18 +1792,8 @@ pub extern "C" fn rb_buffer_reverse(buffer: *mut ffi::rb_buffer_t) {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_buffer_reverse_range(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
-    Buffer::from_ptr_mut(buffer).reverse_range(start as usize, end as usize);
-}
-
-#[no_mangle]
 pub extern "C" fn rb_buffer_get_length(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).len as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_set_length(buffer: *mut ffi::rb_buffer_t, len: u32) {
-    Buffer::from_ptr_mut(buffer).set_len(len as usize);
 }
 
 #[no_mangle]
@@ -1834,36 +1809,8 @@ pub extern "C" fn rb_buffer_get_cur_pos(buffer: *mut ffi::rb_buffer_t) -> *mut G
 }
 
 #[no_mangle]
-pub extern "C" fn rb_buffer_get_prev(buffer: *mut ffi::rb_buffer_t) -> *mut GlyphInfo {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    buffer.prev_mut() as *mut _ as *mut GlyphInfo
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_out_infos(buffer: *mut ffi::rb_buffer_t) -> *mut GlyphInfo {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    buffer.out_info_mut().as_mut_ptr() as *mut _
-}
-
-#[no_mangle]
 pub extern "C" fn rb_buffer_get_backtrack_len(buffer: *const ffi::rb_buffer_t) -> u32 {
     Buffer::from_ptr(buffer).backtrack_len() as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_lookahead_len(buffer: *const ffi::rb_buffer_t) -> u32 {
-    Buffer::from_ptr(buffer).lookahead_len() as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_next_serial(buffer: *mut ffi::rb_buffer_t) -> u32 {
-    Buffer::from_ptr_mut(buffer).next_serial() as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_set_cluster(info: *mut GlyphInfo, cluster: u32, mask: u32) {
-    let info = unsafe { &mut *(info as *mut GlyphInfo) };
-    Buffer::set_cluster(info, cluster, mask)
 }
 
 #[no_mangle]
@@ -1877,24 +1824,8 @@ pub extern "C" fn rb_buffer_swap_buffers(buffer: *mut ffi::rb_buffer_t) {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_buffer_remove_output(buffer: *mut ffi::rb_buffer_t) {
-    Buffer::from_ptr_mut(buffer).remove_output()
-}
-
-#[no_mangle]
 pub extern "C" fn rb_buffer_clear_output(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).clear_output()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_clear_positions(buffer: *mut ffi::rb_buffer_t) {
-    Buffer::from_ptr_mut(buffer).clear_positions()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_replace_glyphs(buffer: *mut ffi::rb_buffer_t, num_in: u32, num_out: u32, glyph_data: *const u32) {
-    let glyph_data = unsafe { std::slice::from_raw_parts(glyph_data as *const _, num_out as usize) };
-    Buffer::from_ptr_mut(buffer).replace_glyphs(num_in as usize, num_out as usize, glyph_data);
 }
 
 #[no_mangle]
@@ -1918,12 +1849,6 @@ pub extern "C" fn rb_buffer_unsafe_to_break_from_outbuffer(buffer: *mut ffi::rb_
 }
 
 #[no_mangle]
-pub extern "C" fn rb_buffer_unsafe_to_break_all(buffer: *mut ffi::rb_buffer_t) {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    buffer.unsafe_to_break_impl(0, buffer.len);
-}
-
-#[no_mangle]
 pub extern "C" fn rb_buffer_replace_glyph(buffer: *mut ffi::rb_buffer_t, glyph_index: ffi::rb_codepoint_t) {
     Buffer::from_ptr_mut(buffer).replace_glyph(glyph_index);
 }
@@ -1931,11 +1856,6 @@ pub extern "C" fn rb_buffer_replace_glyph(buffer: *mut ffi::rb_buffer_t, glyph_i
 #[no_mangle]
 pub extern "C" fn rb_buffer_output_glyph(buffer: *mut ffi::rb_buffer_t, glyph_index: ffi::rb_codepoint_t) {
     Buffer::from_ptr_mut(buffer).output_glyph(glyph_index)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_output_info(buffer: *mut ffi::rb_buffer_t, glyph_info: GlyphInfo) {
-    Buffer::from_ptr_mut(buffer).output_info(glyph_info);
 }
 
 #[no_mangle]
@@ -1949,23 +1869,8 @@ pub extern "C" fn rb_buffer_next_glyph(buffer: *mut ffi::rb_buffer_t) {
 }
 
 #[no_mangle]
-pub extern "C" fn rb_buffer_next_glyphs(buffer: *mut ffi::rb_buffer_t, n: u32) {
-    Buffer::from_ptr_mut(buffer).next_glyphs(n as usize);
-}
-
-#[no_mangle]
 pub extern "C" fn rb_buffer_skip_glyph(buffer: *mut ffi::rb_buffer_t) {
     Buffer::from_ptr_mut(buffer).skip_glyph();
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_reset_masks(buffer: *mut ffi::rb_buffer_t, mask: Mask) {
-    Buffer::from_ptr_mut(buffer).reset_masks(mask);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_set_masks(buffer: *mut ffi::rb_buffer_t, value: Mask, mask: Mask, start: u32, end: u32) {
-    Buffer::from_ptr_mut(buffer).set_masks(value, mask, start, end);
 }
 
 #[no_mangle]
@@ -1987,30 +1892,10 @@ pub extern "C" fn rb_buffer_get_glyph_infos(buffer: *mut ffi::rb_buffer_t) -> *m
 }
 
 #[no_mangle]
-pub extern "C" fn rb_buffer_get_pos(buffer: *mut ffi::rb_buffer_t) -> *mut GlyphPosition{
-    Buffer::from_ptr_mut(buffer).pos.as_mut_ptr() as *mut _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_max_ops(buffer: *const ffi::rb_buffer_t) -> i32 {
-    Buffer::from_ptr(buffer).max_ops
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_set_max_ops(buffer: *mut ffi::rb_buffer_t, ops: i32) {
-    Buffer::from_ptr_mut(buffer).max_ops = ops;
-}
-
-#[no_mangle]
 pub extern "C" fn rb_buffer_decrement_max_ops(buffer: *mut ffi::rb_buffer_t, count: i32) -> i32 {
     let buffer = Buffer::from_ptr_mut(buffer);
     buffer.max_ops -= count;
     buffer.max_ops
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_set_max_len(buffer: *mut ffi::rb_buffer_t, len: u32) {
-    Buffer::from_ptr_mut(buffer).max_len = len as usize;
 }
 
 #[no_mangle]
@@ -2029,26 +1914,6 @@ pub extern "C" fn rb_buffer_get_out_len(buffer: *const ffi::rb_buffer_t) -> u32 
 }
 
 #[no_mangle]
-pub extern "C" fn rb_buffer_set_out_len(buffer: *mut ffi::rb_buffer_t, idx: u32) {
-    Buffer::from_ptr_mut(buffer).out_len = idx as usize;
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_has_separate_output(buffer: *const ffi::rb_buffer_t) -> bool {
-    Buffer::from_ptr(buffer).have_separate_output
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_context(buffer: *const ffi::rb_buffer_t, idx1: u32, idx2: u32) -> ffi::rb_codepoint_t {
-    Buffer::from_ptr(buffer).context[idx1 as usize][idx2 as usize] as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_context_len(buffer: *const ffi::rb_buffer_t, idx: u32) -> u32 {
-    Buffer::from_ptr(buffer).context_len[idx as usize] as u32
-}
-
-#[no_mangle]
 pub extern "C" fn rb_buffer_get_glyph_positions(buffer: *mut ffi::rb_buffer_t) -> *mut GlyphPosition {
     let buffer = Buffer::from_ptr_mut(buffer);
     if !buffer.have_positions {
@@ -2056,36 +1921,6 @@ pub extern "C" fn rb_buffer_get_glyph_positions(buffer: *mut ffi::rb_buffer_t) -
     }
 
     buffer.pos.as_mut_ptr() as *mut _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_script(buffer: *const ffi::rb_buffer_t) -> ffi::rb_script_t {
-    Buffer::from_ptr(buffer).script.map(|s| (s.0).0).unwrap_or(0)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_flags(buffer: *const ffi::rb_buffer_t) -> u32 {
-    Buffer::from_ptr(buffer).flags.bits
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_set_direction(buffer: *mut ffi::rb_buffer_t, direction: ffi::rb_direction_t) {
-    Buffer::from_ptr_mut(buffer).direction = Direction::from_raw(direction);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_segment_properties(
-    buffer: *const ffi::rb_buffer_t,
-    props: *mut ffi::rb_segment_properties_t,
-) {
-    let buffer = Buffer::from_ptr(buffer);
-    unsafe {
-        *props = ffi::rb_segment_properties_t {
-            direction: buffer.direction.to_raw(),
-            script: buffer.script.map(|s| (s.0).0).unwrap_or(0),
-            language: buffer.language.as_ref().map(|s| s.0.as_ptr()).unwrap_or(std::ptr::null()),
-        };
-    }
 }
 
 #[no_mangle]
@@ -2101,41 +1936,6 @@ pub extern "C" fn rb_buffer_set_scratch_flags(buffer: *mut ffi::rb_buffer_t, fla
 #[no_mangle]
 pub extern "C" fn rb_buffer_is_allocation_successful(buffer: *const ffi::rb_buffer_t) -> bool {
     Buffer::from_ptr(buffer).successful
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_sort(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32,
-                                 cmp: extern "C" fn(*const GlyphInfo, *const GlyphInfo) -> i32
-) {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    let start = start as usize;
-    let end = end as usize;
-
-    assert!(!buffer.have_positions);
-
-    for i in start+1..end {
-        let mut j = i;
-        while j > start && cmp(&GlyphInfo::from(buffer.info[j - 1]) as *const _,
-                               &GlyphInfo::from(buffer.info[i]) as *const _) > 0 {
-            j -= 1;
-        }
-
-        if i == j {
-            continue;
-        }
-
-        // Move item i to occupy place for item j, shift what's in between.
-        buffer.merge_clusters(j, i + 1);
-
-        {
-            let t = buffer.info[i];
-            for idx in (0..i-j).rev() {
-                buffer.info[idx + j + 1] = buffer.info[idx + j];
-            }
-
-            buffer.info[j] = t;
-        }
-    }
 }
 
 #[no_mangle]

@@ -2,7 +2,6 @@ use std::ops::{Bound, RangeBounds};
 
 use ttf_parser::Tag;
 
-use crate::ffi;
 use crate::text_parser::TextParser;
 
 
@@ -23,24 +22,13 @@ pub enum Direction {
 
 impl Direction {
     #[inline]
-    pub(crate) fn to_raw(self) -> ffi::rb_direction_t {
+    pub(crate) fn to_raw(self) -> crate::ffi::rb_direction_t {
         match self {
-            Direction::Invalid => ffi::RB_DIRECTION_INVALID,
-            Direction::LeftToRight => ffi::RB_DIRECTION_LTR,
-            Direction::RightToLeft => ffi::RB_DIRECTION_RTL,
-            Direction::TopToBottom => ffi::RB_DIRECTION_TTB,
-            Direction::BottomToTop => ffi::RB_DIRECTION_BTT,
-        }
-    }
-
-    #[inline]
-    pub(crate) fn from_raw(dir: ffi::rb_direction_t) -> Self {
-        match dir {
-            ffi::RB_DIRECTION_LTR => Direction::LeftToRight,
-            ffi::RB_DIRECTION_RTL => Direction::RightToLeft,
-            ffi::RB_DIRECTION_TTB => Direction::TopToBottom,
-            ffi::RB_DIRECTION_BTT => Direction::BottomToTop,
-            _ => Direction::Invalid,
+            Direction::Invalid => crate::ffi::RB_DIRECTION_INVALID,
+            Direction::LeftToRight => crate::ffi::RB_DIRECTION_LTR,
+            Direction::RightToLeft => crate::ffi::RB_DIRECTION_RTL,
+            Direction::TopToBottom => crate::ffi::RB_DIRECTION_TTB,
+            Direction::BottomToTop => crate::ffi::RB_DIRECTION_BTT,
         }
     }
 
