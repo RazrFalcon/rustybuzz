@@ -414,73 +414,24 @@ fn rotate_chars(ctx: &mut ShapeContext) {
         let rtlm_mask = ctx.plan.rtlm_mask;
 
         for info in &mut ctx.buffer.info[..len] {
-            let c = info.as_char().mirrored().map_or(0, u32::from);
-            if c != info.codepoint && ctx.face.has_glyph(c) {
-                info.codepoint = c;
-            } else {
-                info.mask |= rtlm_mask;
+            if let Some(c) = info.as_char().mirrored().map(u32::from) {
+                if ctx.face.has_glyph(c) {
+                    info.codepoint = c;
+                    continue;
+                }
             }
+            info.mask |= rtlm_mask;
         }
     }
 
     if ctx.target_direction.is_vertical() && !ctx.plan.has_vert {
         for info in &mut ctx.buffer.info[..len] {
-            let c = vert_char_for(info.codepoint);
-            if c != info.codepoint && ctx.face.has_glyph(c) {
-                info.codepoint = c;
+            if let Some(c) = info.as_char().vertical().map(u32::from) {
+                if ctx.face.has_glyph(c) {
+                    info.codepoint = c;
+                }
             }
         }
-    }
-}
-
-fn vert_char_for(u: u32) -> u32 {
-    match u >> 8 {
-        0x20 => match u {
-            0x2013 => 0xfe32, // EN DASH
-            0x2014 => 0xfe31, // EM DASH
-            0x2025 => 0xfe30, // TWO DOT LEADER
-            0x2026 => 0xfe19, // HORIZONTAL ELLIPSIS
-            _ => u,
-        },
-        0x30 => match u {
-            0x3001 => 0xfe11, // IDEOGRAPHIC COMMA
-            0x3002 => 0xfe12, // IDEOGRAPHIC FULL STOP
-            0x3008 => 0xfe3f, // LEFT ANGLE BRACKET
-            0x3009 => 0xfe40, // RIGHT ANGLE BRACKET
-            0x300a => 0xfe3d, // LEFT DOUBLE ANGLE BRACKET
-            0x300b => 0xfe3e, // RIGHT DOUBLE ANGLE BRACKET
-            0x300c => 0xfe41, // LEFT CORNER BRACKET
-            0x300d => 0xfe42, // RIGHT CORNER BRACKET
-            0x300e => 0xfe43, // LEFT WHITE CORNER BRACKET
-            0x300f => 0xfe44, // RIGHT WHITE CORNER BRACKET
-            0x3010 => 0xfe3b, // LEFT BLACK LENTICULAR BRACKET
-            0x3011 => 0xfe3c, // RIGHT BLACK LENTICULAR BRACKET
-            0x3014 => 0xfe39, // LEFT TORTOISE SHELL BRACKET
-            0x3015 => 0xfe3a, // RIGHT TORTOISE SHELL BRACKET
-            0x3016 => 0xfe17, // LEFT WHITE LENTICULAR BRACKET
-            0x3017 => 0xfe18, // RIGHT WHITE LENTICULAR BRACKET
-            _ => u,
-        },
-        0xfe => match u {
-            0xfe4f => 0xfe34, // WAVY LOW LINE
-            _ => u,
-        },
-        0xff => match u {
-            0xff01 => 0xfe15, // FULLWIDTH EXCLAMATION MARK
-            0xff08 => 0xfe35, // FULLWIDTH LEFT PARENTHESIS
-            0xff09 => 0xfe36, // FULLWIDTH RIGHT PARENTHESIS
-            0xff0c => 0xfe10, // FULLWIDTH COMMA
-            0xff1a => 0xfe13, // FULLWIDTH COLON
-            0xff1b => 0xfe14, // FULLWIDTH SEMICOLON
-            0xff1f => 0xfe16, // FULLWIDTH QUESTION MARK
-            0xff3b => 0xfe47, // FULLWIDTH LEFT SQUARE BRACKET
-            0xff3d => 0xfe48, // FULLWIDTH RIGHT SQUARE BRACKET
-            0xff3f => 0xfe33, // FULLWIDTH LOW LINE
-            0xff5b => 0xfe37, // FULLWIDTH LEFT CURLY BRACKET
-            0xff5d => 0xfe38, // FULLWIDTH RIGHT CURLY BRACKET
-            _ => u,
-        }
-        _ => u,
     }
 }
 
