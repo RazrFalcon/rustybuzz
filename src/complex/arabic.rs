@@ -1,7 +1,3 @@
-use std::convert::TryFrom;
-
-use ttf_parser::GlyphId;
-
 use crate::{ffi, script, Tag, Face, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::{feature, FeatureFlags};
@@ -325,8 +321,7 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
             let end = i;
             while i != 0 && buffer.info[i - 1].arabic_shaping_action().is_stch() {
                 i -= 1;
-                let glyph = GlyphId(u16::try_from(buffer.info[i].codepoint).unwrap());
-                let width = face.glyph_h_advance(glyph) as i32;
+                let width = face.glyph_h_advance(buffer.info[i].as_glyph()) as i32;
 
                 if buffer.info[i].arabic_shaping_action() == Action::StretchingFixed {
                     w_fixed += width;
@@ -374,8 +369,7 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
                 buffer.unsafe_to_break(context, end);
                 let mut x_offset = 0;
                 for k in (start+1..=end).rev() {
-                    let glyph = GlyphId(u16::try_from(buffer.info[k - 1].codepoint).unwrap());
-                    let width = face.glyph_h_advance(glyph) as i32;
+                    let width = face.glyph_h_advance(buffer.info[k - 1].as_glyph()) as i32;
 
                     let mut repeat = 1;
                     if buffer.info[k - 1].arabic_shaping_action() == Action::StretchingRepeating {

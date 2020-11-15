@@ -8,7 +8,6 @@ pub type rb_bool_t = i32;
 pub type rb_codepoint_t = u32;
 pub type rb_mask_t = u32;
 pub type rb_position_t = i32;
-pub type rb_script_t = u32;
 
 pub const RB_DIRECTION_INVALID: rb_direction_t = 0;
 pub const RB_DIRECTION_LTR: rb_direction_t = 4;
@@ -50,14 +49,6 @@ pub const RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR: u32          = 29;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct rb_segment_properties_t {
-    pub direction: rb_direction_t,
-    pub script: rb_script_t,
-    pub language: *const c_char,
-}
-
-#[repr(C)]
-#[derive(Clone, Copy)]
 pub union rb_var_int_t {
     pub var_u32: u32,
     pub var_i32: i32,
@@ -66,15 +57,6 @@ pub union rb_var_int_t {
     pub var_u8: [u8; 4usize],
     pub var_i8: [i8; 4usize],
     _bindgen_union_align: u32,
-}
-
-#[repr(C)]
-#[derive(Clone, Copy, Default)]
-pub struct rb_glyph_extents_t {
-    pub x_bearing: rb_position_t,
-    pub y_bearing: rb_position_t,
-    pub width: rb_position_t,
-    pub height: rb_position_t,
 }
 
 #[repr(C)]
@@ -164,11 +146,7 @@ extern "C" {
 
     pub fn rb_aat_map_builder_fini(builder: *mut rb_aat_map_builder_t);
 
-    pub fn rb_aat_map_builder_add_feature(
-        builder: *mut rb_aat_map_builder_t,
-        tag: Tag,
-        value: u32,
-    );
+    pub fn rb_aat_map_builder_add_feature(builder: *mut rb_aat_map_builder_t, tag: Tag, value: u32);
 
     pub fn rb_aat_map_builder_compile(builder: *mut rb_aat_map_builder_t, map: *mut rb_aat_map_t);
 

@@ -312,6 +312,7 @@ pub trait CharExt {
     fn is_emoji_extended_pictographic(self) -> bool;
     fn is_default_ignorable(self) -> bool;
     fn is_variation_selector(self) -> bool;
+    fn vertical(self) -> Option<char>;
 }
 
 impl CharExt for char {
@@ -699,6 +700,57 @@ impl CharExt for char {
         let ch = u32::from(self);
         (0x0FE00..=0x0FE0F).contains(&ch) || // VARIATION SELECTOR - 1..16
         (0xE0100..=0xE01EF).contains(&ch)    // VARIATION SELECTOR - 17..256
+    }
+
+    fn vertical(self) -> Option<char> {
+        Some(match u32::from(self) >> 8 {
+            0x20 => match self {
+                '\u{2013}' => '\u{fe32}', // EN DASH
+                '\u{2014}' => '\u{fe31}', // EM DASH
+                '\u{2025}' => '\u{fe30}', // TWO DOT LEADER
+                '\u{2026}' => '\u{fe19}', // HORIZONTAL ELLIPSIS
+                _ => return None,
+            },
+            0x30 => match self {
+                '\u{3001}' => '\u{fe11}', // IDEOGRAPHIC COMMA
+                '\u{3002}' => '\u{fe12}', // IDEOGRAPHIC FULL STOP
+                '\u{3008}' => '\u{fe3f}', // LEFT ANGLE BRACKET
+                '\u{3009}' => '\u{fe40}', // RIGHT ANGLE BRACKET
+                '\u{300a}' => '\u{fe3d}', // LEFT DOUBLE ANGLE BRACKET
+                '\u{300b}' => '\u{fe3e}', // RIGHT DOUBLE ANGLE BRACKET
+                '\u{300c}' => '\u{fe41}', // LEFT CORNER BRACKET
+                '\u{300d}' => '\u{fe42}', // RIGHT CORNER BRACKET
+                '\u{300e}' => '\u{fe43}', // LEFT WHITE CORNER BRACKET
+                '\u{300f}' => '\u{fe44}', // RIGHT WHITE CORNER BRACKET
+                '\u{3010}' => '\u{fe3b}', // LEFT BLACK LENTICULAR BRACKET
+                '\u{3011}' => '\u{fe3c}', // RIGHT BLACK LENTICULAR BRACKET
+                '\u{3014}' => '\u{fe39}', // LEFT TORTOISE SHELL BRACKET
+                '\u{3015}' => '\u{fe3a}', // RIGHT TORTOISE SHELL BRACKET
+                '\u{3016}' => '\u{fe17}', // LEFT WHITE LENTICULAR BRACKET
+                '\u{3017}' => '\u{fe18}', // RIGHT WHITE LENTICULAR BRACKET
+                _ => return None,
+            },
+            0xfe => match self {
+                '\u{fe4f}' => '\u{fe34}', // WAVY LOW LINE
+                _ => return None,
+            },
+            0xff => match self {
+                '\u{ff01}' => '\u{fe15}', // FULLWIDTH EXCLAMATION MARK
+                '\u{ff08}' => '\u{fe35}', // FULLWIDTH LEFT PARENTHESIS
+                '\u{ff09}' => '\u{fe36}', // FULLWIDTH RIGHT PARENTHESIS
+                '\u{ff0c}' => '\u{fe10}', // FULLWIDTH COMMA
+                '\u{ff1a}' => '\u{fe13}', // FULLWIDTH COLON
+                '\u{ff1b}' => '\u{fe14}', // FULLWIDTH SEMICOLON
+                '\u{ff1f}' => '\u{fe16}', // FULLWIDTH QUESTION MARK
+                '\u{ff3b}' => '\u{fe47}', // FULLWIDTH LEFT SQUARE BRACKET
+                '\u{ff3d}' => '\u{fe48}', // FULLWIDTH RIGHT SQUARE BRACKET
+                '\u{ff3f}' => '\u{fe33}', // FULLWIDTH LOW LINE
+                '\u{ff5b}' => '\u{fe37}', // FULLWIDTH LEFT CURLY BRACKET
+                '\u{ff5d}' => '\u{fe38}', // FULLWIDTH RIGHT CURLY BRACKET
+                _ => return None,
+            }
+            _ => return None,
+        })
     }
 }
 

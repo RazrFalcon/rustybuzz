@@ -97,7 +97,7 @@ impl<'a> ShapePlanner<'a> {
         };
 
         // https://github.com/harfbuzz/harfbuzz/issues/2124
-        let apply_morx = unsafe { ffi::rb_aat_layout_has_substitution(face.as_ptr()) != 0 }
+        let apply_morx = aat::has_substitution(face)
             && (direction.is_horizontal() || !face.gsub.is_some());
 
         // https://github.com/harfbuzz/harfbuzz/issues/1528
@@ -248,7 +248,7 @@ impl<'a> ShapePlanner<'a> {
         let mut apply_kern = false;
 
         // Decide who does positioning. GPOS, kerx, kern, or fallback.
-        if unsafe { ffi::rb_aat_layout_has_positioning(self.face.as_ptr()) != 0 } {
+        if aat::has_positioning(self.face) {
             apply_kerx = true;
         } else if !apply_morx && !disable_gpos && self.face.gpos.is_some() {
             apply_gpos = true;
@@ -256,9 +256,9 @@ impl<'a> ShapePlanner<'a> {
 
         if !apply_kerx && (!has_gpos_kern || !apply_gpos) {
             // Apparently Apple applies kerx if GPOS kern was not applied.
-            if unsafe { ffi::rb_aat_layout_has_positioning(self.face.as_ptr()) != 0 } {
+            if aat::has_positioning(self.face) {
                 apply_kerx = true;
-            } else if unsafe { ffi::rb_ot_layout_has_kerning(self.face.as_ptr()) != 0 } {
+            } else if ot::has_kerning(self.face) {
                 apply_kern = true;
             }
         }
@@ -266,23 +266,21 @@ impl<'a> ShapePlanner<'a> {
         let zero_marks =
             self.script_zero_marks
             && !apply_kerx
-            && (!apply_kern || unsafe { ffi::rb_ot_layout_has_machine_kerning(self.face.as_ptr()) == 0 });
+            && (!apply_kern || !ot::has_machine_kerning(self.face));
 
         let has_gpos_mark = ot_map.one_mask(feature::MARK_POSITIONING) != 0;
 
         let adjust_mark_positioning_when_zeroing =
             !apply_gpos
             && !apply_kerx
-            && (!apply_kern || unsafe { ffi::rb_ot_layout_has_cross_kerning(self.face.as_ptr()) == 0 });
+            && (!apply_kern || !ot::has_cross_kerning(self.face));
 
         let fallback_mark_positioning =
             adjust_mark_positioning_when_zeroing
             && self.script_fallback_mark_positioning;
 
         // Currently we always apply trak.
-        let apply_trak =
-            requested_tracking
-            && unsafe { ffi::rb_aat_layout_has_tracking(self.face.as_ptr()) != 0 };
+        let apply_trak = requested_tracking && aat::has_tracking(self.face);
 
         let mut plan = ShapePlan {
             direction: self.direction,

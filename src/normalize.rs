@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use crate::Face;
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphInfo};
 use crate::complex::MAX_COMBINING_MARKS;
@@ -230,8 +228,8 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 (starter == buffer.out_len - 1
                     || buffer.prev().modified_combining_class() < cur.modified_combining_class())
             {
-                let a = char::try_from(buffer.out_info()[starter].codepoint).unwrap();
-                let b = char::try_from(cur.codepoint).unwrap();
+                let a = buffer.out_info()[starter].as_char();
+                let b = cur.as_char();
                 if let Some(composed) = (ctx.compose)(&ctx, a, b) {
                     if let Some(glyph_id) = face.glyph_index(u32::from(composed)) {
                         // Copy to out-buffer.

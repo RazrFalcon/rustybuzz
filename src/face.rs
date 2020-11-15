@@ -3,12 +3,12 @@ use std::ptr::NonNull;
 
 use ttf_parser::{Tag, GlyphClass, GlyphId};
 
+use crate::{ffi, Variation};
+use crate::ot::TableIndex;
 use crate::buffer::GlyphPropsFlags;
 use crate::tables::gpos::PosTable;
 use crate::tables::gsub::SubstTable;
 use crate::tables::gsubgpos::SubstPosTable;
-use crate::ot::TableIndex;
-use crate::{ffi, Variation};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -89,32 +89,21 @@ impl<'a> Face<'a> {
     /// Data will be referenced, not owned.
     pub fn from_slice(data: &'a [u8], face_index: u32) -> Option<Self> {
         let ttfp_face = ttf_parser::Face::from_slice(data, face_index).ok()?;
-        let upem = ttfp_face.units_per_em()? as i32;
-        let prefered_cmap_encoding_subtable = find_best_cmap_subtable(&ttfp_face);
-        let gsub = ttfp_face.table_data(Tag::from_bytes(b"GSUB")).and_then(SubstTable::parse);
-        let gpos = ttfp_face.table_data(Tag::from_bytes(b"GPOS")).and_then(PosTable::parse);
-        let kern = load_sanitized_table(&ttfp_face, Tag::from_bytes(b"kern"));
-        let morx = load_sanitized_table(&ttfp_face, Tag::from_bytes(b"morx"));
-        let mort = load_sanitized_table(&ttfp_face, Tag::from_bytes(b"mort"));
-        let kerx = load_sanitized_table(&ttfp_face, Tag::from_bytes(b"kerx"));
-        let ankr = load_sanitized_table(&ttfp_face, Tag::from_bytes(b"ankr"));
-        let trak = load_sanitized_table(&ttfp_face, Tag::from_bytes(b"trak"));
-        let feat = load_sanitized_table(&ttfp_face, Tag::from_bytes(b"feat"));
         Some(Face {
-            ttfp_face,
-            units_per_em: upem,
+            units_per_em: ttfp_face.units_per_em()? as i32,
             pixels_per_em: None,
             points_per_em: None,
-            prefered_cmap_encoding_subtable,
-            gsub,
-            gpos,
-            kern,
-            morx,
-            mort,
-            kerx,
-            ankr,
-            trak,
-            feat,
+            prefered_cmap_encoding_subtable: find_best_cmap_subtable(&ttfp_face),
+            gsub: ttfp_face.table_data(Tag::from_bytes(b"GSUB")).and_then(SubstTable::parse),
+            gpos: ttfp_face.table_data(Tag::from_bytes(b"GPOS")).and_then(PosTable::parse),
+            kern: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"kern")),
+            morx: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"morx")),
+            mort: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"mort")),
+            kerx: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"kerx")),
+            ankr: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"ankr")),
+            trak: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"trak")),
+            feat: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"feat")),
+            ttfp_face,
         })
     }
 
@@ -272,7 +261,7 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub(crate) fn glyph_extents(&self, glyph: GlyphId) -> Option<ffi::rb_glyph_extents_t> {
+    pub(crate) fn glyph_extents(&self, glyph: GlyphId) -> Option<GlyphExtents> {
         let pixels_per_em = match self.pixels_per_em {
             Some(ppem) => ppem.0,
             None => std::u16::MAX,
@@ -282,7 +271,7 @@ impl<'a> Face<'a> {
             // HarfBuzz also supports only PNG.
             if img.format == ttf_parser::RasterImageFormat::PNG {
                 let scale = self.units_per_em as f32 / img.pixels_per_em as f32;
-                return Some(ffi::rb_glyph_extents_t {
+                return Some(GlyphExtents {
                     x_bearing: (f32::from(img.x) * scale).round() as i32,
                     y_bearing: ((f32::from(img.y) + f32::from(img.height)) * scale).round() as i32,
                     width: (f32::from(img.width) * scale).round() as i32,
@@ -292,7 +281,7 @@ impl<'a> Face<'a> {
         }
 
         let bbox = self.ttfp_face.glyph_bounding_box(glyph)?;
-        Some(ffi::rb_glyph_extents_t {
+        Some(GlyphExtents {
             x_bearing: i32::from(bbox.x_min),
             y_bearing: i32::from(bbox.y_max),
             width: i32::from(bbox.width()),
@@ -339,6 +328,14 @@ impl<'a> Face<'a> {
             _ => panic!("invalid table"),
         }
     }
+}
+
+#[derive(Clone, Copy, Default)]
+pub struct GlyphExtents {
+    pub x_bearing: i32,
+    pub y_bearing: i32,
+    pub width: i32,
+    pub height: i32,
 }
 
 fn load_sanitized_table<'a>(face: &ttf_parser::Face<'a>, tag: Tag) -> Blob<'a> {

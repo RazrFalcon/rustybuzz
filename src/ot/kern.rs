@@ -8,6 +8,18 @@ use super::TableIndex;
 use super::apply::ApplyContext;
 use super::matching::SkippyIter;
 
+pub fn has_kerning(face: &Face) -> bool {
+    unsafe { ffi::rb_ot_layout_has_kerning(face.as_ptr()) != 0 }
+}
+
+pub fn has_machine_kerning(face: &Face) -> bool {
+    unsafe { ffi::rb_ot_layout_has_machine_kerning(face.as_ptr()) != 0 }
+}
+
+pub fn has_cross_kerning(face: &Face) -> bool {
+    unsafe { ffi::rb_ot_layout_has_cross_kerning(face.as_ptr()) != 0 }
+}
+
 pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     unsafe { ffi::rb_ot_layout_kern(plan.as_ptr(), face.as_ptr(), buffer.as_ptr()); }
 }
