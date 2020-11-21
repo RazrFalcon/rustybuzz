@@ -32,7 +32,6 @@
 #include "hb-blob.hh"
 #include "hb-machinery.hh"
 
-#include "hb-ot-kern-table.hh"
 #include "hb-aat-layout-ankr-table.hh"
 #include "hb-aat-layout-feat-table.hh"
 #include "hb-aat-layout-kerx-table.hh"
@@ -55,9 +54,6 @@ rb_blob_t *rb_face_sanitize_table(rb_blob_t *blob, rb_tag_t tag, unsigned int gl
     rb_sanitize_context_t c;
     c.set_num_glyphs(glyph_count);
     switch (tag) {
-        case RB_OT_TAG_kern:
-            return c.sanitize_blob<OT::kern>(blob);
-
         case RB_AAT_TAG_morx:
             return c.sanitize_blob<AAT::morx>(blob);
 
@@ -79,11 +75,6 @@ rb_blob_t *rb_face_sanitize_table(rb_blob_t *blob, rb_tag_t tag, unsigned int gl
         default:
             assert(false);
     }
-}
-
-const OT::kern *rb_face_get_kern_table(rb_face_t *face)
-{
-    return rb_face_get_table_blob(face, RB_OT_TAG_kern)->as<OT::kern>();
 }
 
 const AAT::morx *rb_face_get_morx_table(rb_face_t *face)

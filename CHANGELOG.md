@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Ported
+- Tables: `GSUB`, `GPOS`, `GDEF`, `kern`.
 - Main shaping logic.
 - `hb_shape_plan_t` and `hb_ot_shape_plan_t`
 - `hb_ot_map_t`
@@ -13,11 +14,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - OpenType Layout (GSUB, GPOS).
 - Normalization.
 - Fallback shaper.
+- Kerning.
 
 ### Changed
 - Rename `Font` to `Face`.
 
-Thanks to [laurmaedje](https://github.com/laurmaedje).
+Most changes in this release were made by [laurmaedje](https://github.com/laurmaedje).
 
 ## [0.2.0] - 2020-07-25
 ### Ported

@@ -24,7 +24,6 @@ fn main() {
     build.file("harfbuzz/src/hb-blob.cc");
     build.file("harfbuzz/src/hb-common.cc");
     build.file("harfbuzz/src/hb-face.cc");
-    build.file("harfbuzz/src/hb-kern.cc");
     build.file("harfbuzz/src/hb-static.cc");
     build.include("harfbuzz/src");
     build.compile("librustybuzz.a");

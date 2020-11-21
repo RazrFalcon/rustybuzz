@@ -604,7 +604,7 @@ impl<'a> MarkArray<'a> {
 }
 
 #[derive(Clone, Copy, Debug)]
-enum AttachType {
+pub enum AttachType {
     Mark = 1,
     Cursive = 2,
 }

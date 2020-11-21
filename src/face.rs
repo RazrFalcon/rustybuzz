@@ -9,6 +9,7 @@ use crate::buffer::GlyphPropsFlags;
 use crate::tables::gpos::PosTable;
 use crate::tables::gsub::SubstTable;
 use crate::tables::gsubgpos::SubstPosTable;
+use crate::tables::kern;
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -74,7 +75,7 @@ pub struct Face<'a> {
     prefered_cmap_encoding_subtable: Option<u16>,
     pub(crate) gsub: Option<SubstTable<'a>>,
     pub(crate) gpos: Option<PosTable<'a>>,
-    kern: Blob<'a>,
+    pub(crate) kern: Option<kern::Subtables<'a>>,
     morx: Blob<'a>,
     mort: Blob<'a>,
     kerx: Blob<'a>,
@@ -96,7 +97,7 @@ impl<'a> Face<'a> {
             prefered_cmap_encoding_subtable: find_best_cmap_subtable(&ttfp_face),
             gsub: ttfp_face.table_data(Tag::from_bytes(b"GSUB")).and_then(SubstTable::parse),
             gpos: ttfp_face.table_data(Tag::from_bytes(b"GPOS")).and_then(PosTable::parse),
-            kern: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"kern")),
+            kern: ttfp_face.table_data(Tag::from_bytes(b"kern")).and_then(kern::parse),
             morx: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"morx")),
             mort: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"mort")),
             kerx: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"kerx")),
@@ -318,7 +319,6 @@ impl<'a> Face<'a> {
 
     fn get_table_blob(&self, tag: Tag) -> &Blob<'a> {
         match &tag.to_bytes() {
-            b"kern" => &self.kern,
             b"morx" => &self.morx,
             b"mort" => &self.mort,
             b"kerx" => &self.kerx,

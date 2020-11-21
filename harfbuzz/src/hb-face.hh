@@ -31,7 +31,6 @@
 
 #include "hb.hh"
 
-namespace OT { struct kern; }
 namespace AAT { struct morx; }
 namespace AAT { struct mort; }
 namespace AAT { struct kerx; }
@@ -39,7 +38,6 @@ namespace AAT { struct ankr; }
 namespace AAT { struct trak; }
 namespace AAT { struct feat; }
 
-const OT::kern  *rb_face_get_kern_table(rb_face_t *face);
 const AAT::morx *rb_face_get_morx_table(rb_face_t *face);
 const AAT::mort *rb_face_get_mort_table(rb_face_t *face);
 const AAT::kerx *rb_face_get_kerx_table(rb_face_t *face);

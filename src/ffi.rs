@@ -126,18 +126,6 @@ extern "C" {
 
     pub fn rb_face_sanitize_table(blob: *mut rb_blob_t, tag: Tag, glyph_count: u32) -> *mut rb_blob_t;
 
-    pub fn rb_ot_layout_has_kerning(face: *const rb_face_t) -> rb_bool_t;
-
-    pub fn rb_ot_layout_has_machine_kerning(face: *const rb_face_t) -> rb_bool_t;
-
-    pub fn rb_ot_layout_has_cross_kerning(face: *const rb_face_t) -> rb_bool_t;
-
-    pub fn rb_ot_layout_kern(
-        plan: *const rb_shape_plan_t,
-        face: *const rb_face_t,
-        buffer: *mut rb_buffer_t,
-    );
-
     pub fn rb_aat_map_init(map: *mut rb_aat_map_t);
 
     pub fn rb_aat_map_fini(map: *mut rb_aat_map_t);

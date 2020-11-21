@@ -38,7 +38,7 @@ Embedded `harfbuzz` version: 2.7.0
   - [ ] Make macos tests OS-independent (ultra hard).
   - [ ] `ankr` (easy)
   - [ ] `feat`
-  - [ ] `kern` (ttf-parser already supports it, but we have to integrate it with rustybuzz)
+  - [x] `kern`
   - [ ] `kerx`
   - [ ] `mort`
   - [ ] `morx`

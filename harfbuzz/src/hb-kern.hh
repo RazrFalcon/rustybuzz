@@ -32,14 +32,6 @@
 
 RB_BEGIN_DECLS
 
-RB_EXTERN rb_bool_t rb_ot_layout_has_kerning(rb_face_t *face);
-
-RB_EXTERN rb_bool_t rb_ot_layout_has_machine_kerning(rb_face_t *face);
-
-RB_EXTERN rb_bool_t rb_ot_layout_has_cross_kerning(rb_face_t *face);
-
-RB_EXTERN void rb_ot_layout_kern(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
-
 RB_EXTERN void rb_kern_machine_kern(
     rb_face_t *face,
     rb_buffer_t *buffer,

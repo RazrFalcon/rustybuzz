@@ -4,6 +4,7 @@ use ttf_parser::{GlyphId, Class};
 pub mod gpos;
 pub mod gsub;
 pub mod gsubgpos;
+pub mod kern;
 
 trait StreamExt<'a> {
     fn read_dyn_array(&mut self, count: usize, stride: usize) -> Option<DynArray<'a>>;
