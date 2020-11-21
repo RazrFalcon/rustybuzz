@@ -224,6 +224,7 @@ fn apply_state_machine_kerning(
             if entry.has_offset() ||
                 !(entry.new_state() == state_machine::state::START_OF_TEXT && !entry.has_advance())
             {
+                // println!("unsafe_to_break_from_outbuffer");
                 buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
         }
@@ -305,30 +306,31 @@ fn state_machine_transition(
             let glyph_mask = buffer.info[idx].mask;
             let pos = &mut buffer.pos[idx];
 
-            // The following flag is undocumented in the spec, but described
-            // in the 'kern' table example.
-            if v == -0x8000 {
-                pos.set_attach_type(0);
-                pos.set_attach_chain(0);
-                pos.x_offset = 0;
-                pos.y_offset = 0;
-            } else if buffer.direction.is_horizontal() {
+            if buffer.direction.is_horizontal() {
                 if has_cross_stream {
-                    if pos.attach_type() != 0 && pos.y_offset == 0 {
-                        pos.y_offset = v;
+                    // The following flag is undocumented in the spec, but described
+                    // in the 'kern' table example.
+                    if v == -0x8000 {
+                        pos.set_attach_type(0);
+                        pos.set_attach_chain(0);
+                        pos.y_offset = 0;
+                    } else if pos.attach_type() != 0 {
+                        pos.y_offset += v;
                         has_gpos_attachment = true;
                     }
                 } else if glyph_mask & kern_mask != 0 {
-                    if pos.x_offset == 0 {
-                        pos.x_advance += v;
-                        pos.x_offset += v;
-                    }
+                    pos.x_advance += v;
+                    pos.x_offset += v;
                 }
             } else {
                 if has_cross_stream {
                     // CoreText doesn't do crossStream kerning in vertical. We do.
-                    if pos.attach_type() != 0 && pos.x_offset == 0 {
-                        pos.x_offset = v;
+                    if v == -0x8000 {
+                        pos.set_attach_type(0);
+                        pos.set_attach_chain(0);
+                        pos.x_offset = 0;
+                    } else if pos.attach_type() != 0 {
+                        pos.x_offset += v;
                         has_gpos_attachment = true;
                     }
                 } else if glyph_mask & kern_mask != 0 {

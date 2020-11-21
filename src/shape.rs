@@ -178,7 +178,7 @@ fn position_complex(ctx: &mut ShapeContext) {
     // direction is backward we don't shift and it will end up
     // hanging over the next glyph after the final reordering.
     //
-    // Note: If fallback positinoing happens, we don't care about
+    // Note: If fallback positioning happens, we don't care about
     // this as it will be overriden.
     let adjust_offsets_when_zeroing = ctx.plan.adjust_mark_positioning_when_zeroing
         && ctx.buffer.direction.is_forward();

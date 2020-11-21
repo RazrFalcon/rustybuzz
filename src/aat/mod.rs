@@ -1,3 +1,4 @@
+mod extended_kerning;
 mod map;
 
 pub use map::*;
@@ -10,10 +11,6 @@ pub fn has_substitution(face: &Face) -> bool {
     unsafe { ffi::rb_aat_layout_has_substitution(face.as_ptr()) != 0 }
 }
 
-pub fn has_positioning(face: &Face) -> bool {
-    unsafe { ffi::rb_aat_layout_has_positioning(face.as_ptr()) != 0 }
-}
-
 pub fn has_tracking(face: &Face) -> bool {
     unsafe { ffi::rb_aat_layout_has_tracking(face.as_ptr()) != 0 }
 }
@@ -23,7 +20,7 @@ pub fn substitute(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 }
 
 pub fn position(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    unsafe { ffi::rb_aat_layout_position(plan.as_ptr(), face.as_ptr(), buffer.as_ptr()); }
+    extended_kerning::apply(plan, face, buffer);
 }
 
 pub fn track(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {

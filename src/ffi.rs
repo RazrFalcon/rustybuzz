@@ -140,8 +140,6 @@ extern "C" {
 
     pub fn rb_aat_layout_has_substitution(face: *const rb_face_t) -> rb_bool_t;
 
-    pub fn rb_aat_layout_has_positioning(face: *const rb_face_t) -> rb_bool_t;
-
     pub fn rb_aat_layout_has_tracking(face: *const rb_face_t) -> rb_bool_t;
 
     pub fn rb_aat_layout_substitute(
@@ -153,12 +151,6 @@ extern "C" {
     pub fn rb_aat_layout_zero_width_deleted_glyphs(buffer: *mut rb_buffer_t);
 
     pub fn rb_aat_layout_remove_deleted_glyphs(buffer: *mut rb_buffer_t);
-
-    pub fn rb_aat_layout_position(
-        plan: *const rb_shape_plan_t,
-        face: *const rb_face_t,
-        buffer: *mut rb_buffer_t,
-    );
 
     pub fn rb_aat_layout_track(
         plan: *const rb_shape_plan_t,

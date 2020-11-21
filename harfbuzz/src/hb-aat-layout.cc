@@ -28,9 +28,7 @@
 #include "hb.hh"
 
 #include "hb-aat-layout.hh"
-#include "hb-aat-layout-ankr-table.hh"
 #include "hb-aat-layout-feat-table.hh"
-#include "hb-aat-layout-kerx-table.hh"
 #include "hb-aat-layout-morx-table.hh"
 #include "hb-aat-layout-trak-table.hh"
 
@@ -47,7 +45,6 @@ AAT::rb_aat_apply_context_t::rb_aat_apply_context_t(const rb_shape_plan_t *plan_
     , face(face_)
     , buffer(buffer_)
     , sanitizer()
-    , ankr_table(&Null(AAT::ankr))
     , lookup_index(0)
 {
     sanitizer.init(blob);
@@ -59,11 +56,6 @@ AAT::rb_aat_apply_context_t::rb_aat_apply_context_t(const rb_shape_plan_t *plan_
 AAT::rb_aat_apply_context_t::~rb_aat_apply_context_t()
 {
     sanitizer.end_processing();
-}
-
-void AAT::rb_aat_apply_context_t::set_ankr_table(const AAT::ankr *ankr_table_)
-{
-    ankr_table = ankr_table_;
 }
 
 /**
@@ -457,28 +449,6 @@ static rb_bool_t is_deleted_glyph(const rb_glyph_info_t *info)
 void rb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer)
 {
     rb_buffer_delete_glyphs_inplace(buffer, is_deleted_glyph);
-}
-
-/*
- * rb_aat_layout_has_positioning:
- * @face:
- *
- * Returns:
- * Since: 2.3.0
- */
-rb_bool_t rb_aat_layout_has_positioning(rb_face_t *face)
-{
-    return rb_face_get_kerx_table(face)->has_data();
-}
-
-void rb_aat_layout_position(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
-{
-    rb_blob_t *kerx_blob = rb_face_get_table_blob(face, RB_AAT_TAG_kerx);
-    const AAT::kerx &kerx = *kerx_blob->as<AAT::kerx>();
-
-    AAT::rb_aat_apply_context_t c(plan, face, buffer, kerx_blob);
-    c.set_ankr_table(rb_face_get_ankr_table(face));
-    kerx.apply(&c);
 }
 
 /*

@@ -9,7 +9,7 @@ use crate::buffer::GlyphPropsFlags;
 use crate::tables::gpos::PosTable;
 use crate::tables::gsub::SubstTable;
 use crate::tables::gsubgpos::SubstPosTable;
-use crate::tables::kern;
+use crate::tables::{ankr, kern, kerx};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -76,10 +76,10 @@ pub struct Face<'a> {
     pub(crate) gsub: Option<SubstTable<'a>>,
     pub(crate) gpos: Option<PosTable<'a>>,
     pub(crate) kern: Option<kern::Subtables<'a>>,
+    pub(crate) kerx: Option<kerx::Subtables<'a>>,
+    pub(crate) ankr: Option<ankr::Table<'a>>,
     morx: Blob<'a>,
     mort: Blob<'a>,
-    kerx: Blob<'a>,
-    ankr: Blob<'a>,
     trak: Blob<'a>,
     feat: Blob<'a>,
 }
@@ -98,10 +98,12 @@ impl<'a> Face<'a> {
             gsub: ttfp_face.table_data(Tag::from_bytes(b"GSUB")).and_then(SubstTable::parse),
             gpos: ttfp_face.table_data(Tag::from_bytes(b"GPOS")).and_then(PosTable::parse),
             kern: ttfp_face.table_data(Tag::from_bytes(b"kern")).and_then(kern::parse),
+            kerx: ttfp_face.table_data(Tag::from_bytes(b"kerx"))
+                .and_then(|data| kerx::parse(data, ttfp_face.number_of_glyphs())),
+            ankr: ttfp_face.table_data(Tag::from_bytes(b"ankr"))
+                .and_then(|data| ankr::Table::parse(data, ttfp_face.number_of_glyphs())),
             morx: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"morx")),
             mort: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"mort")),
-            kerx: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"kerx")),
-            ankr: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"ankr")),
             trak: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"trak")),
             feat: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"feat")),
             ttfp_face,
@@ -321,8 +323,6 @@ impl<'a> Face<'a> {
         match &tag.to_bytes() {
             b"morx" => &self.morx,
             b"mort" => &self.mort,
-            b"kerx" => &self.kerx,
-            b"ankr" => &self.ankr,
             b"trak" => &self.trak,
             b"feat" => &self.feat,
             _ => panic!("invalid table"),

@@ -96,6 +96,9 @@ impl<'a> ShapePlanner<'a> {
             None => &DEFAULT_SHAPER,
         };
 
+        let script_zero_marks = shaper.zero_width_marks.is_some();
+        let script_fallback_mark_positioning = shaper.fallback_position;
+
         // https://github.com/harfbuzz/harfbuzz/issues/2124
         let apply_morx = aat::has_substitution(face)
             && (direction.is_horizontal() || !face.gsub.is_some());
@@ -112,8 +115,8 @@ impl<'a> ShapePlanner<'a> {
             ot_map,
             aat_map,
             apply_morx,
-            script_zero_marks: shaper.zero_width_marks.is_some(),
-            script_fallback_mark_positioning: shaper.fallback_position,
+            script_zero_marks,
+            script_fallback_mark_positioning,
             shaper,
         }
     }
@@ -248,7 +251,7 @@ impl<'a> ShapePlanner<'a> {
         let mut apply_kern = false;
 
         // Decide who does positioning. GPOS, kerx, kern, or fallback.
-        if aat::has_positioning(self.face) {
+        if self.face.kerx.is_some() {
             apply_kerx = true;
         } else if !apply_morx && !disable_gpos && self.face.gpos.is_some() {
             apply_gpos = true;
@@ -256,7 +259,7 @@ impl<'a> ShapePlanner<'a> {
 
         if !apply_kerx && (!has_gpos_kern || !apply_gpos) {
             // Apparently Apple applies kerx if GPOS kern was not applied.
-            if aat::has_positioning(self.face) {
+            if self.face.kerx.is_some() {
                 apply_kerx = true;
             } else if ot::has_kerning(self.face) {
                 apply_kern = true;

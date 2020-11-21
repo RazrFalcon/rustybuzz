@@ -758,8 +758,6 @@ public:
     unsigned int num_glyphs;
 };
 
-struct ankr;
-
 struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bool>
 {
     template <typename T> return_t dispatch(const T &obj)
@@ -775,7 +773,6 @@ struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bo
     rb_face_t *face;
     rb_buffer_t *buffer;
     rb_sanitize_context_t sanitizer;
-    const ankr *ankr_table;
 
     /* Unused. For debug tracing only. */
     unsigned int lookup_index;
@@ -786,8 +783,6 @@ struct rb_aat_apply_context_t : rb_dispatch_context_t<rb_aat_apply_context_t, bo
                                        rb_blob_t *blob = const_cast<rb_blob_t *>(&Null(rb_blob_t)));
 
     RB_INTERNAL ~rb_aat_apply_context_t();
-
-    RB_INTERNAL void set_ankr_table(const AAT::ankr *ankr_table_);
 
     void set_lookup_index(unsigned int i)
     {

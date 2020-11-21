@@ -453,14 +453,6 @@ RB_EXTERN void rb_aat_layout_zero_width_deleted_glyphs(rb_buffer_t *buffer);
 RB_EXTERN void rb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer);
 
 /*
- * kerx
- */
-
-RB_EXTERN rb_bool_t rb_aat_layout_has_positioning(rb_face_t *face);
-
-RB_EXTERN void rb_aat_layout_position(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
-
-/*
  * trak
  */
 

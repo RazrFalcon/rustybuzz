@@ -36,10 +36,10 @@ Embedded `harfbuzz` version: 2.7.0
 - [x] Port shaper logic (`hb-ot-shape.cc`).
 - [ ] Port Apple tables:
   - [ ] Make macos tests OS-independent (ultra hard).
-  - [ ] `ankr` (easy)
+  - [x] `ankr`
   - [ ] `feat`
   - [x] `kern`
-  - [ ] `kerx`
+  - [x] `kerx`
   - [ ] `mort`
   - [ ] `morx`
   - [ ] `trak`
