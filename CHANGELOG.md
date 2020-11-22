@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Ported
-- Tables: `GSUB`, `GPOS`, `GDEF`, `ankr`, `kern`, `kerx`.
+- Tables: `GSUB`, `GPOS`, `GDEF`, `ankr`, `feat`, `kern`, `kerx`.
 - Main shaping logic.
 - `hb_shape_plan_t` and `hb_ot_shape_plan_t`
 - `hb_ot_map_t`

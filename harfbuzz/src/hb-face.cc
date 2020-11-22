@@ -32,7 +32,6 @@
 #include "hb-blob.hh"
 #include "hb-machinery.hh"
 
-#include "hb-aat-layout-feat-table.hh"
 #include "hb-aat-layout-morx-table.hh"
 #include "hb-aat-layout-trak-table.hh"
 
@@ -61,9 +60,6 @@ rb_blob_t *rb_face_sanitize_table(rb_blob_t *blob, rb_tag_t tag, unsigned int gl
         case RB_AAT_TAG_trak:
             return c.sanitize_blob<AAT::trak>(blob);
 
-        case RB_AAT_TAG_feat:
-            return c.sanitize_blob<AAT::feat>(blob);
-
         default:
             assert(false);
     }
@@ -82,9 +78,4 @@ const AAT::mort *rb_face_get_mort_table(rb_face_t *face)
 const AAT::trak *rb_face_get_trak_table(rb_face_t *face)
 {
     return rb_face_get_table_blob(face, RB_AAT_TAG_trak)->as<AAT::trak>();
-}
-
-const AAT::feat *rb_face_get_feat_table(rb_face_t *face)
-{
-    return rb_face_get_table_blob(face, RB_AAT_TAG_feat)->as<AAT::feat>();
 }

@@ -1,4 +1,4 @@
-//! The Glyph Subsitution Table.
+//! The Glyph Substitution Table.
 
 use super::gsubgpos::*;
 use super::*;

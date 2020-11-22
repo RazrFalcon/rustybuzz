@@ -37,7 +37,7 @@ Embedded `harfbuzz` version: 2.7.0
 - [ ] Port Apple tables:
   - [ ] Make macos tests OS-independent (ultra hard).
   - [x] `ankr`
-  - [ ] `feat`
+  - [x] `feat`
   - [x] `kern`
   - [x] `kerx`
   - [ ] `mort`

@@ -29,7 +29,6 @@
 #include "hb-open-type.hh"
 
 #include "hb-aat-layout-common.hh"
-#include "hb-aat-layout-feat-table.hh"
 
 #ifndef RB_NO_VISIBILITY
 
@@ -37,7 +36,6 @@ uint64_t const _rb_NullPool[(RB_NULL_POOL_SIZE + sizeof(uint64_t) - 1) / sizeof(
 /*thread_local*/ uint64_t _rb_CrapPool[(RB_NULL_POOL_SIZE + sizeof(uint64_t) - 1) / sizeof(uint64_t)] = {};
 
 DEFINE_NULL_NAMESPACE_BYTES(OT, Index) = {0xFF, 0xFF};
-DEFINE_NULL_NAMESPACE_BYTES(AAT, SettingName) = {0xFF, 0xFF, 0xFF, 0xFF};
 /* Hand-coded because Lookup is a template.  Sad. */
 const unsigned char _rb_Null_AAT_Lookup[2] = {0xFF, 0xFF};
 

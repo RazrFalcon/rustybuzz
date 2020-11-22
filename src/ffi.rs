@@ -134,7 +134,7 @@ extern "C" {
 
     pub fn rb_aat_map_builder_fini(builder: *mut rb_aat_map_builder_t);
 
-    pub fn rb_aat_map_builder_add_feature(builder: *mut rb_aat_map_builder_t, tag: Tag, value: u32);
+    pub fn rb_aat_map_builder_add_feature(builder: *mut rb_aat_map_builder_t, kind: i32, setting: i32, is_exclusive: bool);
 
     pub fn rb_aat_map_builder_compile(builder: *mut rb_aat_map_builder_t, map: *mut rb_aat_map_t);
 

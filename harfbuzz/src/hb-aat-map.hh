@@ -62,8 +62,6 @@ public:
         features.fini();
     }
 
-    RB_INTERNAL void add_feature(rb_tag_t tag, unsigned int value = 1);
-
     RB_INTERNAL void compile(rb_aat_map_t *m);
 
 public:
@@ -110,7 +108,7 @@ RB_EXTERN void rb_aat_map_builder_init(rb_aat_map_builder_t *builder, rb_face_t 
 
 RB_EXTERN void rb_aat_map_builder_fini(rb_aat_map_builder_t *builder);
 
-RB_EXTERN void rb_aat_map_builder_add_feature(rb_aat_map_builder_t *builder, rb_tag_t tag, unsigned int value);
+RB_EXTERN void rb_aat_map_builder_add_feature(rb_aat_map_builder_t *builder, int type, int setting, bool is_exclusive);
 
 RB_EXTERN void rb_aat_map_builder_compile(rb_aat_map_builder_t *builder, rb_aat_map_t *map);
 

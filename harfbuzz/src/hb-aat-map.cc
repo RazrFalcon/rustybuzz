@@ -30,48 +30,6 @@
 
 #include "hb-aat-map.hh"
 #include "hb-aat-layout.hh"
-#include "hb-aat-layout-feat-table.hh"
-
-void rb_aat_map_builder_t::add_feature(rb_tag_t tag, unsigned value)
-{
-    if (!rb_face_get_feat_table(face)->has_data())
-        return;
-
-    if (tag == RB_TAG('a', 'a', 'l', 't')) {
-        if (!rb_face_get_feat_table(face)->exposes_feature(RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES))
-            return;
-        feature_info_t *info = features.push();
-        info->type = RB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES;
-        info->setting = (rb_aat_layout_feature_selector_t)value;
-        info->seq = features.length;
-        info->is_exclusive = true;
-        return;
-    }
-
-    const rb_aat_feature_mapping_t *mapping = rb_aat_layout_find_feature_mapping(tag);
-    if (!mapping)
-        return;
-
-    const AAT::FeatureName *feature = &rb_face_get_feat_table(face)->get_feature(mapping->aatFeatureType);
-    if (!feature->has_data()) {
-        /* Special case: Chain::compile_flags will fall back to the deprecated version of
-         * small-caps if necessary, so we need to check for that possibility.
-         * https://github.com/harfbuzz/harfbuzz/issues/2307 */
-        if (mapping->aatFeatureType == RB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE &&
-            mapping->selectorToEnable == RB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS) {
-            feature = &rb_face_get_feat_table(face)->get_feature(RB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE);
-            if (!feature->has_data())
-                return;
-        } else
-            return;
-    }
-
-    feature_info_t *info = features.push();
-    info->type = mapping->aatFeatureType;
-    info->setting = value ? mapping->selectorToEnable : mapping->selectorToDisable;
-    info->seq = features.length;
-    info->is_exclusive = feature->is_exclusive();
-}
 
 void rb_aat_map_builder_t::compile(rb_aat_map_t *m)
 {
@@ -112,9 +70,13 @@ void rb_aat_map_builder_fini(rb_aat_map_builder_t *builder)
     builder->fini();
 }
 
-void rb_aat_map_builder_add_feature(rb_aat_map_builder_t *builder, rb_tag_t tag, unsigned int value)
+void rb_aat_map_builder_add_feature(rb_aat_map_builder_t *builder, int type, int setting, bool is_exclusive)
 {
-    builder->add_feature(tag, value);
+    rb_aat_map_builder_t::feature_info_t *info = builder->features.push();
+    info->type = (rb_aat_layout_feature_type_t)type;
+    info->setting = (rb_aat_layout_feature_selector_t)setting;
+    info->seq = builder->features.length;
+    info->is_exclusive = is_exclusive;
 }
 
 void rb_aat_map_builder_compile(rb_aat_map_builder_t *builder, rb_aat_map_t *map)

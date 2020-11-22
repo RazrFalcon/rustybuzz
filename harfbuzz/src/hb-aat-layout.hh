@@ -31,21 +31,6 @@
 
 #include "hb-aat-map.hh"
 
-struct rb_aat_feature_mapping_t
-{
-    rb_tag_t otFeatureTag;
-    rb_aat_layout_feature_type_t aatFeatureType;
-    rb_aat_layout_feature_selector_t selectorToEnable;
-    rb_aat_layout_feature_selector_t selectorToDisable;
-
-    int cmp(rb_tag_t key) const
-    {
-        return key < otFeatureTag ? -1 : key > otFeatureTag ? 1 : 0;
-    }
-};
-
-RB_INTERNAL const rb_aat_feature_mapping_t *rb_aat_layout_find_feature_mapping(rb_tag_t tag);
-
 RB_INTERNAL void rb_aat_layout_compile_map(const rb_aat_map_builder_t *mapper, rb_aat_map_t *map);
 
 #endif /* RB_AAT_LAYOUT_HH */

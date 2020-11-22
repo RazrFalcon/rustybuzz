@@ -2,6 +2,7 @@ use ttf_parser::parser::*;
 use ttf_parser::{GlyphId, Class};
 
 pub mod ankr;
+pub mod feat;
 pub mod gpos;
 pub mod gsub;
 pub mod gsubgpos;

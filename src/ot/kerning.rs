@@ -224,7 +224,6 @@ fn apply_state_machine_kerning(
             if entry.has_offset() ||
                 !(entry.new_state() == state_machine::state::START_OF_TEXT && !entry.has_advance())
             {
-                // println!("unsafe_to_break_from_outbuffer");
                 buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
         }

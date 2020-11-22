@@ -9,7 +9,7 @@ use crate::buffer::GlyphPropsFlags;
 use crate::tables::gpos::PosTable;
 use crate::tables::gsub::SubstTable;
 use crate::tables::gsubgpos::SubstPosTable;
-use crate::tables::{ankr, kern, kerx};
+use crate::tables::{ankr, feat, kern, kerx};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -78,10 +78,10 @@ pub struct Face<'a> {
     pub(crate) kern: Option<kern::Subtables<'a>>,
     pub(crate) kerx: Option<kerx::Subtables<'a>>,
     pub(crate) ankr: Option<ankr::Table<'a>>,
+    pub(crate) feat: Option<feat::Table<'a>>,
     morx: Blob<'a>,
     mort: Blob<'a>,
     trak: Blob<'a>,
-    feat: Blob<'a>,
 }
 
 impl<'a> Face<'a> {
@@ -105,7 +105,7 @@ impl<'a> Face<'a> {
             morx: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"morx")),
             mort: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"mort")),
             trak: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"trak")),
-            feat: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"feat")),
+            feat: ttfp_face.table_data(Tag::from_bytes(b"feat")).and_then(feat::Table::parse),
             ttfp_face,
         })
     }
@@ -324,7 +324,6 @@ impl<'a> Face<'a> {
             b"morx" => &self.morx,
             b"mort" => &self.mort,
             b"trak" => &self.trak,
-            b"feat" => &self.feat,
             _ => panic!("invalid table"),
         }
     }

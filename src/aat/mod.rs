@@ -1,5 +1,7 @@
 mod extended_kerning;
 mod map;
+mod feature_selector;
+mod feature_mappings;
 
 pub use map::*;
 
