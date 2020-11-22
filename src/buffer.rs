@@ -512,7 +512,7 @@ pub struct Buffer {
     have_output: bool,
     pub have_separate_output: bool,
     /// Whether we have positions
-    have_positions: bool,
+    pub have_positions: bool,
 
     pub idx: usize,
     pub len: usize,

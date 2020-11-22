@@ -42,7 +42,7 @@ Embedded `harfbuzz` version: 2.7.0
   - [x] `kerx`
   - [ ] `mort`
   - [ ] `morx`
-  - [ ] `trak`
+  - [x] `trak`
 - [ ] Remove C++ sources.
 - [ ] Remove `unsafe`.
 

@@ -33,10 +33,8 @@
 
 namespace AAT { struct morx; }
 namespace AAT { struct mort; }
-namespace AAT { struct trak; }
 
 const AAT::morx *rb_face_get_morx_table(rb_face_t *face);
 const AAT::mort *rb_face_get_mort_table(rb_face_t *face);
-const AAT::trak *rb_face_get_trak_table(rb_face_t *face);
 
 #endif /* RB_FACE_HH */

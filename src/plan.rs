@@ -283,7 +283,7 @@ impl<'a> ShapePlanner<'a> {
             && self.script_fallback_mark_positioning;
 
         // Currently we always apply trak.
-        let apply_trak = requested_tracking && aat::has_tracking(self.face);
+        let apply_trak = requested_tracking && self.face.trak.is_some();
 
         let mut plan = ShapePlan {
             direction: self.direction,

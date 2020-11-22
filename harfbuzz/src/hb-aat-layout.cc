@@ -29,7 +29,6 @@
 
 #include "hb-aat-layout.hh"
 #include "hb-aat-layout-morx-table.hh"
-#include "hb-aat-layout-trak-table.hh"
 
 /*
  * rb_aat_apply_context_t
@@ -134,23 +133,4 @@ static rb_bool_t is_deleted_glyph(const rb_glyph_info_t *info)
 void rb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer)
 {
     rb_buffer_delete_glyphs_inplace(buffer, is_deleted_glyph);
-}
-
-/*
- * rb_aat_layout_has_tracking:
- * @face:
- *
- * Returns:
- * Since: 2.3.0
- */
-rb_bool_t rb_aat_layout_has_tracking(rb_face_t *face)
-{
-    return rb_face_get_trak_table(face)->has_data();
-}
-
-void rb_aat_layout_track(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer)
-{
-    const AAT::trak &trak = *rb_face_get_trak_table(face);
-    AAT::rb_aat_apply_context_t c(plan, face, buffer);
-    trak.apply(&c);
 }

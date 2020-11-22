@@ -106,14 +106,6 @@ RB_EXTERN void rb_aat_layout_zero_width_deleted_glyphs(rb_buffer_t *buffer);
 
 RB_EXTERN void rb_aat_layout_remove_deleted_glyphs(rb_buffer_t *buffer);
 
-/*
- * trak
- */
-
-RB_EXTERN rb_bool_t rb_aat_layout_has_tracking(rb_face_t *face);
-
-RB_EXTERN void rb_aat_layout_track(const rb_shape_plan_t *plan, rb_face_t *face, rb_buffer_t *buffer);
-
 RB_END_DECLS
 
 #endif /* RB_AAT_LAYOUT_H */

@@ -8,6 +8,7 @@ pub mod gsub;
 pub mod gsubgpos;
 pub mod kern;
 pub mod kerx;
+pub mod trak;
 
 trait StreamExt<'a> {
     fn read_dyn_array(&mut self, count: usize, stride: usize) -> Option<DynArray<'a>>;

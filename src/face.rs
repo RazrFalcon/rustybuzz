@@ -9,7 +9,7 @@ use crate::buffer::GlyphPropsFlags;
 use crate::tables::gpos::PosTable;
 use crate::tables::gsub::SubstTable;
 use crate::tables::gsubgpos::SubstPosTable;
-use crate::tables::{ankr, feat, kern, kerx};
+use crate::tables::{ankr, feat, kern, kerx, trak};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -71,7 +71,7 @@ pub struct Face<'a> {
     pub(crate) ttfp_face: ttf_parser::Face<'a>,
     units_per_em: i32,
     pixels_per_em: Option<(u16, u16)>,
-    points_per_em: Option<f32>,
+    pub(crate) points_per_em: Option<f32>,
     prefered_cmap_encoding_subtable: Option<u16>,
     pub(crate) gsub: Option<SubstTable<'a>>,
     pub(crate) gpos: Option<PosTable<'a>>,
@@ -79,9 +79,9 @@ pub struct Face<'a> {
     pub(crate) kerx: Option<kerx::Subtables<'a>>,
     pub(crate) ankr: Option<ankr::Table<'a>>,
     pub(crate) feat: Option<feat::Table<'a>>,
+    pub(crate) trak: Option<trak::Table<'a>>,
     morx: Blob<'a>,
     mort: Blob<'a>,
-    trak: Blob<'a>,
 }
 
 impl<'a> Face<'a> {
@@ -104,7 +104,7 @@ impl<'a> Face<'a> {
                 .and_then(|data| ankr::Table::parse(data, ttfp_face.number_of_glyphs())),
             morx: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"morx")),
             mort: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"mort")),
-            trak: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"trak")),
+            trak: ttfp_face.table_data(Tag::from_bytes(b"trak")).and_then(trak::Table::parse),
             feat: ttfp_face.table_data(Tag::from_bytes(b"feat")).and_then(feat::Table::parse),
             ttfp_face,
         })
@@ -323,7 +323,6 @@ impl<'a> Face<'a> {
         match &tag.to_bytes() {
             b"morx" => &self.morx,
             b"mort" => &self.mort,
-            b"trak" => &self.trak,
             _ => panic!("invalid table"),
         }
     }
