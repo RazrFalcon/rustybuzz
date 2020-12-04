@@ -373,6 +373,7 @@ impl IndicWouldSubstituteFeature {
             let lookup = map.lookup(TableIndex::GSUB, index);
             let ctx = WouldApplyContext { glyphs, zero_context: self.zero_context };
             if face.gsub
+                .as_ref()
                 .and_then(|table| table.get_lookup(lookup.index))
                 .map_or(false, |lookup| lookup.would_apply(&ctx))
             {

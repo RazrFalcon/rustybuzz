@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use crate::{Face, Tag};
+use crate::Face;
 use crate::buffer::{Buffer, GlyphPropsFlags};
 use crate::plan::ShapePlan;
 use crate::tables::gsub::*;
@@ -22,7 +22,7 @@ pub fn substitute_start(face: &Face, buffer: &mut Buffer) {
 }
 
 pub fn substitute(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    super::apply_layout_table(plan, face, buffer, face.gsub);
+    super::apply_layout_table(plan, face, buffer, face.gsub.as_ref());
 }
 
 fn set_glyph_props(face: &Face, buffer: &mut Buffer) {
@@ -35,43 +35,35 @@ fn set_glyph_props(face: &Face, buffer: &mut Buffer) {
 }
 
 impl<'a> LayoutTable for SubstTable<'a> {
-    const TAG: Tag = Tag::from_bytes(b"GSUB");
     const INDEX: TableIndex = TableIndex::GSUB;
     const IN_PLACE: bool = false;
 
     type Lookup = SubstLookup<'a>;
 
-    fn get_lookup(&self, index: LookupIndex) -> Option<Self::Lookup> {
-        self.0.get_lookup(index).map(SubstLookup)
+    fn get_lookup(&self, index: LookupIndex) -> Option<&Self::Lookup> {
+        self.lookups.get(usize::from(index.0))?.as_ref()
     }
 }
 
 impl LayoutLookup for SubstLookup<'_> {
     fn props(&self) -> u32 {
-        self.0.props()
+        self.props
     }
 
     fn is_reverse(&self) -> bool {
-        self.0.subtables
-            .into_iter()
-            .filter_map(|data| SubstLookupSubtable::parse(data, self.0.kind))
-            .all(|subtable| subtable.is_reverse())
+        self.reverse
     }
 }
 
 impl WouldApply for SubstLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        self.0.subtables
-            .into_iter()
-            .filter_map(|data| SubstLookupSubtable::parse(data, self.0.kind))
-            .any(|subtable| subtable.would_apply(ctx))
+        self.subtables.iter().any(|subtable| subtable.would_apply(ctx))
     }
 }
 
 impl Apply for SubstLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        for data in self.0.subtables {
-            let subtable = SubstLookupSubtable::parse(data, self.0.kind)?;
+        for subtable in &self.subtables {
             if subtable.apply(ctx).is_some() {
                 return Some(());
             }
