@@ -11,6 +11,7 @@ mod aat;
 mod common;
 mod ffi;
 mod fallback;
+mod glyph_set;
 mod normalize;
 mod shape;
 mod plan;

@@ -2,6 +2,8 @@
 
 use std::ops::{Index, IndexMut};
 
+use ttf_parser::GlyphId;
+
 use crate::{Face, Tag};
 use crate::buffer::Buffer;
 use crate::common::TagExt;
@@ -60,6 +62,9 @@ pub trait LayoutLookup: Apply {
 
     /// Whether the lookup has to be applied backwards.
     fn is_reverse(&self) -> bool;
+
+    /// Whether any subtable of the lookup could apply at a specific glyph.
+    fn covers(&self, glyph: GlyphId) -> bool;
 }
 
 impl SubstPosTable<'_> {

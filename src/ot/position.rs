@@ -1,3 +1,6 @@
+use std::convert::TryFrom;
+
+use ttf_parser::GlyphId;
 use ttf_parser::parser::{Offset, Offset16};
 
 use crate::{Direction, Face};
@@ -107,15 +110,22 @@ impl LayoutLookup for PosLookup<'_> {
     fn is_reverse(&self) -> bool {
         false
     }
+
+    fn covers(&self, glyph: GlyphId) -> bool {
+        self.coverage.contains(glyph)
+    }
 }
 
 impl Apply for PosLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        for subtable in &self.subtables {
-            if subtable.apply(ctx).is_some() {
-                return Some(());
+        if self.covers(GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap())) {
+            for subtable in &self.subtables {
+                if subtable.apply(ctx).is_some() {
+                    return Some(());
+                }
             }
         }
+
         None
     }
 }

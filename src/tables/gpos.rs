@@ -1,8 +1,9 @@
 //! The Glyph Positioning Table.
 
+use crate::Face;
+use crate::glyph_set::GlyphSet;
 use super::gsubgpos::*;
 use super::*;
-use crate::Face;
 
 #[derive(Clone, Debug)]
 pub struct PosTable<'a> {
@@ -24,20 +25,28 @@ impl<'a> PosTable<'a> {
 #[derive(Clone, Debug)]
 pub struct PosLookup<'a> {
     pub subtables: Vec<PosLookupSubtable<'a>>,
+    pub coverage: GlyphSet,
     pub props: u32,
 }
 
 impl<'a> PosLookup<'a> {
     pub fn parse(lookup: Lookup<'a>) -> Self {
-        let subtables = lookup
+        let subtables: Vec<_> = lookup
             .subtables
             .into_iter()
             .flat_map(|data| PosLookupSubtable::parse(data, lookup.kind))
             .collect();
 
-        let props = lookup.props();
+        let mut coverage = GlyphSet::builder();
+        for subtable in &subtables {
+            subtable.coverage().collect(&mut coverage);
+        }
 
-        Self { subtables, props }
+        Self {
+            subtables,
+            coverage: coverage.finish(),
+            props: lookup.props(),
+        }
     }
 }
 

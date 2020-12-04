@@ -1,5 +1,6 @@
 //! The Glyph Substitution Table.
 
+use crate::glyph_set::GlyphSet;
 use super::gsubgpos::*;
 use super::*;
 
@@ -23,8 +24,9 @@ impl<'a> SubstTable<'a> {
 #[derive(Clone, Debug)]
 pub struct SubstLookup<'a> {
     pub subtables: Vec<SubstLookupSubtable<'a>>,
-    pub props: u32,
+    pub coverage: GlyphSet,
     pub reverse: bool,
+    pub props: u32,
 }
 
 impl<'a> SubstLookup<'a> {
@@ -35,10 +37,20 @@ impl<'a> SubstLookup<'a> {
             .flat_map(|data| SubstLookupSubtable::parse(data, lookup.kind))
             .collect();
 
-        let props = lookup.props();
-        let reverse = subtables.iter().all(|subtable| subtable.is_reverse());
+        let mut coverage = GlyphSet::builder();
+        let mut reverse = !subtables.is_empty();
 
-        Self { subtables, props, reverse }
+        for subtable in &subtables {
+            subtable.coverage().collect(&mut coverage);
+            reverse &= subtable.is_reverse();
+        }
+
+        Self {
+            subtables,
+            coverage: coverage.finish(),
+            reverse,
+            props: lookup.props(),
+        }
     }
 }
 

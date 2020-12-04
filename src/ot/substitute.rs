@@ -53,21 +53,29 @@ impl LayoutLookup for SubstLookup<'_> {
     fn is_reverse(&self) -> bool {
         self.reverse
     }
+
+    fn covers(&self, glyph: GlyphId) -> bool {
+        self.coverage.contains(glyph)
+    }
 }
 
 impl WouldApply for SubstLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        self.subtables.iter().any(|subtable| subtable.would_apply(ctx))
+        self.covers(GlyphId(u16::try_from(ctx.glyphs[0]).unwrap()))
+            && self.subtables.iter().any(|subtable| subtable.would_apply(ctx))
     }
 }
 
 impl Apply for SubstLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        for subtable in &self.subtables {
-            if subtable.apply(ctx).is_some() {
-                return Some(());
+        if self.covers(GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap())) {
+            for subtable in &self.subtables {
+                if subtable.apply(ctx).is_some() {
+                    return Some(());
+                }
             }
         }
+
         None
     }
 }
