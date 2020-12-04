@@ -1,20 +1,54 @@
 //! The Glyph Positioning Table.
 
+use crate::Face;
+use crate::glyph_set::GlyphSet;
 use super::gsubgpos::*;
 use super::*;
-use crate::Face;
 
-#[derive(Clone, Copy, Debug)]
-pub struct PosTable<'a>(pub SubstPosTable<'a>);
+#[derive(Clone, Debug)]
+pub struct PosTable<'a> {
+    pub inner: SubstPosTable<'a>,
+    pub lookups: Vec<Option<PosLookup<'a>>>,
+}
 
 impl<'a> PosTable<'a> {
     pub fn parse(data: &'a [u8]) -> Option<Self> {
-        SubstPosTable::parse(data).map(Self)
+        let inner = SubstPosTable::parse(data)?;
+        let lookups = (0..inner.lookup_count())
+            .map(|i| inner.get_lookup(LookupIndex(i)).map(PosLookup::parse))
+            .collect();
+
+        Some(Self { inner, lookups})
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-pub struct PosLookup<'a>(pub Lookup<'a>);
+#[derive(Clone, Debug)]
+pub struct PosLookup<'a> {
+    pub subtables: Vec<PosLookupSubtable<'a>>,
+    pub coverage: GlyphSet,
+    pub props: u32,
+}
+
+impl<'a> PosLookup<'a> {
+    pub fn parse(lookup: Lookup<'a>) -> Self {
+        let subtables: Vec<_> = lookup
+            .subtables
+            .into_iter()
+            .flat_map(|data| PosLookupSubtable::parse(data, lookup.kind))
+            .collect();
+
+        let mut coverage = GlyphSet::builder();
+        for subtable in &subtables {
+            subtable.coverage().collect(&mut coverage);
+        }
+
+        Self {
+            subtables,
+            coverage: coverage.finish(),
+            props: lookup.props(),
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 pub enum PosLookupSubtable<'a> {

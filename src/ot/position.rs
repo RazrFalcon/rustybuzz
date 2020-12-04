@@ -1,6 +1,9 @@
+use std::convert::TryFrom;
+
+use ttf_parser::GlyphId;
 use ttf_parser::parser::{Offset, Offset16};
 
-use crate::{Direction, Face, Tag};
+use crate::{Direction, Face};
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
 use crate::plan::ShapePlan;
 use crate::tables::gpos::*;
@@ -19,7 +22,7 @@ pub fn position_start(_: &Face, buffer: &mut Buffer) {
 }
 
 pub fn position(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    super::apply_layout_table(plan, face, buffer, face.gpos);
+    super::apply_layout_table(plan, face, buffer, face.gpos.as_ref());
 }
 
 pub fn position_finish_advances(_: &Face, _: &mut Buffer) {}
@@ -89,35 +92,40 @@ fn propagate_attachment_offsets(
 }
 
 impl<'a> LayoutTable for PosTable<'a> {
-    const TAG: Tag = Tag::from_bytes(b"GPOS");
     const INDEX: TableIndex = TableIndex::GPOS;
     const IN_PLACE: bool = true;
 
     type Lookup = PosLookup<'a>;
 
-    fn get_lookup(&self, index: LookupIndex) -> Option<Self::Lookup> {
-        self.0.get_lookup(index).map(PosLookup)
+    fn get_lookup(&self, index: LookupIndex) -> Option<&Self::Lookup> {
+        self.lookups.get(usize::from(index.0))?.as_ref()
     }
 }
 
 impl LayoutLookup for PosLookup<'_> {
     fn props(&self) -> u32 {
-        self.0.props()
+        self.props
     }
 
     fn is_reverse(&self) -> bool {
         false
     }
+
+    fn covers(&self, glyph: GlyphId) -> bool {
+        self.coverage.contains(glyph)
+    }
 }
 
 impl Apply for PosLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        for data in self.0.subtables {
-            let subtable = PosLookupSubtable::parse(data, self.0.kind)?;
-            if subtable.apply(ctx).is_some() {
-                return Some(());
+        if self.covers(GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap())) {
+            for subtable in &self.subtables {
+                if subtable.apply(ctx).is_some() {
+                    return Some(());
+                }
             }
         }
+
         None
     }
 }

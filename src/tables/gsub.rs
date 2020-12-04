@@ -1,21 +1,60 @@
 //! The Glyph Substitution Table.
 
+use crate::glyph_set::GlyphSet;
 use super::gsubgpos::*;
 use super::*;
 
-#[derive(Clone, Copy, Debug)]
-pub struct SubstTable<'a>(pub SubstPosTable<'a>);
+#[derive(Clone, Debug)]
+pub struct SubstTable<'a> {
+    pub inner: SubstPosTable<'a>,
+    pub lookups: Vec<Option<SubstLookup<'a>>>,
+}
 
 impl<'a> SubstTable<'a> {
     pub fn parse(data: &'a [u8]) -> Option<Self> {
-        SubstPosTable::parse(data).map(Self)
+        let inner = SubstPosTable::parse(data)?;
+        let lookups = (0..inner.lookup_count())
+            .map(|i| inner.get_lookup(LookupIndex(i)).map(SubstLookup::parse))
+            .collect();
+
+        Some(Self { inner, lookups})
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-pub struct SubstLookup<'a>(pub Lookup<'a>);
+#[derive(Clone, Debug)]
+pub struct SubstLookup<'a> {
+    pub subtables: Vec<SubstLookupSubtable<'a>>,
+    pub coverage: GlyphSet,
+    pub reverse: bool,
+    pub props: u32,
+}
 
-#[derive(Clone, Copy, Debug)]
+impl<'a> SubstLookup<'a> {
+    pub fn parse(lookup: Lookup<'a>) -> Self {
+        let subtables: Vec<_> = lookup
+            .subtables
+            .into_iter()
+            .flat_map(|data| SubstLookupSubtable::parse(data, lookup.kind))
+            .collect();
+
+        let mut coverage = GlyphSet::builder();
+        let mut reverse = !subtables.is_empty();
+
+        for subtable in &subtables {
+            subtable.coverage().collect(&mut coverage);
+            reverse &= subtable.is_reverse();
+        }
+
+        Self {
+            subtables,
+            coverage: coverage.finish(),
+            reverse,
+            props: lookup.props(),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub enum SubstLookupSubtable<'a> {
     Single(SingleSubst<'a>),
     Multiple(MultipleSubst<'a>),

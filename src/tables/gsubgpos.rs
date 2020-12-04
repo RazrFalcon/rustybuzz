@@ -5,8 +5,9 @@ use std::cmp::Ordering;
 
 use ttf_parser::NormalizedCoordinate;
 
-use super::*;
 use crate::{Face, Tag};
+use crate::glyph_set::GlyphSetBuilder;
+use super::*;
 
 /// A GSUB or GPOS table.
 #[derive(Clone, Copy, Debug)]
@@ -578,6 +579,22 @@ impl<'a> Coverage<'a> {
                 let record = RangeRecord::binary_search(records, glyph)?;
                 let offset = glyph.0 - record.start.0;
                 record.value.checked_add(offset)
+            }
+        }
+    }
+
+    /// Collect this coverage table into a glyph set.
+    pub fn collect(&self, set: &mut GlyphSetBuilder) {
+        match *self {
+            Self::Format1 { glyphs } => {
+                for glyph in glyphs {
+                    set.insert(glyph);
+                }
+            }
+            Self::Format2 { records } => {
+                for record in records {
+                    set.insert_range(record.start..=record.end);
+                }
             }
         }
     }

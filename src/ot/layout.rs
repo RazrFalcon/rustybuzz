@@ -2,6 +2,8 @@
 
 use std::ops::{Index, IndexMut};
 
+use ttf_parser::GlyphId;
+
 use crate::{Face, Tag};
 use crate::buffer::Buffer;
 use crate::common::TagExt;
@@ -40,9 +42,6 @@ impl<T> IndexMut<TableIndex> for [T] {
 
 /// A lookup-based layout table (GSUB or GPOS).
 pub trait LayoutTable {
-    /// The tag of this table.
-    const TAG: Tag;
-
     /// The index of this table.
     const INDEX: TableIndex;
 
@@ -53,7 +52,7 @@ pub trait LayoutTable {
     type Lookup: LayoutLookup;
 
     /// Get the lookup at the specified index.
-    fn get_lookup(&self, index: LookupIndex) -> Option<Self::Lookup>;
+    fn get_lookup(&self, index: LookupIndex) -> Option<&Self::Lookup>;
 }
 
 /// A lookup in a layout table.
@@ -63,6 +62,9 @@ pub trait LayoutLookup: Apply {
 
     /// Whether the lookup has to be applied backwards.
     fn is_reverse(&self) -> bool;
+
+    /// Whether any subtable of the lookup could apply at a specific glyph.
+    fn covers(&self, glyph: GlyphId) -> bool;
 }
 
 impl SubstPosTable<'_> {
@@ -163,7 +165,7 @@ pub fn apply_layout_table<T: LayoutTable>(
     plan: &ShapePlan,
     face: &Face,
     buffer: &mut Buffer,
-    table: Option<T>,
+    table: Option<&T>,
 ) {
     let mut ctx = ApplyContext::new(T::INDEX, face, buffer);
 
@@ -193,7 +195,7 @@ pub fn apply_layout_table<T: LayoutTable>(
     }
 }
 
-fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: T::Lookup) {
+fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
     if ctx.buffer.is_empty() || ctx.lookup_mask == 0 {
         return;
     }
@@ -225,7 +227,7 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: T::Lookup) {
     }
 }
 
-fn apply_forward(ctx: &mut ApplyContext, lookup: impl Apply) -> bool {
+fn apply_forward(ctx: &mut ApplyContext, lookup: &impl Apply) -> bool {
     let mut ret = false;
     while ctx.buffer.idx < ctx.buffer.len && ctx.buffer.successful {
         let cur = ctx.buffer.cur(0);
@@ -241,7 +243,7 @@ fn apply_forward(ctx: &mut ApplyContext, lookup: impl Apply) -> bool {
     ret
 }
 
-fn apply_backward(ctx: &mut ApplyContext, lookup: impl Apply) -> bool {
+fn apply_backward(ctx: &mut ApplyContext, lookup: &impl Apply) -> bool {
     let mut ret = false;
     loop {
         let cur = ctx.buffer.cur(0);

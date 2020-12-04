@@ -77,6 +77,7 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
         let applied = match self.table_index {
             TableIndex::GSUB => {
                 self.face.gsub
+                    .as_ref()
                     .and_then(|table| table.get_lookup(sub_lookup_index))
                     .and_then(|lookup| {
                         self.lookup_props = lookup.props();
@@ -85,6 +86,7 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
             }
             TableIndex::GPOS => {
                 self.face.gpos
+                    .as_ref()
                     .and_then(|table| table.get_lookup(sub_lookup_index))
                     .and_then(|lookup| {
                         self.lookup_props = lookup.props();

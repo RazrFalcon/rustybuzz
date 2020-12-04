@@ -308,14 +308,14 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub(crate) fn layout_table(&self, table_index: TableIndex) -> Option<SubstPosTable<'a>> {
+    pub(crate) fn layout_table(&self, table_index: TableIndex) -> Option<&SubstPosTable<'a>> {
         match table_index {
-            TableIndex::GSUB => self.gsub.map(|table| table.0),
-            TableIndex::GPOS => self.gpos.map(|table| table.0),
+            TableIndex::GSUB => self.gsub.as_ref().map(|table| &table.inner),
+            TableIndex::GPOS => self.gpos.as_ref().map(|table| &table.inner),
         }
     }
 
-    pub(crate) fn layout_tables(&self) -> impl Iterator<Item = (TableIndex, SubstPosTable<'a>)> + '_ {
+    pub(crate) fn layout_tables(&self) -> impl Iterator<Item = (TableIndex, &SubstPosTable<'a>)> + '_ {
         TableIndex::iter().filter_map(move |idx| self.layout_table(idx).map(|table| (idx, table)))
     }
 
