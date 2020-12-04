@@ -9,7 +9,6 @@
 mod buffer;
 mod aat;
 mod common;
-mod ffi;
 mod fallback;
 mod glyph_set;
 mod normalize;

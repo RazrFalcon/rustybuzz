@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use crate::Face;
 use crate::buffer::{BufferScratchFlags, Buffer};
 use crate::ot::{ApplyContext, AttachType, TableIndex};
-use crate::tables::aat::extended_state_table as state_table;
+use crate::tables::aat;
 use crate::tables::{ankr, kerx};
 use crate::tables::gsubgpos::LookupFlags;
 use crate::plan::ShapePlan;
@@ -153,33 +153,33 @@ fn apply_simple_kerning(
     }
 }
 
-fn apply_state_machine_kerning<E: state_table::Entry, T: state_table::StateTable<E>>(
+fn apply_state_machine_kerning<E: aat::Entry, T: aat::StateTable2<E>>(
     coverage: kerx::Coverage,
-    state_table: &T,
+    aat: &T,
     driver: &mut dyn StateTableDriver<T, E>,
     plan: &ShapePlan,
     buffer: &mut Buffer,
 ) {
-    let mut state = state_table::START_OF_TEXT;
+    let mut state = aat::START_OF_TEXT;
     buffer.idx = 0;
     loop {
         let class = if buffer.idx < buffer.len {
-            state_table.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
+            aat.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
         } else {
-            state_table::class::END_OF_TEXT
+            aat::class::END_OF_TEXT
         };
 
-        let entry: E = state_table.entry(state, class).unwrap();
+        let entry: E = aat.entry(state, class).unwrap();
 
         // Unsafe-to-break before this if not in state 0, as things might
         // go differently if we start from state 0 here.
-        if state != state_table::START_OF_TEXT &&
+        if state != aat::START_OF_TEXT &&
             buffer.backtrack_len() != 0 &&
             buffer.idx < buffer.len
         {
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
             if   entry.is_actionable() ||
-                !(entry.new_state() == state_table::START_OF_TEXT && !entry.has_advance())
+                !(entry.new_state() == aat::START_OF_TEXT && !entry.has_advance())
             {
                 buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
@@ -187,13 +187,13 @@ fn apply_state_machine_kerning<E: state_table::Entry, T: state_table::StateTable
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry: E = state_table.entry(state, state_table::class::END_OF_TEXT).unwrap();
+            let end_entry: E = aat.entry(state, aat::class::END_OF_TEXT).unwrap();
             if end_entry.is_actionable() {
                 buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
             }
         }
 
-        let _ = driver.transition(state_table, entry, coverage.has_cross_stream(), plan, buffer);
+        let _ = driver.transition(aat, entry, coverage.has_cross_stream(), plan, buffer);
 
         state = entry.new_state();
 
@@ -201,17 +201,17 @@ fn apply_state_machine_kerning<E: state_table::Entry, T: state_table::StateTable
             break;
         }
 
-        buffer.max_ops -= 1;
         if entry.has_advance() || buffer.max_ops <= 0 {
             buffer.next_glyph();
         }
+        buffer.max_ops -= 1;
     }
 }
 
 
 trait StateTableDriver<Table, Entry> {
     fn is_actionable(&self, entry: Entry) -> bool;
-    fn transition(&mut self, state_table: &Table, entry: Entry,
+    fn transition(&mut self, aat: &Table, entry: Entry,
                   has_cross_stream: bool, plan: &ShapePlan, buffer: &mut Buffer) -> Option<()>;
 }
 
@@ -223,19 +223,19 @@ struct Driver1 {
 
 impl StateTableDriver<kerx::format1::StateTable<'_>, kerx::format1::Entry> for Driver1 {
     fn is_actionable(&self, entry: kerx::format1::Entry) -> bool {
-        use state_table::Entry;
+        use aat::Entry;
         entry.is_actionable()
     }
 
     fn transition(
         &mut self,
-        state_table: &kerx::format1::StateTable,
+        aat: &kerx::format1::StateTable,
         entry: kerx::format1::Entry,
         has_cross_stream: bool,
         plan: &ShapePlan,
         buffer: &mut Buffer,
     ) -> Option<()> {
-        use state_table::Entry;
+        use aat::Entry;
 
         if entry.has_reset() {
             self.depth = 0;
@@ -251,7 +251,7 @@ impl StateTableDriver<kerx::format1::StateTable<'_>, kerx::format1::Entry> for D
         }
 
         if entry.is_actionable() && self.depth != 0 {
-            let tuple_count = u16::try_from(state_table.tuple_count.max(1)).ok()?;
+            let tuple_count = u16::try_from(aat.tuple_count.max(1)).ok()?;
 
             let mut action_index = entry.action_index;
 
@@ -262,7 +262,7 @@ impl StateTableDriver<kerx::format1::StateTable<'_>, kerx::format1::Entry> for D
             while !last && self.depth != 0 {
                 self.depth -= 1;
                 let idx = self.stack[self.depth];
-                let mut v = state_table.kerning(action_index)? as i32;
+                let mut v = aat.kerning(action_index)? as i32;
                 action_index = action_index.checked_add(tuple_count)?;
                 if idx >= buffer.len {
                     continue;
@@ -335,29 +335,29 @@ struct Driver4<'a> {
 impl StateTableDriver<kerx::format4::StateTable<'_>, kerx::format4::Entry> for Driver4<'_> {
     // TODO: remove
     fn is_actionable(&self, entry: kerx::format4::Entry) -> bool {
-        use state_table::Entry;
+        use aat::Entry;
         entry.is_actionable()
     }
 
     fn transition(
         &mut self,
-        state_table: &kerx::format4::StateTable,
+        aat: &kerx::format4::StateTable,
         entry: kerx::format4::Entry,
         _has_cross_stream: bool,
         _opt: &ShapePlan,
         buffer: &mut Buffer,
     ) -> Option<()> {
         use ttf_parser::parser::{Stream, FromData};
-        use state_table::Entry;
+        use aat::Entry;
 
         if self.mark_set && entry.is_actionable() && buffer.idx < buffer.len {
             let points_data_offset = usize::from(entry.action_index) * u16::SIZE;
-            let mut s = Stream::new_at(state_table.control_points_data, points_data_offset)?;
+            let mut s = Stream::new_at(aat.control_points_data, points_data_offset)?;
 
             // Note: I wasn't able to find any fonts that actually use
             // ControlPointActions and ControlPointCoordinateActions.
             // So they are commented out for now.
-            match state_table.action_type {
+            match aat.action_type {
                 kerx::format4::ActionType::ControlPointActions => {
                     // let mark_control_point: u16 = s.read()?;
                     // let curr_control_point: u16 = s.read()?;

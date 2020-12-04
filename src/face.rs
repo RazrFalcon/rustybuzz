@@ -1,15 +1,12 @@
-use std::marker::PhantomData;
-use std::ptr::NonNull;
-
 use ttf_parser::{Tag, GlyphClass, GlyphId};
 
-use crate::{ffi, Variation};
+use crate::Variation;
 use crate::ot::TableIndex;
 use crate::buffer::GlyphPropsFlags;
 use crate::tables::gpos::PosTable;
 use crate::tables::gsub::SubstTable;
 use crate::tables::gsubgpos::SubstPosTable;
-use crate::tables::{ankr, feat, kern, kerx, trak};
+use crate::tables::{ankr, feat, kern, kerx, morx, trak};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -27,45 +24,6 @@ const UNICODE_2_0_FULL_ENCODING: u16 = 4;
 const UNICODE_FULL_ENCODING: u16 = 6;
 
 
-struct Blob<'a> {
-    ptr: NonNull<ffi::rb_blob_t>,
-    marker: PhantomData<&'a [u8]>,
-}
-
-impl<'a> Blob<'a> {
-    fn from_data(bytes: &'a [u8]) -> Self {
-        Blob {
-            ptr: NonNull::new(unsafe {
-                ffi::rb_blob_create(
-                    bytes.as_ptr() as *const _,
-                    bytes.len() as u32,
-                    std::ptr::null_mut(),
-                    None,
-                )
-            }).unwrap(),
-            marker: PhantomData,
-        }
-    }
-
-    pub fn from_ptr(ptr: *mut ffi::rb_blob_t) -> Blob<'static> {
-        Blob {
-            ptr: NonNull::new(ptr).unwrap(),
-            marker: PhantomData,
-        }
-    }
-
-    pub fn as_ptr(&self) -> *mut ffi::rb_blob_t {
-        self.ptr.as_ptr()
-    }
-}
-
-impl Drop for Blob<'_> {
-    fn drop(&mut self) {
-        unsafe { ffi::rb_blob_destroy(self.as_ptr()) }
-    }
-}
-
-
 /// A font face handle.
 pub struct Face<'a> {
     pub(crate) ttfp_face: ttf_parser::Face<'a>,
@@ -80,8 +38,7 @@ pub struct Face<'a> {
     pub(crate) ankr: Option<ankr::Table<'a>>,
     pub(crate) feat: Option<feat::Table<'a>>,
     pub(crate) trak: Option<trak::Table<'a>>,
-    morx: Blob<'a>,
-    mort: Blob<'a>,
+    pub(crate) morx: Option<morx::Chains<'a>>,
 }
 
 impl<'a> Face<'a> {
@@ -102,22 +59,12 @@ impl<'a> Face<'a> {
                 .and_then(|data| kerx::parse(data, ttfp_face.number_of_glyphs())),
             ankr: ttfp_face.table_data(Tag::from_bytes(b"ankr"))
                 .and_then(|data| ankr::Table::parse(data, ttfp_face.number_of_glyphs())),
-            morx: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"morx")),
-            mort: load_sanitized_table(&ttfp_face, Tag::from_bytes(b"mort")),
+            morx: ttfp_face.table_data(Tag::from_bytes(b"morx"))
+                .and_then(|data| morx::Chains::parse(data, ttfp_face.number_of_glyphs())),
             trak: ttfp_face.table_data(Tag::from_bytes(b"trak")).and_then(trak::Table::parse),
             feat: ttfp_face.table_data(Tag::from_bytes(b"feat")).and_then(feat::Table::parse),
             ttfp_face,
         })
-    }
-
-    #[inline]
-    pub(crate) fn from_ptr(face: *const ffi::rb_face_t) -> &'static Face<'static> {
-        unsafe { &*(face as *const Face) }
-    }
-
-    #[inline]
-    pub(crate) fn as_ptr(&self) -> *const ffi::rb_face_t {
-        self as *const _ as *const ffi::rb_face_t
     }
 
     #[inline]
@@ -318,14 +265,6 @@ impl<'a> Face<'a> {
     pub(crate) fn layout_tables(&self) -> impl Iterator<Item = (TableIndex, &SubstPosTable<'a>)> + '_ {
         TableIndex::iter().filter_map(move |idx| self.layout_table(idx).map(|table| (idx, table)))
     }
-
-    fn get_table_blob(&self, tag: Tag) -> &Blob<'a> {
-        match &tag.to_bytes() {
-            b"morx" => &self.morx,
-            b"mort" => &self.mort,
-            _ => panic!("invalid table"),
-        }
-    }
 }
 
 #[derive(Clone, Copy, Default)]
@@ -334,18 +273,6 @@ pub struct GlyphExtents {
     pub y_bearing: i32,
     pub width: i32,
     pub height: i32,
-}
-
-fn load_sanitized_table<'a>(face: &ttf_parser::Face<'a>, tag: Tag) -> Blob<'a> {
-    let data = face.table_data(tag).unwrap_or(&[]);
-    unsafe {
-        let input = Blob::from_data(data);
-        let ptr = ffi::rb_face_sanitize_table(input.as_ptr(), tag, u32::from(face.number_of_glyphs()));
-
-        // Sanitization takes ownership and may return the same blob we pass in.
-        std::mem::forget(input);
-        Blob::from_ptr(ptr)
-    }
 }
 
 fn find_best_cmap_subtable(face: &ttf_parser::Face) -> Option<u16> {
@@ -379,35 +306,4 @@ fn find_cmap_subtable(
     }
 
     None
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_glyph_count(face: *const ffi::rb_face_t) -> i32 {
-    Face::from_ptr(face).ttfp_face.number_of_glyphs() as i32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_ptem(face: *const ffi::rb_face_t) -> f32 {
-    Face::from_ptr(face).points_per_em.unwrap_or(0.0)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_table_blob(face: *const ffi::rb_face_t, tag: Tag) -> *mut ffi::rb_blob_t {
-    Face::from_ptr(face).get_table_blob(tag).as_ptr()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_face_get_glyph_contour_point_for_origin(
-    _: *const ffi::rb_face_t,
-    _: ffi::rb_codepoint_t ,
-    _: u32,
-    _: ffi::rb_direction_t ,
-    x: *mut ffi::rb_position_t,
-    y: *mut ffi::rb_position_t,
-) -> ffi::rb_bool_t {
-    unsafe {
-        *x = 0;
-        *y = 0;
-    }
-    0
 }

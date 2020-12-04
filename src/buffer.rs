@@ -4,10 +4,21 @@ use std::mem;
 
 use ttf_parser::GlyphId;
 
-use crate::{ffi, script, Direction, Face, Language, Mask, Script};
+use crate::{script, Direction, Face, Language, Mask, Script};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
 
 const CONTEXT_LENGTH: usize = 5;
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub union IntBits {
+    pub var_u32: u32,
+    pub var_i32: i32,
+    pub var_u16: [u16; 2usize],
+    pub var_i16: [i16; 2usize],
+    pub var_u8: [u8; 4usize],
+    pub var_i8: [i8; 4usize],
+}
 
 pub mod glyph_flag {
     /// Indicates that if input text is broken at the
@@ -59,7 +70,7 @@ impl GlyphPosition {
         // glyph to which this attaches to, relative to current glyphs;
         // negative for going back, positive for forward.
         unsafe {
-            let v: ffi::rb_var_int_t = std::mem::transmute(self.var);
+            let v: IntBits = std::mem::transmute(self.var);
             v.var_i16[0]
         }
     }
@@ -67,7 +78,7 @@ impl GlyphPosition {
     #[inline]
     pub(crate) fn set_attach_chain(&mut self, n: i16) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var);
             v.var_i16[0] = n;
         }
     }
@@ -77,7 +88,7 @@ impl GlyphPosition {
         // attachment type
         // Note! if attach_chain() is zero, the value of attach_type() is irrelevant.
         unsafe {
-            let v: ffi::rb_var_int_t = std::mem::transmute(self.var);
+            let v: IntBits = std::mem::transmute(self.var);
             v.var_u8[2]
         }
     }
@@ -85,7 +96,7 @@ impl GlyphPosition {
     #[inline]
     pub(crate) fn set_attach_type(&mut self, n: u8) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var);
             v.var_u8[2] = n;
         }
     }
@@ -124,7 +135,7 @@ impl GlyphInfo {
     #[inline]
     fn unicode_props(&self) -> u16 {
         unsafe {
-            let v: ffi::rb_var_int_t = std::mem::transmute(self.var2);
+            let v: IntBits = std::mem::transmute(self.var2);
             v.var_u16[0]
         }
     }
@@ -132,7 +143,7 @@ impl GlyphInfo {
     #[inline]
     fn set_unicode_props(&mut self, n: u16) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
             v.var_u16[0] = n;
         }
     }
@@ -318,7 +329,7 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn lig_props(&self) -> u8 {
         unsafe {
-            let v: ffi::rb_var_int_t = std::mem::transmute(self.var1);
+            let v: IntBits = std::mem::transmute(self.var1);
             v.var_u8[2]
         }
     }
@@ -326,7 +337,7 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn set_lig_props(&mut self, n: u8) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var1);
             v.var_u8[2] = n;
         }
     }
@@ -377,7 +388,7 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn glyph_props(&self) -> u16 {
         unsafe {
-            let v: ffi::rb_var_int_t = std::mem::transmute(self.var1);
+            let v: IntBits = std::mem::transmute(self.var1);
             v.var_u16[0]
         }
     }
@@ -385,7 +396,7 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn set_glyph_props(&mut self, n: u16) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var1);
             v.var_u16[0] = n;
         }
     }
@@ -445,7 +456,7 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn syllable(&self) -> u8 {
         unsafe {
-            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var1);
+            let v: &IntBits = std::mem::transmute(&self.var1);
             v.var_u8[3]
         }
     }
@@ -453,7 +464,7 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn set_syllable(&mut self, n: u8) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var1);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var1);
             v.var_u8[3] = n;
         }
     }
@@ -566,21 +577,6 @@ impl Buffer {
             context: [['\0', '\0', '\0', '\0', '\0'], ['\0', '\0', '\0', '\0', '\0']],
             context_len: [0, 0],
         }
-    }
-
-    #[inline]
-    pub fn from_ptr(buffer: *const ffi::rb_buffer_t) -> &'static Buffer {
-        unsafe { &*(buffer as *const Buffer) }
-    }
-
-    #[inline]
-    pub fn from_ptr_mut(buffer: *mut ffi::rb_buffer_t) -> &'static mut Buffer {
-        unsafe { &mut *(buffer as *mut Buffer) }
-    }
-
-    #[inline]
-    pub fn as_ptr(&mut self) -> *mut ffi::rb_buffer_t {
-        self as *mut _ as *mut ffi::rb_buffer_t
     }
 
     #[inline]
@@ -891,7 +887,7 @@ impl Buffer {
     }
 
     /// Copies glyph at idx to output but doesn't advance idx.
-    fn copy_glyph(&mut self) {
+    pub fn copy_glyph(&mut self) {
         if !self.make_room_for(0, 1) {
             return;
         }
@@ -1779,166 +1775,4 @@ impl fmt::Debug for GlyphBuffer {
             .field("glyph_infos", &self.glyph_infos())
             .finish()
     }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_direction(buffer: *const ffi::rb_buffer_t) -> ffi::rb_direction_t {
-    Buffer::from_ptr(buffer).direction.to_raw()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_reverse(buffer: *mut ffi::rb_buffer_t) {
-    Buffer::from_ptr_mut(buffer).reverse();
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_length(buffer: *const ffi::rb_buffer_t) -> u32 {
-    Buffer::from_ptr(buffer).len as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_cur(buffer: *mut ffi::rb_buffer_t, i: u32) -> *mut GlyphInfo {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    buffer.cur_mut(i as usize) as *mut _ as *mut GlyphInfo
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_cur_pos(buffer: *mut ffi::rb_buffer_t) -> *mut GlyphPosition {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    buffer.cur_pos_mut() as *mut _ as *mut GlyphPosition
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_backtrack_len(buffer: *const ffi::rb_buffer_t) -> u32 {
-    Buffer::from_ptr(buffer).backtrack_len() as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_move_to(buffer: *mut ffi::rb_buffer_t, i: u32) -> bool {
-    Buffer::from_ptr_mut(buffer).move_to(i as usize)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_swap_buffers(buffer: *mut ffi::rb_buffer_t) {
-    Buffer::from_ptr_mut(buffer).swap_buffers()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_clear_output(buffer: *mut ffi::rb_buffer_t) {
-    Buffer::from_ptr_mut(buffer).clear_output()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_merge_clusters(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
-    Buffer::from_ptr_mut(buffer).merge_clusters(start as usize, end as usize);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_merge_out_clusters(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
-    Buffer::from_ptr_mut(buffer).merge_out_clusters(start as usize, end as usize);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_unsafe_to_break(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
-    Buffer::from_ptr_mut(buffer).unsafe_to_break(start as usize, end as usize);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_unsafe_to_break_from_outbuffer(buffer: *mut ffi::rb_buffer_t, start: u32, end: u32) {
-    Buffer::from_ptr_mut(buffer).unsafe_to_break_from_outbuffer(start as usize, end as usize);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_replace_glyph(buffer: *mut ffi::rb_buffer_t, glyph_index: ffi::rb_codepoint_t) {
-    Buffer::from_ptr_mut(buffer).replace_glyph(glyph_index);
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_output_glyph(buffer: *mut ffi::rb_buffer_t, glyph_index: ffi::rb_codepoint_t) {
-    Buffer::from_ptr_mut(buffer).output_glyph(glyph_index)
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_copy_glyph(buffer: *mut ffi::rb_buffer_t) {
-    Buffer::from_ptr_mut(buffer).copy_glyph();
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_next_glyph(buffer: *mut ffi::rb_buffer_t) {
-    Buffer::from_ptr_mut(buffer).next_glyph();
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_skip_glyph(buffer: *mut ffi::rb_buffer_t) {
-    Buffer::from_ptr_mut(buffer).skip_glyph();
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_delete_glyph(buffer: *mut ffi::rb_buffer_t) {
-    Buffer::from_ptr_mut(buffer).delete_glyph();
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_delete_glyphs_inplace(
-    buffer: *mut ffi::rb_buffer_t,
-    filter: unsafe extern "C" fn(info: *const GlyphInfo) -> ffi::rb_bool_t,
-) {
-    Buffer::from_ptr_mut(buffer).delete_glyphs_inplace(|info| unsafe { filter(info) != 0 })
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_glyph_infos(buffer: *mut ffi::rb_buffer_t) -> *mut GlyphInfo {
-    Buffer::from_ptr_mut(buffer).info.as_mut_ptr() as *mut _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_decrement_max_ops(buffer: *mut ffi::rb_buffer_t, count: i32) -> i32 {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    buffer.max_ops -= count;
-    buffer.max_ops
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_index(buffer: *const ffi::rb_buffer_t) -> u32 {
-    Buffer::from_ptr(buffer).idx as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_set_index(buffer: *mut ffi::rb_buffer_t, idx: u32) {
-    Buffer::from_ptr_mut(buffer).idx = idx as usize;
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_out_len(buffer: *const ffi::rb_buffer_t) -> u32 {
-    Buffer::from_ptr(buffer).out_len as u32
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_glyph_positions(buffer: *mut ffi::rb_buffer_t) -> *mut GlyphPosition {
-    let buffer = Buffer::from_ptr_mut(buffer);
-    if !buffer.have_positions {
-        buffer.clear_positions();
-    }
-
-    buffer.pos.as_mut_ptr() as *mut _
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_get_scratch_flags(buffer: *const ffi::rb_buffer_t) -> u32 {
-    Buffer::from_ptr(buffer).scratch_flags.bits
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_set_scratch_flags(buffer: *mut ffi::rb_buffer_t, flags: u32) {
-    Buffer::from_ptr_mut(buffer).scratch_flags.bits = flags;
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_is_allocation_successful(buffer: *const ffi::rb_buffer_t) -> bool {
-    Buffer::from_ptr(buffer).successful
-}
-
-#[no_mangle]
-pub extern "C" fn rb_buffer_next_grapheme(buffer: *const ffi::rb_buffer_t, start: u32) -> u32 {
-    Buffer::from_ptr(buffer).next_grapheme(start as usize) as u32
 }

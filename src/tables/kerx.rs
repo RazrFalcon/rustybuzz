@@ -2,7 +2,7 @@
 
 use ttf_parser::GlyphId;
 use ttf_parser::parser::{Stream, FromData, NumFrom, Offset32, Offset};
-use crate::tables::aat::{self, extended_state_table};
+use crate::tables::aat;
 use super::kern::KerningRecord;
 
 const HEADER_SIZE: usize = 12;
@@ -65,10 +65,10 @@ impl<'a> Iterator for Subtables<'a> {
             }
             1 => {
                 let data = s.read_bytes(data_len)?;
-                let state_table = extended_state_table::Table::parse(data, self.number_of_glyphs)?;
+                let state_table = aat::StateTable::parse(data, self.number_of_glyphs)?;
 
                 // Actions offset is right after the state table.
-                let actions_offset: Offset32 = Stream::read_at(data, extended_state_table::Table::SIZE)?;
+                let actions_offset: Offset32 = Stream::read_at(data, aat::StateTable::SIZE)?;
                 // Actions offset is from the start of the state table and not from the start of subtable.
                 // And since we don't know the length of the actions data,
                 // simply store all the data after the offset.
@@ -86,7 +86,7 @@ impl<'a> Iterator for Subtables<'a> {
             }
             4 => {
                 let data = s.read_bytes(data_len)?;
-                let flags: u32 = Stream::read_at(data, extended_state_table::Table::SIZE)?;
+                let flags: u32 = Stream::read_at(data, aat::StateTable::SIZE)?;
                 let action_type = ((flags & 0xC0000000) >> 30) as u8;
                 let points_offset = usize::num_from(flags & 0x00FFFFFF);
 
@@ -98,7 +98,7 @@ impl<'a> Iterator for Subtables<'a> {
                 };
 
                 Subtable::Format4(format4::StateTable {
-                    state_table: extended_state_table::Table::parse(data, self.number_of_glyphs)?,
+                    state_table: aat::StateTable::parse(data, self.number_of_glyphs)?,
                     action_type,
                     control_points_data: data.get(points_offset..)?,
                 })
@@ -184,10 +184,7 @@ impl KerningPairs for Subtable0<'_> {
 
 
 pub mod format1 {
-    use ttf_parser::GlyphId;
-    use ttf_parser::parser::{Stream, FromData};
-    use crate::tables::aat::extended_state_table as state_table;
-    use state_table::State;
+    use super::*;
 
     /// A state machine entry.
     #[derive(Clone, Copy, Debug)]
@@ -211,9 +208,13 @@ pub mod format1 {
         }
     }
 
-    impl state_table::Entry for Entry {
-        fn new_state(&self) -> State {
-            State(self.new_state)
+    impl aat::Entry for Entry {
+        fn new_state(&self) -> u16 {
+            self.new_state
+        }
+
+        fn flags(&self) -> u16 {
+            self.flags
         }
 
         fn is_actionable(&self) -> bool {
@@ -240,7 +241,7 @@ pub mod format1 {
     }
 
     pub struct StateTable<'a> {
-        pub state_table: state_table::Table<'a>,
+        pub state_table: aat::StateTable<'a>,
         pub actions_data: &'a [u8],
         pub tuple_count: u32,
     }
@@ -252,18 +253,18 @@ pub mod format1 {
         }
     }
 
-    impl state_table::StateTable<Entry> for StateTable<'_> {
+    impl aat::StateTable2<Entry> for StateTable<'_> {
         fn class(&self, glyph_id: GlyphId) -> Option<u16> {
             self.state_table.class(glyph_id)
         }
 
-        fn entry(&self, state: State, class: u16) -> Option<Entry> {
+        fn entry(&self, state: u16, class: u16) -> Option<Entry> {
             self.state_table.entry(state, class)
         }
     }
 
     impl<'a> core::ops::Deref for StateTable<'a> {
-        type Target = state_table::Table<'a>;
+        type Target = aat::StateTable<'a>;
 
         fn deref(&self) -> &Self::Target {
             &self.state_table
@@ -318,10 +319,7 @@ fn get_format2_class(glyph_id: u16, offset: usize, data: &[u8]) -> Option<u16> {
 
 
 pub mod format4 {
-    use ttf_parser::GlyphId;
-    use ttf_parser::parser::{Stream, FromData};
-    use crate::tables::aat::extended_state_table as state_table;
-    use state_table::State;
+    use super::*;
 
     /// A state machine entry.
     #[derive(Clone, Copy, Debug)]
@@ -339,9 +337,13 @@ pub mod format4 {
         }
     }
 
-    impl state_table::Entry for Entry {
-        fn new_state(&self) -> State {
-            State(self.new_state)
+    impl aat::Entry for Entry {
+        fn new_state(&self) -> u16 {
+            self.new_state
+        }
+
+        fn flags(&self) -> u16 {
+            self.flags
         }
 
         fn is_actionable(&self) -> bool {
@@ -376,23 +378,23 @@ pub mod format4 {
 
 
     pub struct StateTable<'a> {
-        pub state_table: state_table::Table<'a>,
+        pub state_table: aat::StateTable<'a>,
         pub action_type: ActionType,
         pub control_points_data: &'a [u8],
     }
 
-    impl state_table::StateTable<Entry> for StateTable<'_> {
+    impl aat::StateTable2<Entry> for StateTable<'_> {
         fn class(&self, glyph_id: GlyphId) -> Option<u16> {
             self.state_table.class(glyph_id)
         }
 
-        fn entry(&self, state: State, class: u16) -> Option<Entry> {
+        fn entry(&self, state: u16, class: u16) -> Option<Entry> {
             self.state_table.entry(state, class)
         }
     }
 
     impl<'a> core::ops::Deref for StateTable<'a> {
-        type Target = state_table::Table<'a>;
+        type Target = aat::StateTable<'a>;
 
         fn deref(&self) -> &Self::Target {
             &self.state_table

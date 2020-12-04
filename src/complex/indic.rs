@@ -2,12 +2,12 @@ use std::convert::TryFrom;
 use std::cmp;
 use std::ops::Range;
 
-use crate::{ffi, script, Tag, Script, Mask, Face, GlyphInfo};
-use crate::buffer::{Buffer, BufferFlags};
+use crate::{script, Tag, Script, Mask, Face, GlyphInfo};
+use crate::buffer::{Buffer, BufferFlags, IntBits};
 use crate::ot::{feature, FeatureFlags, LayoutTable, Map, TableIndex, WouldApply, WouldApplyContext};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::normalize::ShapeNormalizationMode;
-use crate::unicode::{CharExt, GeneralCategoryExt};
+use crate::unicode::{CharExt, GeneralCategoryExt, hb_gc};
 use super::*;
 
 
@@ -455,35 +455,35 @@ impl IndicShapePlan {
 impl GlyphInfo {
     pub(crate) fn indic_category(&self) -> Category {
         unsafe {
-            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &IntBits = std::mem::transmute(&self.var2);
             std::mem::transmute(v.var_u8[2])
         }
     }
 
     pub(crate) fn set_indic_category(&mut self, c: Category) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
             v.var_u8[2] = c as u8;
         }
     }
 
     pub(crate) fn indic_position(&self) -> Position {
         unsafe {
-            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &IntBits = std::mem::transmute(&self.var2);
             std::mem::transmute(v.var_u8[3])
         }
     }
 
     pub(crate) fn set_indic_position(&mut self, c: Position) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
             v.var_u8[3] = c as u8;
         }
     }
 
     fn set_indic_position_raw(&mut self, c: u8) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
             v.var_u8[3] = c;
         }
     }
@@ -1827,9 +1827,9 @@ fn final_reordering_impl(
                         if new_pos <= base && base < old_pos {
                             // TODO: investigate
                             #[allow(unused_assignments)]
-                                {
-                                    base += 1;
-                                }
+                            {
+                                base += 1;
+                            }
                         }
                     }
                 }
@@ -1842,7 +1842,7 @@ fn final_reordering_impl(
     // Apply 'init' to the Left Matra if it's a word start.
     if buffer.info[start].indic_position() == Position::PreM {
         if start == 0 || (rb_flag_unsafe(buffer.info[start - 1].general_category().to_rb()) &
-            rb_flag_range(ffi::RB_UNICODE_GENERAL_CATEGORY_FORMAT, ffi::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)) == 0
+            rb_flag_range(hb_gc::RB_UNICODE_GENERAL_CATEGORY_FORMAT, hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)) == 0
         {
             buffer.info[start].mask |= plan.mask_array[indic_feature::INIT];
         } else {

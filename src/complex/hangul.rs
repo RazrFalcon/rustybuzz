@@ -1,5 +1,5 @@
-use crate::{ffi, Face, GlyphInfo, Mask};
-use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
+use crate::{Face, GlyphInfo, Mask};
+use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel, IntBits};
 use crate::ot::{feature, FeatureFlags, Map};
 use crate::plan::{ShapePlan, ShapePlanner};
 use super::*;
@@ -40,14 +40,14 @@ const TJMO: u8 = 3;
 impl GlyphInfo {
     fn hangul_shaping_feature(&self) -> u8 {
         unsafe {
-            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &IntBits = std::mem::transmute(&self.var2);
             v.var_u8[2]
         }
     }
 
     fn set_hangul_shaping_feature(&mut self, feature: u8) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
             v.var_u8[2] = feature;
         }
     }

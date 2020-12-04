@@ -8,6 +8,9 @@ pub const CONTEXTUAL_LIGATURES_OFF: u8 = 19;
 pub const HISTORICAL_LIGATURES_ON: u8 = 20;
 pub const HISTORICAL_LIGATURES_OFF: u8 = 21;
 
+// FeatureType::LetterCase
+pub const SMALL_CAPS: u8 = 3; // deprecated
+
 // FeatureType::VerticalSubstitution
 pub const SUBSTITUTE_VERTICAL_FORMS_ON: u8 = 0;
 pub const SUBSTITUTE_VERTICAL_FORMS_OFF: u8 = 1;

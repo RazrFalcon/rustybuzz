@@ -1,8 +1,8 @@
-use crate::{ffi, script, Tag, Face, GlyphInfo, Mask, Script};
-use crate::buffer::{Buffer, BufferScratchFlags};
+use crate::{script, Tag, Face, GlyphInfo, Mask, Script};
+use crate::buffer::{Buffer, BufferScratchFlags, IntBits};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
-use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class};
+use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class, hb_gc};
 use super::*;
 
 
@@ -131,14 +131,14 @@ pub enum JoiningType {
 impl GlyphInfo {
     fn arabic_shaping_action(&self) -> Action {
         unsafe {
-            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &IntBits = std::mem::transmute(&self.var2);
             std::mem::transmute(v.var_u8[2])
         }
     }
 
     fn set_arabic_shaping_action(&mut self, action: Action) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
             v.var_u8[2] = action as u8;
         }
     }
@@ -408,20 +408,20 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
 // https://github.com/harfbuzz/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516
 fn is_word_category(gc: GeneralCategory) -> bool {
     (rb_flag_unsafe(gc.to_rb()) &
-        (   rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_SPACING_MARK) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL)
+        (   rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_SPACING_MARK) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL)
         )) != 0
 }
 
@@ -518,9 +518,9 @@ fn get_joining_type(u: char, gc: GeneralCategory) -> JoiningType {
     }
 
     let ok = rb_flag_unsafe(gc.to_rb()) &
-        (   rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
-            rb_flag(ffi::RB_UNICODE_GENERAL_CATEGORY_FORMAT));
+        (   rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
+            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_FORMAT));
 
     if ok != 0 { JoiningType::T } else { JoiningType::U }
 }

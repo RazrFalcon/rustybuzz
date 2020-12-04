@@ -22,17 +22,6 @@ pub enum Direction {
 
 impl Direction {
     #[inline]
-    pub(crate) fn to_raw(self) -> crate::ffi::rb_direction_t {
-        match self {
-            Direction::Invalid => crate::ffi::RB_DIRECTION_INVALID,
-            Direction::LeftToRight => crate::ffi::RB_DIRECTION_LTR,
-            Direction::RightToLeft => crate::ffi::RB_DIRECTION_RTL,
-            Direction::TopToBottom => crate::ffi::RB_DIRECTION_TTB,
-            Direction::BottomToTop => crate::ffi::RB_DIRECTION_BTT,
-        }
-    }
-
-    #[inline]
     pub(crate) fn is_horizontal(self) -> bool {
         match self {
             Direction::Invalid => false,

@@ -1,8 +1,6 @@
-use std::ffi::c_void;
-
 use ttf_parser::GlyphId;
 
-use crate::{ffi, Face, Mask};
+use crate::{Face, Mask};
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::plan::ShapePlan;
 use crate::tables::gsubgpos::LookupFlags;
@@ -84,27 +82,7 @@ pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn rb_kern_machine_kern(
-    face: *const ffi::rb_face_t,
-    buffer: *mut ffi::rb_buffer_t,
-    kern_mask: ffi::rb_mask_t,
-    cross_stream: ffi::rb_bool_t,
-    machine: *const c_void,
-    machine_get_kerning: unsafe extern "C" fn(
-        *const c_void,
-        ffi::rb_codepoint_t,
-        ffi::rb_codepoint_t,
-    ) -> ffi::rb_position_t,
-) {
-    let face = Face::from_ptr(face);
-    let mut buffer = Buffer::from_ptr_mut(buffer);
-    let cross_stream = cross_stream != 0;
-    machine_kern(face, &mut buffer, kern_mask, cross_stream, |left, right| {
-        unsafe { machine_get_kerning(machine, left, right) }
-    });
-}
-
+// TODO: remove
 fn machine_kern(
     face: &Face,
     buffer: &mut Buffer,

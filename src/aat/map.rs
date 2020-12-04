@@ -1,6 +1,4 @@
-use std::marker::PhantomData;
-
-use crate::{ffi, Face, Tag};
+use crate::{Face, Tag, Mask};
 use super::feature_mappings::FEATURE_MAPPINGS;
 
 
@@ -31,72 +29,29 @@ pub enum FeatureType {
 }
 
 
-#[repr(C)]
+#[derive(Default)]
 pub struct Map {
-    // This has to have the exact same memory size as the C++ variant!
-    inner: ffi::rb_aat_map_t
+    pub chain_flags: Vec<Mask>,
 }
 
-impl Map {
-    pub fn new() -> Self {
-        // Initialized on the C++ side.
-        let mut map = Map {
-            inner: ffi::rb_aat_map_t {
-                _chain_flags: ffi::rb_vector_t::zero(),
-            }
-        };
 
-        unsafe { ffi::rb_aat_map_init(&mut map.inner); }
-
-        map
-    }
-
-    pub fn as_ptr(&self) -> *const ffi::rb_aat_map_t {
-        self as *const _ as *const ffi::rb_aat_map_t
-    }
-
-    pub fn as_ptr_mut(&mut self) -> *mut ffi::rb_aat_map_t {
-        self as *mut _ as *mut ffi::rb_aat_map_t
-    }
+#[derive(Copy, Clone)]
+pub struct FeatureInfo {
+    pub kind: u16,
+    pub setting: u16,
+    pub is_exclusive: bool,
 }
 
-impl Drop for Map {
-    fn drop(&mut self) {
-        unsafe { ffi::rb_aat_map_fini(&mut self.inner); }
-    }
+
+#[derive(Default)]
+pub struct MapBuilder {
+    pub features: Vec<FeatureInfo>,
 }
 
-#[repr(C)]
-pub struct MapBuilder<'a> {
-    // This has to have the exact same memory size as the C++ variant!
-    inner: ffi::rb_aat_map_builder_t,
-    phantom: PhantomData<&'a Face<'a>>,
-}
-
-impl<'a> MapBuilder<'a> {
-    pub fn new(face: &'a Face<'a>) -> Self {
-        // Initialized on the C++ side.
-        let mut builder = MapBuilder {
-            inner: ffi::rb_aat_map_builder_t {
-                _face: std::ptr::null(),
-                _features: ffi::rb_vector_t::zero(),
-            },
-            phantom: PhantomData,
-        };
-
-        unsafe { ffi::rb_aat_map_builder_init(&mut builder.inner, face.as_ptr()); }
-
-        builder
-    }
-
-    pub fn as_ptr(&mut self) -> *mut ffi::rb_aat_map_builder_t {
-        self as *mut _ as *mut ffi::rb_aat_map_builder_t
-    }
-
-    pub fn add_feature(&mut self, tag: Tag, value: u32) -> Option<()> {
+impl MapBuilder {
+    pub fn add_feature(&mut self, face: &Face, tag: Tag, value: u32) -> Option<()> {
         const FEATURE_TYPE_CHARACTER_ALTERNATIVES: u16 = 17;
 
-        let face = Face::from_ptr(self.inner._face);
         let feat = face.feat?;
 
         if tag == Tag::from_bytes(b"aalt") {
@@ -104,14 +59,11 @@ impl<'a> MapBuilder<'a> {
                 return Some(());
             }
 
-            unsafe {
-                ffi::rb_aat_map_builder_add_feature(
-                    self.as_ptr(),
-                    FEATURE_TYPE_CHARACTER_ALTERNATIVES as i32,
-                    value as i32,
-                    true,
-                );
-            }
+            self.features.push(FeatureInfo {
+                kind: FEATURE_TYPE_CHARACTER_ALTERNATIVES,
+                setting: value as u16,
+                is_exclusive: true,
+            });
         }
 
         let idx = FEATURE_MAPPINGS.binary_search_by(|map| map.ot_feature_tag.cmp(&tag)).ok()?;
@@ -135,14 +87,17 @@ impl<'a> MapBuilder<'a> {
 
         match feature {
             Some(feature) if feature.has_data() => {
-                unsafe {
-                    ffi::rb_aat_map_builder_add_feature(
-                        self.as_ptr(),
-                        mapping.aat_feature_type as i32,
-                        if value != 0 { mapping.selector_to_enable } else { mapping.selector_to_disable } as i32,
-                        feature.is_exclusive(),
-                    );
-                }
+                let setting = if value != 0 {
+                    mapping.selector_to_enable
+                } else {
+                    mapping.selector_to_disable
+                } as u16;
+
+                self.features.push(FeatureInfo {
+                    kind: mapping.aat_feature_type as u16,
+                    setting,
+                    is_exclusive: feature.is_exclusive(),
+                });
             }
             _ => {}
         }
@@ -150,15 +105,43 @@ impl<'a> MapBuilder<'a> {
         Some(())
     }
 
-    pub fn compile(&mut self) -> Map {
-        let mut map = Map::new();
-        unsafe { ffi::rb_aat_map_builder_compile(self.as_ptr(), map.as_ptr_mut()); }
-        map
+    pub fn has_feature(&self, kind: u16, setting: u16) -> bool {
+        self.features.binary_search_by(|probe| {
+            if probe.kind != kind {
+                probe.kind.cmp(&kind)
+            } else {
+                probe.setting.cmp(&setting)
+            }
+        }).is_ok()
     }
-}
 
-impl Drop for MapBuilder<'_> {
-    fn drop(&mut self) {
-        unsafe { ffi::rb_aat_map_builder_fini(&mut self.inner); }
+    pub fn compile(&mut self, face: &Face) -> Map {
+        // Sort features and merge duplicates.
+        self.features.sort_by(|a, b| {
+            if a.kind != b.kind {
+                a.kind.cmp(&b.kind)
+            } else if !a.is_exclusive && (a.setting & !1) != (b.setting & !1) {
+                a.setting.cmp(&b.setting)
+            } else {
+                std::cmp::Ordering::Equal
+            }
+        });
+
+        let mut j = 0;
+        for i in 0..self.features.len() {
+            // Nonexclusive feature selectors come in even/odd pairs to turn a setting on/off
+            // respectively, so we mask out the low-order bit when checking for "duplicates"
+            // (selectors referring to the same feature setting) here.
+            let non_exclusive = !self.features[i].is_exclusive &&
+                (self.features[i].setting & !1) != (self.features[j].setting & !1);
+
+            if self.features[i].kind != self.features[j].kind || non_exclusive {
+                j += 1;
+                self.features[j] = self.features[i];
+            }
+        }
+        self.features.truncate(j + 1);
+
+        super::metamorphosis::compile_flags(face, self).unwrap_or_default()
     }
 }

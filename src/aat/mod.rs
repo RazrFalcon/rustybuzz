@@ -1,21 +1,18 @@
 mod extended_kerning;
-mod map;
-mod feature_selector;
 mod feature_mappings;
+mod feature_selector;
+mod map;
+mod metamorphosis;
 mod tracking;
 
 pub use map::*;
 
-use crate::{ffi, Face};
+use crate::Face;
 use crate::buffer::Buffer;
 use crate::plan::ShapePlan;
 
-pub fn has_substitution(face: &Face) -> bool {
-    unsafe { ffi::rb_aat_layout_has_substitution(face.as_ptr()) != 0 }
-}
-
 pub fn substitute(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    unsafe { ffi::rb_aat_layout_substitute(plan.as_ptr(), face.as_ptr(), buffer.as_ptr()); }
+    metamorphosis::apply(plan, face, buffer);
 }
 
 pub fn position(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
@@ -27,9 +24,16 @@ pub fn track(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 }
 
 pub fn zero_width_deleted_glyphs(buffer: &mut Buffer) {
-    unsafe { ffi::rb_aat_layout_zero_width_deleted_glyphs(buffer.as_ptr()); }
+    for i in 0..buffer.len {
+        if buffer.info[i].codepoint == 0xFFFF {
+            buffer.pos[i].x_advance = 0;
+            buffer.pos[i].y_advance = 0;
+            buffer.pos[i].x_offset = 0;
+            buffer.pos[i].y_offset = 0;
+        }
+    }
 }
 
 pub fn remove_deleted_glyphs(buffer: &mut Buffer) {
-    unsafe { ffi::rb_aat_layout_remove_deleted_glyphs(buffer.as_ptr()); }
+    buffer.delete_glyphs_inplace(|info| info.codepoint == 0xFFFF )
 }

@@ -1,6 +1,6 @@
 use std::any::Any;
 
-use crate::{aat, ffi, Direction, Face, Feature, Language, Mask, Tag, Script};
+use crate::{aat, Direction, Face, Feature, Language, Mask, Tag, Script};
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
 use crate::ot::{self, feature, FeatureFlags, TableIndex};
 
@@ -50,16 +50,6 @@ impl ShapePlan {
         planner.compile()
     }
 
-    #[inline]
-    pub fn from_ptr(plan: *const ffi::rb_shape_plan_t) -> &'static Self {
-        unsafe { &*(plan as *const Self) }
-    }
-
-    #[inline]
-    pub fn as_ptr(&self) -> *const ffi::rb_shape_plan_t {
-        self as *const _ as *const ffi::rb_shape_plan_t
-    }
-
     pub fn data<T: 'static>(&self) -> &T {
         self.data.as_ref().unwrap().downcast_ref().unwrap()
     }
@@ -70,7 +60,7 @@ pub struct ShapePlanner<'a> {
     pub direction: Direction,
     pub script: Option<Script>,
     pub ot_map: ot::MapBuilder<'a>,
-    pub aat_map: aat::MapBuilder<'a>,
+    pub aat_map: aat::MapBuilder,
     pub apply_morx: bool,
     pub script_zero_marks: bool,
     pub script_fallback_mark_positioning: bool,
@@ -85,7 +75,7 @@ impl<'a> ShapePlanner<'a> {
         language: Option<&Language>,
     ) -> Self {
         let ot_map = ot::MapBuilder::new(face, script, language);
-        let aat_map = aat::MapBuilder::new(face);
+        let aat_map = aat::MapBuilder::default();
 
         let mut shaper = match script {
             Some(script) => complex_categorize(
@@ -100,8 +90,7 @@ impl<'a> ShapePlanner<'a> {
         let script_fallback_mark_positioning = shaper.fallback_position;
 
         // https://github.com/harfbuzz/harfbuzz/issues/2124
-        let apply_morx = aat::has_substitution(face)
-            && (direction.is_horizontal() || !face.gsub.is_some());
+        let apply_morx = face.morx.is_some() && (direction.is_horizontal() || !face.gsub.is_some());
 
         // https://github.com/harfbuzz/harfbuzz/issues/1528
         if apply_morx && shaper as *const _ != &DEFAULT_SHAPER as *const _ {
@@ -203,7 +192,7 @@ impl<'a> ShapePlanner<'a> {
 
         if self.apply_morx {
             for feature in user_features {
-                self.aat_map.add_feature(feature.tag, feature.value);
+                self.aat_map.add_feature(self.face, feature.tag, feature.value);
             }
         }
 
@@ -212,13 +201,14 @@ impl<'a> ShapePlanner<'a> {
         }
     }
 
+    // TODO: to just self
     fn compile(&mut self) -> ShapePlan {
         let ot_map = self.ot_map.compile();
 
         let aat_map = if self.apply_morx {
-            self.aat_map.compile()
+            self.aat_map.compile(self.face)
         } else {
-            aat::Map::new()
+            aat::Map::default()
         };
 
         let frac_mask = ot_map.one_mask(feature::FRACTIONS);
@@ -320,24 +310,4 @@ impl<'a> ShapePlanner<'a> {
 
         plan
     }
-}
-
-#[no_mangle]
-pub extern "C" fn rb_shape_plan_aat_map(plan: *const ffi::rb_shape_plan_t) -> *const ffi::rb_aat_map_t {
-    ShapePlan::from_ptr(plan).aat_map.as_ptr()
-}
-
-#[no_mangle]
-pub extern "C" fn rb_shape_plan_kern_mask(plan: *const ffi::rb_shape_plan_t) -> ffi::rb_mask_t {
-    ShapePlan::from_ptr(plan).kern_mask
-}
-
-#[no_mangle]
-pub extern "C" fn rb_shape_plan_trak_mask(plan: *const ffi::rb_shape_plan_t) -> ffi::rb_mask_t {
-    ShapePlan::from_ptr(plan).trak_mask
-}
-
-#[no_mangle]
-pub extern "C" fn rb_shape_plan_requested_kerning(plan: *const ffi::rb_shape_plan_t) -> ffi::rb_bool_t {
-    ShapePlan::from_ptr(plan).requested_kerning as ffi::rb_bool_t
 }

@@ -1,5 +1,5 @@
-use crate::{ffi, script, Tag, Face, GlyphInfo, Mask, Script};
-use crate::buffer::{Buffer, BufferFlags};
+use crate::{script, Tag, Face, GlyphInfo, Mask, Script};
+use crate::buffer::{Buffer, BufferFlags, IntBits};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
@@ -122,14 +122,14 @@ const OTHER_FEATURES: &[Tag] = &[
 impl GlyphInfo {
     fn use_category(&self) -> Category {
         unsafe {
-            let v: &ffi::rb_var_int_t = std::mem::transmute(&self.var2);
+            let v: &IntBits = std::mem::transmute(&self.var2);
             std::mem::transmute(v.var_u8[2])
         }
     }
 
     fn set_use_category(&mut self, c: Category) {
         unsafe {
-            let v: &mut ffi::rb_var_int_t = std::mem::transmute(&mut self.var2);
+            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
             v.var_u8[2] = c as u8;
         }
     }
