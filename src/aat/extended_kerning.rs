@@ -169,7 +169,10 @@ fn apply_state_machine_kerning<E: aat::Entry, T: aat::StateTable2<E>>(
             aat::class::END_OF_TEXT
         };
 
-        let entry: E = aat.entry(state, class).unwrap();
+        let entry: E = match aat.entry(state, class) {
+            Some(v) => v,
+            None => break,
+        };
 
         // Unsafe-to-break before this if not in state 0, as things might
         // go differently if we start from state 0 here.

@@ -68,7 +68,7 @@ impl WouldApply for SubstLookup<'_> {
 
 impl Apply for SubstLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        if self.covers(GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap())) {
+        if self.covers(ctx.buffer.cur(0).as_glyph()) {
             for subtable in &self.subtables {
                 if subtable.apply(ctx).is_some() {
                     return Some(());

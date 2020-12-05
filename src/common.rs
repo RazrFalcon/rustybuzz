@@ -174,13 +174,13 @@ impl std::str::FromStr for Direction {
 
 /// A script language.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub struct Language(pub(crate) std::ffi::CString);
+pub struct Language(String);
 
 impl Language {
     /// Returns the language as a string.
     #[inline]
     pub fn as_str(&self) -> &str {
-        self.0.to_str().unwrap()
+        self.0.as_str()
     }
 }
 
@@ -189,8 +189,7 @@ impl std::str::FromStr for Language {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if !s.is_empty() {
-            let s = s.to_ascii_lowercase();
-            Ok(Language(std::ffi::CString::new(s.into_bytes()).unwrap()))
+            Ok(Language(s.to_ascii_lowercase()))
         } else {
             Err("invalid language")
         }
