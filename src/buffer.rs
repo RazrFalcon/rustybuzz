@@ -1,5 +1,4 @@
 use std::convert::TryFrom;
-use std::fmt;
 
 use ttf_parser::GlyphId;
 
@@ -1677,6 +1676,10 @@ impl GlyphBuffer {
 
     /// Converts the glyph buffer content into a string.
     pub fn serialize(&self, face: &Face, flags: SerializeFlags) -> String {
+        self.serialize_impl(face, flags).unwrap_or_default()
+    }
+
+    fn serialize_impl(&self, face: &Face, flags: SerializeFlags) -> Result<String, std::fmt::Error> {
         use std::fmt::Write;
 
         let mut s = String::with_capacity(64);
@@ -1689,38 +1692,38 @@ impl GlyphBuffer {
             if !flags.contains(SerializeFlags::NO_GLYPH_NAMES) {
                 match face.glyph_name(info.as_glyph()) {
                     Some(name) => s.push_str(name),
-                    None => write!(&mut s, "gid{}", info.codepoint).unwrap(),
+                    None => write!(&mut s, "gid{}", info.codepoint)?,
                 }
             } else {
-                write!(&mut s, "{}", info.codepoint).unwrap();
+                write!(&mut s, "{}", info.codepoint)?;
             }
 
             if !flags.contains(SerializeFlags::NO_CLUSTERS) {
-                write!(&mut s, "={}", info.cluster).unwrap();
+                write!(&mut s, "={}", info.cluster)?;
             }
 
             if !flags.contains(SerializeFlags::NO_POSITIONS) {
                 if x + pos.x_offset != 0 || y + pos.y_offset != 0 {
-                    write!(&mut s, "@{},{}", x + pos.x_offset, y + pos.y_offset).unwrap();
+                    write!(&mut s, "@{},{}", x + pos.x_offset, y + pos.y_offset)?;
                 }
 
                 if !flags.contains(SerializeFlags::NO_ADVANCES) {
-                    write!(&mut s, "+{}", pos.x_advance).unwrap();
+                    write!(&mut s, "+{}", pos.x_advance)?;
                     if pos.y_advance != 0 {
-                        write!(&mut s, ",{}", pos.y_advance).unwrap();
+                        write!(&mut s, ",{}", pos.y_advance)?;
                     }
                 }
             }
 
             if flags.contains(SerializeFlags::GLYPH_FLAGS) {
                 if info.mask & glyph_flag::DEFINED != 0 {
-                    write!(&mut s, "#{:X}", info.mask & glyph_flag::DEFINED).unwrap();
+                    write!(&mut s, "#{:X}", info.mask & glyph_flag::DEFINED)?;
                 }
             }
 
             if flags.contains(SerializeFlags::GLYPH_EXTENTS) {
                 let extents = face.glyph_extents(info.as_glyph()).unwrap_or_default();
-                write!(&mut s, "<{},{},{},{}>", extents.x_bearing, extents.y_bearing, extents.width, extents.height).unwrap();
+                write!(&mut s, "<{},{},{},{}>", extents.x_bearing, extents.y_bearing, extents.width, extents.height)?;
             }
 
             if flags.contains(SerializeFlags::NO_ADVANCES) {
@@ -1736,12 +1739,12 @@ impl GlyphBuffer {
             s.pop();
         }
 
-        s
+        Ok(s)
     }
 }
 
-impl fmt::Debug for GlyphBuffer {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Debug for GlyphBuffer {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         fmt.debug_struct("GlyphBuffer")
             .field("glyph_positions", &self.glyph_positions())
             .field("glyph_infos", &self.glyph_infos())

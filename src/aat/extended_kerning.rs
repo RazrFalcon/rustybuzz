@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 
 use crate::Face;
 use crate::buffer::{BufferScratchFlags, Buffer};
-use crate::ot::{ApplyContext, AttachType, TableIndex};
+use crate::ot::{attach_type, ApplyContext, TableIndex};
 use crate::tables::aat;
 use crate::tables::{ankr, kerx};
 use crate::tables::gsubgpos::LookupFlags;
@@ -27,7 +27,7 @@ pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Optio
 
             // Attach all glyphs into a chain.
             for pos in &mut buffer.pos {
-                pos.set_attach_type(AttachType::Cursive as u8);
+                pos.set_attach_type(attach_type::CURSIVE);
                 pos.set_attach_chain(if buffer.direction.is_forward() { -1 } else { 1 });
                 // We intentionally don't set BufferScratchFlags::HAS_GPOS_ATTACHMENT,
                 // since there needs to be a non-zero attachment for post-positioning to
@@ -153,6 +153,8 @@ fn apply_simple_kerning(
     }
 }
 
+// TODO: use crate::tables::aat instead
+
 fn apply_state_machine_kerning<E: aat::Entry, T: aat::StateTable2<E>>(
     coverage: kerx::Coverage,
     aat: &T,
@@ -190,7 +192,11 @@ fn apply_state_machine_kerning<E: aat::Entry, T: aat::StateTable2<E>>(
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry: E = aat.entry(state, aat::class::END_OF_TEXT).unwrap();
+            let end_entry: E = match aat.entry(state, aat::class::END_OF_TEXT) {
+                Some(v) => v,
+                None => break,
+            };
+
             if end_entry.is_actionable() {
                 buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
             }
@@ -393,7 +399,7 @@ impl StateTableDriver<kerx::format4::StateTable<'_>, kerx::format4::Entry> for D
                 }
             }
 
-            buffer.cur_pos_mut().set_attach_type(AttachType::Mark as u8);
+            buffer.cur_pos_mut().set_attach_type(attach_type::MARK);
             let idx = buffer.idx;
             buffer.cur_pos_mut().set_attach_chain(self.mark as i16 - idx as i16);
             buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;

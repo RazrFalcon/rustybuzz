@@ -7,7 +7,7 @@ use crate::tables::gsubgpos::LookupFlags;
 use super::TableIndex;
 use super::apply::ApplyContext;
 use super::matching::SkippyIter;
-use crate::ot::AttachType;
+use crate::ot::attach_type;
 
 pub fn has_kerning(face: &Face) -> bool {
     face.kern.is_some()
@@ -54,7 +54,7 @@ pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 
             // Attach all glyphs into a chain.
             for pos in &mut buffer.pos {
-                pos.set_attach_type(AttachType::Cursive as u8);
+                pos.set_attach_type(attach_type::CURSIVE);
                 pos.set_attach_chain(if buffer.direction.is_forward() { -1 } else { 1 });
                 // We intentionally don't set BufferScratchFlags::HAS_GPOS_ATTACHMENT,
                 // since there needs to be a non-zero attachment for post-positioning to
@@ -190,7 +190,10 @@ fn apply_state_machine_kerning(
             state_machine::class::END_OF_TEXT
         };
 
-        let entry = machine.entry(state, class).unwrap();
+        let entry = match machine.entry(state, class) {
+            Some(v) => v,
+            None => break,
+        };
 
         // Unsafe-to-break before this if not in state 0, as things might
         // go differently if we start from state 0 here.
@@ -208,7 +211,11 @@ fn apply_state_machine_kerning(
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry = machine.entry(state, state_machine::class::END_OF_TEXT).unwrap();
+            let end_entry = match machine.entry(state, state_machine::class::END_OF_TEXT) {
+                Some(v) => v,
+                None => break,
+            };
+
             if end_entry.has_offset() {
                 buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
             }

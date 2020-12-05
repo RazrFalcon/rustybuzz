@@ -149,7 +149,10 @@ pub fn drive<T: FromData>(machine: &StateTable, c: &mut dyn Driver<T>, buffer: &
             class::END_OF_TEXT
         };
 
-        let entry: Entry2<T> = machine.entry2(state, class).unwrap();
+        let entry: Entry2<T> = match machine.entry2(state, class) {
+            Some(v) => v,
+            None => break,
+        };
 
         // Unsafe-to-break before this if not in state 0, as things might
         // go differently if we start from state 0 here.
@@ -167,7 +170,11 @@ pub fn drive<T: FromData>(machine: &StateTable, c: &mut dyn Driver<T>, buffer: &
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry: Entry2<T> = machine.entry2(state, class::END_OF_TEXT).unwrap();
+            let end_entry: Entry2<T> = match machine.entry2(state, class::END_OF_TEXT) {
+                Some(v) => v,
+                None => break,
+            };
+
             if c.is_actionable(&end_entry, buffer) {
                 buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
             }

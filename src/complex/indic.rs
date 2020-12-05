@@ -430,6 +430,7 @@ impl IndicShapePlan {
             }
         }
 
+        // TODO: what is this?
         // let mut virama_glyph = None;
         // if config.virama != 0 {
         //     if let Some(g) = face.glyph_index(char::try_from(config.virama).unwrap()) {

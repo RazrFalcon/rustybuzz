@@ -780,7 +780,7 @@ impl HintingDevice<'_> {
         }
 
         let s = ppem - self.start_size;
-        let byte = self.delta_values.get(s >> (4 - f)).unwrap();
+        let byte = self.delta_values.get(s >> (4 - f))?;
         let bits = byte >> (16 - (((s & ((1 << (4 - f)) - 1)) + 1) << f));
         let mask = 0xFFFF >> (16 - (1 << f));
 

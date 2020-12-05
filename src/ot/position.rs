@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use ttf_parser::GlyphId;
 use ttf_parser::parser::{Offset, Offset16};
 
@@ -62,8 +60,8 @@ fn propagate_attachment_offsets(
 
     propagate_attachment_offsets(pos, len, j, direction);
 
-    match AttachType::from_raw(kind).unwrap() {
-        AttachType::Mark => {
+    match kind {
+        attach_type::MARK => {
             pos[i].x_offset += pos[j].x_offset;
             pos[i].y_offset += pos[j].y_offset;
 
@@ -80,14 +78,14 @@ fn propagate_attachment_offsets(
                 }
             }
         }
-
-        AttachType::Cursive => {
+        attach_type::CURSIVE => {
             if direction.is_horizontal() {
                 pos[i].y_offset += pos[j].y_offset;
             } else {
                 pos[i].x_offset += pos[j].x_offset;
             }
         }
+        _ => {}
     }
 }
 
@@ -118,7 +116,7 @@ impl LayoutLookup for PosLookup<'_> {
 
 impl Apply for PosLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        if self.covers(GlyphId(u16::try_from(ctx.buffer.cur(0).codepoint).unwrap())) {
+        if self.covers(ctx.buffer.cur(0).as_glyph()) {
             for subtable in &self.subtables {
                 if subtable.apply(ctx).is_some() {
                     return Some(());
@@ -288,7 +286,7 @@ impl Apply for CursivePos<'_> {
         // where new parent is on the path from old chain...
         reverse_cursive_minor_offset(pos, child, direction, parent);
 
-        pos[child].set_attach_type(AttachType::Cursive as u8);
+        pos[child].set_attach_type(attach_type::CURSIVE);
         pos[child].set_attach_chain((parent as isize - child as isize) as i16);
 
         ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
@@ -317,7 +315,7 @@ fn reverse_cursive_minor_offset(
 ) {
     let chain = pos[i].attach_chain();
     let attach_type = pos[i].attach_type();
-    if chain == 0 || attach_type & AttachType::Cursive as u8 == 0 {
+    if chain == 0 || attach_type & attach_type::CURSIVE == 0 {
         return;
     }
 
@@ -601,7 +599,7 @@ impl<'a> MarkArray<'a> {
         let pos = ctx.buffer.cur_pos_mut();
         pos.x_offset = base_x - mark_x;
         pos.y_offset = base_y - mark_y;
-        pos.set_attach_type(AttachType::Mark as u8);
+        pos.set_attach_type(attach_type::MARK);
         pos.set_attach_chain((glyph_pos as isize - idx as isize) as i16);
 
         ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
@@ -611,18 +609,7 @@ impl<'a> MarkArray<'a> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-pub enum AttachType {
-    Mark = 1,
-    Cursive = 2,
-}
-
-impl AttachType {
-    fn from_raw(kind: u8) -> Option<Self> {
-        match kind {
-            1 => Some(Self::Mark),
-            2 => Some(Self::Cursive),
-            _ => None,
-        }
-    }
+pub mod attach_type {
+    pub const MARK: u8 = 1;
+    pub const CURSIVE: u8 = 2;
 }
