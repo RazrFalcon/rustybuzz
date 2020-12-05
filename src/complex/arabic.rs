@@ -1,5 +1,5 @@
 use crate::{script, Tag, Face, GlyphInfo, Mask, Script};
-use crate::buffer::{Buffer, BufferScratchFlags, IntBits};
+use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class, hb_gc};
@@ -40,76 +40,71 @@ fn feature_is_syriac(tag: Tag) -> bool {
 }
 
 
-#[allow(dead_code)]
-#[repr(u8)]
-#[derive(Clone, Copy, PartialEq, Debug)]
-enum Action {
-    ISOL = 0,
-    FINA = 1,
-    FIN2 = 2,
-    FIN3 = 3,
-    MEDI = 4,
-    MED2 = 5,
-    INIT = 6,
-    NONE = 7,
+mod action {
+    pub const ISOL: u8 = 0;
+    pub const FINA: u8 = 1;
+    pub const FIN2: u8 = 2;
+    pub const FIN3: u8 = 3;
+    pub const MEDI: u8 = 4;
+    pub const MED2: u8 = 5;
+    pub const INIT: u8 = 6;
+    pub const NONE: u8 = 7;
 
     // We abuse the same byte for other things...
-    StretchingFixed = 8,
-    StretchingRepeating = 9,
-}
+    pub const STRETCHING_FIXED: u8 = 8;
+    pub const STRETCHING_REPEATING: u8 = 9;
 
-impl Action {
     #[inline]
-    fn is_stch(self) -> bool {
-        matches!(self, Action::StretchingFixed | Action::StretchingRepeating)
+    pub fn is_stch(n: u8) -> bool {
+        matches!(n, STRETCHING_FIXED | STRETCHING_REPEATING)
     }
 }
 
 
-const STATE_TABLE: &[[(Action, Action, u16); 6]] = &[
+const STATE_TABLE: &[[(u8, u8, u16); 6]] = &[
     // jt_U,          jt_L,          jt_R,
     // jt_D,          jg_ALAPH,      jg_DALATH_RISH
 
     // State 0: prev was U, not willing to join.
     [
-        (Action::NONE, Action::NONE, 0), (Action::NONE, Action::ISOL, 2), (Action::NONE, Action::ISOL, 1),
-        (Action::NONE, Action::ISOL, 2), (Action::NONE, Action::ISOL, 1), (Action::NONE, Action::ISOL, 6),
+        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::NONE, action::ISOL, 1),
+        (action::NONE, action::ISOL, 2), (action::NONE, action::ISOL, 1), (action::NONE, action::ISOL, 6),
     ],
 
-    // State 1: prev was R or Action::ISOL/ALAPH, not willing to join.
+    // State 1: prev was R or action::ISOL/ALAPH, not willing to join.
     [
-        (Action::NONE, Action::NONE, 0), (Action::NONE, Action::ISOL, 2), (Action::NONE, Action::ISOL, 1),
-        (Action::NONE, Action::ISOL, 2), (Action::NONE, Action::FIN2, 5), (Action::NONE, Action::ISOL, 6),
+        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::NONE, action::ISOL, 1),
+        (action::NONE, action::ISOL, 2), (action::NONE, action::FIN2, 5), (action::NONE, action::ISOL, 6),
     ],
 
-    // State 2: prev was D/L in Action::ISOL form, willing to join.
+    // State 2: prev was D/L in action::ISOL form, willing to join.
     [
-        (Action::NONE, Action::NONE, 0), (Action::NONE, Action::ISOL, 2), (Action::INIT, Action::FINA, 1),
-        (Action::INIT, Action::FINA, 3), (Action::INIT, Action::FINA, 4), (Action::INIT, Action::FINA, 6),
+        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::INIT, action::FINA, 1),
+        (action::INIT, action::FINA, 3), (action::INIT, action::FINA, 4), (action::INIT, action::FINA, 6),
     ],
 
-    // State 3: prev was D in Action::FINA form, willing to join.
+    // State 3: prev was D in action::FINA form, willing to join.
     [
-        (Action::NONE, Action::NONE, 0), (Action::NONE, Action::ISOL, 2), (Action::MEDI, Action::FINA, 1),
-        (Action::MEDI, Action::FINA, 3), (Action::MEDI, Action::FINA, 4), (Action::MEDI, Action::FINA, 6),
+        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::MEDI, action::FINA, 1),
+        (action::MEDI, action::FINA, 3), (action::MEDI, action::FINA, 4), (action::MEDI, action::FINA, 6),
     ],
 
-    // State 4: prev was Action::FINA ALAPH, not willing to join.
+    // State 4: prev was action::FINA ALAPH, not willing to join.
     [
-        (Action::NONE, Action::NONE, 0), (Action::NONE, Action::ISOL, 2), (Action::MED2, Action::ISOL, 1),
-        (Action::MED2, Action::ISOL, 2), (Action::MED2, Action::FIN2, 5), (Action::MED2, Action::ISOL, 6),
+        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::MED2, action::ISOL, 1),
+        (action::MED2, action::ISOL, 2), (action::MED2, action::FIN2, 5), (action::MED2, action::ISOL, 6),
     ],
 
     // State 5: prev was FIN2/FIN3 ALAPH, not willing to join.
     [
-        (Action::NONE, Action::NONE, 0), (Action::NONE, Action::ISOL, 2), (Action::ISOL, Action::ISOL, 1),
-        (Action::ISOL, Action::ISOL, 2), (Action::ISOL, Action::FIN2, 5), (Action::ISOL, Action::ISOL, 6),
+        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::ISOL, action::ISOL, 1),
+        (action::ISOL, action::ISOL, 2), (action::ISOL, action::FIN2, 5), (action::ISOL, action::ISOL, 6),
     ],
 
     // State 6: prev was DALATH/RISH, not willing to join.
     [
-        (Action::NONE, Action::NONE, 0), (Action::NONE, Action::ISOL, 2), (Action::NONE, Action::ISOL, 1),
-        (Action::NONE, Action::ISOL, 2), (Action::NONE, Action::FIN3, 5), (Action::NONE, Action::ISOL, 6),
+        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::NONE, action::ISOL, 1),
+        (action::NONE, action::ISOL, 2), (action::NONE, action::FIN3, 5), (action::NONE, action::ISOL, 6),
     ]
 ];
 
@@ -129,18 +124,14 @@ pub enum JoiningType {
 
 
 impl GlyphInfo {
-    fn arabic_shaping_action(&self) -> Action {
-        unsafe {
-            let v: &IntBits = std::mem::transmute(&self.var2);
-            std::mem::transmute(v.var_u8[2])
-        }
+    fn arabic_shaping_action(&self) -> u8 {
+        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
+        v[2]
     }
 
-    fn set_arabic_shaping_action(&mut self, action: Action) {
-        unsafe {
-            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
-            v.var_u8[2] = action as u8;
-        }
+    fn set_arabic_shaping_action(&mut self, action: u8) {
+        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
+        v[2] = action;
     }
 }
 
@@ -259,9 +250,9 @@ fn record_stch(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     for i in 0..len {
         if info[i].is_multiplied() {
             let comp = if info[i].lig_comp() % 2 != 0 {
-                Action::StretchingRepeating
+                action::STRETCHING_REPEATING
             } else {
-                Action::StretchingFixed
+                action::STRETCHING_FIXED
             };
 
             info[i].set_arabic_shaping_action(comp);
@@ -300,7 +291,7 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
         let mut i = buffer.len;
         let mut j = new_len;
         while i != 0 {
-            if !buffer.info[i - 1].arabic_shaping_action().is_stch() {
+            if !action::is_stch(buffer.info[i - 1].arabic_shaping_action()) {
                 if step == CUT {
                     j -= 1;
                     buffer.info[j] = buffer.info[i - 1];
@@ -319,11 +310,11 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
             let mut n_repeating: i32 = 0;
 
             let end = i;
-            while i != 0 && buffer.info[i - 1].arabic_shaping_action().is_stch() {
+            while i != 0 && action::is_stch(buffer.info[i - 1].arabic_shaping_action()) {
                 i -= 1;
                 let width = face.glyph_h_advance(buffer.info[i].as_glyph()) as i32;
 
-                if buffer.info[i].arabic_shaping_action() == Action::StretchingFixed {
+                if buffer.info[i].arabic_shaping_action() == action::STRETCHING_FIXED {
                     w_fixed += width;
                 } else {
                     w_repeating += width;
@@ -334,7 +325,7 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
             let start = i;
             let mut context = i;
             while context != 0 &&
-                !buffer.info[context - 1].arabic_shaping_action().is_stch() &&
+                !action::is_stch(buffer.info[context - 1].arabic_shaping_action()) &&
                 (buffer.info[context - 1].is_default_ignorable() ||
                     is_word_category(buffer.info[context - 1].general_category()))
             {
@@ -372,7 +363,7 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
                     let width = face.glyph_h_advance(buffer.info[k - 1].as_glyph()) as i32;
 
                     let mut repeat = 1;
-                    if buffer.info[k - 1].arabic_shaping_action() == Action::StretchingRepeating {
+                    if buffer.info[k - 1].arabic_shaping_action() == action::STRETCHING_REPEATING {
                         repeat += n_copies;
                     }
 
@@ -463,12 +454,12 @@ fn arabic_joining(buffer: &mut Buffer) {
             buffer.info[i].general_category(),
         );
         if this_type == JoiningType::T {
-            buffer.info[i].set_arabic_shaping_action(Action::NONE);
+            buffer.info[i].set_arabic_shaping_action(action::NONE);
             continue;
         }
 
         let entry = &STATE_TABLE[state][this_type as usize];
-        if entry.0 != Action::NONE && prev.is_some() {
+        if entry.0 != action::NONE && prev.is_some() {
             if let Some(prev) = prev {
                 buffer.info[prev].set_arabic_shaping_action(entry.0);
                 buffer.unsafe_to_break(prev, i + 1);
@@ -489,7 +480,7 @@ fn arabic_joining(buffer: &mut Buffer) {
         }
 
         let entry = &STATE_TABLE[state][this_type as usize];
-        if entry.0 != Action::NONE && prev.is_some() {
+        if entry.0 != action::NONE && prev.is_some() {
             if let Some(prev) = prev {
                 buffer.info[prev].set_arabic_shaping_action(entry.0);
             }

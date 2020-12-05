@@ -3,7 +3,7 @@ use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use super::indic::{Category, Position};
+use super::indic::{category, position};
 use super::*;
 
 
@@ -59,22 +59,22 @@ impl GlyphInfo {
         // These categories are experimentally extracted from what Uniscribe allows.
 
         match u {
-            0x179A => cat = Category::Ra,
-            0x17CC | 0x17C9 | 0x17CA => cat = Category::Robatic,
-            0x17C6 | 0x17CB | 0x17CD | 0x17CE | 0x17CF | 0x17D0 | 0x17D1 => cat = Category::Xgroup,
+            0x179A => cat = category::RA,
+            0x17CC | 0x17C9 | 0x17CA => cat = category::ROBATIC,
+            0x17C6 | 0x17CB | 0x17CD | 0x17CE | 0x17CF | 0x17D0 | 0x17D1 => cat = category::X_GROUP,
             // Just guessing. Uniscribe doesn't categorize it.
-            0x17C7 | 0x17C8 | 0x17DD | 0x17D3 => cat = Category::Ygroup,
+            0x17C7 | 0x17C8 | 0x17DD | 0x17D3 => cat = category::Y_GROUP,
             _ => {}
         }
 
         // Re-assign position.
 
-        if cat == Category::M {
+        if cat == category::M {
             match pos {
-                Position::PreC => cat = Category::VPre,
-                Position::BelowC => cat = Category::VBlw,
-                Position::AboveC => cat = Category::VAbv,
-                Position::PostC => cat = Category::VPst,
+                position::PRE_C => cat = category::V_PRE,
+                position::BELOW_C => cat = category::V_BLW,
+                position::ABOVE_C => cat = category::V_AVB,
+                position::POST_C => cat = category::V_PST,
                 _ => {}
             }
         }
@@ -204,7 +204,7 @@ fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
             // Insert dottedcircle after possible Repha.
             while buffer.idx < buffer.len &&
                 last_syllable == buffer.cur(0).syllable() &&
-                buffer.cur(0).indic_category() == Category::Repha
+                buffer.cur(0).indic_category() == category::REPHA
             {
                 buffer.next_glyph();
             }
@@ -271,10 +271,10 @@ fn reorder_consonant_syllable(
         // Subscript Type 2 - The COENG + RO characters are reordered to immediately
         // before the base glyph. Then the COENG + RO characters are assigned to have
         // the 'pref' OpenType feature applied to them.
-        if buffer.info[i].indic_category() == Category::Coeng && num_coengs <= 2 && i + 1 < end {
+        if buffer.info[i].indic_category() == category::COENG && num_coengs <= 2 && i + 1 < end {
             num_coengs += 1;
 
-            if buffer.info[i + 1].indic_category() == Category::Ra {
+            if buffer.info[i + 1].indic_category() == category::RA {
                 for j in 0..2 {
                     buffer.info[i + j].mask |= plan.mask_array[khmer_feature::PREF];
                 }
@@ -303,7 +303,7 @@ fn reorder_consonant_syllable(
 
                 num_coengs = 2; // Done.
             }
-        } else if buffer.info[i].indic_category() == Category::VPre {
+        } else if buffer.info[i].indic_category() == category::V_PRE {
             // Reorder left matra piece.
 
             // Move to the start.

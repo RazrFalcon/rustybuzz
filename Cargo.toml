@@ -14,6 +14,7 @@ exclude = ["benches/**"]
 
 [dependencies]
 bitflags = "1.2"
+bytemuck = "1.4"
 smallvec = "1.4"
 ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "fa7f156" }
 unicode-bidi-mirroring = "0.1"

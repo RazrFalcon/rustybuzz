@@ -2,7 +2,7 @@ use crate::{Tag, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
-use super::indic::{Category, Position};
+use super::indic::{category, position};
 use super::*;
 
 
@@ -66,12 +66,12 @@ impl GlyphInfo {
         // https://docs.microsoft.com/en-us/typography/script-development/myanmar#analyze
 
         if (0xFE00..=0xFE0F).contains(&u) {
-            cat = Category::VS;
+            cat = category::VS;
         }
 
         match u {
             // The spec says C, IndicSyllableCategory doesn't have.
-            0x104E => cat = Category::C,
+            0x104E => cat = category::C,
 
             0x002D |
             0x00A0 |
@@ -85,18 +85,18 @@ impl GlyphInfo {
             0x25FB |
             0x25FC |
             0x25FD |
-            0x25FE => cat = Category::Placeholder,
+            0x25FE => cat = category::PLACEHOLDER,
 
             0x1004 |
             0x101B |
-            0x105A => cat = Category::Ra,
+            0x105A => cat = category::RA,
 
             0x1032 |
-            0x1036 => cat = Category::A,
+            0x1036 => cat = category::A,
 
-            0x1039 => cat = Category::H,
+            0x1039 => cat = category::H,
 
-            0x103A => cat = Category::Symbol,
+            0x103A => cat = category::SYMBOL,
 
             0x1041 |
             0x1042 |
@@ -116,22 +116,22 @@ impl GlyphInfo {
             0x1096 |
             0x1097 |
             0x1098 |
-            0x1099 => cat = Category::D,
+            0x1099 => cat = category::D,
 
             // XXX The spec says D0, but Uniscribe doesn't seem to do.
-            0x1040 => cat = Category::D,
+            0x1040 => cat = category::D,
 
             0x103E |
-            0x1060 => cat = Category::Xgroup,
+            0x1060 => cat = category::X_GROUP,
 
-            0x103C => cat = Category::Ygroup,
+            0x103C => cat = category::Y_GROUP,
 
             0x103D |
-            0x1082 => cat = Category::MW,
+            0x1082 => cat = category::MW,
 
             0x103B |
             0x105E |
-            0x105F => cat = Category::MY,
+            0x105F => cat = category::MY,
 
             0x1063 |
             0x1064 |
@@ -140,7 +140,7 @@ impl GlyphInfo {
             0x106B |
             0x106C |
             0x106D |
-            0xAA7B => cat = Category::PT,
+            0xAA7B => cat = category::PT,
 
             0x1038 |
             0x1087 |
@@ -153,30 +153,30 @@ impl GlyphInfo {
             0x108F |
             0x109A |
             0x109B |
-            0x109C => cat = Category::SM,
+            0x109C => cat = category::SM,
 
             0x104A |
-            0x104B => cat = Category::P,
+            0x104B => cat = category::P,
 
             // https://github.com/harfbuzz/harfbuzz/issues/218
             0xAA74 |
             0xAA75 |
-            0xAA76 => cat = Category::C,
+            0xAA76 => cat = category::C,
 
             _ => {}
         }
 
         // Re-assign position.
 
-        if cat == Category::M {
+        if cat == category::M {
             match pos {
-                Position::PreC => {
-                    cat = Category::VPre;
-                    pos = Position::PreM;
+                position::PRE_C => {
+                    cat = category::V_PRE;
+                    pos = position::PRE_M;
                 }
-                Position::BelowC => cat = Category::VBlw,
-                Position::AboveC => cat = Category::VAbv,
-                Position::PostC => cat = Category::VPst,
+                position::BELOW_C => cat = category::V_BLW,
+                position::ABOVE_C => cat = category::V_AVB,
+                position::POST_C => cat = category::V_PST,
                 _ => {}
             }
         }
@@ -314,9 +314,9 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut limit = start;
         if start + 3 <= end &&
-            buffer.info[start + 0].indic_category() == Category::Ra &&
-            buffer.info[start + 1].indic_category() == Category::Symbol &&
-            buffer.info[start + 2].indic_category() == Category::H
+            buffer.info[start + 0].indic_category() == category::RA &&
+            buffer.info[start + 1].indic_category() == category::SYMBOL &&
+            buffer.info[start + 2].indic_category() == category::H
         {
             limit += 3;
             base = start;
@@ -341,59 +341,59 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut i = start;
         while i < start + if has_reph { 3 } else { 0 } {
-            buffer.info[i].set_indic_position(Position::AfterMain);
+            buffer.info[i].set_indic_position(position::AFTER_MAIN);
             i += 1;
         }
 
         while i < base {
-            buffer.info[i].set_indic_position(Position::PreC);
+            buffer.info[i].set_indic_position(position::PRE_C);
             i += 1;
         }
 
         if i < end {
-            buffer.info[i].set_indic_position(Position::BaseC);
+            buffer.info[i].set_indic_position(position::BASE_C);
             i += 1;
         }
 
-        let mut pos = Position::AfterMain;
+        let mut pos = position::AFTER_MAIN;
         // The following loop may be ugly, but it implements all of
         // Myanmar reordering!
         for i in i..end {
             // Pre-base reordering
-            if buffer.info[i].indic_category() == Category::Ygroup {
-                buffer.info[i].set_indic_position(Position::PreC);
+            if buffer.info[i].indic_category() == category::Y_GROUP {
+                buffer.info[i].set_indic_position(position::PRE_C);
                 continue;
             }
 
             // Left matra
-            if buffer.info[i].indic_position() < Position::BaseC {
+            if buffer.info[i].indic_position() < position::BASE_C {
                 continue;
             }
 
-            if buffer.info[i].indic_category() == Category::VS {
+            if buffer.info[i].indic_category() == category::VS {
                 let t = buffer.info[i - 1].indic_position();
                 buffer.info[i].set_indic_position(t);
                 continue;
             }
 
-            if pos == Position::AfterMain && buffer.info[i].indic_category() == Category::VBlw {
-                pos = Position::BelowC;
+            if pos == position::AFTER_MAIN && buffer.info[i].indic_category() == category::V_BLW {
+                pos = position::BELOW_C;
                 buffer.info[i].set_indic_position(pos);
                 continue;
             }
 
-            if pos == Position::BelowC && buffer.info[i].indic_category() == Category::A {
-                buffer.info[i].set_indic_position(Position::BeforeSub);
+            if pos == position::BELOW_C && buffer.info[i].indic_category() == category::A {
+                buffer.info[i].set_indic_position(position::BEFORE_SUB);
                 continue;
             }
 
-            if pos == Position::BelowC && buffer.info[i].indic_category() == Category::VBlw {
+            if pos == position::BELOW_C && buffer.info[i].indic_category() == category::V_BLW {
                 buffer.info[i].set_indic_position(pos);
                 continue;
             }
 
-            if pos == Position::BelowC && buffer.info[i].indic_category() != Category::A {
-                pos = Position::AfterSub;
+            if pos == position::BELOW_C && buffer.info[i].indic_category() != category::A {
+                pos = position::AFTER_SUB;
                 buffer.info[i].set_indic_position(pos);
                 continue;
             }

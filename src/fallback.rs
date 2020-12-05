@@ -3,7 +3,7 @@ use ttf_parser::GlyphId;
 use crate::{Direction, Face};
 use crate::face::GlyphExtents;
 use crate::buffer::{Buffer, GlyphPosition};
-use crate::unicode::{modified_combining_class, CanonicalCombiningClass, GeneralCategory, Space};
+use crate::unicode::{space, modified_combining_class, CanonicalCombiningClass, GeneralCategory};
 use crate::plan::ShapePlan;
 
 pub fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
@@ -253,7 +253,7 @@ fn position_around_base(
                 info.as_glyph(),
                 pos,
                 &mut cluster_extents,
-                unsafe { std::mem::transmute(this_combining_class) },
+                conv_combining_class(this_combining_class),
             );
 
             pos.x_advance = 0;
@@ -422,15 +422,13 @@ pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         };
 
         match space_type {
-            Space::Space => {}
-
-            Space::SpaceEm |
-            Space::SpaceEm2 |
-            Space::SpaceEm3 |
-            Space::SpaceEm4 |
-            Space::SpaceEm5 |
-            Space::SpaceEm6 |
-            Space::SpaceEm16 => {
+            space::SPACE_EM |
+            space::SPACE_EM_2 |
+            space::SPACE_EM_3 |
+            space::SPACE_EM_4 |
+            space::SPACE_EM_5 |
+            space::SPACE_EM_6 |
+            space::SPACE_EM_16 => {
                 let length = (face.units_per_em() + (space_type as i32) / 2) / space_type as i32;
                 if horizontal {
                     pos.x_advance = length;
@@ -439,7 +437,7 @@ pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 }
             }
 
-            Space::Space4Em18 => {
+            space::SPACE_4_EM_18 => {
                 let length = ((face.units_per_em() as i64) * 4 / 18) as i32;
                 if horizontal {
                     pos.x_advance = length
@@ -448,7 +446,7 @@ pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 }
             }
 
-            Space::SpaceFigure => {
+            space::SPACE_FIGURE => {
                 for u in '0'..='9' {
                     if let Some(glyph) = face.glyph_index(u as u32) {
                         if horizontal {
@@ -461,7 +459,7 @@ pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 }
             }
 
-            Space::SpacePunctuation => {
+            space::SPACE_PUNCTUATION => {
                 let punct = face
                     .glyph_index('.' as u32)
                     .or_else(|| face.glyph_index(',' as u32));
@@ -475,7 +473,7 @@ pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 }
             }
 
-            Space::SpaceNarrow => {
+            space::SPACE_NARROW => {
                 // Half-space?
                 // Unicode doc https://unicode.org/charts/PDF/U2000.pdf says ~1/4 or 1/5 of EM.
                 // However, in my testing, many fonts have their regular space being about that
@@ -487,6 +485,72 @@ pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                     pos.y_advance /= 2;
                 }
             }
+
+            _ => {}
         }
+    }
+}
+
+// TODO: can we cast directly?
+fn conv_combining_class(n: u8) -> CanonicalCombiningClass {
+    use CanonicalCombiningClass as Class;
+    match n {
+        1 => Class::Overlay,
+        6 => Class::HanReading,
+        7 => Class::Nukta,
+        8 => Class::KanaVoicing,
+        9 => Class::Virama,
+        10 => Class::CCC10,
+        11 => Class::CCC11,
+        12 => Class::CCC12,
+        13 => Class::CCC13,
+        14 => Class::CCC14,
+        15 => Class::CCC15,
+        16 => Class::CCC16,
+        17 => Class::CCC17,
+        18 => Class::CCC18,
+        19 => Class::CCC19,
+        20 => Class::CCC20,
+        21 => Class::CCC21,
+        22 => Class::CCC22,
+        23 => Class::CCC23,
+        24 => Class::CCC24,
+        25 => Class::CCC25,
+        26 => Class::CCC26,
+        27 => Class::CCC27,
+        28 => Class::CCC28,
+        29 => Class::CCC29,
+        30 => Class::CCC30,
+        31 => Class::CCC31,
+        32 => Class::CCC32,
+        33 => Class::CCC33,
+        34 => Class::CCC34,
+        35 => Class::CCC35,
+        36 => Class::CCC36,
+        84 => Class::CCC84,
+        91 => Class::CCC91,
+        103 => Class::CCC103,
+        107 => Class::CCC107,
+        118 => Class::CCC118,
+        122 => Class::CCC122,
+        129 => Class::CCC129,
+        130 => Class::CCC130,
+        132 => Class::CCC132,
+        200 => Class::AttachedBelowLeft,
+        202 => Class::AttachedBelow,
+        214 => Class::AttachedAbove,
+        216 => Class::AttachedAboveRight,
+        218 => Class::BelowLeft,
+        220 => Class::Below,
+        222 => Class::BelowRight,
+        224 => Class::Left,
+        226 => Class::Right,
+        228 => Class::AboveLeft,
+        230 => Class::Above,
+        232 => Class::AboveRight,
+        233 => Class::DoubleBelow,
+        234 => Class::DoubleAbove,
+        240 => Class::IotaSubscript,
+        _ => Class::NotReordered,
     }
 }

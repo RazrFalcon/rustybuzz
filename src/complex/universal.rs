@@ -1,5 +1,5 @@
 use crate::{script, Tag, Face, GlyphInfo, Mask, Script};
-use crate::buffer::{Buffer, BufferFlags, IntBits};
+use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
@@ -24,63 +24,62 @@ pub const UNIVERSAL_SHAPER: ComplexShaper = ComplexShaper {
 };
 
 
-#[allow(dead_code)]
-#[derive(Clone, Copy, PartialEq)]
-pub enum Category {
-    O       = 0,    // OTHER
+pub type Category = u8;
+pub mod category {
+    pub const O: u8       = 0;    // OTHER
 
-    B       = 1,    // BASE
-    IND     = 3,    // BASE_IND
-    N       = 4,    // BASE_NUM
-    GB      = 5,    // BASE_OTHER
-    CGJ     = 6,    // CGJ
-//    F       = 7,    // CONS_FINAL
-    FM      = 8,    // CONS_FINAL_MOD
-//    M       = 9,    // CONS_MED
-//    CM      = 10,   // CONS_MOD
-    SUB     = 11,   // CONS_SUB
-    H       = 12,   // HALANT
+    pub const B: u8       = 1;    // BASE
+    pub const IND: u8     = 3;    // BASE_IND
+    pub const N: u8       = 4;    // BASE_NUM
+    pub const GB: u8      = 5;    // BASE_OTHER
+    pub const CGJ: u8     = 6;    // CGJ
+    // pub const F: u8       = 7;    // CONS_FINAL
+    pub const FM: u8      = 8;    // CONS_FINAL_MOD
+    // pub const M: u8       = 9;    // CONS_MED
+    // pub const CM: u8      = 10;   // CONS_MOD
+    pub const SUB: u8     = 11;   // CONS_SUB
+    pub const H: u8       = 12;   // HALANT
 
-    HN      = 13,   // HALANT_NUM
-    ZWNJ    = 14,   // Zero width non-joiner
-    ZWJ     = 15,   // Zero width joiner
-    WJ      = 16,   // Word joiner
-    Rsv     = 17,   // Reserved characters
-    R       = 18,   // REPHA
-    S       = 19,   // SYM
-//    SM      = 20,   // SYM_MOD
-    VS      = 21,   // VARIATION_SELECTOR
-//    V       = 36,   // VOWEL
-//    VM      = 40,   // VOWEL_MOD
-    CS      = 43,   // CONS_WITH_STACKER
+    pub const HN: u8      = 13;   // HALANT_NUM
+    pub const ZWNJ: u8    = 14;   // Zero width non-joiner
+    pub const ZWJ: u8     = 15;   // Zero width joiner
+    pub const WJ: u8      = 16;   // Word joiner
+    // pub const RSV: u8     = 17;   // Reserved characters
+    pub const R: u8       = 18;   // REPHA
+    pub const S: u8       = 19;   // SYM
+    // pub const SM: u8      = 20;   // SYM_MOD
+    pub const VS: u8      = 21;   // VARIATION_SELECTOR
+    // pub const V: u8       = 36;   // VOWEL
+    // pub const VM: u8      = 40;   // VOWEL_MOD
+    pub const CS: u8      = 43;   // CONS_WITH_STACKER
 
     // https://github.com/harfbuzz/harfbuzz/issues/1102
-    HVM     = 44,   // HALANT_OR_VOWEL_MODIFIER
+    pub const HVM: u8     = 44;   // HALANT_OR_VOWEL_MODIFIER
 
-    Sk      = 48,   // SAKOT
+    pub const SK: u8      = 48;   // SAKOT
 
-    FAbv    = 24,   // CONS_FINAL_ABOVE
-    FBlw    = 25,   // CONS_FINAL_BELOW
-    FPst    = 26,   // CONS_FINAL_POST
-    MAbv    = 27,   // CONS_MED_ABOVE
-    MBlw    = 28,   // CONS_MED_BELOW
-    MPst    = 29,   // CONS_MED_POST
-    MPre    = 30,   // CONS_MED_PRE
-    CMAbv   = 31,   // CONS_MOD_ABOVE
-    CMBlw   = 32,   // CONS_MOD_BELOW
-    VAbv    = 33,   // VOWEL_ABOVE / VOWEL_ABOVE_BELOW / VOWEL_ABOVE_BELOW_POST / VOWEL_ABOVE_POST
-    VBlw    = 34,   // VOWEL_BELOW / VOWEL_BELOW_POST
-    VPst    = 35,   // VOWEL_POST UIPC = Right
-    VPre    = 22,   // VOWEL_PRE / VOWEL_PRE_ABOVE / VOWEL_PRE_ABOVE_POST / VOWEL_PRE_POST
-    VMAbv   = 37,   // VOWEL_MOD_ABOVE
-    VMBlw   = 38,   // VOWEL_MOD_BELOW
-    VMPst   = 39,   // VOWEL_MOD_POST
-    VMPre   = 23,   // VOWEL_MOD_PRE
-    SMAbv   = 41,   // SYM_MOD_ABOVE
-    SMBlw   = 42,   // SYM_MOD_BELOW
-    FMAbv   = 45,   // CONS_FINAL_MOD UIPC = Top
-    FMBlw   = 46,   // CONS_FINAL_MOD UIPC = Bottom
-    FMPst   = 47,   // CONS_FINAL_MOD UIPC = Not_Applicable
+    pub const FABV: u8    = 24;   // CONS_FINAL_ABOVE
+    pub const FBLW: u8    = 25;   // CONS_FINAL_BELOW
+    pub const FPST: u8    = 26;   // CONS_FINAL_POST
+    pub const MABV: u8    = 27;   // CONS_MED_ABOVE
+    pub const MBLW: u8    = 28;   // CONS_MED_BELOW
+    pub const MPST: u8    = 29;   // CONS_MED_POST
+    pub const MPRE: u8    = 30;   // CONS_MED_PRE
+    pub const CMABV: u8   = 31;   // CONS_MOD_ABOVE
+    pub const CMBLW: u8   = 32;   // CONS_MOD_BELOW
+    pub const VABV: u8    = 33;   // VOWEL_ABOVE / VOWEL_ABOVE_BELOW / VOWEL_ABOVE_BELOW_POST / VOWEL_ABOVE_POST
+    pub const VBLW: u8    = 34;   // VOWEL_BELOW / VOWEL_BELOW_POST
+    pub const VPST: u8    = 35;   // VOWEL_POST UIPC = Right
+    pub const VPRE: u8    = 22;   // VOWEL_PRE / VOWEL_PRE_ABOVE / VOWEL_PRE_ABOVE_POST / VOWEL_PRE_POST
+    pub const VMABV: u8   = 37;   // VOWEL_MOD_ABOVE
+    pub const VMBLW: u8   = 38;   // VOWEL_MOD_BELOW
+    pub const VMPST: u8   = 39;   // VOWEL_MOD_POST
+    pub const VMPRE: u8   = 23;   // VOWEL_MOD_PRE
+    pub const SMABV: u8   = 41;   // SYM_MOD_ABOVE
+    pub const SMBLW: u8   = 42;   // SYM_MOD_BELOW
+    pub const FMABV: u8   = 45;   // CONS_FINAL_MOD UIPC = Top
+    pub const FMBLW: u8   = 46;   // CONS_FINAL_MOD UIPC = Bottom
+    pub const FMPST: u8   = 47;   // CONS_FINAL_MOD UIPC = Not_Applicable
 }
 
 // These features are applied all at once, before reordering.
@@ -121,21 +120,17 @@ const OTHER_FEATURES: &[Tag] = &[
 
 impl GlyphInfo {
     fn use_category(&self) -> Category {
-        unsafe {
-            let v: &IntBits = std::mem::transmute(&self.var2);
-            std::mem::transmute(v.var_u8[2])
-        }
+        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
+        v[2]
     }
 
     fn set_use_category(&mut self, c: Category) {
-        unsafe {
-            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
-            v.var_u8[2] = c as u8;
-        }
+        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
+        v[2] = c;
     }
 
     fn is_halant_use(&self) -> bool {
-        matches!(self.use_category(), Category::H | Category::HVM) && !self.is_ligated()
+        matches!(self.use_category(), category::H | category::HVM) && !self.is_ligated()
     }
 }
 
@@ -219,7 +214,7 @@ fn setup_rphf_mask(plan: &ShapePlan, buffer: &mut Buffer) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
-        let limit = if buffer.info[start].use_category() == Category::R {
+        let limit = if buffer.info[start].use_category() == category::R {
             1
         } else {
             std::cmp::min(3, end - start)
@@ -313,7 +308,7 @@ fn record_rphf(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
             }
 
             if buffer.info[i].is_substituted() {
-                buffer.info[i].set_use_category(Category::R);
+                buffer.info[i].set_use_category(category::R);
                 break;
             }
         }
@@ -380,7 +375,7 @@ fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
             // Insert dottedcircle after possible Repha.
             while buffer.idx < buffer.len &&
                 last_syllable == buffer.cur(0).syllable() &&
-                buffer.cur(0).use_category() == Category::R
+                buffer.cur(0).use_category() == category::R
             {
                 buffer.next_glyph();
             }
@@ -403,22 +398,22 @@ const fn category_flag64(c: Category) -> u64 {
 }
 
 const BASE_FLAGS: u64 =
-    category_flag64(Category::FM) |
-    category_flag64(Category::FAbv) |
-    category_flag64(Category::FBlw) |
-    category_flag64(Category::FPst) |
-    category_flag64(Category::MAbv) |
-    category_flag64(Category::MBlw) |
-    category_flag64(Category::MPst) |
-    category_flag64(Category::MPre) |
-    category_flag64(Category::VAbv) |
-    category_flag64(Category::VBlw) |
-    category_flag64(Category::VPst) |
-    category_flag64(Category::VPre) |
-    category_flag64(Category::VMAbv) |
-    category_flag64(Category::VMBlw) |
-    category_flag64(Category::VMPst) |
-    category_flag64(Category::VMPre);
+    category_flag64(category::FM) |
+    category_flag64(category::FABV) |
+    category_flag64(category::FBLW) |
+    category_flag64(category::FPST) |
+    category_flag64(category::MABV) |
+    category_flag64(category::MBLW) |
+    category_flag64(category::MPST) |
+    category_flag64(category::MPRE) |
+    category_flag64(category::VABV) |
+    category_flag64(category::VBLW) |
+    category_flag64(category::VPST) |
+    category_flag64(category::VPRE) |
+    category_flag64(category::VMABV) |
+    category_flag64(category::VMBLW) |
+    category_flag64(category::VMPST) |
+    category_flag64(category::VMPRE);
 
 fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
     use super::universal_machine::SyllableType;
@@ -436,7 +431,7 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
     }
 
     // Move things forward.
-    if buffer.info[start].use_category() == Category::R && end - start > 1 {
+    if buffer.info[start].use_category() == category::R && end - start > 1 {
         // Got a repha.  Reorder it towards the end, but before the first post-base glyph.
         for i in start+1..end {
             let is_post_base_glyph =
@@ -472,7 +467,7 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
             // If we hit a halant, move after it; otherwise move to the beginning, and
             // shift things in between forward.
             j = i + 1;
-        } else if (flag & (category_flag(Category::VPre) | category_flag(Category::VMPre))) != 0 &&
+        } else if (flag & (category_flag(category::VPRE) | category_flag(category::VMPRE))) != 0 &&
             buffer.info[i].lig_comp() == 0 && j < i
         {
             // Only move the first component of a MultipleSubst.
@@ -493,7 +488,7 @@ fn record_pref(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
         // Mark a substituted pref as VPre, as they behave the same way.
         for i in start..end {
             if buffer.info[i].is_substituted() {
-                buffer.info[i].set_use_category(Category::VPre);
+                buffer.info[i].set_use_category(category::VPRE);
                 break;
             }
         }

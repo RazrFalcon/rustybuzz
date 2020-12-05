@@ -8,20 +8,20 @@ use crate::Script;
 // Space estimates based on:
 // https://unicode.org/charts/PDF/U2000.pdf
 // https://docs.microsoft.com/en-us/typography/develop/character-design-standards/whitespace
-#[derive(Clone, Copy, Debug)]
-pub enum Space {
-    SpaceEm  = 1,
-    SpaceEm2 = 2,
-    SpaceEm3 = 3,
-    SpaceEm4 = 4,
-    SpaceEm5 = 5,
-    SpaceEm6 = 6,
-    SpaceEm16 = 16,
-    Space4Em18, // 4/18th of an EM!
-    Space,
-    SpaceFigure,
-    SpacePunctuation,
-    SpaceNarrow,
+pub type Space = u8;
+pub mod space {
+    pub const SPACE_EM: u8  = 1;
+    pub const SPACE_EM_2: u8 = 2;
+    pub const SPACE_EM_3: u8 = 3;
+    pub const SPACE_EM_4: u8 = 4;
+    pub const SPACE_EM_5: u8 = 5;
+    pub const SPACE_EM_6: u8 = 6;
+    pub const SPACE_EM_16: u8 = 16;
+    pub const SPACE_4_EM_18: u8 = 17; // 4/18th of an EM!
+    pub const SPACE: u8 = 18;
+    pub const SPACE_FIGURE: u8 = 19;
+    pub const SPACE_PUNCTUATION: u8 = 20;
+    pub const SPACE_NARROW: u8 = 21;
 }
 
 #[allow(dead_code)]
@@ -492,22 +492,22 @@ impl CharExt for char {
     fn space_fallback(self) -> Option<Space> {
         // All GC=Zs chars that can use a fallback.
         match self {
-            '\u{0020}' => Some(Space::Space),               // SPACE
-            '\u{00A0}' => Some(Space::Space),               // NO-BREAK SPACE
-            '\u{2000}' => Some(Space::SpaceEm2),            // EN QUAD
-            '\u{2001}' => Some(Space::SpaceEm),             // EM QUAD
-            '\u{2002}' => Some(Space::SpaceEm2),            // EN SPACE
-            '\u{2003}' => Some(Space::SpaceEm),             // EM SPACE
-            '\u{2004}' => Some(Space::SpaceEm3),            // THREE-PER-EM SPACE
-            '\u{2005}' => Some(Space::SpaceEm4),            // FOUR-PER-EM SPACE
-            '\u{2006}' => Some(Space::SpaceEm6),            // SIX-PER-EM SPACE
-            '\u{2007}' => Some(Space::SpaceFigure),         // FIGURE SPACE
-            '\u{2008}' => Some(Space::SpacePunctuation),    // PUNCTUATION SPACE
-            '\u{2009}' => Some(Space::SpaceEm5),            // THIN SPACE
-            '\u{200A}' => Some(Space::SpaceEm16),           // HAIR SPACE
-            '\u{202F}' => Some(Space::SpaceNarrow),         // NARROW NO-BREAK SPACE
-            '\u{205F}' => Some(Space::Space4Em18),          // MEDIUM MATHEMATICAL SPACE
-            '\u{3000}' => Some(Space::SpaceEm),             // IDEOGRAPHIC SPACE
+            '\u{0020}' => Some(space::SPACE),               // SPACE
+            '\u{00A0}' => Some(space::SPACE),               // NO-BREAK SPACE
+            '\u{2000}' => Some(space::SPACE_EM_2),          // EN QUAD
+            '\u{2001}' => Some(space::SPACE_EM),            // EM QUAD
+            '\u{2002}' => Some(space::SPACE_EM_2),          // EN SPACE
+            '\u{2003}' => Some(space::SPACE_EM),            // EM SPACE
+            '\u{2004}' => Some(space::SPACE_EM_3),          // THREE-PER-EM SPACE
+            '\u{2005}' => Some(space::SPACE_EM_4),          // FOUR-PER-EM SPACE
+            '\u{2006}' => Some(space::SPACE_EM_6),          // SIX-PER-EM SPACE
+            '\u{2007}' => Some(space::SPACE_FIGURE),        // FIGURE SPACE
+            '\u{2008}' => Some(space::SPACE_PUNCTUATION),   // PUNCTUATION SPACE
+            '\u{2009}' => Some(space::SPACE_EM_5),          // THIN SPACE
+            '\u{200A}' => Some(space::SPACE_EM_16),         // HAIR SPACE
+            '\u{202F}' => Some(space::SPACE_NARROW),        // NARROW NO-BREAK SPACE
+            '\u{205F}' => Some(space::SPACE_4_EM_18),       // MEDIUM MATHEMATICAL SPACE
+            '\u{3000}' => Some(space::SPACE_EM),            // IDEOGRAPHIC SPACE
             _ => None,                                      // OGHAM SPACE MARK
         }
     }

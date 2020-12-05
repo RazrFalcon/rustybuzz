@@ -333,6 +333,7 @@ pub fn complex_categorize(
     }
 }
 
+// TODO: find a better name
 #[inline]
 pub const fn rb_flag(x: u32) -> u32 {
     1 << x

@@ -9,16 +9,6 @@ use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
 
 const CONTEXT_LENGTH: usize = 5;
 
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub union IntBits {
-    pub var_u32: u32,
-    pub var_i32: i32,
-    pub var_u16: [u16; 2usize],
-    pub var_i16: [i16; 2usize],
-    pub var_u8: [u8; 4usize],
-    pub var_i8: [i8; 4usize],
-}
 
 pub mod glyph_flag {
     /// Indicates that if input text is broken at the
@@ -66,39 +56,31 @@ pub struct GlyphPosition {
 
 impl GlyphPosition {
     #[inline]
-    pub(crate) fn attach_chain(&mut self) -> i16 {
+    pub(crate) fn attach_chain(&self) -> i16 {
         // glyph to which this attaches to, relative to current glyphs;
         // negative for going back, positive for forward.
-        unsafe {
-            let v: IntBits = std::mem::transmute(self.var);
-            v.var_i16[0]
-        }
+        let v: &[i16; 2] = bytemuck::cast_ref(&self.var);
+        v[0]
     }
 
     #[inline]
     pub(crate) fn set_attach_chain(&mut self, n: i16) {
-        unsafe {
-            let v: &mut IntBits = std::mem::transmute(&mut self.var);
-            v.var_i16[0] = n;
-        }
+        let v: &mut [i16; 2] = bytemuck::cast_mut(&mut self.var);
+        v[0] = n;
     }
 
     #[inline]
-    pub(crate) fn attach_type(&mut self) -> u8 {
+    pub(crate) fn attach_type(&self) -> u8 {
         // attachment type
         // Note! if attach_chain() is zero, the value of attach_type() is irrelevant.
-        unsafe {
-            let v: IntBits = std::mem::transmute(self.var);
-            v.var_u8[2]
-        }
+        let v: &[u8; 4] = bytemuck::cast_ref(&self.var);
+        v[2]
     }
 
     #[inline]
     pub(crate) fn set_attach_type(&mut self, n: u8) {
-        unsafe {
-            let v: &mut IntBits = std::mem::transmute(&mut self.var);
-            v.var_u8[2] = n;
-        }
+        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var);
+        v[2] = n;
     }
 }
 
@@ -134,18 +116,14 @@ impl GlyphInfo {
 
     #[inline]
     fn unicode_props(&self) -> u16 {
-        unsafe {
-            let v: IntBits = std::mem::transmute(self.var2);
-            v.var_u16[0]
-        }
+        let v: &[u16; 2] = bytemuck::cast_ref(&self.var2);
+        v[0]
     }
 
     #[inline]
     fn set_unicode_props(&mut self, n: u16) {
-        unsafe {
-            let v: &mut IntBits = std::mem::transmute(&mut self.var2);
-            v.var_u16[0] = n;
-        }
+        let v: &mut [u16; 2] = bytemuck::cast_mut(&mut self.var2);
+        v[0] = n;
     }
 
     pub(crate) fn init_unicode_props(&mut self, scratch_flags: &mut BufferScratchFlags) {
@@ -213,10 +191,8 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn space_fallback(&self) -> Option<Space> {
         if self.general_category() == GeneralCategory::SpaceSeparator {
-            unsafe {
-                let n = (self.unicode_props() >> 8) as u8;
-                Some(std::mem::transmute(n))
-            }
+            let n = (self.unicode_props() >> 8) as u8;
+            Some(n)
         } else {
             None
         }
@@ -328,18 +304,14 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn lig_props(&self) -> u8 {
-        unsafe {
-            let v: IntBits = std::mem::transmute(self.var1);
-            v.var_u8[2]
-        }
+        let v: &[u8; 4] = bytemuck::cast_ref(&self.var1);
+        v[2]
     }
 
     #[inline]
     pub(crate) fn set_lig_props(&mut self, n: u8) {
-        unsafe {
-            let v: &mut IntBits = std::mem::transmute(&mut self.var1);
-            v.var_u8[2] = n;
-        }
+        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var1);
+        v[2] = n;
     }
 
     pub(crate) fn set_lig_props_for_ligature(&mut self, lig_id: u8, lig_num_comps: u8) {
@@ -387,18 +359,14 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn glyph_props(&self) -> u16 {
-        unsafe {
-            let v: IntBits = std::mem::transmute(self.var1);
-            v.var_u16[0]
-        }
+        let v: &[u16; 2] = bytemuck::cast_ref(&self.var1);
+        v[0]
     }
 
     #[inline]
     pub(crate) fn set_glyph_props(&mut self, n: u16) {
-        unsafe {
-            let v: &mut IntBits = std::mem::transmute(&mut self.var1);
-            v.var_u16[0] = n;
-        }
+        let v: &mut [u16; 2] = bytemuck::cast_mut(&mut self.var1);
+        v[0] = n;
     }
 
     #[inline]
@@ -455,18 +423,14 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn syllable(&self) -> u8 {
-        unsafe {
-            let v: &IntBits = std::mem::transmute(&self.var1);
-            v.var_u8[3]
-        }
+        let v: &[u8; 4] = bytemuck::cast_ref(&self.var1);
+        v[3]
     }
 
     #[inline]
     pub(crate) fn set_syllable(&mut self, n: u8) {
-        unsafe {
-            let v: &mut IntBits = std::mem::transmute(&mut self.var1);
-            v.var_u8[3] = n;
-        }
+        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var1);
+        v[3] = n;
     }
 
     // Var allocation: glyph_index
