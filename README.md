@@ -23,7 +23,7 @@ are not implemented yet or cannot be implemented at all.
 
 - Subsetting removed.
 - TrueType parsing has been implemented from scratch, mostly on the
-  [ttf_parser](https://github.com/RazrFalcon/ttf_parser) side.
+  [ttf-parser](https://github.com/RazrFalcon/ttf-parser) side.
   And while the parsing algorithm is very different, it's not better or worse, just different.
 - Malformed fonts will cause an error. HarfBuzz uses fallback/dummy shaper in this case.
 - Most of the TrueType and Unicode handling code was moved into separate crates.
@@ -48,7 +48,7 @@ harfbuzz can roughly be split into 6 parts: shaping, subsetting, TrueType parsin
 Unicode routines, custom containers and utilities (harfbuzz doesn't use C++ std)
 and glue for system/3rd party libraries.
 While rustybuzz contains only shaping and some TrueType parsing.
-Most of the TrueType parsing was moved to the [ttf_parser](https://github.com/RazrFalcon/ttf_parser).
+Most of the TrueType parsing was moved to the [ttf-parser](https://github.com/RazrFalcon/ttf-parser).
 Subseting was removed. Unicode code mostly moved to external crates.
 We don't need custom containers because Rust's std is good enough.
 And we do not use any non Rust libraries, so no glue code either.
