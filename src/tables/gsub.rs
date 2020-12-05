@@ -80,8 +80,6 @@ impl<'a> SubstLookupSubtable<'a> {
         }
     }
 
-    // Note: Could be used for lookup acceleration.
-    #[allow(dead_code)]
     pub fn coverage(&self) -> Coverage<'a> {
         match self {
             Self::Single(t) => t.coverage(),
