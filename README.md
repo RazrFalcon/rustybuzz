@@ -78,6 +78,14 @@ But there are still a lot of room for performance optimizations and refactoring.
 Also, despite the fact that harfbuzz has a vast test suite, there are still a lot of
 things left to test.
 
+## Safety
+
+The library is completely safe.
+
+We do have one `unsafe` to cast between two POD structures.
+But except that, there are no `unsafe` in this library and in most of its dependencies
+(excluding `bytemuck`).
+
 ## License
 
 `rustybuzz` is licensed under the **MIT**.

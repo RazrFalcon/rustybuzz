@@ -1,6 +1,5 @@
 use std::convert::TryFrom;
 use std::fmt;
-use std::mem;
 
 use ttf_parser::GlyphId;
 
@@ -54,6 +53,9 @@ pub struct GlyphPosition {
     var: u32,
 }
 
+unsafe impl bytemuck::Zeroable for GlyphPosition {}
+unsafe impl bytemuck::Pod for GlyphPosition {}
+
 impl GlyphPosition {
     #[inline]
     pub(crate) fn attach_chain(&self) -> i16 {
@@ -97,6 +99,9 @@ pub struct GlyphInfo {
     pub(crate) var1: u32,
     pub(crate) var2: u32,
 }
+
+unsafe impl bytemuck::Zeroable for GlyphInfo {}
+unsafe impl bytemuck::Pod for GlyphInfo {}
 
 const IS_LIG_BASE: u8 = 0x10;
 
@@ -556,7 +561,7 @@ impl Buffer {
     #[inline]
     pub fn out_info(&self) -> &[GlyphInfo] {
         if self.have_separate_output {
-            unsafe { mem::transmute(self.pos.as_slice()) }
+            bytemuck::cast_slice(self.pos.as_slice())
         } else {
             &self.info
         }
@@ -565,7 +570,7 @@ impl Buffer {
     #[inline]
     pub fn out_info_mut(&mut self) -> &mut [GlyphInfo] {
         if self.have_separate_output {
-            unsafe { mem::transmute(self.pos.as_mut_slice()) }
+            bytemuck::cast_slice_mut(self.pos.as_mut_slice())
         } else {
             &mut self.info
         }
@@ -736,12 +741,14 @@ impl Buffer {
         self.have_output = false;
 
         if self.have_separate_output {
-            unsafe {
-                mem::swap(&mut self.info, mem::transmute(&mut self.pos));
-            }
+            // Swap info and pos buffers.
+            let info: Vec<GlyphPosition> = bytemuck::cast_vec(std::mem::take(&mut self.info));
+            let pos: Vec<GlyphInfo> = bytemuck::cast_vec(std::mem::take(&mut self.pos));
+            self.pos = info;
+            self.info = pos;
         }
 
-        mem::swap(&mut self.len, &mut self.out_len);
+        std::mem::swap(&mut self.len, &mut self.out_len);
 
         self.idx = 0;
     }
