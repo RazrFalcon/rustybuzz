@@ -2,6 +2,8 @@ use std::convert::TryFrom;
 use std::cmp;
 use std::ops::Range;
 
+use ttf_parser::GlyphId;
+
 use crate::{script, Tag, Script, Mask, Face, GlyphInfo};
 use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::{feature, FeatureFlags, LayoutTable, Map, TableIndex, WouldApply, WouldApplyContext};
@@ -366,7 +368,7 @@ impl IndicWouldSubstituteFeature {
         }
     }
 
-    pub fn would_substitute(&self, map: &Map, face: &Face, glyphs: &[u32]) -> bool {
+    pub fn would_substitute(&self, map: &Map, face: &Face, glyphs: &[GlyphId]) -> bool {
         for index in self.lookups.clone() {
             let lookup = map.lookup(TableIndex::GSUB, index);
             let ctx = WouldApplyContext { glyphs, zero_context: self.zero_context };
@@ -633,7 +635,6 @@ fn decompose(ctx: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
 
         let mut ok = false;
         if let Some(g) = ctx.face.glyph_index(u32::from(ab)) {
-            let g = g.0 as u32;
             let indic_plan = ctx.plan.data::<IndicShapePlan>();
             ok = indic_plan.pstf.would_substitute(&ctx.plan.ot_map, ctx.face, &[g]);
         }
@@ -708,16 +709,15 @@ fn update_consonant_positions(
 
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {
-        if let Some(g) = face.glyph_index(indic_plan.config.virama) {
-            virama_glyph = Some(g.0 as u32);
-        }
+        virama_glyph = face.glyph_index(indic_plan.config.virama);
     }
 
     if let Some(virama) = virama_glyph {
         for info in buffer.info_slice_mut() {
             if info.indic_position() == position::BASE_C {
-                let consonant = info.codepoint;
-                info.set_indic_position(consonant_position_from_face(plan, indic_plan, face, consonant, virama));
+                let consonant = info.as_glyph();
+                info.set_indic_position(
+                    consonant_position_from_face(plan, indic_plan, face, consonant, virama));
             }
         }
     }
@@ -727,8 +727,8 @@ fn consonant_position_from_face(
     plan: &ShapePlan,
     indic_plan: &IndicShapePlan,
     face: &Face,
-    consonant: u32,
-    virama: u32,
+    consonant: GlyphId,
+    virama: GlyphId,
 ) -> u8 {
     // For old-spec, the order of glyphs is Consonant,Virama,
     // whereas for new-spec, it's Virama,Consonant.  However,
@@ -913,9 +913,13 @@ fn initial_reordering_consonant_syllable(
         {
             // See if it matches the 'rphf' feature.
             let glyphs = &[
-                buffer.info[start].codepoint,
-                buffer.info[start + 1].codepoint,
-                if indic_plan.config.reph_mode == RephMode::Explicit { buffer.info[start + 2].codepoint } else { 0 }
+                buffer.info[start].as_glyph(),
+                buffer.info[start + 1].as_glyph(),
+                if indic_plan.config.reph_mode == RephMode::Explicit {
+                    buffer.info[start + 2].as_glyph()
+                } else {
+                    GlyphId(0)
+                }
             ];
             if indic_plan.rphf.would_substitute(&plan.ot_map, face, &glyphs[0..2]) ||
                 (indic_plan.config.reph_mode == RephMode::Explicit &&
@@ -1325,8 +1329,8 @@ fn initial_reordering_consonant_syllable(
         // Find a Halant,Ra sequence and mark it for pre-base-reordering processing.
         for i in base+1..end-pref_len+1 {
             let glyphs = &[
-                buffer.info[i + 0].codepoint,
-                buffer.info[i + 1].codepoint,
+                buffer.info[i + 0].as_glyph(),
+                buffer.info[i + 1].as_glyph(),
             ];
             if indic_plan.pref.would_substitute(&plan.ot_map, face, glyphs) {
                 buffer.info[i + 0].mask = indic_plan.mask_array[indic_feature::PREF];

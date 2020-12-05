@@ -18,7 +18,7 @@ pub trait Apply {
 }
 
 pub struct WouldApplyContext<'a> {
-    pub glyphs: &'a [u32],
+    pub glyphs: &'a [GlyphId],
     pub zero_context: bool,
 }
 

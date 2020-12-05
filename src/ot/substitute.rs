@@ -61,7 +61,7 @@ impl LayoutLookup for SubstLookup<'_> {
 
 impl WouldApply for SubstLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        self.covers(GlyphId(u16::try_from(ctx.glyphs[0]).unwrap()))
+        self.covers(ctx.glyphs[0])
             && self.subtables.iter().any(|subtable| subtable.would_apply(ctx))
     }
 }
@@ -110,8 +110,7 @@ impl Apply for SubstLookupSubtable<'_> {
 
 impl WouldApply for SingleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
-        ctx.glyphs.len() == 1 && self.coverage().get(glyph).is_some()
+        ctx.glyphs.len() == 1 && self.coverage().get(ctx.glyphs[0]).is_some()
     }
 }
 
@@ -138,8 +137,7 @@ impl Apply for SingleSubst<'_> {
 
 impl WouldApply for MultipleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
-        ctx.glyphs.len() == 1 && self.coverage().get(glyph).is_some()
+        ctx.glyphs.len() == 1 && self.coverage().get(ctx.glyphs[0]).is_some()
     }
 }
 
@@ -189,8 +187,7 @@ impl Apply for Sequence<'_> {
 
 impl WouldApply for AlternateSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
-        ctx.glyphs.len() == 1 && self.coverage().get(glyph).is_some()
+        ctx.glyphs.len() == 1 && self.coverage().get(ctx.glyphs[0]).is_some()
     }
 }
 
@@ -234,10 +231,9 @@ impl Apply for AlternateSet<'_> {
 
 impl WouldApply for LigatureSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
         match self {
             Self::Format1 { coverage, ligature_sets } => {
-                coverage.get(glyph)
+                coverage.get(ctx.glyphs[0])
                     .and_then(|index| ligature_sets.slice(index))
                     .and_then(LigatureSet::parse)
                     .map_or(false, |set| set.would_apply(ctx))
@@ -286,7 +282,7 @@ impl WouldApply for Ligature<'_> {
             && self.components
                 .into_iter()
                 .enumerate()
-                .all(|(i, comp)| ctx.glyphs[1 + i] == u32::from(comp))
+                .all(|(i, comp)| ctx.glyphs[1 + i].0 == comp)
     }
 }
 
@@ -413,8 +409,7 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
 
 impl WouldApply for ReverseChainSingleSubst<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
-        ctx.glyphs.len() == 1 && self.coverage().get(glyph).is_some()
+        ctx.glyphs.len() == 1 && self.coverage().get(ctx.glyphs[0]).is_some()
     }
 }
 

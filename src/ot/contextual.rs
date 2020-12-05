@@ -1,6 +1,3 @@
-use std::convert::TryFrom;
-
-use ttf_parser::GlyphId;
 use ttf_parser::parser::{LazyArray16, Offset};
 
 use crate::tables::gsubgpos::*;
@@ -13,7 +10,7 @@ use super::matching::{
 
 impl WouldApply for ContextLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        let glyph_id = ctx.glyphs[0];
         match *self {
             Self::Format1 { coverage, sets } => {
                 coverage.get(glyph_id)
@@ -95,7 +92,7 @@ impl<'a> Rule<'a> {
 
 impl WouldApply for ChainContextLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = GlyphId(u16::try_from(ctx.glyphs[0]).unwrap());
+        let glyph_id = ctx.glyphs[0];
         match *self {
             Self::Format1 { coverage, sets } => {
                 coverage.get(glyph_id)

@@ -113,7 +113,8 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn as_glyph(&self) -> GlyphId {
-        GlyphId(u16::try_from(self.codepoint).unwrap())
+        debug_assert!(self.codepoint <= u32::from(u16::MAX));
+        GlyphId(self.codepoint as u16)
     }
 
     // Var allocation: unicode_props

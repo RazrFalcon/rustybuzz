@@ -1,7 +1,5 @@
 //! Matching of glyph patterns.
 
-use std::convert::TryFrom;
-
 use ttf_parser::parser::LazyArray16;
 use ttf_parser::GlyphId;
 
@@ -39,7 +37,7 @@ pub fn would_match_input(
 ) -> bool {
     ctx.glyphs.len() == 1 + usize::from(input.len())
         && input.into_iter().enumerate().all(|(i, value)| {
-            match_func(GlyphId(u16::try_from(ctx.glyphs[1 + i]).unwrap()), value)
+            match_func(ctx.glyphs[1 + i], value)
         })
 }
 
