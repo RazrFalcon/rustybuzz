@@ -26,6 +26,7 @@ are not implemented yet or cannot be implemented at all.
   [ttf-parser](https://github.com/RazrFalcon/ttf-parser) side.
   And while the parsing algorithm is very different, it's not better or worse, just different.
 - Malformed fonts will cause an error. HarfBuzz uses fallback/dummy shaper in this case.
+- No font size property. Shaping is always using UnitsPerEm. You should scale the result manually.
 - Most of the TrueType and Unicode handling code was moved into separate crates.
 - rustybuzz doesn't interact with any system libraries and must produce exactly the same
   results on all OS'es and targets.
