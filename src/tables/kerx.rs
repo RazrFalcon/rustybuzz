@@ -412,7 +412,7 @@ pub struct Subtable6<'a>{
 
 impl KerningPairs for Subtable6<'_> {
     fn glyphs_kerning(&self, left: GlyphId, right: GlyphId) -> Option<i16> {
-        use std::convert::TryFrom;
+        use core::convert::TryFrom;
 
         let mut s = Stream::new(self.data);
         let flags: u32 = s.read()?;

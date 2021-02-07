@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 use ttf_parser::parser::*;
 use ttf_parser::{GlyphId, Class};
 
@@ -72,11 +74,9 @@ impl<'a> DynArray<'a> {
 
     #[inline]
     pub fn binary_search_by<F>(&self, mut f: F) -> Option<(usize, &'a [u8])>
-        where F: FnMut(&[u8]) -> std::cmp::Ordering
+        where F: FnMut(&[u8]) -> Ordering
     {
         // Based on Rust std implementation.
-
-        use std::cmp::Ordering;
 
         let mut size = self.len();
         if size == 0 {
@@ -123,8 +123,8 @@ impl<'a, T: Offset + FromData> Offsets16<'a, T> {
     }
 }
 
-impl<'a, T: Offset + FromData + Copy + std::fmt::Debug> std::fmt::Debug for Offsets16<'a, T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl<'a, T: Offset + FromData + Copy + core::fmt::Debug> core::fmt::Debug for Offsets16<'a, T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "{:?}", self.offsets)
     }
 }

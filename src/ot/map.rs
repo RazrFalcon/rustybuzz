@@ -1,4 +1,5 @@
-use std::ops::Range;
+use alloc::vec::Vec;
+use core::ops::Range;
 
 use crate::{tag, Face, Language, Mask, Tag, Script};
 use crate::buffer::{glyph_flag, Buffer};
@@ -206,8 +207,8 @@ impl<'a> MapBuilder<'a> {
             chosen_script,
             lang_index,
             current_stage: [0, 0],
-            feature_infos: vec![],
-            stages: [vec![], vec![]],
+            feature_infos: Vec::new(),
+            stages: [Vec::new(), Vec::new()],
         }
     }
 
@@ -301,7 +302,7 @@ impl<'a> MapBuilder<'a> {
         &mut self,
         required_tag: [Option<Tag>; 2],
     ) -> (Vec<FeatureMap>, [usize; 2], Mask) {
-        let mut map_features = vec![];
+        let mut map_features = Vec::new();
         let mut required_stage = [0; 2];
         let mut global_mask = Self::GLOBAL_BIT_MASK;
         let mut next_bit = Self::GLOBAL_BIT_SHIFT + 1;
@@ -316,11 +317,11 @@ impl<'a> MapBuilder<'a> {
             } else {
                 // Limit bits per feature.
                 let v = info.max_value;
-                let num_bits = 8 * std::mem::size_of_val(&v) as u32 - v.leading_zeros();
+                let num_bits = 8 * core::mem::size_of_val(&v) as u32 - v.leading_zeros();
                 Map::MAX_BITS.min(num_bits)
             };
 
-            let bits_available = 8 * std::mem::size_of::<Mask>() as u32;
+            let bits_available = 8 * core::mem::size_of::<Mask>() as u32;
             if info.max_value == 0 || next_bit + bits_needed > bits_available {
                  // Feature disabled, or not enough bits.
                 continue;
@@ -424,8 +425,8 @@ impl<'a> MapBuilder<'a> {
         required_feature_index: [Option<FeatureIndex>; 2],
         required_feature_stage: [usize; 2],
     ) -> ([Vec<LookupMap>; 2], [Vec<StageMap>; 2]) {
-        let mut map_lookups = [vec![], vec![]];
-        let mut map_stages = [vec![], vec![]];
+        let mut map_lookups = [Vec::new(), Vec::new()];
+        let mut map_stages = [Vec::new(), Vec::new()];
 
         for table_index in TableIndex::iter() {
             // Collect lookup indices for features.

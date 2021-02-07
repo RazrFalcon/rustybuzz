@@ -1,3 +1,5 @@
+use alloc::boxed::Box;
+
 use crate::{Face, GlyphInfo, Mask};
 use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
 use crate::ot::{feature, FeatureFlags, Map};

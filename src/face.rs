@@ -214,7 +214,7 @@ impl<'a> Face<'a> {
     pub(crate) fn glyph_extents(&self, glyph: GlyphId) -> Option<GlyphExtents> {
         let pixels_per_em = match self.pixels_per_em {
             Some(ppem) => ppem.0,
-            None => std::u16::MAX,
+            None => core::u16::MAX,
         };
 
         if let Some(img) = self.ttfp_face.glyph_raster_image(glyph, pixels_per_em) {

@@ -1,5 +1,6 @@
-use std::cmp::{self, Ordering};
-use std::ops::RangeInclusive;
+use alloc::vec::Vec;
+use core::cmp::{self, Ordering};
+use core::ops::RangeInclusive;
 
 use ttf_parser::GlyphId;
 
@@ -14,7 +15,7 @@ pub struct GlyphSet {
 impl GlyphSet {
     /// Create a new glyph set builder.
     pub fn builder() -> GlyphSetBuilder {
-        GlyphSetBuilder { ranges: vec![] }
+        GlyphSetBuilder { ranges: Vec::new() }
     }
 
     /// Check whether the glyph is contained in the set.
@@ -93,6 +94,7 @@ impl GlyphSetBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::vec;
 
     #[test]
     fn test_empty() {

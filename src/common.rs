@@ -1,4 +1,5 @@
-use std::ops::{Bound, RangeBounds};
+use alloc::string::String;
+use core::ops::{Bound, RangeBounds};
 
 use ttf_parser::Tag;
 
@@ -152,7 +153,7 @@ impl Default for Direction {
     }
 }
 
-impl std::str::FromStr for Direction {
+impl core::str::FromStr for Direction {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -184,7 +185,7 @@ impl Language {
     }
 }
 
-impl std::str::FromStr for Language {
+impl core::str::FromStr for Language {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -249,7 +250,7 @@ impl Script {
     }
 }
 
-impl std::str::FromStr for Script {
+impl core::str::FromStr for Script {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -486,7 +487,7 @@ impl Feature {
     }
 }
 
-impl std::str::FromStr for Feature {
+impl core::str::FromStr for Feature {
     type Err = &'static str;
 
     /// Parses a `Feature` form a string.
@@ -544,10 +545,10 @@ impl std::str::FromStr for Feature {
                     p.advance(1);
                     p.consume_i32().unwrap_or(-1) as u32 // negative value overflow is ok
                 } else {
-                    if start_opt.is_some() && start != std::u32::MAX {
+                    if start_opt.is_some() && start != core::u32::MAX {
                         start + 1
                     } else {
-                        std::u32::MAX
+                        core::u32::MAX
                     }
                 };
 
@@ -555,7 +556,7 @@ impl std::str::FromStr for Feature {
 
                 (start, end)
             } else {
-                (0, std::u32::MAX)
+                (0, core::u32::MAX)
             };
 
             // Parse postfix.
@@ -591,7 +592,7 @@ impl std::str::FromStr for Feature {
 #[cfg(test)]
 mod tests_features {
     use super::*;
-    use std::str::FromStr;
+    use core::str::FromStr;
 
     macro_rules! test {
         ($name:ident, $text:expr, $tag:expr, $value:expr, $range:expr) => (
@@ -620,7 +621,7 @@ mod tests_features {
     test!(parse_13, "kern[3:5]=2",  b"kern", 2, 3..=5);
     test!(parse_14, "kern[3;5]=2",  b"kern", 2, 3..=5);
     test!(parse_15, "kern[:-1]",    b"kern", 1, ..);
-    test!(parse_16, "kern[-1]",     b"kern", 1, std::u32::MAX as usize..);
+    test!(parse_16, "kern[-1]",     b"kern", 1, core::u32::MAX as usize..);
     test!(parse_17, "kern=on",      b"kern", 1, ..);
     test!(parse_18, "kern=off",     b"kern", 0, ..);
     test!(parse_19, "kern=oN",      b"kern", 1, ..);
@@ -637,7 +638,7 @@ pub struct Variation {
     pub value: f32,
 }
 
-impl std::str::FromStr for Variation {
+impl core::str::FromStr for Variation {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

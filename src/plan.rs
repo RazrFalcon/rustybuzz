@@ -1,4 +1,5 @@
-use std::any::Any;
+use alloc::boxed::Box;
+use core::any::Any;
 
 use crate::{aat, Direction, Face, Feature, Language, Mask, Tag, Script};
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};

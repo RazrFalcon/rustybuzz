@@ -1,3 +1,5 @@
+use alloc::boxed::Box;
+
 use crate::{script, Tag, Face, GlyphInfo, Mask, Script};
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::{feature, FeatureFlags};

@@ -314,7 +314,7 @@ pub struct BinarySearchTable<'a, T: BinarySearchValue> {
     values: LazyArray16<'a, T>,
 }
 
-impl<'a, T: BinarySearchValue + std::fmt::Debug> BinarySearchTable<'a, T> {
+impl<'a, T: BinarySearchValue + core::fmt::Debug> BinarySearchTable<'a, T> {
     #[inline(never)]
     fn parse(data: &'a [u8]) -> Option<Self> {
         let mut s = Stream::new(data);
@@ -352,9 +352,9 @@ impl<'a, T: BinarySearchValue + std::fmt::Debug> BinarySearchTable<'a, T> {
             let mid = (min + max) / 2;
             let v = self.values.get(mid as u16)?;
             match v.contains(key) {
-                std::cmp::Ordering::Less    => max = mid - 1,
-                std::cmp::Ordering::Greater => min = mid + 1,
-                std::cmp::Ordering::Equal   => return Some(v),
+                core::cmp::Ordering::Less    => max = mid - 1,
+                core::cmp::Ordering::Greater => min = mid + 1,
+                core::cmp::Ordering::Equal   => return Some(v),
             }
         }
 
@@ -365,7 +365,7 @@ impl<'a, T: BinarySearchValue + std::fmt::Debug> BinarySearchTable<'a, T> {
 
 pub trait BinarySearchValue: FromData {
     fn is_termination(&self) -> bool;
-    fn contains(&self, glyph_id: GlyphId) -> std::cmp::Ordering;
+    fn contains(&self, glyph_id: GlyphId) -> core::cmp::Ordering;
 }
 
 
@@ -381,13 +381,13 @@ impl BinarySearchValue for LookupSegment {
         self.last_glyph == 0xFFFF && self.first_glyph == 0xFFFF
     }
 
-    fn contains(&self, id: GlyphId) -> std::cmp::Ordering {
+    fn contains(&self, id: GlyphId) -> core::cmp::Ordering {
         if id.0 < self.first_glyph {
-            std::cmp::Ordering::Less
+            core::cmp::Ordering::Less
         } else if id.0 <= self.last_glyph {
-            std::cmp::Ordering::Greater
+            core::cmp::Ordering::Greater
         } else {
-            std::cmp::Ordering::Equal
+            core::cmp::Ordering::Equal
         }
     }
 }
@@ -418,7 +418,7 @@ impl BinarySearchValue for LookupSingle {
         self.glyph == 0xFFFF
     }
 
-    fn contains(&self, id: GlyphId) -> std::cmp::Ordering {
+    fn contains(&self, id: GlyphId) -> core::cmp::Ordering {
         id.0.cmp(&self.glyph)
     }
 }
