@@ -402,7 +402,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
         }
     }
 
-    buffer.sort(start, end, |a, b| a.indic_position().cmp(&b.indic_position()) == std::cmp::Ordering::Greater);
+    buffer.sort(start, end, |a, b| a.indic_position().cmp(&b.indic_position()) == core::cmp::Ordering::Greater);
 }
 
 fn override_features(planner: &mut ShapePlanner) {

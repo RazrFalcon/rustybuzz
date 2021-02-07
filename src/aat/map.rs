@@ -1,6 +1,7 @@
+use alloc::vec::Vec;
+
 use crate::{Face, Tag, Mask};
 use super::feature_mappings::FEATURE_MAPPINGS;
-
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq)]
@@ -123,7 +124,7 @@ impl MapBuilder {
             } else if !a.is_exclusive && (a.setting & !1) != (b.setting & !1) {
                 a.setting.cmp(&b.setting)
             } else {
-                std::cmp::Ordering::Equal
+                core::cmp::Ordering::Equal
             }
         });
 

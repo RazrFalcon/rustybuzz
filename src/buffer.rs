@@ -1,4 +1,5 @@
-use std::convert::TryFrom;
+use alloc::{string::String, vec::Vec};
+use core::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
@@ -756,13 +757,13 @@ impl Buffer {
 
         if self.have_separate_output {
             // Swap info and pos buffers.
-            let info: Vec<GlyphPosition> = bytemuck::cast_vec(std::mem::take(&mut self.info));
-            let pos: Vec<GlyphInfo> = bytemuck::cast_vec(std::mem::take(&mut self.pos));
+            let info: Vec<GlyphPosition> = bytemuck::cast_vec(core::mem::take(&mut self.info));
+            let pos: Vec<GlyphInfo> = bytemuck::cast_vec(core::mem::take(&mut self.pos));
             self.pos = info;
             self.info = pos;
         }
 
-        std::mem::swap(&mut self.len, &mut self.out_len);
+        core::mem::swap(&mut self.len, &mut self.out_len);
 
         self.idx = 0;
     }
@@ -951,7 +952,7 @@ impl Buffer {
             return;
         }
 
-        if cluster_start == 0 && cluster_end == std::u32::MAX {
+        if cluster_start == 0 && cluster_end == core::u32::MAX {
             for info in &mut self.info[..self.len] {
                 info.mask = (info.mask & not_mask) | value;
             }
@@ -983,7 +984,7 @@ impl Buffer {
         let mut cluster = self.info[start].cluster;
 
         for i in start+1..end {
-            cluster = std::cmp::min(cluster, self.info[i].cluster);
+            cluster = core::cmp::min(cluster, self.info[i].cluster);
         }
 
         // Extend end
@@ -1022,7 +1023,7 @@ impl Buffer {
         let mut cluster = self.out_info()[start].cluster;
 
         for i in start+1..end {
-            cluster = std::cmp::min(cluster, self.out_info()[i].cluster);
+            cluster = core::cmp::min(cluster, self.out_info()[i].cluster);
         }
 
         // Extend start
@@ -1143,7 +1144,7 @@ impl Buffer {
     }
 
     fn unsafe_to_break_impl(&mut self, start: usize, end: usize) {
-        let mut cluster = std::u32::MAX;
+        let mut cluster = core::u32::MAX;
         cluster = Self::_unsafe_to_break_find_min_cluster(&self.info, start, end, cluster);
         let unsafe_to_break = Self::_unsafe_to_break_set_mask(&mut self.info, start, end, cluster);
         if unsafe_to_break {
@@ -1160,7 +1161,7 @@ impl Buffer {
         assert!(start <= self.out_len);
         assert!(self.idx <= end);
 
-        let mut cluster = std::u32::MAX;
+        let mut cluster = core::u32::MAX;
         cluster = Self::_unsafe_to_break_find_min_cluster(self.out_info(), start, self.out_len, cluster);
         cluster = Self::_unsafe_to_break_find_min_cluster(&self.info, self.idx, end, cluster);
         let idx = self.idx;
@@ -1323,7 +1324,7 @@ impl Buffer {
 
     fn _unsafe_to_break_find_min_cluster(info: &[GlyphInfo], start: usize, end: usize, mut cluster: u32) -> u32 {
         for i in start..end {
-            cluster = std::cmp::min(cluster, info[i].cluster);
+            cluster = core::cmp::min(cluster, info[i].cluster);
         }
 
         cluster
@@ -1630,8 +1631,8 @@ impl UnicodeBuffer {
     }
 }
 
-impl std::fmt::Debug for UnicodeBuffer {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for UnicodeBuffer {
+    fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         fmt.debug_struct("UnicodeBuffer")
             .field("direction", &self.direction())
             .field("language", &self.language())
@@ -1693,8 +1694,8 @@ impl GlyphBuffer {
         self.serialize_impl(face, flags).unwrap_or_default()
     }
 
-    fn serialize_impl(&self, face: &Face, flags: SerializeFlags) -> Result<String, std::fmt::Error> {
-        use std::fmt::Write;
+    fn serialize_impl(&self, face: &Face, flags: SerializeFlags) -> Result<String, core::fmt::Error> {
+        use core::fmt::Write;
 
         let mut s = String::with_capacity(64);
 
@@ -1757,8 +1758,8 @@ impl GlyphBuffer {
     }
 }
 
-impl std::fmt::Debug for GlyphBuffer {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for GlyphBuffer {
+    fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         fmt.debug_struct("GlyphBuffer")
             .field("glyph_positions", &self.glyph_positions())
             .field("glyph_infos", &self.glyph_infos())

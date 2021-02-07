@@ -1,5 +1,7 @@
 //! The Glyph Substitution Table.
 
+use alloc::vec::Vec;
+
 use crate::glyph_set::GlyphSet;
 use super::gsubgpos::*;
 use super::*;

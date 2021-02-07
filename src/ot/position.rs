@@ -275,7 +275,7 @@ impl Apply for CursivePos<'_> {
 
         // Low bits are lookup flags, so we want to truncate.
         if ctx.lookup_props as u16 & LookupFlags::RIGHT_TO_LEFT.bits() == 0 {
-            std::mem::swap(&mut child, &mut parent);
+            core::mem::swap(&mut child, &mut parent);
             x_offset = -x_offset;
             y_offset = -y_offset;
         }

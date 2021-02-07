@@ -1,4 +1,4 @@
-use std::convert::TryFrom;
+use core::convert::TryFrom;
 
 pub use unicode_general_category::GeneralCategory;
 pub use unicode_ccc::CanonicalCombiningClass; // TODO: prefer unic-ucd-normal::CanonicalCombiningClass

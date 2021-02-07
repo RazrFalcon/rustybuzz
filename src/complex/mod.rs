@@ -15,7 +15,8 @@ mod universal_machine;
 mod universal_table;
 mod vowel_constraints;
 
-use std::any::Any;
+use alloc::boxed::Box;
+use core::any::Any;
 
 use crate::{script, Direction, Face, Script, Tag};
 use crate::buffer::Buffer;

@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use core::str::FromStr;
 
 use smallvec::SmallVec;
 
@@ -125,12 +125,12 @@ fn parse_private_use_subtag(
     true
 }
 
-fn lang_cmp(s1: &str, s2: &str) -> std::cmp::Ordering {
+fn lang_cmp(s1: &str, s2: &str) -> core::cmp::Ordering {
     let da = s1.find('-').unwrap_or(s1.len());
     let db = s2.find('-').unwrap_or(s2.len());
-    let n = std::cmp::max(da, db);
-    let ea = std::cmp::min(n, s1.len());
-    let eb = std::cmp::min(n, s2.len());
+    let n = core::cmp::max(da, db);
+    let ea = core::cmp::min(n, s1.len());
+    let eb = core::cmp::min(n, s2.len());
     s1[..ea].cmp(&s2[..eb])
 }
 
@@ -169,7 +169,7 @@ fn tags_from_language(
             idx -= 1;
         }
 
-        let len = std::cmp::min(tags.left(), LANGUAGES.len() - idx - 1);
+        let len = core::cmp::min(tags.left(), LANGUAGES.len() - idx - 1);
         for i in 0..len {
             if LANGUAGES[idx + i].language != LANGUAGES[idx].language {
                 break;
@@ -251,7 +251,8 @@ mod tests {
     #![allow(non_snake_case)]
 
     use super::*;
-    use std::str::FromStr;
+    use core::str::FromStr;
+    use alloc::vec::Vec;
 
     fn new_tag_to_script(tag: Tag) -> Option<Script> {
         match &tag.to_bytes() {

@@ -1,7 +1,7 @@
 //! Common tables for GSUB and GPOS.
 
-use std::convert::TryFrom;
-use std::cmp::Ordering;
+use core::convert::TryFrom;
+use core::cmp::Ordering;
 
 use ttf_parser::NormalizedCoordinate;
 

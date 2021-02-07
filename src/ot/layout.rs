@@ -1,6 +1,6 @@
 //! OpenType layout.
 
-use std::ops::{Index, IndexMut};
+use core::ops::{Index, IndexMut};
 
 use ttf_parser::GlyphId;
 

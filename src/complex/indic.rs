@@ -1,6 +1,7 @@
-use std::convert::TryFrom;
-use std::cmp;
-use std::ops::Range;
+use alloc::boxed::Box;
+use core::cmp;
+use core::convert::TryFrom;
+use core::ops::Range;
 
 use ttf_parser::GlyphId;
 

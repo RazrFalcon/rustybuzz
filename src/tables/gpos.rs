@@ -1,5 +1,7 @@
 //! The Glyph Positioning Table.
 
+use alloc::vec::Vec;
+
 use crate::Face;
 use crate::glyph_set::GlyphSet;
 use super::gsubgpos::*;

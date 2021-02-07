@@ -217,7 +217,7 @@ fn setup_rphf_mask(plan: &ShapePlan, buffer: &mut Buffer) {
         let limit = if buffer.info[start].use_category() == category::R {
             1
         } else {
-            std::cmp::min(3, end - start)
+            core::cmp::min(3, end - start)
         };
 
         for i in start..start+limit {
