@@ -830,7 +830,7 @@ mod tests {
     fn check_unicode_version() {
         assert_eq!(unicode_bidi_mirroring::UNICODE_VERSION,     (13, 0, 0));
         assert_eq!(unicode_ccc::UNICODE_VERSION,                (13, 0, 0));
-        assert_eq!(unicode_general_category::UNICODE_VERSION,   (12, 1, 0)); // TODO: update
+        assert_eq!(unicode_general_category::UNICODE_VERSION,   (13, 0, 0));
         assert_eq!(unicode_script::UNICODE_VERSION,             (13, 0, 0));
         assert_eq!(crate::unicode_norm::UNICODE_VERSION,        (13, 0, 0));
     }
