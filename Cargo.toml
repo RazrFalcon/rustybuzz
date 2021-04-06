@@ -14,12 +14,12 @@ exclude = ["benches/**"]
 
 [dependencies]
 bitflags = "1.2"
-bytemuck = { version = "1.4", features = ["extern_crate_alloc"] }
-smallvec = "1.4"
-ttf-parser = "0.9"
+bytemuck = { version = "1.5", features = ["extern_crate_alloc"] }
+smallvec = "1.6"
+ttf-parser = "0.12"
 unicode-bidi-mirroring = "0.1"
 unicode-ccc = "0.1"
-unicode-general-category = "0.2"
+unicode-general-category = "0.4"
 unicode-script = "0.5"
 
 [dev-dependencies]
