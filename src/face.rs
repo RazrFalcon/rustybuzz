@@ -25,6 +25,7 @@ const UNICODE_FULL_ENCODING: u16 = 6;
 
 
 /// A font face handle.
+#[derive(Clone)]
 pub struct Face<'a> {
     pub(crate) ttfp_face: ttf_parser::Face<'a>,
     units_per_em: i32,
@@ -41,34 +42,87 @@ pub struct Face<'a> {
     pub(crate) morx: Option<morx::Chains<'a>>,
 }
 
+impl<'a> AsRef<ttf_parser::Face<'a>> for Face<'a> {
+    #[inline]
+    fn as_ref(&self) -> &ttf_parser::Face<'a> {
+        &self.ttfp_face
+    }
+}
+
+impl<'a> AsMut<ttf_parser::Face<'a>> for Face<'a> {
+    #[inline]
+    fn as_mut(&mut self) -> &mut ttf_parser::Face<'a> {
+        &mut self.ttfp_face
+    }
+}
+
+impl<'a> core::ops::Deref for Face<'a> {
+    type Target = ttf_parser::FaceTables<'a>;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        core::ops::Deref::deref(&self.ttfp_face)
+    }
+}
+
+impl<'a> core::ops::DerefMut for Face<'a> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        core::ops::DerefMut::deref_mut(&mut self.ttfp_face)
+    }
+}
+
 impl<'a> Face<'a> {
     /// Creates a new `Face` from data.
     ///
     /// Data will be referenced, not owned.
     pub fn from_slice(data: &'a [u8], face_index: u32) -> Option<Self> {
-        let ttfp_face = ttf_parser::Face::from_slice(data, face_index).ok()?;
+        let face = ttf_parser::Face::from_slice(data, face_index).ok()?;
+        Self::from_face(face)
+    }
+
+    /// Creates a new [`Face`] from [`ttf_parser::Face`].
+    ///
+    /// Data will be referenced, not owned.
+    ///
+    /// Returns `None` when face's units per EM is `None`.
+    pub fn from_face(face: ttf_parser::Face<'a>) -> Option<Self> {
         Some(Face {
-            units_per_em: ttfp_face.units_per_em()? as i32,
+            units_per_em: face.units_per_em()? as i32,
             pixels_per_em: None,
             points_per_em: None,
-            prefered_cmap_encoding_subtable: find_best_cmap_subtable(&ttfp_face),
-            gsub: ttfp_face.table_data(Tag::from_bytes(b"GSUB")).and_then(SubstTable::parse),
-            gpos: ttfp_face.table_data(Tag::from_bytes(b"GPOS")).and_then(PosTable::parse),
-            kern: ttfp_face.table_data(Tag::from_bytes(b"kern")).and_then(kern::parse),
-            kerx: ttfp_face.table_data(Tag::from_bytes(b"kerx"))
-                .and_then(|data| kerx::parse(data, ttfp_face.number_of_glyphs())),
-            ankr: ttfp_face.table_data(Tag::from_bytes(b"ankr"))
-                .and_then(|data| ankr::Table::parse(data, ttfp_face.number_of_glyphs())),
-            morx: ttfp_face.table_data(Tag::from_bytes(b"morx"))
-                .and_then(|data| morx::Chains::parse(data, ttfp_face.number_of_glyphs())),
-            trak: ttfp_face.table_data(Tag::from_bytes(b"trak")).and_then(trak::Table::parse),
-            feat: ttfp_face.table_data(Tag::from_bytes(b"feat")).and_then(feat::Table::parse),
-            ttfp_face,
+            prefered_cmap_encoding_subtable: find_best_cmap_subtable(&face),
+            gsub: face
+                .table_data(Tag::from_bytes(b"GSUB"))
+                .and_then(SubstTable::parse),
+            gpos: face
+                .table_data(Tag::from_bytes(b"GPOS"))
+                .and_then(PosTable::parse),
+            kern: face
+                .table_data(Tag::from_bytes(b"kern"))
+                .and_then(kern::parse),
+            kerx: face
+                .table_data(Tag::from_bytes(b"kerx"))
+                .and_then(|data| kerx::parse(data, face.number_of_glyphs())),
+            ankr: face
+                .table_data(Tag::from_bytes(b"ankr"))
+                .and_then(|data| ankr::Table::parse(data, face.number_of_glyphs())),
+            morx: face
+                .table_data(Tag::from_bytes(b"morx"))
+                .and_then(|data| morx::Chains::parse(data, face.number_of_glyphs())),
+            trak: face
+                .table_data(Tag::from_bytes(b"trak"))
+                .and_then(trak::Table::parse),
+            feat: face
+                .table_data(Tag::from_bytes(b"feat"))
+                .and_then(feat::Table::parse),
+            ttfp_face: face,
         })
     }
 
+    /// Returns face’s units per EM.
     #[inline]
-    pub(crate) fn units_per_em(&self) -> i32 {
+    pub fn units_per_em(&self) -> i32 {
         self.units_per_em
     }
 
