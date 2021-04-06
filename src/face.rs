@@ -57,18 +57,18 @@ impl<'a> AsMut<ttf_parser::Face<'a>> for Face<'a> {
 }
 
 impl<'a> core::ops::Deref for Face<'a> {
-    type Target = ttf_parser::FaceTables<'a>;
+    type Target = ttf_parser::Face<'a>;
 
     #[inline]
     fn deref(&self) -> &Self::Target {
-        core::ops::Deref::deref(&self.ttfp_face)
+        &self.ttfp_face
     }
 }
 
 impl<'a> core::ops::DerefMut for Face<'a> {
     #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
-        core::ops::DerefMut::deref_mut(&mut self.ttfp_face)
+        &mut self.ttfp_face
     }
 }
 
