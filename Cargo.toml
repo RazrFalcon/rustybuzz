@@ -20,7 +20,7 @@ ttf-parser = "0.12"
 unicode-bidi-mirroring = "0.1"
 unicode-ccc = "0.1"
 unicode-general-category = "0.4"
-unicode-script = "0.5"
+unicode-script = "0.5.2"
 
 [dev-dependencies]
 pico-args = "0.3"
