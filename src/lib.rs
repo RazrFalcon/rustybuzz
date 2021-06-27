@@ -3,7 +3,7 @@ A complete [harfbuzz](https://github.com/harfbuzz/harfbuzz) shaping algorithm po
 */
 
 #![no_std]
-#![doc(html_root_url = "https://docs.rs/rustybuzz/0.3.0")]
+#![doc(html_root_url = "https://docs.rs/rustybuzz/0.4.0")]
 #![warn(missing_docs)]
 
 extern crate alloc;
