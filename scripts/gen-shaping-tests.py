@@ -27,6 +27,8 @@ IGNORE_TEST_CASES = [
     'collections_006',
     # no `hhea` table.
     'indic_decompose_001',
+    # ttf-parser doesn't support phantom points
+    'variations_space_001',
 
     # text-rendering-tests tests
     # Unknown issue. Investigate.

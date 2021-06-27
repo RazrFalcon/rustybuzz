@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `GlyphInfo::unsafe_to_break` thanks to [@glowcoil](https://github.com/glowcoil).
 
 ### Changed
+- Sync with harfbuzz 2.7.1
 - Rename `GlyphInfo.codepoint` into `GlyphInfo.glyph_id` to remove confusion.
 
 ## [0.3.0] - 2020-12-05

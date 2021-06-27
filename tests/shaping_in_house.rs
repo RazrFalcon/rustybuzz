@@ -12014,6 +12014,18 @@ fn variations_rvrn_100() {
 }
 
 #[test]
+fn variations_space_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ab40c89624a6104e5d0a2308e448a989302f515b.ttf",
+            "\u{0020}",
+            "--variations=wdth=402",
+        ),
+        "space=0+639"
+    );
+}
+
+#[test]
 fn vertical_001() {
     assert_eq!(
         shape(
