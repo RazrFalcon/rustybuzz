@@ -176,7 +176,7 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
 
     pub fn replace_glyph_inplace(&mut self, glyph_id: GlyphId) {
         self.set_glyph_class(glyph_id, GlyphPropsFlags::empty(), false, false);
-        self.buffer.cur_mut(0).codepoint = u32::from(glyph_id.0);
+        self.buffer.cur_mut(0).glyph_id = u32::from(glyph_id.0);
     }
 
     pub fn replace_glyph_with_ligature(&mut self, glyph_id: GlyphId, class_guess: GlyphPropsFlags) {

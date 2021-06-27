@@ -91,8 +91,13 @@ impl GlyphPosition {
 #[repr(C)]
 #[derive(Clone, Copy, Default, Debug)]
 pub struct GlyphInfo {
+    // NOTE: Stores a Unicode codepoint before shaping and a glyph ID after.
+    //       Just like harfbuzz, we are using the same variable for two purposes.
+    //       Occupies u32 as a codepoint and u16 as a glyph id.
     /// A selected glyph.
-    pub codepoint: u32,
+    ///
+    /// Guarantee to be <= `u16::MAX`.
+    pub glyph_id: u32,
     pub(crate) mask: Mask,
     /// An original cluster index.
     pub cluster: u32,
@@ -122,13 +127,13 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn as_char(&self) -> char {
-        char::try_from(self.codepoint).unwrap()
+        char::try_from(self.glyph_id).unwrap()
     }
 
     #[inline]
     pub(crate) fn as_glyph(&self) -> GlyphId {
-        debug_assert!(self.codepoint <= u32::from(u16::MAX));
-        GlyphId(self.codepoint as u16)
+        debug_assert!(self.glyph_id <= u32::from(u16::MAX));
+        GlyphId(self.glyph_id as u16)
     }
 
     // Var allocation: unicode_props
@@ -669,7 +674,7 @@ impl Buffer {
 
         let i = self.len;
         self.info[i] = GlyphInfo {
-            codepoint,
+            glyph_id: codepoint,
             mask: 0,
             cluster,
             var1: 0,
@@ -809,7 +814,7 @@ impl Buffer {
         for i in 0..num_out {
             let ii = self.out_len + i;
             self.set_out_info(ii, orig_info);
-            self.out_info_mut()[ii].codepoint = glyph_data[i];
+            self.out_info_mut()[ii].glyph_id = glyph_data[i];
         }
 
         self.idx += num_in;
@@ -826,7 +831,7 @@ impl Buffer {
         }
 
         let out_len = self.out_len;
-        self.out_info_mut()[out_len].codepoint = glyph_index;
+        self.out_info_mut()[out_len].glyph_id = glyph_index;
 
         self.idx += 1;
         self.out_len += 1;
@@ -849,7 +854,7 @@ impl Buffer {
             self.set_out_info(out_len, info);
         }
 
-        self.out_info_mut()[out_len].codepoint = glyph_index;
+        self.out_info_mut()[out_len].glyph_id = glyph_index;
 
         self.out_len += 1;
     }
@@ -1707,10 +1712,10 @@ impl GlyphBuffer {
             if !flags.contains(SerializeFlags::NO_GLYPH_NAMES) {
                 match face.glyph_name(info.as_glyph()) {
                     Some(name) => s.push_str(name),
-                    None => write!(&mut s, "gid{}", info.codepoint)?,
+                    None => write!(&mut s, "gid{}", info.glyph_id)?,
                 }
             } else {
-                write!(&mut s, "{}", info.codepoint)?;
+                write!(&mut s, "{}", info.glyph_id)?;
             }
 
             if !flags.contains(SerializeFlags::NO_CLUSTERS) {

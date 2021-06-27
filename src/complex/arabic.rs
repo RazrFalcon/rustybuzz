@@ -497,7 +497,7 @@ fn mongolian_variation_selectors(buffer: &mut Buffer) {
     let len = buffer.len;
     let info = &mut buffer.info;
     for i in 1..len {
-        if (0x180B..=0x180D).contains(&info[i].codepoint) {
+        if (0x180B..=0x180D).contains(&info[i].glyph_id) {
             let a = info[i - 1].arabic_shaping_action();
             info[i].set_arabic_shaping_action(a);
         }
@@ -549,7 +549,7 @@ fn reorder_marks(_: &ShapePlan, buffer: &mut Buffer, mut start: usize, end: usiz
         let mut j = i;
         while j < end &&
             buffer.info[j].modified_combining_class() == cc &&
-            MODIFIER_COMBINING_MARKS.contains(&buffer.info[j].codepoint)
+            MODIFIER_COMBINING_MARKS.contains(&buffer.info[j].glyph_id)
         {
             j += 1;
         }

@@ -11,7 +11,7 @@ pub fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     for info in &mut buffer.info[..len] {
         if info.general_category() == GeneralCategory::NonspacingMark {
             let mut class = info.modified_combining_class();
-            class = recategorize_combining_class(info.codepoint, class);
+            class = recategorize_combining_class(info.glyph_id, class);
             info.set_modified_combining_class(class);
         }
     }

@@ -112,7 +112,7 @@ fn machine_kern(
         let j = iter.index();
 
         let info = &ctx.buffer.info;
-        let kern = get_kerning(info[i].codepoint, info[j].codepoint);
+        let kern = get_kerning(info[i].glyph_id, info[j].glyph_id);
 
         let pos = &mut ctx.buffer.pos;
         if kern != 0 {

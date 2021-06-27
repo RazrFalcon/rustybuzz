@@ -59,7 +59,7 @@ const MYANMAR_FEATURES: &[Tag] = &[
 
 impl GlyphInfo {
     fn set_myanmar_properties(&mut self) {
-        let u = self.codepoint;
+        let u = self.glyph_id;
         let (mut cat, mut pos) = super::indic::get_category_and_position(u);
 
         // Myanmar
@@ -255,11 +255,11 @@ fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
     };
 
     let mut dottedcircle = GlyphInfo {
-        codepoint: 0x25CC,
+        glyph_id: 0x25CC,
         ..GlyphInfo::default()
     };
     dottedcircle.set_myanmar_properties();
-    dottedcircle.codepoint = dottedcircle_glyph;
+    dottedcircle.glyph_id = dottedcircle_glyph;
 
     buffer.clear_output();
 

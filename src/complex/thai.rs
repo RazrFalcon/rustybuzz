@@ -238,10 +238,10 @@ fn do_pua_shaping(face: &Face, buffer: &mut Buffer) {
     let mut base = 0;
 
     for i in 0..buffer.len {
-        let mt = get_mark_type(buffer.info[i].codepoint);
+        let mt = get_mark_type(buffer.info[i].glyph_id);
 
         if mt == Mark::NotMark {
-            let ct = get_consonant_type(buffer.info[i].codepoint);
+            let ct = get_consonant_type(buffer.info[i].glyph_id);
             above_state = ABOVE_START_STATE[ct as usize];
             below_state = BELOW_START_STATE[ct as usize];
             base = i;
@@ -262,9 +262,9 @@ fn do_pua_shaping(face: &Face, buffer: &mut Buffer) {
 
         buffer.unsafe_to_break(base, i);
         if action == Action::RD {
-            buffer.info[base].codepoint = pua_shape(buffer.info[base].codepoint, action, face);
+            buffer.info[base].glyph_id = pua_shape(buffer.info[base].glyph_id, action, face);
         } else {
-            buffer.info[i].codepoint = pua_shape(buffer.info[i].codepoint, action, face);
+            buffer.info[i].glyph_id = pua_shape(buffer.info[i].glyph_id, action, face);
         }
     }
 }
@@ -331,7 +331,7 @@ fn preprocess_text(
     buffer.clear_output();
     buffer.idx = 0;
     while buffer.idx < buffer.len {
-        let u = buffer.cur(0).codepoint;
+        let u = buffer.cur(0).glyph_id;
         if !is_sara_am(u) {
             buffer.next_glyph();
             continue;
@@ -351,7 +351,7 @@ fn preprocess_text(
 
         // Ok, let's see...
         let mut start = end - 2;
-        while start > 0 && is_tone_mark(buffer.out_info()[start - 1].codepoint) {
+        while start > 0 && is_tone_mark(buffer.out_info()[start - 1].glyph_id) {
             start -= 1;
         }
 

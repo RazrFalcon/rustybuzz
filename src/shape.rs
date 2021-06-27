@@ -262,7 +262,7 @@ fn setup_masks_fraction(ctx: &mut ShapeContext) {
     let mut i = 0;
     while i < len {
         // FRACTION SLASH
-        if buffer.info[i].codepoint == 0x2044 {
+        if buffer.info[i].glyph_id == 0x2044 {
             let mut start = i;
             while start > 0 && buffer.info[start - 1].general_category() == GeneralCategory::DecimalNumber {
                 start -= 1;
@@ -311,7 +311,7 @@ fn set_unicode_props(buffer: &mut Buffer) {
         // Marks are already set as continuation by the above line.
         // Handle Emoji_Modifier and ZWJ-continuation.
         if info.general_category() == GeneralCategory::ModifierSymbol
-            && matches!(info.codepoint, 0x1F3FB..=0x1F3FF)
+            && matches!(info.glyph_id, 0x1F3FB..=0x1F3FF)
         {
             info.set_continuation();
         } else if info.is_zwj() {
@@ -323,7 +323,7 @@ fn set_unicode_props(buffer: &mut Buffer) {
                     i += 1;
                 }
             }
-        } else if matches!(info.codepoint, 0xE0020..=0xE007F) {
+        } else if matches!(info.glyph_id, 0xE0020..=0xE007F) {
             // Or part of the Other_Grapheme_Extend that is not marks.
             // As of Unicode 11 that is just:
             //
@@ -350,7 +350,7 @@ fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
         && face.has_glyph(0x25CC)
     {
         let mut info = GlyphInfo {
-            codepoint: 0x25CC,
+            glyph_id: 0x25CC,
             mask: buffer.cur(0).mask,
             cluster: buffer.cur(0).cluster,
             var1: 0,
@@ -416,7 +416,7 @@ fn rotate_chars(ctx: &mut ShapeContext) {
         for info in &mut ctx.buffer.info[..len] {
             if let Some(c) = info.as_char().mirrored().map(u32::from) {
                 if ctx.face.has_glyph(c) {
-                    info.codepoint = c;
+                    info.glyph_id = c;
                     continue;
                 }
             }
@@ -428,7 +428,7 @@ fn rotate_chars(ctx: &mut ShapeContext) {
         for info in &mut ctx.buffer.info[..len] {
             if let Some(c) = info.as_char().vertical().map(u32::from) {
                 if ctx.face.has_glyph(c) {
-                    info.codepoint = c;
+                    info.glyph_id = c;
                 }
             }
         }
@@ -439,7 +439,7 @@ fn map_glyphs_fast(buffer: &mut Buffer) {
     // Normalization process sets up glyph_index(), we just copy it.
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
-        info.codepoint = info.glyph_index();
+        info.glyph_id = info.glyph_index();
     }
 }
 
@@ -507,7 +507,7 @@ fn hide_default_ignorables(buffer: &mut Buffer, face: &Face) {
                 let len = buffer.len;
                 for info in &mut buffer.info[..len] {
                     if info.is_default_ignorable() {
-                        info.codepoint = u32::from(invisible.0);
+                        info.glyph_id = u32::from(invisible.0);
                     }
                 }
                 return;

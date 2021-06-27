@@ -123,7 +123,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 let mut done = 0;
                 while done < len {
                     let cur = buffer.cur_mut(done);
-                    cur.set_glyph_index(match face.glyph_index(cur.codepoint) {
+                    cur.set_glyph_index(match face.glyph_index(cur.glyph_id) {
                         Some(glyph_id) => u32::from(glyph_id.0),
                         None => break,
                     });
@@ -193,7 +193,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         // If it did NOT, then make it skippable.
         // https://github.com/harfbuzz/harfbuzz/issues/554
         for i in 1..buffer.len.saturating_sub(1) {
-            if buffer.info[i].codepoint == 0x034F /* CGJ */ {
+            if buffer.info[i].glyph_id == 0x034F /* CGJ */ {
                 let last = buffer.info[i - 1].modified_combining_class();
                 let next = buffer.info[i + 1].modified_combining_class();
                 if next == 0 || last <= next {
@@ -246,7 +246,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                         // Modify starter and carry on.
                         let mut flags = buffer.scratch_flags;
                         let mut info = &mut buffer.out_info_mut()[starter];
-                        info.codepoint = u32::from(composed);
+                        info.glyph_id = u32::from(composed);
                         info.set_glyph_index(u32::from(glyph_id.0));
                         info.init_unicode_props(&mut flags);
                         buffer.scratch_flags = flags;
@@ -287,7 +287,7 @@ fn decompose_multi_char_cluster(ctx: &mut ShapeNormalizeContext, end: usize, sho
 fn handle_variation_selector_cluster(ctx: &mut ShapeNormalizeContext, end: usize, _: bool) {
     let face = ctx.face;
     let set_glyph = |info: &mut GlyphInfo| {
-        if let Some(glyph_id) = face.glyph_index(info.codepoint) {
+        if let Some(glyph_id) = face.glyph_index(info.glyph_id) {
             info.set_glyph_index(u32::from(glyph_id.0));
         }
     };
@@ -301,7 +301,7 @@ fn handle_variation_selector_cluster(ctx: &mut ShapeNormalizeContext, end: usize
                 buffer.cur(1).as_char(),
             ) {
                 buffer.cur_mut(0).set_glyph_index(u32::from(glyph_id.0));
-                let unicode = buffer.cur(0).codepoint;
+                let unicode = buffer.cur(0).glyph_id;
                 buffer.replace_glyphs(2, 1, &[unicode]);
             } else {
                 // Just pass on the two characters separately, let GSUB do its magic.

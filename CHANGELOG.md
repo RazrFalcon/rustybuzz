@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- `Face::from_face`, so you can create `rustybuzz::Face` directly from `ttf_parser::Face`.
+  Thanks to [@lain-dono](https://github.com/lain-dono)
+- `no_std` support thanks to [@CryZe](https://github.com/CryZe).
+- `GlyphInfo::unsafe_to_break` thanks to [@glowcoil](https://github.com/glowcoil).
+
+### Changed
+- Rename `GlyphInfo.codepoint` into `GlyphInfo.glyph_id` to remove confusion.
 
 ## [0.3.0] - 2020-12-05
 ### Ported

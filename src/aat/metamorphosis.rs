@@ -138,7 +138,7 @@ fn apply_subtable(kind: &morx::SubtableKind, face: &Face, buffer: &mut Buffer) {
             let number_of_glyphs = face.ttfp_face.number_of_glyphs();
             for info in &mut buffer.info {
                 if let Some(replacement) = lookup.value(info.as_glyph(), number_of_glyphs) {
-                    info.codepoint = u32::from(replacement);
+                    info.glyph_id = u32::from(replacement);
                 }
             }
         }
@@ -314,7 +314,7 @@ impl aat::Driver<morx::ContextualEntry> for ContextualCtx<'_> {
 
         if let Some(replacement) = replacement {
             buffer.unsafe_to_break(self.mark, (buffer.idx +1 ).min(buffer.len));
-            buffer.info[self.mark].codepoint = u32::from(replacement);
+            buffer.info[self.mark].glyph_id = u32::from(replacement);
         }
 
         replacement = None;
@@ -326,7 +326,7 @@ impl aat::Driver<morx::ContextualEntry> for ContextualCtx<'_> {
         }
 
         if let Some(replacement) = replacement {
-            buffer.info[idx].codepoint = u32::from(replacement);
+            buffer.info[idx].glyph_id = u32::from(replacement);
         }
 
         if entry.flags & Self::SET_MARK != 0 {
@@ -536,7 +536,7 @@ impl aat::Driver<u16> for LigatureCtx<'_> {
                 }
 
                 let offset = uoffset as i32;
-                let component_idx = (buffer.cur(0).codepoint as i32 + offset) as u32;
+                let component_idx = (buffer.cur(0).glyph_id as i32 + offset) as u32;
                 ligature_idx += match self.table.components.get(component_idx) {
                     Some(v) => v,
                     None => break,

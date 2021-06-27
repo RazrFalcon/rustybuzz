@@ -83,14 +83,14 @@ class ConstraintSet(object):
                 s.append('matched = true;\n')
             elif len(self._c) == 1:
                 assert index == 1, 'Cannot use `matched` for this constraint; the general case has not been implemented'
-                s.append('matched = 0x{:04X} == buffer.cur({}).codepoint;\n'.format(next(
+                s.append('matched = 0x{:04X} == buffer.cur({}).glyph_id;\n'.format(next(
                     iter(self._c)), index))
             else:
-                s.append('if 0x{:04X} == buffer.cur({}).codepoint &&\n'.format(self._c[0], index))
+                s.append('if 0x{:04X} == buffer.cur({}).glyph_id &&\n'.format(self._c[0], index))
                 if index:
-                    s.append('buffer.idx + {} < buffer.len() &&\n'.format(index + 1))
+                    s.append('buffer.idx + {} < buffer.len &&\n'.format(index + 1))
                 for i, cp in enumerate(self._c[1:], start=1):
-                    s.append('0x{:04X} == buffer.cur({}).codepoint{}\n'.format(
+                    s.append('0x{:04X} == buffer.cur({}).glyph_id{}\n'.format(
                         cp, index + i, '' if i == len(self._c) - 1 else ' &&'))
                 s.append('{\n')
                 for i in range(index + 1):
@@ -98,7 +98,7 @@ class ConstraintSet(object):
                 s.append('output_dotted_circle(buffer);\n')
                 s.append('}\n')
         else:
-            s.append('match buffer.cur({}).codepoint {{\n'.format(index))
+            s.append('match buffer.cur({}).glyph_id {{\n'.format(index))
             cases = collections.defaultdict(set)
             for first, rest in sorted(self._c.items()):
                 cases[rest.__str__(index + 1, depth + 2)].add(first)
@@ -147,7 +147,7 @@ print()
 print('fn output_dotted_circle(buffer: &mut Buffer) {')
 print('    buffer.output_glyph(0x25CC);')
 print('    {')
-print('        let out_idx = buffer.out_len() - 1;')
+print('        let out_idx = buffer.out_len - 1;')
 print('        buffer.out_info_mut()[out_idx].reset_continuation();')
 print('    }')
 print('}')
@@ -169,12 +169,13 @@ print('    //')
 print('    // https://github.com/harfbuzz/harfbuzz/issues/1019')
 print('    let mut processed = false;')
 print('    buffer.clear_output();')
-print('    match buffer.props.script {')
+print('    match buffer.script {')
 
 for script, constraints in sorted(constraints.items(), key=lambda s_c: script_order[s_c[0]]):
     print('        Some(script::{}) => {{'.format(script.upper()))
     print('            buffer.idx = 0;')
-    print('            while buffer.idx + 1 < buffer.len() {')
+    print('            while buffer.idx + 1 < buffer.len {')
+    print('               #[allow(unused_mut)]')
     print('                let mut matched = false;')
     print(str(constraints), end='')
     print('                buffer.next_glyph();')
@@ -187,7 +188,7 @@ for script, constraints in sorted(constraints.items(), key=lambda s_c: script_or
 print('        _ => {}')
 print('    }')
 print('    if processed {')
-print('        if buffer.idx < buffer.len() {')
+print('        if buffer.idx < buffer.len {')
 print('            buffer.next_glyph();')
 print('        }')
 print('        buffer.swap_buffers();')

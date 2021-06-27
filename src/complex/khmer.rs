@@ -53,7 +53,7 @@ mod khmer_feature {
 
 impl GlyphInfo {
     fn set_khmer_properties(&mut self) {
-        let u = self.codepoint;
+        let u = self.glyph_id;
         let (mut cat, pos) = super::indic::get_category_and_position(u);
 
         // Re-assign category
@@ -182,11 +182,11 @@ fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
     };
 
     let mut dottedcircle = GlyphInfo {
-        codepoint: 0x25CC,
+        glyph_id: 0x25CC,
         ..GlyphInfo::default()
     };
     dottedcircle.set_khmer_properties();
-    dottedcircle.codepoint = dottedcircle_glyph;
+    dottedcircle.glyph_id = dottedcircle_glyph;
 
     buffer.clear_output();
 

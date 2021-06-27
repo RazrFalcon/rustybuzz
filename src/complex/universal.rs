@@ -352,7 +352,7 @@ fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
     };
 
     let mut dottedcircle = GlyphInfo {
-        codepoint: dottedcircle_glyph,
+        glyph_id: dottedcircle_glyph,
         ..GlyphInfo::default()
     };
     dottedcircle.set_use_category(super::universal_table::get_category(0x25CC));
@@ -550,6 +550,6 @@ fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     // We cannot setup masks here. We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {
-        info.set_use_category(super::universal_table::get_category(info.codepoint));
+        info.set_use_category(super::universal_table::get_category(info.glyph_id));
     }
 }

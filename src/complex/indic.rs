@@ -497,7 +497,7 @@ impl GlyphInfo {
     }
 
     fn set_indic_properties(&mut self) {
-        let u = self.codepoint;
+        let u = self.glyph_id;
         let (mut cat, mut pos) = get_category_and_position(u);
 
         // Re-assign category
@@ -791,11 +791,11 @@ fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
     };
 
     let mut dottedcircle = GlyphInfo {
-        codepoint: 0x25CC,
+        glyph_id: 0x25CC,
         ..GlyphInfo::default()
     };
     dottedcircle.set_indic_properties();
-    dottedcircle.codepoint = dottedcircle_glyph;
+    dottedcircle.glyph_id = dottedcircle_glyph;
 
     buffer.clear_output();
 
@@ -1420,7 +1420,7 @@ fn final_reordering_impl(
     // We don't call load_virama_glyph(), since we know it's already loaded.
     if let Some(virama_glyph) = virama_glyph {
         for info in &mut buffer.info[start..end] {
-            if info.codepoint == virama_glyph && info.is_ligated() && info.is_multiplied() {
+            if info.glyph_id == virama_glyph && info.is_ligated() && info.is_multiplied() {
                 // This will make sure that this glyph passes is_halant() test.
                 info.set_indic_category(category::H);
                 info.clear_ligated_and_multiplied();

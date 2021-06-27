@@ -25,7 +25,7 @@ pub fn track(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 
 pub fn zero_width_deleted_glyphs(buffer: &mut Buffer) {
     for i in 0..buffer.len {
-        if buffer.info[i].codepoint == 0xFFFF {
+        if buffer.info[i].glyph_id == 0xFFFF {
             buffer.pos[i].x_advance = 0;
             buffer.pos[i].y_advance = 0;
             buffer.pos[i].x_offset = 0;
@@ -35,5 +35,5 @@ pub fn zero_width_deleted_glyphs(buffer: &mut Buffer) {
 }
 
 pub fn remove_deleted_glyphs(buffer: &mut Buffer) {
-    buffer.delete_glyphs_inplace(|info| info.codepoint == 0xFFFF )
+    buffer.delete_glyphs_inplace(|info| info.glyph_id == 0xFFFF )
 }
