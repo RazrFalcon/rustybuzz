@@ -87,6 +87,13 @@ We do have one `unsafe` to cast between two POD structures.
 But except that, there are no `unsafe` in this library and in most of its dependencies
 (excluding `bytemuck`).
 
+## Alternatives
+
+- [harfbuzz_rs](https://crates.io/crates/harfbuzz_rs) - bindings to the actual harfbuzz library.
+  As of v2 doesn't expose subsetting and glyph outlining, which harfbuzz supports.
+- [allsorts](https://github.com/yeslogic/allsorts) - shaper and subsetter. As of v0.6 doesn't support variable fonts and [Apple Advanced Typography](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6AATIntro.html). Relies on some unsafe code.
+- [swash](https://github.com/dfrg/swash) - Supports variable fonts, text layout and rendering. No subsetting. Relies on some unsafe code. As of v0.1.4 has zero tests.
+
 ## License
 
 `rustybuzz` is licensed under the **MIT**.
