@@ -781,9 +781,9 @@ fn fallback_positioning_001() {
             "",
         ),
         "x=0+1030|\
-         acutecomb=0@-19,-27+0|\
+         acutecomb=0@-20,-27+0|\
          X=2+1295|\
-         acutecomb=2@-151,320+0"
+         acutecomb=2@-152,321+0"
     );
 }
 
