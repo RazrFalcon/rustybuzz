@@ -1,13 +1,13 @@
 use ttf_parser::GlyphId;
-use ttf_parser::parser::{Offset, Offset16};
+use ttf_parser::opentype_layout::LookupIndex;
+use ttf_parser::opentype_layout::positioning::*;
+use ttf_parser::parser::TryNumFrom;
 
 use crate::{Direction, Face};
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
 use crate::plan::ShapePlan;
-use crate::tables::gpos::*;
-use crate::tables::gsubgpos::*;
 
-use super::{LayoutLookup, LayoutTable, TableIndex};
+use super::{lookup_flags, LayoutLookup, LayoutTable, TableIndex, PositioningTable, PositioningLookup};
 use super::apply::{Apply, ApplyContext};
 use super::matching::SkippyIter;
 
@@ -89,18 +89,18 @@ fn propagate_attachment_offsets(
     }
 }
 
-impl<'a> LayoutTable for PosTable<'a> {
+impl<'a> LayoutTable for PositioningTable<'a> {
     const INDEX: TableIndex = TableIndex::GPOS;
     const IN_PLACE: bool = true;
 
-    type Lookup = PosLookup<'a>;
+    type Lookup = PositioningLookup<'a>;
 
     fn get_lookup(&self, index: LookupIndex) -> Option<&Self::Lookup> {
-        self.lookups.get(usize::from(index.0))?.as_ref()
+        self.lookups.get(usize::from(index))
     }
 }
 
-impl LayoutLookup for PosLookup<'_> {
+impl LayoutLookup for PositioningLookup<'_> {
     fn props(&self) -> u32 {
         self.props
     }
@@ -114,7 +114,7 @@ impl LayoutLookup for PosLookup<'_> {
     }
 }
 
-impl Apply for PosLookup<'_> {
+impl Apply for PositioningLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         if self.covers(ctx.buffer.cur(0).as_glyph()) {
             for subtable in &self.subtables {
@@ -128,44 +128,41 @@ impl Apply for PosLookup<'_> {
     }
 }
 
-impl Apply for PosLookupSubtable<'_> {
+impl Apply for PositioningSubtable<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         match self {
             Self::Single(t) => t.apply(ctx),
             Self::Pair(t) => t.apply(ctx),
             Self::Cursive(t) => t.apply(ctx),
-            Self::MarkBase(t) => t.apply(ctx),
-            Self::MarkLig(t) => t.apply(ctx),
-            Self::MarkMark(t) => t.apply(ctx),
+            Self::MarkToBase(t) => t.apply(ctx),
+            Self::MarkToLigature(t) => t.apply(ctx),
+            Self::MarkToMark(t) => t.apply(ctx),
             Self::Context(t) => t.apply(ctx),
             Self::ChainContext(t) => t.apply(ctx),
         }
     }
 }
 
-impl Apply for SinglePos<'_> {
+impl Apply for SingleAdjustment<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
-        let (base, value) = match *self {
-            Self::Format1 { data, coverage, value } => {
+        let record = match self {
+            Self::Format1 { coverage, value } => {
                 coverage.get(glyph)?;
-                (data, value)
+                *value
             }
-            Self::Format2 { data, coverage, flags, values } => {
+            Self::Format2 { coverage, values } => {
                 let index = coverage.get(glyph)?;
-                let record = ValueRecord::new(values.get(usize::from(index))?, flags);
-                (data, record)
+                values.get(index)?
             }
         };
-
-        value.apply(ctx, base, ctx.buffer.idx);
+        record.apply(ctx, ctx.buffer.idx);
         ctx.buffer.idx += 1;
-
         Some(())
     }
 }
 
-impl Apply for PairPos<'_> {
+impl Apply for PairAdjustment<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let first = ctx.buffer.cur(0).as_glyph();
         let index = self.coverage().get(first)?;
@@ -178,39 +175,34 @@ impl Apply for PairPos<'_> {
         let pos = iter.index();
         let second = ctx.buffer.info[pos].as_glyph();
 
-        let (base, flags, records) = match *self {
-            Self::Format1 { flags, sets, .. } => {
-                let data = sets.slice(index)?;
-                let set = PairSet::parse(data, flags)?;
-                let records = set.get(second)?;
-                (data, flags, records)
+        let records = match self {
+            Self::Format1 { sets, .. } => {
+                sets.get(index)?.get(second)
             }
-            Self::Format2 { data, flags, classes, matrix, .. } => {
-                let classes = [classes[0].get(first).0, classes[1].get(second).0];
-                let records = matrix.get(classes)?;
-                (data, flags, records)
+            Self::Format2 { classes, matrix, .. } => {
+                let classes = (classes.0.get(first), classes.1.get(second));
+                matrix.get(classes)
             }
-        };
+        }?;
 
+        let flag1 = records.0.apply(ctx, ctx.buffer.idx);
+        let flag2 = records.1.apply(ctx, pos);
         // Note the intentional use of "|" instead of short-circuit "||".
-        if records[0].apply(ctx, base, ctx.buffer.idx) | records[1].apply(ctx, base, pos) {
+        if flag1 | flag2 {
             ctx.buffer.unsafe_to_break(ctx.buffer.idx, pos + 1);
         }
 
-        ctx.buffer.idx = pos + usize::from(!flags[1].is_empty());
+        ctx.buffer.idx = pos + usize::from(flag2);
         Some(())
     }
 }
 
-impl Apply for CursivePos<'_> {
+impl Apply for CursiveAdjustment<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let Self::Format1 { data, coverage, entry_exits } = *self;
-
         let this = ctx.buffer.cur(0).as_glyph();
-        let entry = entry_exits.get(coverage.get(this)?)?.entry_anchor;
-        if entry.is_null() {
-            return None;
-        }
+
+        let index_this = self.coverage.get(this)?;
+        let entry_this = self.sets.entry(index_this)?;
 
         let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
         if !iter.prev() {
@@ -219,13 +211,11 @@ impl Apply for CursivePos<'_> {
 
         let i = iter.index();
         let prev = ctx.buffer.info[i].as_glyph();
-        let exit = entry_exits.get(coverage.get(prev)?)?.exit_anchor;
-        if exit.is_null() {
-            return None;
-        }
+        let index_prev = self.coverage.get(prev)?;
+        let exit_prev = self.sets.exit(index_prev)?;
 
-        let (exit_x, exit_y) = Anchor::parse(data.get(exit.to_usize()..)?)?.get(ctx.face);
-        let (entry_x, entry_y) = Anchor::parse(data.get(entry.to_usize()..)?)?.get(ctx.face);
+        let (exit_x, exit_y) = exit_prev.get(ctx.face);
+        let (entry_x, entry_y) = entry_this.get(ctx.face);
 
         let direction = ctx.buffer.direction;
         let j = ctx.buffer.idx;
@@ -274,7 +264,7 @@ impl Apply for CursivePos<'_> {
         let mut y_offset = entry_y - exit_y;
 
         // Low bits are lookup flags, so we want to truncate.
-        if ctx.lookup_props as u16 & LookupFlags::RIGHT_TO_LEFT.bits() == 0 {
+        if ctx.lookup_props as u16 & lookup_flags::RIGHT_TO_LEFT == 0 {
             core::mem::swap(&mut child, &mut parent);
             x_offset = -x_offset;
             y_offset = -y_offset;
@@ -339,17 +329,15 @@ fn reverse_cursive_minor_offset(
     pos[j].set_attach_type(attach_type);
 }
 
-impl Apply for MarkBasePos<'_> {
+impl Apply for MarkToBaseAdjustment<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let Self::Format1 { mark_coverage, base_coverage, marks, base_matrix } = *self;
-
         let buffer = &ctx.buffer;
         let mark_glyph = ctx.buffer.cur(0).as_glyph();
-        let mark_index = mark_coverage.get(mark_glyph)?;
+        let mark_index = self.mark_coverage.get(mark_glyph)?;
 
         // Now we search backwards for a non-mark glyph
         let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
-        iter.set_lookup_props(u32::from(LookupFlags::IGNORE_MARKS.bits()));
+        iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
 
         let info = &buffer.info;
         loop {
@@ -379,23 +367,21 @@ impl Apply for MarkBasePos<'_> {
 
         let idx = iter.index();
         let base_glyph = info[idx].as_glyph();
-        let base_index = base_coverage.get(base_glyph)?;
+        let base_index = self.base_coverage.get(base_glyph)?;
 
-        marks.apply(ctx, base_matrix, mark_index, base_index, idx)
+        self.marks.apply(ctx, self.anchors, mark_index, base_index, idx)
     }
 }
 
-impl Apply for MarkLigPos<'_> {
+impl Apply for MarkToLigatureAdjustment<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let Self::Format1 { mark_coverage, lig_coverage, marks, lig_array } = *self;
-
         let buffer = &ctx.buffer;
         let mark_glyph = ctx.buffer.cur(0).as_glyph();
-        let mark_index = mark_coverage.get(mark_glyph)?;
+        let mark_index = self.mark_coverage.get(mark_glyph)?;
 
         // Now we search backwards for a non-mark glyph
         let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
-        iter.set_lookup_props(u32::from(LookupFlags::IGNORE_MARKS.bits()));
+        iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
         if !iter.prev() {
             return None;
         }
@@ -404,8 +390,8 @@ impl Apply for MarkLigPos<'_> {
 
         let idx = iter.index();
         let lig_glyph = buffer.info[idx].as_glyph();
-        let lig_index = lig_coverage.get(lig_glyph)?;
-        let lig_attach = lig_array.get(lig_index)?;
+        let lig_index = self.ligature_coverage.get(lig_glyph)?;
+        let lig_attach = self.ligature_array.get(lig_index)?;
 
         // Find component to attach to
         let comp_count = lig_attach.rows;
@@ -423,21 +409,19 @@ impl Apply for MarkLigPos<'_> {
         let matches = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
         let comp_index = if matches { mark_comp.min(comp_count) } else { comp_count } - 1;
 
-        marks.apply(ctx, lig_attach, mark_index, comp_index, idx)
+        self.marks.apply(ctx, lig_attach, mark_index, comp_index, idx)
     }
 }
 
-impl Apply for MarkMarkPos<'_> {
+impl Apply for MarkToMarkAdjustment<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let Self::Format1 { mark1_coverage, mark2_coverage, marks, mark2_matrix } = *self;
-
         let buffer = &ctx.buffer;
         let mark1_glyph = ctx.buffer.cur(0).as_glyph();
-        let mark1_index = mark1_coverage.get(mark1_glyph)?;
+        let mark1_index = self.mark1_coverage.get(mark1_glyph)?;
 
         // Now we search backwards for a suitable mark glyph until a non-mark glyph
         let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
-        iter.set_lookup_props(ctx.lookup_props & !u32::from(LookupFlags::IGNORE_FLAGS.bits()));
+        iter.set_lookup_props(ctx.lookup_props & !u32::from(lookup_flags::IGNORE_FLAGS));
         if !iter.prev() {
             return None;
         }
@@ -467,93 +451,75 @@ impl Apply for MarkMarkPos<'_> {
         }
 
         let mark2_glyph = buffer.info[idx].as_glyph();
-        let mark2_index = mark2_coverage.get(mark2_glyph)?;
+        let mark2_index = self.mark2_coverage.get(mark2_glyph)?;
 
-        marks.apply(ctx, mark2_matrix, mark1_index, mark2_index, idx)
+        self.marks.apply(ctx, self.mark2_matrix, mark1_index, mark2_index, idx)
     }
 }
 
-impl<'a> ValueRecord<'a> {
-    pub fn apply(&self, ctx: &mut ApplyContext, base: &[u8], idx: usize) -> bool {
-        let mut s = ttf_parser::parser::Stream::new(self.data);
+trait ValueRecordExt {
+    fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool;
+}
 
+impl ValueRecordExt for ValueRecord<'_> {
+    fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool {
         let horizontal = ctx.buffer.direction.is_horizontal();
         let mut pos = ctx.buffer.pos[idx];
         let mut worked = false;
 
-        if self.flags.contains(ValueFormatFlags::X_PLACEMENT) {
-            if let Some(delta) = s.read::<i16>() {
-                pos.x_offset += i32::from(delta);
-                worked |= delta != 0;
-            }
+        if self.x_placement != 0 {
+            pos.x_offset += i32::from(self.x_placement);
+            worked = true;
         }
 
-        if self.flags.contains(ValueFormatFlags::Y_PLACEMENT) {
-            if let Some(delta) = s.read::<i16>() {
-                pos.y_offset += i32::from(delta);
-                worked |= delta != 0;
-            }
+        if self.y_placement != 0 {
+            pos.y_offset += i32::from(self.y_placement);
+            worked = true;
         }
 
-        if self.flags.contains(ValueFormatFlags::X_ADVANCE) {
-            if let Some(delta) = s.read::<i16>() {
-                if horizontal {
-                    pos.x_advance += i32::from(delta);
-                    worked |= delta != 0;
-                }
-            }
+        if self.x_advance != 0 && horizontal {
+            pos.x_advance += i32::from(self.x_advance);
+            worked = true;
         }
 
-        if self.flags.contains(ValueFormatFlags::Y_ADVANCE) {
-            if let Some(delta) = s.read::<i16>() {
-                if !horizontal {
-                    // y_advance values grow downward but font-space grows upward, hence negation
-                    pos.y_advance -= i32::from(delta);
-                    worked |= delta != 0;
-                }
-            }
+        if self.y_advance != 0 && !horizontal {
+            // y_advance values grow downward but font-space grows upward, hence negation
+            pos.y_advance -= i32::from(self.y_advance);
+            worked = true;
         }
 
-        if self.flags.intersects(ValueFormatFlags::DEVICES) {
+        {
             let (ppem_x, ppem_y) = ctx.face.pixels_per_em().unwrap_or((0, 0));
             let coords = ctx.face.ttfp_face.variation_coordinates().len();
             let use_x_device = ppem_x != 0 || coords != 0;
             let use_y_device = ppem_y != 0 || coords != 0;
 
-            if self.flags.contains(ValueFormatFlags::X_PLACEMENT_DEVICE) {
-                if let Some(offset) = s.read::<Offset16>() {
-                    if use_x_device && !offset.is_null() {
-                        pos.x_offset += device_x_delta(base, offset, ctx.face);
-                        worked = true;
-                    }
+            if use_x_device {
+                if let Some(device) = self.x_placement_device {
+                    pos.x_offset += device.get_x_delta(ctx.face).unwrap_or(0);
+                    worked = true; // TODO: even when 0?
                 }
             }
 
-            if self.flags.contains(ValueFormatFlags::Y_PLACEMENT_DEVICE) {
-                if let Some(offset) = s.read::<Offset16>() {
-                    if use_y_device && !offset.is_null() {
-                        pos.y_offset += device_y_delta(base, offset, ctx.face);
-                        worked = true;
-                    }
+            if use_y_device {
+                if let Some(device) = self.y_placement_device {
+                    pos.y_offset += device.get_y_delta(ctx.face).unwrap_or(0);
+                    worked = true;
                 }
             }
 
-            if self.flags.contains(ValueFormatFlags::X_ADVANCE_DEVICE) {
-                if let Some(offset) = s.read::<Offset16>() {
-                    if horizontal && use_x_device && !offset.is_null() {
-                        pos.x_advance += device_x_delta(base, offset, ctx.face);
-                        worked = true;
-                    }
+            if horizontal && use_x_device {
+                if let Some(device) = self.x_advance_device {
+                    pos.x_advance += device.get_x_delta(ctx.face).unwrap_or(0);
+                    worked = true;
                 }
             }
 
-            if self.flags.contains(ValueFormatFlags::Y_ADVANCE_DEVICE) {
-                if let Some(offset) = s.read::<Offset16>() {
-                    if !horizontal && use_y_device && !offset.is_null() {
-                        // y_advance values grow downward but face-space grows upward, hence negation
-                        pos.y_advance -= device_y_delta(base, offset, ctx.face);
-                        worked = true;
-                    }
+            if !horizontal && use_y_device {
+                if let Some(device) = self.y_advance_device {
+                    // y_advance values grow downward but face-space grows upward, hence negation
+                    pos.y_advance -= device.get_y_delta(ctx.face).unwrap_or(0);
+                    worked = true;
                 }
             }
         }
@@ -563,19 +529,18 @@ impl<'a> ValueRecord<'a> {
     }
 }
 
-fn device_x_delta(base: &[u8], offset: Offset16, face: &Face) -> i32 {
-    device(base, offset).and_then(|device| device.get_x_delta(face)).unwrap_or(0)
+trait MarkArrayExt {
+    fn apply(
+        &self,
+        ctx: &mut ApplyContext,
+        anchors: AnchorMatrix,
+        mark_index: u16,
+        glyph_index: u16,
+        glyph_pos: usize,
+    ) -> Option<()>;
 }
 
-fn device_y_delta(base: &[u8], offset: Offset16, face: &Face) -> i32 {
-    device(base, offset).and_then(|device| device.get_y_delta(face)).unwrap_or(0)
-}
-
-fn device(base: &[u8], offset: Offset16) -> Option<Device> {
-    base.get(offset.to_usize()..).and_then(Device::parse)
-}
-
-impl<'a> MarkArray<'a> {
+impl MarkArrayExt for MarkArray<'_> {
     fn apply(
         &self,
         ctx: &mut ApplyContext,
@@ -586,9 +551,8 @@ impl<'a> MarkArray<'a> {
     ) -> Option<()> {
         // If this subtable doesn't have an anchor for this base and this class
         // return `None` such that the subsequent subtables have a chance at it.
-        let record = self.array.get(mark_index)?;
-        let mark_anchor = Anchor::parse(self.data.get(record.mark_anchor.to_usize()..)?)?;
-        let base_anchor = anchors.get(glyph_index, record.class.0)?;
+        let (mark_class, mark_anchor) = self.get(mark_index)?;
+        let base_anchor = anchors.get(glyph_index, mark_class)?;
 
         let (mark_x, mark_y) = mark_anchor.get(ctx.face);
         let (base_x, base_y) = base_anchor.get(ctx.face);
@@ -612,4 +576,64 @@ impl<'a> MarkArray<'a> {
 pub mod attach_type {
     pub const MARK: u8 = 1;
     pub const CURSIVE: u8 = 2;
+}
+
+trait DeviceExt {
+    fn get_x_delta(&self, face: &Face) -> Option<i32>;
+    fn get_y_delta(&self, face: &Face) -> Option<i32>;
+}
+
+impl DeviceExt for Device<'_> {
+    fn get_x_delta(&self, face: &Face) -> Option<i32> {
+        match self {
+            Device::Hinting(hinting) => hinting.x_delta(face.units_per_em, face.pixels_per_em()),
+            Device::Variation(variation) => {
+                face.opentype_definition()?
+                    .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
+                    .and_then(|float| i32::try_num_from(float.round()))
+            }
+        }
+    }
+
+    fn get_y_delta(&self, face: &Face) -> Option<i32> {
+        match self {
+            Device::Hinting(hinting) => hinting.y_delta(face.units_per_em, face.pixels_per_em()),
+            Device::Variation(variation) => {
+                face.opentype_definition()?
+                    .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
+                    .and_then(|float| i32::try_num_from(float.round()))
+            }
+        }
+    }
+}
+
+
+trait AnchorExt {
+    fn get(&self, face: &Face) -> (i32, i32);
+}
+
+impl AnchorExt for Anchor<'_> {
+    fn get(&self, face: &Face) -> (i32, i32) {
+        let mut x = i32::from(self.x);
+        let mut y = i32::from(self.y);
+
+        if self.x_device.is_some() || self.y_device.is_some() {
+            let (ppem_x, ppem_y) = face.pixels_per_em().unwrap_or((0, 0));
+            let coords = face.ttfp_face.variation_coordinates().len();
+
+            if let Some(device) = self.x_device {
+                if ppem_x != 0 || coords != 0 {
+                    x += device.get_x_delta(face).unwrap_or(0);
+                }
+            }
+
+            if let Some(device) = self.y_device {
+                if ppem_y != 0 || coords != 0 {
+                    y += device.get_y_delta(face).unwrap_or(0);
+                }
+            }
+        }
+
+        (x, y)
+    }
 }

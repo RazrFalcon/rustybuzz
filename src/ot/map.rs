@@ -1,11 +1,12 @@
 use alloc::vec::Vec;
 use core::ops::Range;
 
+use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, VariationIndex, ScriptIndex};
+
 use crate::{tag, Face, Language, Mask, Tag, Script};
 use crate::buffer::{glyph_flag, Buffer};
 use crate::plan::ShapePlan;
-use crate::tables::gsubgpos::{FeatureIndex, LangIndex, LookupIndex, VariationIndex, ScriptIndex};
-use super::TableIndex;
+use super::{LayoutTableExt, TableIndex};
 
 pub struct Map {
     found_script: [bool; 2],
@@ -152,7 +153,7 @@ pub struct MapBuilder<'a> {
     found_script: [bool; 2],
     script_index: [Option<ScriptIndex>; 2],
     chosen_script: [Option<Tag>; 2],
-    lang_index: [Option<LangIndex>; 2],
+    lang_index: [Option<LanguageIndex>; 2],
     current_stage: [usize; 2],
     feature_infos: Vec<FeatureInfo>,
     stages: [Vec<StageInfo>; 2],
@@ -346,7 +347,7 @@ impl<'a> MapBuilder<'a> {
 
             if !found && info.flags.contains(FeatureFlags::GLOBAL_SEARCH) {
                 for (table_index, table) in self.face.layout_tables() {
-                    if let Some(idx) = table.find_feature_index(info.tag) {
+                    if let Some(idx) = table.features.index(info.tag) {
                         feature_index[table_index] = Some(idx);
                         found = true;
                     }
@@ -436,7 +437,7 @@ impl<'a> MapBuilder<'a> {
             let coords = self.face.ttfp_face.variation_coordinates();
             let variation_index = self.face
                 .layout_table(table_index)
-                .and_then(|t| t.find_variation_index(coords));
+                .and_then(|t| t.variations?.find_index(coords));
 
             for stage in 0..self.current_stage[table_index] {
                 if let Some(feature_index) = required_feature_index[table_index] {
@@ -524,14 +525,18 @@ impl<'a> MapBuilder<'a> {
     ) -> Option<()> {
         let table = self.face.layout_table(table_index)?;
 
-        let lookup_count = table.lookup_count();
+        let lookup_count = table.lookups.len();
         let feature = match variation_index {
-            Some(idx) => table.get_variation(feature_index, idx)?,
-            None => table.get_feature(feature_index)?,
+            Some(idx) => {
+                table.variations
+                    .and_then(|var| var.find_substitute(feature_index, idx))
+                    .or_else(|| table.features.get(feature_index))?
+            }
+            None => table.features.get(feature_index)?,
         };
 
         for index in feature.lookup_indices {
-            if index.0 < lookup_count {
+            if index < lookup_count {
                 lookups.push(LookupMap { mask, index, auto_zwnj, auto_zwj, random });
             }
         }

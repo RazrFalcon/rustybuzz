@@ -1,11 +1,9 @@
-use ttf_parser::{Tag, GlyphClass, GlyphId};
+use ttf_parser::{Tag, GlyphId};
+use ttf_parser::opentype_layout::{LayoutTable, GlyphClass};
 
 use crate::Variation;
-use crate::ot::TableIndex;
+use crate::ot::{TableIndex, PositioningTable, SubstitutionTable};
 use crate::buffer::GlyphPropsFlags;
-use crate::tables::gpos::PosTable;
-use crate::tables::gsub::SubstTable;
-use crate::tables::gsubgpos::SubstPosTable;
 use crate::tables::{ankr, feat, kern, kerx, morx, trak};
 
 
@@ -28,12 +26,12 @@ const UNICODE_FULL_ENCODING: u16 = 6;
 #[derive(Clone)]
 pub struct Face<'a> {
     pub(crate) ttfp_face: ttf_parser::Face<'a>,
-    units_per_em: i32,
+    pub(crate) units_per_em: u16,
     pixels_per_em: Option<(u16, u16)>,
     pub(crate) points_per_em: Option<f32>,
     prefered_cmap_encoding_subtable: Option<u16>,
-    pub(crate) gsub: Option<SubstTable<'a>>,
-    pub(crate) gpos: Option<PosTable<'a>>,
+    pub(crate) gsub: Option<SubstitutionTable<'a>>,
+    pub(crate) gpos: Option<PositioningTable<'a>>,
     pub(crate) kern: Option<kern::Subtables<'a>>,
     pub(crate) kerx: Option<kerx::Subtables<'a>>,
     pub(crate) ankr: Option<ankr::Table<'a>>,
@@ -88,16 +86,12 @@ impl<'a> Face<'a> {
     /// Returns `None` when face's units per EM is `None`.
     pub fn from_face(face: ttf_parser::Face<'a>) -> Option<Self> {
         Some(Face {
-            units_per_em: face.units_per_em()? as i32,
+            units_per_em: face.units_per_em()?,
             pixels_per_em: None,
             points_per_em: None,
             prefered_cmap_encoding_subtable: find_best_cmap_subtable(&face),
-            gsub: face
-                .table_data(Tag::from_bytes(b"GSUB"))
-                .and_then(SubstTable::parse),
-            gpos: face
-                .table_data(Tag::from_bytes(b"GPOS"))
-                .and_then(PosTable::parse),
+            gsub: face.opentype_substitution().map(SubstitutionTable::new),
+            gpos: face.opentype_positioning().map(PositioningTable::new),
             kern: face
                 .table_data(Tag::from_bytes(b"kern"))
                 .and_then(kern::parse),
@@ -120,10 +114,11 @@ impl<'a> Face<'a> {
         })
     }
 
+    // TODO: remove
     /// Returns face’s units per EM.
     #[inline]
     pub fn units_per_em(&self) -> i32 {
-        self.units_per_em
+        self.units_per_em as i32
     }
 
     #[inline]
@@ -298,25 +293,30 @@ impl<'a> Face<'a> {
     }
 
     pub(crate) fn glyph_props(&self, glyph: GlyphId) -> u16 {
-        match self.ttfp_face.glyph_class(glyph) {
+        let table = match self.ttfp_face.opentype_definition() {
+            Some(v) => v,
+            None => return 0,
+        };
+
+        match table.glyph_class(glyph) {
             Some(GlyphClass::Base) => GlyphPropsFlags::BASE_GLYPH.bits(),
             Some(GlyphClass::Ligature) => GlyphPropsFlags::LIGATURE.bits(),
             Some(GlyphClass::Mark) => {
-                let class = self.ttfp_face.glyph_mark_attachment_class(glyph).0;
+                let class = table.glyph_mark_attachment_class(glyph);
                 (class << 8) | GlyphPropsFlags::MARK.bits()
             }
             _ => 0,
         }
     }
 
-    pub(crate) fn layout_table(&self, table_index: TableIndex) -> Option<&SubstPosTable<'a>> {
+    pub(crate) fn layout_table(&self, table_index: TableIndex) -> Option<&LayoutTable<'a>> {
         match table_index {
             TableIndex::GSUB => self.gsub.as_ref().map(|table| &table.inner),
             TableIndex::GPOS => self.gpos.as_ref().map(|table| &table.inner),
         }
     }
 
-    pub(crate) fn layout_tables(&self) -> impl Iterator<Item = (TableIndex, &SubstPosTable<'a>)> + '_ {
+    pub(crate) fn layout_tables(&self) -> impl Iterator<Item = (TableIndex, &LayoutTable<'a>)> + '_ {
         TableIndex::iter().filter_map(move |idx| self.layout_table(idx).map(|table| (idx, table)))
     }
 }

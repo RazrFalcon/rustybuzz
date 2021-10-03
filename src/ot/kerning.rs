@@ -3,8 +3,7 @@ use ttf_parser::GlyphId;
 use crate::{Face, Mask};
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::plan::ShapePlan;
-use crate::tables::gsubgpos::LookupFlags;
-use super::TableIndex;
+use super::{lookup_flags, TableIndex};
 use super::apply::ApplyContext;
 use super::matching::SkippyIter;
 use crate::ot::attach_type;
@@ -92,7 +91,7 @@ fn machine_kern(
 ) {
     let mut ctx = ApplyContext::new(TableIndex::GPOS, face, buffer);
     ctx.lookup_mask = kern_mask;
-    ctx.lookup_props = u32::from(LookupFlags::IGNORE_MARKS.bits());
+    ctx.lookup_props = u32::from(lookup_flags::IGNORE_MARKS);
 
     let horizontal = ctx.buffer.direction.is_horizontal();
 

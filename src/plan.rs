@@ -232,7 +232,8 @@ impl<'a> ShapePlanner<'a> {
             && self.shaper.gpos_tag != ot_map.chosen_script(TableIndex::GPOS);
 
         // Decide who provides glyph classes. GDEF or Unicode.
-        let fallback_glyph_classes = !self.face.ttfp_face.has_glyph_classes();
+        let fallback_glyph_classes = !self.face.ttfp_face.opentype_definition()
+            .map_or(false, |table| table.has_glyph_classes());
 
         // Decide who does substitutions. GSUB, morx, or fallback.
         let apply_morx = self.apply_morx;

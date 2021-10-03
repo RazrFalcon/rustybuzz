@@ -1,44 +1,17 @@
 //! Matching of glyph patterns.
 
-use ttf_parser::parser::LazyArray16;
 use ttf_parser::GlyphId;
 
 use crate::Mask;
 use crate::buffer::GlyphInfo;
-use crate::tables::gsubgpos::{Class, ClassDef, Coverage};
 use super::{TableIndex, MAX_CONTEXT_LENGTH};
-use super::apply::{ApplyContext, WouldApplyContext};
+use super::apply::ApplyContext;
 
 pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 
 /// Value represents glyph id.
 pub fn match_glyph(glyph: GlyphId, value: u16) -> bool {
     glyph == GlyphId(value)
-}
-
-/// Value represents glyph class.
-pub fn match_class<'a>(class_def: ClassDef<'a>) -> impl Fn(GlyphId, u16) -> bool + 'a {
-    move |glyph, value| class_def.get(glyph) == Class(value)
-}
-
-/// Value represents offset to coverage table.
-pub fn match_coverage<'a>(data: &'a [u8]) -> impl Fn(GlyphId, u16) -> bool + 'a {
-    move |glyph, value| {
-        data.get(usize::from(value)..)
-            .and_then(Coverage::parse)
-            .map_or(false, |coverage| coverage.get(glyph).is_some())
-    }
-}
-
-pub fn would_match_input(
-    ctx: &WouldApplyContext,
-    input: LazyArray16<u16>,
-    match_func: &MatchFunc,
-) -> bool {
-    ctx.glyphs.len() == 1 + usize::from(input.len())
-        && input.into_iter().enumerate().all(|(i, value)| {
-            match_func(ctx.glyphs[1 + i], value)
-        })
 }
 
 // TODO: Find out whether returning this by value is slow.
@@ -50,8 +23,8 @@ pub struct Matched {
 
 pub fn match_input(
     ctx: &ApplyContext,
-    input: LazyArray16<u16>,
-    match_func: &MatchFunc,
+    input_len: u16,
+    match_func: &MatchingFunc,
 ) -> Option<Matched> {
     // This is perhaps the trickiest part of OpenType...  Remarks:
     //
@@ -82,13 +55,13 @@ pub fn match_input(
         MaySkip,
     }
 
-    let count = 1 + usize::from(input.len());
+    let count = usize::from(input_len) + 1;
     if count > MAX_CONTEXT_LENGTH {
         return None;
     }
 
-    let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, input.len(), false);
-    iter.enable_matching(input, match_func);
+    let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, input_len, false);
+    iter.enable_matching(match_func);
 
     let first = ctx.buffer.cur(0);
     let first_lig_id = first.lig_id();
@@ -162,13 +135,13 @@ pub fn match_input(
 
 pub fn match_backtrack(
     ctx: &ApplyContext,
-    backtrack: LazyArray16<u16>,
-    match_func: &MatchFunc,
+    backtrack_len: u16,
+    match_func: &MatchingFunc
 ) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, ctx.buffer.backtrack_len(), backtrack.len(), true);
-    iter.enable_matching(backtrack, match_func);
+    let mut iter = SkippyIter::new(ctx, ctx.buffer.backtrack_len(), backtrack_len, true);
+    iter.enable_matching(match_func);
 
-    for _ in 0..backtrack.len() {
+    for _ in 0..backtrack_len {
         if !iter.prev() {
             return None;
         }
@@ -179,14 +152,14 @@ pub fn match_backtrack(
 
 pub fn match_lookahead(
     ctx: &ApplyContext,
-    lookahead: LazyArray16<u16>,
-    match_func: &MatchFunc,
+    lookahead_len: u16,
+    match_func: &MatchingFunc,
     offset: usize,
 ) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, ctx.buffer.idx + offset - 1, lookahead.len(), true);
-    iter.enable_matching(lookahead, match_func);
+    let mut iter = SkippyIter::new(ctx, ctx.buffer.idx + offset - 1, lookahead_len, true);
+    iter.enable_matching(match_func);
 
-    for _ in 0..lookahead.len() {
+    for _ in 0..lookahead_len {
         if !iter.next() {
             return None;
         }
@@ -195,6 +168,8 @@ pub fn match_lookahead(
     Some(iter.index() + 1)
 }
 
+pub type MatchingFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
+
 pub struct SkippyIter<'a, 'b> {
     ctx: &'a ApplyContext<'a, 'b>,
     lookup_props: u32,
@@ -202,7 +177,7 @@ pub struct SkippyIter<'a, 'b> {
     ignore_zwj: bool,
     mask: Mask,
     syllable: u8,
-    matching: Option<(LazyArray16<'a, u16>, &'a MatchFunc<'a>)>,
+    matching: Option<&'a MatchingFunc<'a>>,
     buf_len: usize,
     buf_idx: usize,
     num_items: u16,
@@ -239,8 +214,8 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
         self.lookup_props = lookup_props;
     }
 
-    pub fn enable_matching(&mut self, input: LazyArray16<'a, u16>, match_func: &'a MatchFunc) {
-        self.matching = Some((input, match_func));
+    pub fn enable_matching(&mut self, func: &'a MatchingFunc<'a>) {
+        self.matching = Some(func);
     }
 
     pub fn index(&self) -> usize {
@@ -303,11 +278,7 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
 
     fn may_match(&self, info: &GlyphInfo) -> Option<bool> {
         if (info.mask & self.mask) != 0 && (self.syllable == 0 || self.syllable == info.syllable()) {
-            self.matching.map(|(input, func)| {
-                let index = input.len() - self.num_items;
-                let value = input.get(index).unwrap();
-                func(info.as_glyph(), value)
-            })
+            self.matching.map(|f| f(info.as_glyph(), self.num_items))
         } else {
             Some(false)
         }

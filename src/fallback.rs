@@ -306,7 +306,7 @@ fn position_mark(
         None => return,
     };
 
-    let y_gap = face.units_per_em() / 16;
+    let y_gap = face.units_per_em as i32 / 16;
     pos.x_offset = 0;
     pos.y_offset = 0;
 
@@ -429,7 +429,7 @@ pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             space::SPACE_EM_5 |
             space::SPACE_EM_6 |
             space::SPACE_EM_16 => {
-                let length = (face.units_per_em() + (space_type as i32) / 2) / space_type as i32;
+                let length = (face.units_per_em as i32 + (space_type as i32) / 2) / space_type as i32;
                 if horizontal {
                     pos.x_advance = length;
                 } else {
@@ -438,7 +438,7 @@ pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             }
 
             space::SPACE_4_EM_18 => {
-                let length = ((face.units_per_em() as i64) * 4 / 18) as i32;
+                let length = ((face.units_per_em as i64) * 4 / 18) as i32;
                 if horizontal {
                     pos.x_advance = length
                 } else {

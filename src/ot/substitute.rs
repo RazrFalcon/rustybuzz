@@ -1,19 +1,19 @@
 use core::convert::TryFrom;
 
 use ttf_parser::GlyphId;
+use ttf_parser::opentype_layout::substitution::*;
 
 use crate::Face;
 use crate::buffer::{Buffer, GlyphPropsFlags};
 use crate::plan::ShapePlan;
-use crate::tables::gsub::*;
-use crate::tables::gsubgpos::*;
 use crate::unicode::GeneralCategory;
 
-use super::{Map, LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
+use super::{Map, LayoutLookup, LayoutTable, TableIndex, SubstitutionTable, SubstLookup, MAX_NESTING_LEVEL};
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
 use super::matching::{
-    match_backtrack, match_coverage, match_glyph, match_input, match_lookahead, Matched,
+    match_backtrack, match_glyph, match_input, match_lookahead, Matched,
 };
+use ttf_parser::opentype_layout::LookupIndex;
 
 /// Called before substitution lookups are performed, to ensure that glyph
 /// class and other properties are set on the glyphs in the buffer.
@@ -34,14 +34,14 @@ fn set_glyph_props(face: &Face, buffer: &mut Buffer) {
     }
 }
 
-impl<'a> LayoutTable for SubstTable<'a> {
+impl<'a> LayoutTable for SubstitutionTable<'a> {
     const INDEX: TableIndex = TableIndex::GSUB;
     const IN_PLACE: bool = false;
 
     type Lookup = SubstLookup<'a>;
 
     fn get_lookup(&self, index: LookupIndex) -> Option<&Self::Lookup> {
-        self.lookups.get(usize::from(index.0))?.as_ref()
+        self.lookups.get(usize::from(index))
     }
 }
 
@@ -80,7 +80,7 @@ impl Apply for SubstLookup<'_> {
     }
 }
 
-impl WouldApply for SubstLookupSubtable<'_> {
+impl WouldApply for SubstitutionSubtable<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         match self {
             Self::Single(t) => t.would_apply(ctx),
@@ -94,7 +94,7 @@ impl WouldApply for SubstLookupSubtable<'_> {
     }
 }
 
-impl Apply for SubstLookupSubtable<'_> {
+impl Apply for SubstitutionSubtable<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         match self {
             Self::Single(t) => t.apply(ctx),
@@ -108,13 +108,13 @@ impl Apply for SubstLookupSubtable<'_> {
     }
 }
 
-impl WouldApply for SingleSubst<'_> {
+impl WouldApply for SingleSubstitution<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         ctx.glyphs.len() == 1 && self.coverage().get(ctx.glyphs[0]).is_some()
     }
 }
 
-impl Apply for SingleSubst<'_> {
+impl Apply for SingleSubstitution<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         let subst = match *self {
@@ -135,22 +135,18 @@ impl Apply for SingleSubst<'_> {
     }
 }
 
-impl WouldApply for MultipleSubst<'_> {
+impl WouldApply for MultipleSubstitution<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        ctx.glyphs.len() == 1 && self.coverage().get(ctx.glyphs[0]).is_some()
+        ctx.glyphs.len() == 1 && self.coverage.get(ctx.glyphs[0]).is_some()
     }
 }
 
-impl Apply for MultipleSubst<'_> {
+impl Apply for MultipleSubstitution<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
-        match self {
-            Self::Format1 { coverage, sequences } => {
-                let index = coverage.get(glyph)?;
-                let seq = Sequence::parse(sequences.slice(index)?)?;
-                seq.apply(ctx)
-            }
-        }
+        let index = self.coverage.get(glyph)?;
+        let seq = self.sequences.get(index)?;
+        seq.apply(ctx)
     }
 }
 
@@ -185,22 +181,18 @@ impl Apply for Sequence<'_> {
     }
 }
 
-impl WouldApply for AlternateSubst<'_> {
+impl WouldApply for AlternateSubstitution<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        ctx.glyphs.len() == 1 && self.coverage().get(ctx.glyphs[0]).is_some()
+        ctx.glyphs.len() == 1 && self.coverage.get(ctx.glyphs[0]).is_some()
     }
 }
 
-impl Apply for AlternateSubst<'_> {
+impl Apply for AlternateSubstitution<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
-        match self {
-            Self::Format1 { coverage, alternate_sets } => {
-                let index = coverage.get(glyph)?;
-                let set = AlternateSet::parse(alternate_sets.slice(index)?)?;
-                set.apply(ctx)
-            }
-        }
+        let index = self.coverage.get(glyph)?;
+        let set = self.alternate_sets.get(index)?;
+        set.apply(ctx)
     }
 }
 
@@ -229,45 +221,32 @@ impl Apply for AlternateSet<'_> {
     }
 }
 
-impl WouldApply for LigatureSubst<'_> {
+impl WouldApply for LigatureSubstitution<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        match self {
-            Self::Format1 { coverage, ligature_sets } => {
-                coverage.get(ctx.glyphs[0])
-                    .and_then(|index| ligature_sets.slice(index))
-                    .and_then(LigatureSet::parse)
-                    .map_or(false, |set| set.would_apply(ctx))
-            }
-        }
+        self.coverage.get(ctx.glyphs[0])
+            .and_then(|index| self.ligature_sets.get(index))
+            .map_or(false, |set| set.would_apply(ctx))
     }
 }
 
-impl Apply for LigatureSubst<'_> {
+impl Apply for LigatureSubstitution<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
-        match self {
-            Self::Format1 { coverage, ligature_sets } => {
-                let index = coverage.get(glyph)?;
-                let set = LigatureSet::parse(ligature_sets.slice(index)?)?;
-                set.apply(ctx)
-            }
-        }
+        self.coverage.get(glyph)
+            .and_then(|index| self.ligature_sets.get(index))
+            .and_then(|set| set.apply(ctx))
     }
 }
 
 impl WouldApply for LigatureSet<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        self.ligatures
-            .into_iter()
-            .filter_map(|data| Ligature::parse(data))
-            .any(|lig| lig.would_apply(ctx))
+        self.into_iter().any(|lig| lig.would_apply(ctx))
     }
 }
 
 impl Apply for LigatureSet<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        for data in self.ligatures {
-            let lig = Ligature::parse(data)?;
+        for lig in self.into_iter() {
             if lig.apply(ctx).is_some() {
                 return Some(());
             }
@@ -278,11 +257,11 @@ impl Apply for LigatureSet<'_> {
 
 impl WouldApply for Ligature<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        ctx.glyphs.len() == 1 + usize::from(self.components.len())
+        ctx.glyphs.len() == usize::from(self.components.len()) + 1
             && self.components
                 .into_iter()
                 .enumerate()
-                .all(|(i, comp)| ctx.glyphs[1 + i].0 == comp)
+                .all(|(i, comp)| ctx.glyphs[i + 1] == comp)
     }
 }
 
@@ -291,12 +270,18 @@ impl Apply for Ligature<'_> {
         // Special-case to make it in-place and not consider this
         // as a "ligated" substitution.
         if self.components.is_empty() {
-            ctx.replace_glyph(self.lig_glyph);
+            ctx.replace_glyph(self.glyph);
             Some(())
         } else {
-            match_input(ctx, self.components, &match_glyph).map(|matched| {
-                let count = 1 + usize::from(self.components.len());
-                ligate(ctx, count, matched, self.lig_glyph);
+            let f = |glyph, num_items| {
+                let index = self.components.len() - num_items;
+                let value = self.components.get(index).unwrap();
+                match_glyph(glyph, value.0)
+            };
+
+            match_input(ctx, self.components.len(), &f).map(|matched| {
+                let count = usize::from(self.components.len()) + 1;
+                ligate(ctx, count, matched, self.glyph);
             })
         }
     }
@@ -407,37 +392,41 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     }
 }
 
-impl WouldApply for ReverseChainSingleSubst<'_> {
+impl WouldApply for ReverseChainSingleSubstitution<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        ctx.glyphs.len() == 1 && self.coverage().get(ctx.glyphs[0]).is_some()
+        ctx.glyphs.len() == 1 && self.coverage.get(ctx.glyphs[0]).is_some()
     }
 }
 
-impl Apply for ReverseChainSingleSubst<'_> {
+impl Apply for ReverseChainSingleSubstitution<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let Self::Format1 {
-            data,
-            coverage,
-            backtrack_coverages,
-            lookahead_coverages,
-            substitutes,
-        } = *self;
-
         // No chaining to this type.
         if ctx.nesting_level_left != MAX_NESTING_LEVEL {
             return None;
         }
 
         let glyph = ctx.buffer.cur(0).as_glyph();
-        let index = coverage.get(glyph)?;
-        if index >= substitutes.len() {
+        let index = self.coverage.get(glyph)?;
+        if index >= self.substitutes.len() {
             return None;
         }
 
-        let subst = substitutes.get(index)?;
-        let match_func = &match_coverage(data);
-        if let Some(start_idx) = match_backtrack(ctx, backtrack_coverages, match_func) {
-            if let Some(end_idx) = match_lookahead(ctx, lookahead_coverages, match_func, 1) {
+        let subst = self.substitutes.get(index)?;
+
+        let f1 = |glyph, num_items| {
+            let index = self.backtrack_coverages.len() - num_items;
+            let value = self.backtrack_coverages.get(index).unwrap();
+            value.contains(glyph)
+        };
+
+        let f2 = |glyph, num_items| {
+            let index = self.lookahead_coverages.len() - num_items;
+            let value = self.lookahead_coverages.get(index).unwrap();
+            value.contains(glyph)
+        };
+
+        if let Some(start_idx) = match_backtrack(ctx, self.backtrack_coverages.len(), &f1) {
+            if let Some(end_idx) = match_lookahead(ctx, self.lookahead_coverages.len(), &f2, 1) {
                 ctx.buffer.unsafe_to_break_from_outbuffer(start_idx, end_idx);
                 ctx.replace_glyph_inplace(subst);
 

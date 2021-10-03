@@ -2,10 +2,9 @@ use core::convert::TryFrom;
 
 use crate::Face;
 use crate::buffer::{BufferScratchFlags, Buffer};
-use crate::ot::{attach_type, ApplyContext, TableIndex};
+use crate::ot::{attach_type, lookup_flags, ApplyContext, TableIndex};
 use crate::tables::aat;
 use crate::tables::{ankr, kerx};
-use crate::tables::gsubgpos::LookupFlags;
 use crate::plan::ShapePlan;
 use crate::ot::matching::SkippyIter;
 
@@ -97,7 +96,7 @@ fn apply_simple_kerning(
 ) {
     let mut ctx = ApplyContext::new(TableIndex::GPOS, face, buffer);
     ctx.lookup_mask = plan.kern_mask;
-    ctx.lookup_props = u32::from(LookupFlags::IGNORE_MARKS.bits());
+    ctx.lookup_props = u32::from(lookup_flags::IGNORE_FLAGS);
 
     let horizontal = ctx.buffer.direction.is_horizontal();
 

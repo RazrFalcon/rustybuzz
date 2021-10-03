@@ -3,12 +3,12 @@
 use core::ops::{Index, IndexMut};
 
 use ttf_parser::GlyphId;
+use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex};
 
 use crate::{Face, Tag};
 use crate::buffer::Buffer;
 use crate::common::TagExt;
 use crate::plan::ShapePlan;
-use crate::tables::gsubgpos::{FeatureIndex, LangIndex, LookupIndex, ScriptIndex, SubstPosTable};
 use super::apply::{Apply, ApplyContext};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
@@ -67,12 +67,28 @@ pub trait LayoutLookup: Apply {
     fn covers(&self, glyph: GlyphId) -> bool;
 }
 
-impl SubstPosTable<'_> {
+pub trait LayoutTableExt {
+    fn select_script(&self, script_tags: &[Tag]) -> Option<(bool, ScriptIndex, Tag)>;
+    fn select_script_language(&self, script_index: ScriptIndex, lang_tags: &[Tag]) -> Option<LanguageIndex>;
+    fn get_required_language_feature(
+        &self,
+        script_index: ScriptIndex,
+        lang_index: Option<LanguageIndex>,
+    ) -> Option<(FeatureIndex, Tag)>;
+    fn find_language_feature(
+        &self,
+        script_index: ScriptIndex,
+        lang_index: Option<LanguageIndex>,
+        feature_tag: Tag,
+    ) -> Option<FeatureIndex>;
+}
+
+impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
     /// Returns true + index and tag of the first found script tag in the given GSUB or GPOS table
     /// or false + index and tag if falling back to a default script.
-    pub fn select_script(&self, script_tags: &[Tag]) -> Option<(bool, ScriptIndex, Tag)> {
+    fn select_script(&self, script_tags: &[Tag]) -> Option<(bool, ScriptIndex, Tag)> {
         for &tag in script_tags {
-            if let Some(index) = self.find_script_index(tag) {
+            if let Some(index) = self.scripts.index(tag) {
                 return Some((true, index, tag));
             }
         }
@@ -86,7 +102,7 @@ impl SubstPosTable<'_> {
             // they're really trying to support Thai, for example :(
             Tag::from_bytes(b"latn"),
         ] {
-            if let Some(index) = self.find_script_index(tag) {
+            if let Some(index) = self.scripts.index(tag) {
                 return Some((false, index, tag));
             }
         }
@@ -96,21 +112,21 @@ impl SubstPosTable<'_> {
 
     /// Returns the index of the first found language tag in the given GSUB or GPOS table,
     /// underneath the specified script index.
-    pub fn select_script_language(
+    fn select_script_language(
         &self,
         script_index: ScriptIndex,
         lang_tags: &[Tag],
-    ) -> Option<LangIndex> {
-        let script = self.get_script(script_index)?;
+    ) -> Option<LanguageIndex> {
+        let script = self.scripts.get(script_index)?;
 
         for &tag in lang_tags {
-            if let Some(index) = script.find_lang_index(tag) {
+            if let Some(index) = script.languages.index(tag) {
                 return Some(index);
             }
         }
 
         // try finding 'dflt'
-        if let Some(index) = script.find_lang_index(Tag::default_language()) {
+        if let Some(index) = script.languages.index(Tag::default_language()) {
             return Some(index);
         }
 
@@ -119,38 +135,38 @@ impl SubstPosTable<'_> {
 
     /// Returns the index and tag of a required feature in the given GSUB or GPOS table,
     /// underneath the specified script and language.
-    pub fn get_required_language_feature(
+    fn get_required_language_feature(
         &self,
         script_index: ScriptIndex,
-        lang_index: Option<LangIndex>,
+        lang_index: Option<LanguageIndex>,
     ) -> Option<(FeatureIndex, Tag)> {
-        let script = self.get_script(script_index)?;
+        let script = self.scripts.get(script_index)?;
         let sys = match lang_index {
-            Some(index) => script.get_lang(index)?,
-            None => script.default_lang()?,
+            Some(index) => script.languages.get(index)?,
+            None => script.default_language?,
         };
         let idx = sys.required_feature?;
-        let tag = self.get_feature_tag(idx)?;
+        let tag = self.features.get(idx)?.tag;
         Some((idx, tag))
     }
 
     /// Returns the index of a given feature tag in the given GSUB or GPOS table,
     /// underneath the specified script and language.
-    pub fn find_language_feature(
+    fn find_language_feature(
         &self,
         script_index: ScriptIndex,
-        lang_index: Option<LangIndex>,
+        lang_index: Option<LanguageIndex>,
         feature_tag: Tag,
     ) -> Option<FeatureIndex> {
-        let script = self.get_script(script_index)?;
+        let script = self.scripts.get(script_index)?;
         let sys = match lang_index {
-            Some(index) => script.get_lang(index)?,
-            None => script.default_lang()?,
+            Some(index) => script.languages.get(index)?,
+            None => script.default_language?,
         };
 
-        for i in 0..sys.feature_count() {
-            if let Some(index) = sys.get_feature_index(i) {
-                if self.get_feature_tag(index) == Some(feature_tag) {
+        for i in 0..sys.feature_indices.len() {
+            if let Some(index) = sys.feature_indices.get(i) {
+                if self.features.get(index).map(|v| v.tag) == Some(feature_tag) {
                     return Some(index);
                 }
             }

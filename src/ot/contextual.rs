@@ -1,32 +1,32 @@
-use ttf_parser::parser::{LazyArray16, Offset};
+use ttf_parser::GlyphId;
+use ttf_parser::parser::LazyArray16;
+use ttf_parser::opentype_layout::*;
 
-use crate::tables::gsubgpos::*;
 use super::MAX_CONTEXT_LENGTH;
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
 use super::matching::{
-    match_backtrack, match_class, match_coverage, match_glyph, match_input, match_lookahead,
-    would_match_input, MatchFunc, Matched,
+    match_backtrack, match_glyph, match_input, match_lookahead,
+    MatchFunc, Matched,
 };
 
 impl WouldApply for ContextLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        let glyph_id = ctx.glyphs[0];
+        let glyph = ctx.glyphs[0];
         match *self {
             Self::Format1 { coverage, sets } => {
-                coverage.get(glyph_id)
-                    .and_then(|index| sets.slice(index))
-                    .and_then(RuleSet::parse)
+                coverage.get(glyph)
+                    .and_then(|index| sets.get(index))
                     .map_or(false, |set| set.would_apply(ctx, &match_glyph))
             }
-            Self::Format2 { classes: class_def, sets, .. } => {
-                let class = class_def.get(glyph_id);
-                sets.get(class.0).map_or(false, |offset| !offset.is_null())
-                    && sets.slice(class.0)
-                        .and_then(RuleSet::parse)
-                        .map_or(false, |set| set.would_apply(ctx, &match_class(class_def)))
+            Self::Format2 { classes, sets, .. } => {
+                let class = classes.get(glyph);
+                sets.get(class).map_or(false, |set| set.would_apply(ctx, &match_class(classes)))
             }
-            Self::Format3 { data, coverages, .. } => {
-                would_apply_context(ctx, coverages, &match_coverage(data))
+            Self::Format3 { coverages, .. } => {
+                ctx.glyphs.len() == usize::from(coverages.len()) + 1
+                    && coverages.into_iter().enumerate().all(|(i, coverage)| {
+                        coverage.get(ctx.glyphs[i + 1]).is_some()
+                    })
             }
         }
     }
@@ -37,52 +37,61 @@ impl Apply for ContextLookup<'_> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         match *self {
             Self::Format1 { coverage, sets } => {
-                let index = coverage.get(glyph)?;
-                let set = RuleSet::parse(sets.slice(index)?)?;
+                coverage.get(glyph)?;
+                let set = coverage.get(glyph).and_then(|index| sets.get(index))?;
                 set.apply(ctx, &match_glyph)
             }
             Self::Format2 { coverage, classes, sets } => {
                 coverage.get(glyph)?;
                 let class = classes.get(glyph);
-                let offset = sets.get(class.0)?;
-                if !offset.is_null() {
-                    let set = RuleSet::parse(sets.slice(class.0)?)?;
-                    set.apply(ctx, &match_class(classes))
-                } else {
-                    None
-                }
+                let set = sets.get(class)?;
+                set.apply(ctx, &match_class(classes))
             }
-            Self::Format3 { data, coverage, coverages, lookups } => {
+            Self::Format3 { coverage, coverages, lookups } => {
                 coverage.get(glyph)?;
-                apply_context(ctx, coverages, &match_coverage(data), lookups)
+                let coverages_len = coverages.len();
+
+                let match_func = |glyph, num_items| {
+                    let index = coverages_len - num_items;
+                    let coverage = coverages.get(index).unwrap();
+                    coverage.get(glyph).is_some()
+                };
+
+                match_input(ctx, coverages_len as u16, &match_func).map(|matched| {
+                    ctx.buffer.unsafe_to_break(ctx.buffer.idx, ctx.buffer.idx + matched.len);
+                    apply_lookup(ctx, usize::from(coverages_len), matched, lookups);
+                })
             }
         }
     }
 }
 
-impl<'a> RuleSet<'a> {
+trait SequenceRuleSetExt {
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
+    fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()>;
+}
+
+impl SequenceRuleSetExt for SequenceRuleSet<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
-        self.rules
-            .into_iter()
-            .filter_map(|data| Rule::parse(data))
-            .any(|rule| rule.would_apply(ctx, match_func))
+        self.into_iter().any(|rule| rule.would_apply(ctx, match_func))
     }
 
     fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()> {
-        for data in self.rules {
-            if let Some(rule) = Rule::parse(data) {
-                if rule.apply(ctx, match_func).is_some() {
-                    return Some(());
-                }
-            }
-        }
-        None
+        if self.into_iter().any(|rule| rule.apply(ctx, match_func).is_some()) { Some(()) } else { None }
     }
 }
 
-impl<'a> Rule<'a> {
+trait SequenceRuleExt {
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
+    fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()>;
+}
+
+impl SequenceRuleExt for SequenceRule<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
-        would_apply_context(ctx, self.input, match_func)
+        ctx.glyphs.len() == usize::from(self.input.len()) + 1
+            && self.input.into_iter().enumerate().all(|(i, value)| {
+                match_func(ctx.glyphs[i + 1], value)
+            })
     }
 
     fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()> {
@@ -90,115 +99,118 @@ impl<'a> Rule<'a> {
     }
 }
 
-impl WouldApply for ChainContextLookup<'_> {
+impl WouldApply for ChainedContextLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         let glyph_id = ctx.glyphs[0];
         match *self {
             Self::Format1 { coverage, sets } => {
                 coverage.get(glyph_id)
-                    .and_then(|index| sets.slice(index))
-                    .and_then(ChainRuleSet::parse)
+                    .and_then(|index| sets.get(index))
                     .map_or(false, |set| set.would_apply(ctx, &match_glyph))
             }
             Self::Format2 { input_classes, sets, .. } => {
                 let class = input_classes.get(glyph_id);
-                sets.get(class.0).map_or(false, |offset| !offset.is_null())
-                    && sets.slice(class.0)
-                        .and_then(ChainRuleSet::parse)
-                        .map_or(false, |set| set.would_apply(ctx, &match_class(input_classes)))
+                sets.get(class)
+                    .map_or(false, |set| set.would_apply(ctx, &match_class(input_classes)))
             }
-            Self::Format3 { data, backtrack_coverages, input_coverages, lookahead_coverages, .. } => {
-                would_apply_chain_context(
-                    ctx,
-                    backtrack_coverages,
-                    input_coverages,
-                    lookahead_coverages,
-                    &match_coverage(data),
-                )
+            Self::Format3 { backtrack_coverages, input_coverages, lookahead_coverages, .. } => {
+                (!ctx.zero_context || (backtrack_coverages.len() == 0 && lookahead_coverages.len() == 0))
+                    && (
+                        ctx.glyphs.len() == usize::from(input_coverages.len()) + 1
+                            && input_coverages.into_iter().enumerate().all(|(i, coverage)| {
+                                coverage.contains(ctx.glyphs[i + 1])
+                            })
+                    )
             }
         }
     }
 }
 
-impl Apply for ChainContextLookup<'_> {
+impl Apply for ChainedContextLookup<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         match *self {
             Self::Format1 { coverage, sets } => {
                 let index = coverage.get(glyph)?;
-                let set = ChainRuleSet::parse(sets.slice(index)?)?;
+                let set = sets.get(index)?;
                 set.apply(ctx, [&match_glyph, &match_glyph, &match_glyph])
             }
-            Self::Format2 {
-                coverage,
-                backtrack_classes,
-                input_classes,
-                lookahead_classes,
-                sets,
-            } => {
+            Self::Format2 { coverage, backtrack_classes, input_classes, lookahead_classes, sets } => {
                 coverage.get(glyph)?;
                 let class = input_classes.get(glyph);
-                let offset = sets.get(class.0)?;
-                if !offset.is_null() {
-                    let set = ChainRuleSet::parse(sets.slice(class.0)?)?;
-                    set.apply(ctx, [
-                        &match_class(backtrack_classes),
-                        &match_class(input_classes),
-                        &match_class(lookahead_classes),
-                    ])
-                } else {
-                    None
-                }
+                let set = sets.get(class)?;
+                set.apply(ctx, [
+                    &match_class(backtrack_classes),
+                    &match_class(input_classes),
+                    &match_class(lookahead_classes),
+                ])
             }
-            Self::Format3 {
-                data,
-                coverage,
-                backtrack_coverages,
-                input_coverages,
-                lookahead_coverages,
-                lookups,
-            } => {
+            Self::Format3 { coverage, backtrack_coverages, input_coverages, lookahead_coverages, lookups } => {
                 coverage.get(glyph)?;
-                apply_chain_context(
-                    ctx,
-                    backtrack_coverages,
-                    input_coverages,
-                    lookahead_coverages,
-                    [
-                        &match_coverage(data),
-                        &match_coverage(data),
-                        &match_coverage(data),
-                    ],
-                    lookups,
-                )
+
+                let back = |glyph, num_items| {
+                    let index = backtrack_coverages.len() - num_items;
+                    let coverage = backtrack_coverages.get(index).unwrap();
+                    coverage.contains(glyph)
+                };
+
+                let ahead = |glyph, num_items| {
+                    let index = lookahead_coverages.len() - num_items;
+                    let coverage = lookahead_coverages.get(index).unwrap();
+                    coverage.contains(glyph)
+                };
+
+                let input = |glyph, num_items| {
+                    let index = input_coverages.len() - num_items;
+                    let coverage = input_coverages.get(index).unwrap();
+                    coverage.contains(glyph)
+                };
+
+                if let Some(matched) = match_input(ctx, input_coverages.len(), &input) {
+                    if let Some(start_idx) = match_backtrack(ctx, backtrack_coverages.len(), &back) {
+                        if let Some(end_idx) = match_lookahead(ctx, lookahead_coverages.len(), &ahead, matched.len) {
+                            ctx.buffer.unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                            apply_lookup(ctx, usize::from(input_coverages.len()), matched, lookups);
+                            return Some(());
+                        }
+                    }
+                }
+
+                None
             }
         }
     }
 }
 
-impl<'a> ChainRuleSet<'a> {
+trait ChainRuleSetExt {
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
+    fn apply(&self, ctx: &mut ApplyContext, match_funcs: [&MatchFunc; 3]) -> Option<()>;
+}
+
+impl ChainRuleSetExt for ChainedSequenceRuleSet<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
-        self.rules
-            .into_iter()
-            .filter_map(|data| ChainRule::parse(data))
-            .any(|rule| rule.would_apply(ctx, match_func))
+        self.into_iter().any(|rule| rule.would_apply(ctx, match_func))
     }
 
     fn apply(&self, ctx: &mut ApplyContext, match_funcs: [&MatchFunc; 3]) -> Option<()> {
-        for data in self.rules {
-            if let Some(rule) = ChainRule::parse(data) {
-                if rule.apply(ctx, match_funcs).is_some() {
-                    return Some(());
-                }
-            }
-        }
-        None
+        if self.into_iter().any(|rule| rule.apply(ctx, match_funcs).is_some()) { Some(()) } else { None }
     }
 }
 
-impl<'a> ChainRule<'a> {
+trait ChainRuleExt {
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
+    fn apply(&self, ctx: &mut ApplyContext, match_funcs: [&MatchFunc; 3]) -> Option<()>;
+}
+
+impl ChainRuleExt for ChainedSequenceRule<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
-        would_apply_chain_context(ctx, self.backtrack, self.input, self.lookahead, match_func)
+        (!ctx.zero_context || (self.backtrack.len() == 0 && self.lookahead.len() == 0))
+            && (
+                ctx.glyphs.len() == usize::from(self.input.len()) + 1
+                    && self.input.into_iter().enumerate().all(|(i, value)| {
+                        match_func(ctx.glyphs[i + 1], value)
+                    })
+            )
     }
 
     fn apply(&self, ctx: &mut ApplyContext, match_funcs: [&MatchFunc; 3]) -> Option<()> {
@@ -213,34 +225,21 @@ impl<'a> ChainRule<'a> {
     }
 }
 
-fn would_apply_context(
-    ctx: &WouldApplyContext,
-    input: LazyArray16<u16>,
-    match_func: &MatchFunc,
-) -> bool {
-    would_match_input(ctx, input, match_func)
-}
-
-fn would_apply_chain_context(
-    ctx: &WouldApplyContext,
-    backtrack: LazyArray16<u16>,
-    input: LazyArray16<u16>,
-    lookahead: LazyArray16<u16>,
-    match_func: &MatchFunc,
-) -> bool {
-    (!ctx.zero_context || (backtrack.len() == 0 && lookahead.len() == 0))
-        && would_match_input(ctx, input, match_func)
-}
-
 fn apply_context(
     ctx: &mut ApplyContext,
     input: LazyArray16<u16>,
     match_func: &MatchFunc,
-    lookups: LazyArray16<LookupRecord>,
+    lookups: LazyArray16<SequenceLookupRecord>,
 ) -> Option<()> {
-    match_input(ctx, input, match_func).map(|matched| {
+    let match_func = |glyph, num_items| {
+        let index = input.len() - num_items;
+        let value = input.get(index).unwrap();
+        match_func(glyph, value)
+    };
+
+    match_input(ctx, input.len(), &match_func).map(|matched| {
         ctx.buffer.unsafe_to_break(ctx.buffer.idx, ctx.buffer.idx + matched.len);
-        apply_lookup(ctx, input, matched, lookups);
+        apply_lookup(ctx, usize::from(input.len()), matched, lookups);
     })
 }
 
@@ -250,27 +249,46 @@ fn apply_chain_context(
     input: LazyArray16<u16>,
     lookahead: LazyArray16<u16>,
     match_funcs: [&MatchFunc; 3],
-    lookups: LazyArray16<LookupRecord>,
+    lookups: LazyArray16<SequenceLookupRecord>,
 ) -> Option<()> {
-    if let Some(matched) = match_input(ctx, input, match_funcs[1]) {
-        if let Some(start_idx) = match_backtrack(ctx, backtrack, match_funcs[0]) {
-            if let Some(end_idx) = match_lookahead(ctx, lookahead, match_funcs[2], matched.len) {
+    let f1 = |glyph, num_items| {
+        let index = backtrack.len() - num_items;
+        let value = backtrack.get(index).unwrap();
+        match_funcs[0](glyph, value)
+    };
+
+    let f2 = |glyph, num_items| {
+        let index = lookahead.len() - num_items;
+        let value = lookahead.get(index).unwrap();
+        match_funcs[2](glyph, value)
+    };
+
+    let f3 = |glyph, num_items| {
+        let index = input.len() - num_items;
+        let value = input.get(index).unwrap();
+        match_funcs[1](glyph, value)
+    };
+
+    if let Some(matched) = match_input(ctx, input.len(), &f3) {
+        if let Some(start_idx) = match_backtrack(ctx, backtrack.len(), &f1) {
+            if let Some(end_idx) = match_lookahead(ctx, lookahead.len(), &f2, matched.len) {
                 ctx.buffer.unsafe_to_break_from_outbuffer(start_idx, end_idx);
-                apply_lookup(ctx, input, matched, lookups);
+                apply_lookup(ctx, usize::from(input.len()), matched, lookups);
                 return Some(());
             }
         }
     }
+
     None
 }
 
 fn apply_lookup(
     ctx: &mut ApplyContext,
-    input: LazyArray16<u16>,
+    input_len: usize,
     mut matched: Matched,
-    lookups: LazyArray16<LookupRecord>,
+    lookups: LazyArray16<SequenceLookupRecord>,
 ) {
-    let mut count = 1 + usize::from(input.len());
+    let mut count = input_len + 1;
 
     // All positions are distance from beginning of *output* buffer.
     // Adjust.
@@ -298,7 +316,7 @@ fn apply_lookup(
 
         // Don't recurse to ourself at same position.
         // Note that this test is too naive, it doesn't catch longer loops.
-        if idx == 0 && record.lookup_index == ctx.lookup_index {
+        if idx == 0 && record.lookup_list_index == ctx.lookup_index {
             continue;
         }
 
@@ -311,7 +329,7 @@ fn apply_lookup(
         }
 
         let orig_len = ctx.buffer.backtrack_len() + ctx.buffer.lookahead_len();
-        if ctx.recurse(record.lookup_index).is_none() {
+        if ctx.recurse(record.lookup_list_index).is_none() {
             continue;
         }
 
@@ -387,4 +405,9 @@ fn apply_lookup(
     }
 
     ctx.buffer.move_to(end);
+}
+
+/// Value represents glyph class.
+fn match_class<'a>(class_def: ClassDefinition<'a>) -> impl Fn(GlyphId, u16) -> bool + 'a {
+    move |glyph, value| class_def.get(glyph) == value
 }

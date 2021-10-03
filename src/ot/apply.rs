@@ -1,9 +1,10 @@
 use ttf_parser::GlyphId;
+use ttf_parser::opentype_layout::LookupIndex;
 
 use crate::{Face, Mask};
 use crate::buffer::{Buffer, GlyphInfo, GlyphPropsFlags};
-use crate::tables::gsubgpos::{LookupFlags, LookupIndex};
-use super::{LayoutLookup, LayoutTable, TableIndex, MAX_NESTING_LEVEL};
+use super::{lookup_flags, TableIndex, MAX_NESTING_LEVEL};
+use super::layout::{LayoutLookup, LayoutTable};
 
 /// Find out whether a lookup would be applied.
 pub trait WouldApply {
@@ -43,7 +44,7 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
             face,
             buffer,
             lookup_mask: 1,
-            lookup_index: LookupIndex(u16::MAX),
+            lookup_index: u16::MAX,
             lookup_props: 0,
             nesting_level_left: MAX_NESTING_LEVEL,
             auto_zwnj: true,
@@ -110,24 +111,28 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
 
         // Not covered, if, for example, glyph class is ligature and
         // match_props includes LookupFlags::IgnoreLigatures
-        if glyph_props & lookup_flags & LookupFlags::IGNORE_FLAGS.bits() != 0 {
+        if glyph_props & lookup_flags & lookup_flags::IGNORE_FLAGS != 0 {
             return false;
         }
 
         if glyph_props & GlyphPropsFlags::MARK.bits() != 0 {
             // If using mark filtering sets, the high short of
             // match_props has the set index.
-            if lookup_flags & LookupFlags::USE_MARK_FILTERING_SET.bits() != 0 {
+            if lookup_flags & lookup_flags::USE_MARK_FILTERING_SET != 0 {
                 let set_index = (match_props >> 16) as u16;
-                return self.face.ttfp_face.is_mark_glyph(info.as_glyph(), Some(set_index));
+                if let Some(table) = self.face.ttfp_face.opentype_definition() {
+                    return table.is_mark_glyph(info.as_glyph(), Some(set_index));
+                } else {
+                    return false;
+                }
             }
 
             // The second byte of match_props has the meaning
             // "ignore marks of attachment type different than
             // the attachment type specified."
-            if lookup_flags & LookupFlags::MARK_ATTACHMENT_TYPE.bits() != 0 {
-                return (lookup_flags & LookupFlags::MARK_ATTACHMENT_TYPE.bits())
-                    == (glyph_props & LookupFlags::MARK_ATTACHMENT_TYPE.bits());
+            if lookup_flags & lookup_flags::MARK_ATTACHMENT_TYPE_MASK != 0 {
+                return (lookup_flags & lookup_flags::MARK_ATTACHMENT_TYPE_MASK)
+                    == (glyph_props & lookup_flags::MARK_ATTACHMENT_TYPE_MASK);
             }
         }
 
@@ -160,7 +165,10 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
             props |= GlyphPropsFlags::MULTIPLIED.bits();
         }
 
-        if self.face.ttfp_face.has_glyph_classes() {
+        let has_glyph_classes = self.face.ttfp_face.opentype_definition()
+            .map_or(false, |table| table.has_glyph_classes());
+
+        if has_glyph_classes {
             props = (props & !GlyphPropsFlags::CLASS_MASK.bits()) | self.face.glyph_props(glyph_id);
         } else if !class_guess.is_empty() {
             props = (props & !GlyphPropsFlags::CLASS_MASK.bits()) | class_guess.bits();
