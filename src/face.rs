@@ -1,5 +1,8 @@
+use core::convert::TryFrom;
+
 use ttf_parser::{Tag, GlyphId};
-use ttf_parser::opentype_layout::{LayoutTable, GlyphClass};
+use ttf_parser::gdef::GlyphClass;
+use ttf_parser::opentype_layout::LayoutTable;
 
 use crate::Variation;
 use crate::ot::{TableIndex, PositioningTable, SubstitutionTable};
@@ -86,12 +89,12 @@ impl<'a> Face<'a> {
     /// Returns `None` when face's units per EM is `None`.
     pub fn from_face(face: ttf_parser::Face<'a>) -> Option<Self> {
         Some(Face {
-            units_per_em: face.units_per_em()?,
+            units_per_em: face.units_per_em(),
             pixels_per_em: None,
             points_per_em: None,
             prefered_cmap_encoding_subtable: find_best_cmap_subtable(&face),
-            gsub: face.opentype_substitution().map(SubstitutionTable::new),
-            gpos: face.opentype_positioning().map(PositioningTable::new),
+            gsub: face.tables().gsub.map(SubstitutionTable::new),
+            gpos: face.tables().gpos.map(PositioningTable::new),
             kern: face
                 .table_data(Tag::from_bytes(b"kern"))
                 .and_then(kern::parse),
@@ -149,7 +152,7 @@ impl<'a> Face<'a> {
     /// Sets font variations.
     pub fn set_variations(&mut self, variations: &[Variation]) {
         for variation in variations {
-            self.ttfp_face.set_variation(variation.tag, variation.value);
+            self.set_variation(variation.tag, variation.value);
         }
     }
 
@@ -159,14 +162,14 @@ impl<'a> Face<'a> {
 
     pub(crate) fn glyph_index(&self, c: u32) -> Option<GlyphId> {
         let subtable_idx = self.prefered_cmap_encoding_subtable?;
-        let subtable = self.ttfp_face.character_mapping_subtables().nth(subtable_idx as usize)?;
-        match subtable.glyph_index(c) {
+        let subtable = self.tables().cmap?.subtables.get(subtable_idx)?;
+        match subtable.glyph_index(char::try_from(c).unwrap()) {
             Some(gid) => Some(gid),
             None => {
                 // Special case for Windows Symbol fonts.
                 // TODO: add tests
-                if  subtable.platform_id() == ttf_parser::PlatformId::Windows &&
-                    subtable.encoding_id() == WINDOWS_SYMBOL_ENCODING
+                if  subtable.platform_id == ttf_parser::PlatformId::Windows &&
+                    subtable.encoding_id == WINDOWS_SYMBOL_ENCODING
                 {
                     if c <= 0x00FF {
                         // For symbol-encoded OpenType fonts, we duplicate the
@@ -183,16 +186,6 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub(crate) fn glyph_variation_index(&self, c: char, variation: char) -> Option<GlyphId> {
-        let res = self.ttfp_face.character_mapping_subtables()
-            .find(|e| e.format() == ttf_parser::cmap::Format::UnicodeVariationSequences)
-            .and_then(|e| e.glyph_variation_index(c, variation))?;
-        match res {
-            ttf_parser::cmap::GlyphVariationResult::Found(v) => Some(v),
-            ttf_parser::cmap::GlyphVariationResult::UseDefault => self.glyph_index(c as u32),
-        }
-    }
-
     pub(crate) fn glyph_h_advance(&self, glyph: GlyphId) -> i32 {
         self.glyph_advance(glyph, false) as i32
     }
@@ -205,8 +198,8 @@ impl<'a> Face<'a> {
         let face = &self.ttfp_face;
         if face.is_variable() &&
            face.has_non_default_variation_coordinates() &&
-          !face.has_table(ttf_parser::TableName::HorizontalMetricsVariations) &&
-          !face.has_table(ttf_parser::TableName::VerticalMetricsVariations)
+           face.tables().hvar.is_none() &&
+           face.tables().vvar.is_none()
         {
             return match face.glyph_bounding_box(glyph) {
                 Some(bbox) => {
@@ -220,12 +213,12 @@ impl<'a> Face<'a> {
             };
         }
 
-        if is_vertical && face.has_table(ttf_parser::TableName::VerticalMetrics) {
+        if is_vertical && face.tables().vmtx.is_some() {
             face.glyph_ver_advance(glyph).unwrap_or(0) as u32
-        } else if !is_vertical && face.has_table(ttf_parser::TableName::HorizontalMetrics) {
+        } else if !is_vertical && face.tables().hmtx.is_some() {
             face.glyph_hor_advance(glyph).unwrap_or(0) as u32
         } else {
-            face.units_per_em().unwrap_or(1000) as u32
+            face.units_per_em() as u32
         }
     }
 
@@ -244,8 +237,8 @@ impl<'a> Face<'a> {
     pub(crate) fn glyph_side_bearing(&self, glyph: GlyphId, is_vertical: bool) -> i32 {
         let face = &self.ttfp_face;
         if  face.is_variable() &&
-           !face.has_table(ttf_parser::TableName::HorizontalMetricsVariations) &&
-           !face.has_table(ttf_parser::TableName::VerticalMetricsVariations)
+            face.tables().hvar.is_none() &&
+            face.tables().vvar.is_none()
         {
             return match face.glyph_bounding_box(glyph) {
                 Some(bbox) => (if is_vertical { bbox.x_min } else { bbox.y_min }) as i32,
@@ -293,7 +286,7 @@ impl<'a> Face<'a> {
     }
 
     pub(crate) fn glyph_props(&self, glyph: GlyphId) -> u16 {
-        let table = match self.ttfp_face.opentype_definition() {
+        let table = match self.tables().gdef {
             Some(v) => v,
             None => return 0,
         };
@@ -353,8 +346,8 @@ fn find_cmap_subtable(
     platform_id: ttf_parser::PlatformId,
     encoding_id: u16,
 ) -> Option<u16> {
-    for (i, subtable) in face.character_mapping_subtables().enumerate() {
-        if subtable.platform_id() == platform_id && subtable.encoding_id() == encoding_id {
+    for (i, subtable) in face.tables().cmap?.subtables.into_iter().enumerate() {
+        if subtable.platform_id == platform_id && subtable.encoding_id == encoding_id {
             return Some(i as u16)
         }
     }

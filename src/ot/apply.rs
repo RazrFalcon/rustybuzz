@@ -120,7 +120,7 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
             // match_props has the set index.
             if lookup_flags & lookup_flags::USE_MARK_FILTERING_SET != 0 {
                 let set_index = (match_props >> 16) as u16;
-                if let Some(table) = self.face.ttfp_face.opentype_definition() {
+                if let Some(table) = self.face.tables().gdef {
                     return table.is_mark_glyph(info.as_glyph(), Some(set_index));
                 } else {
                     return false;
@@ -165,7 +165,7 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
             props |= GlyphPropsFlags::MULTIPLIED.bits();
         }
 
-        let has_glyph_classes = self.face.ttfp_face.opentype_definition()
+        let has_glyph_classes = self.face.tables().gdef
             .map_or(false, |table| table.has_glyph_classes());
 
         if has_glyph_classes {

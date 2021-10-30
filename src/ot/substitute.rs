@@ -1,7 +1,7 @@
 use core::convert::TryFrom;
 
 use ttf_parser::GlyphId;
-use ttf_parser::opentype_layout::substitution::*;
+use ttf_parser::gsub::*;
 
 use crate::Face;
 use crate::buffer::{Buffer, GlyphPropsFlags};

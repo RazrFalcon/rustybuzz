@@ -1,6 +1,6 @@
 use ttf_parser::GlyphId;
 use ttf_parser::opentype_layout::LookupIndex;
-use ttf_parser::opentype_layout::positioning::*;
+use ttf_parser::gpos::*;
 use ttf_parser::parser::TryNumFrom;
 
 use crate::{Direction, Face};
@@ -588,7 +588,7 @@ impl DeviceExt for Device<'_> {
         match self {
             Device::Hinting(hinting) => hinting.x_delta(face.units_per_em, face.pixels_per_em()),
             Device::Variation(variation) => {
-                face.opentype_definition()?
+                face.tables().gdef?
                     .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
                     .and_then(|float| i32::try_num_from(float.round()))
             }
@@ -599,7 +599,7 @@ impl DeviceExt for Device<'_> {
         match self {
             Device::Hinting(hinting) => hinting.y_delta(face.units_per_em, face.pixels_per_em()),
             Device::Variation(variation) => {
-                face.opentype_definition()?
+                face.tables().gdef?
                     .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
                     .and_then(|float| i32::try_num_from(float.round()))
             }

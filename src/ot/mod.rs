@@ -18,8 +18,8 @@ pub use substitute::*;
 use alloc::vec::Vec;
 
 use ttf_parser::opentype_layout::{Coverage, Lookup};
-use ttf_parser::opentype_layout::positioning::PositioningSubtable;
-use ttf_parser::opentype_layout::substitution::SubstitutionSubtable;
+use ttf_parser::gpos::PositioningSubtable;
+use ttf_parser::gsub::SubstitutionSubtable;
 
 use crate::glyph_set::{GlyphSet, GlyphSetBuilder};
 
