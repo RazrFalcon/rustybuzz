@@ -33,6 +33,8 @@ are not implemented yet or cannot be implemented at all.
 - `mort` table is not supported, since it's deprecated by Apple.
 - No Arabic fallback shaper, since it requires subsetting.
 - No `graphite` library support.
+- No automated Apple layout testing for legal reasons. We just cannot include Apple fonts.
+  harfbuzz avoids this by running such tests only on CI, which is far from ideal.
 
 ## Performance
 
@@ -54,21 +56,21 @@ Subseting was removed. Unicode code mostly moved to external crates.
 We don't need custom containers because Rust's std is good enough.
 And we do not use any non Rust libraries, so no glue code either.
 
-In the end, we still have around 23 KLOC. While harfbuzz is around 80 KLOC.
+In the end, we still have around 20 KLOC. While harfbuzz is around 80 KLOC.
 
 ## Lines of code
 
-As mentioned above, rustybuzz has around 23 KLOC. But this is not strictly true,
+As mentioned above, rustybuzz has around 20 KLOC. But this is not strictly true,
 because there are a lot of auto-generated data tables.
 
 You can find the "real" code size using:
 
 ```sh
 tokei --exclude unicode_norm.rs --exclude complex/vowel_constraints.rs \
-      --exclude '*_machine.rs' --exclude '*_table.rs'
+      --exclude '*_machine.rs' --exclude '*_table.rs' src
 ```
 
-Which gives us around 16 KLOC, which is still a lot.
+Which gives us around 14 KLOC, which is still a lot.
 
 ## Future work
 
@@ -91,8 +93,12 @@ But except that, there are no `unsafe` in this library and in most of its depend
 
 - [harfbuzz_rs](https://crates.io/crates/harfbuzz_rs) - bindings to the actual harfbuzz library.
   As of v2 doesn't expose subsetting and glyph outlining, which harfbuzz supports.
-- [allsorts](https://github.com/yeslogic/allsorts) - shaper and subsetter. As of v0.6 doesn't support variable fonts and [Apple Advanced Typography](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6AATIntro.html). Relies on some unsafe code.
-- [swash](https://github.com/dfrg/swash) - Supports variable fonts, text layout and rendering. No subsetting. Relies on some unsafe code. As of v0.1.4 has zero tests.
+- [allsorts](https://github.com/yeslogic/allsorts) - shaper and subsetter.
+  As of v0.6 doesn't support variable fonts and
+  [Apple Advanced Typography](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6AATIntro.html).
+  Relies on some unsafe code.
+- [swash](https://github.com/dfrg/swash) - Supports variable fonts, text layout and rendering.
+  No subsetting. Relies on some unsafe code. As of v0.1.4 has zero tests.
 
 ## License
 

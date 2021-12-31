@@ -53,10 +53,14 @@ impl MapBuilder {
     pub fn add_feature(&mut self, face: &Face, tag: Tag, value: u32) -> Option<()> {
         const FEATURE_TYPE_CHARACTER_ALTERNATIVES: u16 = 17;
 
-        let feat = face.feat?;
+        let feat = face.tables().feat?;
 
         if tag == Tag::from_bytes(b"aalt") {
-            if !feat.exposes_feature(FEATURE_TYPE_CHARACTER_ALTERNATIVES) {
+            let exposes_feature = feat.names.find(FEATURE_TYPE_CHARACTER_ALTERNATIVES)
+                .map(|f| f.setting_names.len() != 0)
+                .unwrap_or(false);
+
+            if !exposes_feature {
                 return Some(());
             }
 
@@ -70,10 +74,10 @@ impl MapBuilder {
         let idx = FEATURE_MAPPINGS.binary_search_by(|map| map.ot_feature_tag.cmp(&tag)).ok()?;
         let mapping = &FEATURE_MAPPINGS[idx];
 
-        let mut feature = feat.feature(mapping.aat_feature_type as u16);
+        let mut feature = feat.names.find(mapping.aat_feature_type as u16);
 
         match feature {
-            Some(feature) if feature.has_data() => {}
+            Some(feature) if feature.setting_names.len() != 0 => {}
             _ => {
                 // Special case: Chain::compile_flags will fall back to the deprecated version of
                 // small-caps if necessary, so we need to check for that possibility.
@@ -81,13 +85,13 @@ impl MapBuilder {
                 if  mapping.aat_feature_type == FeatureType::LowerCase &&
                     mapping.selector_to_enable == super::feature_selector::LOWER_CASE_SMALL_CAPS
                 {
-                    feature = feat.feature(FeatureType::LetterCase as u16);
+                    feature = feat.names.find(FeatureType::LetterCase as u16);
                 }
             }
         }
 
         match feature {
-            Some(feature) if feature.has_data() => {
+            Some(feature) if feature.setting_names.len() != 0 => {
                 let setting = if value != 0 {
                     mapping.selector_to_enable
                 } else {
@@ -97,7 +101,7 @@ impl MapBuilder {
                 self.features.push(FeatureInfo {
                     kind: mapping.aat_feature_type as u16,
                     setting,
-                    is_exclusive: feature.is_exclusive(),
+                    is_exclusive: feature.exclusive,
                 });
             }
             _ => {}

@@ -1,5 +1,3 @@
-use core::convert::TryFrom;
-
 use ttf_parser::{Tag, GlyphId};
 use ttf_parser::gdef::GlyphClass;
 use ttf_parser::opentype_layout::LayoutTable;
@@ -7,7 +5,7 @@ use ttf_parser::opentype_layout::LayoutTable;
 use crate::Variation;
 use crate::ot::{TableIndex, PositioningTable, SubstitutionTable};
 use crate::buffer::GlyphPropsFlags;
-use crate::tables::{ankr, feat, kern, kerx, morx, trak};
+use crate::tables::{ankr, kern, kerx, morx};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -38,8 +36,6 @@ pub struct Face<'a> {
     pub(crate) kern: Option<kern::Subtables<'a>>,
     pub(crate) kerx: Option<kerx::Subtables<'a>>,
     pub(crate) ankr: Option<ankr::Table<'a>>,
-    pub(crate) feat: Option<feat::Table<'a>>,
-    pub(crate) trak: Option<trak::Table<'a>>,
     pub(crate) morx: Option<morx::Chains<'a>>,
 }
 
@@ -107,12 +103,6 @@ impl<'a> Face<'a> {
             morx: face
                 .table_data(Tag::from_bytes(b"morx"))
                 .and_then(|data| morx::Chains::parse(data, face.number_of_glyphs())),
-            trak: face
-                .table_data(Tag::from_bytes(b"trak"))
-                .and_then(trak::Table::parse),
-            feat: face
-                .table_data(Tag::from_bytes(b"feat"))
-                .and_then(feat::Table::parse),
             ttfp_face: face,
         })
     }
@@ -163,7 +153,7 @@ impl<'a> Face<'a> {
     pub(crate) fn glyph_index(&self, c: u32) -> Option<GlyphId> {
         let subtable_idx = self.prefered_cmap_encoding_subtable?;
         let subtable = self.tables().cmap?.subtables.get(subtable_idx)?;
-        match subtable.glyph_index(char::try_from(c).unwrap()) {
+        match subtable.glyph_index(c) {
             Some(gid) => Some(gid),
             None => {
                 // Special case for Windows Symbol fonts.
