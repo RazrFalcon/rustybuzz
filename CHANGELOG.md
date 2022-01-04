@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
-- GSUB/GPOS parsing was moved to `ttf-parser`.
+- `GSUB`, `GPOS`, `ankr`, `feat` and `trak` tables parsing was moved to `ttf-parser`.
+
+### Fixed
+- Multiple issues in AAT Lookup Table parsing.
 
 ## [0.4.0] - 2021-06-27
 ### Added

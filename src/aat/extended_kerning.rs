@@ -1,10 +1,12 @@
 use core::convert::TryFrom;
 
+use ttf_parser::ankr;
+
 use crate::Face;
 use crate::buffer::{BufferScratchFlags, Buffer};
 use crate::ot::{attach_type, lookup_flags, ApplyContext, TableIndex};
 use crate::tables::aat;
-use crate::tables::{ankr, kerx};
+use crate::tables::kerx;
 use crate::plan::ShapePlan;
 use crate::ot::matching::SkippyIter;
 
@@ -65,7 +67,7 @@ pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Optio
                 let mut driver = Driver4 {
                     mark_set: false,
                     mark: 0,
-                    ankr_table: face.ankr.clone(),
+                    ankr_table: face.tables().ankr.clone(),
                 };
 
                 apply_state_machine_kerning(coverage, sub, &mut driver, plan, buffer);
@@ -376,10 +378,16 @@ impl StateTableDriver<kerx::format4::StateTable<'_>, kerx::format4::Entry> for D
                         let curr_anchor_point: u16 = s.read()?;
 
                         let mark_idx = buffer.info[self.mark].as_glyph();
-                        let mark_anchor = ankr_table.anchor(mark_idx, mark_anchor_point).unwrap_or_default();
+                        let mark_anchor = ankr_table
+                            .points(mark_idx)
+                            .and_then(|list| list.get(u32::from(mark_anchor_point)))
+                            .unwrap_or_default();
 
                         let curr_idx = buffer.cur(0).as_glyph();
-                        let curr_anchor = ankr_table.anchor(curr_idx, curr_anchor_point).unwrap_or_default();
+                        let curr_anchor = ankr_table
+                            .points(curr_idx)
+                            .and_then(|list| list.get(u32::from(curr_anchor_point)))
+                            .unwrap_or_default();
 
                         let pos = buffer.cur_pos_mut();
                         pos.x_offset = i32::from(mark_anchor.x - curr_anchor.x);

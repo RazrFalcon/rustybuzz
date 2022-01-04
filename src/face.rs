@@ -5,7 +5,7 @@ use ttf_parser::opentype_layout::LayoutTable;
 use crate::Variation;
 use crate::ot::{TableIndex, PositioningTable, SubstitutionTable};
 use crate::buffer::GlyphPropsFlags;
-use crate::tables::{ankr, kern, kerx, morx};
+use crate::tables::{kern, kerx, morx};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -35,7 +35,6 @@ pub struct Face<'a> {
     pub(crate) gpos: Option<PositioningTable<'a>>,
     pub(crate) kern: Option<kern::Subtables<'a>>,
     pub(crate) kerx: Option<kerx::Subtables<'a>>,
-    pub(crate) ankr: Option<ankr::Table<'a>>,
     pub(crate) morx: Option<morx::Chains<'a>>,
 }
 
@@ -97,9 +96,6 @@ impl<'a> Face<'a> {
             kerx: face
                 .table_data(Tag::from_bytes(b"kerx"))
                 .and_then(|data| kerx::parse(data, face.number_of_glyphs())),
-            ankr: face
-                .table_data(Tag::from_bytes(b"ankr"))
-                .and_then(|data| ankr::Table::parse(data, face.number_of_glyphs())),
             morx: face
                 .table_data(Tag::from_bytes(b"morx"))
                 .and_then(|data| morx::Chains::parse(data, face.number_of_glyphs())),
