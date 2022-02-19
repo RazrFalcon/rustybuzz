@@ -1,3 +1,5 @@
+use core::num::NonZeroU16;
+
 use ttf_parser::{Tag, GlyphId};
 use ttf_parser::gdef::GlyphClass;
 use ttf_parser::opentype_layout::LayoutTable;
@@ -5,7 +7,7 @@ use ttf_parser::opentype_layout::LayoutTable;
 use crate::Variation;
 use crate::ot::{TableIndex, PositioningTable, SubstitutionTable};
 use crate::buffer::GlyphPropsFlags;
-use crate::tables::{kern, kerx, morx};
+use crate::tables::{kern, kerx};
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -35,7 +37,6 @@ pub struct Face<'a> {
     pub(crate) gpos: Option<PositioningTable<'a>>,
     pub(crate) kern: Option<kern::Subtables<'a>>,
     pub(crate) kerx: Option<kerx::Subtables<'a>>,
-    pub(crate) morx: Option<morx::Chains<'a>>,
 }
 
 impl<'a> AsRef<ttf_parser::Face<'a>> for Face<'a> {
@@ -95,10 +96,7 @@ impl<'a> Face<'a> {
                 .and_then(kern::parse),
             kerx: face
                 .table_data(Tag::from_bytes(b"kerx"))
-                .and_then(|data| kerx::parse(data, face.number_of_glyphs())),
-            morx: face
-                .table_data(Tag::from_bytes(b"morx"))
-                .and_then(|data| morx::Chains::parse(data, face.number_of_glyphs())),
+                .and_then(|data| kerx::parse(NonZeroU16::new(face.number_of_glyphs()).unwrap(), data)),
             ttfp_face: face,
         })
     }

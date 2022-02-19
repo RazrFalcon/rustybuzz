@@ -1,13 +1,14 @@
 // https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6kerx.html
 
-use ttf_parser::GlyphId;
+use core::num::NonZeroU16;
+
+use ttf_parser::{aat, GlyphId};
 use ttf_parser::parser::{Stream, FromData, NumFrom, Offset32, Offset};
-use crate::tables::aat;
 use super::kern::KerningRecord;
 
 const HEADER_SIZE: usize = 12;
 
-pub fn parse(data: &[u8], number_of_glyphs: u16) -> Option<Subtables> {
+pub fn parse(number_of_glyphs: NonZeroU16, data: &[u8]) -> Option<Subtables> {
     let mut s = Stream::new(data);
     s.skip::<u16>(); // version
     s.skip::<u16>(); // padding
@@ -23,10 +24,10 @@ pub fn parse(data: &[u8], number_of_glyphs: u16) -> Option<Subtables> {
 
 /// An iterator over extended kerning subtables.
 #[allow(missing_debug_implementations)]
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy)]
 pub struct Subtables<'a> {
     /// The number of glyphs from the `maxp` table.
-    number_of_glyphs: u16,
+    number_of_glyphs: NonZeroU16,
     /// The current table index.
     table_index: u32,
     /// The total number of tables.
@@ -64,11 +65,11 @@ impl<'a> Iterator for Subtables<'a> {
                 Subtable::Format0(Subtable0(data))
             }
             1 => {
-                let data = s.read_bytes(data_len)?;
-                let state_table = aat::StateTable::parse(data, self.number_of_glyphs)?;
+                let data = s.tail()?.get(0..data_len)?;
+                let state_table = aat::ExtendedStateTable::parse(self.number_of_glyphs, s)?;
 
                 // Actions offset is right after the state table.
-                let actions_offset: Offset32 = Stream::read_at(data, aat::StateTable::SIZE)?;
+                let actions_offset: Offset32 = s.read()?;
                 // Actions offset is from the start of the state table and not from the start of subtable.
                 // And since we don't know the length of the actions data,
                 // simply store all the data after the offset.
@@ -85,8 +86,9 @@ impl<'a> Iterator for Subtables<'a> {
                 Subtable::Format2(Subtable2(data))
             }
             4 => {
-                let data = s.read_bytes(data_len)?;
-                let flags: u32 = Stream::read_at(data, aat::StateTable::SIZE)?;
+                let data = s.tail()?.get(0..data_len)?;
+                let state_table = aat::ExtendedStateTable::parse(self.number_of_glyphs, s)?;
+                let flags: u32 = s.read()?;
                 let action_type = ((flags & 0xC0000000) >> 30) as u8;
                 let points_offset = usize::num_from(flags & 0x00FFFFFF);
 
@@ -98,7 +100,7 @@ impl<'a> Iterator for Subtables<'a> {
                 };
 
                 Subtable::Format4(format4::StateTable {
-                    state_table: aat::StateTable::parse(data, self.number_of_glyphs)?,
+                    state_table,
                     action_type,
                     control_points_data: data.get(points_offset..)?,
                 })
@@ -183,65 +185,34 @@ impl KerningPairs for Subtable0<'_> {
 }
 
 
+pub trait StateTableExt<T: FromData + Copy> {
+    fn class(&self, glyph_id: GlyphId) -> Option<u16>;
+    fn entry(&self, state: u16, class: u16) -> Option<aat::ExtendedStateEntry<T>>;
+}
+
+/// A state machine entry.
+#[derive(Clone, Copy, Debug)]
+pub struct EntryData {
+    pub action_index: u16,
+}
+
+impl FromData for EntryData {
+    const SIZE: usize = 2;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        Some(EntryData {
+            action_index: s.read()?,
+        })
+    }
+}
+
 pub mod format1 {
     use super::*;
 
-    /// A state machine entry.
-    #[derive(Clone, Copy, Debug)]
-    pub struct Entry {
-        pub new_state: u16,
-        pub flags: u16,
-        pub action_index: u16,
-    }
-
-    impl Entry {
-        /// If set, push this glyph on the kerning stack.
-        #[inline]
-        pub fn has_push(&self) -> bool {
-            self.flags & 0x8000 != 0
-        }
-
-        /// If set, reset the kerning data (clear the stack)
-        #[inline]
-        pub fn has_reset(&self) -> bool {
-            self.flags & 0x2000 != 0
-        }
-    }
-
-    impl aat::Entry for Entry {
-        fn new_state(&self) -> u16 {
-            self.new_state
-        }
-
-        fn flags(&self) -> u16 {
-            self.flags
-        }
-
-        fn is_actionable(&self) -> bool {
-            self.action_index != 0xFFFF
-        }
-
-        fn has_advance(&self) -> bool {
-            self.flags & 0x4000 == 0
-        }
-    }
-
-    impl FromData for Entry {
-        const SIZE: usize = 6;
-
-        #[inline]
-        fn parse(data: &[u8]) -> Option<Self> {
-            let mut s = Stream::new(data);
-            Some(Entry {
-                new_state: s.read()?,
-                flags: s.read()?,
-                action_index: s.read()?,
-            })
-        }
-    }
-
     pub struct StateTable<'a> {
-        pub state_table: aat::StateTable<'a>,
+        pub state_table: aat::ExtendedStateTable<'a, EntryData>,
         pub actions_data: &'a [u8],
         pub tuple_count: u32,
     }
@@ -253,18 +224,18 @@ pub mod format1 {
         }
     }
 
-    impl aat::StateTable2<Entry> for StateTable<'_> {
+    impl StateTableExt<EntryData> for StateTable<'_> {
         fn class(&self, glyph_id: GlyphId) -> Option<u16> {
             self.state_table.class(glyph_id)
         }
 
-        fn entry(&self, state: u16, class: u16) -> Option<Entry> {
+        fn entry(&self, state: u16, class: u16) -> Option<aat::ExtendedStateEntry<EntryData>> {
             self.state_table.entry(state, class)
         }
     }
 
     impl<'a> core::ops::Deref for StateTable<'a> {
-        type Target = aat::StateTable<'a>;
+        type Target = aat::ExtendedStateTable<'a, EntryData>;
 
         fn deref(&self) -> &Self::Target {
             &self.state_table
@@ -321,80 +292,30 @@ fn get_format2_class(glyph_id: u16, offset: usize, data: &[u8]) -> Option<u16> {
 pub mod format4 {
     use super::*;
 
-    /// A state machine entry.
-    #[derive(Clone, Copy, Debug)]
-    pub struct Entry {
-        pub new_state: u16,
-        pub flags: u16,
-        pub action_index: u16,
-    }
-
-    impl Entry {
-        /// If set, remember this glyph as the marked glyph.
-        #[inline]
-        pub fn has_mark(&self) -> bool {
-            self.flags & 0x8000 != 0
-        }
-    }
-
-    impl aat::Entry for Entry {
-        fn new_state(&self) -> u16 {
-            self.new_state
-        }
-
-        fn flags(&self) -> u16 {
-            self.flags
-        }
-
-        fn is_actionable(&self) -> bool {
-            self.action_index != 0xFFFF
-        }
-
-        fn has_advance(&self) -> bool {
-            self.flags & 0x4000 == 0
-        }
-    }
-
-    impl FromData for Entry {
-        const SIZE: usize = 6;
-
-        #[inline]
-        fn parse(data: &[u8]) -> Option<Self> {
-            let mut s = Stream::new(data);
-            Some(Entry {
-                new_state: s.read()?,
-                flags: s.read()?,
-                action_index: s.read()?,
-            })
-        }
-    }
-
-
     pub enum ActionType {
         ControlPointActions,
         AnchorPointActions,
         ControlPointCoordinateActions,
     }
 
-
     pub struct StateTable<'a> {
-        pub state_table: aat::StateTable<'a>,
+        pub state_table: aat::ExtendedStateTable<'a, EntryData>,
         pub action_type: ActionType,
         pub control_points_data: &'a [u8],
     }
 
-    impl aat::StateTable2<Entry> for StateTable<'_> {
+    impl StateTableExt<EntryData> for StateTable<'_> {
         fn class(&self, glyph_id: GlyphId) -> Option<u16> {
             self.state_table.class(glyph_id)
         }
 
-        fn entry(&self, state: u16, class: u16) -> Option<Entry> {
+        fn entry(&self, state: u16, class: u16) -> Option<aat::ExtendedStateEntry<EntryData>> {
             self.state_table.entry(state, class)
         }
     }
 
     impl<'a> core::ops::Deref for StateTable<'a> {
-        type Target = aat::StateTable<'a>;
+        type Target = aat::ExtendedStateTable<'a, EntryData>;
 
         fn deref(&self) -> &Self::Target {
             &self.state_table
@@ -407,7 +328,7 @@ pub mod format4 {
 /// from https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6kerx.html
 pub struct Subtable6<'a>{
     data: &'a [u8],
-    number_of_glyphs: u16,
+    number_of_glyphs: NonZeroU16,
 }
 
 impl KerningPairs for Subtable6<'_> {
@@ -431,22 +352,22 @@ impl KerningPairs for Subtable6<'_> {
 
         let has_long_values = flags & 0x00000001 != 0;
         if has_long_values {
-            let l: u32 = aat::Lookup::parse(row_index_table_data)?
-                .value(left, self.number_of_glyphs).unwrap_or(0) as u32;
+            let l: u32 = aat::Lookup::parse(self.number_of_glyphs, row_index_table_data)?
+                .value(left).unwrap_or(0) as u32;
 
-            let r: u32 = aat::Lookup::parse(column_index_table_data)?
-                .value(right, self.number_of_glyphs).unwrap_or(0) as u32;
+            let r: u32 = aat::Lookup::parse(self.number_of_glyphs, column_index_table_data)?
+                .value(right).unwrap_or(0) as u32;
 
             let array_offset = usize::try_from(l + r).ok()?.checked_mul(i32::SIZE)?;
             let vector_offset: u32 = Stream::read_at(kerning_array_data, array_offset)?;
 
             Stream::read_at(kerning_vector_data, usize::num_from(vector_offset))
         } else {
-            let l: u16 = aat::Lookup::parse(row_index_table_data)?
-                .value(left, self.number_of_glyphs).unwrap_or(0);
+            let l: u16 = aat::Lookup::parse(self.number_of_glyphs, row_index_table_data)?
+                .value(left).unwrap_or(0);
 
-            let r: u16 = aat::Lookup::parse(column_index_table_data)?
-                .value(right, self.number_of_glyphs).unwrap_or(0);
+            let r: u16 = aat::Lookup::parse(self.number_of_glyphs, column_index_table_data)?
+                .value(right).unwrap_or(0);
 
             let array_offset = usize::try_from(l + r).ok()?.checked_mul(i16::SIZE)?;
             let vector_offset: u16 = Stream::read_at(kerning_array_data, array_offset)?;

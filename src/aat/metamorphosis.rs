@@ -1,20 +1,18 @@
-use ttf_parser::parser::{LazyArray32, Offset32, Offset};
+use ttf_parser::{aat, morx, GlyphId};
+use ttf_parser::parser::{FromData, LazyArray32};
 
 use crate::{Face, GlyphInfo};
 use crate::buffer::Buffer;
 use crate::plan::ShapePlan;
 use crate::aat::{Map, MapBuilder, FeatureType};
 use crate::aat::feature_selector;
-use crate::tables::aat;
-use crate::tables::morx;
-use ttf_parser::GlyphId;
 
 pub fn compile_flags(face: &Face, builder: &MapBuilder) -> Option<Map> {
     let mut map = Map::default();
 
-    for chain in face.morx? {
-        let mut flags = chain.default_flags();
-        for feature in chain.features() {
+    for chain in face.tables().morx.as_ref()?.chains {
+        let mut flags = chain.default_flags;
+        for feature in chain.features {
             // Check whether this type/setting pair was requested in the map,
             // and if so, apply its flags.
 
@@ -43,15 +41,15 @@ pub fn compile_flags(face: &Face, builder: &MapBuilder) -> Option<Map> {
 }
 
 pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
-    for (chain_idx, chain) in face.morx?.enumerate() {
+    for (chain_idx, chain) in face.tables().morx.as_ref()?.chains.into_iter().enumerate() {
         let flags = plan.aat_map.chain_flags[chain_idx];
-        for subtable in chain.subtables() {
+        for subtable in chain.subtables {
             if subtable.feature_flags & flags == 0 {
                 continue;
             }
 
-            if !subtable.is_all_directions() &&
-                buffer.direction.is_vertical() != subtable.is_vertical()
+            if !subtable.coverage.is_all_directions() &&
+                buffer.direction.is_vertical() != subtable.coverage.is_vertical()
             {
                 continue;
             }
@@ -83,17 +81,17 @@ pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
             //                   (the order opposite that of the characters, which
             //                   may be right-to-left or left-to-right).
 
-            let reverse = if subtable.is_logical() {
-                subtable.is_backwards()
+            let reverse = if subtable.coverage.is_logical() {
+                subtable.coverage.is_backwards()
             } else {
-                subtable.is_backwards() != buffer.direction.is_backward()
+                subtable.coverage.is_backwards() != buffer.direction.is_backward()
             };
 
             if reverse {
                 buffer.reverse();
             }
 
-            apply_subtable(&subtable.kind, face, buffer);
+            apply_subtable(&subtable.kind, buffer);
 
             if reverse {
                 buffer.reverse();
@@ -104,7 +102,88 @@ pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
     Some(())
 }
 
-fn apply_subtable(kind: &morx::SubtableKind, face: &Face, buffer: &mut Buffer) {
+trait Driver<T: FromData> {
+    fn in_place(&self) -> bool;
+    fn can_advance(&self, entry: &aat::ExtendedStateEntry<T>) -> bool;
+    fn is_actionable(&self, entry: &aat::ExtendedStateEntry<T>, buffer: &Buffer) -> bool;
+    fn transition(&mut self, entry: &aat::ExtendedStateEntry<T>, buffer: &mut Buffer) -> Option<()>;
+}
+
+const START_OF_TEXT: u16 = 0;
+
+fn drive<T: FromData>(machine: &aat::ExtendedStateTable<T>, c: &mut dyn Driver<T>, buffer: &mut Buffer) {
+    if !c.in_place() {
+        buffer.clear_output();
+    }
+
+    let mut state = START_OF_TEXT;
+    buffer.idx = 0;
+    loop {
+        let class = if buffer.idx < buffer.len {
+            machine.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
+        } else {
+            aat::class::END_OF_TEXT
+        };
+
+        let entry: aat::ExtendedStateEntry<T> = match machine.entry(state, class) {
+            Some(v) => v,
+            None => break,
+        };
+
+        // Unsafe-to-break before this if not in state 0, as things might
+        // go differently if we start from state 0 here.
+        if state != START_OF_TEXT &&
+            buffer.backtrack_len() != 0 &&
+            buffer.idx < buffer.len
+        {
+            // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
+            if  c.is_actionable(&entry, buffer) ||
+                !(entry.new_state == START_OF_TEXT && !c.can_advance(&entry))
+            {
+                buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
+            }
+        }
+
+        // Unsafe-to-break if end-of-text would kick in here.
+        if buffer.idx + 2 <= buffer.len {
+            let end_entry: aat::ExtendedStateEntry<T> = match machine.entry(state, aat::class::END_OF_TEXT) {
+                Some(v) => v,
+                None => break,
+            };
+
+            if c.is_actionable(&end_entry, buffer) {
+                buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
+            }
+        }
+
+        c.transition(&entry, buffer);
+
+        state = entry.new_state;
+
+        if buffer.idx >= buffer.len {
+            break;
+        }
+
+        if c.can_advance(&entry) {
+            buffer.next_glyph();
+        } else {
+            if buffer.max_ops <= 0 {
+                buffer.next_glyph();
+            }
+            buffer.max_ops -= 1;
+        }
+    }
+
+    if !c.in_place() {
+        while buffer.idx < buffer.len {
+            buffer.next_glyph();
+        }
+
+        buffer.swap_buffers();
+    }
+}
+
+fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut Buffer) {
     match kind {
         morx::SubtableKind::Rearrangement(ref table) => {
             let mut c = RearrangementCtx {
@@ -112,18 +191,16 @@ fn apply_subtable(kind: &morx::SubtableKind, face: &Face, buffer: &mut Buffer) {
                 end: 0,
             };
 
-            aat::drive::<()>(table, &mut c, buffer);
+            drive::<()>(table, &mut c, buffer);
         }
         morx::SubtableKind::Contextual(ref table) => {
             let mut c = ContextualCtx {
-                offsets_data: table.offsets_data,
-                number_of_glyphs: face.ttfp_face.number_of_glyphs(),
                 mark_set: false,
                 mark: 0,
-                offsets: table.offsets,
+                table,
             };
 
-            aat::drive::<morx::ContextualEntry>(&table.machine, &mut c, buffer);
+            drive::<morx::ContextualEntryData>(&table.state, &mut c, buffer);
         }
         morx::SubtableKind::Ligature(ref table) => {
             let mut c = LigatureCtx {
@@ -132,12 +209,11 @@ fn apply_subtable(kind: &morx::SubtableKind, face: &Face, buffer: &mut Buffer) {
                 match_positions: [0; LIGATURE_MAX_MATCHES],
             };
 
-            aat::drive::<u16>(&table.machine, &mut c, buffer);
+            drive::<u16>(&table.state, &mut c, buffer);
         }
         morx::SubtableKind::NonContextual(ref lookup) => {
-            let number_of_glyphs = face.ttfp_face.number_of_glyphs();
             for info in &mut buffer.info {
-                if let Some(replacement) = lookup.value(info.as_glyph(), number_of_glyphs) {
+                if let Some(replacement) = lookup.value(info.as_glyph()) {
                     info.glyph_id = u32::from(replacement);
                 }
             }
@@ -148,7 +224,7 @@ fn apply_subtable(kind: &morx::SubtableKind, face: &Face, buffer: &mut Buffer) {
                 glyphs: table.glyphs,
             };
 
-            aat::drive::<morx::InsertionEntry>(&table.machine, &mut c, buffer);
+            drive::<morx::InsertionEntryData>(&table.state, &mut c, buffer);
         }
     }
 }
@@ -166,20 +242,20 @@ impl RearrangementCtx {
     const VERB: u16         = 0x000F;
 }
 
-impl aat::Driver<()> for RearrangementCtx {
+impl Driver<()> for RearrangementCtx {
     fn in_place(&self) -> bool {
         true
     }
 
-    fn can_advance(&self, entry: &aat::Entry2<()>) -> bool {
+    fn can_advance(&self, entry: &aat::ExtendedStateEntry<()>) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &aat::Entry2<()>, _: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &aat::ExtendedStateEntry<()>, _: &Buffer) -> bool {
         entry.flags & Self::VERB != 0 && self.start < self.end
     }
 
-    fn transition(&mut self, entry: &aat::Entry2<()>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(&mut self, entry: &aat::ExtendedStateEntry<()>, buffer: &mut Buffer) -> Option<()> {
         let flags = entry.flags;
 
         if flags & Self::MARK_FIRST != 0 {
@@ -268,11 +344,9 @@ impl aat::Driver<()> for RearrangementCtx {
 
 
 struct ContextualCtx<'a> {
-    offsets_data: &'a [u8],
-    number_of_glyphs: u16,
     mark_set: bool,
     mark: usize,
-    offsets: LazyArray32<'a, Offset32>,
+    table: &'a morx::ContextualSubtable<'a>,
 }
 
 impl ContextualCtx<'_> {
@@ -280,16 +354,16 @@ impl ContextualCtx<'_> {
     const DONT_ADVANCE: u16     = 0x4000;
 }
 
-impl aat::Driver<morx::ContextualEntry> for ContextualCtx<'_> {
+impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
     fn in_place(&self) -> bool {
         true
     }
 
-    fn can_advance(&self, entry: &aat::Entry2<morx::ContextualEntry>) -> bool {
+    fn can_advance(&self, entry: &aat::ExtendedStateEntry<morx::ContextualEntryData>) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &aat::Entry2<morx::ContextualEntry>, buffer: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &aat::ExtendedStateEntry<morx::ContextualEntryData>, buffer: &Buffer) -> bool {
         if buffer.idx == buffer.len && !self.mark_set {
             return false;
         }
@@ -297,7 +371,7 @@ impl aat::Driver<morx::ContextualEntry> for ContextualCtx<'_> {
         return entry.extra.mark_index != 0xFFFF || entry.extra.current_index != 0xFFFF;
     }
 
-    fn transition(&mut self, entry: &aat::Entry2<morx::ContextualEntry>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(&mut self, entry: &aat::ExtendedStateEntry<morx::ContextualEntryData>, buffer: &mut Buffer) -> Option<()> {
         // Looks like CoreText applies neither mark nor current substitution for
         // end-of-text if mark was not explicitly set.
         if buffer.idx == buffer.len && !self.mark_set {
@@ -307,9 +381,8 @@ impl aat::Driver<morx::ContextualEntry> for ContextualCtx<'_> {
         let mut replacement = None;
 
         if entry.extra.mark_index != 0xFFFF {
-            let offset = self.offsets.get(u32::from(entry.extra.mark_index))?.to_usize();
-            let lookup = aat::Lookup::parse(&self.offsets_data[offset..])?;
-            replacement = lookup.value(buffer.info[self.mark].as_glyph(), self.number_of_glyphs);
+            let lookup = self.table.lookup(u32::from(entry.extra.mark_index))?;
+            replacement = lookup.value(buffer.info[self.mark].as_glyph());
         }
 
         if let Some(replacement) = replacement {
@@ -320,9 +393,8 @@ impl aat::Driver<morx::ContextualEntry> for ContextualCtx<'_> {
         replacement = None;
         let idx = buffer.idx.min(buffer.len - 1);
         if entry.extra.current_index != 0xFFFF {
-            let offset = self.offsets.get(u32::from(entry.extra.current_index))?.to_usize();
-            let lookup = aat::Lookup::parse(&self.offsets_data[offset..])?;
-            replacement = lookup.value(buffer.info[idx].as_glyph(), self.number_of_glyphs);
+            let lookup = self.table.lookup(u32::from(entry.extra.current_index))?;
+            replacement = lookup.value(buffer.info[idx].as_glyph());
         }
 
         if let Some(replacement) = replacement {
@@ -352,21 +424,21 @@ impl InsertionCtx<'_> {
     const MARKED_INSERT_COUNT: u16      = 0x001F;
 }
 
-impl aat::Driver<morx::InsertionEntry> for InsertionCtx<'_> {
+impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
     fn in_place(&self) -> bool {
         false
     }
 
-    fn can_advance(&self, entry: &aat::Entry2<morx::InsertionEntry>) -> bool {
+    fn can_advance(&self, entry: &aat::ExtendedStateEntry<morx::InsertionEntryData>) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &aat::Entry2<morx::InsertionEntry>, _: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &aat::ExtendedStateEntry<morx::InsertionEntryData>, _: &Buffer) -> bool {
         (entry.flags & (Self::CURRENT_INSERT_COUNT | Self::MARKED_INSERT_COUNT) != 0) &&
             (entry.extra.current_insert_index != 0xFFFF || entry.extra.marked_insert_index != 0xFFFF)
     }
 
-    fn transition(&mut self, entry: &aat::Entry2<morx::InsertionEntry>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(&mut self, entry: &aat::ExtendedStateEntry<morx::InsertionEntryData>, buffer: &mut Buffer) -> Option<()> {
         let flags = entry.flags;
         let mark_loc = buffer.out_len;
 
@@ -472,20 +544,20 @@ impl LigatureCtx<'_> {
     const LIG_ACTION_OFFSET: u32    = 0x3FFFFFFF;
 }
 
-impl aat::Driver<u16> for LigatureCtx<'_> {
+impl Driver<u16> for LigatureCtx<'_> {
     fn in_place(&self) -> bool {
         false
     }
 
-    fn can_advance(&self, entry: &aat::Entry2<u16>) -> bool {
+    fn can_advance(&self, entry: &aat::ExtendedStateEntry<u16>) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &aat::Entry2<u16>, _: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &aat::ExtendedStateEntry<u16>, _: &Buffer) -> bool {
         entry.flags & Self::PERFORM_ACTION != 0
     }
 
-    fn transition(&mut self, entry: &aat::Entry2<u16>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(&mut self, entry: &aat::ExtendedStateEntry<u16>, buffer: &mut Buffer) -> Option<()> {
         if entry.flags & Self::SET_COMPONENT != 0 {
             // Never mark same index twice, in case DONT_ADVANCE was used...
             if self.match_length != 0 &&
