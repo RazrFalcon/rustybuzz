@@ -7,7 +7,7 @@ use ttf_parser::opentype_layout::LayoutTable;
 use crate::Variation;
 use crate::ot::{TableIndex, PositioningTable, SubstitutionTable};
 use crate::buffer::GlyphPropsFlags;
-use crate::tables::{kern, kerx};
+use crate::tables::kerx;
 
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -35,7 +35,6 @@ pub struct Face<'a> {
     prefered_cmap_encoding_subtable: Option<u16>,
     pub(crate) gsub: Option<SubstitutionTable<'a>>,
     pub(crate) gpos: Option<PositioningTable<'a>>,
-    pub(crate) kern: Option<kern::Subtables<'a>>,
     pub(crate) kerx: Option<kerx::Subtables<'a>>,
 }
 
@@ -91,9 +90,6 @@ impl<'a> Face<'a> {
             prefered_cmap_encoding_subtable: find_best_cmap_subtable(&face),
             gsub: face.tables().gsub.map(SubstitutionTable::new),
             gpos: face.tables().gpos.map(PositioningTable::new),
-            kern: face
-                .table_data(Tag::from_bytes(b"kern"))
-                .and_then(kern::parse),
             kerx: face
                 .table_data(Tag::from_bytes(b"kerx"))
                 .and_then(|data| kerx::parse(NonZeroU16::new(face.number_of_glyphs()).unwrap(), data)),

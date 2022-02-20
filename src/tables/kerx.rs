@@ -4,9 +4,29 @@ use core::num::NonZeroU16;
 
 use ttf_parser::{aat, GlyphId};
 use ttf_parser::parser::{Stream, FromData, NumFrom, Offset32, Offset};
-use super::kern::KerningRecord;
 
 const HEADER_SIZE: usize = 12;
+
+#[derive(Clone, Copy)]
+pub(crate) struct KerningRecord {
+    // In the kern table spec, a kerning pair is stored as two u16,
+    // but we are using one u32, so we can binary search it directly.
+    pub(crate) pair: u32,
+    pub(crate) value: i16,
+}
+
+impl FromData for KerningRecord {
+    const SIZE: usize = 6;
+
+    #[inline]
+    fn parse(data: &[u8]) -> Option<Self> {
+        let mut s = Stream::new(data);
+        Some(KerningRecord {
+            pair: s.read()?,
+            value: s.read()?,
+        })
+    }
+}
 
 pub fn parse(number_of_glyphs: NonZeroU16, data: &[u8]) -> Option<Subtables> {
     let mut s = Stream::new(data);
@@ -187,7 +207,7 @@ impl KerningPairs for Subtable0<'_> {
 
 pub trait StateTableExt<T: FromData + Copy> {
     fn class(&self, glyph_id: GlyphId) -> Option<u16>;
-    fn entry(&self, state: u16, class: u16) -> Option<aat::ExtendedStateEntry<T>>;
+    fn entry(&self, state: u16, class: u16) -> Option<aat::GenericStateEntry<T>>;
 }
 
 /// A state machine entry.
@@ -229,7 +249,7 @@ pub mod format1 {
             self.state_table.class(glyph_id)
         }
 
-        fn entry(&self, state: u16, class: u16) -> Option<aat::ExtendedStateEntry<EntryData>> {
+        fn entry(&self, state: u16, class: u16) -> Option<aat::GenericStateEntry<EntryData>> {
             self.state_table.entry(state, class)
         }
     }
@@ -309,7 +329,7 @@ pub mod format4 {
             self.state_table.class(glyph_id)
         }
 
-        fn entry(&self, state: u16, class: u16) -> Option<aat::ExtendedStateEntry<EntryData>> {
+        fn entry(&self, state: u16, class: u16) -> Option<aat::GenericStateEntry<EntryData>> {
             self.state_table.entry(state, class)
         }
     }

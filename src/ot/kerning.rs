@@ -1,4 +1,4 @@
-use ttf_parser::GlyphId;
+use ttf_parser::{aat, kern, GlyphId};
 
 use crate::{Face, Mask};
 use crate::buffer::{Buffer, BufferScratchFlags};
@@ -9,46 +9,46 @@ use super::matching::SkippyIter;
 use crate::ot::attach_type;
 
 pub fn has_kerning(face: &Face) -> bool {
-    face.kern.is_some()
+    face.tables().kern.is_some()
 }
 
 pub fn has_machine_kerning(face: &Face) -> bool {
-    match face.kern {
-        Some(mut kern) => {
-            kern.any(|s| s.has_state_machine())
+    match face.tables().kern {
+        Some(ref kern) => {
+            kern.subtables.into_iter().any(|s| s.has_state_machine)
         }
         None => false,
     }
 }
 
 pub fn has_cross_kerning(face: &Face) -> bool {
-    match face.kern {
-        Some(mut kern) => {
-            kern.any(|s| s.has_cross_stream())
+    match face.tables().kern {
+        Some(ref kern) => {
+            kern.subtables.into_iter().any(|s| s.has_cross_stream)
         }
         None => false,
     }
 }
 
 pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    let subtables = match face.kern {
-        Some(subtables) => subtables,
+    let subtables = match face.tables().kern {
+        Some(table) => table.subtables,
         None => return,
     };
 
     let mut seen_cross_stream = false;
     for subtable in subtables {
-        if subtable.is_variable() {
+        if subtable.variable {
             continue;
         }
 
-        if buffer.direction.is_horizontal() != subtable.is_horizontal() {
+        if buffer.direction.is_horizontal() != subtable.horizontal {
             continue;
         }
 
         let reverse = buffer.direction.is_backward();
 
-        if !seen_cross_stream && subtable.has_cross_stream() {
+        if !seen_cross_stream && subtable.has_cross_stream {
             seen_cross_stream = true;
 
             // Attach all glyphs into a chain.
@@ -65,7 +65,7 @@ pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             buffer.reverse();
         }
 
-        if subtable.has_state_machine() {
+        if subtable.has_state_machine {
             apply_state_machine_kerning(&subtable, plan.kern_mask, buffer);
         } else {
             if !plan.requested_kerning {
@@ -147,12 +147,12 @@ fn machine_kern(
 }
 
 fn apply_simple_kerning(
-    subtable: &crate::tables::kern::Subtable,
+    subtable: &kern::Subtable,
     face: &Face,
     kern_mask: Mask,
     buffer: &mut Buffer,
 ) {
-    machine_kern(face, buffer, kern_mask, subtable.has_cross_stream(), |left, right| {
+    machine_kern(face, buffer, kern_mask, subtable.has_cross_stream, |left, right| {
         subtable.glyphs_kerning(GlyphId(left as u16), GlyphId(right as u16))
             .map(|v| i32::from(v)).unwrap_or(0)
     });
@@ -164,15 +164,13 @@ struct StateMachineDriver {
 }
 
 fn apply_state_machine_kerning(
-    subtable: &crate::tables::kern::Subtable,
+    subtable: &kern::Subtable,
     kern_mask: Mask,
     buffer: &mut Buffer,
 ) {
-    use crate::tables::kern::state_machine;
-
-    let machine = match subtable.state_machine() {
-        Some(v) => v,
-        None => return,
+    let state_table = match subtable.format {
+        kern::Format::Format1(ref state_table) => state_table,
+        _ => return,
     };
 
     let mut driver = StateMachineDriver {
@@ -180,29 +178,29 @@ fn apply_state_machine_kerning(
         depth: 0,
     };
 
-    let mut state = state_machine::state::START_OF_TEXT;
+    let mut state = aat::state::START_OF_TEXT;
     buffer.idx = 0;
     loop {
         let class = if buffer.idx < buffer.len {
-            machine.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
+            state_table.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
         } else {
-            state_machine::class::END_OF_TEXT
+            aat::class::END_OF_TEXT as u8
         };
 
-        let entry = match machine.entry(state, class) {
+        let entry = match state_table.entry(state, class) {
             Some(v) => v,
             None => break,
         };
 
         // Unsafe-to-break before this if not in state 0, as things might
         // go differently if we start from state 0 here.
-        if state != state_machine::state::START_OF_TEXT &&
+        if state != aat::state::START_OF_TEXT &&
             buffer.backtrack_len() != 0 &&
             buffer.idx < buffer.len
         {
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
             if entry.has_offset() ||
-                !(entry.new_state() == state_machine::state::START_OF_TEXT && !entry.has_advance())
+                !(entry.new_state == aat::state::START_OF_TEXT && !entry.has_advance())
             {
                 buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
@@ -210,7 +208,7 @@ fn apply_state_machine_kerning(
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry = match machine.entry(state, state_machine::class::END_OF_TEXT) {
+            let end_entry = match state_table.entry(state, aat::class::END_OF_TEXT) {
                 Some(v) => v,
                 None => break,
             };
@@ -220,10 +218,10 @@ fn apply_state_machine_kerning(
             }
         }
 
-        state_machine_transition(entry, subtable.has_cross_stream(), kern_mask,
-                                 &machine, &mut driver, buffer);
+        state_machine_transition(entry, subtable.has_cross_stream, kern_mask,
+                                 &state_table, &mut driver, buffer);
 
-        state = machine.new_state(entry.new_state());
+        state = state_table.new_state(entry.new_state);
 
         if buffer.idx >= buffer.len {
             break;
@@ -237,10 +235,10 @@ fn apply_state_machine_kerning(
 }
 
 fn state_machine_transition(
-    entry: crate::tables::kern::state_machine::Entry,
+    entry: aat::StateEntry,
     has_cross_stream: bool,
     kern_mask: Mask,
-    machine: &crate::tables::kern::state_machine::Machine,
+    state_table: &aat::StateTable,
     driver: &mut StateMachineDriver,
     buffer: &mut Buffer,
 ) {
@@ -255,7 +253,7 @@ fn state_machine_transition(
 
     if entry.has_offset() && driver.depth != 0 {
         let mut value_offset = entry.value_offset();
-        let mut value = match machine.kerning(value_offset) {
+        let mut value = match state_table.kerning(value_offset) {
             Some(v) => v,
             None => {
                 driver.depth = 0;
@@ -272,7 +270,7 @@ fn state_machine_transition(
             let idx = driver.stack[driver.depth];
             let mut v = value as i32;
             value_offset = value_offset.next();
-            value = machine.kerning(value_offset).unwrap_or(0);
+            value = state_table.kerning(value_offset).unwrap_or(0);
             if idx >= buffer.len {
                 continue;
             }

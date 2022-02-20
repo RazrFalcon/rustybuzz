@@ -16,7 +16,7 @@ exclude = ["benches/**"]
 bitflags = "1.2"
 bytemuck = { version = "1.5", features = ["extern_crate_alloc"] }
 smallvec = "1.6"
-ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "ff6eb20" }
+ttf-parser = { git = "https://github.com/RazrFalcon/ttf-parser", rev = "79fb1ee" }
 unicode-bidi-mirroring = "0.1"
 unicode-ccc = "0.1.2"
 unicode-general-category = "0.4"

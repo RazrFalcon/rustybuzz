@@ -157,32 +157,11 @@ fn apply_simple_kerning(
 const START_OF_TEXT: u16 = 0;
 
 trait KerxEntryDataExt {
-    fn new_state(&self) -> u16;
-    fn flags(&self) -> u16;
-
-    /// If set, reset the kerning data (clear the stack).
-    fn has_reset(&self) -> bool;
-
-    /// If set, don't advance to the next glyph before going to the new state.
-    fn has_advance(&self) -> bool;
-
-    /// If set, push this glyph on the kerning stack. Used by format1 subtable.
-    fn has_push(&self) -> bool;
-
-    /// If set, remember this glyph as the marked glyph. Used by format4 subtable.
-    fn has_mark(&self) -> bool;
-
     fn action_index(self) -> u16;
     fn is_actionable(&self) -> bool;
 }
 
-impl KerxEntryDataExt for aat::ExtendedStateEntry<kerx::EntryData> {
-    fn new_state(&self) -> u16 { self.new_state }
-    fn flags(&self) -> u16 { self.flags }
-    fn has_reset(&self) -> bool { self.flags & 0x2000 != 0 }
-    fn has_advance(&self) -> bool { self.flags & 0x4000 == 0 }
-    fn has_push(&self) -> bool { self.flags & 0x8000 != 0 }
-    fn has_mark(&self) -> bool { self.flags & 0x8000 != 0 }
+impl KerxEntryDataExt for aat::GenericStateEntry<kerx::EntryData> {
     fn action_index(self) -> u16 { self.extra.action_index }
     fn is_actionable(&self) -> bool { self.extra.action_index != 0xFFFF }
 }
@@ -196,7 +175,7 @@ fn apply_state_machine_kerning<T, E>(
 )
 where T: kerx::StateTableExt<E>,
       E: FromData + Copy,
-      aat::ExtendedStateEntry<E>: KerxEntryDataExt
+      aat::GenericStateEntry<E>: KerxEntryDataExt
 {
     let mut state = START_OF_TEXT;
     buffer.idx = 0;
@@ -204,10 +183,10 @@ where T: kerx::StateTableExt<E>,
         let class = if buffer.idx < buffer.len {
             aat.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
         } else {
-            aat::class::END_OF_TEXT
+            u16::from(aat::class::END_OF_TEXT)
         };
 
-        let entry: aat::ExtendedStateEntry<E> = match aat.entry(state, class) {
+        let entry: aat::GenericStateEntry<E> = match aat.entry(state, class) {
             Some(v) => v,
             None => break,
         };
@@ -220,7 +199,7 @@ where T: kerx::StateTableExt<E>,
         {
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
             if   entry.is_actionable() ||
-                !(entry.new_state() == START_OF_TEXT && !entry.has_advance())
+                !(entry.new_state == START_OF_TEXT && !entry.has_advance())
             {
                 buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
@@ -228,7 +207,7 @@ where T: kerx::StateTableExt<E>,
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry: aat::ExtendedStateEntry<E> = match aat.entry(state, aat::class::END_OF_TEXT) {
+            let end_entry: aat::GenericStateEntry<E> = match aat.entry(state, u16::from(aat::class::END_OF_TEXT)) {
                 Some(v) => v,
                 None => break,
             };
@@ -240,7 +219,7 @@ where T: kerx::StateTableExt<E>,
 
         let _ = driver.transition(aat, entry, coverage.has_cross_stream(), plan, buffer);
 
-        state = entry.new_state();
+        state = entry.new_state;
 
         if buffer.idx >= buffer.len {
             break;
@@ -255,8 +234,8 @@ where T: kerx::StateTableExt<E>,
 
 
 trait StateTableDriver<Table, E: FromData> {
-    fn is_actionable(&self, entry: aat::ExtendedStateEntry<E>) -> bool;
-    fn transition(&mut self, aat: &Table, entry: aat::ExtendedStateEntry<E>,
+    fn is_actionable(&self, entry: aat::GenericStateEntry<E>) -> bool;
+    fn transition(&mut self, aat: &Table, entry: aat::GenericStateEntry<E>,
                   has_cross_stream: bool, plan: &ShapePlan, buffer: &mut Buffer) -> Option<()>;
 }
 
@@ -267,14 +246,14 @@ struct Driver1 {
 }
 
 impl StateTableDriver<kerx::format1::StateTable<'_>, kerx::EntryData> for Driver1 {
-    fn is_actionable(&self, entry: aat::ExtendedStateEntry<kerx::EntryData>) -> bool {
+    fn is_actionable(&self, entry: aat::GenericStateEntry<kerx::EntryData>) -> bool {
         entry.is_actionable()
     }
 
     fn transition(
         &mut self,
         aat: &kerx::format1::StateTable,
-        entry: aat::ExtendedStateEntry<kerx::EntryData>,
+        entry: aat::GenericStateEntry<kerx::EntryData>,
         has_cross_stream: bool,
         plan: &ShapePlan,
         buffer: &mut Buffer,
@@ -376,14 +355,14 @@ struct Driver4<'a> {
 
 impl StateTableDriver<kerx::format4::StateTable<'_>, kerx::EntryData> for Driver4<'_> {
     // TODO: remove
-    fn is_actionable(&self, entry: aat::ExtendedStateEntry<kerx::EntryData>) -> bool {
+    fn is_actionable(&self, entry: aat::GenericStateEntry<kerx::EntryData>) -> bool {
         entry.is_actionable()
     }
 
     fn transition(
         &mut self,
         aat: &kerx::format4::StateTable,
-        entry: aat::ExtendedStateEntry<kerx::EntryData>,
+        entry: aat::GenericStateEntry<kerx::EntryData>,
         _has_cross_stream: bool,
         _opt: &ShapePlan,
         buffer: &mut Buffer,
