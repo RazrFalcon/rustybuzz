@@ -1,5 +1,4 @@
-use ttf_parser::GlyphId;
-use ttf_parser::parser::LazyArray16;
+use ttf_parser::{GlyphId, LazyArray16};
 use ttf_parser::opentype_layout::*;
 
 use super::MAX_CONTEXT_LENGTH;
