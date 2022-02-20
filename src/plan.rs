@@ -243,7 +243,7 @@ impl<'a> ShapePlanner<'a> {
         let mut apply_kern = false;
 
         // Decide who does positioning. GPOS, kerx, kern, or fallback.
-        if self.face.kerx.is_some() {
+        if self.face.tables().kerx.is_some() {
             apply_kerx = true;
         } else if !apply_morx && !disable_gpos && self.face.gpos.is_some() {
             apply_gpos = true;
@@ -251,7 +251,7 @@ impl<'a> ShapePlanner<'a> {
 
         if !apply_kerx && (!has_gpos_kern || !apply_gpos) {
             // Apparently Apple applies kerx if GPOS kern was not applied.
-            if self.face.kerx.is_some() {
+            if self.face.tables().kerx.is_some() {
                 apply_kerx = true;
             } else if ot::has_kerning(self.face) {
                 apply_kern = true;

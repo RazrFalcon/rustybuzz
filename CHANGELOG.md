@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
-- `GSUB`, `GPOS`, `ankr`, `feat`, `kern`, `morx` and `trak` tables parsing was moved to `ttf-parser`.
+- `GSUB`, `GPOS`, `ankr`, `feat`, `kern`, `kerx`, `morx` and `trak`
+  tables parsing was moved to `ttf-parser`.
+- `rustybuzz` no longer do any TrueType parsing. Everything is handled by `ttf-parser`.
 
 ### Fixed
 - Multiple issues in AAT Lookup Table parsing.

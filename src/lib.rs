@@ -18,7 +18,6 @@ mod normalize;
 mod shape;
 mod plan;
 mod face;
-mod tables;
 mod tag;
 mod tag_table;
 mod text_parser;

@@ -1,4 +1,4 @@
-use ttf_parser::{aat, kern, GlyphId};
+use ttf_parser::{apple_layout, kern, GlyphId};
 
 use crate::{Face, Mask};
 use crate::buffer::{Buffer, BufferScratchFlags};
@@ -178,13 +178,13 @@ fn apply_state_machine_kerning(
         depth: 0,
     };
 
-    let mut state = aat::state::START_OF_TEXT;
+    let mut state = apple_layout::state::START_OF_TEXT;
     buffer.idx = 0;
     loop {
         let class = if buffer.idx < buffer.len {
             state_table.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
         } else {
-            aat::class::END_OF_TEXT as u8
+            apple_layout::class::END_OF_TEXT as u8
         };
 
         let entry = match state_table.entry(state, class) {
@@ -194,13 +194,13 @@ fn apply_state_machine_kerning(
 
         // Unsafe-to-break before this if not in state 0, as things might
         // go differently if we start from state 0 here.
-        if state != aat::state::START_OF_TEXT &&
+        if state != apple_layout::state::START_OF_TEXT &&
             buffer.backtrack_len() != 0 &&
             buffer.idx < buffer.len
         {
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
             if entry.has_offset() ||
-                !(entry.new_state == aat::state::START_OF_TEXT && !entry.has_advance())
+                !(entry.new_state == apple_layout::state::START_OF_TEXT && !entry.has_advance())
             {
                 buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
@@ -208,7 +208,7 @@ fn apply_state_machine_kerning(
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry = match state_table.entry(state, aat::class::END_OF_TEXT) {
+            let end_entry = match state_table.entry(state, apple_layout::class::END_OF_TEXT) {
                 Some(v) => v,
                 None => break,
             };
@@ -235,10 +235,10 @@ fn apply_state_machine_kerning(
 }
 
 fn state_machine_transition(
-    entry: aat::StateEntry,
+    entry: apple_layout::StateEntry,
     has_cross_stream: bool,
     kern_mask: Mask,
-    state_table: &aat::StateTable,
+    state_table: &apple_layout::StateTable,
     driver: &mut StateMachineDriver,
     buffer: &mut Buffer,
 ) {

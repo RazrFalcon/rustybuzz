@@ -19,11 +19,15 @@ rustybuzz passes 98% of harfbuzz tests (1764 to be more precise).
 So it's mostly identical, but there are still some tiny edge-cases which
 are not implemented yet or cannot be implemented at all.
 
+Also, Apple layout is largely untested, because we cannot include Apple fonts for legal reasons.
+harfbuzz uses macOS CI instances to test it, which is extremely painful
+and we do not do this for now.
+
 ## Major changes
 
 - Subsetting removed.
-- TrueType parsing has been implemented from scratch, mostly on the
-  [ttf-parser](https://github.com/RazrFalcon/ttf-parser) side.
+- TrueType parsing is completely handled by the
+  [ttf-parser](https://github.com/RazrFalcon/ttf-parser).
   And while the parsing algorithm is very different, it's not better or worse, just different.
 - Malformed fonts will cause an error. HarfBuzz uses fallback/dummy shaper in this case.
 - No font size property. Shaping is always using UnitsPerEm. You should scale the result manually.
@@ -49,10 +53,9 @@ rustybuzz is not a faithful port.
 
 harfbuzz can roughly be split into 6 parts: shaping, subsetting, TrueType parsing,
 Unicode routines, custom containers and utilities (harfbuzz doesn't use C++ std)
-and glue for system/3rd party libraries.
-While rustybuzz contains only shaping and some TrueType parsing.
-Most of the TrueType parsing was moved to the [ttf-parser](https://github.com/RazrFalcon/ttf-parser).
-Subseting was removed. Unicode code mostly moved to external crates.
+and glue for system/3rd party libraries. In the mean time, rustybuzz contains only shaping.
+All of the TrueType parsing was moved to the [ttf-parser](https://github.com/RazrFalcon/ttf-parser).
+Subsetting was removed. Unicode code was mostly moved to external crates.
 We don't need custom containers because Rust's std is good enough.
 And we do not use any non Rust libraries, so no glue code either.
 
@@ -70,7 +73,7 @@ tokei --exclude unicode_norm.rs --exclude complex/vowel_constraints.rs \
       --exclude '*_machine.rs' --exclude '*_table.rs' src
 ```
 
-Which gives us around 14 KLOC, which is still a lot.
+Which gives us around 13 KLOC, which is still a lot.
 
 ## Future work
 
@@ -85,7 +88,7 @@ things left to test.
 
 The library is completely safe.
 
-We do have one `unsafe` to cast between two POD structures.
+We do have one `unsafe` to cast between two POD structures, which is perfectly safe.
 But except that, there are no `unsafe` in this library and in most of its dependencies
 (excluding `bytemuck`).
 

@@ -1,29 +1,53 @@
 use core::convert::TryFrom;
 
-use ttf_parser::{aat, ankr};
+use ttf_parser::{apple_layout, ankr, kerx, GlyphId};
 use ttf_parser::parser::FromData;
 
 use crate::Face;
 use crate::buffer::{BufferScratchFlags, Buffer};
 use crate::ot::{attach_type, lookup_flags, ApplyContext, TableIndex};
-use crate::tables::kerx;
 use crate::plan::ShapePlan;
 use crate::ot::matching::SkippyIter;
 
+trait ExtendedStateTableExt<T: FromData + Copy> {
+    fn class(&self, glyph_id: GlyphId) -> Option<u16>;
+    fn entry(&self, state: u16, class: u16) -> Option<apple_layout::GenericStateEntry<T>>;
+}
+
+impl ExtendedStateTableExt<kerx::EntryData> for kerx::Subtable1<'_> {
+    fn class(&self, glyph_id: GlyphId) -> Option<u16> {
+        self.state_table.class(glyph_id)
+    }
+
+    fn entry(&self, state: u16, class: u16) -> Option<apple_layout::GenericStateEntry<kerx::EntryData>> {
+        self.state_table.entry(state, class)
+    }
+}
+
+impl ExtendedStateTableExt<kerx::EntryData> for kerx::Subtable4<'_> {
+    fn class(&self, glyph_id: GlyphId) -> Option<u16> {
+        self.state_table.class(glyph_id)
+    }
+
+    fn entry(&self, state: u16, class: u16) -> Option<apple_layout::GenericStateEntry<kerx::EntryData>> {
+        self.state_table.entry(state, class)
+    }
+}
+
 pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
     let mut seen_cross_stream = false;
-    for (coverage, subtable) in face.kerx? {
-        if coverage.is_variable() {
+    for subtable in face.tables().kerx?.subtables {
+        if subtable.variable {
             continue;
         }
 
-        if buffer.direction.is_horizontal() != coverage.is_horizontal() {
+        if buffer.direction.is_horizontal() != subtable.horizontal {
             continue;
         }
 
         let reverse = buffer.direction.is_backward();
 
-        if !seen_cross_stream && coverage.has_cross_stream() {
+        if !seen_cross_stream && subtable.has_cross_stream {
             seen_cross_stream = true;
 
             // Attach all glyphs into a chain.
@@ -40,44 +64,44 @@ pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Optio
             buffer.reverse();
         }
 
-        match subtable {
-            kerx::Subtable::Format0(ref sub) => {
+        match subtable.format {
+            kerx::Format::Format0(_) => {
                 if !plan.requested_kerning {
                     continue;
                 }
 
-                apply_simple_kerning(coverage, sub, plan, face, buffer);
+                apply_simple_kerning(&subtable, plan, face, buffer);
             }
-            kerx::Subtable::Format1(ref sub) => {
+            kerx::Format::Format1(ref sub) => {
                 let mut driver = Driver1 {
                     stack: [0; 8],
                     depth: 0,
                 };
 
-                apply_state_machine_kerning(coverage, sub, &mut driver, plan, buffer);
+                apply_state_machine_kerning(&subtable, sub, &mut driver, plan, buffer);
             }
-            kerx::Subtable::Format2(ref sub) => {
+            kerx::Format::Format2(_) => {
                 if !plan.requested_kerning {
                     continue;
                 }
 
-                apply_simple_kerning(coverage, sub, plan, face, buffer);
+                apply_simple_kerning(&subtable, plan, face, buffer);
             }
-            kerx::Subtable::Format4(ref sub) => {
+            kerx::Format::Format4(ref sub) => {
                 let mut driver = Driver4 {
                     mark_set: false,
                     mark: 0,
                     ankr_table: face.tables().ankr.clone(),
                 };
 
-                apply_state_machine_kerning(coverage, sub, &mut driver, plan, buffer);
+                apply_state_machine_kerning(&subtable, sub, &mut driver, plan, buffer);
             }
-            kerx::Subtable::Format6(ref sub) => {
+            kerx::Format::Format6(_) => {
                 if !plan.requested_kerning {
                     continue;
                 }
 
-                apply_simple_kerning(coverage, sub, plan, face, buffer);
+                apply_simple_kerning(&subtable, plan, face, buffer);
             }
         }
 
@@ -90,8 +114,7 @@ pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Optio
 }
 
 fn apply_simple_kerning(
-    coverage: kerx::Coverage,
-    subtable: &dyn kerx::KerningPairs,
+    subtable: &kerx::Subtable,
     plan: &ShapePlan,
     face: &Face,
     buffer: &mut Buffer,
@@ -124,7 +147,7 @@ fn apply_simple_kerning(
         let pos = &mut ctx.buffer.pos;
         if kern != 0 {
             if horizontal {
-                if coverage.has_cross_stream() {
+                if subtable.has_cross_stream {
                     pos[j].y_offset = kern;
                     ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
                 } else {
@@ -135,7 +158,7 @@ fn apply_simple_kerning(
                     pos[j].x_offset += kern2;
                 }
             } else {
-                if coverage.has_cross_stream() {
+                if subtable.has_cross_stream {
                     pos[j].x_offset = kern;
                     ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
                 } else {
@@ -161,32 +184,32 @@ trait KerxEntryDataExt {
     fn is_actionable(&self) -> bool;
 }
 
-impl KerxEntryDataExt for aat::GenericStateEntry<kerx::EntryData> {
+impl KerxEntryDataExt for apple_layout::GenericStateEntry<kerx::EntryData> {
     fn action_index(self) -> u16 { self.extra.action_index }
     fn is_actionable(&self) -> bool { self.extra.action_index != 0xFFFF }
 }
 
 fn apply_state_machine_kerning<T, E>(
-    coverage: kerx::Coverage,
-    aat: &T,
+    subtable: &kerx::Subtable,
+    state_table: &T,
     driver: &mut dyn StateTableDriver<T, E>,
     plan: &ShapePlan,
     buffer: &mut Buffer,
 )
-where T: kerx::StateTableExt<E>,
+where T: ExtendedStateTableExt<E>,
       E: FromData + Copy,
-      aat::GenericStateEntry<E>: KerxEntryDataExt
+      apple_layout::GenericStateEntry<E>: KerxEntryDataExt
 {
     let mut state = START_OF_TEXT;
     buffer.idx = 0;
     loop {
         let class = if buffer.idx < buffer.len {
-            aat.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
+            state_table.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
         } else {
-            u16::from(aat::class::END_OF_TEXT)
+            u16::from(apple_layout::class::END_OF_TEXT)
         };
 
-        let entry: aat::GenericStateEntry<E> = match aat.entry(state, class) {
+        let entry: apple_layout::GenericStateEntry<E> = match state_table.entry(state, class) {
             Some(v) => v,
             None => break,
         };
@@ -207,7 +230,9 @@ where T: kerx::StateTableExt<E>,
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry: aat::GenericStateEntry<E> = match aat.entry(state, u16::from(aat::class::END_OF_TEXT)) {
+            let end_entry: Option<apple_layout::GenericStateEntry<E>>
+                = state_table.entry(state, u16::from(apple_layout::class::END_OF_TEXT));
+            let end_entry = match end_entry {
                 Some(v) => v,
                 None => break,
             };
@@ -217,7 +242,7 @@ where T: kerx::StateTableExt<E>,
             }
         }
 
-        let _ = driver.transition(aat, entry, coverage.has_cross_stream(), plan, buffer);
+        let _ = driver.transition(state_table, entry, subtable.has_cross_stream, subtable.tuple_count, plan, buffer);
 
         state = entry.new_state;
 
@@ -234,9 +259,9 @@ where T: kerx::StateTableExt<E>,
 
 
 trait StateTableDriver<Table, E: FromData> {
-    fn is_actionable(&self, entry: aat::GenericStateEntry<E>) -> bool;
-    fn transition(&mut self, aat: &Table, entry: aat::GenericStateEntry<E>,
-                  has_cross_stream: bool, plan: &ShapePlan, buffer: &mut Buffer) -> Option<()>;
+    fn is_actionable(&self, entry: apple_layout::GenericStateEntry<E>) -> bool;
+    fn transition(&mut self, aat: &Table, entry: apple_layout::GenericStateEntry<E>,
+                  has_cross_stream: bool, tuple_count: u32, plan: &ShapePlan, buffer: &mut Buffer) -> Option<()>;
 }
 
 
@@ -245,16 +270,17 @@ struct Driver1 {
     depth: usize,
 }
 
-impl StateTableDriver<kerx::format1::StateTable<'_>, kerx::EntryData> for Driver1 {
-    fn is_actionable(&self, entry: aat::GenericStateEntry<kerx::EntryData>) -> bool {
+impl StateTableDriver<kerx::Subtable1<'_>, kerx::EntryData> for Driver1 {
+    fn is_actionable(&self, entry: apple_layout::GenericStateEntry<kerx::EntryData>) -> bool {
         entry.is_actionable()
     }
 
     fn transition(
         &mut self,
-        aat: &kerx::format1::StateTable,
-        entry: aat::GenericStateEntry<kerx::EntryData>,
+        aat: &kerx::Subtable1,
+        entry: apple_layout::GenericStateEntry<kerx::EntryData>,
         has_cross_stream: bool,
+        tuple_count: u32,
         plan: &ShapePlan,
         buffer: &mut Buffer,
     ) -> Option<()> {
@@ -272,7 +298,7 @@ impl StateTableDriver<kerx::format1::StateTable<'_>, kerx::EntryData> for Driver
         }
 
         if entry.is_actionable() && self.depth != 0 {
-            let tuple_count = u16::try_from(aat.tuple_count.max(1)).ok()?;
+            let tuple_count = u16::try_from(tuple_count.max(1)).ok()?;
 
             let mut action_index = entry.action_index();
 
@@ -283,7 +309,7 @@ impl StateTableDriver<kerx::format1::StateTable<'_>, kerx::EntryData> for Driver
             while !last && self.depth != 0 {
                 self.depth -= 1;
                 let idx = self.stack[self.depth];
-                let mut v = aat.kerning(action_index)? as i32;
+                let mut v = aat.glyphs_kerning(action_index)? as i32;
                 action_index = action_index.checked_add(tuple_count)?;
                 if idx >= buffer.len {
                     continue;
@@ -353,66 +379,40 @@ struct Driver4<'a> {
     ankr_table: Option<ankr::Table<'a>>,
 }
 
-impl StateTableDriver<kerx::format4::StateTable<'_>, kerx::EntryData> for Driver4<'_> {
+impl StateTableDriver<kerx::Subtable4<'_>, kerx::EntryData> for Driver4<'_> {
     // TODO: remove
-    fn is_actionable(&self, entry: aat::GenericStateEntry<kerx::EntryData>) -> bool {
+    fn is_actionable(&self, entry: apple_layout::GenericStateEntry<kerx::EntryData>) -> bool {
         entry.is_actionable()
     }
 
     fn transition(
         &mut self,
-        aat: &kerx::format4::StateTable,
-        entry: aat::GenericStateEntry<kerx::EntryData>,
+        aat: &kerx::Subtable4,
+        entry: apple_layout::GenericStateEntry<kerx::EntryData>,
         _has_cross_stream: bool,
+        _tuple_count: u32,
         _opt: &ShapePlan,
         buffer: &mut Buffer,
     ) -> Option<()> {
-        use ttf_parser::parser::Stream;
-
         if self.mark_set && entry.is_actionable() && buffer.idx < buffer.len {
-            let points_data_offset = usize::from(entry.action_index()) * u16::SIZE;
-            let mut s = Stream::new_at(aat.control_points_data, points_data_offset)?;
+            if let Some(ref ankr_table) = self.ankr_table {
+                let point = aat.anchor_points.get(entry.action_index())?;
 
-            // Note: I wasn't able to find any fonts that actually use
-            // ControlPointActions and ControlPointCoordinateActions.
-            // So they are commented out for now.
-            match aat.action_type {
-                kerx::format4::ActionType::ControlPointActions => {
-                    // let mark_control_point: u16 = s.read()?;
-                    // let curr_control_point: u16 = s.read()?;
-                }
-                kerx::format4::ActionType::AnchorPointActions => {
-                    if let Some(ref ankr_table) = self.ankr_table {
-                        let mark_anchor_point: u16 = s.read()?;
-                        let curr_anchor_point: u16 = s.read()?;
+                let mark_idx = buffer.info[self.mark].as_glyph();
+                let mark_anchor = ankr_table
+                    .points(mark_idx)
+                    .and_then(|list| list.get(u32::from(point.0)))
+                    .unwrap_or_default();
 
-                        let mark_idx = buffer.info[self.mark].as_glyph();
-                        let mark_anchor = ankr_table
-                            .points(mark_idx)
-                            .and_then(|list| list.get(u32::from(mark_anchor_point)))
-                            .unwrap_or_default();
+                let curr_idx = buffer.cur(0).as_glyph();
+                let curr_anchor = ankr_table
+                    .points(curr_idx)
+                    .and_then(|list| list.get(u32::from(point.1)))
+                    .unwrap_or_default();
 
-                        let curr_idx = buffer.cur(0).as_glyph();
-                        let curr_anchor = ankr_table
-                            .points(curr_idx)
-                            .and_then(|list| list.get(u32::from(curr_anchor_point)))
-                            .unwrap_or_default();
-
-                        let pos = buffer.cur_pos_mut();
-                        pos.x_offset = i32::from(mark_anchor.x - curr_anchor.x);
-                        pos.y_offset = i32::from(mark_anchor.y - curr_anchor.y);
-                    }
-                }
-                kerx::format4::ActionType::ControlPointCoordinateActions => {
-                    // let mark_x: i16 = s.read()?;
-                    // let mark_y: i16 = s.read()?;
-                    // let curr_x: i16 = s.read()?;
-                    // let curr_y: i16 = s.read()?;
-                    //
-                    // let pos = buffer.cur_pos_mut();
-                    // pos.x_offset = mark_x - curr_x;
-                    // pos.y_offset = mark_y - curr_y;
-                }
+                let pos = buffer.cur_pos_mut();
+                pos.x_offset = i32::from(mark_anchor.x - curr_anchor.x);
+                pos.y_offset = i32::from(mark_anchor.y - curr_anchor.y);
             }
 
             buffer.cur_pos_mut().set_attach_type(attach_type::MARK);

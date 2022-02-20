@@ -1,4 +1,4 @@
-use ttf_parser::{aat, morx, GlyphId};
+use ttf_parser::{apple_layout, morx, GlyphId};
 use ttf_parser::parser::{FromData, LazyArray32};
 
 use crate::{Face, GlyphInfo};
@@ -104,14 +104,14 @@ pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
 
 trait Driver<T: FromData> {
     fn in_place(&self) -> bool;
-    fn can_advance(&self, entry: &aat::GenericStateEntry<T>) -> bool;
-    fn is_actionable(&self, entry: &aat::GenericStateEntry<T>, buffer: &Buffer) -> bool;
-    fn transition(&mut self, entry: &aat::GenericStateEntry<T>, buffer: &mut Buffer) -> Option<()>;
+    fn can_advance(&self, entry: &apple_layout::GenericStateEntry<T>) -> bool;
+    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<T>, buffer: &Buffer) -> bool;
+    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<T>, buffer: &mut Buffer) -> Option<()>;
 }
 
 const START_OF_TEXT: u16 = 0;
 
-fn drive<T: FromData>(machine: &aat::ExtendedStateTable<T>, c: &mut dyn Driver<T>, buffer: &mut Buffer) {
+fn drive<T: FromData>(machine: &apple_layout::ExtendedStateTable<T>, c: &mut dyn Driver<T>, buffer: &mut Buffer) {
     if !c.in_place() {
         buffer.clear_output();
     }
@@ -122,10 +122,10 @@ fn drive<T: FromData>(machine: &aat::ExtendedStateTable<T>, c: &mut dyn Driver<T
         let class = if buffer.idx < buffer.len {
             machine.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
         } else {
-            u16::from(aat::class::END_OF_TEXT)
+            u16::from(apple_layout::class::END_OF_TEXT)
         };
 
-        let entry: aat::GenericStateEntry<T> = match machine.entry(state, class) {
+        let entry: apple_layout::GenericStateEntry<T> = match machine.entry(state, class) {
             Some(v) => v,
             None => break,
         };
@@ -146,7 +146,7 @@ fn drive<T: FromData>(machine: &aat::ExtendedStateTable<T>, c: &mut dyn Driver<T
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry: aat::GenericStateEntry<T> = match machine.entry(state, u16::from(aat::class::END_OF_TEXT)) {
+            let end_entry: apple_layout::GenericStateEntry<T> = match machine.entry(state, u16::from(apple_layout::class::END_OF_TEXT)) {
                 Some(v) => v,
                 None => break,
             };
@@ -247,15 +247,15 @@ impl Driver<()> for RearrangementCtx {
         true
     }
 
-    fn can_advance(&self, entry: &aat::GenericStateEntry<()>) -> bool {
+    fn can_advance(&self, entry: &apple_layout::GenericStateEntry<()>) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &aat::GenericStateEntry<()>, _: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<()>, _: &Buffer) -> bool {
         entry.flags & Self::VERB != 0 && self.start < self.end
     }
 
-    fn transition(&mut self, entry: &aat::GenericStateEntry<()>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<()>, buffer: &mut Buffer) -> Option<()> {
         let flags = entry.flags;
 
         if flags & Self::MARK_FIRST != 0 {
@@ -359,11 +359,11 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
         true
     }
 
-    fn can_advance(&self, entry: &aat::GenericStateEntry<morx::ContextualEntryData>) -> bool {
+    fn can_advance(&self, entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &aat::GenericStateEntry<morx::ContextualEntryData>, buffer: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>, buffer: &Buffer) -> bool {
         if buffer.idx == buffer.len && !self.mark_set {
             return false;
         }
@@ -371,7 +371,7 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
         return entry.extra.mark_index != 0xFFFF || entry.extra.current_index != 0xFFFF;
     }
 
-    fn transition(&mut self, entry: &aat::GenericStateEntry<morx::ContextualEntryData>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>, buffer: &mut Buffer) -> Option<()> {
         // Looks like CoreText applies neither mark nor current substitution for
         // end-of-text if mark was not explicitly set.
         if buffer.idx == buffer.len && !self.mark_set {
@@ -429,16 +429,16 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
         false
     }
 
-    fn can_advance(&self, entry: &aat::GenericStateEntry<morx::InsertionEntryData>) -> bool {
+    fn can_advance(&self, entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &aat::GenericStateEntry<morx::InsertionEntryData>, _: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>, _: &Buffer) -> bool {
         (entry.flags & (Self::CURRENT_INSERT_COUNT | Self::MARKED_INSERT_COUNT) != 0) &&
             (entry.extra.current_insert_index != 0xFFFF || entry.extra.marked_insert_index != 0xFFFF)
     }
 
-    fn transition(&mut self, entry: &aat::GenericStateEntry<morx::InsertionEntryData>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>, buffer: &mut Buffer) -> Option<()> {
         let flags = entry.flags;
         let mark_loc = buffer.out_len;
 
@@ -549,15 +549,15 @@ impl Driver<u16> for LigatureCtx<'_> {
         false
     }
 
-    fn can_advance(&self, entry: &aat::GenericStateEntry<u16>) -> bool {
+    fn can_advance(&self, entry: &apple_layout::GenericStateEntry<u16>) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &aat::GenericStateEntry<u16>, _: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<u16>, _: &Buffer) -> bool {
         entry.flags & Self::PERFORM_ACTION != 0
     }
 
-    fn transition(&mut self, entry: &aat::GenericStateEntry<u16>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<u16>, buffer: &mut Buffer) -> Option<()> {
         if entry.flags & Self::SET_COMPONENT != 0 {
             // Never mark same index twice, in case DONT_ADVANCE was used...
             if self.match_length != 0 &&
