@@ -617,7 +617,7 @@ impl DeviceExt for Device<'_> {
             Device::Variation(variation) => {
                 face.tables().gdef?
                     .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
-                    .and_then(|float| i32::try_num_from(float.round()))
+                    .and_then(|float| i32::try_num_from(crate::round(float)))
             }
         }
     }
@@ -628,7 +628,7 @@ impl DeviceExt for Device<'_> {
             Device::Variation(variation) => {
                 face.tables().gdef?
                     .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
-                    .and_then(|float| i32::try_num_from(float.round()))
+                    .and_then(|float| i32::try_num_from(crate::round(float)))
             }
         }
     }
