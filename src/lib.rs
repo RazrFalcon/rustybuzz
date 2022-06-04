@@ -5,6 +5,12 @@ A complete [harfbuzz](https://github.com/harfbuzz/harfbuzz) shaping algorithm po
 #![no_std]
 #![warn(missing_docs)]
 
+#[cfg(not(any(feature = "std", feature = "libm")))]
+compile_error!("You have to activate either the `std` or the `libm` feature.");
+
+#[cfg(feature = "std")]
+extern crate std;
+
 extern crate alloc;
 
 #[macro_use]
@@ -36,3 +42,14 @@ pub use crate::face::Face;
 pub use crate::shape::shape;
 
 type Mask = u32;
+
+fn round(x: f32) -> f32 {
+    #[cfg(feature = "std")]
+    {
+        x.round()
+    }
+    #[cfg(not(feature = "std"))]
+    {
+        libm::roundf(x)
+    }
+}

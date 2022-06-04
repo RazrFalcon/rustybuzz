@@ -78,7 +78,7 @@ impl TrackTableDataExt for ttf_parser::trak::TrackData<'_> {
             idx -= 1;
         }
 
-        self.interpolate_at(idx as u16, ptem, &track).map(|n| n.round() as i32)
+        self.interpolate_at(idx as u16, ptem, &track).map(|n| crate::round(n) as i32)
     }
 
     fn interpolate_at(

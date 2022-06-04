@@ -237,10 +237,10 @@ impl<'a> Face<'a> {
             if img.format == ttf_parser::RasterImageFormat::PNG {
                 let scale = self.units_per_em as f32 / img.pixels_per_em as f32;
                 return Some(GlyphExtents {
-                    x_bearing: (f32::from(img.x) * scale).round() as i32,
-                    y_bearing: ((f32::from(img.y) + f32::from(img.height)) * scale).round() as i32,
-                    width: (f32::from(img.width) * scale).round() as i32,
-                    height: (-f32::from(img.height) * scale).round() as i32,
+                    x_bearing: crate::round(f32::from(img.x) * scale) as i32,
+                    y_bearing: crate::round((f32::from(img.y) + f32::from(img.height)) * scale) as i32,
+                    width: crate::round(f32::from(img.width) * scale) as i32,
+                    height: crate::round(-f32::from(img.height) * scale) as i32,
                 });
             }
         }
