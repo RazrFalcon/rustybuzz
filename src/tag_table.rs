@@ -1072,7 +1072,7 @@ fn lang_matches(language: &str, spec: &str) -> bool {
 fn strncmp(s1: &str, s2: &str, n: usize) -> bool {
     let n1 = core::cmp::min(n, s1.len());
     let n2 = core::cmp::min(n, s2.len());
-    &s1[..n1] == &s2[..n2]
+    s1[..n1] == s2[..n2]
 }
 
 /// Converts a multi-subtag BCP 47 language tag to language tags.

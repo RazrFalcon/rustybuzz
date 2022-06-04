@@ -72,7 +72,7 @@ pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 continue;
             }
 
-            apply_simple_kerning(&subtable, &face, plan.kern_mask, buffer);
+            apply_simple_kerning(&subtable, face, plan.kern_mask, buffer);
         }
 
         if reverse {
@@ -154,7 +154,7 @@ fn apply_simple_kerning(
 ) {
     machine_kern(face, buffer, kern_mask, subtable.has_cross_stream, |left, right| {
         subtable.glyphs_kerning(GlyphId(left as u16), GlyphId(right as u16))
-            .map(|v| i32::from(v)).unwrap_or(0)
+            .map(i32::from).unwrap_or(0)
     });
 }
 
@@ -219,7 +219,7 @@ fn apply_state_machine_kerning(
         }
 
         state_machine_transition(entry, subtable.has_cross_stream, kern_mask,
-                                 &state_table, &mut driver, buffer);
+                                 state_table, &mut driver, buffer);
 
         state = state_table.new_state(entry.new_state);
 

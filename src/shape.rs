@@ -101,7 +101,7 @@ fn substitute_post(ctx: &mut ShapeContext) {
     }
 
     if let Some(func) = ctx.plan.shaper.postprocess_glyphs {
-        func(&ctx.plan, ctx.face, ctx.buffer);
+        func(ctx.plan, ctx.face, ctx.buffer);
     }
 }
 

@@ -17,7 +17,7 @@ use super::*;
 pub const INDIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
     override_features: Some(override_features),
-    create_data: Some(|plan| Box::new(IndicShapePlan::new(&plan))),
+    create_data: Some(|plan| Box::new(IndicShapePlan::new(plan))),
     preprocess_text: Some(preprocess_text),
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
@@ -687,7 +687,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     let indic_plan = plan.data::<IndicShapePlan>();
 
-    update_consonant_positions(plan, &indic_plan, face, buffer);
+    update_consonant_positions(plan, indic_plan, face, buffer);
     insert_dotted_circles(face, buffer);
 
     let mut start = 0;
@@ -882,9 +882,7 @@ fn initial_reordering_consonant_syllable(
         buffer.info[start + 2].is_one_of(category_flag(category::ZWJ))
     {
         buffer.merge_clusters(start + 1, start + 3);
-        let tmp = buffer.info[start + 1];
-        buffer.info[start + 1] = buffer.info[start + 2];
-        buffer.info[start + 2] = tmp;
+        buffer.info.swap(start + 1, start + 2);
     }
 
     // 1. Find base consonant:
@@ -1315,7 +1313,7 @@ fn initial_reordering_consonant_syllable(
         // in that sequence.
         //
         // Test case: U+0924,U+094D,U+0930,U+094d,U+200D,U+0915
-        for i in start..base.checked_sub(1).unwrap_or(0) {
+        for i in start..base.saturating_sub(1) {
             if buffer.info[i].indic_category() == category::RA &&
                 buffer.info[i + 1].indic_category() == category::H &&
                 (i + 2 == base || buffer.info[i + 2].indic_category() != category::ZWJ)
@@ -1398,7 +1396,7 @@ fn final_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
-        final_reordering_impl(&indic_plan, virama_glyph, start, end, buffer);
+        final_reordering_impl(indic_plan, virama_glyph, start, end, buffer);
         start = end;
         end = buffer.next_syllable(start);
     }

@@ -119,12 +119,12 @@ pub fn position_marks(
     let len = buffer.len;
     for i in 1..len {
         if !buffer.info[i].is_unicode_mark() {
-            position_cluster(&plan, face, buffer, start, i, adjust_offsets_when_zeroing);
+            position_cluster(plan, face, buffer, start, i, adjust_offsets_when_zeroing);
             start = i;
         }
     }
 
-    position_cluster(&plan, face, buffer, start, len, adjust_offsets_when_zeroing);
+    position_cluster(plan, face, buffer, start, len, adjust_offsets_when_zeroing);
 }
 
 fn position_cluster(
@@ -247,7 +247,7 @@ fn position_around_base(
             }
 
             position_mark(
-                &plan,
+                plan,
                 face,
                 buffer.direction,
                 info.as_glyph(),

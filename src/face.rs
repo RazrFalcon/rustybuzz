@@ -303,15 +303,15 @@ fn find_best_cmap_subtable(face: &ttf_parser::Face) -> Option<u16> {
     // https://github.com/harfbuzz/harfbuzz/issues/1918
     find_cmap_subtable(face, PlatformId::Windows, WINDOWS_SYMBOL_ENCODING)
         // 32-bit subtables:
-        .or(find_cmap_subtable(face, PlatformId::Windows, WINDOWS_UNICODE_FULL_ENCODING))
-        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_FULL_ENCODING))
-        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_2_0_FULL_ENCODING))
+        .or_else(|| find_cmap_subtable(face, PlatformId::Windows, WINDOWS_UNICODE_FULL_ENCODING))
+        .or_else(|| find_cmap_subtable(face, PlatformId::Unicode, UNICODE_FULL_ENCODING))
+        .or_else(|| find_cmap_subtable(face, PlatformId::Unicode, UNICODE_2_0_FULL_ENCODING))
         // 16-bit subtables:
-        .or(find_cmap_subtable(face, PlatformId::Windows, WINDOWS_UNICODE_BMP_ENCODING))
-        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_2_0_BMP_ENCODING))
-        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_ISO_ENCODING))
-        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_1_1_ENCODING))
-        .or(find_cmap_subtable(face, PlatformId::Unicode, UNICODE_1_0_ENCODING))
+        .or_else(|| find_cmap_subtable(face, PlatformId::Windows, WINDOWS_UNICODE_BMP_ENCODING))
+        .or_else(|| find_cmap_subtable(face, PlatformId::Unicode, UNICODE_2_0_BMP_ENCODING))
+        .or_else(|| find_cmap_subtable(face, PlatformId::Unicode, UNICODE_ISO_ENCODING))
+        .or_else(|| find_cmap_subtable(face, PlatformId::Unicode, UNICODE_1_1_ENCODING))
+        .or_else(|| find_cmap_subtable(face, PlatformId::Unicode, UNICODE_1_0_ENCODING))
 }
 
 fn find_cmap_subtable(

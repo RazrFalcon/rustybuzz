@@ -72,12 +72,12 @@ pub fn match_input(
 
     positions[0] = ctx.buffer.idx;
 
-    for i in 1..count {
+    for position in &mut positions[1..count] {
         if !iter.next() {
             return None;
         }
 
-        positions[i] = iter.index();
+        *position = iter.index();
 
         let this = ctx.buffer.info[iter.index()];
         let this_lig_id = this.lig_id();

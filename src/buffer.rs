@@ -1328,8 +1328,8 @@ impl Buffer {
     }
 
     fn _unsafe_to_break_find_min_cluster(info: &[GlyphInfo], start: usize, end: usize, mut cluster: u32) -> u32 {
-        for i in start..end {
-            cluster = core::cmp::min(cluster, info[i].cluster);
+        for glyph_info in &info[start..end] {
+            cluster = core::cmp::min(cluster, glyph_info.cluster);
         }
 
         cluster
@@ -1337,10 +1337,10 @@ impl Buffer {
 
     fn _unsafe_to_break_set_mask(info: &mut [GlyphInfo], start: usize, end: usize, cluster: u32) -> bool {
         let mut unsafe_to_break = false;
-        for i in start..end {
-            if info[i].cluster != cluster {
+        for glyph_info in &mut info[start..end] {
+            if glyph_info.cluster != cluster {
                 unsafe_to_break = true;
-                info[i].mask |= glyph_flag::UNSAFE_TO_BREAK;
+                glyph_info.mask |= glyph_flag::UNSAFE_TO_BREAK;
             }
         }
 

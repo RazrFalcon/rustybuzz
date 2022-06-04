@@ -295,14 +295,14 @@ impl Driver<()> for RearrangementCtx {
             let reverse_l = 3 == (m >> 4);
             let reverse_r = 3 == (m & 0x0F);
 
-            if self.end - self.start >= usize::from(l + r) {
+            if self.end - self.start >= l + r {
                 buffer.merge_clusters(self.start, (buffer.idx + 1).min(buffer.len));
                 buffer.merge_clusters(self.start, self.end);
 
                 let mut buf = [GlyphInfo::default(); 4];
 
-                for i in 0..l {
-                    buf[i] = buffer.info[self.start + i];
+                for (i, glyph_info) in buf[..l].iter_mut().enumerate() {
+                    *glyph_info = buffer.info[self.start + i];
                 }
 
                 for i in 0..r {
@@ -367,7 +367,7 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
             return false;
         }
 
-        return entry.extra.mark_index != 0xFFFF || entry.extra.current_index != 0xFFFF;
+        entry.extra.mark_index != 0xFFFF || entry.extra.current_index != 0xFFFF
     }
 
     fn transition(&mut self, entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>, buffer: &mut Buffer) -> Option<()> {

@@ -561,7 +561,7 @@ impl core::str::FromStr for Feature {
 
             // Parse postfix.
             let had_equal = p.consume_byte(b'=').is_some();
-            let value1 = p.consume_i32().or(p.consume_bool().map(|b| b as i32));
+            let value1 = p.consume_i32().or_else(|| p.consume_bool().map(|b| b as i32));
 
             if had_equal && value1.is_none() {
                 return None;

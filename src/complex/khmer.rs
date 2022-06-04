@@ -12,7 +12,7 @@ use super::*;
 pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
     override_features: Some(override_features),
-    create_data: Some(|plan| Box::new(KhmerShapePlan::new(&plan))),
+    create_data: Some(|plan| Box::new(KhmerShapePlan::new(plan))),
     preprocess_text: None,
     postprocess_glyphs: None,
     normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
