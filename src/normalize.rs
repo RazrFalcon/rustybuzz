@@ -181,7 +181,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 buffer.sort(i, end, |a, b| a.modified_combining_class() > b.modified_combining_class());
 
                 if let Some(reorder_marks) = ctx.plan.shaper.reorder_marks {
-                    reorder_marks(&ctx.plan, buffer, i, end);
+                    reorder_marks(ctx.plan, buffer, i, end);
                 }
             }
 

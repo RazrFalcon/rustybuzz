@@ -185,7 +185,7 @@ pub fn apply_layout_table<T: LayoutTable>(
 ) {
     let mut ctx = ApplyContext::new(T::INDEX, face, buffer);
 
-    for (stage_index, stage) in plan.ot_map.stages(T::INDEX).into_iter().enumerate() {
+    for (stage_index, stage) in plan.ot_map.stages(T::INDEX).iter().enumerate() {
         for lookup in plan.ot_map.stage_lookups(T::INDEX, stage_index) {
             ctx.lookup_index = lookup.index;
             ctx.lookup_mask = lookup.mask;

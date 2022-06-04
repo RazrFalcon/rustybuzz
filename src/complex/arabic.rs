@@ -249,15 +249,15 @@ fn record_stch(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     let info = &mut buffer.info;
     let mut has_stch = false;
-    for i in 0..len {
-        if info[i].is_multiplied() {
-            let comp = if info[i].lig_comp() % 2 != 0 {
+    for glyph_info in &mut info[..len] {
+        if glyph_info.is_multiplied() {
+            let comp = if glyph_info.lig_comp() % 2 != 0 {
                 action::STRETCHING_REPEATING
             } else {
                 action::STRETCHING_FIXED
             };
 
-            info[i].set_arabic_shaping_action(comp);
+            glyph_info.set_arabic_shaping_action(comp);
             has_stch = true;
         }
     }
@@ -563,17 +563,13 @@ fn reorder_marks(_: &ShapePlan, buffer: &mut Buffer, mut start: usize, end: usiz
         debug_assert!(j - i <= MAX_COMBINING_MARKS);
         buffer.merge_clusters(start, j);
 
-        for k in 0..j-i {
-            temp[k] = buffer.info[k + i];
-        }
+        temp[..j - i].copy_from_slice(&buffer.info[i..j]);
 
         for k in (0..i-start).rev() {
             buffer.info[k + start + j - i] = buffer.info[k + start];
         }
 
-        for k in 0..j-i {
-            buffer.info[k + start] = temp[k];
-        }
+        buffer.info[start..][..j - i].copy_from_slice(&temp[..j - i]);
 
         // Renumber CC such that the reordered sequence is still sorted.
         // 22 and 26 are chosen because they are smaller than all Arabic categories,
