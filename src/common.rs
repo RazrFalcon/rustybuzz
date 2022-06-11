@@ -203,7 +203,7 @@ impl core::str::FromStr for Language {
 // The only difference is that `Script` cannot be set to `HB_SCRIPT_INVALID`.
 /// A text script.
 #[allow(missing_docs)]
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct Script(pub(crate) Tag);
 
 impl Script {
