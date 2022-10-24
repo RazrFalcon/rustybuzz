@@ -69,7 +69,7 @@ impl<'a> Face<'a> {
     ///
     /// Data will be referenced, not owned.
     pub fn from_slice(data: &'a [u8], face_index: u32) -> Option<Self> {
-        let face = ttf_parser::Face::from_slice(data, face_index).ok()?;
+        let face = ttf_parser::Face::parse(data, face_index).ok()?;
         Self::from_face(face)
     }
 

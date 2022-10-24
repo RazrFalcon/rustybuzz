@@ -1,6 +1,6 @@
 [package]
 name = "rustybuzz"
-version = "0.5.3"
+version = "0.6.0"
 authors = ["Evgeniy Reizner <razrfalcon@gmail.com>"]
 edition = "2018"
 description = "A complete harfbuzz shaping algorithm port to Rust."
@@ -16,7 +16,7 @@ exclude = ["benches/", "tests/"]
 bitflags = "1.2"
 bytemuck = { version = "1.5", features = ["extern_crate_alloc"] }
 smallvec = "1.6"
-ttf-parser = { version = "0.15", default-features = false, features = [
+ttf-parser = { version = "0.17", default-features = false, features = [
     "opentype-layout",
     "apple-layout",
     "variable-fonts",

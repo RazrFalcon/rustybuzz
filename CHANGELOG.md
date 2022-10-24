@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2022-10-24
+### Added
+- `ttf-parser` is reexported now.
+
+### Changed
+- Bump `ttf-parser`.
+
 ## [0.5.3] - 2022-10-24
 ### Changed
 - Revert 0.5.2 because it was a breaking change.
@@ -117,7 +124,8 @@ At this point, this is just a simple Rust bindings to a stripped down harfbuzz.
   Embedded harfbuzz relies only on internal TrueType implementation.
 - Most of the non-shaping harfbuzz API.
 
-[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.5.3...HEAD
+[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.5.3...v0.6.0
 [0.5.3]: https://github.com/RazrFalcon/rustybuzz/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/RazrFalcon/rustybuzz/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/RazrFalcon/rustybuzz/compare/v0.5.0...v0.5.1
