@@ -31,8 +31,6 @@ mod unicode_norm;
 mod complex;
 mod ot;
 
-pub use ttf_parser;
-
 pub use ttf_parser::Tag;
 
 pub use crate::buffer::{
