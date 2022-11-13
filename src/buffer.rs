@@ -1569,6 +1569,13 @@ impl UnicodeBuffer {
         self.0.push_str(str);
     }
 
+    /// Appends a character to a buffer with the given cluster value.
+    #[inline]
+    pub fn add(&mut self, codepoint: char, cluster: u32) {
+        self.0.add(codepoint as u32, cluster);
+        self.0.context_len[1] = 0;
+    }
+
     /// Set the text direction of the `Buffer`'s contents.
     #[inline]
     pub fn set_direction(&mut self, direction: Direction) {
