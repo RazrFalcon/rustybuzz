@@ -40,8 +40,6 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
         ned: parser.contains("--ned"),
     };
 
-    parser.finish()?;
-
     Ok(args)
 }
 

@@ -88,7 +88,7 @@ fn parse_args() -> Result<Args, pico_args::Error> {
         show_extents: args.contains("--show-extents"),
         show_flags: args.contains("--show-flags"),
         ned: args.contains("--ned"),
-        free: args.free()?,
+        free: args.finish().iter().map(|s| s.to_string_lossy().to_string()).collect(),
     };
 
     Ok(args)

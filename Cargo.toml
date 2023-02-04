@@ -16,22 +16,26 @@ exclude = ["benches/", "tests/"]
 bitflags = "1.2"
 bytemuck = { version = "1.5", features = ["extern_crate_alloc"] }
 smallvec = "1.6"
-ttf-parser = { version = "0.17", default-features = false, features = [
-    "opentype-layout",
-    "apple-layout",
-    "variable-fonts",
-    "glyph-names",
-] }
 unicode-bidi-mirroring = "0.1"
 unicode-ccc = "0.1.2"
 unicode-general-category = "0.6"
 unicode-script = "0.5.2"
 libm = { version = "0.2.2", optional = true }
 
+[dependencies.ttf-parser]
+version = "0.18"
+default-features = false
+features = [
+    "opentype-layout",
+    "apple-layout",
+    "variable-fonts",
+    "glyph-names",
+]
+
 [features]
 default = ["std"]
 std = []
 
 [dev-dependencies]
-pico-args = "0.3"
+pico-args = { version = "0.5", features = ["eq-separator"] }
 libc = "0.2"
