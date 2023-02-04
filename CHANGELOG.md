@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Bump `ttf-parser`.
+- `Face::from_face` no longer returns `Option`.
 
 ## [0.6.0] - 2022-10-24
 ### Added
