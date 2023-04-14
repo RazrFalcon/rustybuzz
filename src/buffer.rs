@@ -99,7 +99,9 @@ pub struct GlyphInfo {
     /// Guarantee to be <= `u16::MAX`.
     pub glyph_id: u32,
     pub(crate) mask: Mask,
-    /// An original cluster index.
+    /// An index to the start of the grapheme cluster in the original string.
+    ///
+    /// [Read more on clusters](https://harfbuzz.github.io/clusters.html).
     pub cluster: u32,
     pub(crate) var1: u32,
     pub(crate) var2: u32,
