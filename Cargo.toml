@@ -25,16 +25,14 @@ libm = { version = "0.2.2", optional = true }
 [dependencies.ttf-parser]
 version = "0.19"
 default-features = false
-features = [
-    "opentype-layout",
-    "apple-layout",
-    "variable-fonts",
-    "glyph-names",
-]
+features = ["opentype-layout"]
 
 [features]
-default = ["std"]
+default = ["std", "apple-layout", "variable-fonts", "glyph-names"]
 std = []
+apple-layout = ["ttf-parser/apple-layout"]
+variable-fonts = ["ttf-parser/variable-fonts"]
+glyph-names = ["ttf-parser/glyph-names"]
 
 [dev-dependencies]
 pico-args = { version = "0.5", features = ["eq-separator"] }

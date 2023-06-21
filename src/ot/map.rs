@@ -434,7 +434,9 @@ impl<'a> MapBuilder<'a> {
             let mut stage_index = 0;
             let mut last_lookup = 0;
 
+            #[cfg(feature = "variable-fonts")]
             let coords = self.face.ttfp_face.variation_coordinates();
+            #[cfg(feature = "variable-fonts")]
             let variation_index = self.face
                 .layout_table(table_index)
                 .and_then(|t| t.variations?.find_index(coords));
@@ -446,6 +448,7 @@ impl<'a> MapBuilder<'a> {
                             &mut map_lookups[table_index],
                             table_index,
                             feature_index,
+                            #[cfg(feature = "variable-fonts")]
                             variation_index,
                             Self::GLOBAL_BIT_MASK,
                             true,
@@ -462,6 +465,7 @@ impl<'a> MapBuilder<'a> {
                                 &mut map_lookups[table_index],
                                 table_index,
                                 feature_index,
+                                #[cfg(feature = "variable-fonts")]
                                 variation_index,
                                 feature.mask,
                                 feature.auto_zwnj,
@@ -517,6 +521,7 @@ impl<'a> MapBuilder<'a> {
         lookups: &mut Vec<LookupMap>,
         table_index: TableIndex,
         feature_index: FeatureIndex,
+        #[cfg(feature = "variable-fonts")]
         variation_index: Option<VariationIndex>,
         mask: Mask,
         auto_zwnj: bool,
@@ -526,14 +531,20 @@ impl<'a> MapBuilder<'a> {
         let table = self.face.layout_table(table_index)?;
 
         let lookup_count = table.lookups.len();
-        let feature = match variation_index {
-            Some(idx) => {
-                table.variations
-                    .and_then(|var| var.find_substitute(feature_index, idx))
-                    .or_else(|| table.features.get(feature_index))?
+        let feature = ({
+            #[cfg(feature = "variable-fonts")]
+            match variation_index {
+                Some(idx) => {
+                    Some(table.variations
+                        .and_then(|var| var.find_substitute(feature_index, idx))
+                        .or_else(|| table.features.get(feature_index))?)
+                }
+                None => None,
             }
-            None => table.features.get(feature_index)?,
-        };
+
+            #[cfg(not(feature = "variable-fonts"))]
+            { None }
+        }).or_else(|| table.features.get(feature_index))?;
 
         for index in feature.lookup_indices {
             if index < lookup_count {

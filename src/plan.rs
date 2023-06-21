@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 use core::any::Any;
 
-use crate::{aat, Direction, Face, Feature, Language, Mask, Tag, Script};
+use crate::{Direction, Face, Feature, Language, Mask, Tag, Script};
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
 use crate::ot::{self, feature, FeatureFlags, TableIndex};
 
@@ -10,7 +10,8 @@ pub struct ShapePlan {
     pub script: Option<Script>,
     pub shaper: &'static ComplexShaper,
     pub ot_map: ot::Map,
-    pub aat_map: aat::Map,
+    #[cfg(feature = "apple-layout")]
+    pub aat_map: crate::aat::Map,
     data: Option<Box<dyn Any>>,
 
     pub frac_mask: Mask,
@@ -61,7 +62,8 @@ pub struct ShapePlanner<'a> {
     pub direction: Direction,
     pub script: Option<Script>,
     pub ot_map: ot::MapBuilder<'a>,
-    pub aat_map: aat::MapBuilder,
+    #[cfg(feature = "apple-layout")]
+    pub aat_map: crate::aat::MapBuilder,
     pub apply_morx: bool,
     pub script_zero_marks: bool,
     pub script_fallback_mark_positioning: bool,
@@ -76,7 +78,8 @@ impl<'a> ShapePlanner<'a> {
         language: Option<&Language>,
     ) -> Self {
         let ot_map = ot::MapBuilder::new(face, script, language);
-        let aat_map = aat::MapBuilder::default();
+        #[cfg(feature = "apple-layout")]
+        let aat_map = crate::aat::MapBuilder::default();
 
         let mut shaper = match script {
             Some(script) => complex_categorize(
@@ -91,7 +94,12 @@ impl<'a> ShapePlanner<'a> {
         let script_fallback_mark_positioning = shaper.fallback_position;
 
         // https://github.com/harfbuzz/harfbuzz/issues/2124
-        let apply_morx = face.tables().morx.is_some() && (direction.is_horizontal() || face.gsub.is_none());
+        #[allow(unused_mut)]
+        let mut apply_morx = false;
+        #[cfg(feature = "apple-layout")]
+        if face.tables().morx.is_some() && (direction.is_horizontal() || face.gsub.is_none()) {
+            apply_morx = true;
+        }
 
         // https://github.com/harfbuzz/harfbuzz/issues/1528
         if apply_morx && shaper as *const _ != &DEFAULT_SHAPER as *const _ {
@@ -103,6 +111,7 @@ impl<'a> ShapePlanner<'a> {
             direction,
             script,
             ot_map,
+            #[cfg(feature = "apple-layout")]
             aat_map,
             apply_morx,
             script_zero_marks,
@@ -191,6 +200,7 @@ impl<'a> ShapePlanner<'a> {
             self.ot_map.add_feature(feature.tag, flags, feature.value);
         }
 
+        #[cfg(feature = "apple-layout")]
         if self.apply_morx {
             for feature in user_features {
                 self.aat_map.add_feature(self.face, feature.tag, feature.value);
@@ -206,10 +216,11 @@ impl<'a> ShapePlanner<'a> {
     fn compile(&mut self) -> ShapePlan {
         let ot_map = self.ot_map.compile();
 
+        #[cfg(feature = "apple-layout")]
         let aat_map = if self.apply_morx {
             self.aat_map.compile(self.face)
         } else {
-            aat::Map::default()
+            crate::aat::Map::default()
         };
 
         let frac_mask = ot_map.one_mask(feature::FRACTIONS);
@@ -239,21 +250,27 @@ impl<'a> ShapePlanner<'a> {
         let apply_morx = self.apply_morx;
 
         let mut apply_gpos = false;
+        #[allow(unused_mut)]
         let mut apply_kerx = false;
         let mut apply_kern = false;
 
         // Decide who does positioning. GPOS, kerx, kern, or fallback.
+        #[cfg(feature = "apple-layout")]
         if self.face.tables().kerx.is_some() {
             apply_kerx = true;
-        } else if !apply_morx && !disable_gpos && self.face.gpos.is_some() {
+        }
+        if !apply_kerx && !apply_morx && !disable_gpos && self.face.gpos.is_some() {
             apply_gpos = true;
         }
 
         if !apply_kerx && (!has_gpos_kern || !apply_gpos) {
             // Apparently Apple applies kerx if GPOS kern was not applied.
+            #[cfg(feature = "apple-layout")]
             if self.face.tables().kerx.is_some() {
                 apply_kerx = true;
-            } else if ot::has_kerning(self.face) {
+            }
+
+            if !apply_kerx && ot::has_kerning(self.face) {
                 apply_kern = true;
             }
         }
@@ -275,13 +292,19 @@ impl<'a> ShapePlanner<'a> {
             && self.script_fallback_mark_positioning;
 
         // Currently we always apply trak.
-        let apply_trak = requested_tracking && self.face.tables().trak.is_some();
+        #[allow(unused_mut)]
+        let mut apply_trak = false;
+        #[cfg(feature = "apple-layout")]
+        if requested_tracking && self.face.tables().trak.is_some() {
+            apply_trak = true;
+        }
 
         let mut plan = ShapePlan {
             direction: self.direction,
             script: self.script,
             shaper: self.shaper,
             ot_map,
+            #[cfg(feature = "apple-layout")]
             aat_map,
             data: None,
             frac_mask,

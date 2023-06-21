@@ -15,6 +15,7 @@ extern crate alloc;
 
 #[macro_use]
 mod buffer;
+#[cfg(feature = "apple-layout")]
 mod aat;
 mod common;
 mod fallback;

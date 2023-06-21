@@ -134,6 +134,7 @@ fn main() {
 
     face.set_points_per_em(args.font_ptem);
 
+    #[cfg(feature = "variable-fonts")]
     if !args.variations.is_empty() {
         face.set_variations(&args.variations);
     }

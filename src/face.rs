@@ -121,6 +121,7 @@ impl<'a> Face<'a> {
     }
 
     /// Sets font variations.
+    #[cfg(feature = "variable-fonts")]
     pub fn set_variations(&mut self, variations: &[Variation]) {
         for variation in variations {
             self.set_variation(variation.tag, variation.value);
@@ -167,6 +168,7 @@ impl<'a> Face<'a> {
 
     fn glyph_advance(&self, glyph: GlyphId, is_vertical: bool) -> u32 {
         let face = &self.ttfp_face;
+        #[cfg(feature = "variable-fonts")]
         if face.is_variable() &&
            face.has_non_default_variation_coordinates() &&
            face.tables().hvar.is_none() &&
@@ -207,6 +209,7 @@ impl<'a> Face<'a> {
 
     pub(crate) fn glyph_side_bearing(&self, glyph: GlyphId, is_vertical: bool) -> i32 {
         let face = &self.ttfp_face;
+        #[cfg(feature = "variable-fonts")]
         if  face.is_variable() &&
             face.tables().hvar.is_none() &&
             face.tables().vvar.is_none()
@@ -252,6 +255,7 @@ impl<'a> Face<'a> {
         })
     }
 
+    #[cfg(feature = "glyph-names")]
     pub(crate) fn glyph_name(&self, glyph: GlyphId) -> Option<&str> {
         self.ttfp_face.glyph_name(glyph)
     }

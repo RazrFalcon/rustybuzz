@@ -489,7 +489,13 @@ impl ValueRecordExt for ValueRecord<'_> {
 
         {
             let (ppem_x, ppem_y) = ctx.face.pixels_per_em().unwrap_or((0, 0));
-            let coords = ctx.face.ttfp_face.variation_coordinates().len();
+            let coords = {
+                #[cfg(feature = "variable-fonts")]
+                { ctx.face.ttfp_face.variation_coordinates().len() }
+
+                #[cfg(not(feature = "variable-fonts"))]
+                { 0 }
+            };
             let use_x_device = ppem_x != 0 || coords != 0;
             let use_y_device = ppem_y != 0 || coords != 0;
 
@@ -615,9 +621,16 @@ impl DeviceExt for Device<'_> {
         match self {
             Device::Hinting(hinting) => hinting.x_delta(face.units_per_em, face.pixels_per_em()),
             Device::Variation(variation) => {
-                face.tables().gdef?
-                    .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
-                    .and_then(|float| i32::try_num_from(crate::round(float)))
+                ({
+                    #[cfg(feature = "variable-fonts")]
+                    {
+                        face.tables().gdef?
+                            .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
+                    }
+
+                    #[cfg(not(feature = "variable-fonts"))]
+                    { None }
+                }).and_then(|float| i32::try_num_from(crate::round(float)))
             }
         }
     }
@@ -626,9 +639,16 @@ impl DeviceExt for Device<'_> {
         match self {
             Device::Hinting(hinting) => hinting.y_delta(face.units_per_em, face.pixels_per_em()),
             Device::Variation(variation) => {
-                face.tables().gdef?
-                    .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
-                    .and_then(|float| i32::try_num_from(crate::round(float)))
+                ({
+                    #[cfg(feature = "variable-fonts")]
+                    {
+                        face.tables().gdef?
+                            .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
+                    }
+
+                    #[cfg(not(feature = "variable-fonts"))]
+                    { None }
+                }).and_then(|float| i32::try_num_from(crate::round(float)))
             }
         }
     }
@@ -646,7 +666,13 @@ impl AnchorExt for Anchor<'_> {
 
         if self.x_device.is_some() || self.y_device.is_some() {
             let (ppem_x, ppem_y) = face.pixels_per_em().unwrap_or((0, 0));
-            let coords = face.ttfp_face.variation_coordinates().len();
+            let coords = {
+                #[cfg(feature = "variable-fonts")]
+                { face.ttfp_face.variation_coordinates().len() }
+
+                #[cfg(not(feature = "variable-fonts"))]
+                { 0 }
+            };
 
             if let Some(device) = self.x_device {
                 if ppem_x != 0 || coords != 0 {

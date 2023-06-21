@@ -1,6 +1,6 @@
 use core::convert::TryFrom;
 
-use crate::{aat, ot, fallback, normalize, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
+use crate::{ot, fallback, normalize, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
 use crate::buffer::{
     glyph_flag, Buffer, BufferClusterLevel, BufferFlags, BufferScratchFlags, GlyphInfo,
     GlyphPropsFlags,
@@ -96,8 +96,9 @@ fn substitute_pre(ctx: &mut ShapeContext) {
 fn substitute_post(ctx: &mut ShapeContext) {
     hide_default_ignorables(ctx.buffer, ctx.face);
 
+    #[cfg(feature = "apple-layout")]
     if ctx.plan.apply_morx {
-        aat::remove_deleted_glyphs(ctx.buffer);
+        crate::aat::remove_deleted_glyphs(ctx.buffer);
     }
 
     if let Some(func) = ctx.plan.shaper.postprocess_glyphs {
@@ -131,11 +132,12 @@ fn substitute_complex(ctx: &mut ShapeContext) {
 }
 
 fn substitute_by_plan(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+    #[cfg(feature = "apple-layout")]
     if plan.apply_morx {
-        aat::substitute(plan, face, buffer);
-    } else {
-        ot::substitute(plan, face, buffer);
+        crate::aat::substitute(plan, face, buffer);
+        return;
     }
+    ot::substitute(plan, face, buffer);
 }
 
 fn position(ctx: &mut ShapeContext) {
@@ -201,8 +203,9 @@ fn position_complex(ctx: &mut ShapeContext) {
     ot::position_finish_advances(ctx.face, ctx.buffer);
     zero_width_default_ignorables(ctx.buffer);
 
+    #[cfg(feature = "apple-layout")]
     if ctx.plan.apply_morx {
-        aat::zero_width_deleted_glyphs(ctx.buffer);
+        crate::aat::zero_width_deleted_glyphs(ctx.buffer);
     }
 
     ot::position_finish_offsets(ctx.face, ctx.buffer);
@@ -215,14 +218,16 @@ fn position_complex(ctx: &mut ShapeContext) {
 fn position_by_plan(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     if plan.apply_gpos {
         ot::position(plan, face, buffer);
-    } else if plan.apply_kerx {
-        aat::position(plan, face, buffer);
+    } else if cfg!(feature = "apple-layout") && plan.apply_kerx {
+        #[cfg(feature = "apple-layout")]
+        crate::aat::position(plan, face, buffer);
     } else if plan.apply_kern {
         ot::kern(plan, face, buffer);
     }
 
+    #[cfg(feature = "apple-layout")]
     if plan.apply_trak {
-        aat::track(plan, face, buffer);
+        crate::aat::track(plan, face, buffer);
     }
 }
 

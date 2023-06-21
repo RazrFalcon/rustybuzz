@@ -1,4 +1,7 @@
-use ttf_parser::{apple_layout, kern, GlyphId};
+use ttf_parser::{kern, GlyphId};
+
+#[cfg(feature = "apple-layout")]
+use ttf_parser::apple_layout;
 
 use crate::{Face, Mask};
 use crate::buffer::{Buffer, BufferScratchFlags};
@@ -65,9 +68,21 @@ pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             buffer.reverse();
         }
 
-        if subtable.has_state_machine {
-            apply_state_machine_kerning(&subtable, plan.kern_mask, buffer);
-        } else {
+
+        let has_state_machine = {
+            #[cfg(feature = "apple-layout")]
+            {
+                if subtable.has_state_machine {
+                    apply_state_machine_kerning(&subtable, plan.kern_mask, buffer);
+                }
+                subtable.has_state_machine
+            }
+
+            #[cfg(not(feature = "apple-layout"))]
+            { false }
+        };
+
+        if !has_state_machine {
             if !plan.requested_kerning {
                 continue;
             }
@@ -158,11 +173,13 @@ fn apply_simple_kerning(
     });
 }
 
+#[cfg(feature = "apple-layout")]
 struct StateMachineDriver {
     stack: [usize; 8],
     depth: usize,
 }
 
+#[cfg(feature = "apple-layout")]
 fn apply_state_machine_kerning(
     subtable: &kern::Subtable,
     kern_mask: Mask,
@@ -234,6 +251,7 @@ fn apply_state_machine_kerning(
     }
 }
 
+#[cfg(feature = "apple-layout")]
 fn state_machine_transition(
     entry: apple_layout::StateEntry,
     has_cross_stream: bool,

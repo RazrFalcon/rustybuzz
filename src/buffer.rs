@@ -1719,7 +1719,14 @@ impl GlyphBuffer {
         let mut y = 0;
         for (info, pos) in info.iter().zip(pos) {
             if !flags.contains(SerializeFlags::NO_GLYPH_NAMES) {
-                match face.glyph_name(info.as_glyph()) {
+                let glyph_name = {
+                    #[cfg(feature = "glyph-names")]
+                    { face.glyph_name(info.as_glyph()) }
+
+                    #[cfg(not(feature = "glyph-names"))]
+                    { None }
+                };
+                match glyph_name {
                     Some(name) => s.push_str(name),
                     None => write!(&mut s, "gid{}", info.glyph_id)?,
                 }

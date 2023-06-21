@@ -65,6 +65,7 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
 
     face.set_points_per_em(args.font_ptem);
 
+    #[cfg(feature = "variable-fonts")]
     if !args.variations.is_empty() {
         let variations: Vec<_> = args.variations.iter()
             .map(|s| rustybuzz::Variation::from_str(s).unwrap()).collect();
