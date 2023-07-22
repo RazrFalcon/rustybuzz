@@ -700,22 +700,9 @@ impl Buffer {
             return;
         }
 
-        let mut i = start;
-        let mut j = end - 1;
-        while i < j {
-            self.info.swap(i, j);
-            i += 1;
-            j -= 1;
-        }
-
+        self.info[start..end].reverse();
         if self.have_positions {
-            i = start;
-            j = end - 1;
-            while i < j {
-                self.pos.swap(i, j);
-                i += 1;
-                j -= 1;
-            }
+            self.pos[start..end].reverse();
         }
     }
 
