@@ -1,6 +1,6 @@
 use core::convert::TryFrom;
 
-pub use unicode_general_category::GeneralCategory;
+pub use unicode_properties::GeneralCategory;
 pub use unicode_ccc::CanonicalCombiningClass; // TODO: prefer unic-ucd-normal::CanonicalCombiningClass
 
 use crate::Script;
@@ -482,7 +482,7 @@ impl CharExt for char {
     }
 
     fn general_category(self) -> GeneralCategory {
-        unicode_general_category::get_general_category(self)
+        unicode_properties::general_category::UnicodeGeneralCategory::general_category(self)
     }
 
     fn combining_class(self) -> CanonicalCombiningClass {
@@ -830,7 +830,7 @@ mod tests {
     fn check_unicode_version() {
         assert_eq!(unicode_bidi_mirroring::UNICODE_VERSION,     (13, 0, 0));
         assert_eq!(unicode_ccc::UNICODE_VERSION,                (13, 0, 0));
-        assert_eq!(unicode_general_category::UNICODE_VERSION,   (15, 0, 0));
+        assert_eq!(unicode_properties::UNICODE_VERSION,         (15, 0, 0));
         assert_eq!(unicode_script::UNICODE_VERSION,             (15, 0, 0));
         assert_eq!(crate::unicode_norm::UNICODE_VERSION,        (13, 0, 0));
     }
