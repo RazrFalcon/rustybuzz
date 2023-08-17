@@ -524,7 +524,14 @@ fn has_arabic_joining(script: Script) -> bool {
         script::PSALTER_PAHLAVI |
 
         // Unicode-9.0 additions.
-        script::ADLAM => true,
+        script::ADLAM |
+
+        // Unicode-11.0 additions.
+        script::HANIFI_ROHINGYA |
+        script::SOGDIAN |
+
+        // Unicode-13.0 additions.
+        script::CHORASMIAN => true,
 
         _ => false,
     }
