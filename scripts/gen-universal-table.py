@@ -410,8 +410,8 @@ use_positions = {
     'V': {
         'ABV': [Top, Top_And_Bottom, Top_And_Bottom_And_Right, Top_And_Right],
         'BLW': [Bottom, Overstruck, Bottom_And_Right],
-        'Pst': [Right],
-        'Pre': [Left, Top_And_Left, Top_And_Left_And_Right, Left_And_Right],
+        'PST': [Right],
+        'PRE': [Left, Top_And_Left, Top_And_Left_And_Right, Left_And_Right],
     },
     'VM': {
         'ABV': [Top],

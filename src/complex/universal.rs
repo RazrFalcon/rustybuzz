@@ -29,10 +29,10 @@ pub mod category {
     pub const O: u8       = 0;    // OTHER
 
     pub const B: u8       = 1;    // BASE
-    pub const IND: u8     = 3;    // BASE_IND
+    // pub const IND: u8     = 3;    // BASE_IND
     pub const N: u8       = 4;    // BASE_NUM
     pub const GB: u8      = 5;    // BASE_OTHER
-    pub const CGJ: u8     = 6;    // CGJ
+    // pub const CGJ: u8     = 6;    // CGJ
     // pub const F: u8       = 7;    // CONS_FINAL
     pub const FM: u8      = 8;    // CONS_FINAL_MOD
     // pub const M: u8       = 9;    // CONS_MED
@@ -42,13 +42,13 @@ pub mod category {
 
     pub const HN: u8      = 13;   // HALANT_NUM
     pub const ZWNJ: u8    = 14;   // Zero width non-joiner
-    pub const ZWJ: u8     = 15;   // Zero width joiner
-    pub const WJ: u8      = 16;   // Word joiner
+    // pub const ZWJ: u8     = 15;   // Zero width joiner
+    // pub const WJ: u8      = 16;   // Word joiner
     // pub const RSV: u8     = 17;   // Reserved characters
     pub const R: u8       = 18;   // REPHA
     pub const S: u8       = 19;   // SYM
     // pub const SM: u8      = 20;   // SYM_MOD
-    pub const VS: u8      = 21;   // VARIATION_SELECTOR
+    // pub const VS: u8      = 21;   // VARIATION_SELECTOR
     // pub const V: u8       = 36;   // VOWEL
     // pub const VM: u8      = 40;   // VOWEL_MOD
     pub const CS: u8      = 43;   // CONS_WITH_STACKER
@@ -80,6 +80,10 @@ pub mod category {
     pub const FMABV: u8   = 45;   // CONS_FINAL_MOD UIPC = Top
     pub const FMBLW: u8   = 46;   // CONS_FINAL_MOD UIPC = Bottom
     pub const FMPST: u8   = 47;   // CONS_FINAL_MOD UIPC = Not_Applicable
+    pub const G: u8 = 49;   // HIEROGLYPH
+    pub const J: u8 = 50;   // HIEROGLYPH_JOINER
+    pub const SB: u8 = 51;   // HIEROGLYPH_SEGMENT_BEGIN
+    pub const SE: u8 = 52;   // HIEROGLYPH_SEGMENT_END
 }
 
 // These features are applied all at once, before reordering.
