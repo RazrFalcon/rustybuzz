@@ -1699,6 +1699,7 @@ impl GlyphBuffer {
         use core::fmt::Write;
 
         let mut s = String::with_capacity(64);
+        s.push('[');
 
         let info = self.glyph_infos();
         let pos = self.glyph_positions();
@@ -1754,6 +1755,7 @@ impl GlyphBuffer {
         if !s.is_empty() {
             s.pop();
         }
+        s.push(']');
 
         Ok(s)
     }
