@@ -44,7 +44,7 @@ pub mod category {
     pub const ZWNJ: u8    = 14;   // Zero width non-joiner
     // pub const ZWJ: u8     = 15;   // Zero width joiner
     // pub const WJ: u8      = 16;   // Word joiner
-    // pub const RSV: u8     = 17;   // Reserved characters
+    pub const RSV: u8     = 17;   // Reserved characters
     pub const R: u8       = 18;   // REPHA
     pub const S: u8       = 19;   // SYM
     // pub const SM: u8      = 20;   // SYM_MOD
@@ -123,7 +123,7 @@ const OTHER_FEATURES: &[Tag] = &[
 ];
 
 impl GlyphInfo {
-    fn use_category(&self) -> Category {
+    pub(crate) fn use_category(&self) -> Category {
         let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
         v[2]
     }
