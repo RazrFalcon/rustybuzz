@@ -33,6 +33,7 @@ def expect(condition, message=None):
             raise AssertionError
         raise AssertionError(message)
 
+DEFAULT_LANGUAGE_SYSTEM = ''
 
 # from http://www-01.sil.org/iso639-3/iso-639-3.tab
 ISO_639_3_TO_1 = {
@@ -457,11 +458,8 @@ class OpenTypeRegistryParser(HTMLParser):
             if ot_macrolanguages:
                 for ot_macrolanguage in ot_macrolanguages:
                     for language in languages:
-                        # Remove the following condition if e.g. nn should map to NYN,NOR
-                        # instead of just NYN.
-                        if language not in original_ot_from_bcp_47:
-                            self.add_language(language, ot_macrolanguage)
-                            self.ranks[ot_macrolanguage] += 1
+                        self.add_language(language, ot_macrolanguage)
+                        self.ranks[ot_macrolanguage] += 1
             else:
                 for language in languages:
                     if language in original_ot_from_bcp_47:
@@ -546,7 +544,7 @@ class BCP47Parser(object):
                         self.grandfathered.add(subtag.lower())
                 elif line.startswith('Description: '):
                     description = line.split(' ', 1)[1].replace('(individual language)', '')
-                    description = re.sub('(\((individual |macro)language\)|languages)$', '',
+                    description = re.sub('(\(family\)|\((individual |macro)language\)|languages)$', '',
                                          description)
                     if subtag in self.names:
                         self.names[subtag] += '\n' + description
@@ -581,7 +579,9 @@ class BCP47Parser(object):
                     elif not has_preferred_value and line.startswith('Macrolanguage: '):
                         self._add_macrolanguage(line.split(' ')[1], subtag)
                 elif subtag_type == 'variant':
-                    if line.startswith('Prefix: '):
+                    if line.startswith('Deprecated: '):
+                        self.scopes[subtag] = ' (retired code)' + self.scopes.get(subtag, '')
+                    elif line.startswith('Prefix: '):
                         self.prefixes[subtag].add(line.split(' ')[1])
                 elif line.startswith('File-Date: '):
                     self.header = line
@@ -612,6 +612,15 @@ class BCP47Parser(object):
                 for macrolanguage in macrolanguages:
                     self._add_macrolanguage(biggest_macrolanguage, macrolanguage)
 
+    def _get_name_piece(self, subtag):
+        """Return the first name of a subtag plus its scope suffix.
+        Args:
+            subtag (str): A BCP 47 subtag.
+        Returns:
+            The name form of ``subtag``.
+        """
+        return self.names[subtag].split('\n')[0] + self.scopes.get(subtag, '')
+
     def get_name(self, lt):
         """Return the names of the subtags in a language tag.
 
@@ -621,13 +630,13 @@ class BCP47Parser(object):
         Returns:
             The name form of ``lt``.
         """
-        name = self.names[lt.language].split('\n')[0]
+        name = self._get_name_piece(lt.language)
         if lt.script:
-            name += '; ' + self.names[lt.script.title()].split('\n')[0]
+            name += '; ' + self._get_name_piece(lt.script.title())
         if lt.region:
-            name += '; ' + self.names[lt.region.upper()].split('\n')[0]
+            name += '; ' + self._get_name_piece(lt.region.upper())
         if lt.variant:
-            name += '; ' + self.names[lt.variant].split('\n')[0]
+            name += '; ' + self._get_name_piece(lt.variant)
         return name
 
 
@@ -664,6 +673,8 @@ ot.add_language('und-fonnapa', 'APPH')
 ot.remove_language_ot('IRT')
 ot.add_language('ga-Latg', 'IRT')
 
+ot.add_language('hy-arevmda', 'HYE')
+
 ot.remove_language_ot('KGE')
 ot.add_language('und-Geok', 'KGE')
 
@@ -677,9 +688,7 @@ bcp_47.macrolanguages['ijo'] = {'ijc'}
 
 ot.add_language('kht', 'KHN')
 ot.names['KHN'] = ot.names['KHT'] + '(Microsoft fonts)'
-ot.names['KHT'] = ot.names['KHT'] + '(OpenType spec and SIL fonts)'
-ot.ranks['KHN'] = ot.ranks['KHT']
-ot.ranks['KHT'] += 1
+ot.ranks['KHN'] = ot.ranks['KHT'] + 1
 
 ot.ranks['LCR'] = ot.ranks['MCR'] + 1
 
@@ -689,6 +698,9 @@ ot.ranks['MLR'] += 1
 bcp_47.names['mhv'] = 'Arakanese'
 bcp_47.scopes['mhv'] = '(retired code)'
 
+ot.remove_language_ot('MONT')
+ot.add_language('mnw', 'MONT')
+
 ot.add_language('no', 'NOR')
 
 ot.add_language('oc-provenc', 'PRO')
@@ -697,6 +709,7 @@ ot.add_language('qu', 'QUZ')
 ot.add_language('qub', 'QWH')
 ot.add_language('qud', 'QVI')
 ot.add_language('qug', 'QVI')
+ot.add_language('qul', 'QUH')
 ot.add_language('qup', 'QVI')
 ot.add_language('qur', 'QWH')
 ot.add_language('qus', 'QUH')
@@ -727,10 +740,6 @@ ot.add_language('qxw', 'QWH')
 bcp_47.macrolanguages['ro'].remove('mo')
 bcp_47.macrolanguages['ro-MD'].add('mo')
 
-ot.add_language('sgw', 'SGW')
-ot.names['SGW'] = ot.names['CHG'] + '(SIL fonts)'
-ot.ranks['SGW'] = ot.ranks['CHG'] + 1
-
 ot.remove_language_ot('SYRE')
 ot.remove_language_ot('SYRJ')
 ot.remove_language_ot('SYRN')
@@ -747,14 +756,17 @@ ot.add_language('xwo', 'TOD')
 ot.remove_language_ot('ZHH')
 ot.remove_language_ot('ZHP')
 ot.remove_language_ot('ZHT')
+ot.remove_language_ot('ZHTM')
 bcp_47.macrolanguages['zh'].remove('lzh')
 bcp_47.macrolanguages['zh'].remove('yue')
 ot.add_language('zh-Hant-MO', 'ZHH')
+ot.add_language('zh-Hant-MO', 'ZHTM')
 ot.add_language('zh-Hant-HK', 'ZHH')
 ot.add_language('zh-Hans', 'ZHS')
 ot.add_language('zh-Hant', 'ZHT')
 ot.add_language('zh-HK', 'ZHH')
 ot.add_language('zh-MO', 'ZHH')
+ot.add_language('zh-MO', 'ZHTM')
 ot.add_language('zh-TW', 'ZHT')
 ot.add_language('lzh', 'ZHT')
 ot.add_language('lzh-Hans', 'ZHS')
@@ -788,6 +800,7 @@ def rank_delta(bcp_47, ot):
 disambiguation = {
     'ALT': 'alt',
     'ARK': 'rki',
+    'ATH': 'ath',
     'BHI': 'bhb',
     'BLN': 'bjt',
     'BTI': 'beb',
@@ -799,6 +812,7 @@ disambiguation = {
     'ECR': 'crj',
     'HAL': 'cfm',
     'HND': 'hnd',
+    'HYE': 'hyw',
     'KIS': 'kqs',
     'LRC': 'bqi',
     'NDB': 'nd',
@@ -810,15 +824,23 @@ disambiguation = {
     'QVI': 'qvi',
     'QWH': 'qwh',
     'SIG': 'stv',
-    'TNE': 'yrk',
+    'SRB': 'sr',
     'ZHH': 'zh-HK',
     'ZHS': 'zh-Hans',
     'ZHT': 'zh-Hant',
+    'ZHTM': 'zh-Hant-MO',
 }
 
 ot.inherit_from_macrolanguages()
 bcp_47.remove_extra_macrolanguages()
 ot.inherit_from_macrolanguages()
+ot.names[DEFAULT_LANGUAGE_SYSTEM] = '*/'
+ot.ranks[DEFAULT_LANGUAGE_SYSTEM] = max(ot.ranks.values()) + 1
+for tricky_ot_tag in filter(lambda tag: re.match('[A-Z]{3}$', tag), ot.names):
+    possible_bcp_47_tag = tricky_ot_tag.lower()
+    if possible_bcp_47_tag in bcp_47.names and not ot.from_bcp_47[possible_bcp_47_tag]:
+        ot.add_language(possible_bcp_47_tag, DEFAULT_LANGUAGE_SYSTEM)
+        bcp_47.macrolanguages[possible_bcp_47_tag] = set()
 ot.sort_languages()
 
 print('// WARNING: this file was generated by ../scripts/gen-tag-table.py')
@@ -834,6 +856,8 @@ print('pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[')
 
 
 def hb_tag(tag):
+    if tag == DEFAULT_LANGUAGE_SYSTEM:
+        return 'Tag(0)\t           '
     return 'Tag::from_bytes(b\"%s%s%s%s\")' % tuple(('%-4s' % tag)[:4])
 
 
@@ -889,14 +913,18 @@ for language, tags in sorted(ot.from_bcp_47.items()):
         print(' // ', end='')
         bcp_47_name = bcp_47.names.get(language, '')
         bcp_47_name_candidates = bcp_47_name.split('\n')
-        intersection = language_name_intersection(bcp_47_name, ot.names[tag])
+        ot_name = ot.names[tag]
         scope = bcp_47.scopes.get(language, '')
-        if not intersection:
-            print('%s%s -> %s' % (bcp_47_name_candidates[0], scope, ot.names[tag]))
+        if tag == DEFAULT_LANGUAGE_SYSTEM:
+            print(f'{bcp_47_name_candidates[0]}{scope} != {ot.names[language.upper()]}')
         else:
-            name = get_matching_language_name(intersection, bcp_47_name_candidates)
-            bcp_47.names[language] = name
-            print('%s%s' % (name if len(name) > len(ot.names[tag]) else ot.names[tag], scope))
+            intersection = language_name_intersection(bcp_47_name, ot_name)
+            if not intersection:
+                print('%s%s -> %s' % (bcp_47_name_candidates[0], scope, ot_name))
+            else:
+                name = get_matching_language_name(intersection, bcp_47_name_candidates)
+                bcp_47.names[language] = name
+                print('%s%s' % (name if len(name) > len(ot_name) else ot_name, scope))
 
 print('];')
 print()
@@ -988,23 +1016,25 @@ for initial, items in sorted(complex_tags.items()):
     print("        b'%s' => {" % initial)
     for lt, tags in items:
         print('            if ', end='')
+        script = lt.script
+        region = lt.region
         if lt.grandfathered:
             print('&language[1..] == "%s" ' % lt.language[1:], end='')
         else:
             string_literal = lt.language[1:] + '-'
-            if lt.script:
-                string_literal += lt.script
-                lt.script = None
-                if lt.region:
-                    string_literal += '-' + lt.region
-                    lt.region = None
+            if script:
+                string_literal += script
+                script = None
+                if region:
+                    string_literal += '-' + region
+                    region = None
             if string_literal[-1] == '-':
                 print('strncmp(&language[1..], "%s", %i)' % (string_literal, len(string_literal)), end='')
             else:
                 print('lang_matches(&language[1..], "%s")' % string_literal, end='')
 
-        print_subtag_matches(lt.script, True)
-        print_subtag_matches(lt.region, True)
+        print_subtag_matches(script, True)
+        print_subtag_matches(region, True)
         print_subtag_matches(lt.variant, True)
         print('{')
         print('                // %s' % bcp_47.get_name(lt))
