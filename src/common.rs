@@ -229,7 +229,11 @@ impl Script {
             b"Qaac" => return Some(script::COPTIC),
 
             // Script variants from https://unicode.org/iso15924/
+            b"Aran" => return Some(script::ARABIC),
             b"Cyrs" => return Some(script::CYRILLIC),
+            b"Geok" => return Some(script::GEORGIAN),
+            b"Hans" | b"Hant" => return Some(script::HAN),
+            b"Jamo" => return Some(script::HANGUL),
             b"Latf" | b"Latg" => return Some(script::LATIN),
             b"Syre" | b"Syrj" | b"Syrn" => return Some(script::SYRIAC),
 
