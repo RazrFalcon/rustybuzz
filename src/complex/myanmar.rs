@@ -8,7 +8,7 @@ use super::*;
 
 pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
-    override_features: Some(override_features),
+    override_features: None,
     create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
@@ -403,10 +403,6 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     }
 
     buffer.sort(start, end, |a, b| a.indic_position().cmp(&b.indic_position()) == core::cmp::Ordering::Greater);
-}
-
-fn override_features(planner: &mut ShapePlanner) {
-    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
 fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
