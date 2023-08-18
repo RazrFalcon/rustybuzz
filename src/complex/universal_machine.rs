@@ -1,3 +1,5 @@
+use core::cell::Cell;
+
 use alloc::vec::Vec;
 
 use crate::{buffer::Buffer, GlyphInfo};
@@ -146,30 +148,38 @@ pub fn find_syllables(buffer: &mut Buffer) {
     let mut ts = 0;
     let mut te = 0;
     let mut act = 0;
-    // HarfBuzz uses a `machine_index` iterator wrapper, but this
-    // is extremely cursed and probably hard to replicate in Rust.
-    // We just collect the indices of the relevant glyphs into a vector.
-    let mut glyphs: Vec<_> = buffer
-        .info
-        .iter()
-        .copied()
-        .enumerate()
-        .filter(|(_, glyph)| not_standard_default_ignorable(glyph))
-        .filter(|(i, glyph)| {
-            if glyph.use_category() == category::ZWNJ {
-                for glyph2 in &buffer.info[i + 1..] {
-                    if not_standard_default_ignorable(glyph2) {
-                        return !glyph2.is_unicode_mark();
-                    }
+    let infos = Cell::as_slice_of_cells(Cell::from_mut(&mut buffer.info));
+    let included = |i: usize| {
+        let glyph = &infos[i].get();
+        if !not_standard_default_ignorable(glyph) {
+            return false;
+        }
+        if glyph.use_category() == category::ZWNJ {
+            for glyph2 in &infos[i + 1..] {
+                if not_standard_default_ignorable(&glyph2.get()) {
+                    return !glyph2.get().is_unicode_mark();
                 }
             }
-            true
-        })
-        .map(|(i, _)| i)
-        .collect();
-    let eof = glyphs.len();
-    glyphs.push(buffer.info.len());
-    let mut p = 0;
+        }
+        true
+    };
+    let eof = infos.len();
+    let next_glyph = |p: usize| {
+        let mut q = p + 1;
+        while q < eof && !included(q) {
+            q += 1;
+        }
+        q
+    };
+    let first_glyph = (0..eof).find(|i| included(*i)).unwrap_or(eof);
+    let prev_glyph = |p: usize| {
+        let mut q = p - 1;
+        while !included(q) {
+            q -= 1;
+        }
+        q
+    };
+    let mut p = first_glyph;
     let pe = eof;
     let mut syllable_serial = 1u8;
     let mut reset = true;
@@ -189,7 +199,7 @@ pub fn find_syllables(buffer: &mut Buffer) {
 
             slen = MACHINE_KEY_SPANS[cs] as usize;
             let cs_idx = ((cs as i32) << 1) as usize;
-            let glyph = &buffer.info[glyphs[p]];
+            let glyph = &infos[p].get();
             let i = if slen > 0
                 && MACHINE_TRANS_KEYS[cs_idx] <= glyph.indic_category() as u8
                 && glyph.indic_category() as u8 <= MACHINE_TRANS_KEYS[cs_idx + 1]
@@ -207,178 +217,164 @@ pub fn find_syllables(buffer: &mut Buffer) {
         if MACHINE_TRANS_ACTIONS[trans] != 0 {
             match MACHINE_TRANS_ACTIONS[trans] {
                 5 => {
-                    te = p + 1;
+                    te = next_glyph(p);
                 }
                 8 => {
-                    te = p + 1;
+                    te = next_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::IndependentCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 13 => {
-                    te = p + 1;
+                    te = next_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::StandardCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 11 => {
-                    te = p + 1;
+                    te = next_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::BrokenCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 9 => {
-                    te = p + 1;
+                    te = next_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::NonCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 14 => {
                     te = p;
-                    p -= 1;
+                    p = prev_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::ViramaTerminatedCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 15 => {
                     te = p;
-                    p -= 1;
+                    p = prev_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::SakotTerminatedCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 12 => {
                     te = p;
-                    p -= 1;
+                    p = prev_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::StandardCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 17 => {
                     te = p;
-                    p -= 1;
+                    p = prev_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::NumberJoinerTerminatedCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 16 => {
                     te = p;
-                    p -= 1;
+                    p = prev_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::NumeralCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 18 => {
                     te = p;
-                    p -= 1;
+                    p = prev_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::SymbolCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 19 => {
                     te = p;
-                    p -= 1;
+                    p = prev_glyph(p);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::BrokenCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 1 => {
-                    p = te - 1;
+                    p = prev_glyph(te);
                     found_syllable(
-                        &glyphs,
                         ts,
                         te,
                         &mut syllable_serial,
                         SyllableType::StandardCluster,
-                        buffer,
+                        infos,
                     );
                 }
                 2 => match act {
                     8 => {
-                        p = te - 1;
+                        p = prev_glyph(te);
                         found_syllable(
-                            &glyphs,
                             ts,
                             te,
                             &mut syllable_serial,
                             SyllableType::BrokenCluster,
-                            buffer,
+                            infos,
                         );
                     }
                     9 => {
-                        p = te - 1;
+                        p = prev_glyph(te);
                         found_syllable(
-                            &glyphs,
                             ts,
                             te,
                             &mut syllable_serial,
                             SyllableType::NonCluster,
-                            buffer,
+                            infos,
                         );
                     }
                     _ => {}
                 },
                 3 => {
-                    te = p + 1;
+                    te = next_glyph(p);
                     act = 8;
                 }
                 10 => {
-                    te = p + 1;
+                    te = next_glyph(p);
                     act = 9;
                 }
                 _ => {}
@@ -389,7 +385,7 @@ pub fn find_syllables(buffer: &mut Buffer) {
             ts = 0;
         }
 
-        p += 1;
+        p = next_glyph(p);
         if p != pe {
             continue;
         }
@@ -408,15 +404,16 @@ pub fn find_syllables(buffer: &mut Buffer) {
 
 #[inline]
 fn found_syllable(
-    glyphs: &[usize],
     start: usize,
     end: usize,
     syllable_serial: &mut u8,
     kind: SyllableType,
-    buffer: &mut Buffer,
+    infos: &[Cell<GlyphInfo>],
 ) {
-    for i in glyphs[start]..glyphs[end] {
-        buffer.info[i].set_syllable((*syllable_serial << 4) | kind as u8);
+    for i in start..end {
+        let mut info = infos[i].get();
+        info.set_syllable((*syllable_serial << 4) | kind as u8);
+        infos[i].set(info);
     }
 
     *syllable_serial += 1;
