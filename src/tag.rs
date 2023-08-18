@@ -468,6 +468,8 @@ mod tests {
     test_tag_from_language!(tag_from_language_ENV, "EVN", "eve");
     test_tag_from_language!(tag_from_language_HAL, "HAL", "cfm"); /* BCP47 and current ISO639-3 code for Halam/Falam Chin */
     test_tag_from_language!(tag_from_language_flm, "HAL", "flm"); /* Retired ISO639-3 code for Halam/Falam Chin */
+    test_tag_from_language!(tag_from_language_hy, "HYE0", "hy");
+    test_tag_from_language!(tag_from_language_hyw, "HYE", "hyw");
     test_tag_from_language!(tag_from_language_bgr, "QIN", "bgr"); /* Bawm Chin */
     test_tag_from_language!(tag_from_language_cbl, "QIN", "cbl"); /* Bualkhaw Chin */
     test_tag_from_language!(tag_from_language_cka, "QIN", "cka"); /* Khumi Awa Chin */
@@ -491,6 +493,7 @@ mod tests {
     test_tag_from_language!(tag_from_language_zom, "QIN", "zom"); /* Zou */
     test_tag_from_language!(tag_from_language_FAR, "FAR", "fa");
     test_tag_from_language!(tag_from_language_fa_IR, "FAR", "fa_IR");
+    test_tag_from_language!(tag_from_language_man, "MNK", "man");
     test_tag_from_language!(tag_from_language_SWA, "SWA", "aii"); /* Swadaya Aramaic */
     test_tag_from_language!(tag_from_language_SYR, "SYR", "syr"); /* Syriac [macrolanguage] */
     test_tag_from_language!(tag_from_language_amw, "SYR", "amw"); /* Western Neo-Aramaic */
@@ -500,10 +503,12 @@ mod tests {
     test_tag_from_language!(tag_from_language_zh, "ZHS", "zh"); /* Chinese */
     test_tag_from_language!(tag_from_language_zh_cn, "ZHS", "zh-cn"); /* Chinese (China) */
     test_tag_from_language!(tag_from_language_zh_sg, "ZHS", "zh-sg"); /* Chinese (Singapore) */
-    test_tag_from_language!(tag_from_language_zh_mo, "ZHH", "zh-mo"); /* Chinese (Macao) */
-    test_tag_from_language!(tag_from_language_zh_hant_mo, "ZHH", "zh-hant-mo"); /* Chinese (Macao) */
+    test_tag_from_language!(tag_from_language_zh_mo, "ZHTM", "zh-mo"); /* Chinese (Macao) */
+    test_tag_from_language!(tag_from_language_zh_hant_mo, "ZHTM", "zh-hant-mo"); /* Chinese (Macao) */
+    test_tag_from_language!(tag_from_language_zh_hans_mo, "ZHS", "zh-hans-mo"); /* Chinese (Simplified, Macao) */
     test_tag_from_language!(tag_from_language_ZHH, "ZHH", "zh-HK"); /* Chinese (Hong Kong) */
     test_tag_from_language!(tag_from_language_zh_HanT_hK, "ZHH", "zH-HanT-hK"); /* Chinese (Hong Kong) */
+    test_tag_from_language!(tag_from_language_zh_HanS_hK, "ZHS", "zH-HanS-hK"); /* Chinese (Simplified, Hong Kong) */
     test_tag_from_language!(tag_from_language_zh_tw, "ZHT", "zh-tw"); /* Chinese (Taiwan) */
     test_tag_from_language!(tag_from_language_ZHS, "ZHS", "zh-Hans"); /* Chinese (Simplified) */
     test_tag_from_language!(tag_from_language_ZHT, "ZHT", "zh-Hant"); /* Chinese (Traditional) */
@@ -604,6 +609,10 @@ mod tests {
     test_tag_from_language!(tag_from_language_zh_min, "ZHS", "zh-min");
     test_tag_from_language!(tag_from_language_zh_min_nan, "ZHS", "zh-min-nan");
     test_tag_from_language!(tag_from_language_zh_xiang, "ZHS", "zh-xiang");
+
+    /* BCP 47 tags that look similar to unrelated language system tags */
+    test_tag_from_language!(tag_from_language_als, "SQI", "als");
+    test_tag_from_language!(tag_from_language_far, "dflt", "far");
 
     /* A UN M.49 region code, not an extended language subtag */
     test_tag_from_language!(tag_from_language_ar_001, "ARA", "ar-001");
