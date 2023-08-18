@@ -149,7 +149,7 @@ pub fn find_syllables(buffer: &mut Buffer) {
     // HarfBuzz uses a `machine_index` iterator wrapper, but this
     // is extremely cursed and probably hard to replicate in Rust.
     // We just collect the indices of the relevant glyphs into a vector.
-    let glyphs: Vec<_> = buffer
+    let mut glyphs: Vec<_> = buffer
         .info
         .iter()
         .copied()
@@ -167,9 +167,10 @@ pub fn find_syllables(buffer: &mut Buffer) {
         })
         .map(|(i, _)| i)
         .collect();
-    let mut p = 0;
-    let pe = glyphs.len();
     let eof = glyphs.len();
+    glyphs.push(buffer.info.len());
+    let mut p = 0;
+    let pe = eof;
     let mut syllable_serial = 1u8;
     let mut reset = true;
     let mut slen;
