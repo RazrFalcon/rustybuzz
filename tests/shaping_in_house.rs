@@ -781,9 +781,9 @@ fn fallback_positioning_001() {
             "",
         ),
         "x=0+1030|\
-         acutecomb=0@-20,-27+0|\
+         acutecomb=0@-19,-27+0|\
          X=2+1295|\
-         acutecomb=2@-152,321+0"
+         acutecomb=2@-151,320+0"
     );
 }
 
@@ -6020,6 +6020,18 @@ fn mongolian_variation_selector_019() {
 }
 
 #[test]
+fn myanmar_misc_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/065b01e54f35f0d849fd43bd5b936212739a50cb.ttf",
+            "\u{101A}\u{1035}",
+            "",
+        ),
+        "ya_e_above=0+1000"
+    );
+}
+
+#[test]
 fn myanmar_syllable_001() {
     assert_eq!(
         shape(
@@ -9240,6 +9252,86 @@ fn use_syllable_016() {
 }
 
 #[test]
+fn use_syllable_017() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/573d3a3177c9a8646e94c8a0d7b224334340946a.ttf",
+            "\u{11410}\u{11442}\u{200C}\u{11411}",
+            "",
+        ),
+        "Ga=0+576|\
+         Virama=0@70,70+0|\
+         Gha=3+566"
+    );
+}
+
+#[test]
+fn use_syllable_018() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/573d3a3177c9a8646e94c8a0d7b224334340946a.ttf",
+            "\u{11410}\u{11442}\u{200C}\u{034F}\u{11411}",
+            "",
+        ),
+        "Ga=0+576|\
+         Virama=0@70,70+0|\
+         Gha=4+566"
+    );
+}
+
+#[test]
+fn use_syllable_019() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/573d3a3177c9a8646e94c8a0d7b224334340946a.ttf",
+            "\u{11410}\u{200C}\u{11442}\u{034F}\u{11411}",
+            "",
+        ),
+        "Ga.icd=0+367|\
+         Gha.diag=1@100,0+386"
+    );
+}
+
+#[test]
+fn use_syllable_020() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/e68a88939e0f06e34d2bc911f09b70890289c8fd.ttf",
+            "\u{AA00}\u{200C}\u{AA34}",
+            "",
+        ),
+        "raMedial_cham_pre=0+400|\
+         a_cham=0+1121"
+    );
+}
+
+#[test]
+fn use_syllable_021() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/2a670df15b73a5dc75a5cc491bde5ac93c5077dc.ttf",
+            "\u{11124}\u{200D}\u{11127}",
+            "",
+        ),
+        "u11124=0+514|\
+         u11127=0+0"
+    );
+}
+
+#[test]
+fn use_syllable_022() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/2a670df15b73a5dc75a5cc491bde5ac93c5077dc.ttf",
+            "\u{11124}\u{2060}\u{11127}",
+            "",
+        ),
+        "u11124=0+514|\
+         u11127=1+0"
+    );
+}
+
+#[test]
 fn use_vowel_letter_spoofing_001() {
     assert_eq!(
         shape(
@@ -10786,6 +10878,18 @@ fn use_014() {
          u11046_u11013=0+500|\
          u1102D_u11046=0+500|\
          u11046=0+500"
+    );
+}
+
+#[test]
+fn use_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/4afb0e8b9a86bb9bd73a1247de4e33fbe3c1fd93.ttf",
+            "\u{11083}",
+            "",
+        ),
+        ".notdef=0+500"
     );
 }
 
