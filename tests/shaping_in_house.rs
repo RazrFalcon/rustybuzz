@@ -11,11 +11,11 @@ fn aat_morx_001() {
             "\u{0041}\u{0078}\u{0045}\u{0079}\u{0044}\u{0079}\u{0079}",
             "",
         ),
-        "A_E_D=0+1394|\
+        "[A_E_D=0+1394|\
          x=0+529|\
          y=0+510|\
          y=5+510|\
-         y=6+510"
+         y=6+510]"
     );
 }
 
@@ -27,9 +27,9 @@ fn aat_trak_001() {
             "\u{0041}\u{0042}\u{0043}",
             "",
         ),
-        "A.alt=0+1000|\
+        "[A.alt=0+1000|\
          B=1+1000|\
-         C.alt=2+1000"
+         C.alt=2+1000]"
     );
 }
 
@@ -41,9 +41,9 @@ fn aat_trak_002() {
             "\u{0041}\u{0042}\u{0043}",
             "--font-ptem=.5",
         ),
-        "A.alt=0@100,0+1200|\
+        "[A.alt=0@100,0+1200|\
          B=1@100,0+1200|\
-         C.alt=2@100,0+1200"
+         C.alt=2@100,0+1200]"
     );
 }
 
@@ -55,9 +55,9 @@ fn aat_trak_003() {
             "\u{0041}\u{0042}\u{0043}",
             "--font-ptem=1",
         ),
-        "A.alt=0@100,0+1200|\
+        "[A.alt=0@100,0+1200|\
          B=1@100,0+1200|\
-         C.alt=2@100,0+1200"
+         C.alt=2@100,0+1200]"
     );
 }
 
@@ -69,9 +69,9 @@ fn aat_trak_004() {
             "\u{0041}\u{0042}\u{0043}",
             "--font-ptem=2",
         ),
-        "A.alt=0@100,0+1200|\
+        "[A.alt=0@100,0+1200|\
          B=1@100,0+1200|\
-         C.alt=2@100,0+1200"
+         C.alt=2@100,0+1200]"
     );
 }
 
@@ -83,9 +83,9 @@ fn aat_trak_005() {
             "\u{0041}\u{0042}\u{0043}",
             "--font-ptem=9",
         ),
-        "A.alt=0@30,0+1060|\
+        "[A.alt=0@30,0+1060|\
          B=1@30,0+1060|\
-         C.alt=2@30,0+1060"
+         C.alt=2@30,0+1060]"
     );
 }
 
@@ -97,9 +97,9 @@ fn aat_trak_006() {
             "\u{0041}\u{0042}\u{0043}",
             "--font-ptem=24",
         ),
-        "A.alt=0@-7,0+986|\
+        "[A.alt=0@-7,0+986|\
          B=1@-7,0+986|\
-         C.alt=2@-7,0+986"
+         C.alt=2@-7,0+986]"
     );
 }
 
@@ -111,9 +111,9 @@ fn aat_trak_007() {
             "\u{0041}\u{0042}\u{0043}",
             "--font-ptem=72",
         ),
-        "A.alt=0@-35,0+929|\
+        "[A.alt=0@-35,0+929|\
          B=1@-35,0+929|\
-         C.alt=2@-35,0+929"
+         C.alt=2@-35,0+929]"
     );
 }
 
@@ -125,9 +125,9 @@ fn aat_trak_008() {
             "\u{0041}\u{0042}\u{0043}",
             "--font-ptem=144",
         ),
-        "A.alt=0@-78,0+843|\
+        "[A.alt=0@-78,0+843|\
          B=1@-78,0+843|\
-         C.alt=2@-78,0+843"
+         C.alt=2@-78,0+843]"
     );
 }
 
@@ -139,9 +139,9 @@ fn aat_trak_009() {
             "\u{0041}\u{0042}\u{0043}",
             "--font-ptem=144",
         ),
-        "A.alt=0@-78,0+843|\
+        "[A.alt=0@-78,0+843|\
          B=1@-78,0+843|\
-         C.alt=2@-78,0+843"
+         C.alt=2@-78,0+843]"
     );
 }
 
@@ -153,9 +153,9 @@ fn aat_trak_010() {
             "\u{0041}\u{0042}\u{0043}",
             "--font-ptem=144 --features=-trak",
         ),
-        "A.alt=0+1000|\
+        "[A.alt=0+1000|\
          B=1+1000|\
-         C.alt=2+1000"
+         C.alt=2+1000]"
     );
 }
 
@@ -167,12 +167,12 @@ fn aat_trak_011() {
             "\u{0041}\u{0042}\u{0043}\u{0041}\u{0042}\u{0043}",
             "--font-ptem=144 --features=-trak[1;3]",
         ),
-        "A.alt=0@-78,0+843|\
+        "[A.alt=0@-78,0+843|\
          B=1+1000|\
          C.alt=2+1000|\
          A.alt=3@-78,0+843|\
          B=4@-78,0+843|\
-         C.alt=5@-78,0+843"
+         C.alt=5@-78,0+843]"
     );
 }
 
@@ -184,7 +184,7 @@ fn arabic_feature_order_001() {
             "\u{1820}\u{180B}",
             "",
         ),
-        "uni2048.E81A=0+1550"
+        "[uni2048.E81A=0+1550]"
     );
 }
 
@@ -196,7 +196,7 @@ fn arabic_feature_order_002() {
             "\u{1820}\u{180B}",
             "",
         ),
-        "uni2048.E81A=0+1550"
+        "[uni2048.E81A=0+1550]"
     );
 }
 
@@ -208,7 +208,7 @@ fn arabic_feature_order_003() {
             "\u{0644}\u{0644}\u{0647}",
             "",
         ),
-        "Lellah=0+1503"
+        "[Lellah=0+1503]"
     );
 }
 
@@ -220,10 +220,10 @@ fn arabic_feature_order_004() {
             "\u{0644}\u{064E}\u{0670}\u{0653}\u{0626}",
             "",
         ),
-        "afii57414.zz04=4+1202|\
+        "[afii57414.zz04=4+1202|\
          uni0670_uni0653=0@50,350+0|\
          afii57454=0@550,1425+0|\
-         afii57444.calt=0+1065"
+         afii57444.calt=0+1065]"
     );
 }
 
@@ -238,7 +238,7 @@ fn arabic_like_joining_001() {
              \u{1E940}\u{1E941}\u{1E942}\u{1E943}",
             "",
         ),
-        "sha_adlam.fina=33+711|\
+        "[sha_adlam.fina=33+711|\
          kpo_adlam.medi=32+573|\
          zal_adlam.medi=31+773|\
          gbe_adlam.medi=30+594|\
@@ -271,7 +271,7 @@ fn arabic_like_joining_001() {
          miim_adlam.medi=3+525|\
          laam_adlam.medi=2+554|\
          daali_adlam.medi=1+600|\
-         alif_adlam.init=0+597"
+         alif_adlam.init=0+597]"
     );
 }
 
@@ -283,13 +283,13 @@ fn arabic_mark_attach_001() {
             "\u{064A}\u{0633}\u{06E1}\u{200D}\u{0654}\u{064E}\u{0644}",
             "",
         ),
-        "afii57444.zz04=6+1091|\
+        "[afii57444.zz04=6+1091|\
          afii57454=1@75,925+0|\
          uni0654=1+0|\
          space=1+0|\
          uni06E1=1@950,1115+0|\
          afii57427.zz03_calt=1+1847|\
-         afii57450.zz21=0+345"
+         afii57450.zz21=0+345]"
     );
 }
 
@@ -301,13 +301,13 @@ fn arabic_mark_order_001() {
             "\u{064A}\u{064E}\u{0670}\u{0653}\u{0640}\u{0654}\u{064E}\u{0627}",
             "",
         ),
-        "afii57415.zz04=7+481|\
+        "[afii57415.zz04=7+481|\
          afii57454=4@25,975+0|\
          uni0654=4@-50,50+0|\
          afii57440=4+650|\
          uni0670_uni0653=0@75,400+0|\
          afii57454=0@750,1125+0|\
-         afii57450.calt=0+1331"
+         afii57450.calt=0+1331]"
     );
 }
 
@@ -320,7 +320,7 @@ fn arabic_mark_order_002() {
              \u{0656}\u{0651}\u{065C}\u{0655}\u{0650}",
             "",
         ),
-        "uni0653.small=0@266,2508+0|\
+        "[uni0653.small=0@266,2508+0|\
          uni0654=0@308,2151+0|\
          uni0655=0@518,-1544+0|\
          uni065C=0@501,-1453+0|\
@@ -332,7 +332,7 @@ fn arabic_mark_order_002() {
          uni0651=0@402,764+0|\
          uni0658=0@424,404+0|\
          uni0654064F=0@540,-435+0|\
-         uni0628=0+1352"
+         uni0628=0+1352]"
     );
 }
 
@@ -344,10 +344,10 @@ fn arabic_mark_order_003() {
             "\u{0649}\u{0655}\u{034F}\u{0650}",
             "",
         ),
-        "uni0650.small2=0@727,-774+0|\
+        "[uni0650.small2=0@727,-774+0|\
          space=0+0|\
          uni0655=0@727,-209+0|\
-         uni0649=0+1566"
+         uni0649=0+1566]"
     );
 }
 
@@ -359,9 +359,9 @@ fn arabic_mark_order_004() {
             "\u{0649}\u{0655}\u{0650}",
             "",
         ),
-        "uni0650.small2=0@727,-774+0|\
+        "[uni0650.small2=0@727,-774+0|\
          uni0655=0@727,-209+0|\
-         uni0649=0+1566"
+         uni0649=0+1566]"
     );
 }
 
@@ -373,9 +373,9 @@ fn arabic_mark_order_005() {
             "\u{0649}\u{0650}\u{0655}",
             "",
         ),
-        "uni0650.small2=0@727,-774+0|\
+        "[uni0650.small2=0@727,-774+0|\
          uni0655=0@727,-209+0|\
-         uni0649=0+1566"
+         uni0649=0+1566]"
     );
 }
 
@@ -387,10 +387,10 @@ fn arabic_mark_order_006() {
             "\u{0649}\u{0650}\u{034F}\u{0655}",
             "",
         ),
-        "uni0655=0+0|\
+        "[uni0655=0+0|\
          space=0+0|\
          uni0650=0@166,0+0|\
-         uni0649=0+1566"
+         uni0649=0+1566]"
     );
 }
 
@@ -402,7 +402,7 @@ fn arabic_stch_001() {
             "\u{0718}\u{070F}\u{0718}\u{0718}\u{002E}",
             "--no-glyph-names",
         ),
-        "1=4+168|\
+        "[1=4+168|\
          3=3+502|\
          3=2+502|\
          4=1@-1004,0+0|\
@@ -416,7 +416,7 @@ fn arabic_stch_001() {
          5=1@-284,0+0|\
          5=1@-207,0+0|\
          4=1@-128,0+0|\
-         3=0+502"
+         3=0+502]"
     );
 }
 
@@ -428,13 +428,13 @@ fn automatic_fractions_001() {
             "\u{0031}\u{0032}\u{0033}\u{2044}\u{0034}\u{0035}\u{0036}",
             "",
         ),
-        "one.numr=0+600|\
+        "[one.numr=0+600|\
          two.numr=1+600|\
          three.numr=2+600|\
          fraction=3+252|\
          four.small=4+600|\
          five.small=5+600|\
-         six.small=6+600"
+         six.small=6+600]"
     );
 }
 
@@ -446,13 +446,13 @@ fn automatic_fractions_002() {
             "\u{0031}\u{0032}\u{0033}\u{2044}\u{0034}\u{0035}\u{0036}",
             "--direction=l --script=arab",
         ),
-        "one.numr=0+600|\
+        "[one.numr=0+600|\
          two.numr=1+600|\
          three.numr=2+600|\
          fraction=3+252|\
          four.small=4+600|\
          five.small=5+600|\
-         six.small=6+600"
+         six.small=6+600]"
     );
 }
 
@@ -464,13 +464,13 @@ fn automatic_fractions_003() {
             "\u{0661}\u{0662}\u{0663}\u{2044}\u{0664}\u{0665}\u{0666}",
             "--direction=l",
         ),
-        "uni0661.numr=0+600|\
+        "[uni0661.numr=0+600|\
          uni0662.numr=1+600|\
          uni0663.numr=2+600|\
          fraction=3+252|\
          uni0664.small=4+600|\
          uni0665.small=5+600|\
-         uni0666.small=6+600"
+         uni0666.small=6+600]"
     );
 }
 
@@ -482,10 +482,10 @@ fn cluster_001() {
             "\u{0078}\u{030A}\u{0058}\u{030A}",
             "--cluster-level=2",
         ),
-        "gid2=0+1083|\
+        "[gid2=0+1083|\
          gid3=1@-1132,-8+0|\
          gid1=2+1200|\
-         gid3=3@-1190,349+0"
+         gid3=3@-1190,349+0]"
     );
 }
 
@@ -497,7 +497,7 @@ fn cluster_002() {
             "\u{05D4}\u{05B7}\u{05E9}\u{05BC}\u{05C1}\u{05B8}\u{05DE}\u{05B4}\u{05DD}",
             "--cluster-level=1",
         ),
-        "uni05DD=8+1359|\
+        "[uni05DD=8+1359|\
          uni05B4=7@111,0+0|\
          uni05DE=6+1391|\
          uni05B8=5+0|\
@@ -505,7 +505,7 @@ fn cluster_002() {
          uni05C1=3+0|\
          uni05E9=2+1451|\
          uni05B7=1@28,0+0|\
-         uni05D4=0+1338"
+         uni05D4=0+1338]"
     );
 }
 
@@ -517,9 +517,9 @@ fn collections_004() {
             "\u{2026}\u{0020}\u{002E}",
             "--face-index=0",
         ),
-        "ellipsis=0+723|\
+        "[ellipsis=0+723|\
          space=1+250|\
-         period=2+241"
+         period=2+241]"
     );
 }
 
@@ -531,9 +531,9 @@ fn collections_005() {
             "\u{2026}\u{0020}\u{002E}",
             "--face-index=1",
         ),
-        "ellipsis=0+723|\
+        "[ellipsis=0+723|\
          space=1+250|\
-         period=2+241"
+         period=2+241]"
     );
 }
 
@@ -545,7 +545,7 @@ fn color_fonts_001() {
             "\u{1F42F}",
             "--show-extents",
         ),
-        "gid1=0+2963<0,2179,2963,-2789>"
+        "[gid1=0+2963<0,2179,2963,-2789>]"
     );
 }
 
@@ -557,7 +557,7 @@ fn color_fonts_002() {
             "\u{1F600}",
             "--show-extents",
         ),
-        "gid4=0+2550<0,1898,2555,-2405>"
+        "[gid4=0+2550<0,1898,2555,-2405>]"
     );
 }
 
@@ -569,14 +569,14 @@ fn context_matching_001() {
             "\u{1A48}\u{1A58}\u{1A25}\u{1A48}\u{1A58}\u{1A25}\u{1A6E}\u{1A63}",
             "",
         ),
-        "uni1A48=0+1212|\
+        "[uni1A48=0+1212|\
          uni1A25=0+1912|\
          uni1A58=0+0|\
          uni1A48=3+1212|\
          uni1A6E=3+0|\
          uni1A25=3+1912|\
          uni1A58=3+0|\
-         uni1A63=3+1212"
+         uni1A63=3+1212]"
     );
 }
 
@@ -588,10 +588,10 @@ fn context_matching_002() {
             "\u{0915}\u{093F}\u{0915}\u{093F}",
             "",
         ),
-        "ivowelsign03deva=0+530|\
+        "[ivowelsign03deva=0+530|\
          kadeva=0+1561|\
          ivowelsign03deva=2+530|\
-         kadeva=2+1561"
+         kadeva=2+1561]"
     );
 }
 
@@ -603,9 +603,9 @@ fn context_matching_003() {
             "\u{09B0}\u{09CD}\u{09A5}\u{09CD}\u{09AF}\u{09C0}",
             "",
         ),
-        "gid1=0+1320|\
+        "[gid1=0+1320|\
          gid13=0+523|\
-         gid18=0+545"
+         gid18=0+545]"
     );
 }
 
@@ -617,12 +617,12 @@ fn cursive_positioning_001() {
             "\u{0643}\u{0645}\u{0645}\u{062B}\u{0644}",
             "",
         ),
-        "gid8=4+738|\
+        "[gid8=4+738|\
          gid5=3@441,1197+0|\
          gid6=3@0,432+405|\
          gid9=2@0,477+452|\
          gid9=1@0,977+452|\
-         gid10=0@20,1577+207"
+         gid10=0@20,1577+207]"
     );
 }
 
@@ -634,12 +634,12 @@ fn cursive_positioning_002() {
             "\u{0643}\u{0645}\u{0645}\u{062B}\u{0644}",
             "",
         ),
-        "gid8=4+738|\
+        "[gid8=4+738|\
          gid5=3@441,1197+0|\
          gid6=3@0,432+405|\
          gid9=2@0,477+500|\
          gid9=1@0,577+452|\
-         gid10=0@20,1177+207"
+         gid10=0@20,1177+207]"
     );
 }
 
@@ -651,8 +651,8 @@ fn cursive_positioning_004() {
             "\u{0606}\u{06E1}",
             "--no-glyph-names",
         ),
-        "2=0@40,502+0|\
-         1=0+1000"
+        "[2=0@40,502+0|\
+         1=0+1000]"
     );
 }
 
@@ -664,9 +664,9 @@ fn cursive_positioning_005() {
             "\u{16F0A}\u{16F57}\u{16F8F}",
             "",
         ),
-        "u16F0A=0+422|\
+        "[u16F0A=0+422|\
          u16F57=0@0,209+338|\
-         u16F8F=0+0"
+         u16F8F=0+0]"
     );
 }
 
@@ -678,10 +678,10 @@ fn default_ignorables_001() {
             "\u{0075}\u{0361}\u{034F}\u{0301}\u{0069}",
             "",
         ),
-        "gid2=0+1266|\
+        "[gid2=0+1266|\
          gid7=0@-617,442+0|\
          gid5=0@-7,0+0|\
-         gid1=4+528"
+         gid1=4+528]"
     );
 }
 
@@ -693,11 +693,11 @@ fn default_ignorables_002() {
             "\u{0020}\u{06CC}\u{064E}\u{034F}\u{0651}",
             "",
         ),
-        "uni0651=1+0|\
+        "[uni0651=1+0|\
          space=1+0|\
          uni064E=1@236,-432+0|\
          uni06CC=1+1266|\
-         space=0+452"
+         space=0+452]"
     );
 }
 
@@ -709,12 +709,12 @@ fn emoji_001() {
             "\u{1F3F4}\u{E0055}\u{E0053}\u{E0064}\u{E0065}\u{E007F}",
             "",
         ),
-        "u1F3F4=0+2126|\
+        "[u1F3F4=0+2126|\
          space=0+0|\
          space=0+0|\
          space=0+0|\
          space=0+0|\
-         space=0+0"
+         space=0+0]"
     );
 }
 
@@ -726,7 +726,7 @@ fn emoji_002() {
             "\u{1F3F4}\u{E0064}\u{E0065}\u{E007F}",
             "",
         ),
-        "de=0+3200"
+        "[de=0+3200]"
     );
 }
 
@@ -738,7 +738,7 @@ fn emoji_003() {
             "\u{1F481}\u{1F3FB}\u{200D}\u{2642}\u{FE0F}",
             "--direction=l",
         ),
-        "gid7=0+2550"
+        "[gid7=0+2550]"
     );
 }
 
@@ -750,7 +750,7 @@ fn emoji_004() {
             "\u{1F481}\u{1F3FB}\u{200D}\u{2642}\u{FE0F}",
             "--direction=r",
         ),
-        "gid7=0+2550"
+        "[gid7=0+2550]"
     );
 }
 
@@ -762,13 +762,13 @@ fn emoji_005() {
             "\u{1F3F4}\u{E0067}\u{E0062}\u{E0077}\u{E006C}\u{E0073}\u{E007F}",
             "",
         ),
-        ".notdef=0+1229|\
+        "[.notdef=0+1229|\
          space=0+0|\
          space=0+0|\
          space=0+0|\
          space=0+0|\
          space=0+0|\
-         space=0+0"
+         space=0+0]"
     );
 }
 
@@ -780,10 +780,10 @@ fn fallback_positioning_001() {
             "\u{0078}\u{0301}\u{0058}\u{0301}",
             "",
         ),
-        "x=0+1030|\
+        "[x=0+1030|\
          acutecomb=0@-19,-27+0|\
          X=2+1295|\
-         acutecomb=2@-151,320+0"
+         acutecomb=2@-151,320+0]"
     );
 }
 
@@ -795,9 +795,9 @@ fn fallback_positioning_002() {
             "\u{0061}\u{035C}\u{0062}",
             "",
         ),
-        "uni0061=0+512|\
+        "[uni0061=0+512|\
          uni035C=0@0,-128+0|\
-         uni0062=2+512"
+         uni0062=2+512]"
     );
 }
 
@@ -809,8 +809,8 @@ fn hangul_jamo_001() {
             "\u{115F}\u{11A2}",
             "",
         ),
-        "gid3=0+920|\
-         gid4=0+0"
+        "[gid3=0+920|\
+         gid4=0+0]"
     );
 }
 
@@ -822,7 +822,7 @@ fn hangul_jamo_002() {
             "\u{11A2}",
             "",
         ),
-        "gid1=0+920"
+        "[gid1=0+920]"
     );
 }
 
@@ -834,7 +834,7 @@ fn hyphens_001() {
             "\u{2010}",
             "",
         ),
-        "gid1=0+739"
+        "[gid1=0+739]"
     );
 }
 
@@ -846,7 +846,7 @@ fn hyphens_002() {
             "\u{2011}",
             "",
         ),
-        "gid1=0+739"
+        "[gid1=0+739]"
     );
 }
 
@@ -858,8 +858,8 @@ fn indic_consonant_with_stacker_001() {
             "\u{0CF1}\u{0C95}",
             "--no-glyph-names",
         ),
-        "2=0+1129|\
-         3=1+358"
+        "[2=0+1129|\
+         3=1+358]"
     );
 }
 
@@ -871,8 +871,8 @@ fn indic_consonant_with_stacker_002() {
             "\u{0CF2}\u{0CAA}",
             "--no-glyph-names",
         ),
-        "2=0+1539|\
-         3=1+245"
+        "[2=0+1539|\
+         3=1+245]"
     );
 }
 
@@ -884,7 +884,7 @@ fn indic_consonant_with_stacker_003() {
             "\u{0CF1}",
             "--no-glyph-names",
         ),
-        "1=0+1129"
+        "[1=0+1129]"
     );
 }
 
@@ -896,7 +896,7 @@ fn indic_consonant_with_stacker_004() {
             "\u{0CF2}",
             "--no-glyph-names",
         ),
-        "1=0+1539"
+        "[1=0+1539]"
     );
 }
 
@@ -908,10 +908,10 @@ fn indic_init_001() {
             "\u{09AC}\u{09C7}\u{09AC}\u{09C7}",
             "--no-glyph-names",
         ),
-        "3=0+273|\
+        "[3=0+273|\
          1=0+460|\
          2=2+307|\
-         1=2+460"
+         1=2+460]"
     );
 }
 
@@ -923,7 +923,7 @@ fn indic_joiner_candrabindu_001() {
             "\u{0B13}\u{200D}\u{0B01}",
             "",
         ),
-        "omorya=0+1450"
+        "[omorya=0+1450]"
     );
 }
 
@@ -935,9 +935,9 @@ fn indic_joiner_candrabindu_002() {
             "\u{0B13}\u{200C}\u{0B01}",
             "",
         ),
-        "oorya=0+1309|\
+        "[oorya=0+1309|\
          space=1+0|\
-         candrabinduorya=1+0"
+         candrabinduorya=1+0]"
     );
 }
 
@@ -949,13 +949,13 @@ fn indic_joiners_001() {
             "\u{179A}\u{1784}\u{17D2}\u{179F}\u{200C}\u{17CA}\u{17B8}\u{0020}",
             "",
         ),
-        "uni179a=0+775|\
+        "[uni179a=0+775|\
          uni1784=1+1550|\
          uni179f.sub=1+775|\
          space=4+0|\
          uni17ca=4+0|\
          uni17b8=4@0,300+0|\
-         space=7+600"
+         space=7+600]"
     );
 }
 
@@ -967,11 +967,11 @@ fn indic_joiners_002() {
             "\u{179A}\u{1784}\u{17D2}\u{179F}\u{17CA}\u{17B8}",
             "",
         ),
-        "uni179a=0+775|\
+        "[uni179a=0+775|\
          uni1784=1+1550|\
          uni179f.sub=1+775|\
          uni17bb=1@-75,-700+0|\
-         uni17b8=1+0"
+         uni17b8=1+0]"
     );
 }
 
@@ -983,11 +983,11 @@ fn indic_joiners_003() {
             "\u{091F}\u{094D}\u{200C}\u{092F}\u{093F}",
             "",
         ),
-        "uni091F=0+876|\
+        "[uni091F=0+876|\
          uni094D=0@4,0+0|\
          space=2+0|\
          uni093F.750=3+397|\
-         uni092F=3+924"
+         uni092F=3+924]"
     );
 }
 
@@ -999,11 +999,11 @@ fn indic_joiners_004() {
             "\u{091F}\u{094D}\u{200D}\u{092F}\u{093F}",
             "",
         ),
-        "uni093F=0+398|\
+        "[uni093F=0+398|\
          uni091F=0+876|\
          uni094D=0@4,0+0|\
          space=0+0|\
-         uni092F=0+924"
+         uni092F=0+924]"
     );
 }
 
@@ -1016,7 +1016,7 @@ fn indic_joiners_005() {
              \u{093F}",
             "",
         ),
-        "uni091F=0+876|\
+        "[uni091F=0+876|\
          uni094D=0@4,0+0|\
          space=0+0|\
          uni091F=3+876|\
@@ -1026,7 +1026,7 @@ fn indic_joiners_005() {
          uni091F=6+876|\
          uni094D=6@4,0+0|\
          space=6+0|\
-         uni092F=6+924"
+         uni092F=6+924]"
     );
 }
 
@@ -1039,7 +1039,7 @@ fn indic_joiners_006() {
              \u{093F}",
             "",
         ),
-        "uni093F=0+398|\
+        "[uni093F=0+398|\
          uni091F=0+876|\
          uni094D=0@4,0+0|\
          space=0+0|\
@@ -1049,7 +1049,7 @@ fn indic_joiners_006() {
          uni091F=0+876|\
          uni094D=0@4,0+0|\
          space=0+0|\
-         uni092F=0+924"
+         uni092F=0+924]"
     );
 }
 
@@ -1061,8 +1061,8 @@ fn indic_old_spec_001() {
             "\u{0C9A}\u{0CCD}\u{0C9A}\u{0CCD}",
             "",
         ),
-        "U0C9A_U0CCD.haln=0+1066|\
-         U0C9A_0CCD.blwf=0+0"
+        "[U0C9A_U0CCD.haln=0+1066|\
+         U0C9A_0CCD.blwf=0+0]"
     );
 }
 
@@ -1074,8 +1074,8 @@ fn indic_old_spec_002() {
             "\u{0D38}\u{0D4D}\u{0D31}\u{0D4D}\u{0D31}\u{0D4D}",
             "",
         ),
-        "glyph201=0+1183|\
-         U0D4D=0+0"
+        "[glyph201=0+1183|\
+         U0D4D=0+0]"
     );
 }
 
@@ -1087,9 +1087,9 @@ fn indic_old_spec_003() {
             "\u{091F}\u{094D}\u{0930}\u{094D}\u{0020}",
             "",
         ),
-        "Tra=0+550|\
+        "[Tra=0+550|\
          virAma=0@-73,-110+0|\
-         space=4+500"
+         space=4+500]"
     );
 }
 
@@ -1101,8 +1101,8 @@ fn indic_old_spec_004() {
             "\u{091F}\u{094D}\u{0930}\u{0942}",
             "",
         ),
-        "Tra=0+550|\
-         UT=0@42,-150+0"
+        "[Tra=0+550|\
+         UT=0@42,-150+0]"
     );
 }
 
@@ -1114,9 +1114,9 @@ fn indic_pref_blocking_001() {
             "\u{0D2F}\u{0D4D}\u{0D30}\u{0D46}",
             "",
         ),
-        "evowelsignmlym=0+1465|\
+        "[evowelsignmlym=0+1465|\
          rapostmlym=0+499|\
-         yamlym=0+2120"
+         yamlym=0+2120]"
     );
 }
 
@@ -1128,10 +1128,10 @@ fn indic_pref_blocking_002() {
             "\u{0D2F}\u{0D4D}\u{0D30}\u{0D46}",
             "",
         ),
-        "yamlym=0+2120|\
+        "[yamlym=0+2120|\
          viramamlym=0+0|\
          evowelsignmlym=0+1465|\
-         ramlym=0+1507"
+         ramlym=0+1507]"
     );
 }
 
@@ -1143,13 +1143,13 @@ fn indic_script_extensions_001() {
             "\u{0BA4}\u{0BC6}\u{1133C}\u{0BAA}\u{1133C}\u{0BC6}\u{1133C}",
             "",
         ),
-        "u0BC6=0+2093|\
+        "[u0BC6=0+2093|\
          u1133C=0+0|\
          u0BA4=0+1863|\
          u0BC6=3+2093|\
          u1133C=3+0|\
          u0BAA=3+1706|\
-         u1133C=3+0"
+         u1133C=3+0]"
     );
 }
 
@@ -1161,9 +1161,9 @@ fn indic_script_extensions_002() {
             "\u{0BAA}\u{11301}\u{11303}",
             "--no-glyph-names",
         ),
-        "1=0+535|\
+        "[1=0+535|\
          2=0+0|\
-         3=0+310"
+         3=0+310]"
     );
 }
 
@@ -1175,8 +1175,8 @@ fn indic_special_cases_001() {
             "\u{0CB0}\u{0CCD}\u{0C95}",
             "",
         ),
-        "gid1=0+1176|\
-         gid5=0+1161"
+        "[gid1=0+1176|\
+         gid5=0+1161]"
     );
 }
 
@@ -1188,8 +1188,8 @@ fn indic_special_cases_002() {
             "\u{0CB0}\u{200D}\u{0CCD}\u{0C95}",
             "",
         ),
-        "gid2=0+1334|\
-         gid6=0+358"
+        "[gid2=0+1334|\
+         gid6=0+358]"
     );
 }
 
@@ -1201,8 +1201,8 @@ fn indic_special_cases_003() {
             "\u{0CB0}\u{0CCD}\u{200D}\u{0C95}",
             "",
         ),
-        "gid2=0+1334|\
-         gid6=0+358"
+        "[gid2=0+1334|\
+         gid6=0+358]"
     );
 }
 
@@ -1214,8 +1214,8 @@ fn indic_syllable_001() {
             "\u{0BA4}\u{0BCD}\u{00B3}",
             "",
         ),
-        "taprehalftamil=0+1509|\
-         uni00B3=2+674"
+        "[taprehalftamil=0+1509|\
+         uni00B3=2+674]"
     );
 }
 
@@ -1227,7 +1227,7 @@ fn indic_syllable_002() {
             "\u{0CF1}",
             "",
         ),
-        "gid1=0+1129"
+        "[gid1=0+1129]"
     );
 }
 
@@ -1239,7 +1239,7 @@ fn indic_syllable_003() {
             "\u{0CF2}",
             "",
         ),
-        "gid2=0+1539"
+        "[gid2=0+1539]"
     );
 }
 
@@ -1251,8 +1251,8 @@ fn indic_syllable_004() {
             "\u{0980}\u{0981}",
             "",
         ),
-        "anjibeng=0+520|\
-         candrabindubeng=0+0"
+        "[anjibeng=0+520|\
+         candrabindubeng=0+0]"
     );
 }
 
@@ -1264,9 +1264,9 @@ fn indic_syllable_005() {
             "\u{0A15}\u{0A51}\u{0A47}",
             "",
         ),
-        "kaguru=0+1273|\
+        "[kaguru=0+1273|\
          udaatguru=0@75,0+0|\
-         eematraguru=0@-40,0+0"
+         eematraguru=0@-40,0+0]"
     );
 }
 
@@ -1278,8 +1278,8 @@ fn indic_syllable_006() {
             "\u{0A51}",
             "",
         ),
-        "uni25CC=0+1044|\
-         udaatguru=0+0"
+        "[uni25CC=0+1044|\
+         udaatguru=0+0]"
     );
 }
 
@@ -1291,8 +1291,8 @@ fn indic_syllable_007() {
             "\u{25CC}\u{0A51}",
             "",
         ),
-        "uni25CC=0+1044|\
-         udaatguru=0+0"
+        "[uni25CC=0+1044|\
+         udaatguru=0+0]"
     );
 }
 
@@ -1304,8 +1304,8 @@ fn indic_syllable_008() {
             "\u{0C80}\u{0C82}",
             "--no-glyph-names",
         ),
-        "1=0+502|\
-         2=0+502"
+        "[1=0+502|\
+         2=0+502]"
     );
 }
 
@@ -1317,9 +1317,9 @@ fn indic_syllable_009() {
             "\u{0A20}\u{0A75}\u{0A47}",
             "",
         ),
-        "tthaguru=0+1352|\
+        "[tthaguru=0+1352|\
          yakashguru=0@-90,0+0|\
-         eematraguru=0@-411,0+0"
+         eematraguru=0@-411,0+0]"
     );
 }
 
@@ -1331,8 +1331,8 @@ fn indic_syllable_010() {
             "\u{0A20}\u{0A75}\u{0A42}",
             "",
         ),
-        "tthaguru=0+1352|\
-         yakashuuguru=0+0"
+        "[tthaguru=0+1352|\
+         yakashuuguru=0+0]"
     );
 }
 
@@ -1344,11 +1344,11 @@ fn indic_vowel_letter_spoofing_001() {
             "\u{0904}\u{0020}\u{0905}\u{0946}",
             "",
         ),
-        "ashortdeva=0+764|\
+        "[ashortdeva=0+764|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
-         eshortvowelsigndeva=2+0"
+         eshortvowelsigndeva=2+0]"
     );
 }
 
@@ -1360,11 +1360,11 @@ fn indic_vowel_letter_spoofing_002() {
             "\u{0906}\u{0020}\u{0905}\u{093E}",
             "",
         ),
-        "aadeva=0+1023|\
+        "[aadeva=0+1023|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
-         aavowelsigndeva=2+259"
+         aavowelsigndeva=2+259]"
     );
 }
 
@@ -1376,11 +1376,11 @@ fn indic_vowel_letter_spoofing_003() {
             "\u{0908}\u{0020}\u{0930}\u{094D}\u{0907}",
             "",
         ),
-        "iideva=0+491|\
+        "[iideva=0+491|\
          space=1+260|\
          uni25CC=2+510|\
          rephdeva=2+0|\
-         ideva=2+491"
+         ideva=2+491]"
     );
 }
 
@@ -1392,11 +1392,11 @@ fn indic_vowel_letter_spoofing_004() {
             "\u{090A}\u{0020}\u{0909}\u{0941}",
             "",
         ),
-        "uudeva=0+765|\
+        "[uudeva=0+765|\
          space=1+260|\
          udeva=2+548|\
          uni25CC=2+510|\
-         uvowelsigndeva=2+0"
+         uvowelsigndeva=2+0]"
     );
 }
 
@@ -1408,11 +1408,11 @@ fn indic_vowel_letter_spoofing_005() {
             "\u{090D}\u{0020}\u{090F}\u{0945}",
             "",
         ),
-        "ecandradeva=0+553|\
+        "[ecandradeva=0+553|\
          space=1+260|\
          edeva=2+553|\
          uni25CC=2+510|\
-         ecandravowelsigndeva=2+0"
+         ecandravowelsigndeva=2+0]"
     );
 }
 
@@ -1424,11 +1424,11 @@ fn indic_vowel_letter_spoofing_006() {
             "\u{090E}\u{0020}\u{090F}\u{0946}",
             "",
         ),
-        "eshortdeva=0+553|\
+        "[eshortdeva=0+553|\
          space=1+260|\
          edeva=2+553|\
          uni25CC=2+510|\
-         eshortvowelsigndeva=2+0"
+         eshortvowelsigndeva=2+0]"
     );
 }
 
@@ -1440,11 +1440,11 @@ fn indic_vowel_letter_spoofing_007() {
             "\u{0910}\u{0020}\u{090F}\u{0947}",
             "",
         ),
-        "aideva=0+553|\
+        "[aideva=0+553|\
          space=1+260|\
          edeva=2+553|\
          uni25CC=2+510|\
-         evowelsigndeva=2+0"
+         evowelsigndeva=2+0]"
     );
 }
 
@@ -1456,7 +1456,7 @@ fn indic_vowel_letter_spoofing_008() {
             "\u{0911}\u{0020}\u{0905}\u{0949}\u{0020}\u{0906}\u{0945}",
             "",
         ),
-        "ocandradeva=0+1023|\
+        "[ocandradeva=0+1023|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
@@ -1464,7 +1464,7 @@ fn indic_vowel_letter_spoofing_008() {
          space=4+260|\
          aadeva=5+1023|\
          uni25CC=5+510|\
-         ecandravowelsigndeva=5+0"
+         ecandravowelsigndeva=5+0]"
     );
 }
 
@@ -1476,7 +1476,7 @@ fn indic_vowel_letter_spoofing_009() {
             "\u{0912}\u{0020}\u{0905}\u{094A}\u{0020}\u{0906}\u{0946}",
             "",
         ),
-        "oshortdeva=0+1023|\
+        "[oshortdeva=0+1023|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
@@ -1484,7 +1484,7 @@ fn indic_vowel_letter_spoofing_009() {
          space=4+260|\
          aadeva=5+1023|\
          uni25CC=5+510|\
-         eshortvowelsigndeva=5+0"
+         eshortvowelsigndeva=5+0]"
     );
 }
 
@@ -1496,7 +1496,7 @@ fn indic_vowel_letter_spoofing_010() {
             "\u{0913}\u{0020}\u{0905}\u{094B}\u{0020}\u{0906}\u{0947}",
             "",
         ),
-        "odeva=0+1023|\
+        "[odeva=0+1023|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
@@ -1504,7 +1504,7 @@ fn indic_vowel_letter_spoofing_010() {
          space=4+260|\
          aadeva=5+1023|\
          uni25CC=5+510|\
-         evowelsigndeva=5+0"
+         evowelsigndeva=5+0]"
     );
 }
 
@@ -1516,7 +1516,7 @@ fn indic_vowel_letter_spoofing_011() {
             "\u{0914}\u{0020}\u{0905}\u{094C}\u{0020}\u{0906}\u{0948}",
             "",
         ),
-        "audeva=0+1023|\
+        "[audeva=0+1023|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
@@ -1524,7 +1524,7 @@ fn indic_vowel_letter_spoofing_011() {
          space=4+260|\
          aadeva=5+1023|\
          uni25CC=5+510|\
-         aivowelsigndeva=5+0"
+         aivowelsigndeva=5+0]"
     );
 }
 
@@ -1536,11 +1536,11 @@ fn indic_vowel_letter_spoofing_012() {
             "\u{0972}\u{0020}\u{0905}\u{0945}",
             "",
         ),
-        "acandradeva=0+764|\
+        "[acandradeva=0+764|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
-         ecandravowelsigndeva=2+0"
+         ecandravowelsigndeva=2+0]"
     );
 }
 
@@ -1552,11 +1552,11 @@ fn indic_vowel_letter_spoofing_013() {
             "\u{0973}\u{0020}\u{0905}\u{093A}",
             "",
         ),
-        "oedeva=0+764|\
+        "[oedeva=0+764|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
-         oevowelsigndeva=2+0"
+         oevowelsigndeva=2+0]"
     );
 }
 
@@ -1568,7 +1568,7 @@ fn indic_vowel_letter_spoofing_014() {
             "\u{0974}\u{0020}\u{0905}\u{093B}\u{0020}\u{0906}\u{093A}",
             "",
         ),
-        "ooedeva=0+1023|\
+        "[ooedeva=0+1023|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
@@ -1576,7 +1576,7 @@ fn indic_vowel_letter_spoofing_014() {
          space=4+260|\
          aadeva=5+1023|\
          uni25CC=5+510|\
-         oevowelsigndeva=5+0"
+         oevowelsigndeva=5+0]"
     );
 }
 
@@ -1588,11 +1588,11 @@ fn indic_vowel_letter_spoofing_015() {
             "\u{0975}\u{0020}\u{0905}\u{094F}",
             "",
         ),
-        "awdeva=0+1023|\
+        "[awdeva=0+1023|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
-         awvowelsigndeva=2+259"
+         awvowelsigndeva=2+259]"
     );
 }
 
@@ -1604,11 +1604,11 @@ fn indic_vowel_letter_spoofing_016() {
             "\u{0976}\u{0020}\u{0905}\u{0956}",
             "",
         ),
-        "uedeva=0+764|\
+        "[uedeva=0+764|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
-         uevowelsigndeva=2@50,0+0"
+         uevowelsigndeva=2@50,0+0]"
     );
 }
 
@@ -1620,11 +1620,11 @@ fn indic_vowel_letter_spoofing_017() {
             "\u{0977}\u{0020}\u{0905}\u{0957}",
             "",
         ),
-        "uuedeva=0+764|\
+        "[uuedeva=0+764|\
          space=1+260|\
          adeva=2+764|\
          uni25CC=2+510|\
-         uuevowelsigndeva=2@50,0+0"
+         uuevowelsigndeva=2@50,0+0]"
     );
 }
 
@@ -1636,11 +1636,11 @@ fn indic_vowel_letter_spoofing_018() {
             "\u{0986}\u{0020}\u{0985}\u{09BE}",
             "",
         ),
-        "aabeng=0+1158|\
+        "[aabeng=0+1158|\
          space=1+260|\
          abeng=2+893|\
          uni25CC=2+510|\
-         aavowelsignbeng=2+266"
+         aavowelsignbeng=2+266]"
     );
 }
 
@@ -1652,11 +1652,11 @@ fn indic_vowel_letter_spoofing_019() {
             "\u{09E0}\u{0020}\u{098B}\u{09C3}",
             "",
         ),
-        "rrvocalicbeng=0+853|\
+        "[rrvocalicbeng=0+853|\
          space=1+260|\
          rvocalicbeng=2+853|\
          uni25CC=2+510|\
-         rvocalicvowelsignbeng=2+0"
+         rvocalicvowelsignbeng=2+0]"
     );
 }
 
@@ -1668,11 +1668,11 @@ fn indic_vowel_letter_spoofing_020() {
             "\u{09E1}\u{0020}\u{098C}\u{09E2}",
             "",
         ),
-        "llvocalicbeng=0+639|\
+        "[llvocalicbeng=0+639|\
          space=1+260|\
          lvocalicbeng=2+639|\
          uni25CC=2+510|\
-         lvocalicvowelsignbeng=2+0"
+         lvocalicvowelsignbeng=2+0]"
     );
 }
 
@@ -1684,11 +1684,11 @@ fn indic_vowel_letter_spoofing_021() {
             "\u{0A06}\u{0020}\u{0A05}\u{0A3E}",
             "",
         ),
-        "aaguru=0+2001|\
+        "[aaguru=0+2001|\
          space=1+532|\
          aguru=2+1520|\
          uni25CC=2+1044|\
-         aamatraguru=2+481"
+         aamatraguru=2+481]"
     );
 }
 
@@ -1700,11 +1700,11 @@ fn indic_vowel_letter_spoofing_022() {
             "\u{0A07}\u{0020}\u{0A72}\u{0A3F}",
             "",
         ),
-        "iguru=0+1671|\
+        "[iguru=0+1671|\
          space=1+532|\
          iriguru=2+1141|\
          imatraguru=2+530|\
-         uni25CC=2+1044"
+         uni25CC=2+1044]"
     );
 }
 
@@ -1716,11 +1716,11 @@ fn indic_vowel_letter_spoofing_023() {
             "\u{0A08}\u{0020}\u{0A72}\u{0A40}",
             "",
         ),
-        "iiguru=0+1671|\
+        "[iiguru=0+1671|\
          space=1+532|\
          iriguru=2+1141|\
          uni25CC=2+1044|\
-         iimatraguru=2+530"
+         iimatraguru=2+530]"
     );
 }
 
@@ -1732,11 +1732,11 @@ fn indic_vowel_letter_spoofing_024() {
             "\u{0A09}\u{0020}\u{0A73}\u{0A41}",
             "",
         ),
-        "uguru=0+1356|\
+        "[uguru=0+1356|\
          space=1+532|\
          uraguru=2+1356|\
          uni25CC=2+1044|\
-         umatraguru=2@102,0+0"
+         umatraguru=2@102,0+0]"
     );
 }
 
@@ -1748,11 +1748,11 @@ fn indic_vowel_letter_spoofing_025() {
             "\u{0A0A}\u{0020}\u{0A73}\u{0A42}",
             "",
         ),
-        "uuguru=0+1356|\
+        "[uuguru=0+1356|\
          space=1+532|\
          uraguru=2+1356|\
          uni25CC=2+1044|\
-         uumatraguru=2@102,0+0"
+         uumatraguru=2@102,0+0]"
     );
 }
 
@@ -1764,11 +1764,11 @@ fn indic_vowel_letter_spoofing_026() {
             "\u{0A0F}\u{0020}\u{0A72}\u{0A47}",
             "",
         ),
-        "eeguru=0+1141|\
+        "[eeguru=0+1141|\
          space=1+532|\
          iriguru=2+1141|\
          uni25CC=2+1044|\
-         eematraguru=2+0"
+         eematraguru=2+0]"
     );
 }
 
@@ -1780,11 +1780,11 @@ fn indic_vowel_letter_spoofing_027() {
             "\u{0A10}\u{0020}\u{0A05}\u{0A48}",
             "",
         ),
-        "aiguru=0+1520|\
+        "[aiguru=0+1520|\
          space=1+532|\
          aguru=2+1520|\
          uni25CC=2+1044|\
-         aimatraguru=2+0"
+         aimatraguru=2+0]"
     );
 }
 
@@ -1796,11 +1796,11 @@ fn indic_vowel_letter_spoofing_028() {
             "\u{0A13}\u{0020}\u{0A73}\u{0A4B}",
             "",
         ),
-        "ooguru=0+1356|\
+        "[ooguru=0+1356|\
          space=1+532|\
          uraguru=2+1356|\
          uni25CC=2+1044|\
-         oomatraguru=2+0"
+         oomatraguru=2+0]"
     );
 }
 
@@ -1812,11 +1812,11 @@ fn indic_vowel_letter_spoofing_029() {
             "\u{0A14}\u{0020}\u{0A05}\u{0A4C}",
             "",
         ),
-        "auguru=0+1520|\
+        "[auguru=0+1520|\
          space=1+532|\
          aguru=2+1520|\
          uni25CC=2+1044|\
-         aumatraguru=2+0"
+         aumatraguru=2+0]"
     );
 }
 
@@ -1828,11 +1828,11 @@ fn indic_vowel_letter_spoofing_030() {
             "\u{0A86}\u{0020}\u{0A85}\u{0ABE}",
             "",
         ),
-        "gid3=0+2351|\
+        "[gid3=0+2351|\
          gid1=1+612|\
          gid2=2+1808|\
          gid17=2+1044|\
-         gid10=2+543"
+         gid10=2+543]"
     );
 }
 
@@ -1844,11 +1844,11 @@ fn indic_vowel_letter_spoofing_031() {
             "\u{0A8D}\u{0020}\u{0A85}\u{0AC5}",
             "",
         ),
-        "gid4=0+1808|\
+        "[gid4=0+1808|\
          gid1=1+612|\
          gid2=2+1808|\
          gid17=2+1044|\
-         gid11=2+0"
+         gid11=2+0]"
     );
 }
 
@@ -1860,11 +1860,11 @@ fn indic_vowel_letter_spoofing_032() {
             "\u{0A8F}\u{0020}\u{0A85}\u{0AC7}",
             "",
         ),
-        "gid5=0+1808|\
+        "[gid5=0+1808|\
          gid1=1+612|\
          gid2=2+1808|\
          gid17=2+1044|\
-         gid12=2+0"
+         gid12=2+0]"
     );
 }
 
@@ -1876,11 +1876,11 @@ fn indic_vowel_letter_spoofing_033() {
             "\u{0A90}\u{0020}\u{0A85}\u{0AC8}",
             "",
         ),
-        "gid6=0+1808|\
+        "[gid6=0+1808|\
          gid1=1+612|\
          gid2=2+1808|\
          gid17=2+1044|\
-         gid13=2+0"
+         gid13=2+0]"
     );
 }
 
@@ -1892,11 +1892,11 @@ fn indic_vowel_letter_spoofing_034() {
             "\u{0A91}\u{0020}\u{0A85}\u{0AC9}",
             "",
         ),
-        "gid7=0+2351|\
+        "[gid7=0+2351|\
          gid1=1+612|\
          gid2=2+1808|\
          gid17=2+1044|\
-         gid14=2+543"
+         gid14=2+543]"
     );
 }
 
@@ -1908,7 +1908,7 @@ fn indic_vowel_letter_spoofing_035() {
             "\u{0A93}\u{0020}\u{0A85}\u{0ACB}\u{0020}\u{0A85}\u{0ABE}\u{0AC5}",
             "",
         ),
-        "gid8=0+2351|\
+        "[gid8=0+2351|\
          gid1=1+612|\
          gid2=2+1808|\
          gid17=2+1044|\
@@ -1917,7 +1917,7 @@ fn indic_vowel_letter_spoofing_035() {
          gid2=5+1808|\
          gid17=5+1044|\
          gid11=5+0|\
-         gid10=5+543"
+         gid10=5+543]"
     );
 }
 
@@ -1929,7 +1929,7 @@ fn indic_vowel_letter_spoofing_036() {
             "\u{0A94}\u{0020}\u{0A85}\u{0ACC}\u{0020}\u{0A85}\u{0ABE}\u{0AC8}",
             "",
         ),
-        "gid9=0+2351|\
+        "[gid9=0+2351|\
          gid1=1+612|\
          gid2=2+1808|\
          gid17=2+1044|\
@@ -1938,7 +1938,7 @@ fn indic_vowel_letter_spoofing_036() {
          gid2=5+1808|\
          gid17=5+1044|\
          gid13=5+0|\
-         gid10=5+543"
+         gid10=5+543]"
     );
 }
 
@@ -1950,13 +1950,13 @@ fn indic_vowel_letter_spoofing_037() {
             "\u{0AC9}\u{0020}\u{0AC5}\u{0ABE}",
             "",
         ),
-        "gid17=0+1044|\
+        "[gid17=0+1044|\
          gid14=0+543|\
          gid1=1+612|\
          gid17=1+1044|\
          gid11=1+0|\
          gid17=1+1044|\
-         gid10=1+543"
+         gid10=1+543]"
     );
 }
 
@@ -1968,11 +1968,11 @@ fn indic_vowel_letter_spoofing_038() {
             "\u{0B06}\u{0020}\u{0B05}\u{0B3E}",
             "",
         ),
-        "aaorya=0+1681|\
+        "[aaorya=0+1681|\
          space=1+881|\
          aorya=2+1284|\
          uni25CC=2+1044|\
-         aavowelsignorya=2+387"
+         aavowelsignorya=2+387]"
     );
 }
 
@@ -1984,11 +1984,11 @@ fn indic_vowel_letter_spoofing_039() {
             "\u{0B10}\u{0020}\u{0B0F}\u{0B57}",
             "",
         ),
-        "aiorya=0+1681|\
+        "[aiorya=0+1681|\
          space=1+881|\
          eorya=2+1315|\
          uni25CC=2+1044|\
-         aulengthmarkorya=2+387"
+         aulengthmarkorya=2+387]"
     );
 }
 
@@ -2000,11 +2000,11 @@ fn indic_vowel_letter_spoofing_040() {
             "\u{0B14}\u{0020}\u{0B13}\u{0B57}",
             "",
         ),
-        "auorya=0+1679|\
+        "[auorya=0+1679|\
          space=1+881|\
          oorya=2+1309|\
          uni25CC=2+1044|\
-         aulengthmarkorya=2+387"
+         aulengthmarkorya=2+387]"
     );
 }
 
@@ -2016,11 +2016,11 @@ fn indic_vowel_letter_spoofing_041() {
             "\u{0C13}\u{0020}\u{0C12}\u{0C55}",
             "",
         ),
-        "gid3=0+1497|\
+        "[gid3=0+1497|\
          gid1=1+580|\
          gid2=2+1497|\
          gid13=2+1184|\
-         gid12=2+0"
+         gid12=2+0]"
     );
 }
 
@@ -2032,11 +2032,11 @@ fn indic_vowel_letter_spoofing_042() {
             "\u{0C14}\u{0020}\u{0C12}\u{0C4C}",
             "",
         ),
-        "gid4=0+1497|\
+        "[gid4=0+1497|\
          gid1=1+580|\
          gid2=2+1497|\
          gid13=2+1184|\
-         gid11=2+634"
+         gid11=2+634]"
     );
 }
 
@@ -2048,13 +2048,13 @@ fn indic_vowel_letter_spoofing_043() {
             "\u{0C40}\u{0020}\u{0C3F}\u{0C55}",
             "",
         ),
-        "gid13=0+1184|\
+        "[gid13=0+1184|\
          gid6=0+0|\
          gid1=1+580|\
          gid13=1+1184|\
          gid5=1+0|\
          gid13=1+1184|\
-         gid12=1+0"
+         gid12=1+0]"
     );
 }
 
@@ -2066,13 +2066,13 @@ fn indic_vowel_letter_spoofing_044() {
             "\u{0C47}\u{0020}\u{0C46}\u{0C55}",
             "",
         ),
-        "gid13=0+1184|\
+        "[gid13=0+1184|\
          gid8=0+0|\
          gid1=1+580|\
          gid13=1+1184|\
          gid7=1+0|\
          gid13=1+1184|\
-         gid12=1+0"
+         gid12=1+0]"
     );
 }
 
@@ -2084,13 +2084,13 @@ fn indic_vowel_letter_spoofing_045() {
             "\u{0C4B}\u{0020}\u{0C4A}\u{0C55}",
             "",
         ),
-        "gid13=0+1184|\
+        "[gid13=0+1184|\
          gid10=0+634|\
          gid1=1+580|\
          gid13=1+1184|\
          gid9=1+634|\
          gid13=1+1184|\
-         gid12=1+0"
+         gid12=1+0]"
     );
 }
 
@@ -2102,11 +2102,11 @@ fn indic_vowel_letter_spoofing_046() {
             "\u{0C8A}\u{0020}\u{0C89}\u{0CBE}",
             "",
         ),
-        "gid3=0+3269|\
+        "[gid3=0+3269|\
          gid1=1+590|\
          gid2=2+2502|\
          gid10=2+1184|\
-         gid7=2+919"
+         gid7=2+919]"
     );
 }
 
@@ -2118,11 +2118,11 @@ fn indic_vowel_letter_spoofing_047() {
             "\u{0C94}\u{0020}\u{0C92}\u{0CCC}",
             "",
         ),
-        "gid6=0+1596|\
+        "[gid6=0+1596|\
          gid1=1+590|\
          gid5=2+1590|\
          gid10=2+1184|\
-         gid8=2+880"
+         gid8=2+880]"
     );
 }
 
@@ -2134,11 +2134,11 @@ fn indic_vowel_letter_spoofing_048() {
             "\u{0CE0}\u{0020}\u{0C8B}\u{0CBE}",
             "",
         ),
-        "gid9=0+3214|\
+        "[gid9=0+3214|\
          gid1=1+590|\
          gid4=2+2440|\
          gid10=2+1184|\
-         gid7=2+919"
+         gid7=2+919]"
     );
 }
 
@@ -2150,11 +2150,11 @@ fn indic_vowel_letter_spoofing_049() {
             "\u{0D08}\u{0020}\u{0D07}\u{0D57}",
             "",
         ),
-        "gid3=0+3574|\
+        "[gid3=0+3574|\
          gid1=1+632|\
          gid2=2+2019|\
          gid14=2+1184|\
-         gid13=2+1555"
+         gid13=2+1555]"
     );
 }
 
@@ -2166,11 +2166,11 @@ fn indic_vowel_letter_spoofing_050() {
             "\u{0D0A}\u{0020}\u{0D09}\u{0D57}",
             "",
         ),
-        "gid5=0+2972|\
+        "[gid5=0+2972|\
          gid1=1+632|\
          gid4=2+1417|\
          gid14=2+1184|\
-         gid13=2+1555"
+         gid13=2+1555]"
     );
 }
 
@@ -2182,11 +2182,11 @@ fn indic_vowel_letter_spoofing_051() {
             "\u{0D10}\u{0020}\u{0D0E}\u{0D46}",
             "",
         ),
-        "gid7=0+4073|\
+        "[gid7=0+4073|\
          gid1=1+632|\
          gid6=2+2608|\
          gid12=2+1465|\
-         gid14=2+1184"
+         gid14=2+1184]"
     );
 }
 
@@ -2198,11 +2198,11 @@ fn indic_vowel_letter_spoofing_052() {
             "\u{0D13}\u{0020}\u{0D12}\u{0D3E}",
             "",
         ),
-        "gid9=0+2557|\
+        "[gid9=0+2557|\
          gid1=1+632|\
          gid8=2+1524|\
          gid14=2+1184|\
-         gid11=2+1033"
+         gid11=2+1033]"
     );
 }
 
@@ -2214,11 +2214,11 @@ fn indic_vowel_letter_spoofing_053() {
             "\u{0D14}\u{0020}\u{0D12}\u{0D57}",
             "",
         ),
-        "gid10=0+3073|\
+        "[gid10=0+3073|\
          gid1=1+632|\
          gid8=2+1524|\
          gid14=2+1184|\
-         gid13=2+1555"
+         gid13=2+1555]"
     );
 }
 
@@ -2231,7 +2231,7 @@ fn kern_format2_001() {
              \u{006B}\u{006C}\u{006D}\u{006E}\u{006F}\u{0070}",
             "",
         ),
-        "a=0+626|\
+        "[a=0+626|\
          b=1+672|\
          c=2+564|\
          d=3@-15,0+657|\
@@ -2246,7 +2246,7 @@ fn kern_format2_001() {
          m=12+1021|\
          n=13+666|\
          o=14+644|\
-         p=15+672"
+         p=15+672]"
     );
 }
 
@@ -2258,12 +2258,12 @@ fn kern_format2_002() {
             "\u{0063}\u{006B}\u{0063}\u{006B}\u{0063}\u{006B}",
             "",
         ),
-        "c=0+579|\
+        "[c=0+579|\
          k=1+591|\
          c=2+579|\
          k=3+591|\
          c=4+579|\
-         k=5+591"
+         k=5+591]"
     );
 }
 
@@ -2275,8 +2275,8 @@ fn kern_format2_003() {
             "\u{0041}\u{0056}",
             "",
         ),
-        "A=0+701|\
-         V=1@-40,0+703"
+        "[A=0+701|\
+         V=1@-40,0+703]"
     );
 }
 
@@ -2288,11 +2288,11 @@ fn khmer_mark_order_001() {
             "\u{179F}\u{17CA}\u{17BE}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
-         uni1794=3+635"
+         uni1794=3+635]"
     );
 }
 
@@ -2304,13 +2304,13 @@ fn khmer_mark_order_002() {
             "\u{179F}\u{17C9}\u{17BE}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2322,13 +2322,13 @@ fn khmer_mark_order_003() {
             "\u{179F}\u{17C9}\u{17C1}\u{17B8}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2340,13 +2340,13 @@ fn khmer_mark_order_004() {
             "\u{179F}\u{17C9}\u{17B8}\u{17C1}\u{17BB}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
          uni17C1=0+288|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2358,7 +2358,7 @@ fn khmer_mark_order_005() {
             "\u{179F}\u{17C9}\u{17BE}\u{17BB}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
@@ -2366,7 +2366,7 @@ fn khmer_mark_order_005() {
          uni17BB=0@-20,-26+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2378,7 +2378,7 @@ fn khmer_mark_order_006() {
             "\u{179F}\u{17C9}\u{17C1}\u{17B8}\u{17BB}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
@@ -2386,7 +2386,7 @@ fn khmer_mark_order_006() {
          uni17BB=0@-20,-26+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=6+635"
+         uni1794=6+635]"
     );
 }
 
@@ -2398,7 +2398,7 @@ fn khmer_mark_order_007() {
             "\u{179F}\u{17C9}\u{17B8}\u{17C1}\u{17BB}\u{17BB}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
          uni17C1=0+288|\
@@ -2406,7 +2406,7 @@ fn khmer_mark_order_007() {
          uni17BB=0@-20,-26+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=6+635"
+         uni1794=6+635]"
     );
 }
 
@@ -2418,13 +2418,13 @@ fn khmer_mark_order_008() {
             "\u{179F}\u{17CA}\u{17BE}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2436,13 +2436,13 @@ fn khmer_mark_order_009() {
             "\u{179F}\u{17CA}\u{17C1}\u{17B8}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2454,13 +2454,13 @@ fn khmer_mark_order_010() {
             "\u{179F}\u{17CA}\u{17B8}\u{17C1}\u{17BB}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
          uni17C1=0+288|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2472,7 +2472,7 @@ fn khmer_mark_order_011() {
             "\u{179F}\u{17CA}\u{17BE}\u{17BB}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
@@ -2480,7 +2480,7 @@ fn khmer_mark_order_011() {
          uni17BB=0@-20,-26+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2492,7 +2492,7 @@ fn khmer_mark_order_012() {
             "\u{179F}\u{17CA}\u{17C1}\u{17B8}\u{17BB}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
@@ -2500,7 +2500,7 @@ fn khmer_mark_order_012() {
          uni17BB=0@-20,-26+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=6+635"
+         uni1794=6+635]"
     );
 }
 
@@ -2512,7 +2512,7 @@ fn khmer_mark_order_013() {
             "\u{179F}\u{17CA}\u{17B8}\u{17C1}\u{17BB}\u{17BB}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
          uni17C1=0+288|\
@@ -2520,7 +2520,7 @@ fn khmer_mark_order_013() {
          uni17BB=0@-20,-26+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=6+635"
+         uni1794=6+635]"
     );
 }
 
@@ -2532,13 +2532,13 @@ fn khmer_mark_order_014() {
             "\u{179F}\u{17C9}\u{17BE}\u{17B8}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
          uni25CC=0+635|\
          uni17B8=0@-20,-84+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2550,13 +2550,13 @@ fn khmer_mark_order_015() {
             "\u{179F}\u{17C9}\u{17B8}\u{17BE}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
          uni17C1=0+288|\
          uni25CC=0+635|\
          uni17B8=0@-20,-84+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2568,7 +2568,7 @@ fn khmer_mark_order_016() {
             "\u{179F}\u{17C9}\u{17BE}\u{17B8}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
@@ -2576,7 +2576,7 @@ fn khmer_mark_order_016() {
          uni17B8=0@-20,-84+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2588,7 +2588,7 @@ fn khmer_mark_order_017() {
             "\u{179F}\u{17C9}\u{17B8}\u{17BE}\u{17BB}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17C9=0@-32,-29+0|\
          uni17B8=0@-32,237+0|\
          uni17C1=0+288|\
@@ -2596,7 +2596,7 @@ fn khmer_mark_order_017() {
          uni17B8=0@-20,-84+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2608,13 +2608,13 @@ fn khmer_mark_order_018() {
             "\u{179F}\u{17CA}\u{17BE}\u{17B8}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
          uni25CC=0+635|\
          uni17B8=0@-20,-84+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2626,13 +2626,13 @@ fn khmer_mark_order_019() {
             "\u{179F}\u{17CA}\u{17B8}\u{17BE}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
          uni17C1=0+288|\
          uni25CC=0+635|\
          uni17B8=0@-20,-84+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2644,7 +2644,7 @@ fn khmer_mark_order_020() {
             "\u{179F}\u{17CA}\u{17BE}\u{17B8}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
@@ -2652,7 +2652,7 @@ fn khmer_mark_order_020() {
          uni17B8=0@-20,-84+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2664,7 +2664,7 @@ fn khmer_mark_order_021() {
             "\u{179F}\u{17CA}\u{17B8}\u{17BE}\u{17BB}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17BB=0@-6,-26+0|\
          uni17B8=0@-32,-29+0|\
          uni17C1=0+288|\
@@ -2672,7 +2672,7 @@ fn khmer_mark_order_021() {
          uni17B8=0@-20,-84+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=5+635"
+         uni1794=5+635]"
     );
 }
 
@@ -2684,14 +2684,14 @@ fn khmer_mark_order_022() {
             "\u{179F}\u{17BE}\u{17B8}\u{17BB}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17B8=0@-32,-29+0|\
          uni25CC=0+635|\
          uni17B8=0@-20,-84+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2703,13 +2703,13 @@ fn khmer_mark_order_023() {
             "\u{179F}\u{17BE}\u{17BB}\u{17B8}\u{1794}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179F=0+928|\
          uni17B8=0@-32,-29+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
          uni17B8=0@-20,-84+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2721,14 +2721,14 @@ fn khmer_mark_order_024() {
             "\u{179F}\u{17B8}\u{17BE}\u{17BB}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17B8=0@-32,-29+0|\
          uni17C1=0+288|\
          uni25CC=0+635|\
          uni17B8=0@-20,-84+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2740,14 +2740,14 @@ fn khmer_mark_order_025() {
             "\u{179F}\u{17B8}\u{17BB}\u{17BE}\u{1794}",
             "",
         ),
-        "uni179F=0+928|\
+        "[uni179F=0+928|\
          uni17B8=0@-32,-29+0|\
          uni25CC=0+635|\
          uni17BB=0@-20,-26+0|\
          uni17C1=0+288|\
          uni25CC=0+635|\
          uni17B8=0@-20,-84+0|\
-         uni1794=4+635"
+         uni1794=4+635]"
     );
 }
 
@@ -2759,9 +2759,9 @@ fn khmer_misc_001() {
             "\u{1781}\u{17D2}\u{1798}\u{17C2}",
             "",
         ),
-        "uni17C2=0+288|\
+        "[uni17C2=0+288|\
          uni1781=0+635|\
-         uni17D21798=0@22,-26+0"
+         uni17D21798=0@22,-26+0]"
     );
 }
 
@@ -2773,7 +2773,7 @@ fn khmer_misc_002() {
             "\u{1787}\u{17B6}",
             "",
         ),
-        "uni178717B6=0+923"
+        "[uni178717B6=0+923]"
     );
 }
 
@@ -2785,9 +2785,9 @@ fn khmer_misc_003() {
             "\u{1790}\u{17D2}\u{1784}\u{17C3}",
             "",
         ),
-        "uni17C3=0+288|\
+        "[uni17C3=0+288|\
          uni1790=0+635|\
-         uni17D21784=0@-1,-26+0"
+         uni17D21784=0@-1,-26+0]"
     );
 }
 
@@ -2799,7 +2799,7 @@ fn khmer_misc_004() {
             "\u{1798}\u{17B6}",
             "",
         ),
-        "uni179817B6=0+923"
+        "[uni179817B6=0+923]"
     );
 }
 
@@ -2811,9 +2811,9 @@ fn khmer_misc_005() {
             "\u{1798}\u{17D2}\u{1796}\u{17BB}",
             "",
         ),
-        "uni1798=0+635|\
+        "[uni1798=0+635|\
          uni17D21796=0@-1,-26+0|\
-         uni17BB=0@-22,-296+0"
+         uni17BB=0@-22,-296+0]"
     );
 }
 
@@ -2825,7 +2825,7 @@ fn khmer_misc_006() {
             "\u{179A}",
             "",
         ),
-        "uni179A=0+288"
+        "[uni179A=0+288]"
     );
 }
 
@@ -2837,8 +2837,8 @@ fn khmer_misc_007() {
             "\u{179A}\u{17B8}",
             "",
         ),
-        "uni179A=0+288|\
-         uni17B8.r=0@76,-29+0"
+        "[uni179A=0+288|\
+         uni17B8.r=0@76,-29+0]"
     );
 }
 
@@ -2850,8 +2850,8 @@ fn khmer_misc_008() {
             "\u{179A}\u{17CD}",
             "",
         ),
-        "uni179A=0+288|\
-         uni17CD.r=0@18,-29+0"
+        "[uni179A=0+288|\
+         uni17CD.r=0@18,-29+0]"
     );
 }
 
@@ -2863,8 +2863,8 @@ fn khmer_misc_009() {
             "\u{179F}\u{17C5}",
             "",
         ),
-        "uni17C1=0+288|\
-         uni179F17C5=0+1216"
+        "[uni17C1=0+288|\
+         uni179F17C5=0+1216]"
     );
 }
 
@@ -2876,9 +2876,9 @@ fn khmer_misc_010() {
             "\u{179A}\u{17D2}\u{17A5}",
             "",
         ),
-        "uni179A=0+288|\
+        "[uni179A=0+288|\
          uni17D2=0+0|\
-         uni17A5=2+635"
+         uni17A5=2+635]"
     );
 }
 
@@ -2890,9 +2890,9 @@ fn khmer_misc_011() {
             "\u{1784}\u{17B9}\u{17D2}\u{1788}",
             "",
         ),
-        "uni1784=0+635|\
+        "[uni1784=0+635|\
          uni17B9=0@-46,30+0|\
-         uni17D21788=0+234"
+         uni17D21788=0+234]"
     );
 }
 
@@ -2904,9 +2904,9 @@ fn khmer_misc_012() {
             "\u{1784}\u{17D2}\u{1788}\u{17B9}",
             "",
         ),
-        "uni1784=0+635|\
+        "[uni1784=0+635|\
          uni17D21788=0+234|\
-         uni17B9=0@8,30+0"
+         uni17B9=0@8,30+0]"
     );
 }
 
@@ -2918,9 +2918,9 @@ fn khmer_misc_013() {
             "\u{1784}\u{17D2}\u{1782}\u{17D2}\u{179A}",
             "",
         ),
-        "uni17D2179A.low=0+287|\
+        "[uni17D2179A.low=0+287|\
          uni1784=0+635|\
-         uni17D21782=0@0,-26+0"
+         uni17D21782=0@0,-26+0]"
     );
 }
 
@@ -2932,9 +2932,9 @@ fn khmer_misc_014() {
             "\u{1784}\u{17D2}\u{179A}\u{17D2}\u{1782}",
             "",
         ),
-        "uni17D2179A.low=0+287|\
+        "[uni17D2179A.low=0+287|\
          uni1784=0+635|\
-         uni17D21782=0@0,-26+0"
+         uni17D21782=0@0,-26+0]"
     );
 }
 
@@ -2946,11 +2946,11 @@ fn khmer_misc_015() {
             "\u{1798}\u{17C9}\u{17D2}\u{179B}\u{17C1}\u{17C7}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni1798=0+635|\
          uni17C9=0@-46,-29+0|\
          uni17D2179B=0@-1,-26+0|\
-         uni17C7=0+386"
+         uni17C7=0+386]"
     );
 }
 
@@ -2962,12 +2962,12 @@ fn khmer_misc_016() {
             "\u{1798}\u{200C}\u{17C9}\u{17D2}\u{179B}\u{17C1}\u{17C7}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni1798=0+635|\
          space=0+0|\
          uni17C9=0@-46,-29+0|\
          uni17D2179B=0@-1,-26+0|\
-         uni17C7=0+386"
+         uni17C7=0+386]"
     );
 }
 
@@ -2979,9 +2979,9 @@ fn khmer_misc_017() {
             "\u{1794}\u{17CA}\u{17D0}",
             "",
         ),
-        "uni1794=0+635|\
+        "[uni1794=0+635|\
          uni17CA=0@-46,-29+0|\
-         uni17D0=0@-46,113+0"
+         uni17D0=0@-46,113+0]"
     );
 }
 
@@ -2993,9 +2993,9 @@ fn khmer_misc_018() {
             "\u{1793}\u{17C2}\u{17CE}",
             "",
         ),
-        "uni17C2=0+288|\
+        "[uni17C2=0+288|\
          uni1793=0+635|\
-         uni17CE=0@-36,-29+0"
+         uni17CE=0@-36,-29+0]"
     );
 }
 
@@ -3007,9 +3007,9 @@ fn khmer_misc_019() {
             "\u{1780}\u{17C1}\u{17D2}\u{179A}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni17C1=0+288|\
-         uni1780=0+636"
+         uni1780=0+636]"
     );
 }
 
@@ -3021,10 +3021,10 @@ fn khmer_misc_020() {
             "\u{1780}\u{17C0}\u{17D2}\u{179A}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni17C1=0+288|\
          uni1780=0+636|\
-         uni17C0.right1=0+288"
+         uni17C0.right1=0+288]"
     );
 }
 
@@ -3036,9 +3036,9 @@ fn khmer_misc_021() {
             "\u{1780}\u{17C4}\u{17D2}\u{179A}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni17C1=0+288|\
-         uni178017B6=0+924"
+         uni178017B6=0+924]"
     );
 }
 
@@ -3050,9 +3050,9 @@ fn khmer_misc_022() {
             "\u{1780}\u{17C5}\u{17D2}\u{179A}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni17C1=0+288|\
-         uni178017C5=0+924"
+         uni178017C5=0+924]"
     );
 }
 
@@ -3064,8 +3064,8 @@ fn khmer_misc_023() {
             "\u{1796}\u{17D1}\u{17B6}",
             "",
         ),
-        "uni179617B6=0+923|\
-         uni17D1=0@-311,-19+0"
+        "[uni179617B6=0+923|\
+         uni17D1=0@-311,-19+0]"
     );
 }
 
@@ -3077,12 +3077,12 @@ fn khmer_misc_024() {
             "\u{1780}\u{1793}\u{17D2}\u{178F}\u{17D2}\u{179A}\u{17B6}\u{1780}\u{17CB}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179A.low=1+287|\
          uni179317B6=1+924|\
          uni17D2178F=1@-290,-26+0|\
          uni1780=7+636|\
-         uni17CB=7@-23,-29+0"
+         uni17CB=7@-23,-29+0]"
     );
 }
 
@@ -3094,13 +3094,13 @@ fn khmer_misc_025() {
             "\u{1780}\u{1793}\u{17D2}\u{179A}\u{17D2}\u{179F}\u{17B7}\u{1780}\u{17CB}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179A=1+287|\
          uni1793=1+635|\
          uni17D2179F=1+302|\
          uni17B7=1@-4,30+0|\
          uni1780=7+636|\
-         uni17CB=7@-23,-29+0"
+         uni17CB=7@-23,-29+0]"
     );
 }
 
@@ -3112,13 +3112,13 @@ fn khmer_misc_026() {
             "\u{1780}\u{1793}\u{17D2}\u{179A}\u{17D2}\u{179F}\u{17B8}\u{1780}\u{17CB}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179A=1+287|\
          uni1793=1+635|\
          uni17D2179F=1+302|\
          uni17B8=1@-4,30+0|\
          uni1780=7+636|\
-         uni17CB=7@-23,-29+0"
+         uni17CB=7@-23,-29+0]"
     );
 }
 
@@ -3130,10 +3130,10 @@ fn khmer_misc_027() {
             "\u{1780}\u{17D2}\u{179F}\u{17B6}\u{1793}\u{17D2}\u{178F}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179F17B6=0+584|\
          uni1793=4+635|\
-         uni17D2178F=4@-1,-26+0"
+         uni17D2178F=4@-1,-26+0]"
     );
 }
 
@@ -3145,11 +3145,11 @@ fn khmer_misc_028() {
             "\u{1780}\u{17D2}\u{179F}\u{17B7}\u{1793}\u{17D2}\u{178F}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179F=0+302|\
          uni17B7=0@-4,30+0|\
          uni1793=4+635|\
-         uni17D2178F=4@-1,-26+0"
+         uni17D2178F=4@-1,-26+0]"
     );
 }
 
@@ -3161,11 +3161,11 @@ fn khmer_misc_029() {
             "\u{1780}\u{17D2}\u{179F}\u{17B8}\u{1793}\u{17D2}\u{178F}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179F=0+302|\
          uni17B8=0@-4,30+0|\
          uni1793=4+635|\
-         uni17D2178F=4@-1,-26+0"
+         uni17D2178F=4@-1,-26+0]"
     );
 }
 
@@ -3177,11 +3177,11 @@ fn khmer_misc_030() {
             "\u{1780}\u{17D2}\u{179F}\u{17B9}\u{1793}\u{17D2}\u{178F}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179F=0+302|\
          uni17B9=0@-4,30+0|\
          uni1793=4+635|\
-         uni17D2178F=4@-1,-26+0"
+         uni17D2178F=4@-1,-26+0]"
     );
 }
 
@@ -3193,11 +3193,11 @@ fn khmer_misc_031() {
             "\u{1780}\u{17D2}\u{179F}\u{17BA}\u{1793}\u{17D2}\u{178F}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179F=0+302|\
          uni17BA=0@-4,30+0|\
          uni1793=4+635|\
-         uni17D2178F=4@-1,-26+0"
+         uni17D2178F=4@-1,-26+0]"
     );
 }
 
@@ -3209,11 +3209,11 @@ fn khmer_misc_032() {
             "\u{1780}\u{17D2}\u{179F}\u{17BB}\u{1793}\u{17D2}\u{178F}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179F=0+302|\
          uni17BB=0@1,-260+0|\
          uni1793=4+635|\
-         uni17D2178F=4@-1,-26+0"
+         uni17D2178F=4@-1,-26+0]"
     );
 }
 
@@ -3225,11 +3225,11 @@ fn khmer_misc_033() {
             "\u{1780}\u{17D2}\u{179F}\u{17BC}\u{1793}\u{17D2}\u{178F}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179F=0+302|\
          uni17BC=0@1,-260+0|\
          uni1793=4+635|\
-         uni17D2178F=4@-1,-26+0"
+         uni17D2178F=4@-1,-26+0]"
     );
 }
 
@@ -3241,11 +3241,11 @@ fn khmer_misc_034() {
             "\u{1780}\u{17D2}\u{179F}\u{17BD}\u{1793}\u{17D2}\u{178F}",
             "",
         ),
-        "uni1780=0+636|\
+        "[uni1780=0+636|\
          uni17D2179F=0+302|\
          uni17BD=0@1,-260+0|\
          uni1793=4+635|\
-         uni17D2178F=4@-1,-26+0"
+         uni17D2178F=4@-1,-26+0]"
     );
 }
 
@@ -3257,12 +3257,12 @@ fn khmer_misc_035() {
             "\u{1780}\u{17D2}\u{179F}\u{17BF}\u{1793}\u{17D2}\u{178F}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni1780=0+636|\
          uni17D2179F=0+302|\
          uni17BF.right2=0+288|\
          uni1793=4+635|\
-         uni17D2178F=4@-1,-26+0"
+         uni17D2178F=4@-1,-26+0]"
     );
 }
 
@@ -3274,10 +3274,10 @@ fn khmer_misc_036() {
             "\u{1783}\u{17D2}\u{179B}\u{17D2}\u{179F}\u{17B6}\u{17C6}",
             "",
         ),
-        "uni1783=0+928|\
+        "[uni1783=0+928|\
          uni17D2179B=0@15,-26+0|\
          uni17D2179F17B6.low=0+584|\
-         uni17C6=0@39,-29+0"
+         uni17C6=0@39,-29+0]"
     );
 }
 
@@ -3289,11 +3289,11 @@ fn khmer_misc_037() {
             "\u{1783}\u{17D2}\u{179B}\u{17D2}\u{179F}\u{17B7}\u{17C7}",
             "",
         ),
-        "uni1783=0+928|\
+        "[uni1783=0+928|\
          uni17D2179B=0@15,-26+0|\
          uni17D2179F.low=0+302|\
          uni17B7=0@-4,30+0|\
-         uni17C7=0+386"
+         uni17C7=0+386]"
     );
 }
 
@@ -3305,11 +3305,11 @@ fn khmer_misc_038() {
             "\u{1783}\u{17D2}\u{179B}\u{17D2}\u{179F}\u{17BB}\u{17C6}",
             "",
         ),
-        "uni1783=0+928|\
+        "[uni1783=0+928|\
          uni17D2179B=0@15,-26+0|\
          uni17D2179F.low=0+302|\
          uni17BB=0+0|\
-         uni17C6=0@-4,30+0"
+         uni17C6=0@-4,30+0]"
     );
 }
 
@@ -3321,11 +3321,11 @@ fn khmer_misc_039() {
             "\u{1783}\u{17D2}\u{179B}\u{17D2}\u{179F}\u{17BB}\u{17C7}",
             "",
         ),
-        "uni1783=0+928|\
+        "[uni1783=0+928|\
          uni17D2179B=0@15,-26+0|\
          uni17D2179F.low=0+302|\
          uni17BB=0+0|\
-         uni17C7=0+386"
+         uni17C7=0+386]"
     );
 }
 
@@ -3337,11 +3337,11 @@ fn khmer_misc_040() {
             "\u{1783}\u{17D2}\u{179B}\u{17D2}\u{179F}\u{17C1}\u{17C7}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni1783=0+928|\
          uni17D2179B=0@15,-26+0|\
          uni17D2179F.low=0+302|\
-         uni17C7=0+386"
+         uni17C7=0+386]"
     );
 }
 
@@ -3353,11 +3353,11 @@ fn khmer_misc_041() {
             "\u{1783}\u{17D2}\u{179B}\u{17D2}\u{179F}\u{17C4}\u{17C7}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni1783=0+928|\
          uni17D2179B=0@15,-26+0|\
          uni17D2179F17B6.low=0+584|\
-         uni17C7=0+386"
+         uni17C7=0+386]"
     );
 }
 
@@ -3369,10 +3369,10 @@ fn khmer_misc_042() {
             "\u{1783}\u{17D2}\u{179B}\u{17D2}\u{179F}\u{17C6}",
             "",
         ),
-        "uni1783=0+928|\
+        "[uni1783=0+928|\
          uni17D2179B=0@15,-26+0|\
          uni17D2179F.low=0+302|\
-         uni17C6=0@-4,30+0"
+         uni17C6=0@-4,30+0]"
     );
 }
 
@@ -3384,10 +3384,10 @@ fn khmer_misc_043() {
             "\u{1783}\u{17D2}\u{179B}\u{17D2}\u{179F}\u{17C7}",
             "",
         ),
-        "uni1783=0+928|\
+        "[uni1783=0+928|\
          uni17D2179B=0@15,-26+0|\
          uni17D2179F.low=0+302|\
-         uni17C7=0+386"
+         uni17C7=0+386]"
     );
 }
 
@@ -3399,8 +3399,8 @@ fn khmer_misc_044() {
             "\u{1789}\u{17BC}",
             "",
         ),
-        "uni1789=0+952|\
-         uni17BC=0@-173,-260+0"
+        "[uni1789=0+952|\
+         uni17BC=0@-173,-260+0]"
     );
 }
 
@@ -3412,8 +3412,8 @@ fn khmer_misc_045() {
             "\u{1789}\u{17D2}\u{1789}",
             "",
         ),
-        "uni1789.a=0+952|\
-         uni17D21789.a=0@19,-22+0"
+        "[uni1789.a=0+952|\
+         uni17D21789.a=0@19,-22+0]"
     );
 }
 
@@ -3425,9 +3425,9 @@ fn khmer_misc_046() {
             "\u{1789}\u{17D2}\u{1789}\u{17BB}",
             "",
         ),
-        "uni1789.a=0+952|\
+        "[uni1789.a=0+952|\
          uni17D21789.a=0@19,-22+0|\
-         uni17BB=0@-160,-296+0"
+         uni17BB=0@-160,-296+0]"
     );
 }
 
@@ -3439,9 +3439,9 @@ fn khmer_misc_047() {
             "\u{1789}\u{17D2}\u{1789}\u{17BC}",
             "",
         ),
-        "uni1789.a=0+952|\
+        "[uni1789.a=0+952|\
          uni17D21789.a=0@19,-22+0|\
-         uni17BC=0@-160,-296+0"
+         uni17BC=0@-160,-296+0]"
     );
 }
 
@@ -3453,9 +3453,9 @@ fn khmer_misc_048() {
             "\u{1789}\u{17D2}\u{1789}\u{17BD}",
             "",
         ),
-        "uni1789.a=0+952|\
+        "[uni1789.a=0+952|\
          uni17D21789.a=0@19,-22+0|\
-         uni17BD=0@-160,-296+0"
+         uni17BD=0@-160,-296+0]"
     );
 }
 
@@ -3467,11 +3467,11 @@ fn khmer_misc_049() {
             "\u{178F}\u{17D2}\u{179A}\u{17D2}\u{179F}\u{17C0}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17D2179A=0+287|\
          uni178F=0+635|\
          uni17D2179F=0+302|\
-         uni17C0.right2=0+288"
+         uni17C0.right2=0+288]"
     );
 }
 
@@ -3483,10 +3483,10 @@ fn khmer_misc_050() {
             "\u{178F}\u{17D2}\u{179A}\u{17D2}\u{179F}\u{17C1}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17D2179A=0+287|\
          uni178F=0+635|\
-         uni17D2179F=0+302"
+         uni17D2179F=0+302]"
     );
 }
 
@@ -3498,10 +3498,10 @@ fn khmer_misc_051() {
             "\u{178F}\u{17D2}\u{179A}\u{17D2}\u{179F}\u{17C2}",
             "",
         ),
-        "uni17C2=0+288|\
+        "[uni17C2=0+288|\
          uni17D2179A=0+287|\
          uni178F=0+635|\
-         uni17D2179F=0+302"
+         uni17D2179F=0+302]"
     );
 }
 
@@ -3513,10 +3513,10 @@ fn khmer_misc_052() {
             "\u{178F}\u{17D2}\u{179A}\u{17D2}\u{179F}\u{17C3}",
             "",
         ),
-        "uni17C3=0+288|\
+        "[uni17C3=0+288|\
          uni17D2179A=0+287|\
          uni178F=0+635|\
-         uni17D2179F=0+302"
+         uni17D2179F=0+302]"
     );
 }
 
@@ -3528,10 +3528,10 @@ fn khmer_misc_053() {
             "\u{178F}\u{17D2}\u{179A}\u{17D2}\u{179F}\u{17C4}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17D2179A=0+287|\
          uni178F=0+635|\
-         uni17D2179F17B6=0+584"
+         uni17D2179F17B6=0+584]"
     );
 }
 
@@ -3543,10 +3543,10 @@ fn khmer_misc_054() {
             "\u{178F}\u{17D2}\u{179A}\u{17D2}\u{179F}\u{17C5}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17D2179A=0+287|\
          uni178F=0+635|\
-         uni17D2179F17C5=0+584"
+         uni17D2179F17C5=0+584]"
     );
 }
 
@@ -3558,12 +3558,12 @@ fn khmer_misc_055() {
             "\u{1792}\u{17D2}\u{179B}\u{17BB}\u{17C6}\u{1780}\u{17CB}",
             "",
         ),
-        "uni1792=0+635|\
+        "[uni1792=0+635|\
          uni17D2179B=0@-2,-26+0|\
          uni17BB=0@-19,-296+0|\
          uni17C6=0@-46,-29+0|\
          uni1780=5+636|\
-         uni17CB=5@-23,-29+0"
+         uni17CB=5@-23,-29+0]"
     );
 }
 
@@ -3575,11 +3575,11 @@ fn khmer_misc_056() {
             "\u{1792}\u{17D2}\u{179B}\u{17C4}\u{1780}\u{17CB}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179217B6=0+923|\
          uni17D2179B=0@-290,-26+0|\
          uni1780=4+636|\
-         uni17CB=4@-23,-29+0"
+         uni17CB=4@-23,-29+0]"
     );
 }
 
@@ -3591,11 +3591,11 @@ fn khmer_misc_057() {
             "\u{1792}\u{17D2}\u{179B}\u{17C5}\u{1780}\u{17CB}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni179217C5=0+923|\
          uni17D2179B=0@-290,-26+0|\
          uni1780=4+636|\
-         uni17CB=4@-23,-29+0"
+         uni17CB=4@-23,-29+0]"
     );
 }
 
@@ -3607,11 +3607,11 @@ fn khmer_misc_058() {
             "\u{1792}\u{17D2}\u{179B}\u{17C6}\u{1780}\u{17CB}",
             "",
         ),
-        "uni1792=0+635|\
+        "[uni1792=0+635|\
          uni17D2179B=0@-2,-26+0|\
          uni17C6=0@-46,-29+0|\
          uni1780=4+636|\
-         uni17CB=4@-23,-29+0"
+         uni17CB=4@-23,-29+0]"
     );
 }
 
@@ -3623,10 +3623,10 @@ fn khmer_misc_059() {
             "\u{1798}\u{17D2}\u{178F}\u{17D2}\u{179B}\u{17C9}\u{17B6}",
             "",
         ),
-        "uni179817B6=0+923|\
+        "[uni179817B6=0+923|\
          uni17D2178F=0@-289,-26+0|\
          uni17D2179B=0@-289,-296+0|\
-         uni17C9=0@-334,-29+0"
+         uni17C9=0@-334,-29+0]"
     );
 }
 
@@ -3638,11 +3638,11 @@ fn khmer_misc_060() {
             "\u{1798}\u{17D2}\u{178F}\u{17D2}\u{179B}\u{17C9}\u{17BB}",
             "",
         ),
-        "uni1798=0+635|\
+        "[uni1798=0+635|\
          uni17D2178F=0@-1,-26+0|\
          uni17D2179B=0@-1,-296+0|\
          uni17C9=0@-46,-29+0|\
-         uni17BB=0@-18,-566+0"
+         uni17BB=0@-18,-566+0]"
     );
 }
 
@@ -3654,12 +3654,12 @@ fn khmer_misc_061() {
             "\u{1798}\u{17D2}\u{178F}\u{17D2}\u{179B}\u{17C9}\u{17BF}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni1798=0+635|\
          uni17D2178F=0@-1,-26+0|\
          uni17D2179B=0@-1,-296+0|\
          uni17C9=0@-46,-29+0|\
-         uni17BF.right1=0+288"
+         uni17BF.right1=0+288]"
     );
 }
 
@@ -3671,12 +3671,12 @@ fn khmer_misc_062() {
             "\u{1798}\u{17D2}\u{178F}\u{17D2}\u{179B}\u{17C9}\u{17C0}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni1798=0+635|\
          uni17D2178F=0@-1,-26+0|\
          uni17D2179B=0@-1,-296+0|\
          uni17C9=0@-46,-29+0|\
-         uni17C0.right1=0+288"
+         uni17C0.right1=0+288]"
     );
 }
 
@@ -3688,14 +3688,14 @@ fn khmer_misc_063() {
             "\u{1799}\u{17D2}\u{1799}\u{17BE}\u{17A0}\u{17D2}\u{179C}\u{17D2}\u{179B}\u{17C3}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni1799=0+953|\
          uni17D21799=0+298|\
          uni17B8=0@1,30+0|\
          uni17C3=4+288|\
          uni17A0=4+928|\
          uni17D2179C=4@20,-26+0|\
-         uni17D2179B=4@19,-296+0"
+         uni17D2179B=4@19,-296+0]"
     );
 }
 
@@ -3707,8 +3707,8 @@ fn khmer_misc_064() {
             "\u{179A}\u{17D2}\u{179A}",
             "",
         ),
-        "uni17D2179A=0+287|\
-         uni179A=0+288"
+        "[uni17D2179A=0+287|\
+         uni179A=0+288]"
     );
 }
 
@@ -3721,13 +3721,13 @@ fn khmer_misc_065() {
              \u{1784}\u{17B6}",
             "",
         ),
-        "uni179F17B6=0+1216|\
+        "[uni179F17B6=0+1216|\
          uni17D2179A=2+287|\
          uni179F=2+928|\
          uni17D2178F=2@14,-26+0|\
          uni1783=7+928|\
          uni17D21788=7+234|\
-         uni178417B6=10+923"
+         uni178417B6=10+923]"
     );
 }
 
@@ -3740,14 +3740,14 @@ fn khmer_misc_066() {
              \u{1784}\u{17B7}",
             "",
         ),
-        "uni179F17B6=0+1216|\
+        "[uni179F17B6=0+1216|\
          uni17D2179A=2+287|\
          uni179F=2+928|\
          uni17D2178F=2@14,-26+0|\
          uni1783=7+928|\
          uni17D21788=7+234|\
          uni1784=10+635|\
-         uni17B7=10@-46,30+0"
+         uni17B7=10@-46,30+0]"
     );
 }
 
@@ -3760,14 +3760,14 @@ fn khmer_misc_067() {
              \u{1784}\u{17B8}",
             "",
         ),
-        "uni179F17B6=0+1216|\
+        "[uni179F17B6=0+1216|\
          uni17D2179A=2+287|\
          uni179F=2+928|\
          uni17D2178F=2@14,-26+0|\
          uni1783=7+928|\
          uni17D21788=7+234|\
          uni1784=10+635|\
-         uni17B8=10@-46,30+0"
+         uni17B8=10@-46,30+0]"
     );
 }
 
@@ -3780,7 +3780,7 @@ fn khmer_misc_068() {
              \u{1789}\u{17D2}\u{179F}\u{17B6}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
          uni17B8=0@-32,-29+0|\
@@ -3788,7 +3788,7 @@ fn khmer_misc_068() {
          uni17D0=6@139,40+0|\
          uni1781=8+635|\
          uni17D21789=8@-4,-26+0|\
-         uni17D2179F17B6.low=8+584"
+         uni17D2179F17B6.low=8+584]"
     );
 }
 
@@ -3800,9 +3800,9 @@ fn khmer_misc_069() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17B6}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F17B6=0+1216|\
-         uni17D2178F=0@-274,-26+0"
+         uni17D2178F=0@-274,-26+0]"
     );
 }
 
@@ -3814,10 +3814,10 @@ fn khmer_misc_070() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17B7}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17B7=0@-32,-29+0"
+         uni17B7=0@-32,-29+0]"
     );
 }
 
@@ -3829,10 +3829,10 @@ fn khmer_misc_071() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17B8}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17B8=0@-32,-29+0"
+         uni17B8=0@-32,-29+0]"
     );
 }
 
@@ -3844,10 +3844,10 @@ fn khmer_misc_072() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17B9}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17B9=0@-32,-29+0"
+         uni17B9=0@-32,-29+0]"
     );
 }
 
@@ -3859,10 +3859,10 @@ fn khmer_misc_073() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17BA}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17BA=0@-32,-29+0"
+         uni17BA=0@-32,-29+0]"
     );
 }
 
@@ -3874,10 +3874,10 @@ fn khmer_misc_074() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17BB}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17BB=0@-6,-296+0"
+         uni17BB=0@-6,-296+0]"
     );
 }
 
@@ -3889,10 +3889,10 @@ fn khmer_misc_075() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17BC}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17BC=0@-6,-296+0"
+         uni17BC=0@-6,-296+0]"
     );
 }
 
@@ -3904,10 +3904,10 @@ fn khmer_misc_076() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17BD}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17BD=0@-6,-296+0"
+         uni17BD=0@-6,-296+0]"
     );
 }
 
@@ -3919,11 +3919,11 @@ fn khmer_misc_077() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17BE}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17B8=0@-32,-29+0"
+         uni17B8=0@-32,-29+0]"
     );
 }
 
@@ -3935,11 +3935,11 @@ fn khmer_misc_078() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17BF}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17BF.right2=0+288"
+         uni17BF.right2=0+288]"
     );
 }
 
@@ -3951,12 +3951,12 @@ fn khmer_misc_079() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17CA}\u{17BF}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
          uni17CA=0@-32,-29+0|\
-         uni17BF.right1=0+288"
+         uni17BF.right1=0+288]"
     );
 }
 
@@ -3968,12 +3968,12 @@ fn khmer_misc_080() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17CA}\u{17C0}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
          uni17CA=0@-32,-29+0|\
-         uni17C0.right1.high=0+288"
+         uni17C0.right1.high=0+288]"
     );
 }
 
@@ -3985,11 +3985,11 @@ fn khmer_misc_081() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17CA}\u{17C1}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17CA=0@-32,-29+0"
+         uni17CA=0@-32,-29+0]"
     );
 }
 
@@ -4001,11 +4001,11 @@ fn khmer_misc_082() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17CA}\u{17C2}",
             "",
         ),
-        "uni17C2=0+288|\
+        "[uni17C2=0+288|\
          uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17CA=0@-32,-29+0"
+         uni17CA=0@-32,-29+0]"
     );
 }
 
@@ -4017,11 +4017,11 @@ fn khmer_misc_083() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17CA}\u{17C3}",
             "",
         ),
-        "uni17C3=0+288|\
+        "[uni17C3=0+288|\
          uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
-         uni17CA=0@-32,-29+0"
+         uni17CA=0@-32,-29+0]"
     );
 }
 
@@ -4033,11 +4033,11 @@ fn khmer_misc_084() {
             "\u{179F}\u{17D2}\u{179A}\u{17D2}\u{178F}\u{17CA}\u{17C6}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni179F=0+928|\
          uni17D2178F=0@14,-26+0|\
          uni17CA=0@-32,-29+0|\
-         uni17C6=0@-32,113+0"
+         uni17C6=0@-32,113+0]"
     );
 }
 
@@ -4049,12 +4049,12 @@ fn khmer_misc_085() {
             "\u{17A0}\u{17D2}\u{1782}\u{17D2}\u{179F}\u{17CA}\u{17BE}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17A0=0+928|\
          uni17D21782=0@20,-26+0|\
          uni17D2179F.low=0+302|\
          uni17BB=0+0|\
-         uni17B8=0@-4,30+0"
+         uni17B8=0@-4,30+0]"
     );
 }
 
@@ -4066,12 +4066,12 @@ fn khmer_misc_086() {
             "\u{17A0}\u{17D2}\u{1782}\u{17D2}\u{179F}\u{17CA}\u{17BF}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17A0=0+928|\
          uni17D21782=0@20,-26+0|\
          uni17D2179F.low=0+302|\
          uni17CA=0@-4,30+0|\
-         uni17BF.right1=0+288"
+         uni17BF.right1=0+288]"
     );
 }
 
@@ -4083,12 +4083,12 @@ fn khmer_misc_087() {
             "\u{17A0}\u{17D2}\u{1782}\u{17D2}\u{179F}\u{17CA}\u{17C0}",
             "",
         ),
-        "uni17C1=0+288|\
+        "[uni17C1=0+288|\
          uni17A0=0+928|\
          uni17D21782=0@20,-26+0|\
          uni17D2179F.low=0+302|\
          uni17CA=0@-4,30+0|\
-         uni17C0.right1.high=0+288"
+         uni17C0.right1.high=0+288]"
     );
 }
 
@@ -4100,11 +4100,11 @@ fn khmer_misc_088() {
             "\u{17A0}\u{17D2}\u{179A}\u{17D2}\u{179C}\u{1784}\u{17D2}\u{1780}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni17A0=0+928|\
          uni17D2179C=0@20,-26+0|\
          uni1784=5+635|\
-         uni17D21780=5@0,-26+0"
+         uni17D21780=5@0,-26+0]"
     );
 }
 
@@ -4116,11 +4116,11 @@ fn khmer_misc_089() {
             "\u{17A0}\u{17D2}\u{179A}\u{17D2}\u{179C}\u{17B6}\u{17C6}\u{1784}",
             "",
         ),
-        "uni17D2179A=0+287|\
+        "[uni17D2179A=0+287|\
          uni17A017B6=0+1216|\
          uni17D2179C=0@-268,-26+0|\
          uni17C6=0@47,-29+0|\
-         uni1784=7+635"
+         uni1784=7+635]"
     );
 }
 
@@ -4132,10 +4132,10 @@ fn khmer_misc_090() {
             "\u{17D2}\u{17D2}",
             "",
         ),
-        "uni25CC=0+635|\
+        "[uni25CC=0+635|\
          uni17D2=0+0|\
          uni25CC=0+635|\
-         uni17D2=0+0"
+         uni17D2=0+0]"
     );
 }
 
@@ -4147,7 +4147,7 @@ fn language_tags_001() {
             "\u{004A}",
             "--language=fa",
         ),
-        "gid2=0+1000"
+        "[gid2=0+1000]"
     );
 }
 
@@ -4159,7 +4159,7 @@ fn language_tags_002() {
             "\u{004A}",
             "--language=ja",
         ),
-        "gid2=0+1000"
+        "[gid2=0+1000]"
     );
 }
 
@@ -4171,7 +4171,7 @@ fn language_tags_003() {
             "\u{004A}",
             "--language=zh",
         ),
-        "gid4=0+1000"
+        "[gid4=0+1000]"
     );
 }
 
@@ -4183,7 +4183,7 @@ fn language_tags_004() {
             "\u{004A}",
             "--language=zh-cn",
         ),
-        "gid4=0+1000"
+        "[gid4=0+1000]"
     );
 }
 
@@ -4195,7 +4195,7 @@ fn language_tags_005() {
             "\u{004A}",
             "--language=zh-sg",
         ),
-        "gid4=0+1000"
+        "[gid4=0+1000]"
     );
 }
 
@@ -4207,7 +4207,7 @@ fn language_tags_006() {
             "\u{004A}",
             "--language=zh-tw",
         ),
-        "gid5=0+1000"
+        "[gid5=0+1000]"
     );
 }
 
@@ -4219,7 +4219,7 @@ fn language_tags_007() {
             "\u{004A}",
             "--language=zh-hans",
         ),
-        "gid4=0+1000"
+        "[gid4=0+1000]"
     );
 }
 
@@ -4231,7 +4231,7 @@ fn language_tags_008() {
             "\u{004A}",
             "--language=zh-hant",
         ),
-        "gid5=0+1000"
+        "[gid5=0+1000]"
     );
 }
 
@@ -4243,7 +4243,7 @@ fn language_tags_009() {
             "\u{004A}",
             "--language=zh-hant-hk",
         ),
-        "gid6=0+1000"
+        "[gid6=0+1000]"
     );
 }
 
@@ -4255,7 +4255,7 @@ fn language_tags_010() {
             "\u{004A}",
             "--language=zh-HK",
         ),
-        "gid6=0+1000"
+        "[gid6=0+1000]"
     );
 }
 
@@ -4267,7 +4267,7 @@ fn language_tags_011() {
             "\u{004A}",
             "--language=zh-mo",
         ),
-        "gid6=0+1000"
+        "[gid6=0+1000]"
     );
 }
 
@@ -4279,7 +4279,7 @@ fn language_tags_012() {
             "\u{004A}",
             "--language=zh-Hant-mo",
         ),
-        "gid6=0+1000"
+        "[gid6=0+1000]"
     );
 }
 
@@ -4291,7 +4291,7 @@ fn language_tags_013() {
             "\u{007C}",
             "--language=dv --no-glyph-names",
         ),
-        "2=0+156"
+        "[2=0+156]"
     );
 }
 
@@ -4303,10 +4303,10 @@ fn ligature_id_001() {
             "\u{0995}\u{09CD}\u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          space=3+213|\
          u0995_u09B0_u09CD.blwf.vatu=4+643|\
-         u0995_u09CD.half_u09B2.pres=7+602"
+         u0995_u09CD.half_u09B2.pres=7+602]"
     );
 }
 
@@ -4319,11 +4319,11 @@ fn ligature_id_002() {
              \u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          space=6+213|\
          u0995_u09B0_u09CD.blwf.vatu=7+643|\
-         u0995_u09CD.half_u09B2.pres=10+602"
+         u0995_u09CD.half_u09B2.pres=10+602]"
     );
 }
 
@@ -4336,12 +4336,12 @@ fn ligature_id_003() {
              \u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          space=9+213|\
          u0995_u09B0_u09CD.blwf.vatu=10+643|\
-         u0995_u09CD.half_u09B2.pres=13+602"
+         u0995_u09CD.half_u09B2.pres=13+602]"
     );
 }
 
@@ -4354,13 +4354,13 @@ fn ligature_id_004() {
              \u{09CD}\u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
          space=12+213|\
          u0995_u09B0_u09CD.blwf.vatu=13+643|\
-         u0995_u09CD.half_u09B2.pres=16+602"
+         u0995_u09CD.half_u09B2.pres=16+602]"
     );
 }
 
@@ -4374,14 +4374,14 @@ fn ligature_id_005() {
              \u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
          u0995_u09CD.half_u0995.pres=12+566|\
          space=15+213|\
          u0995_u09B0_u09CD.blwf.vatu=16+643|\
-         u0995_u09CD.half_u09B2.pres=19+602"
+         u0995_u09CD.half_u09B2.pres=19+602]"
     );
 }
 
@@ -4395,7 +4395,7 @@ fn ligature_id_006() {
              \u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4403,7 +4403,7 @@ fn ligature_id_006() {
          u0995_u09CD.half_u0995.pres=15+566|\
          space=18+213|\
          u0995_u09B0_u09CD.blwf.vatu=19+643|\
-         u0995_u09CD.half_u09B2.pres=22+602"
+         u0995_u09CD.half_u09B2.pres=22+602]"
     );
 }
 
@@ -4417,7 +4417,7 @@ fn ligature_id_007() {
              \u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4426,7 +4426,7 @@ fn ligature_id_007() {
          u0995_u09CD.half_u0995.pres=18+566|\
          space=21+213|\
          u0995_u09B0_u09CD.blwf.vatu=22+643|\
-         u0995_u09CD.half_u09B2.pres=25+602"
+         u0995_u09CD.half_u09B2.pres=25+602]"
     );
 }
 
@@ -4441,7 +4441,7 @@ fn ligature_id_008() {
              \u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4451,7 +4451,7 @@ fn ligature_id_008() {
          u0995_u09CD.half_u0995.pres=21+566|\
          space=24+213|\
          u0995_u09B0_u09CD.blwf.vatu=25+643|\
-         u0995_u09CD.half_u09B2.pres=28+602"
+         u0995_u09CD.half_u09B2.pres=28+602]"
     );
 }
 
@@ -4466,7 +4466,7 @@ fn ligature_id_009() {
              \u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4477,7 +4477,7 @@ fn ligature_id_009() {
          u0995_u09CD.half_u0995.pres=24+566|\
          space=27+213|\
          u0995_u09B0_u09CD.blwf.vatu=28+643|\
-         u0995_u09CD.half_u09B2.pres=31+602"
+         u0995_u09CD.half_u09B2.pres=31+602]"
     );
 }
 
@@ -4492,7 +4492,7 @@ fn ligature_id_010() {
              \u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4504,7 +4504,7 @@ fn ligature_id_010() {
          u0995_u09CD.half_u0995.pres=27+566|\
          space=30+213|\
          u0995_u09B0_u09CD.blwf.vatu=31+643|\
-         u0995_u09CD.half_u09B2.pres=34+602"
+         u0995_u09CD.half_u09B2.pres=34+602]"
     );
 }
 
@@ -4519,7 +4519,7 @@ fn ligature_id_011() {
              \u{0995}\u{09CD}\u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4532,7 +4532,7 @@ fn ligature_id_011() {
          u0995_u09CD.half_u0995.pres=30+566|\
          space=33+213|\
          u0995_u09B0_u09CD.blwf.vatu=34+643|\
-         u0995_u09CD.half_u09B2.pres=37+602"
+         u0995_u09CD.half_u09B2.pres=37+602]"
     );
 }
 
@@ -4548,7 +4548,7 @@ fn ligature_id_012() {
              \u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4562,7 +4562,7 @@ fn ligature_id_012() {
          u0995_u09CD.half_u0995.pres=33+566|\
          space=36+213|\
          u0995_u09B0_u09CD.blwf.vatu=37+643|\
-         u0995_u09CD.half_u09B2.pres=40+602"
+         u0995_u09CD.half_u09B2.pres=40+602]"
     );
 }
 
@@ -4578,7 +4578,7 @@ fn ligature_id_013() {
              \u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4593,7 +4593,7 @@ fn ligature_id_013() {
          u0995_u09CD.half_u0995.pres=36+566|\
          space=39+213|\
          u0995_u09B0_u09CD.blwf.vatu=40+643|\
-         u0995_u09CD.half_u09B2.pres=43+602"
+         u0995_u09CD.half_u09B2.pres=43+602]"
     );
 }
 
@@ -4609,7 +4609,7 @@ fn ligature_id_014() {
              \u{09CD}\u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4625,7 +4625,7 @@ fn ligature_id_014() {
          u0995_u09CD.half_u0995.pres=39+566|\
          space=42+213|\
          u0995_u09B0_u09CD.blwf.vatu=43+643|\
-         u0995_u09CD.half_u09B2.pres=46+602"
+         u0995_u09CD.half_u09B2.pres=46+602]"
     );
 }
 
@@ -4642,7 +4642,7 @@ fn ligature_id_015() {
              \u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4659,7 +4659,7 @@ fn ligature_id_015() {
          u0995_u09CD.half_u0995.pres=42+566|\
          space=45+213|\
          u0995_u09B0_u09CD.blwf.vatu=46+643|\
-         u0995_u09CD.half_u09B2.pres=49+602"
+         u0995_u09CD.half_u09B2.pres=49+602]"
     );
 }
 
@@ -4676,7 +4676,7 @@ fn ligature_id_016() {
              \u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4694,7 +4694,7 @@ fn ligature_id_016() {
          u0995_u09CD.half_u0995.pres=45+566|\
          space=48+213|\
          u0995_u09B0_u09CD.blwf.vatu=49+643|\
-         u0995_u09CD.half_u09B2.pres=52+602"
+         u0995_u09CD.half_u09B2.pres=52+602]"
     );
 }
 
@@ -4711,7 +4711,7 @@ fn ligature_id_017() {
              \u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4730,7 +4730,7 @@ fn ligature_id_017() {
          u0995_u09CD.half_u0995.pres=48+566|\
          space=51+213|\
          u0995_u09B0_u09CD.blwf.vatu=52+643|\
-         u0995_u09CD.half_u09B2.pres=55+602"
+         u0995_u09CD.half_u09B2.pres=55+602]"
     );
 }
 
@@ -4748,7 +4748,7 @@ fn ligature_id_018() {
              \u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4768,7 +4768,7 @@ fn ligature_id_018() {
          u0995_u09CD.half_u0995.pres=51+566|\
          space=54+213|\
          u0995_u09B0_u09CD.blwf.vatu=55+643|\
-         u0995_u09CD.half_u09B2.pres=58+602"
+         u0995_u09CD.half_u09B2.pres=58+602]"
     );
 }
 
@@ -4786,7 +4786,7 @@ fn ligature_id_019() {
              \u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4807,7 +4807,7 @@ fn ligature_id_019() {
          u0995_u09CD.half_u0995.pres=54+566|\
          space=57+213|\
          u0995_u09B0_u09CD.blwf.vatu=58+643|\
-         u0995_u09CD.half_u09B2.pres=61+602"
+         u0995_u09CD.half_u09B2.pres=61+602]"
     );
 }
 
@@ -4825,7 +4825,7 @@ fn ligature_id_020() {
              \u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4847,7 +4847,7 @@ fn ligature_id_020() {
          u0995_u09CD.half_u0995.pres=57+566|\
          space=60+213|\
          u0995_u09B0_u09CD.blwf.vatu=61+643|\
-         u0995_u09CD.half_u09B2.pres=64+602"
+         u0995_u09CD.half_u09B2.pres=64+602]"
     );
 }
 
@@ -4865,7 +4865,7 @@ fn ligature_id_021() {
              \u{0995}\u{09CD}\u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4888,7 +4888,7 @@ fn ligature_id_021() {
          u0995_u09CD.half_u0995.pres=60+566|\
          space=63+213|\
          u0995_u09B0_u09CD.blwf.vatu=64+643|\
-         u0995_u09CD.half_u09B2.pres=67+602"
+         u0995_u09CD.half_u09B2.pres=67+602]"
     );
 }
 
@@ -4907,7 +4907,7 @@ fn ligature_id_022() {
              \u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4931,7 +4931,7 @@ fn ligature_id_022() {
          u0995_u09CD.half_u0995.pres=63+566|\
          space=66+213|\
          u0995_u09B0_u09CD.blwf.vatu=67+643|\
-         u0995_u09CD.half_u09B2.pres=70+602"
+         u0995_u09CD.half_u09B2.pres=70+602]"
     );
 }
 
@@ -4950,7 +4950,7 @@ fn ligature_id_023() {
              \u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -4975,7 +4975,7 @@ fn ligature_id_023() {
          u0995_u09CD.half_u0995.pres=66+566|\
          space=69+213|\
          u0995_u09B0_u09CD.blwf.vatu=70+643|\
-         u0995_u09CD.half_u09B2.pres=73+602"
+         u0995_u09CD.half_u09B2.pres=73+602]"
     );
 }
 
@@ -4994,7 +4994,7 @@ fn ligature_id_024() {
              \u{09CD}\u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5020,7 +5020,7 @@ fn ligature_id_024() {
          u0995_u09CD.half_u0995.pres=69+566|\
          space=72+213|\
          u0995_u09B0_u09CD.blwf.vatu=73+643|\
-         u0995_u09CD.half_u09B2.pres=76+602"
+         u0995_u09CD.half_u09B2.pres=76+602]"
     );
 }
 
@@ -5040,7 +5040,7 @@ fn ligature_id_025() {
              \u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5067,7 +5067,7 @@ fn ligature_id_025() {
          u0995_u09CD.half_u0995.pres=72+566|\
          space=75+213|\
          u0995_u09B0_u09CD.blwf.vatu=76+643|\
-         u0995_u09CD.half_u09B2.pres=79+602"
+         u0995_u09CD.half_u09B2.pres=79+602]"
     );
 }
 
@@ -5087,7 +5087,7 @@ fn ligature_id_026() {
              \u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5115,7 +5115,7 @@ fn ligature_id_026() {
          u0995_u09CD.half_u0995.pres=75+566|\
          space=78+213|\
          u0995_u09B0_u09CD.blwf.vatu=79+643|\
-         u0995_u09CD.half_u09B2.pres=82+602"
+         u0995_u09CD.half_u09B2.pres=82+602]"
     );
 }
 
@@ -5135,7 +5135,7 @@ fn ligature_id_027() {
              \u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5164,7 +5164,7 @@ fn ligature_id_027() {
          u0995_u09CD.half_u0995.pres=78+566|\
          space=81+213|\
          u0995_u09B0_u09CD.blwf.vatu=82+643|\
-         u0995_u09CD.half_u09B2.pres=85+602"
+         u0995_u09CD.half_u09B2.pres=85+602]"
     );
 }
 
@@ -5185,7 +5185,7 @@ fn ligature_id_028() {
              \u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5215,7 +5215,7 @@ fn ligature_id_028() {
          u0995_u09CD.half_u0995.pres=81+566|\
          space=84+213|\
          u0995_u09B0_u09CD.blwf.vatu=85+643|\
-         u0995_u09CD.half_u09B2.pres=88+602"
+         u0995_u09CD.half_u09B2.pres=88+602]"
     );
 }
 
@@ -5236,7 +5236,7 @@ fn ligature_id_029() {
              \u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5267,7 +5267,7 @@ fn ligature_id_029() {
          u0995_u09CD.half_u0995.pres=84+566|\
          space=87+213|\
          u0995_u09B0_u09CD.blwf.vatu=88+643|\
-         u0995_u09CD.half_u09B2.pres=91+602"
+         u0995_u09CD.half_u09B2.pres=91+602]"
     );
 }
 
@@ -5288,7 +5288,7 @@ fn ligature_id_030() {
              \u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5320,7 +5320,7 @@ fn ligature_id_030() {
          u0995_u09CD.half_u0995.pres=87+566|\
          space=90+213|\
          u0995_u09B0_u09CD.blwf.vatu=91+643|\
-         u0995_u09CD.half_u09B2.pres=94+602"
+         u0995_u09CD.half_u09B2.pres=94+602]"
     );
 }
 
@@ -5341,7 +5341,7 @@ fn ligature_id_031() {
              \u{0995}\u{09CD}\u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5374,7 +5374,7 @@ fn ligature_id_031() {
          u0995_u09CD.half_u0995.pres=90+566|\
          space=93+213|\
          u0995_u09B0_u09CD.blwf.vatu=94+643|\
-         u0995_u09CD.half_u09B2.pres=97+602"
+         u0995_u09CD.half_u09B2.pres=97+602]"
     );
 }
 
@@ -5396,7 +5396,7 @@ fn ligature_id_032() {
              \u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5430,7 +5430,7 @@ fn ligature_id_032() {
          u0995_u09CD.half_u0995.pres=93+566|\
          space=96+213|\
          u0995_u09B0_u09CD.blwf.vatu=97+643|\
-         u0995_u09CD.half_u09B2.pres=100+602"
+         u0995_u09CD.half_u09B2.pres=100+602]"
     );
 }
 
@@ -5452,7 +5452,7 @@ fn ligature_id_033() {
              \u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5487,7 +5487,7 @@ fn ligature_id_033() {
          u0995_u09CD.half_u0995.pres=96+566|\
          space=99+213|\
          u0995_u09B0_u09CD.blwf.vatu=100+643|\
-         u0995_u09CD.half_u09B2.pres=103+602"
+         u0995_u09CD.half_u09B2.pres=103+602]"
     );
 }
 
@@ -5509,7 +5509,7 @@ fn ligature_id_034() {
              \u{09CD}\u{0995}\u{0020}\u{0995}\u{09CD}\u{09B0}\u{0995}\u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5545,7 +5545,7 @@ fn ligature_id_034() {
          u0995_u09CD.half_u0995.pres=99+566|\
          space=102+213|\
          u0995_u09B0_u09CD.blwf.vatu=103+643|\
-         u0995_u09CD.half_u09B2.pres=106+602"
+         u0995_u09CD.half_u09B2.pres=106+602]"
     );
 }
 
@@ -5568,7 +5568,7 @@ fn ligature_id_035() {
              \u{09CD}\u{09B2}",
             "",
         ),
-        "u0995_u09CD.half_u0995.pres=0+566|\
+        "[u0995_u09CD.half_u0995.pres=0+566|\
          u0995_u09CD.half_u0995.pres=3+566|\
          u0995_u09CD.half_u0995.pres=6+566|\
          u0995_u09CD.half_u0995.pres=9+566|\
@@ -5605,7 +5605,7 @@ fn ligature_id_035() {
          u0995_u09CD.half_u0995.pres=102+566|\
          space=105+213|\
          u0995_u09B0_u09CD.blwf.vatu=106+643|\
-         u0995_u09CD.half_u09B2.pres=109+602"
+         u0995_u09CD.half_u09B2.pres=109+602]"
     );
 }
 
@@ -5617,8 +5617,8 @@ fn ligature_id_036() {
             "\u{1004}\u{103A}\u{1039}\u{101B}\u{103D}\u{102D}",
             "",
         ),
-        "uni101B103D=0+450|\
-         uni1004103A1039102D=0@-50,0+0"
+        "[uni101B103D=0+450|\
+         uni1004103A1039102D=0@-50,0+0]"
     );
 }
 
@@ -5630,9 +5630,9 @@ fn mark_attachment_001() {
             "\u{100F}\u{103C}\u{102F}\u{1036}",
             "",
         ),
-        "uni103C102F=0+150|\
+        "[uni103C102F=0+150|\
          uni100F=0+550|\
-         uni1036=0@-150,0+0"
+         uni1036=0@-150,0+0]"
     );
 }
 
@@ -5644,14 +5644,14 @@ fn mark_filtering_sets_001() {
             "\u{062A}\u{062E}\u{062A}\u{0629}",
             "",
         ),
-        "glyph837=3@299,1170+0|\
+        "[glyph837=3@299,1170+0|\
          uni06C1.1=3+502|\
          glyph837=2@149,690+0|\
          uni0628.8=2+532|\
          glyph836=1@-51,1259+0|\
          glyph514=1+196|\
          glyph837=0@655,1751+0|\
-         glyph112=0@0,-358+905"
+         glyph112=0@0,-358+905]"
     );
 }
 
@@ -5663,14 +5663,14 @@ fn mark_filtering_sets_002() {
             "\u{062A}\u{062E}\u{0646}\u{0629}",
             "",
         ),
-        "glyph837=3@299,1170+0|\
+        "[glyph837=3@299,1170+0|\
          uni06C1.1=3+502|\
          glyph836=2@149,690+0|\
          uni0628.8=2+532|\
          glyph836=1@-51,1259+0|\
          glyph514=1+196|\
          glyph837=0@655,1751+0|\
-         glyph112=0@0,-358+905"
+         glyph112=0@0,-358+905]"
     );
 }
 
@@ -5682,14 +5682,14 @@ fn mark_filtering_sets_003() {
             "\u{062A}\u{062E}\u{0626}\u{0629}",
             "",
         ),
-        "glyph837=3@299,1170+0|\
+        "[glyph837=3@299,1170+0|\
          uni06C1.1=3+502|\
          glyph847=2@149,690+0|\
          uni0628.8=2+532|\
          glyph836=1@-51,1259+0|\
          glyph514=1+196|\
          glyph837=0@655,1751+0|\
-         glyph112=0@0,-358+905"
+         glyph112=0@0,-358+905]"
     );
 }
 
@@ -5701,14 +5701,14 @@ fn mark_filtering_sets_004() {
             "\u{062A}\u{062E}\u{062B}\u{0629}",
             "",
         ),
-        "glyph837=3@299,1520+0|\
+        "[glyph837=3@299,1520+0|\
          uni06C1.1=3+502|\
          glyph838=2@149,690+0|\
          uni0628.8=2+532|\
          glyph836=1@-51,1259+0|\
          glyph514=1+196|\
          glyph837=0@655,1751+0|\
-         glyph112=0@0,-358+905"
+         glyph112=0@0,-358+905]"
     );
 }
 
@@ -5720,14 +5720,14 @@ fn mark_filtering_sets_005() {
             "\u{062A}\u{062E}\u{0679}\u{0629}",
             "",
         ),
-        "glyph837=3@299,1520+0|\
+        "[glyph837=3@299,1520+0|\
          uni06C1.1=3+502|\
          glyph842=2@149,690+0|\
          uni0628.8=2+532|\
          glyph836=1@-51,1259+0|\
          glyph514=1+196|\
          glyph837=0@655,1751+0|\
-         glyph112=0@0,-358+905"
+         glyph112=0@0,-358+905]"
     );
 }
 
@@ -5739,8 +5739,8 @@ fn mongolian_variation_selector_001() {
             "\u{1826}\u{180B}\u{1826}",
             "",
         ),
-        "uni1826.E85E_ue.init1=0+599|\
-         uni1826.E856_ue.fina=2+750"
+        "[uni1826.E85E_ue.init1=0+599|\
+         uni1826.E856_ue.fina=2+750]"
     );
 }
 
@@ -5752,7 +5752,7 @@ fn mongolian_variation_selector_002() {
             "\u{1820}\u{180B}",
             "",
         ),
-        "uni1820.E821_a.isol1=0+1199"
+        "[uni1820.E821_a.isol1=0+1199]"
     );
 }
 
@@ -5765,7 +5765,7 @@ fn mongolian_variation_selector_003() {
              \u{180D}\u{180A}",
             "",
         ),
-        "gid1=0+268|\
+        "[gid1=0+268|\
          gid10=1+778|\
          gid1=2+268|\
          gid9=3+575|\
@@ -5773,7 +5773,7 @@ fn mongolian_variation_selector_003() {
          gid10=6+778|\
          gid1=8+268|\
          gid8=9+575|\
-         gid1=11+268"
+         gid1=11+268]"
     );
 }
 
@@ -5786,13 +5786,13 @@ fn mongolian_variation_selector_004() {
              \u{1837}",
             "",
         ),
-        "uni183A1823.E971_ko.init=0+950|\
+        "[uni183A1823.E971_ko.init=0+950|\
          uni182E.E904_m.medi=2+400|\
          uni182B1822.E8A6_pi.medi=3+1150|\
          uni1826.E854_ue.medi1=5+1100|\
          uni1832.E916_t.medi1=7+1000|\
          uni1827.E85C_ee.medi=9+750|\
-         uni1837.E931_r.fina=10+750"
+         uni1837.E931_r.fina=10+750]"
     );
 }
 
@@ -5804,8 +5804,8 @@ fn mongolian_variation_selector_005() {
             "\u{182D}\u{182D}\u{180B}",
             "",
         ),
-        "uni182D.E8E2_g.init=0+1000|\
-         uni182D.E8E8_g.fina1=1+1250"
+        "[uni182D.E8E2_g.init=0+1000|\
+         uni182D.E8E8_g.fina1=1+1250]"
     );
 }
 
@@ -5817,7 +5817,7 @@ fn mongolian_variation_selector_006() {
             "\u{182D}\u{180C}",
             "",
         ),
-        "uni182D.EA1B_g.isol2=0+1000"
+        "[uni182D.EA1B_g.isol2=0+1000]"
     );
 }
 
@@ -5829,8 +5829,8 @@ fn mongolian_variation_selector_007() {
             "\u{182D}\u{180D}\u{200D}",
             "",
         ),
-        "uni182D.EA1E_g.init3=0+650|\
-         space=0+0"
+        "[uni182D.EA1E_g.init3=0+650|\
+         space=0+0]"
     );
 }
 
@@ -5842,10 +5842,10 @@ fn mongolian_variation_selector_008() {
             "\u{182D}\u{200D}\u{182D}\u{180B}\u{200D}",
             "",
         ),
-        "uni182D.E8E2_g.init=0+1000|\
+        "[uni182D.E8E2_g.init=0+1000|\
          space=0+0|\
          uni182D.E8E5_g.medi1=2+800|\
-         space=2+0"
+         space=2+0]"
     );
 }
 
@@ -5857,8 +5857,8 @@ fn mongolian_variation_selector_009() {
             "\u{182D}\u{180C}\u{200D}",
             "",
         ),
-        "uni182D.EA1D_g.init2=0+950|\
-         space=0+0"
+        "[uni182D.EA1D_g.init2=0+950|\
+         space=0+0]"
     );
 }
 
@@ -5870,8 +5870,8 @@ fn mongolian_variation_selector_010() {
             "\u{182D}\u{180D}\u{200D}",
             "",
         ),
-        "uni182D.EA1E_g.init3=0+650|\
-         space=0+0"
+        "[uni182D.EA1E_g.init3=0+650|\
+         space=0+0]"
     );
 }
 
@@ -5883,12 +5883,12 @@ fn mongolian_variation_selector_011() {
             "\u{200D}\u{182D}\u{200D}\u{200D}\u{182D}\u{180B}\u{200D}",
             "",
         ),
-        "space=0+0|\
+        "[space=0+0|\
          uni182D.E8E4_g.medi=1+800|\
          space=1+0|\
          space=1+0|\
          uni182D.E8E5_g.medi1=4+800|\
-         space=4+0"
+         space=4+0]"
     );
 }
 
@@ -5900,9 +5900,9 @@ fn mongolian_variation_selector_012() {
             "\u{200D}\u{182D}\u{180C}\u{200D}",
             "",
         ),
-        "space=0+0|\
+        "[space=0+0|\
          uni182D.E8E6_g.medi2=1+650|\
-         space=1+0"
+         space=1+0]"
     );
 }
 
@@ -5914,9 +5914,9 @@ fn mongolian_variation_selector_013() {
             "\u{200D}\u{182D}\u{180D}\u{200D}",
             "",
         ),
-        "space=0+0|\
+        "[space=0+0|\
          uni182D.E8E6_g.medi2=1+650|\
-         space=1+0"
+         space=1+0]"
     );
 }
 
@@ -5928,10 +5928,10 @@ fn mongolian_variation_selector_014() {
             "\u{200D}\u{182D}\u{200D}\u{182D}\u{180B}",
             "",
         ),
-        "space=0+0|\
+        "[space=0+0|\
          uni182D.E8E4_g.medi=1+800|\
          space=1+0|\
-         uni182D.E8E8_g.fina1=3+1250"
+         uni182D.E8E8_g.fina1=3+1250]"
     );
 }
 
@@ -5943,8 +5943,8 @@ fn mongolian_variation_selector_015() {
             "\u{200D}\u{182D}\u{180C}",
             "",
         ),
-        "space=0+0|\
-         uni182D.E8E9_g.fina2=1+1050"
+        "[space=0+0|\
+         uni182D.E8E9_g.fina2=1+1050]"
     );
 }
 
@@ -5956,11 +5956,11 @@ fn mongolian_variation_selector_016() {
             "\u{1820}\u{200C}\u{182D}\u{1820}\u{1837}",
             "",
         ),
-        "uni1820.E820_a.isol=0+1550|\
+        "[uni1820.E820_a.isol=0+1550|\
          space=1+0|\
          uni182D.E8E2_g.init=2+1000|\
          uni1820.E823_a.medi=3+400|\
-         uni1837.E931_r.fina=4+750"
+         uni1837.E931_r.fina=4+750]"
     );
 }
 
@@ -5972,14 +5972,14 @@ fn mongolian_variation_selector_017() {
             "\u{1830}\u{1824}\u{1837}\u{200D}\u{200D}\u{182D}\u{1820}\u{200D}",
             "",
         ),
-        "uni1830.E90B_s.init=0+850|\
+        "[uni1830.E90B_s.init=0+850|\
          uni1824.E844_u.medi=1+600|\
          uni1837.E930_r.medi=2+600|\
          space=2+0|\
          space=2+0|\
          uni182D.E8E5_g.medi1=5+800|\
          uni1820.E823_a.medi=6+400|\
-         space=6+0"
+         space=6+0]"
     );
 }
 
@@ -5991,11 +5991,11 @@ fn mongolian_variation_selector_018() {
             "\u{200D}\u{182D}\u{1824}\u{182F}\u{1822}",
             "",
         ),
-        "space=0+0|\
+        "[space=0+0|\
          uni182D.E8E5_g.medi1=1+800|\
          uni1824.E844_u.medi=2+600|\
          uni182F.E908_l.medi=3+400|\
-         uni1822.E837_i.fina=4+600"
+         uni1822.E837_i.fina=4+600]"
     );
 }
 
@@ -6007,7 +6007,7 @@ fn mongolian_variation_selector_019() {
             "\u{182A}\u{1820}\u{1822}\u{182D}\u{180E}\u{1820}\u{202F}\u{1836}\u{1822}\u{1828}",
             "",
         ),
-        "uni182A1820.E875_ba.init=0+1000|\
+        "[uni182A1820.E875_ba.init=0+1000|\
          uni1822.E836_i.medi2=2+1000|\
          uni182D.E8E8_g.fina1=3+1250|\
          space=4+0|\
@@ -6015,7 +6015,7 @@ fn mongolian_variation_selector_019() {
          uni202F.nobreak=6+500|\
          uni1836.E92B_y.init1=7+500|\
          uni1822.E834_i.medi=8+500|\
-         uni1828.E866_n.fina=9+850"
+         uni1828.E866_n.fina=9+850]"
     );
 }
 
@@ -6027,7 +6027,7 @@ fn myanmar_misc_001() {
             "\u{101A}\u{1035}",
             "",
         ),
-        "ya_e_above=0+1000"
+        "[ya_e_above=0+1000]"
     );
 }
 
@@ -6039,9 +6039,9 @@ fn myanmar_syllable_001() {
             "\u{101D}\u{FE00}\u{1031}\u{FE00}\u{1031}\u{FE00}",
             "--no-glyph-names",
         ),
-        "6=0+465|\
+        "[6=0+465|\
          6=0+465|\
-         5=0+502"
+         5=0+502]"
     );
 }
 
@@ -6053,12 +6053,12 @@ fn myanmar_zawgyi_001() {
             "\u{1000}\u{103A}\u{1004}\u{1037}\u{1039}\u{1041}",
             "--script=Qaag",
         ),
-        "Ka=0+2217|\
+        "[Ka=0+2217|\
          Ya-Semivowel=0+286|\
          Nga=2+1247|\
          Dot Below=2+0|\
          Virama-Killer=2+0|\
-         One-Myanmar=5+1247"
+         One-Myanmar=5+1247]"
     );
 }
 
@@ -6070,8 +6070,8 @@ fn none_directional_001() {
             "\u{10300}\u{10301}",
             "",
         ),
-        "u10300=0+1470|\
-         u10301=1+1284"
+        "[u10300=0+1470|\
+         u10301=1+1284]"
     );
 }
 
@@ -6083,8 +6083,8 @@ fn none_directional_002() {
             "\u{10300}\u{10301}",
             "--direction=ltr",
         ),
-        "u10300=0+1470|\
-         u10301=1+1284"
+        "[u10300=0+1470|\
+         u10301=1+1284]"
     );
 }
 
@@ -6096,8 +6096,8 @@ fn none_directional_003() {
             "\u{10300}\u{10301}",
             "--direction=rtl",
         ),
-        "u10301_r=1+1284|\
-         u10300_r=0+1470"
+        "[u10301_r=1+1284|\
+         u10300_r=0+1470]"
     );
 }
 
@@ -6109,8 +6109,8 @@ fn positioning_features_001() {
             "\u{0041}\u{0056}",
             "",
         ),
-        "A=0+625|\
-         V=1+675"
+        "[A=0+625|\
+         V=1+675]"
     );
 }
 
@@ -6122,8 +6122,8 @@ fn positioning_features_002() {
             "\u{006D}\u{0315}",
             "",
         ),
-        "m=0+945|\
-         uni0315=0@32,-178+0"
+        "[m=0+945|\
+         uni0315=0@32,-178+0]"
     );
 }
 
@@ -6135,8 +6135,8 @@ fn positioning_features_003() {
             "\u{0079}\u{0325}",
             "",
         ),
-        "y=0+565|\
-         uni0325=0@-422,-240+0"
+        "[y=0+565|\
+         uni0325=0@-422,-240+0]"
     );
 }
 
@@ -6148,9 +6148,9 @@ fn rand_001() {
             "\u{0054}\u{0055}\u{0056}",
             "--no-glyph-names --features=-rand",
         ),
-        "1=0+560|\
+        "[1=0+560|\
          2=1+602|\
-         3=2+602"
+         3=2+602]"
     );
 }
 
@@ -6162,9 +6162,9 @@ fn rand_002() {
             "\u{0054}\u{0055}\u{0056}",
             "--no-glyph-names --features=rand=2",
         ),
-        "5=0+560|\
+        "[5=0+560|\
          8=1+602|\
-         11=2+602"
+         11=2+602]"
     );
 }
 
@@ -6177,7 +6177,7 @@ fn rand_003() {
              \u{0055}\u{0056}",
             "--no-glyph-names",
         ),
-        "5=0+560|\
+        "[5=0+560|\
          7=1+602|\
          10=2+602|\
          4=3+560|\
@@ -6188,7 +6188,7 @@ fn rand_003() {
          10=8+602|\
          5=9+560|\
          8=10+602|\
-         12=11+602"
+         12=11+602]"
     );
 }
 
@@ -6200,10 +6200,10 @@ fn reverse_sub_001() {
             "\u{0041}\u{0020}\u{0041}\u{0042}",
             "",
         ),
-        "A.alt1=0+1000|\
+        "[A.alt1=0+1000|\
          space=1+1000|\
          A.alt1=2+1000|\
-         B=3+1000"
+         B=3+1000]"
     );
 }
 
@@ -6215,7 +6215,7 @@ fn rotation_001() {
             "\u{3008}",
             "--no-clusters --no-positions --direction=l",
         ),
-        "uni3008"
+        "[uni3008]"
     );
 }
 
@@ -6227,7 +6227,7 @@ fn rotation_002() {
             "\u{3008}",
             "--no-clusters --no-positions --direction=r",
         ),
-        "uni3009"
+        "[uni3009]"
     );
 }
 
@@ -6239,7 +6239,7 @@ fn rotation_003() {
             "\u{3008}",
             "--no-clusters --no-positions --direction=t",
         ),
-        "uniFE3F"
+        "[uniFE3F]"
     );
 }
 
@@ -6251,7 +6251,7 @@ fn rotation_004() {
             "\u{3008}",
             "--no-clusters --no-positions --direction=b",
         ),
-        "uniFE40"
+        "[uniFE40]"
     );
 }
 
@@ -6263,14 +6263,14 @@ fn simple_001() {
             "\u{0056}\u{0041}\u{0042}\u{0045}\u{0061}\u{0062}\u{0063}\u{0064}",
             "",
         ),
-        "V=0+1142|\
+        "[V=0+1142|\
          A=1+1295|\
          B=2+1295|\
          E=3+1123|\
          a=4+1126|\
          b=5+1164|\
          c=6+1072|\
-         d=7+1164"
+         d=7+1164]"
     );
 }
 
@@ -6282,8 +6282,8 @@ fn sinhala_001() {
             "\u{0DBB}\u{0DCA}\u{200D}\u{0DBA}\u{0DCA}\u{200D}\u{0DBA}",
             "",
         ),
-        "gid8=0+1343|\
-         gid4=0+1130"
+        "[gid8=0+1343|\
+         gid4=0+1130]"
     );
 }
 
@@ -6295,7 +6295,7 @@ fn spaces_001() {
             "\u{0020}",
             "",
         ),
-        "gid1=0+560"
+        "[gid1=0+560]"
     );
 }
 
@@ -6307,7 +6307,7 @@ fn spaces_002() {
             "\u{00A0}",
             "",
         ),
-        "gid1=0+560"
+        "[gid1=0+560]"
     );
 }
 
@@ -6319,7 +6319,7 @@ fn spaces_003() {
             "\u{1680}",
             "",
         ),
-        "gid0=0+692"
+        "[gid0=0+692]"
     );
 }
 
@@ -6331,7 +6331,7 @@ fn spaces_004() {
             "\u{2000}",
             "",
         ),
-        "gid1=0+1024"
+        "[gid1=0+1024]"
     );
 }
 
@@ -6343,7 +6343,7 @@ fn spaces_005() {
             "\u{2001}",
             "",
         ),
-        "gid1=0+2048"
+        "[gid1=0+2048]"
     );
 }
 
@@ -6355,7 +6355,7 @@ fn spaces_006() {
             "\u{2002}",
             "",
         ),
-        "gid1=0+1024"
+        "[gid1=0+1024]"
     );
 }
 
@@ -6367,7 +6367,7 @@ fn spaces_007() {
             "\u{2003}",
             "",
         ),
-        "gid1=0+2048"
+        "[gid1=0+2048]"
     );
 }
 
@@ -6379,7 +6379,7 @@ fn spaces_008() {
             "\u{2004}",
             "",
         ),
-        "gid1=0+683"
+        "[gid1=0+683]"
     );
 }
 
@@ -6391,7 +6391,7 @@ fn spaces_009() {
             "\u{2005}",
             "",
         ),
-        "gid1=0+512"
+        "[gid1=0+512]"
     );
 }
 
@@ -6403,7 +6403,7 @@ fn spaces_010() {
             "\u{2006}",
             "",
         ),
-        "gid1=0+341"
+        "[gid1=0+341]"
     );
 }
 
@@ -6415,7 +6415,7 @@ fn spaces_011() {
             "\u{2007}",
             "",
         ),
-        "gid1=0+560"
+        "[gid1=0+560]"
     );
 }
 
@@ -6427,7 +6427,7 @@ fn spaces_012() {
             "\u{2008}",
             "",
         ),
-        "gid1=0+560"
+        "[gid1=0+560]"
     );
 }
 
@@ -6439,7 +6439,7 @@ fn spaces_013() {
             "\u{2009}",
             "",
         ),
-        "gid1=0+410"
+        "[gid1=0+410]"
     );
 }
 
@@ -6451,7 +6451,7 @@ fn spaces_014() {
             "\u{200A}",
             "",
         ),
-        "gid1=0+128"
+        "[gid1=0+128]"
     );
 }
 
@@ -6463,7 +6463,7 @@ fn spaces_015() {
             "\u{202F}",
             "",
         ),
-        "gid1=0+280"
+        "[gid1=0+280]"
     );
 }
 
@@ -6475,7 +6475,7 @@ fn spaces_016() {
             "\u{205F}",
             "",
         ),
-        "gid1=0+455"
+        "[gid1=0+455]"
     );
 }
 
@@ -6487,7 +6487,7 @@ fn spaces_017() {
             "\u{3000}",
             "",
         ),
-        "gid1=0+2048"
+        "[gid1=0+2048]"
     );
 }
 
@@ -6499,7 +6499,7 @@ fn spaces_018() {
             "\u{0020}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-2048"
+        "[gid1=0@-280,0+0,-2048]"
     );
 }
 
@@ -6511,7 +6511,7 @@ fn spaces_019() {
             "\u{00A0}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-2048"
+        "[gid1=0@-280,0+0,-2048]"
     );
 }
 
@@ -6523,7 +6523,7 @@ fn spaces_020() {
             "\u{1680}",
             "--direction=ttb",
         ),
-        "gid0=0@-346,0+0,-2048"
+        "[gid0=0@-346,0+0,-2048]"
     );
 }
 
@@ -6535,7 +6535,7 @@ fn spaces_021() {
             "\u{2000}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-1024"
+        "[gid1=0@-280,0+0,-1024]"
     );
 }
 
@@ -6547,7 +6547,7 @@ fn spaces_022() {
             "\u{2001}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-2048"
+        "[gid1=0@-280,0+0,-2048]"
     );
 }
 
@@ -6559,7 +6559,7 @@ fn spaces_023() {
             "\u{2002}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-1024"
+        "[gid1=0@-280,0+0,-1024]"
     );
 }
 
@@ -6571,7 +6571,7 @@ fn spaces_024() {
             "\u{2003}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-2048"
+        "[gid1=0@-280,0+0,-2048]"
     );
 }
 
@@ -6583,7 +6583,7 @@ fn spaces_025() {
             "\u{2004}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-683"
+        "[gid1=0@-280,0+0,-683]"
     );
 }
 
@@ -6595,7 +6595,7 @@ fn spaces_026() {
             "\u{2005}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-512"
+        "[gid1=0@-280,0+0,-512]"
     );
 }
 
@@ -6607,7 +6607,7 @@ fn spaces_027() {
             "\u{2006}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-341"
+        "[gid1=0@-280,0+0,-341]"
     );
 }
 
@@ -6619,7 +6619,7 @@ fn spaces_028() {
             "\u{2007}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-2048"
+        "[gid1=0@-280,0+0,-2048]"
     );
 }
 
@@ -6631,7 +6631,7 @@ fn spaces_029() {
             "\u{2008}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-2048"
+        "[gid1=0@-280,0+0,-2048]"
     );
 }
 
@@ -6643,7 +6643,7 @@ fn spaces_030() {
             "\u{2009}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-410"
+        "[gid1=0@-280,0+0,-410]"
     );
 }
 
@@ -6655,7 +6655,7 @@ fn spaces_031() {
             "\u{200A}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-128"
+        "[gid1=0@-280,0+0,-128]"
     );
 }
 
@@ -6667,7 +6667,7 @@ fn spaces_032() {
             "\u{202F}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-1024"
+        "[gid1=0@-280,0+0,-1024]"
     );
 }
 
@@ -6679,7 +6679,7 @@ fn spaces_033() {
             "\u{205F}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-455"
+        "[gid1=0@-280,0+0,-455]"
     );
 }
 
@@ -6691,7 +6691,7 @@ fn spaces_034() {
             "\u{3000}",
             "--direction=ttb",
         ),
-        "gid1=0@-280,0+0,-2048"
+        "[gid1=0@-280,0+0,-2048]"
     );
 }
 
@@ -6703,12 +6703,12 @@ fn tibetan_contractions_1_001() {
             "\u{FEFF}\u{0F40}\u{0F72}\u{0F72}\u{0F0B}\u{0F66}\u{0FAD}\u{0F7C}\u{0F7C}\u{0F0B}",
             "",
         ),
-        "uni0F40=0+680|\
+        "[uni0F40=0+680|\
          uni0F720F72=0+0|\
          uni0F0B=4+190|\
          uni0F660FAD=5+680|\
          uni0F7D=5+0|\
-         uni0F0B=9+190"
+         uni0F0B=9+190]"
     );
 }
 
@@ -6720,9 +6720,9 @@ fn tibetan_contractions_1_002() {
             "\u{0F40}\u{0F74}\u{0F72}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F400F740F72=0+680|\
+        "[uni0F400F740F72=0+680|\
          uni0F66=3+680|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -6734,10 +6734,10 @@ fn tibetan_contractions_1_003() {
             "\u{0F40}\u{0F74}\u{0F7A}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F400F74=0+680|\
+        "[uni0F400F74=0+680|\
          uni0F7A=0+0|\
          uni0F53=3+590|\
-         uni0F0B=4@-30,0+160"
+         uni0F0B=4@-30,0+160]"
     );
 }
 
@@ -6749,11 +6749,11 @@ fn tibetan_contractions_1_004() {
             "\u{0F40}\u{0F74}\u{0F7C}\u{0F56}\u{0F39}\u{0F0B}",
             "",
         ),
-        "uni0F400F74=0+680|\
+        "[uni0F400F74=0+680|\
          uni0F7C=0+0|\
          uni0F56=3+610|\
          uni0F39=3+0|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -6765,10 +6765,10 @@ fn tibetan_contractions_1_005() {
             "\u{0F40}\u{0F74}\u{0F72}\u{0F42}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F400F740F72=0+680|\
+        "[uni0F400F740F72=0+680|\
          uni0F42=3+680|\
          uni0F66=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -6780,10 +6780,10 @@ fn tibetan_contractions_1_006() {
             "\u{0F40}\u{0F74}\u{0F7A}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F400F74=0+680|\
+        "[uni0F400F74=0+680|\
          uni0F7A=0+0|\
          uni0F66=3+680|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -6795,10 +6795,10 @@ fn tibetan_contractions_1_007() {
             "\u{0F40}\u{0FB3}\u{0F74}\u{0F7A}\u{0F56}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F400FB30F740F7A=0+660|\
+        "[uni0F400FB30F740F7A=0+660|\
          uni0F56=4+610|\
          uni0F66=5+680|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -6810,10 +6810,10 @@ fn tibetan_contractions_1_008() {
             "\u{0F40}\u{0FB3}\u{0F74}\u{0F7C}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F400FB30F74=0+660|\
+        "[uni0F400FB30F74=0+660|\
          uni0F7C=0+0|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -6825,10 +6825,10 @@ fn tibetan_contractions_1_009() {
             "\u{0F51}\u{0F40}\u{0F7C}\u{0F7C}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F400F7D=1+680|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -6840,10 +6840,10 @@ fn tibetan_contractions_1_010() {
             "\u{0F51}\u{0F40}\u{0F7C}\u{0F7C}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F400F7D=1+680|\
          uni0F62=4+620|\
-         uni0F0B=5@-65,0+130"
+         uni0F0B=5@-65,0+130]"
     );
 }
 
@@ -6855,10 +6855,10 @@ fn tibetan_contractions_1_011() {
             "\u{0F51}\u{0F40}\u{0FB1}\u{0F7C}\u{0F72}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F400FB10F7C0F72=1+660|\
          uni0F62=5+620|\
-         uni0F0B=6@-65,0+130"
+         uni0F0B=6@-65,0+130]"
     );
 }
 
@@ -6870,9 +6870,9 @@ fn tibetan_contractions_1_012() {
             "\u{0F66}\u{0F90}\u{0FB1}\u{0F74}\u{0F7A}\u{0F0B}",
             "",
         ),
-        "uni0F660F900FB10F74=0+680|\
+        "[uni0F660F900FB10F74=0+680|\
          uni0F7A=0+0|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -6884,11 +6884,11 @@ fn tibetan_contractions_1_013() {
             "\u{0F56}\u{0F66}\u{0F90}\u{0FB1}\u{0F7A}\u{0F7A}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F660F900FB1=1+660|\
          uni0F7B=1+0|\
          uni0F51=6+600|\
-         uni0F0B=7@-70,0+106"
+         uni0F0B=7@-70,0+106]"
     );
 }
 
@@ -6900,11 +6900,11 @@ fn tibetan_contractions_1_014() {
             "\u{0F56}\u{0F66}\u{0F90}\u{0FB1}\u{0F7A}\u{0F7A}\u{0F7A}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F660F900FB1=1+660|\
          uni0F7B0F7A=1+0|\
          uni0F51=7+600|\
-         uni0F0B=8@-70,0+106"
+         uni0F0B=8@-70,0+106]"
     );
 }
 
@@ -6916,10 +6916,10 @@ fn tibetan_contractions_1_015() {
             "\u{0F41}\u{0F58}\u{0F66}\u{0F74}\u{0F7E}\u{0F0B}",
             "",
         ),
-        "uni0F41=0+660|\
+        "[uni0F41=0+660|\
          uni0F58=1+660|\
          uni0F660F740F7E=2+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -6931,11 +6931,11 @@ fn tibetan_contractions_1_016() {
             "\u{0F41}\u{0F74}\u{0F7C}\u{0F66}\u{0F39}\u{0F0B}",
             "",
         ),
-        "uni0F410F74=0+680|\
+        "[uni0F410F74=0+680|\
          uni0F7C=0+0|\
          uni0F66=3+680|\
          uni0F39=3+0|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -6947,10 +6947,10 @@ fn tibetan_contractions_1_017() {
             "\u{0F41}\u{0FB1}\u{0F74}\u{0F7C}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F410FB10F74=0+670|\
+        "[uni0F410FB10F74=0+670|\
          uni0F7C=0+0|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -6962,10 +6962,10 @@ fn tibetan_contractions_1_018() {
             "\u{0F41}\u{0FB2}\u{0F74}\u{0F7A}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F410FB20F74=0+660|\
+        "[uni0F410FB20F74=0+660|\
          uni0F7A=0+0|\
          uni0F51=4+600|\
-         uni0F0B=5@-70,0+106"
+         uni0F0B=5@-70,0+106]"
     );
 }
 
@@ -6977,10 +6977,10 @@ fn tibetan_contractions_1_019() {
             "\u{0F41}\u{0FB2}\u{0F74}\u{0F72}\u{0F44}\u{0F0B}",
             "",
         ),
-        "uni0F410FB20F74=0+660|\
+        "[uni0F410FB20F74=0+660|\
          uni0F72=0+0|\
          uni0F44=4+560|\
-         uni0F0B=5@-20,0+110"
+         uni0F0B=5@-20,0+110]"
     );
 }
 
@@ -6992,10 +6992,10 @@ fn tibetan_contractions_1_020() {
             "\u{0F41}\u{0FB2}\u{0F74}\u{0F7C}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F410FB20F74=0+660|\
+        "[uni0F410FB20F74=0+660|\
          uni0F7C=0+0|\
          uni0F51=4+600|\
-         uni0F0B=5@-70,0+106"
+         uni0F0B=5@-70,0+106]"
     );
 }
 
@@ -7007,9 +7007,9 @@ fn tibetan_contractions_1_021() {
             "\u{0F41}\u{0FB2}\u{0F74}\u{0F7E}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F410FB20F740F7E=0+660|\
+        "[uni0F410FB20F740F7E=0+660|\
          uni0F51=4+600|\
-         uni0F0B=5@-70,0+106"
+         uni0F0B=5@-70,0+106]"
     );
 }
 
@@ -7021,11 +7021,11 @@ fn tibetan_contractions_1_022() {
             "\u{0F58}\u{0F41}\u{0FB1}\u{0F7A}\u{0F7A}\u{0F7A}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F58=0+660|\
+        "[uni0F58=0+660|\
          uni0F410FB1=1+680|\
          uni0F7B0F7A=1+0|\
          uni0F53=6+590|\
-         uni0F0B=7@-30,0+160"
+         uni0F0B=7@-30,0+160]"
     );
 }
 
@@ -7037,10 +7037,10 @@ fn tibetan_contractions_1_023() {
             "\u{0F60}\u{0F41}\u{0F7C}\u{0F7C}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F60=0+600|\
+        "[uni0F60=0+600|\
          uni0F410F7D=1+660|\
          uni0F62=4+620|\
-         uni0F0B=5@-65,0+130"
+         uni0F0B=5@-65,0+130]"
     );
 }
 
@@ -7052,10 +7052,10 @@ fn tibetan_contractions_1_024() {
             "\u{0F42}\u{0F74}\u{0F7C}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F420F74=0+680|\
+        "[uni0F420F74=0+680|\
          uni0F7C=0+0|\
          uni0F42=3+680|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -7067,10 +7067,10 @@ fn tibetan_contractions_1_025() {
             "\u{0F42}\u{0FB1}\u{0F74}\u{0F72}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F420FB10F74=0+700|\
+        "[uni0F420FB10F74=0+700|\
          uni0F72=0+0|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7082,10 +7082,10 @@ fn tibetan_contractions_1_026() {
             "\u{0F42}\u{0FB2}\u{0F74}\u{0F72}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F420FB20F74=0+680|\
+        "[uni0F420FB20F74=0+680|\
          uni0F72=0+0|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7097,9 +7097,9 @@ fn tibetan_contractions_1_027() {
             "\u{0F42}\u{0FB2}\u{0F74}\u{0F72}\u{0F0B}",
             "",
         ),
-        "uni0F420FB20F74=0+680|\
+        "[uni0F420FB20F74=0+680|\
          uni0F72=0+0|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -7111,10 +7111,10 @@ fn tibetan_contractions_1_028() {
             "\u{0F42}\u{0FB2}\u{0F74}\u{0F7C}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F420FB20F74=0+680|\
+        "[uni0F420FB20F74=0+680|\
          uni0F7C=0+0|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7126,10 +7126,10 @@ fn tibetan_contractions_1_029() {
             "\u{0F42}\u{0FB2}\u{0F74}\u{0F7C}\u{0F56}\u{0F0B}",
             "",
         ),
-        "uni0F420FB20F74=0+680|\
+        "[uni0F420FB20F74=0+680|\
          uni0F7C=0+0|\
          uni0F56=4+610|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7141,10 +7141,10 @@ fn tibetan_contractions_1_030() {
             "\u{0F42}\u{0FB2}\u{0F7C}\u{0F72}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F420FB2=0+680|\
+        "[uni0F420FB2=0+680|\
          uni0F7C0F72=0+0|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7156,10 +7156,10 @@ fn tibetan_contractions_1_031() {
             "\u{0F42}\u{0FB2}\u{0F7C}\u{0F7A}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F420FB2=0+680|\
+        "[uni0F420FB2=0+680|\
          uni0F7C0F7A=0+0|\
          uni0F62=4+620|\
-         uni0F0B=5@-65,0+130"
+         uni0F0B=5@-65,0+130]"
     );
 }
 
@@ -7171,10 +7171,10 @@ fn tibetan_contractions_1_032() {
             "\u{0F51}\u{0F42}\u{0F74}\u{0F72}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F420F740F72=1+680|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7186,11 +7186,11 @@ fn tibetan_contractions_1_033() {
             "\u{0F51}\u{0F42}\u{0F74}\u{0F7A}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F420F74=1+680|\
          uni0F7A=1+0|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7202,12 +7202,12 @@ fn tibetan_contractions_1_034() {
             "\u{0F51}\u{0F42}\u{0F74}\u{0F7A}\u{0F42}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F420F74=1+680|\
          uni0F7A=1+0|\
          uni0F42=4+680|\
          uni0F66=5+680|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -7219,11 +7219,11 @@ fn tibetan_contractions_1_035() {
             "\u{0F51}\u{0F42}\u{0FB3}\u{0F7C}\u{0F7A}\u{0F44}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F420FB3=1+680|\
          uni0F7C0F7A=1+0|\
          uni0F44=5+560|\
-         uni0F0B=6@-20,0+110"
+         uni0F0B=6@-20,0+110]"
     );
 }
 
@@ -7235,10 +7235,10 @@ fn tibetan_contractions_1_036() {
             "\u{0F58}\u{0F42}\u{0F7C}\u{0F7C}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F58=0+660|\
+        "[uni0F58=0+660|\
          uni0F420F7D=1+680|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7250,10 +7250,10 @@ fn tibetan_contractions_1_037() {
             "\u{0F44}\u{0F74}\u{0F72}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F440F74=0+610|\
+        "[uni0F440F74=0+610|\
          uni0F72=0+0|\
          uni0F42=3+680|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -7265,11 +7265,11 @@ fn tibetan_contractions_1_038() {
             "\u{0F51}\u{0F42}\u{0FB2}\u{0F74}\u{0F7C}\u{0F56}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F420FB20F74=1+680|\
          uni0F7C=1+0|\
          uni0F56=5+610|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -7281,10 +7281,10 @@ fn tibetan_contractions_1_039() {
             "\u{0F56}\u{0F45}\u{0F74}\u{0F72}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F450F740F72=1+630|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7296,10 +7296,10 @@ fn tibetan_contractions_1_040() {
             "\u{0F56}\u{0F45}\u{0F74}\u{0F72}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F450F740F72=1+630|\
          uni0F66=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7311,10 +7311,10 @@ fn tibetan_contractions_1_041() {
             "\u{0F56}\u{0F45}\u{0FB2}\u{0F74}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F450FB20F74=1+640|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7326,9 +7326,9 @@ fn tibetan_contractions_1_042() {
             "\u{0F56}\u{0F45}\u{0F74}\u{0F72}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F450F740F72=1+630|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -7340,9 +7340,9 @@ fn tibetan_contractions_1_043() {
             "\u{0F56}\u{0F45}\u{0F74}\u{0F7E}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F450F740F7E=1+630|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -7354,10 +7354,10 @@ fn tibetan_contractions_1_044() {
             "\u{0F46}\u{0F74}\u{0F72}\u{0F63}\u{0F0B}",
             "",
         ),
-        "uni0F460F74=0+650|\
+        "[uni0F460F74=0+650|\
          uni0F72=0+0|\
          uni0F63=3+700|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -7369,10 +7369,10 @@ fn tibetan_contractions_1_045() {
             "\u{0F46}\u{0F74}\u{0F7C}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F460F74=0+650|\
+        "[uni0F460F74=0+650|\
          uni0F7C=0+0|\
          uni0F51=3+600|\
-         uni0F0B=4@-70,0+106"
+         uni0F0B=4@-70,0+106]"
     );
 }
 
@@ -7384,10 +7384,10 @@ fn tibetan_contractions_1_046() {
             "\u{0F46}\u{0F74}\u{0F7C}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F460F74=0+650|\
+        "[uni0F460F74=0+650|\
          uni0F7C=0+0|\
          uni0F51=3+600|\
-         uni0F0B=4@-70,0+106"
+         uni0F0B=4@-70,0+106]"
     );
 }
 
@@ -7399,9 +7399,9 @@ fn tibetan_contractions_1_047() {
             "\u{0F46}\u{0F74}\u{0F7E}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F460F740F7E=0+650|\
+        "[uni0F460F740F7E=0+650|\
          uni0F51=3+600|\
-         uni0F0B=4@-70,0+106"
+         uni0F0B=4@-70,0+106]"
     );
 }
 
@@ -7413,12 +7413,12 @@ fn tibetan_contractions_1_048() {
             "\u{0F46}\u{0F39}\u{0F74}\u{0F7C}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F46=0+620|\
+        "[uni0F46=0+620|\
          uni0F39=0+0|\
          uni0F74=0+0|\
          uni0F7C=0+0|\
          uni0F51=4+600|\
-         uni0F0B=5@-70,0+106"
+         uni0F0B=5@-70,0+106]"
     );
 }
 
@@ -7430,9 +7430,9 @@ fn tibetan_contractions_1_049() {
             "\u{0F46}\u{0FB2}\u{0F74}\u{0F72}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F460FB20F740F72=0+660|\
+        "[uni0F460FB20F740F72=0+660|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7444,10 +7444,10 @@ fn tibetan_contractions_1_050() {
             "\u{0F46}\u{0FB2}\u{0F74}\u{0F7C}\u{0F63}\u{0F0B}",
             "",
         ),
-        "uni0F460FB20F74=0+660|\
+        "[uni0F460FB20F74=0+660|\
          uni0F7C=0+0|\
          uni0F63=4+700|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7459,11 +7459,11 @@ fn tibetan_contractions_1_051() {
             "\u{0F58}\u{0F46}\u{0F7C}\u{0F7A}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F58=0+660|\
+        "[uni0F58=0+660|\
          uni0F46=1+620|\
          uni0F7C0F7A=1+0|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7475,10 +7475,10 @@ fn tibetan_contractions_1_052() {
             "\u{0F60}\u{0F46}\u{0FB1}\u{0F7C}\u{0F72}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F60=0+600|\
+        "[uni0F60=0+600|\
          uni0F460FB10F7C0F72=1+660|\
          uni0F62=5+620|\
-         uni0F0B=6@-65,0+130"
+         uni0F0B=6@-65,0+130]"
     );
 }
 
@@ -7490,8 +7490,8 @@ fn tibetan_contractions_1_053() {
             "\u{0F47}\u{0F7C}\u{0F7C}\u{0F0B}",
             "",
         ),
-        "uni0F470F7D=0+570|\
-         uni0F0B=3+190"
+        "[uni0F470F7D=0+570|\
+         uni0F0B=3+190]"
     );
 }
 
@@ -7503,11 +7503,11 @@ fn tibetan_contractions_1_054() {
             "\u{0F62}\u{0F97}\u{0F74}\u{0F7A}\u{0F53}\u{0F39}\u{0F0B}",
             "",
         ),
-        "uni0F620F970F74=0+600|\
+        "[uni0F620F970F74=0+600|\
          uni0F7A=0+0|\
          uni0F53=4+590|\
          uni0F39=4+0|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -7519,9 +7519,9 @@ fn tibetan_contractions_1_055() {
             "\u{0F49}\u{0F74}\u{0F72}\u{0F0B}",
             "",
         ),
-        "uni0F490F74=0+580|\
+        "[uni0F490F74=0+580|\
          uni0F72=0+0|\
-         uni0F0B=3+190"
+         uni0F0B=3+190]"
     );
 }
 
@@ -7533,10 +7533,10 @@ fn tibetan_contractions_1_056() {
             "\u{0F49}\u{0F74}\u{0F72}\u{0F44}\u{0F0B}",
             "",
         ),
-        "uni0F490F74=0+580|\
+        "[uni0F490F74=0+580|\
          uni0F72=0+0|\
          uni0F44=3+560|\
-         uni0F0B=4@-20,0+110"
+         uni0F0B=4@-20,0+110]"
     );
 }
 
@@ -7548,11 +7548,11 @@ fn tibetan_contractions_1_057() {
             "\u{0F58}\u{0F49}\u{0F72}\u{0F7E}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F58=0+660|\
+        "[uni0F58=0+660|\
          uni0F49=1+580|\
          uni0F720F7E=1+0|\
          uni0F51=4+600|\
-         uni0F0B=5@-70,0+106"
+         uni0F0B=5@-70,0+106]"
     );
 }
 
@@ -7564,10 +7564,10 @@ fn tibetan_contractions_1_058() {
             "\u{0F42}\u{0F4F}\u{0F74}\u{0F72}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F4F0F740F72=1+600|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7579,12 +7579,12 @@ fn tibetan_contractions_1_059() {
             "\u{0F56}\u{0F4F}\u{0F44}\u{0F7C}\u{0F7E}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F4F=1+560|\
          uni0F44=2+560|\
          uni0F7C0F7E=2+0|\
          uni0F66=5+680|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -7596,12 +7596,12 @@ fn tibetan_contractions_1_060() {
             "\u{0F50}\u{0F39}\u{0F74}\u{0F7A}\u{0F4A}\u{0F0B}",
             "",
         ),
-        "uni0F50=0+600|\
+        "[uni0F50=0+600|\
          uni0F39=0+0|\
          uni0F74=0+0|\
          uni0F7A=0+0|\
          uni0F4A=4+590|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7613,10 +7613,10 @@ fn tibetan_contractions_2_001() {
             "\u{0F50}\u{0F74}\u{0F72}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F500F74=0+600|\
+        "[uni0F500F74=0+600|\
          uni0F72=0+0|\
          uni0F53=3+590|\
-         uni0F0B=4@-30,0+160"
+         uni0F0B=4@-30,0+160]"
     );
 }
 
@@ -7628,11 +7628,11 @@ fn tibetan_contractions_2_002() {
             "\u{0F58}\u{0F50}\u{0F74}\u{0F7C}\u{0F44}\u{0F0B}",
             "",
         ),
-        "uni0F58=0+660|\
+        "[uni0F58=0+660|\
          uni0F500F74=1+600|\
          uni0F7C=1+0|\
          uni0F44=4+560|\
-         uni0F0B=5@-20,0+110"
+         uni0F0B=5@-20,0+110]"
     );
 }
 
@@ -7644,11 +7644,11 @@ fn tibetan_contractions_2_003() {
             "\u{0F58}\u{0F50}\u{0F7C}\u{0F7A}\u{0F44}\u{0F0B}",
             "",
         ),
-        "uni0F58=0+660|\
+        "[uni0F58=0+660|\
          uni0F50=1+600|\
          uni0F7C0F7A=1+0|\
          uni0F44=4+560|\
-         uni0F0B=5@-20,0+110"
+         uni0F0B=5@-20,0+110]"
     );
 }
 
@@ -7660,11 +7660,11 @@ fn tibetan_contractions_2_004() {
             "\u{0F58}\u{0F50}\u{0F7C}\u{0F72}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F58=0+660|\
+        "[uni0F58=0+660|\
          uni0F50=1+600|\
          uni0F7C0F72=1+0|\
          uni0F66=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7676,11 +7676,11 @@ fn tibetan_contractions_2_005() {
             "\u{0F51}\u{0F74}\u{0F62}\u{0FB2}\u{0F7C}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F510F74=0+600|\
+        "[uni0F510F74=0+600|\
          uni0F620FB2=2+600|\
          uni0F7C=2+0|\
          uni0F51=5+600|\
-         uni0F0B=6@-70,0+106"
+         uni0F0B=6@-70,0+106]"
     );
 }
 
@@ -7692,10 +7692,10 @@ fn tibetan_contractions_2_006() {
             "\u{0F51}\u{0FB2}\u{0F74}\u{0F72}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F510FB20F74=0+600|\
+        "[uni0F510FB20F74=0+600|\
          uni0F72=0+0|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7707,10 +7707,10 @@ fn tibetan_contractions_2_007() {
             "\u{0F42}\u{0F51}\u{0F74}\u{0F7A}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F510F740F7A=1+600|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7722,11 +7722,11 @@ fn tibetan_contractions_2_008() {
             "\u{0F56}\u{0F51}\u{0F7B}\u{0F42}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F510F7B=1+579|\
          uni0F42=3+680|\
          uni0F66=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7738,10 +7738,10 @@ fn tibetan_contractions_2_009() {
             "\u{0F60}\u{0F51}\u{0F74}\u{0F7A}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F60=0+600|\
+        "[uni0F60=0+600|\
          uni0F510F740F7A=1+600|\
          uni0F51=4+600|\
-         uni0F0B=5@-70,0+106"
+         uni0F0B=5@-70,0+106]"
     );
 }
 
@@ -7753,8 +7753,8 @@ fn tibetan_contractions_2_010() {
             "\u{0F62}\u{0FA1}\u{0F7C}\u{0F7A}\u{0F0B}",
             "",
         ),
-        "uni0F620FA10F7C0F7A=0+580|\
-         uni0F0B=4+190"
+        "[uni0F620FA10F7C0F7A=0+580|\
+         uni0F0B=4+190]"
     );
 }
 
@@ -7766,10 +7766,10 @@ fn tibetan_contractions_2_011() {
             "\u{0F66}\u{0FA1}\u{0F74}\u{0F72}\u{0F56}\u{0F0B}",
             "",
         ),
-        "uni0F660FA10F74=0+680|\
+        "[uni0F660FA10F74=0+680|\
          uni0F72=0+0|\
          uni0F56=4+610|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7781,11 +7781,11 @@ fn tibetan_contractions_2_012() {
             "\u{0F53}\u{0F74}\u{0F7C}\u{0F42}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F530F74=0+600|\
+        "[uni0F530F74=0+600|\
          uni0F7C=0+0|\
          uni0F42=3+680|\
          uni0F66=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7797,10 +7797,10 @@ fn tibetan_contractions_2_013() {
             "\u{0F53}\u{0F74}\u{0F7C}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F530F74=0+600|\
+        "[uni0F530F74=0+600|\
          uni0F7C=0+0|\
          uni0F62=3+620|\
-         uni0F0B=4@-65,0+130"
+         uni0F0B=4@-65,0+130]"
     );
 }
 
@@ -7812,11 +7812,11 @@ fn tibetan_contractions_2_014() {
             "\u{0F42}\u{0F53}\u{0FB1}\u{0F7C}\u{0F7E}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F530FB1=1+600|\
          uni0F7C0F7E=1+0|\
          uni0F62=5+620|\
-         uni0F0B=6@-65,0+130"
+         uni0F0B=6@-65,0+130]"
     );
 }
 
@@ -7828,12 +7828,12 @@ fn tibetan_contractions_2_015() {
             "\u{0F51}\u{0F54}\u{0F74}\u{0F7C}\u{0F42}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F540F74=1+610|\
          uni0F7C=1+0|\
          uni0F42=4+680|\
          uni0F66=5+680|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -7845,10 +7845,10 @@ fn tibetan_contractions_2_016() {
             "\u{0F56}\u{0FB1}\u{0F74}\u{0F7E}\u{0F56}\u{0F0B}",
             "",
         ),
-        "uni0F560FB10F74=0+620|\
+        "[uni0F560FB10F74=0+620|\
          uni0F7E=0+0|\
          uni0F56=4+610|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7860,10 +7860,10 @@ fn tibetan_contractions_2_017() {
             "\u{0F56}\u{0FB3}\u{0F74}\u{0F7C}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F560FB30F74=0+650|\
+        "[uni0F560FB30F74=0+650|\
          uni0F7C=0+0|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7875,10 +7875,10 @@ fn tibetan_contractions_2_018() {
             "\u{0F56}\u{0FB3}\u{0F7C}\u{0F7C}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F560FB3=0+650|\
+        "[uni0F560FB3=0+650|\
          uni0F7D=0+0|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -7890,11 +7890,11 @@ fn tibetan_contractions_2_019() {
             "\u{0F51}\u{0F56}\u{0F74}\u{0F7C}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F560F74=1+610|\
          uni0F7C=1+0|\
          uni0F51=4+600|\
-         uni0F0B=5@-70,0+106"
+         uni0F0B=5@-70,0+106]"
     );
 }
 
@@ -7906,12 +7906,12 @@ fn tibetan_contractions_2_020() {
             "\u{0F51}\u{0F56}\u{0F74}\u{0F7C}\u{0F56}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F51=0+600|\
+        "[uni0F51=0+600|\
          uni0F560F74=1+610|\
          uni0F7C=1+0|\
          uni0F56=4+610|\
          uni0F66=5+680|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -7923,11 +7923,11 @@ fn tibetan_contractions_2_021() {
             "\u{0F58}\u{0F74}\u{0F7A}\u{0F42}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F580F74=0+680|\
+        "[uni0F580F74=0+680|\
          uni0F7A=0+0|\
          uni0F42=3+680|\
          uni0F66=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7939,10 +7939,10 @@ fn tibetan_contractions_2_022() {
             "\u{0F58}\u{0F74}\u{0F72}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F580F74=0+680|\
+        "[uni0F580F74=0+680|\
          uni0F72=0+0|\
          uni0F42=3+680|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -7954,11 +7954,11 @@ fn tibetan_contractions_2_023() {
             "\u{0F58}\u{0F74}\u{0F7A}\u{0F42}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F580F74=0+680|\
+        "[uni0F580F74=0+680|\
          uni0F7A=0+0|\
          uni0F42=3+680|\
          uni0F66=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7970,10 +7970,10 @@ fn tibetan_contractions_2_024() {
             "\u{0F58}\u{0F74}\u{0F7A}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F580F74=0+680|\
+        "[uni0F580F74=0+680|\
          uni0F7A=0+0|\
          uni0F53=3+590|\
-         uni0F0B=4@-30,0+160"
+         uni0F0B=4@-30,0+160]"
     );
 }
 
@@ -7985,9 +7985,9 @@ fn tibetan_contractions_2_025() {
             "\u{0F58}\u{0F9F}\u{0F7C}\u{0F7A}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F580F9F0F7C0F7A=0+660|\
+        "[uni0F580F9F0F7C0F7A=0+660|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -7999,10 +7999,10 @@ fn tibetan_contractions_2_026() {
             "\u{0F58}\u{0F7C}\u{0F7A}\u{0F44}\u{0F0B}",
             "",
         ),
-        "uni0F58=0+660|\
+        "[uni0F58=0+660|\
          uni0F7C0F7A=0+0|\
          uni0F44=3+560|\
-         uni0F0B=4@-20,0+110"
+         uni0F0B=4@-20,0+110]"
     );
 }
 
@@ -8014,11 +8014,11 @@ fn tibetan_contractions_2_027() {
             "\u{0F42}\u{0F59}\u{0F74}\u{0F7C}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F590F74=1+620|\
          uni0F7C=1+0|\
          uni0F62=4+620|\
-         uni0F0B=5@-65,0+130"
+         uni0F0B=5@-65,0+130]"
     );
 }
 
@@ -8030,10 +8030,10 @@ fn tibetan_contractions_2_028() {
             "\u{0F58}\u{0F5A}\u{0FAE}\u{0F74}\u{0F7E}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F58=0+660|\
+        "[uni0F58=0+660|\
          uni0F5A0FAE0F740F7E=1+620|\
          uni0F66=5+680|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -8045,10 +8045,10 @@ fn tibetan_contractions_2_029() {
             "\u{0F62}\u{0FAB}\u{0F74}\u{0F7A}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F620FAB0F74=0+660|\
+        "[uni0F620FAB0F74=0+660|\
          uni0F7A=0+0|\
          uni0F66=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -8060,10 +8060,10 @@ fn tibetan_contractions_2_030() {
             "\u{0F62}\u{0FAB}\u{0F74}\u{0F7A}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F620FAB0F74=0+660|\
+        "[uni0F620FAB0F74=0+660|\
          uni0F7A=0+0|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -8075,10 +8075,10 @@ fn tibetan_contractions_2_031() {
             "\u{0F5E}\u{0F74}\u{0F7C}\u{0F63}\u{0F0B}",
             "",
         ),
-        "uni0F5E0F74=0+660|\
+        "[uni0F5E0F74=0+660|\
          uni0F7C=0+0|\
          uni0F63=3+700|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -8090,11 +8090,11 @@ fn tibetan_contractions_2_032() {
             "\u{0F42}\u{0F5E}\u{0F74}\u{0F7C}\u{0F42}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F5E0F74=1+660|\
          uni0F7C=1+0|\
          uni0F42=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -8106,12 +8106,12 @@ fn tibetan_contractions_2_033() {
             "\u{0F42}\u{0F5E}\u{0F74}\u{0F7C}\u{0F58}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F5E0F74=1+660|\
          uni0F7C=1+0|\
          uni0F58=4+660|\
          uni0F66=5+680|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -8123,10 +8123,10 @@ fn tibetan_contractions_2_034() {
             "\u{0F42}\u{0F5F}\u{0F74}\u{0F7C}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F5F0F74=1+610|\
          uni0F7C=1+0|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -8138,10 +8138,10 @@ fn tibetan_contractions_2_035() {
             "\u{0F42}\u{0F5F}\u{0F74}\u{0F72}\u{0F44}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F5F0F740F72=1+610|\
          uni0F44=4+560|\
-         uni0F0B=5@-20,0+110"
+         uni0F0B=5@-20,0+110]"
     );
 }
 
@@ -8153,11 +8153,11 @@ fn tibetan_contractions_2_036() {
             "\u{0F42}\u{0F5F}\u{0F74}\u{0F7A}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F5F0F74=1+610|\
          uni0F7A=1+0|\
          uni0F62=4+620|\
-         uni0F0B=5@-65,0+130"
+         uni0F0B=5@-65,0+130]"
     );
 }
 
@@ -8169,11 +8169,11 @@ fn tibetan_contractions_2_037() {
             "\u{0F42}\u{0F5F}\u{0F74}\u{0F7A}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F5F0F74=1+610|\
          uni0F7A=1+0|\
          uni0F62=4+620|\
-         uni0F0B=5@-65,0+130"
+         uni0F0B=5@-65,0+130]"
     );
 }
 
@@ -8185,11 +8185,11 @@ fn tibetan_contractions_2_038() {
             "\u{0F42}\u{0F5F}\u{0F74}\u{0F7A}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F42=0+680|\
+        "[uni0F42=0+680|\
          uni0F5F0F74=1+610|\
          uni0F7A=1+0|\
          uni0F51=4+600|\
-         uni0F0B=5@-70,0+106"
+         uni0F0B=5@-70,0+106]"
     );
 }
 
@@ -8201,10 +8201,10 @@ fn tibetan_contractions_2_039() {
             "\u{0F60}\u{0F7C}\u{0F7A}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F60=0+600|\
+        "[uni0F60=0+600|\
          uni0F7C0F7A=0+0|\
          uni0F62=3+620|\
-         uni0F0B=4@-65,0+130"
+         uni0F0B=4@-65,0+130]"
     );
 }
 
@@ -8216,9 +8216,9 @@ fn tibetan_contractions_2_040() {
             "\u{0F61}\u{0F72}\u{0F7A}\u{0F0B}",
             "",
         ),
-        "uni0F61=0+700|\
+        "[uni0F61=0+700|\
          uni0F720F7A=0+0|\
-         uni0F0B=3+190"
+         uni0F0B=3+190]"
     );
 }
 
@@ -8230,10 +8230,10 @@ fn tibetan_contractions_2_041() {
             "\u{0F61}\u{0F7A}\u{0F7A}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F61=0+700|\
+        "[uni0F61=0+700|\
          uni0F7B=0+0|\
          uni0F66=3+680|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -8245,9 +8245,9 @@ fn tibetan_contractions_2_042() {
             "\u{0F62}\u{0F72}\u{0F53}\u{0F7C}\u{0F7A}\u{0F0B}",
             "",
         ),
-        "uni0F620F72=0+620|\
+        "[uni0F620F72=0+620|\
          uni0F530F7C0F7A=2+590|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -8259,10 +8259,10 @@ fn tibetan_contractions_2_043() {
             "\u{0F62}\u{0F74}\u{0F7C}\u{0F63}\u{0F0B}",
             "",
         ),
-        "uni0F620F74=0+601|\
+        "[uni0F620F74=0+601|\
          uni0F7C=0+0|\
          uni0F63=3+700|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -8274,10 +8274,10 @@ fn tibetan_contractions_2_044() {
             "\u{0F66}\u{0F7A}\u{0F7E}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F66=0+680|\
+        "[uni0F66=0+680|\
          uni0F7A0F7E=0+0|\
          uni0F53=3+590|\
-         uni0F0B=4@-30,0+160"
+         uni0F0B=4@-30,0+160]"
     );
 }
 
@@ -8289,11 +8289,11 @@ fn tibetan_contractions_2_045() {
             "\u{0F66}\u{0F7A}\u{0F7E}\u{0F51}\u{0F60}\u{0F0B}",
             "",
         ),
-        "uni0F66=0+680|\
+        "[uni0F66=0+680|\
          uni0F7A0F7E=0+0|\
          uni0F51=3+600|\
          uni0F60=4+600|\
-         uni0F0B=5@-40,0+150"
+         uni0F0B=5@-40,0+150]"
     );
 }
 
@@ -8305,9 +8305,9 @@ fn tibetan_contractions_2_046() {
             "\u{0F66}\u{0F7C}\u{0F7C}\u{0F56}\u{0F0B}",
             "",
         ),
-        "uni0F660F7D=0+680|\
+        "[uni0F660F7D=0+680|\
          uni0F56=3+610|\
-         uni0F0B=4+190"
+         uni0F0B=4+190]"
     );
 }
 
@@ -8319,9 +8319,9 @@ fn tibetan_contractions_2_047() {
             "\u{0F66}\u{0F7C}\u{0F7C}\u{0F62}\u{0F0B}",
             "",
         ),
-        "uni0F660F7D=0+680|\
+        "[uni0F660F7D=0+680|\
          uni0F62=3+620|\
-         uni0F0B=4@-65,0+130"
+         uni0F0B=4@-65,0+130]"
     );
 }
 
@@ -8333,10 +8333,10 @@ fn tibetan_contractions_2_048() {
             "\u{0F66}\u{0FB2}\u{0F7C}\u{0F7A}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F660FB2=0+680|\
+        "[uni0F660FB2=0+680|\
          uni0F7C0F7A=0+0|\
          uni0F66=4+680|\
-         uni0F0B=5+190"
+         uni0F0B=5+190]"
     );
 }
 
@@ -8348,10 +8348,10 @@ fn tibetan_contractions_2_049() {
             "\u{0F66}\u{0FB3}\u{0F7C}\u{0F7C}\u{0F51}\u{0F0B}",
             "",
         ),
-        "uni0F660FB3=0+680|\
+        "[uni0F660FB3=0+680|\
          uni0F7D=0+0|\
          uni0F51=4+600|\
-         uni0F0B=5@-70,0+106"
+         uni0F0B=5@-70,0+106]"
     );
 }
 
@@ -8363,10 +8363,10 @@ fn tibetan_contractions_2_050() {
             "\u{0F66}\u{0FB3}\u{0F7C}\u{0F7C}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F660FB3=0+680|\
+        "[uni0F660FB3=0+680|\
          uni0F7D=0+0|\
          uni0F53=4+590|\
-         uni0F0B=5@-30,0+160"
+         uni0F0B=5@-30,0+160]"
     );
 }
 
@@ -8378,12 +8378,12 @@ fn tibetan_contractions_2_051() {
             "\u{0F56}\u{0F66}\u{0F99}\u{0F7C}\u{0F7E}\u{0F51}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F56=0+610|\
+        "[uni0F56=0+610|\
          uni0F660F99=1+670|\
          uni0F7C0F7E=1+0|\
          uni0F51=5+600|\
          uni0F66=6+680|\
-         uni0F0B=7+190"
+         uni0F0B=7+190]"
     );
 }
 
@@ -8395,11 +8395,11 @@ fn tibetan_contractions_2_052() {
             "\u{0F63}\u{0FB7}\u{0FB1}\u{0F7C}\u{0F42}\u{0F66}\u{0F0B}",
             "",
         ),
-        "uni0F630FB70FB1=0+680|\
+        "[uni0F630FB70FB1=0+680|\
          uni0F7C=0+0|\
          uni0F42=4+680|\
          uni0F66=5+680|\
-         uni0F0B=6+190"
+         uni0F0B=6+190]"
     );
 }
 
@@ -8411,10 +8411,10 @@ fn tibetan_contractions_2_053() {
             "\u{0F68}\u{0FB1}\u{0F7C}\u{0F53}\u{0F0B}",
             "",
         ),
-        "uni0F680FB1=0+740|\
+        "[uni0F680FB1=0+740|\
          uni0F7C=0+0|\
          uni0F53=3+590|\
-         uni0F0B=4@-30,0+160"
+         uni0F0B=4@-30,0+160]"
     );
 }
 
@@ -8426,7 +8426,7 @@ fn tibetan_vowels_001() {
             "\u{0F68}\u{0F72}",
             "",
         ),
-        "uni0F680F72=0+730"
+        "[uni0F680F72=0+730]"
     );
 }
 
@@ -8438,7 +8438,7 @@ fn tibetan_vowels_002() {
             "\u{0F68}\u{0F74}",
             "",
         ),
-        "uni0F680F74=0+730"
+        "[uni0F680F74=0+730]"
     );
 }
 
@@ -8450,7 +8450,7 @@ fn tibetan_vowels_003() {
             "\u{0F68}\u{0F7A}",
             "",
         ),
-        "uni0F680F7A=0+730"
+        "[uni0F680F7A=0+730]"
     );
 }
 
@@ -8462,7 +8462,7 @@ fn tibetan_vowels_004() {
             "\u{0F68}\u{0F7C}",
             "",
         ),
-        "uni0F680F7C=0+730"
+        "[uni0F680F7C=0+730]"
     );
 }
 
@@ -8474,7 +8474,7 @@ fn tibetan_vowels_005() {
             "\u{0F68}\u{0F71}\u{0F72}",
             "",
         ),
-        "uni0F680F710F72=0+720"
+        "[uni0F680F710F72=0+720]"
     );
 }
 
@@ -8486,7 +8486,7 @@ fn tibetan_vowels_006() {
             "\u{0F68}\u{0F71}\u{0F74}",
             "",
         ),
-        "uni0F680F75=0+720"
+        "[uni0F680F75=0+720]"
     );
 }
 
@@ -8498,7 +8498,7 @@ fn tibetan_vowels_007() {
             "\u{0F68}\u{0F7B}",
             "",
         ),
-        "uni0F680F7B=0+720"
+        "[uni0F680F7B=0+720]"
     );
 }
 
@@ -8510,7 +8510,7 @@ fn tibetan_vowels_008() {
             "\u{0F68}\u{0F7D}",
             "",
         ),
-        "uni0F680F7D=0+730"
+        "[uni0F680F7D=0+730]"
     );
 }
 
@@ -8522,7 +8522,7 @@ fn tibetan_vowels_009() {
             "\u{0F68}\u{0F7E}",
             "",
         ),
-        "uni0F680F7E=0+730"
+        "[uni0F680F7E=0+730]"
     );
 }
 
@@ -8534,8 +8534,8 @@ fn tibetan_vowels_010() {
             "\u{0F68}\u{0F7F}",
             "",
         ),
-        "uni0F68=0+730|\
-         uni0F7F=0+408"
+        "[uni0F68=0+730|\
+         uni0F7F=0+408]"
     );
 }
 
@@ -8547,7 +8547,7 @@ fn tibetan_vowels_011() {
             "\u{0F00}",
             "",
         ),
-        "uni0F00=0+730"
+        "[uni0F00=0+730]"
     );
 }
 
@@ -8559,8 +8559,8 @@ fn use_indic3_001() {
             "\u{0C95}\u{0CCD}\u{0CB0}",
             "",
         ),
-        "uni0C95=0+1176|\
-         uni0CB0_uni0CCD.blwf=0+275"
+        "[uni0C95=0+1176|\
+         uni0CB0_uni0CCD.blwf=0+275]"
     );
 }
 
@@ -8572,7 +8572,7 @@ fn use_marchen_001() {
             "\u{11C8F}",
             "",
         ),
-        "u11C8F=0+3000"
+        "[u11C8F=0+3000]"
     );
 }
 
@@ -8584,7 +8584,7 @@ fn use_marchen_002() {
             "\u{11C71}",
             "",
         ),
-        "u11C71=0+1600"
+        "[u11C71=0+1600]"
     );
 }
 
@@ -8596,8 +8596,8 @@ fn use_marchen_003() {
             "\u{11C8A}\u{11CB5}",
             "",
         ),
-        "u11C8A=0+2000|\
-         u11CB5=0@-2000,0+0"
+        "[u11C8A=0+2000|\
+         u11CB5=0@-2000,0+0]"
     );
 }
 
@@ -8609,8 +8609,8 @@ fn use_marchen_004() {
             "\u{11C84}\u{11C71}",
             "",
         ),
-        "u11C84=0+2200|\
-         u11C71=1+1600"
+        "[u11C84=0+2200|\
+         u11C71=1+1600]"
     );
 }
 
@@ -8622,8 +8622,8 @@ fn use_marchen_005() {
             "\u{11C7E}\u{11C8A}",
             "",
         ),
-        "u11C7E=0+2600|\
-         u11C8A=1+2000"
+        "[u11C7E=0+2600|\
+         u11C8A=1+2000]"
     );
 }
 
@@ -8635,7 +8635,7 @@ fn use_marchen_006() {
             "\u{11C8A}\u{11C92}\u{11CA9}",
             "",
         ),
-        "u11C8A.11C92.11CA9=0+2600"
+        "[u11C8A.11C92.11CA9=0+2600]"
     );
 }
 
@@ -8647,7 +8647,7 @@ fn use_marchen_007() {
             "\u{11C8A}\u{11C94}\u{11CA9}",
             "",
         ),
-        "u11C8A.11C94.11CA9=0+2600"
+        "[u11C8A.11C94.11CA9=0+2600]"
     );
 }
 
@@ -8659,7 +8659,7 @@ fn use_marchen_008() {
             "\u{11C8D}\u{11C92}\u{11CA9}",
             "",
         ),
-        "u11C8D.11C92.11CA9=0+2600"
+        "[u11C8D.11C92.11CA9=0+2600]"
     );
 }
 
@@ -8671,7 +8671,7 @@ fn use_marchen_009() {
             "\u{11C8D}\u{11C94}\u{11CA9}",
             "",
         ),
-        "u11C8D.11C94.11CA9=0+2600"
+        "[u11C8D.11C94.11CA9=0+2600]"
     );
 }
 
@@ -8683,7 +8683,7 @@ fn use_marchen_010() {
             "\u{11C8D}\u{11C9E}\u{11CA9}",
             "",
         ),
-        "u11C8D.11C9E.11CA9=0+3200"
+        "[u11C8D.11C9E.11CA9=0+3200]"
     );
 }
 
@@ -8695,7 +8695,7 @@ fn use_marchen_011() {
             "\u{11C8D}\u{11CA0}\u{11CA9}",
             "",
         ),
-        "u11C8D.11CA0.11CA9=0+3000"
+        "[u11C8D.11CA0.11CA9=0+3000]"
     );
 }
 
@@ -8707,7 +8707,7 @@ fn use_marchen_012() {
             "\u{11C8D}\u{11C92}\u{11CAA}",
             "",
         ),
-        "u11C8D.11C92.11CAA=0+2000"
+        "[u11C8D.11C92.11CAA=0+2000]"
     );
 }
 
@@ -8719,7 +8719,7 @@ fn use_marchen_013() {
             "\u{11C8D}\u{11C94}\u{11CAA}",
             "",
         ),
-        "u11C8D.11C94.11CAA=0+2000"
+        "[u11C8D.11C94.11CAA=0+2000]"
     );
 }
 
@@ -8731,7 +8731,7 @@ fn use_marchen_014() {
             "\u{11C8D}\u{11C9D}\u{11CAA}",
             "",
         ),
-        "u11C8D.11C9D.11CAA=0+2000"
+        "[u11C8D.11C9D.11CAA=0+2000]"
     );
 }
 
@@ -8743,7 +8743,7 @@ fn use_marchen_015() {
             "\u{11C8D}\u{11C9E}\u{11CAA}",
             "",
         ),
-        "u11C8D.11C9E.11CAA=0+2600"
+        "[u11C8D.11C9E.11CAA=0+2600]"
     );
 }
 
@@ -8755,7 +8755,7 @@ fn use_marchen_016() {
             "\u{11C8D}\u{11CA0}\u{11CAA}",
             "",
         ),
-        "u11C8D.11CA0.11CAA=0+2400"
+        "[u11C8D.11CA0.11CAA=0+2400]"
     );
 }
 
@@ -8767,8 +8767,8 @@ fn use_marchen_017() {
             "\u{11C80}\u{11C72}\u{11CAA}",
             "",
         ),
-        "u11C80=0+2400|\
-         u11C72.11CAA=1+2000"
+        "[u11C80=0+2400|\
+         u11C72.11CAA=1+2000]"
     );
 }
 
@@ -8780,8 +8780,8 @@ fn use_marchen_018() {
             "\u{11C8C}\u{11CB1}\u{11C8D}",
             "",
         ),
-        "u11C8C.11CB1=0+2793|\
-         u11C8D=2+2000"
+        "[u11C8C.11CB1=0+2793|\
+         u11C8D=2+2000]"
     );
 }
 
@@ -8793,8 +8793,8 @@ fn use_marchen_019() {
             "\u{11C80}\u{11C7C}\u{11CB3}",
             "",
         ),
-        "u11C80=0+2400|\
-         u11C7C.11CB3=1+2200"
+        "[u11C80=0+2400|\
+         u11C7C.11CB3=1+2200]"
     );
 }
 
@@ -8806,8 +8806,8 @@ fn use_marchen_020() {
             "\u{11C7F}\u{11CB2}\u{11C7D}",
             "",
         ),
-        "u11C7F.11CB2=0+2400|\
-         u11C7D=2+2000"
+        "[u11C7F.11CB2=0+2400|\
+         u11C7D=2+2000]"
     );
 }
 
@@ -8819,8 +8819,8 @@ fn use_marchen_021() {
             "\u{11C8D}\u{11CB2}\u{11C81}",
             "",
         ),
-        "u11C8D.11CB2=0+2000|\
-         u11C81=2+2400"
+        "[u11C8D.11CB2=0+2000|\
+         u11C81=2+2400]"
     );
 }
 
@@ -8832,8 +8832,8 @@ fn use_marchen_022() {
             "\u{11C8C}\u{11CB4}\u{11C74}",
             "",
         ),
-        "u11C8C.11CB4=0+2800|\
-         u11C74=2+2000"
+        "[u11C8C.11CB4=0+2800|\
+         u11C74=2+2000]"
     );
 }
 
@@ -8845,8 +8845,8 @@ fn use_marchen_023() {
             "\u{11C8A}\u{11CA1}\u{11CA9}\u{11C71}",
             "",
         ),
-        "u11C8A.11CA1.11CA9=0+3000|\
-         u11C71=3+1600"
+        "[u11C8A.11CA1.11CA9=0+3000|\
+         u11C71=3+1600]"
     );
 }
 
@@ -8858,8 +8858,8 @@ fn use_marchen_024() {
             "\u{11C8D}\u{11CA1}\u{11CA9}\u{11C71}",
             "",
         ),
-        "u11C8D.11CA1.11CA9=0+3000|\
-         u11C71=3+1600"
+        "[u11C8D.11CA1.11CA9=0+3000|\
+         u11C71=3+1600]"
     );
 }
 
@@ -8871,8 +8871,8 @@ fn use_marchen_025() {
             "\u{11C8D}\u{11CA1}\u{11CAA}\u{11C71}",
             "",
         ),
-        "u11C8D.11CA1.11CAA=0+2400|\
-         u11C71=3+1600"
+        "[u11C8D.11CA1.11CAA=0+2400|\
+         u11C71=3+1600]"
     );
 }
 
@@ -8884,8 +8884,8 @@ fn use_marchen_026() {
             "\u{11C8F}\u{11CB0}\u{11CB4}\u{11CB6}",
             "",
         ),
-        "u11C8F.11CB0.11CB4=0+3600|\
-         u11CB6=0@-3200,0+0"
+        "[u11C8F.11CB0.11CB4=0+3600|\
+         u11CB6=0@-3200,0+0]"
     );
 }
 
@@ -8897,8 +8897,8 @@ fn use_marchen_027() {
             "\u{11C8E}\u{11CB0}\u{11CB2}\u{11CB5}",
             "",
         ),
-        "u11C8E.11CB0.11CB2=0+2000|\
-         u11CB5=0@-2000,0+0"
+        "[u11C8E.11CB0.11CB2=0+2000|\
+         u11CB5=0@-2000,0+0]"
     );
 }
 
@@ -8910,9 +8910,9 @@ fn use_marchen_028() {
             "\u{11C74}\u{11C89}\u{11CB2}\u{11C75}",
             "",
         ),
-        "u11C74=0+2000|\
+        "[u11C74=0+2000|\
          u11C89.11CB2=1+2000|\
-         u11C75=3+2000"
+         u11C75=3+2000]"
     );
 }
 
@@ -8924,8 +8924,8 @@ fn use_marchen_029() {
             "\u{11C7C}\u{11CAA}\u{11CB2}\u{11C75}",
             "",
         ),
-        "u11C7C.11CAA.11CB2=0+2200|\
-         u11C75=3+2000"
+        "[u11C7C.11CAA.11CB2=0+2200|\
+         u11C75=3+2000]"
     );
 }
 
@@ -8937,9 +8937,9 @@ fn use_marchen_030() {
             "\u{11C81}\u{11C74}\u{11CB2}\u{11C8B}",
             "",
         ),
-        "u11C81=0+2400|\
+        "[u11C81=0+2400|\
          u11C74.11CB2=1+2000|\
-         u11C8B=3+2400"
+         u11C8B=3+2400]"
     );
 }
 
@@ -8951,9 +8951,9 @@ fn use_marchen_031() {
             "\u{11C8B}\u{11CB3}\u{11C74}\u{11C8D}",
             "",
         ),
-        "u11C8B.11CB3=0+2400|\
+        "[u11C8B.11CB3=0+2400|\
          u11C74=2+2000|\
-         u11C8D=3+2000"
+         u11C8D=3+2000]"
     );
 }
 
@@ -8965,9 +8965,9 @@ fn use_marchen_032() {
             "\u{11C83}\u{11CB4}\u{11C74}\u{11C8D}",
             "",
         ),
-        "u11C83.11CB4=0+2800|\
+        "[u11C83.11CB4=0+2800|\
          u11C74=2+2000|\
-         u11C8D=3+2000"
+         u11C8D=3+2000]"
     );
 }
 
@@ -8979,10 +8979,10 @@ fn use_marchen_033() {
             "\u{11C8B}\u{11CB3}\u{11C74}\u{11C8D}\u{11C71}",
             "",
         ),
-        "u11C8B.11CB3=0+2400|\
+        "[u11C8B.11CB3=0+2400|\
          u11C74=2+2000|\
          u11C8D=3+2000|\
-         u11C71=4+1600"
+         u11C71=4+1600]"
     );
 }
 
@@ -8994,10 +8994,10 @@ fn use_marchen_034() {
             "\u{11C80}\u{11C76}\u{11CB1}\u{11C75}\u{11C8D}",
             "",
         ),
-        "u11C80=0+2400|\
+        "[u11C80=0+2400|\
          u11C76.11CB1=1+3200|\
          u11C75=3+2000|\
-         u11C8D=4+2000"
+         u11C8D=4+2000]"
     );
 }
 
@@ -9009,10 +9009,10 @@ fn use_marchen_035() {
             "\u{11C80}\u{11C8D}\u{11C94}\u{11CAA}\u{11CB1}\u{11C74}\u{11C8D}",
             "",
         ),
-        "u11C80=0+2400|\
+        "[u11C80=0+2400|\
          u11C8D.11C94.11CAA.11CB1.shorti=1+2600|\
          u11C74=5+2000|\
-         u11C8D=6+2000"
+         u11C8D=6+2000]"
     );
 }
 
@@ -9024,9 +9024,9 @@ fn use_syllable_001() {
             "\u{AA00}\u{AA2D}\u{AA29}",
             "",
         ),
-        "a_cham=0+1121|\
+        "[a_cham=0+1121|\
          uSign_cham=0@14,0+0|\
-         .notdef=0+600"
+         .notdef=0+600]"
     );
 }
 
@@ -9038,9 +9038,9 @@ fn use_syllable_002() {
             "\u{AA00}\u{AA34}\u{AA36}",
             "",
         ),
-        "raMedial_cham_pre=0+400|\
+        "[raMedial_cham_pre=0+400|\
          a_cham=0+1121|\
-         waMedial_cham=0@-32,0+0"
+         waMedial_cham=0@-32,0+0]"
     );
 }
 
@@ -9052,9 +9052,9 @@ fn use_syllable_003() {
             "\u{AA00}\u{AA35}\u{AA33}",
             "",
         ),
-        "a_cham=0+1121|\
+        "[a_cham=0+1121|\
          laMedial_cham=0@-32,0+0|\
-         yaMedial_cham=0+542"
+         yaMedial_cham=0+542]"
     );
 }
 
@@ -9066,8 +9066,8 @@ fn use_syllable_004() {
             "\u{AA00}\u{AA35}\u{AA36}",
             "",
         ),
-        "a_cham=0+1121|\
-         laMedial_waMedial_cham=0@43,0+0"
+        "[a_cham=0+1121|\
+         laMedial_waMedial_cham=0@43,0+0]"
     );
 }
 
@@ -9079,9 +9079,9 @@ fn use_syllable_005() {
             "\u{11320}\u{20F0}\u{11367}",
             "--no-glyph-names",
         ),
-        "3=0+502|\
+        "[3=0+502|\
          1=0@33,0+0|\
-         4=0@300,8+0"
+         4=0@300,8+0]"
     );
 }
 
@@ -9093,9 +9093,9 @@ fn use_syllable_006() {
             "\u{A8AC}\u{A8B4}\u{A8B5}",
             "--no-glyph-names",
         ),
-        "2=0+377|\
+        "[2=0+377|\
          3=0+242|\
-         4=0+210"
+         4=0+210]"
     );
 }
 
@@ -9107,10 +9107,10 @@ fn use_syllable_007() {
             "\u{1BC7}\u{1BEA}\u{1BF3}",
             "--no-glyph-names",
         ),
-        "1=0+749|\
+        "[1=0+749|\
          2=0+402|\
          4=0+535|\
-         3=0+401"
+         3=0+401]"
     );
 }
 
@@ -9122,8 +9122,8 @@ fn use_syllable_008() {
             "\u{11064}\u{1107F}\u{11052}\u{11065}\u{1107F}\u{11053}",
             "",
         ),
-        "brm_num100.1=0+2224|\
-         brm_num1000.2=3+1834"
+        "[brm_num100.1=0+2224|\
+         brm_num1000.2=3+1834]"
     );
 }
 
@@ -9135,9 +9135,9 @@ fn use_syllable_009() {
             "\u{11013}\u{11042}\u{11046}",
             "",
         ),
-        "brm_KA=0+754|\
+        "[brm_KA=0+754|\
          brm_vowelEE=0@-383,0+0|\
-         brm_virama=0@-524,0+0"
+         brm_virama=0@-524,0+0]"
     );
 }
 
@@ -9149,9 +9149,9 @@ fn use_syllable_010() {
             "\u{11013}\u{11044}\u{11046}",
             "",
         ),
-        "brm_KA=0+754|\
+        "[brm_KA=0+754|\
          brm_vowelOO=0@-647,0+0|\
-         brm_virama=0@-524,0+0"
+         brm_virama=0@-524,0+0]"
     );
 }
 
@@ -9163,8 +9163,8 @@ fn use_syllable_011() {
             "\u{11013}\u{1103C}",
             "",
         ),
-        "brm_KA=0+754|\
-         brm_vowelU=0@-403,0+0"
+        "[brm_KA=0+754|\
+         brm_vowelU=0@-403,0+0]"
     );
 }
 
@@ -9176,9 +9176,9 @@ fn use_syllable_012() {
             "\u{111C8}\u{111C9}\u{111C9}",
             "",
         ),
-        "u111C8=0+500|\
+        "[u111C8=0+500|\
          u111C9=0@-500,0+0|\
-         u111C9=0@-500,0+0"
+         u111C9=0@-500,0+0]"
     );
 }
 
@@ -9190,9 +9190,9 @@ fn use_syllable_013() {
             "\u{1A3D}\u{1A5A}\u{1A63}",
             "",
         ),
-        "uni1A3D=0+250|\
+        "[uni1A3D=0+250|\
          uni1A5A=0+0|\
-         uni1A63=0+250"
+         uni1A63=0+250]"
     );
 }
 
@@ -9204,13 +9204,13 @@ fn use_syllable_014() {
             "\u{1A3D}\u{1A60}\u{1A3D}\u{1A63}\u{1A60}\u{1A3D}\u{1A59}",
             "",
         ),
-        "uni1A3D=0+250|\
+        "[uni1A3D=0+250|\
          uni1A60=0+0|\
          uni1A3D=2+250|\
          uni1A63=2+250|\
          uni1A60=2+0|\
          uni1A3D=5+250|\
-         uni1A59=5+0"
+         uni1A59=5+0]"
     );
 }
 
@@ -9222,14 +9222,14 @@ fn use_syllable_015() {
             "\u{1A3D}\u{1A60}\u{1A3D}\u{1A63}\u{1A60}\u{1A3D}\u{1A5A}",
             "",
         ),
-        "uni1A3D=0+250|\
+        "[uni1A3D=0+250|\
          uni1A60=0+0|\
          uni1A3D=2+250|\
          uni1A63=2+250|\
          uni1A60=2+0|\
          uni1A3D=5+250|\
          uni25CC=5+250|\
-         uni1A5A=5+0"
+         uni1A5A=5+0]"
     );
 }
 
@@ -9241,13 +9241,13 @@ fn use_syllable_016() {
             "\u{1A3D}\u{1A60}\u{1A3D}\u{1A63}\u{1A60}\u{1A3D}\u{1A60}",
             "",
         ),
-        "uni1A3D=0+250|\
+        "[uni1A3D=0+250|\
          uni1A60=0+0|\
          uni1A3D=2+250|\
          uni1A63=2+250|\
          uni1A60=2+0|\
          uni1A3D=5+250|\
-         uni1A60=5+0"
+         uni1A60=5+0]"
     );
 }
 
@@ -9259,9 +9259,9 @@ fn use_syllable_017() {
             "\u{11410}\u{11442}\u{200C}\u{11411}",
             "",
         ),
-        "Ga=0+576|\
+        "[Ga=0+576|\
          Virama=0@70,70+0|\
-         Gha=3+566"
+         Gha=3+566]"
     );
 }
 
@@ -9273,9 +9273,9 @@ fn use_syllable_018() {
             "\u{11410}\u{11442}\u{200C}\u{034F}\u{11411}",
             "",
         ),
-        "Ga=0+576|\
+        "[Ga=0+576|\
          Virama=0@70,70+0|\
-         Gha=4+566"
+         Gha=4+566]"
     );
 }
 
@@ -9287,8 +9287,8 @@ fn use_syllable_019() {
             "\u{11410}\u{200C}\u{11442}\u{034F}\u{11411}",
             "",
         ),
-        "Ga.icd=0+367|\
-         Gha.diag=1@100,0+386"
+        "[Ga.icd=0+367|\
+         Gha.diag=1@100,0+386]"
     );
 }
 
@@ -9300,8 +9300,8 @@ fn use_syllable_020() {
             "\u{AA00}\u{200C}\u{AA34}",
             "",
         ),
-        "raMedial_cham_pre=0+400|\
-         a_cham=0+1121"
+        "[raMedial_cham_pre=0+400|\
+         a_cham=0+1121]"
     );
 }
 
@@ -9313,8 +9313,8 @@ fn use_syllable_021() {
             "\u{11124}\u{200D}\u{11127}",
             "",
         ),
-        "u11124=0+514|\
-         u11127=0+0"
+        "[u11124=0+514|\
+         u11127=0+0]"
     );
 }
 
@@ -9326,8 +9326,8 @@ fn use_syllable_022() {
             "\u{11124}\u{2060}\u{11127}",
             "",
         ),
-        "u11124=0+514|\
-         u11127=1+0"
+        "[u11124=0+514|\
+         u11127=1+0]"
     );
 }
 
@@ -9339,9 +9339,9 @@ fn use_vowel_letter_spoofing_001() {
             "\u{0905}\u{093A}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni093A=0+500"
+         uni093A=0+500]"
     );
 }
 
@@ -9353,9 +9353,9 @@ fn use_vowel_letter_spoofing_002() {
             "\u{0905}\u{093B}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni093B=0+500"
+         uni093B=0+500]"
     );
 }
 
@@ -9367,9 +9367,9 @@ fn use_vowel_letter_spoofing_003() {
             "\u{0905}\u{093E}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni093E=0+500"
+         uni093E=0+500]"
     );
 }
 
@@ -9381,9 +9381,9 @@ fn use_vowel_letter_spoofing_004() {
             "\u{0905}\u{0945}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni0945=0+500"
+         uni0945=0+500]"
     );
 }
 
@@ -9395,9 +9395,9 @@ fn use_vowel_letter_spoofing_005() {
             "\u{0905}\u{0946}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni0946=0+500"
+         uni0946=0+500]"
     );
 }
 
@@ -9409,9 +9409,9 @@ fn use_vowel_letter_spoofing_006() {
             "\u{0905}\u{0949}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni0949=0+500"
+         uni0949=0+500]"
     );
 }
 
@@ -9423,9 +9423,9 @@ fn use_vowel_letter_spoofing_007() {
             "\u{0905}\u{094A}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni094A=0+500"
+         uni094A=0+500]"
     );
 }
 
@@ -9437,9 +9437,9 @@ fn use_vowel_letter_spoofing_008() {
             "\u{0905}\u{094B}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni094B=0+500"
+         uni094B=0+500]"
     );
 }
 
@@ -9451,9 +9451,9 @@ fn use_vowel_letter_spoofing_009() {
             "\u{0905}\u{094C}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni094C=0+500"
+         uni094C=0+500]"
     );
 }
 
@@ -9465,9 +9465,9 @@ fn use_vowel_letter_spoofing_010() {
             "\u{0905}\u{094F}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni094F=0+500"
+         uni094F=0+500]"
     );
 }
 
@@ -9479,9 +9479,9 @@ fn use_vowel_letter_spoofing_011() {
             "\u{0905}\u{0956}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni0956=0+500"
+         uni0956=0+500]"
     );
 }
 
@@ -9493,9 +9493,9 @@ fn use_vowel_letter_spoofing_012() {
             "\u{0905}\u{0957}",
             "",
         ),
-        "uni0905=0+500|\
+        "[uni0905=0+500|\
          uni25CC=0+500|\
-         uni0957=0+500"
+         uni0957=0+500]"
     );
 }
 
@@ -9507,9 +9507,9 @@ fn use_vowel_letter_spoofing_013() {
             "\u{0906}\u{093A}",
             "",
         ),
-        "uni0906=0+500|\
+        "[uni0906=0+500|\
          uni25CC=0+500|\
-         uni093A=0+500"
+         uni093A=0+500]"
     );
 }
 
@@ -9521,9 +9521,9 @@ fn use_vowel_letter_spoofing_014() {
             "\u{0906}\u{0945}",
             "",
         ),
-        "uni0906=0+500|\
+        "[uni0906=0+500|\
          uni25CC=0+500|\
-         uni0945=0+500"
+         uni0945=0+500]"
     );
 }
 
@@ -9535,9 +9535,9 @@ fn use_vowel_letter_spoofing_015() {
             "\u{0906}\u{0946}",
             "",
         ),
-        "uni0906=0+500|\
+        "[uni0906=0+500|\
          uni25CC=0+500|\
-         uni0946=0+500"
+         uni0946=0+500]"
     );
 }
 
@@ -9549,9 +9549,9 @@ fn use_vowel_letter_spoofing_016() {
             "\u{0906}\u{0947}",
             "",
         ),
-        "uni0906=0+500|\
+        "[uni0906=0+500|\
          uni25CC=0+500|\
-         uni0947=0+500"
+         uni0947=0+500]"
     );
 }
 
@@ -9563,9 +9563,9 @@ fn use_vowel_letter_spoofing_017() {
             "\u{0906}\u{0948}",
             "",
         ),
-        "uni0906=0+500|\
+        "[uni0906=0+500|\
          uni25CC=0+500|\
-         uni0948=0+500"
+         uni0948=0+500]"
     );
 }
 
@@ -9577,9 +9577,9 @@ fn use_vowel_letter_spoofing_018() {
             "\u{0909}\u{0941}",
             "",
         ),
-        "uni0909=0+500|\
+        "[uni0909=0+500|\
          uni25CC=0+500|\
-         uni0941=0+500"
+         uni0941=0+500]"
     );
 }
 
@@ -9591,9 +9591,9 @@ fn use_vowel_letter_spoofing_019() {
             "\u{090F}\u{0945}",
             "",
         ),
-        "uni090F=0+500|\
+        "[uni090F=0+500|\
          uni25CC=0+500|\
-         uni0945=0+500"
+         uni0945=0+500]"
     );
 }
 
@@ -9605,9 +9605,9 @@ fn use_vowel_letter_spoofing_020() {
             "\u{090F}\u{0946}",
             "",
         ),
-        "uni090F=0+500|\
+        "[uni090F=0+500|\
          uni25CC=0+500|\
-         uni0946=0+500"
+         uni0946=0+500]"
     );
 }
 
@@ -9619,9 +9619,9 @@ fn use_vowel_letter_spoofing_021() {
             "\u{090F}\u{0947}",
             "",
         ),
-        "uni090F=0+500|\
+        "[uni090F=0+500|\
          uni25CC=0+500|\
-         uni0947=0+500"
+         uni0947=0+500]"
     );
 }
 
@@ -9633,10 +9633,10 @@ fn use_vowel_letter_spoofing_022() {
             "\u{0930}\u{094D}\u{0907}",
             "",
         ),
-        "uni0930=0+500|\
+        "[uni0930=0+500|\
          uni094D=0+500|\
          uni25CC=2+500|\
-         uni0907=2+500"
+         uni0907=2+500]"
     );
 }
 
@@ -9648,9 +9648,9 @@ fn use_vowel_letter_spoofing_023() {
             "\u{0985}\u{09BE}",
             "",
         ),
-        "uni0985=0+500|\
+        "[uni0985=0+500|\
          uni25CC=0+500|\
-         .notdef=0+500"
+         .notdef=0+500]"
     );
 }
 
@@ -9662,9 +9662,9 @@ fn use_vowel_letter_spoofing_024() {
             "\u{098B}\u{09C3}",
             "",
         ),
-        "uni098B=0+500|\
+        "[uni098B=0+500|\
          uni25CC=0+500|\
-         uni09C3=0+500"
+         uni09C3=0+500]"
     );
 }
 
@@ -9676,9 +9676,9 @@ fn use_vowel_letter_spoofing_025() {
             "\u{098C}\u{09E2}",
             "",
         ),
-        "uni098C=0+500|\
+        "[uni098C=0+500|\
          uni25CC=0+500|\
-         uni09E2=0+500"
+         uni09E2=0+500]"
     );
 }
 
@@ -9690,9 +9690,9 @@ fn use_vowel_letter_spoofing_026() {
             "\u{0A05}\u{0A3E}",
             "",
         ),
-        "uni0A05=0+500|\
+        "[uni0A05=0+500|\
          uni25CC=0+500|\
-         uni0A3E=0+500"
+         uni0A3E=0+500]"
     );
 }
 
@@ -9704,9 +9704,9 @@ fn use_vowel_letter_spoofing_027() {
             "\u{0A05}\u{0A48}",
             "",
         ),
-        "uni0A05=0+500|\
+        "[uni0A05=0+500|\
          uni25CC=0+500|\
-         uni0A48=0+500"
+         uni0A48=0+500]"
     );
 }
 
@@ -9718,9 +9718,9 @@ fn use_vowel_letter_spoofing_028() {
             "\u{0A05}\u{0A4C}",
             "",
         ),
-        "uni0A05=0+500|\
+        "[uni0A05=0+500|\
          uni25CC=0+500|\
-         uni0A4C=0+500"
+         uni0A4C=0+500]"
     );
 }
 
@@ -9732,9 +9732,9 @@ fn use_vowel_letter_spoofing_029() {
             "\u{0A72}\u{0A3F}",
             "",
         ),
-        "uni0A72=0+500|\
+        "[uni0A72=0+500|\
          uni0A3F=0+500|\
-         uni25CC=0+500"
+         uni25CC=0+500]"
     );
 }
 
@@ -9746,9 +9746,9 @@ fn use_vowel_letter_spoofing_030() {
             "\u{0A72}\u{0A40}",
             "",
         ),
-        "uni0A72=0+500|\
+        "[uni0A72=0+500|\
          uni25CC=0+500|\
-         uni0A40=0+500"
+         uni0A40=0+500]"
     );
 }
 
@@ -9760,9 +9760,9 @@ fn use_vowel_letter_spoofing_031() {
             "\u{0A72}\u{0A47}",
             "",
         ),
-        "uni0A72=0+500|\
+        "[uni0A72=0+500|\
          uni25CC=0+500|\
-         uni0A47=0+500"
+         uni0A47=0+500]"
     );
 }
 
@@ -9774,9 +9774,9 @@ fn use_vowel_letter_spoofing_032() {
             "\u{0A73}\u{0A41}",
             "",
         ),
-        "uni0A73=0+500|\
+        "[uni0A73=0+500|\
          uni25CC=0+500|\
-         uni0A41=0+500"
+         uni0A41=0+500]"
     );
 }
 
@@ -9788,9 +9788,9 @@ fn use_vowel_letter_spoofing_033() {
             "\u{0A73}\u{0A42}",
             "",
         ),
-        "uni0A73=0+500|\
+        "[uni0A73=0+500|\
          uni25CC=0+500|\
-         uni0A42=0+500"
+         uni0A42=0+500]"
     );
 }
 
@@ -9802,9 +9802,9 @@ fn use_vowel_letter_spoofing_034() {
             "\u{0A73}\u{0A4B}",
             "",
         ),
-        "uni0A73=0+500|\
+        "[uni0A73=0+500|\
          uni25CC=0+500|\
-         uni0A4B=0+500"
+         uni0A4B=0+500]"
     );
 }
 
@@ -9816,11 +9816,11 @@ fn use_vowel_letter_spoofing_035() {
             "\u{0A85}\u{0ABE}\u{0AC5}",
             "",
         ),
-        "uni0A85=0+500|\
+        "[uni0A85=0+500|\
          uni25CC=0+500|\
          uni0ABE=0+500|\
          uni25CC=0+500|\
-         uni0AC5=0+500"
+         uni0AC5=0+500]"
     );
 }
 
@@ -9832,11 +9832,11 @@ fn use_vowel_letter_spoofing_036() {
             "\u{0A85}\u{0ABE}\u{0AC8}",
             "",
         ),
-        "uni0A85=0+500|\
+        "[uni0A85=0+500|\
          uni25CC=0+500|\
          uni0ABE=0+500|\
          uni25CC=0+500|\
-         uni0AC8=0+500"
+         uni0AC8=0+500]"
     );
 }
 
@@ -9848,9 +9848,9 @@ fn use_vowel_letter_spoofing_037() {
             "\u{0A85}\u{0ABE}",
             "",
         ),
-        "uni0A85=0+500|\
+        "[uni0A85=0+500|\
          uni25CC=0+500|\
-         uni0ABE=0+500"
+         uni0ABE=0+500]"
     );
 }
 
@@ -9862,9 +9862,9 @@ fn use_vowel_letter_spoofing_038() {
             "\u{0A85}\u{0AC5}",
             "",
         ),
-        "uni0A85=0+500|\
+        "[uni0A85=0+500|\
          uni25CC=0+500|\
-         uni0AC5=0+500"
+         uni0AC5=0+500]"
     );
 }
 
@@ -9876,9 +9876,9 @@ fn use_vowel_letter_spoofing_039() {
             "\u{0A85}\u{0AC7}",
             "",
         ),
-        "uni0A85=0+500|\
+        "[uni0A85=0+500|\
          uni25CC=0+500|\
-         uni0AC7=0+500"
+         uni0AC7=0+500]"
     );
 }
 
@@ -9890,9 +9890,9 @@ fn use_vowel_letter_spoofing_040() {
             "\u{0A85}\u{0AC8}",
             "",
         ),
-        "uni0A85=0+500|\
+        "[uni0A85=0+500|\
          uni25CC=0+500|\
-         uni0AC8=0+500"
+         uni0AC8=0+500]"
     );
 }
 
@@ -9904,9 +9904,9 @@ fn use_vowel_letter_spoofing_041() {
             "\u{0A85}\u{0AC9}",
             "",
         ),
-        "uni0A85=0+500|\
+        "[uni0A85=0+500|\
          uni25CC=0+500|\
-         uni0AC9=0+500"
+         uni0AC9=0+500]"
     );
 }
 
@@ -9918,9 +9918,9 @@ fn use_vowel_letter_spoofing_042() {
             "\u{0A85}\u{0ACB}",
             "",
         ),
-        "uni0A85=0+500|\
+        "[uni0A85=0+500|\
          uni25CC=0+500|\
-         uni0ACB=0+500"
+         uni0ACB=0+500]"
     );
 }
 
@@ -9932,9 +9932,9 @@ fn use_vowel_letter_spoofing_043() {
             "\u{0A85}\u{0ACC}",
             "",
         ),
-        "uni0A85=0+500|\
+        "[uni0A85=0+500|\
          uni25CC=0+500|\
-         uni0ACC=0+500"
+         uni0ACC=0+500]"
     );
 }
 
@@ -9946,10 +9946,10 @@ fn use_vowel_letter_spoofing_044() {
             "\u{0AC5}\u{0ABE}",
             "",
         ),
-        "uni25CC=0+500|\
+        "[uni25CC=0+500|\
          uni0AC5=0+500|\
          uni25CC=0+500|\
-         uni0ABE=0+500"
+         uni0ABE=0+500]"
     );
 }
 
@@ -9961,9 +9961,9 @@ fn use_vowel_letter_spoofing_045() {
             "\u{0B05}\u{0B3E}",
             "",
         ),
-        "uni0B05=0+500|\
+        "[uni0B05=0+500|\
          uni25CC=0+500|\
-         uni0B3E=0+500"
+         uni0B3E=0+500]"
     );
 }
 
@@ -9975,9 +9975,9 @@ fn use_vowel_letter_spoofing_046() {
             "\u{0B0F}\u{0B57}",
             "",
         ),
-        "uni0B0F=0+500|\
+        "[uni0B0F=0+500|\
          uni25CC=0+500|\
-         uni0B57=0+500"
+         uni0B57=0+500]"
     );
 }
 
@@ -9989,9 +9989,9 @@ fn use_vowel_letter_spoofing_047() {
             "\u{0B13}\u{0B57}",
             "",
         ),
-        "uni0B13=0+500|\
+        "[uni0B13=0+500|\
          uni25CC=0+500|\
-         uni0B57=0+500"
+         uni0B57=0+500]"
     );
 }
 
@@ -10003,9 +10003,9 @@ fn use_vowel_letter_spoofing_048() {
             "\u{0C12}\u{0C4C}",
             "",
         ),
-        "uni0C12=0+500|\
+        "[uni0C12=0+500|\
          uni25CC=0+500|\
-         uni0C4C=0+500"
+         uni0C4C=0+500]"
     );
 }
 
@@ -10017,9 +10017,9 @@ fn use_vowel_letter_spoofing_049() {
             "\u{0C12}\u{0C55}",
             "",
         ),
-        "uni0C12=0+500|\
+        "[uni0C12=0+500|\
          uni25CC=0+500|\
-         uni0C55=0+500"
+         uni0C55=0+500]"
     );
 }
 
@@ -10031,10 +10031,10 @@ fn use_vowel_letter_spoofing_050() {
             "\u{0C3F}\u{0C55}",
             "",
         ),
-        "uni25CC=0+500|\
+        "[uni25CC=0+500|\
          uni0C3F=0+500|\
          uni25CC=0+500|\
-         uni0C55=0+500"
+         uni0C55=0+500]"
     );
 }
 
@@ -10046,10 +10046,10 @@ fn use_vowel_letter_spoofing_051() {
             "\u{0C46}\u{0C55}",
             "",
         ),
-        "uni25CC=0+500|\
+        "[uni25CC=0+500|\
          uni0C46=0+500|\
          uni25CC=0+500|\
-         uni0C55=0+500"
+         uni0C55=0+500]"
     );
 }
 
@@ -10061,10 +10061,10 @@ fn use_vowel_letter_spoofing_052() {
             "\u{0C4A}\u{0C55}",
             "",
         ),
-        "uni25CC=0+500|\
+        "[uni25CC=0+500|\
          uni0C4A=0+500|\
          uni25CC=0+500|\
-         uni0C55=0+500"
+         uni0C55=0+500]"
     );
 }
 
@@ -10076,9 +10076,9 @@ fn use_vowel_letter_spoofing_053() {
             "\u{0C89}\u{0CBE}",
             "",
         ),
-        "uni0C89=0+500|\
+        "[uni0C89=0+500|\
          uni25CC=0+500|\
-         uni0CBE=0+500"
+         uni0CBE=0+500]"
     );
 }
 
@@ -10090,9 +10090,9 @@ fn use_vowel_letter_spoofing_054() {
             "\u{0C8B}\u{0CBE}",
             "",
         ),
-        "uni0C8B=0+500|\
+        "[uni0C8B=0+500|\
          uni25CC=0+500|\
-         uni0CBE=0+500"
+         uni0CBE=0+500]"
     );
 }
 
@@ -10104,9 +10104,9 @@ fn use_vowel_letter_spoofing_055() {
             "\u{0C92}\u{0CCC}",
             "",
         ),
-        "uni0C92=0+500|\
+        "[uni0C92=0+500|\
          uni25CC=0+500|\
-         uni0CCC=0+500"
+         uni0CCC=0+500]"
     );
 }
 
@@ -10118,9 +10118,9 @@ fn use_vowel_letter_spoofing_056() {
             "\u{0D07}\u{0D57}",
             "",
         ),
-        "uni0D07=0+500|\
+        "[uni0D07=0+500|\
          uni25CC=0+500|\
-         uni0D57=0+500"
+         uni0D57=0+500]"
     );
 }
 
@@ -10132,9 +10132,9 @@ fn use_vowel_letter_spoofing_057() {
             "\u{0D09}\u{0D57}",
             "",
         ),
-        "uni0D09=0+500|\
+        "[uni0D09=0+500|\
          uni25CC=0+500|\
-         uni0D57=0+500"
+         uni0D57=0+500]"
     );
 }
 
@@ -10146,9 +10146,9 @@ fn use_vowel_letter_spoofing_058() {
             "\u{0D0E}\u{0D46}",
             "",
         ),
-        "uni0D0E=0+500|\
+        "[uni0D0E=0+500|\
          uni0D46=0+500|\
-         uni25CC=0+500"
+         uni25CC=0+500]"
     );
 }
 
@@ -10160,9 +10160,9 @@ fn use_vowel_letter_spoofing_059() {
             "\u{0D12}\u{0D3E}",
             "",
         ),
-        "uni0D12=0+500|\
+        "[uni0D12=0+500|\
          uni25CC=0+500|\
-         uni0D3E=0+500"
+         uni0D3E=0+500]"
     );
 }
 
@@ -10174,9 +10174,9 @@ fn use_vowel_letter_spoofing_060() {
             "\u{0D12}\u{0D57}",
             "",
         ),
-        "uni0D12=0+500|\
+        "[uni0D12=0+500|\
          uni25CC=0+500|\
-         uni0D57=0+500"
+         uni0D57=0+500]"
     );
 }
 
@@ -10188,9 +10188,9 @@ fn use_vowel_letter_spoofing_061() {
             "\u{0D85}\u{0DCF}",
             "",
         ),
-        "uni0D85=0+500|\
+        "[uni0D85=0+500|\
          uni25CC=0+500|\
-         uni0DCF=0+500"
+         uni0DCF=0+500]"
     );
 }
 
@@ -10202,9 +10202,9 @@ fn use_vowel_letter_spoofing_062() {
             "\u{0D85}\u{0DD0}",
             "",
         ),
-        "uni0D85=0+500|\
+        "[uni0D85=0+500|\
          uni25CC=0+500|\
-         uni0DD0=0+500"
+         uni0DD0=0+500]"
     );
 }
 
@@ -10216,9 +10216,9 @@ fn use_vowel_letter_spoofing_063() {
             "\u{0D85}\u{0DD1}",
             "",
         ),
-        "uni0D85=0+500|\
+        "[uni0D85=0+500|\
          uni25CC=0+500|\
-         uni0DD1=0+500"
+         uni0DD1=0+500]"
     );
 }
 
@@ -10230,9 +10230,9 @@ fn use_vowel_letter_spoofing_064() {
             "\u{0D8B}\u{0DDF}",
             "",
         ),
-        "uni0D8B=0+500|\
+        "[uni0D8B=0+500|\
          uni25CC=0+500|\
-         uni0DDF=0+500"
+         uni0DDF=0+500]"
     );
 }
 
@@ -10244,9 +10244,9 @@ fn use_vowel_letter_spoofing_065() {
             "\u{0D8D}\u{0DD8}",
             "",
         ),
-        "uni0D8D=0+500|\
+        "[uni0D8D=0+500|\
          uni25CC=0+500|\
-         uni0DD8=0+500"
+         uni0DD8=0+500]"
     );
 }
 
@@ -10258,9 +10258,9 @@ fn use_vowel_letter_spoofing_066() {
             "\u{0D8F}\u{0DDF}",
             "",
         ),
-        "uni0D8F=0+500|\
+        "[uni0D8F=0+500|\
          uni25CC=0+500|\
-         uni0DDF=0+500"
+         uni0DDF=0+500]"
     );
 }
 
@@ -10272,9 +10272,9 @@ fn use_vowel_letter_spoofing_067() {
             "\u{0D91}\u{0DCA}",
             "",
         ),
-        "uni0D91=0+500|\
+        "[uni0D91=0+500|\
          uni25CC=0+500|\
-         uni0DCA=0+500"
+         uni0DCA=0+500]"
     );
 }
 
@@ -10286,9 +10286,9 @@ fn use_vowel_letter_spoofing_068() {
             "\u{0D91}\u{0DD9}",
             "",
         ),
-        "uni0D91=0+500|\
+        "[uni0D91=0+500|\
          uni0DD9=0+500|\
-         uni25CC=0+500"
+         uni25CC=0+500]"
     );
 }
 
@@ -10300,10 +10300,10 @@ fn use_vowel_letter_spoofing_069() {
             "\u{0D91}\u{0DDA}",
             "",
         ),
-        "uni0D91=0+500|\
+        "[uni0D91=0+500|\
          uni0DD9=0+500|\
          uni25CC=0+500|\
-         uni0DCA=0+500"
+         uni0DCA=0+500]"
     );
 }
 
@@ -10315,10 +10315,10 @@ fn use_vowel_letter_spoofing_070() {
             "\u{0D91}\u{0DDC}",
             "",
         ),
-        "uni0D91=0+500|\
+        "[uni0D91=0+500|\
          uni0DD9=0+500|\
          uni25CC=0+500|\
-         uni0DCF=0+500"
+         uni0DCF=0+500]"
     );
 }
 
@@ -10330,11 +10330,11 @@ fn use_vowel_letter_spoofing_071() {
             "\u{0D91}\u{0DDD}",
             "",
         ),
-        "uni0D91=0+500|\
+        "[uni0D91=0+500|\
          uni0DD9=0+500|\
          uni25CC=0+500|\
          uni0DCF=0+500|\
-         uni0DCA=0+500"
+         uni0DCA=0+500]"
     );
 }
 
@@ -10346,11 +10346,11 @@ fn use_vowel_letter_spoofing_072() {
             "\u{0D91}\u{0DDD}",
             "",
         ),
-        "uni0D91=0+500|\
+        "[uni0D91=0+500|\
          uni0DD9=0+500|\
          uni25CC=0+500|\
          uni0DCF=0+500|\
-         uni0DCA=0+500"
+         uni0DCA=0+500]"
     );
 }
 
@@ -10362,9 +10362,9 @@ fn use_vowel_letter_spoofing_073() {
             "\u{0D94}\u{0DDF}",
             "",
         ),
-        "uni0D94=0+500|\
+        "[uni0D94=0+500|\
          uni25CC=0+500|\
-         uni0DDF=0+500"
+         uni0DDF=0+500]"
     );
 }
 
@@ -10376,9 +10376,9 @@ fn use_vowel_letter_spoofing_074() {
             "\u{11005}\u{11038}",
             "",
         ),
-        "u11005=0+500|\
+        "[u11005=0+500|\
          uni25CC=0+500|\
-         u11038=0+500"
+         u11038=0+500]"
     );
 }
 
@@ -10390,9 +10390,9 @@ fn use_vowel_letter_spoofing_075() {
             "\u{1100B}\u{1103E}",
             "",
         ),
-        "u1100B=0+500|\
+        "[u1100B=0+500|\
          uni25CC=0+500|\
-         u1103E=0+500"
+         u1103E=0+500]"
     );
 }
 
@@ -10404,9 +10404,9 @@ fn use_vowel_letter_spoofing_076() {
             "\u{1100F}\u{11042}",
             "",
         ),
-        "u1100F=0+500|\
+        "[u1100F=0+500|\
          uni25CC=0+500|\
-         u11042=0+500"
+         u11042=0+500]"
     );
 }
 
@@ -10418,9 +10418,9 @@ fn use_vowel_letter_spoofing_077() {
             "\u{112B0}\u{112E0}",
             "",
         ),
-        "u112B0=0+500|\
+        "[u112B0=0+500|\
          uni25CC=0+500|\
-         u112E0=0+500"
+         u112E0=0+500]"
     );
 }
 
@@ -10432,9 +10432,9 @@ fn use_vowel_letter_spoofing_078() {
             "\u{112B0}\u{112E5}",
             "",
         ),
-        "u112B0=0+500|\
+        "[u112B0=0+500|\
          uni25CC=0+500|\
-         u112E5=0+500"
+         u112E5=0+500]"
     );
 }
 
@@ -10446,9 +10446,9 @@ fn use_vowel_letter_spoofing_079() {
             "\u{112B0}\u{112E6}",
             "",
         ),
-        "u112B0=0+500|\
+        "[u112B0=0+500|\
          uni25CC=0+500|\
-         u112E6=0+500"
+         u112E6=0+500]"
     );
 }
 
@@ -10460,9 +10460,9 @@ fn use_vowel_letter_spoofing_080() {
             "\u{112B0}\u{112E7}",
             "",
         ),
-        "u112B0=0+500|\
+        "[u112B0=0+500|\
          uni25CC=0+500|\
-         u112E7=0+500"
+         u112E7=0+500]"
     );
 }
 
@@ -10474,9 +10474,9 @@ fn use_vowel_letter_spoofing_081() {
             "\u{112B0}\u{112E8}",
             "",
         ),
-        "u112B0=0+500|\
+        "[u112B0=0+500|\
          uni25CC=0+500|\
-         u112E8=0+500"
+         u112E8=0+500]"
     );
 }
 
@@ -10488,9 +10488,9 @@ fn use_vowel_letter_spoofing_082() {
             "\u{11481}\u{114B0}",
             "",
         ),
-        "u11481=0+500|\
+        "[u11481=0+500|\
          uni25CC=0+500|\
-         u114B0=0+500"
+         u114B0=0+500]"
     );
 }
 
@@ -10502,9 +10502,9 @@ fn use_vowel_letter_spoofing_083() {
             "\u{1148B}\u{114BA}",
             "",
         ),
-        "u1148B=0+500|\
+        "[u1148B=0+500|\
          uni25CC=0+500|\
-         u114BA=0+500"
+         u114BA=0+500]"
     );
 }
 
@@ -10516,9 +10516,9 @@ fn use_vowel_letter_spoofing_084() {
             "\u{1148D}\u{114BA}",
             "",
         ),
-        "u1148D=0+500|\
+        "[u1148D=0+500|\
          uni25CC=0+500|\
-         u114BA=0+500"
+         u114BA=0+500]"
     );
 }
 
@@ -10530,9 +10530,9 @@ fn use_vowel_letter_spoofing_085() {
             "\u{114AA}\u{114B5}",
             "",
         ),
-        "u114AA=0+500|\
+        "[u114AA=0+500|\
          uni25CC=0+500|\
-         u114B5=0+500"
+         u114B5=0+500]"
     );
 }
 
@@ -10544,9 +10544,9 @@ fn use_vowel_letter_spoofing_086() {
             "\u{114AA}\u{114B6}",
             "",
         ),
-        "u114AA=0+500|\
+        "[u114AA=0+500|\
          uni25CC=0+500|\
-         u114B6=0+500"
+         u114B6=0+500]"
     );
 }
 
@@ -10558,9 +10558,9 @@ fn use_vowel_letter_spoofing_087() {
             "\u{11600}\u{11639}",
             "",
         ),
-        "u11600=0+500|\
+        "[u11600=0+500|\
          uni25CC=0+500|\
-         u11639=0+500"
+         u11639=0+500]"
     );
 }
 
@@ -10572,9 +10572,9 @@ fn use_vowel_letter_spoofing_088() {
             "\u{11600}\u{1163A}",
             "",
         ),
-        "u11600=0+500|\
+        "[u11600=0+500|\
          uni25CC=0+500|\
-         u1163A=0+500"
+         u1163A=0+500]"
     );
 }
 
@@ -10586,9 +10586,9 @@ fn use_vowel_letter_spoofing_089() {
             "\u{11601}\u{11639}",
             "",
         ),
-        "u11601=0+500|\
+        "[u11601=0+500|\
          uni25CC=0+500|\
-         u11639=0+500"
+         u11639=0+500]"
     );
 }
 
@@ -10600,9 +10600,9 @@ fn use_vowel_letter_spoofing_090() {
             "\u{11601}\u{1163A}",
             "",
         ),
-        "u11601=0+500|\
+        "[u11601=0+500|\
          uni25CC=0+500|\
-         u1163A=0+500"
+         u1163A=0+500]"
     );
 }
 
@@ -10614,9 +10614,9 @@ fn use_vowel_letter_spoofing_091() {
             "\u{11680}\u{116AD}",
             "",
         ),
-        "u11680=0+500|\
+        "[u11680=0+500|\
          uni25CC=0+500|\
-         u116AD=0+500"
+         u116AD=0+500]"
     );
 }
 
@@ -10628,9 +10628,9 @@ fn use_vowel_letter_spoofing_092() {
             "\u{11680}\u{116B4}",
             "",
         ),
-        "u11680=0+500|\
+        "[u11680=0+500|\
          uni25CC=0+500|\
-         u116B4=0+500"
+         u116B4=0+500]"
     );
 }
 
@@ -10642,9 +10642,9 @@ fn use_vowel_letter_spoofing_093() {
             "\u{11680}\u{116B5}",
             "",
         ),
-        "u11680=0+500|\
+        "[u11680=0+500|\
          uni25CC=0+500|\
-         u116B5=0+500"
+         u116B5=0+500]"
     );
 }
 
@@ -10656,9 +10656,9 @@ fn use_vowel_letter_spoofing_094() {
             "\u{11686}\u{116B2}",
             "",
         ),
-        "u11686=0+500|\
+        "[u11686=0+500|\
          uni25CC=0+500|\
-         u116B2=0+500"
+         u116B2=0+500]"
     );
 }
 
@@ -10670,9 +10670,9 @@ fn use_001() {
             "\u{1B1B}\u{1B44}\u{1B13}\u{1B3E}",
             "",
         ),
-        "gid3=0+990|\
+        "[gid3=0+990|\
          gid7=0+2473|\
-         gid5=0@-293,-400+0"
+         gid5=0@-293,-400+0]"
     );
 }
 
@@ -10684,14 +10684,14 @@ fn use_002() {
             "\u{1A48}\u{1A58}\u{1A25}\u{1A48}\u{1A58}\u{1A25}\u{1A6E}\u{1A63}",
             "",
         ),
-        "uni1A48=0+1212|\
+        "[uni1A48=0+1212|\
          uni1A25=0+1912|\
          uni1A58=0+0|\
          uni1A48=3+1212|\
          uni1A6E=3+0|\
          uni1A25=3+1912|\
          uni1A58=3+0|\
-         uni1A63=3+1212"
+         uni1A63=3+1212]"
     );
 }
 
@@ -10703,14 +10703,14 @@ fn use_003() {
             "\u{1A48}\u{1A58}\u{1A25}\u{1A48}\u{1A58}\u{1A25}\u{1A6E}\u{1A63}",
             "",
         ),
-        "uni1A48=0+1212|\
+        "[uni1A48=0+1212|\
          uni1A25=0+1912|\
          uni1A58=0+0|\
          uni1A48=3+1212|\
          uni1A6E=3+1211|\
          uni1A25=3+1912|\
          uni1A58=3+0|\
-         uni1A63=3+1212"
+         uni1A63=3+1212]"
     );
 }
 
@@ -10722,8 +10722,8 @@ fn use_004() {
             "\u{11103}\u{11128}",
             "",
         ),
-        "u11103=0+837|\
-         u11128=0+0"
+        "[u11103=0+837|\
+         u11128=0+0]"
     );
 }
 
@@ -10735,9 +10735,9 @@ fn use_005() {
             "\u{11124}\u{1112E}",
             "",
         ),
-        "u11124=0+514|\
+        "[u11124=0+514|\
          u11131=0+0|\
-         u11127=0+0"
+         u11127=0+0]"
     );
 }
 
@@ -10749,9 +10749,9 @@ fn use_006() {
             "\u{11124}\u{11131}\u{11127}",
             "",
         ),
-        "u11124=0+514|\
+        "[u11124=0+514|\
          u11131=0+0|\
-         u11127=0+0"
+         u11127=0+0]"
     );
 }
 
@@ -10763,10 +10763,10 @@ fn use_007() {
             "\u{11124}\u{11127}\u{11131}",
             "",
         ),
-        "u11124=0+514|\
+        "[u11124=0+514|\
          u11127=0+0|\
          uni25CC=0+547|\
-         u11131=0+0"
+         u11131=0+0]"
     );
 }
 
@@ -10778,9 +10778,9 @@ fn use_008() {
             "\u{11124}\u{11134}\u{11131}",
             "",
         ),
-        "u11124=0+514|\
+        "[u11124=0+514|\
          u11134=0+0|\
-         u11131=0+0"
+         u11131=0+0]"
     );
 }
 
@@ -10792,10 +10792,10 @@ fn use_009() {
             "\u{11124}\u{11131}\u{11134}",
             "",
         ),
-        "u11124=0+514|\
+        "[u11124=0+514|\
          u11131=0+0|\
          uni25CC=0+547|\
-         u11134=0+0"
+         u11134=0+0]"
     );
 }
 
@@ -10807,7 +10807,7 @@ fn use_010() {
             "\u{11410}\u{11442}\u{11411}\u{11440}\u{11443}\u{11410}\u{11442}\u{11411}\u{11441}\u{11443}",
             "",
         ),
-        "E_dv.alt=0+275|\
+        "[E_dv.alt=0+275|\
          Ga.icd=0+367|\
          Gha.diag=0@100,0+386|\
          AA_dv.alt=0+208|\
@@ -10816,7 +10816,7 @@ fn use_010() {
          Ga.icd=5+367|\
          Gha.diag=5@100,0+386|\
          AU_dv_part.alt=5+213|\
-         Candrabindu.sm=5@-52,179+0"
+         Candrabindu.sm=5@-52,179+0]"
     );
 }
 
@@ -10828,9 +10828,9 @@ fn use_011() {
             "\u{11328}\u{1134D}\u{1CF4}",
             "",
         ),
-        "gid1=0+793|\
+        "[gid1=0+793|\
          gid2=0+0|\
-         gid3=0+0"
+         gid3=0+0]"
     );
 }
 
@@ -10842,11 +10842,11 @@ fn use_012() {
             "\u{1C00}\u{1C27}\u{1C28}\u{1C34}\u{1C35}",
             "",
         ),
-        "uni1C35=0+500|\
+        "[uni1C35=0+500|\
          uni1C34=0+500|\
          uni1C28=0+500|\
          uni1C27=0+500|\
-         uni1C00=0+500"
+         uni1C00=0+500]"
     );
 }
 
@@ -10858,11 +10858,11 @@ fn use_013() {
             "\u{0D4E}\u{0D15}\u{0D4D}\u{0D15}\u{0D46}",
             "",
         ),
-        "uni0D15=0+500|\
+        "[uni0D15=0+500|\
          uni0D4E=0+500|\
          uni0D4D=0+500|\
          uni0D46=3+500|\
-         uni0D15=3+500"
+         uni0D15=3+500]"
     );
 }
 
@@ -10874,10 +10874,10 @@ fn use_014() {
             "\u{1102D}\u{11046}\u{11013}\u{11046}\u{11013}\u{11046}",
             "",
         ),
-        "u11013=0+500|\
+        "[u11013=0+500|\
          u11046_u11013=0+500|\
          u1102D_u11046=0+500|\
-         u11046=0+500"
+         u11046=0+500]"
     );
 }
 
@@ -10889,7 +10889,7 @@ fn use_015() {
             "\u{11083}",
             "",
         ),
-        ".notdef=0+500"
+        "[.notdef=0+500]"
     );
 }
 
@@ -10901,7 +10901,7 @@ fn variations_rounding_001() {
             "\u{0041}",
             "--variations=TEST=491",
         ),
-        "A=0+496"
+        "[A=0+496]"
     );
 }
 
@@ -10913,7 +10913,7 @@ fn variations_rounding_002() {
             "\u{0041}",
             "--variations=TEST=509",
         ),
-        "A=0+505"
+        "[A=0+505]"
     );
 }
 
@@ -10925,7 +10925,7 @@ fn variations_rvrn_001() {
             "\u{0072}",
             "--variations=FVTT=1",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -10937,7 +10937,7 @@ fn variations_rvrn_002() {
             "\u{0072}",
             "--variations=FVTT=11",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -10949,7 +10949,7 @@ fn variations_rvrn_003() {
             "\u{0072}",
             "--variations=FVTT=21",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -10961,7 +10961,7 @@ fn variations_rvrn_004() {
             "\u{0072}",
             "--variations=FVTT=31",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -10973,7 +10973,7 @@ fn variations_rvrn_005() {
             "\u{0072}",
             "--variations=FVTT=41",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -10985,7 +10985,7 @@ fn variations_rvrn_006() {
             "\u{0072}",
             "--variations=FVTT=51",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -10997,7 +10997,7 @@ fn variations_rvrn_007() {
             "\u{0072}",
             "--variations=FVTT=61",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11009,7 +11009,7 @@ fn variations_rvrn_008() {
             "\u{0072}",
             "--variations=FVTT=71",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11021,7 +11021,7 @@ fn variations_rvrn_009() {
             "\u{0072}",
             "--variations=FVTT=81",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11033,7 +11033,7 @@ fn variations_rvrn_010() {
             "\u{0072}",
             "--variations=FVTT=91",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11045,7 +11045,7 @@ fn variations_rvrn_011() {
             "\u{0072}",
             "--variations=FVTT=101",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11057,7 +11057,7 @@ fn variations_rvrn_012() {
             "\u{0072}",
             "--variations=FVTT=111",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11069,7 +11069,7 @@ fn variations_rvrn_013() {
             "\u{0072}",
             "--variations=FVTT=121",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11081,7 +11081,7 @@ fn variations_rvrn_014() {
             "\u{0072}",
             "--variations=FVTT=131",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11093,7 +11093,7 @@ fn variations_rvrn_015() {
             "\u{0072}",
             "--variations=FVTT=141",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11105,7 +11105,7 @@ fn variations_rvrn_016() {
             "\u{0072}",
             "--variations=FVTT=151",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11117,7 +11117,7 @@ fn variations_rvrn_017() {
             "\u{0072}",
             "--variations=FVTT=161",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11129,7 +11129,7 @@ fn variations_rvrn_018() {
             "\u{0072}",
             "--variations=FVTT=171",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11141,7 +11141,7 @@ fn variations_rvrn_019() {
             "\u{0072}",
             "--variations=FVTT=181",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11153,7 +11153,7 @@ fn variations_rvrn_020() {
             "\u{0072}",
             "--variations=FVTT=191",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11165,7 +11165,7 @@ fn variations_rvrn_021() {
             "\u{0072}",
             "--variations=FVTT=201",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11177,7 +11177,7 @@ fn variations_rvrn_022() {
             "\u{0072}",
             "--variations=FVTT=211",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11189,7 +11189,7 @@ fn variations_rvrn_023() {
             "\u{0072}",
             "--variations=FVTT=221",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11201,7 +11201,7 @@ fn variations_rvrn_024() {
             "\u{0072}",
             "--variations=FVTT=231",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11213,7 +11213,7 @@ fn variations_rvrn_025() {
             "\u{0072}",
             "--variations=FVTT=241",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11225,7 +11225,7 @@ fn variations_rvrn_026() {
             "\u{0072}",
             "--variations=FVTT=251",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11237,7 +11237,7 @@ fn variations_rvrn_027() {
             "\u{0072}",
             "--variations=FVTT=261",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11249,7 +11249,7 @@ fn variations_rvrn_028() {
             "\u{0072}",
             "--variations=FVTT=271",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11261,7 +11261,7 @@ fn variations_rvrn_029() {
             "\u{0072}",
             "--variations=FVTT=281",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11273,7 +11273,7 @@ fn variations_rvrn_030() {
             "\u{0072}",
             "--variations=FVTT=291",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11285,7 +11285,7 @@ fn variations_rvrn_031() {
             "\u{0072}",
             "--variations=FVTT=301",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11297,7 +11297,7 @@ fn variations_rvrn_032() {
             "\u{0072}",
             "--variations=FVTT=311",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11309,7 +11309,7 @@ fn variations_rvrn_033() {
             "\u{0072}",
             "--variations=FVTT=321",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11321,7 +11321,7 @@ fn variations_rvrn_034() {
             "\u{0072}",
             "--variations=FVTT=331",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11333,7 +11333,7 @@ fn variations_rvrn_035() {
             "\u{0072}",
             "--variations=FVTT=341",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11345,7 +11345,7 @@ fn variations_rvrn_036() {
             "\u{0072}",
             "--variations=FVTT=351",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11357,7 +11357,7 @@ fn variations_rvrn_037() {
             "\u{0072}",
             "--variations=FVTT=361",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11369,7 +11369,7 @@ fn variations_rvrn_038() {
             "\u{0072}",
             "--variations=FVTT=371",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11381,7 +11381,7 @@ fn variations_rvrn_039() {
             "\u{0072}",
             "--variations=FVTT=381",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11393,7 +11393,7 @@ fn variations_rvrn_040() {
             "\u{0072}",
             "--variations=FVTT=391",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11405,7 +11405,7 @@ fn variations_rvrn_041() {
             "\u{0072}",
             "--variations=FVTT=401",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11417,7 +11417,7 @@ fn variations_rvrn_042() {
             "\u{0072}",
             "--variations=FVTT=411",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11429,7 +11429,7 @@ fn variations_rvrn_043() {
             "\u{0072}",
             "--variations=FVTT=421",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11441,7 +11441,7 @@ fn variations_rvrn_044() {
             "\u{0072}",
             "--variations=FVTT=431",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11453,7 +11453,7 @@ fn variations_rvrn_045() {
             "\u{0072}",
             "--variations=FVTT=441",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11465,7 +11465,7 @@ fn variations_rvrn_046() {
             "\u{0072}",
             "--variations=FVTT=451",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11477,7 +11477,7 @@ fn variations_rvrn_047() {
             "\u{0072}",
             "--variations=FVTT=461",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11489,7 +11489,7 @@ fn variations_rvrn_048() {
             "\u{0072}",
             "--variations=FVTT=471",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11501,7 +11501,7 @@ fn variations_rvrn_049() {
             "\u{0072}",
             "--variations=FVTT=481",
         ),
-        "rvrn_base=0+1529"
+        "[rvrn_base=0+1529]"
     );
 }
 
@@ -11513,7 +11513,7 @@ fn variations_rvrn_050() {
             "\u{0072}",
             "--variations=FVTT=491",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11525,7 +11525,7 @@ fn variations_rvrn_051() {
             "\u{0072}",
             "--variations=FVTT=501",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11537,7 +11537,7 @@ fn variations_rvrn_052() {
             "\u{0072}",
             "--variations=FVTT=511",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11549,7 +11549,7 @@ fn variations_rvrn_053() {
             "\u{0072}",
             "--variations=FVTT=521",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11561,7 +11561,7 @@ fn variations_rvrn_054() {
             "\u{0072}",
             "--variations=FVTT=531",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11573,7 +11573,7 @@ fn variations_rvrn_055() {
             "\u{0072}",
             "--variations=FVTT=541",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11585,7 +11585,7 @@ fn variations_rvrn_056() {
             "\u{0072}",
             "--variations=FVTT=551",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11597,7 +11597,7 @@ fn variations_rvrn_057() {
             "\u{0072}",
             "--variations=FVTT=561",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11609,7 +11609,7 @@ fn variations_rvrn_058() {
             "\u{0072}",
             "--variations=FVTT=571",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11621,7 +11621,7 @@ fn variations_rvrn_059() {
             "\u{0072}",
             "--variations=FVTT=581",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11633,7 +11633,7 @@ fn variations_rvrn_060() {
             "\u{0072}",
             "--variations=FVTT=591",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11645,7 +11645,7 @@ fn variations_rvrn_061() {
             "\u{0072}",
             "--variations=FVTT=601",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11657,7 +11657,7 @@ fn variations_rvrn_062() {
             "\u{0072}",
             "--variations=FVTT=611",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11669,7 +11669,7 @@ fn variations_rvrn_063() {
             "\u{0072}",
             "--variations=FVTT=621",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11681,7 +11681,7 @@ fn variations_rvrn_064() {
             "\u{0072}",
             "--variations=FVTT=631",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11693,7 +11693,7 @@ fn variations_rvrn_065() {
             "\u{0072}",
             "--variations=FVTT=641",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11705,7 +11705,7 @@ fn variations_rvrn_066() {
             "\u{0072}",
             "--variations=FVTT=651",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11717,7 +11717,7 @@ fn variations_rvrn_067() {
             "\u{0072}",
             "--variations=FVTT=661",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11729,7 +11729,7 @@ fn variations_rvrn_068() {
             "\u{0072}",
             "--variations=FVTT=671",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11741,7 +11741,7 @@ fn variations_rvrn_069() {
             "\u{0072}",
             "--variations=FVTT=681",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11753,7 +11753,7 @@ fn variations_rvrn_070() {
             "\u{0072}",
             "--variations=FVTT=691",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11765,7 +11765,7 @@ fn variations_rvrn_071() {
             "\u{0072}",
             "--variations=FVTT=701",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11777,7 +11777,7 @@ fn variations_rvrn_072() {
             "\u{0072}",
             "--variations=FVTT=711",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11789,7 +11789,7 @@ fn variations_rvrn_073() {
             "\u{0072}",
             "--variations=FVTT=721",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11801,7 +11801,7 @@ fn variations_rvrn_074() {
             "\u{0072}",
             "--variations=FVTT=731",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11813,7 +11813,7 @@ fn variations_rvrn_075() {
             "\u{0072}",
             "--variations=FVTT=741",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11825,7 +11825,7 @@ fn variations_rvrn_076() {
             "\u{0072}",
             "--variations=FVTT=751",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11837,7 +11837,7 @@ fn variations_rvrn_077() {
             "\u{0072}",
             "--variations=FVTT=761",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11849,7 +11849,7 @@ fn variations_rvrn_078() {
             "\u{0072}",
             "--variations=FVTT=771",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11861,7 +11861,7 @@ fn variations_rvrn_079() {
             "\u{0072}",
             "--variations=FVTT=781",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11873,7 +11873,7 @@ fn variations_rvrn_080() {
             "\u{0072}",
             "--variations=FVTT=791",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11885,7 +11885,7 @@ fn variations_rvrn_081() {
             "\u{0072}",
             "--variations=FVTT=801",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11897,7 +11897,7 @@ fn variations_rvrn_082() {
             "\u{0072}",
             "--variations=FVTT=811",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11909,7 +11909,7 @@ fn variations_rvrn_083() {
             "\u{0072}",
             "--variations=FVTT=821",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11921,7 +11921,7 @@ fn variations_rvrn_084() {
             "\u{0072}",
             "--variations=FVTT=831",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11933,7 +11933,7 @@ fn variations_rvrn_085() {
             "\u{0072}",
             "--variations=FVTT=841",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11945,7 +11945,7 @@ fn variations_rvrn_086() {
             "\u{0072}",
             "--variations=FVTT=851",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11957,7 +11957,7 @@ fn variations_rvrn_087() {
             "\u{0072}",
             "--variations=FVTT=861",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11969,7 +11969,7 @@ fn variations_rvrn_088() {
             "\u{0072}",
             "--variations=FVTT=871",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11981,7 +11981,7 @@ fn variations_rvrn_089() {
             "\u{0072}",
             "--variations=FVTT=881",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -11993,7 +11993,7 @@ fn variations_rvrn_090() {
             "\u{0072}",
             "--variations=FVTT=891",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12005,7 +12005,7 @@ fn variations_rvrn_091() {
             "\u{0072}",
             "--variations=FVTT=901",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12017,7 +12017,7 @@ fn variations_rvrn_092() {
             "\u{0072}",
             "--variations=FVTT=911",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12029,7 +12029,7 @@ fn variations_rvrn_093() {
             "\u{0072}",
             "--variations=FVTT=921",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12041,7 +12041,7 @@ fn variations_rvrn_094() {
             "\u{0072}",
             "--variations=FVTT=931",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12053,7 +12053,7 @@ fn variations_rvrn_095() {
             "\u{0072}",
             "--variations=FVTT=941",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12065,7 +12065,7 @@ fn variations_rvrn_096() {
             "\u{0072}",
             "--variations=FVTT=951",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12077,7 +12077,7 @@ fn variations_rvrn_097() {
             "\u{0072}",
             "--variations=FVTT=961",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12089,7 +12089,7 @@ fn variations_rvrn_098() {
             "\u{0072}",
             "--variations=FVTT=971",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12101,7 +12101,7 @@ fn variations_rvrn_099() {
             "\u{0072}",
             "--variations=FVTT=981",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12113,7 +12113,7 @@ fn variations_rvrn_100() {
             "\u{0072}",
             "--variations=FVTT=991",
         ),
-        "rvrn_subst=0+1825"
+        "[rvrn_subst=0+1825]"
     );
 }
 
@@ -12125,7 +12125,7 @@ fn variations_space_002() {
             "\u{0020}",
             "--variations=wdth=402",
         ),
-        "space=0+639"
+        "[space=0+639]"
     );
 }
 
@@ -12137,7 +12137,7 @@ fn vertical_001() {
             "\u{300C}",
             "--direction=t",
         ),
-        "uni300C.vert=0@-512,-189+0,-1024"
+        "[uni300C.vert=0@-512,-189+0,-1024]"
     );
 }
 
@@ -12149,8 +12149,8 @@ fn vertical_002() {
             "\u{0041}\u{0042}",
             "--direction=t",
         ),
-        "gid1=0@-654,-1468+0,-2048|\
-         gid2=1@-665,-1462+0,-2048"
+        "[gid1=0@-654,-1468+0,-2048|\
+         gid2=1@-665,-1462+0,-2048]"
     );
 }
 
@@ -12162,8 +12162,8 @@ fn vertical_003() {
             "\u{0041}\u{0042}",
             "--direction=t",
         ),
-        "gid1=0@-654,-1468+0,-2048|\
-         gid2=1@-665,-1462+0,-2048"
+        "[gid1=0@-654,-1468+0,-2048|\
+         gid2=1@-665,-1462+0,-2048]"
     );
 }
 
@@ -12175,7 +12175,7 @@ fn vertical_004() {
             "\u{FF38}",
             "--direction=t",
         ),
-        "gid2=0@-500,-867+0,-1000"
+        "[gid2=0@-500,-867+0,-1000]"
     );
 }
 
@@ -12187,8 +12187,8 @@ fn zero_width_marks_001() {
             "\u{1030}",
             "",
         ),
-        "circledash=0+636|\
-         u1030.med=0@-162,0+0"
+        "[circledash=0+636|\
+         u1030.med=0@-162,0+0]"
     );
 }
 
@@ -12200,11 +12200,11 @@ fn zero_width_marks_002() {
             "\u{05E0}\u{05B8}\u{0591}\u{05DA}\u{05B0}",
             "",
         ),
-        "uni05DA05B0=3+991|\
+        "[uni05DA05B0=3+991|\
          uni2009=0+200|\
          uni0591=0@75,0+0|\
          uni05B8=0@495,0+0|\
-         uni05E0=0+683"
+         uni05E0=0+683]"
     );
 }
 
@@ -12216,9 +12216,9 @@ fn zero_width_marks_003() {
             "\u{0E01}\u{0E34}\u{0E01}",
             "",
         ),
-        "gid1=0+1264|\
+        "[gid1=0+1264|\
          gid2=0@20,0+0|\
-         gid1=2+1264"
+         gid1=2+1264]"
     );
 }
 
@@ -12230,9 +12230,9 @@ fn zero_width_marks_004() {
             "\u{0E01}\u{0E34}\u{0E01}",
             "",
         ),
-        "gid1=0+1264|\
+        "[gid1=0+1264|\
          gid2=0@20,0+1000|\
-         gid1=2+1264"
+         gid1=2+1264]"
     );
 }
 
@@ -12244,9 +12244,9 @@ fn zero_width_marks_005() {
             "\u{0E01}\u{0E34}\u{0E01}",
             "",
         ),
-        "gid1=0+1264|\
+        "[gid1=0+1264|\
          gid2=0+0|\
-         gid1=2+1264"
+         gid1=2+1264]"
     );
 }
 
@@ -12258,9 +12258,9 @@ fn zero_width_marks_006() {
             "\u{0E01}\u{0E34}\u{0E01}",
             "",
         ),
-        "gid1=0+1264|\
+        "[gid1=0+1264|\
          gid2=0+0|\
-         gid1=2+1264"
+         gid1=2+1264]"
     );
 }
 
@@ -12273,7 +12273,7 @@ fn zero_width_marks_007() {
              \u{006A}\u{006A}",
             "",
         ),
-        "gid1=0+1200|\
+        "[gid1=0+1200|\
          gid6=0@-1029,340+0|\
          gid3=2+1083|\
          gid6=2@-992,0+0|\
@@ -12284,7 +12284,7 @@ fn zero_width_marks_007() {
          gid5=8+528|\
          gid6=8@-693,0+0|\
          gid2=10+528|\
-         gid2=11+528"
+         gid2=11+528]"
     );
 }
 
@@ -12297,7 +12297,7 @@ fn zero_width_marks_008() {
              \u{006A}\u{006A}",
             "",
         ),
-        "gid1=0+1200|\
+        "[gid1=0+1200|\
          gid6=0@-1029,340+1200|\
          gid3=2+1083|\
          gid6=2@-992,0+1200|\
@@ -12308,7 +12308,7 @@ fn zero_width_marks_008() {
          gid5=8+528|\
          gid6=8@-693,0+1200|\
          gid2=10+528|\
-         gid2=11+528"
+         gid2=11+528]"
     );
 }
 
@@ -12321,7 +12321,7 @@ fn zero_width_marks_009() {
              \u{006A}\u{006A}",
             "",
         ),
-        "gid1=0+1200|\
+        "[gid1=0+1200|\
          gid6=0+0|\
          gid3=2+1083|\
          gid6=2+0|\
@@ -12332,7 +12332,7 @@ fn zero_width_marks_009() {
          gid5=8+528|\
          gid6=8+0|\
          gid2=10+528|\
-         gid2=11+528"
+         gid2=11+528]"
     );
 }
 
@@ -12345,7 +12345,7 @@ fn zero_width_marks_010() {
              \u{006A}\u{006A}",
             "",
         ),
-        "gid1=0+1200|\
+        "[gid1=0+1200|\
          gid6=0@-1029,340+0|\
          gid3=2+1083|\
          gid6=2@-992,0+0|\
@@ -12356,7 +12356,7 @@ fn zero_width_marks_010() {
          gid5=8+528|\
          gid6=8@-693,0+0|\
          gid2=10+528|\
-         gid2=11+528"
+         gid2=11+528]"
     );
 }
 
@@ -12368,9 +12368,9 @@ fn zero_width_marks_011() {
             "\u{0041}\u{0042}\u{0041}",
             "",
         ),
-        "A=0+1368|\
+        "[A=0+1368|\
          B=1+0|\
-         A=2+1368"
+         A=2+1368]"
     );
 }
 

@@ -99,7 +99,7 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
     glyphs_expected = subprocess.run(options_list, check=True, stdout=subprocess.PIPE)\
         .stdout.decode()
 
-    glyphs_expected = glyphs_expected[1:-2]  # remove `[..]\n`
+    glyphs_expected = glyphs_expected[:-1]  # remove trailing newline
     glyphs_expected = glyphs_expected.replace('|', '|\\\n         ')
 
     options = options.replace('"', '\\"')
