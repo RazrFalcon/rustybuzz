@@ -274,6 +274,7 @@ pub fn complex_categorize(
 
         // Unicode-6.1 additions
         | script::CHAKMA
+        | script::MIAO
         | script::SHARADA
         | script::TAKRI
 
@@ -292,6 +293,7 @@ pub fn complex_categorize(
 
         // Unicode-8.0 additions
         | script::AHOM
+        | script::MULTANI
 
         // Unicode-9.0 additions
         // | script::ADLAM
@@ -309,10 +311,15 @@ pub fn complex_categorize(
         | script::GUNJALA_GONDI
         // | script::HANIFI_ROHINGYA
         | script::MAKASAR
+        | script::MEDEFAIDRIN
+        | script::OLD_SOGDIAN
         // | script::SOGDIAN
 
         // Unicode-12.0 additions
+        | script::ELYMAIC
         | script::NANDINAGARI
+        | script::NYIAKENG_PUACHUE_HMONG
+        | script::WANCHO
 
         // Unicode-13.0 additions
         | script::CHORASMIAN

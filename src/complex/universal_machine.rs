@@ -132,6 +132,7 @@ pub enum SyllableType {
     NumberJoinerTerminatedCluster,
     NumeralCluster,
     SymbolCluster,
+    HieroglyphCluster,
     BrokenCluster,
     NonCluster,
 }

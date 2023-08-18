@@ -261,6 +261,7 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
         let syllable = buffer.info[start].syllable() & 0x0F;
         if syllable == SyllableType::IndependentCluster as u8 ||
             syllable == SyllableType::SymbolCluster as u8 ||
+            syllable == SyllableType::HieroglyphCluster as u8 ||
             syllable == SyllableType::NonCluster as u8
         {
             last_form = None;
@@ -402,7 +403,6 @@ const fn category_flag64(c: Category) -> u64 {
 }
 
 const BASE_FLAGS: u64 =
-    category_flag64(category::FM) |
     category_flag64(category::FABV) |
     category_flag64(category::FBLW) |
     category_flag64(category::FPST) |

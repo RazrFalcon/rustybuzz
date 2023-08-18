@@ -175,6 +175,10 @@ fn tags_from_language(
                 break;
             }
 
+            if LANGUAGES[idx + i].tag.is_null() {
+                break;
+            }
+
             if tags.is_full() {
                 break;
             }
