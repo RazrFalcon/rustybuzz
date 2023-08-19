@@ -21,6 +21,7 @@ unicode-ccc = "0.1.2"
 unicode-properties = { version = "0.1.0", default-features = false, features = ["general-category"] }
 unicode-script = "0.5.2"
 libm = { version = "0.2.2", optional = true }
+nom = { version = "7.1.3", default-features = false, features = ["alloc"] }
 
 [dependencies.ttf-parser]
 version = "0.19"

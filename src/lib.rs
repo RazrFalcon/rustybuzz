@@ -20,6 +20,7 @@ mod common;
 mod fallback;
 mod glyph_set;
 mod normalize;
+mod scan;
 mod shape;
 mod plan;
 mod face;
