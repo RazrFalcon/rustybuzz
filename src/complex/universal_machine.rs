@@ -415,5 +415,5 @@ fn next_glyph(p: usize, infos: &[GlyphInfo]) -> usize {
 }
 
 fn prev_glyph(p: usize, infos: &[GlyphInfo]) -> usize {
-    (0..p).rev().find(|q| included(*q, infos)).unwrap()
+    (0..p).rev().find(|q| included(*q, infos)).unwrap_or(0)
 }
