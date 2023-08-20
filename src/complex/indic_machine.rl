@@ -17,7 +17,6 @@ use crate::buffer::Buffer;
 %%{
   machine indic_syllable_machine;
   alphtype u8;
-  write exports;
   write data;
 }%%
 

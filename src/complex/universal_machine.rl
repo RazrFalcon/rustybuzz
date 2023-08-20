@@ -26,22 +26,31 @@ use crate::buffer::Buffer;
 O	= 0; # OTHER
 
 B	= 1; # BASE
+IND	= 3; # BASE_IND
 N	= 4; # BASE_NUM
 GB	= 5; # BASE_OTHER
+CGJ	= 6; # CGJ
+#F	= 7; # CONS_FINAL
+#FM	= 8; # CONS_FINAL_MOD
+#M	= 9; # CONS_MED
+#CM	= 10; # CONS_MOD
 SUB	= 11; # CONS_SUB
 H	= 12; # HALANT
 
 HN	= 13; # HALANT_NUM
 ZWNJ	= 14; # Zero width non-joiner
+ZWJ	= 15; # Zero width joiner
+WJ	= 16; # Word joiner
+Rsv	= 17; # Reserved characters
 R	= 18; # REPHA
 S	= 19; # SYM
+#SM	= 20; # SYM_MOD
+VS	= 21; # VARIATION_SELECTOR
+#V	= 36; # VOWEL
+#VM	= 40; # VOWEL_MOD
 CS	= 43; # CONS_WITH_STACKER
 HVM	= 44; # HALANT_OR_VOWEL_MODIFIER
 Sk	= 48; # SAKOT
-G	= 49; # HIEROGLYPH
-J	= 50; # HIEROGLYPH_JOINER
-SB	= 51; # HIEROGLYPH_SEGMENT_BEGIN
-SE	= 52; # HIEROGLYPH_SEGMENT_END
 
 FAbv	= 24; # CONS_FINAL_ABOVE
 FBlw	= 25; # CONS_FINAL_BELOW
@@ -68,14 +77,16 @@ FMPst	= 47; # CONS_FINAL_MOD	UIPC = Not_Applicable
 
 h = H | HVM | Sk;
 
-consonant_modifiers = CMAbv* CMBlw* ((h B | SUB) CMAbv? CMBlw*)*;
-medial_consonants = MPre? MAbv? MBlw? MPst?;
+# Override: Adhoc ZWJ placement. https://github.com/harfbuzz/harfbuzz/issues/542#issuecomment-353169729
+consonant_modifiers = CMAbv* CMBlw* ((ZWJ?.h.ZWJ? B | SUB) VS? CMAbv? CMBlw*)*;
+# Override: Allow two MBlw. https://github.com/harfbuzz/harfbuzz/issues/376
+medial_consonants = MPre? MAbv? MBlw?.MBlw? MPst?;
 dependent_vowels = VPre* VAbv* VBlw* VPst*;
 vowel_modifiers = HVM? VMPre* VMAbv* VMBlw* VMPst*;
 final_consonants = FAbv* FBlw* FPst*;
 final_modifiers = FMAbv* FMBlw* | FMPst?;
 
-complex_syllable_start = (R | CS)? (B | GB);
+complex_syllable_start = (R | CS)? (B | GB) VS?;
 complex_syllable_middle =
 	consonant_modifiers
 	medial_consonants
@@ -88,14 +99,14 @@ complex_syllable_tail =
 	final_consonants
 	final_modifiers
 ;
-number_joiner_terminated_cluster_tail = (HN N)* HN;
-numeral_cluster_tail = (HN N)+;
+number_joiner_terminated_cluster_tail = (HN N VS?)* HN;
+numeral_cluster_tail = (HN N VS?)+;
 symbol_cluster_tail = SMAbv+ SMBlw* | SMBlw+;
 
 virama_terminated_cluster =
 	complex_syllable_start
 	consonant_modifiers
-	h
+	ZWJ?.h.ZWJ?
 ;
 sakot_terminated_cluster =
 	complex_syllable_start
@@ -111,11 +122,10 @@ broken_cluster =
 	(complex_syllable_tail | number_joiner_terminated_cluster_tail | numeral_cluster_tail | symbol_cluster_tail)
 ;
 
-number_joiner_terminated_cluster = N number_joiner_terminated_cluster_tail;
-numeral_cluster = N numeral_cluster_tail?;
-symbol_cluster = (S | GB) symbol_cluster_tail?;
-hieroglyph_cluster = SB+ | SB* G SE* (J SE* (G SE*)?)*;
-independent_cluster = O;
+number_joiner_terminated_cluster = N VS? number_joiner_terminated_cluster_tail;
+numeral_cluster = N VS? numeral_cluster_tail?;
+symbol_cluster = (S | GB) VS? symbol_cluster_tail?;
+independent_cluster = (IND | O | Rsv | WJ) VS?;
 other = any;
 
 main := |*
@@ -126,7 +136,6 @@ main := |*
 	number_joiner_terminated_cluster	=> { found_syllable!(SyllableType::NumberJoinerTerminatedCluster); };
 	numeral_cluster				=> { found_syllable!(SyllableType::NumeralCluster); };
 	symbol_cluster				=> { found_syllable!(SyllableType::SymbolCluster); };
-	hieroglyph_cluster			=> { found_syllable!(SyllableType::HieroglyphCluster); };
 	broken_cluster				=> { found_syllable!(SyllableType::BrokenCluster); };
 	other					=> { found_syllable!(SyllableType::NonCluster); };
 *|;
@@ -143,7 +152,6 @@ pub enum SyllableType {
     NumberJoinerTerminatedCluster,
     NumeralCluster,
     SymbolCluster,
-    HieroglyphCluster,
     BrokenCluster,
     NonCluster,
 }
@@ -156,6 +164,7 @@ pub fn find_syllables(buffer: &mut Buffer) {
     let pe = buffer.len;
     let eof = buffer.len;
     let mut syllable_serial = 1u8;
+    let mut act;
 
     macro_rules! found_syllable {
         ($kind:expr) => {{
