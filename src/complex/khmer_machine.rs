@@ -15,71 +15,54 @@
 
 use crate::buffer::Buffer;
 
-static _khmer_syllable_machine_actions: [i8; 29] = [
-    0, 1, 0, 1, 1, 1, 2, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 2, 2, 3, 2, 2, 4, 0, 0,
+static _khmer_syllable_machine_trans_keys: [u8; 82] = [
+    2, 8, 2, 6, 2, 8, 2, 6, 0, 0, 2, 6, 2, 8, 2, 6, 2, 8, 2, 6, 2, 6, 2, 8, 2, 6, 0, 0, 2, 6, 2, 8,
+    2, 6, 2, 8, 2, 6, 2, 8, 0, 11, 2, 11, 2, 11, 2, 11, 7, 7, 2, 7, 2, 11, 2, 11, 2, 11, 0, 0, 2,
+    8, 2, 11, 2, 11, 7, 7, 2, 7, 2, 11, 2, 11, 0, 0, 2, 11, 2, 11, 0, 0,
 ];
-static _khmer_syllable_machine_key_offsets: [i16; 42] = [
-    0, 5, 8, 12, 15, 18, 21, 25, 28, 32, 35, 38, 42, 45, 48, 51, 55, 58, 62, 65, 70, 84, 94, 103,
-    109, 110, 115, 122, 130, 139, 142, 146, 155, 161, 162, 167, 174, 182, 185, 195, 0, 0,
-];
-static _khmer_syllable_machine_trans_keys: [u8; 206] = [
-    20, 21, 26, 5, 6, 21, 5, 6, 21, 26, 5, 6, 21, 5, 6, 16, 1, 2, 21, 5, 6, 21, 26, 5, 6, 21, 5, 6,
-    21, 26, 5, 6, 21, 5, 6, 21, 5, 6, 21, 26, 5, 6, 21, 5, 6, 16, 1, 2, 21, 5, 6, 21, 26, 5, 6, 21,
-    5, 6, 21, 26, 5, 6, 21, 5, 6, 20, 21, 26, 5, 6, 14, 16, 21, 22, 26, 27, 28, 29, 1, 2, 5, 6, 11,
-    12, 14, 20, 21, 22, 26, 27, 28, 29, 5, 6, 14, 21, 22, 26, 27, 28, 29, 5, 6, 14, 21, 22, 29, 5,
-    6, 22, 14, 21, 22, 5, 6, 14, 21, 22, 26, 29, 5, 6, 14, 21, 22, 26, 27, 29, 5, 6, 14, 21, 22,
-    26, 27, 28, 29, 5, 6, 16, 1, 2, 21, 26, 5, 6, 14, 21, 22, 26, 27, 28, 29, 5, 6, 14, 21, 22, 29,
-    5, 6, 22, 14, 21, 22, 5, 6, 14, 21, 22, 26, 29, 5, 6, 14, 21, 22, 26, 27, 29, 5, 6, 16, 1, 2,
-    14, 20, 21, 22, 26, 27, 28, 29, 5, 6, 14, 21, 22, 26, 27, 28, 29, 5, 6, 0, 0,
-];
-static _khmer_syllable_machine_single_lengths: [i8; 42] = [
-    3, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 3, 8, 8, 7, 4, 1, 3, 5, 6, 7, 1, 2, 7,
-    4, 1, 3, 5, 6, 1, 8, 7, 0, 0,
-];
-static _khmer_syllable_machine_range_lengths: [i8; 42] = [
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1,
-    1, 0, 1, 1, 1, 1, 1, 1, 0, 0,
+static _khmer_syllable_machine_char_class: [i8; 31] = [
+    0, 0, 1, 1, 2, 2, 1, 1, 1, 1, 3, 3, 1, 4, 1, 0, 1, 1, 1, 5, 6, 7, 1, 1, 1, 8, 9, 10, 11, 0, 0,
 ];
 static _khmer_syllable_machine_index_offsets: [i16; 42] = [
-    0, 5, 8, 12, 15, 18, 21, 25, 28, 32, 35, 38, 42, 45, 48, 51, 55, 58, 62, 65, 70, 82, 92, 101,
-    107, 109, 114, 121, 129, 138, 141, 145, 154, 160, 162, 167, 174, 182, 185, 195, 0, 0,
+    0, 7, 12, 19, 24, 25, 30, 37, 42, 49, 54, 59, 66, 71, 72, 77, 84, 89, 96, 101, 108, 120, 130,
+    140, 150, 151, 157, 167, 177, 187, 188, 195, 205, 215, 216, 222, 232, 242, 243, 253, 0, 0,
 ];
-static _khmer_syllable_machine_cond_targs: [i8; 246] = [
-    28, 22, 23, 1, 20, 22, 1, 20, 22, 23, 1, 20, 23, 3, 20, 24, 24, 20, 25, 5, 20, 26, 23, 7, 20,
-    26, 7, 20, 27, 23, 9, 20, 27, 9, 20, 31, 10, 20, 31, 32, 10, 20, 32, 12, 20, 33, 33, 20, 34,
-    14, 20, 35, 32, 16, 20, 35, 16, 20, 36, 32, 18, 20, 36, 18, 20, 39, 31, 32, 10, 20, 37, 21, 31,
-    33, 32, 35, 36, 34, 21, 30, 28, 20, 29, 28, 22, 24, 23, 26, 27, 25, 0, 20, 4, 22, 24, 23, 26,
-    27, 25, 2, 20, 4, 23, 24, 25, 3, 20, 24, 20, 4, 25, 24, 5, 20, 4, 26, 24, 23, 25, 6, 20, 4, 27,
-    24, 23, 26, 25, 8, 20, 29, 22, 24, 23, 26, 27, 25, 2, 20, 21, 21, 20, 31, 32, 10, 20, 13, 31,
-    33, 32, 35, 36, 34, 11, 20, 13, 32, 33, 34, 12, 20, 33, 20, 13, 34, 33, 14, 20, 13, 35, 33, 32,
-    34, 15, 20, 13, 36, 33, 32, 35, 34, 17, 20, 38, 38, 20, 37, 39, 31, 33, 32, 35, 36, 34, 19, 20,
-    37, 31, 33, 32, 35, 36, 34, 11, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-    20, 0, 0,
+static _khmer_syllable_machine_indices: [i8; 265] = [
+    1, 0, 0, 2, 3, 0, 4, 1, 0, 0, 0, 3, 1, 0, 0, 0, 3, 0, 4, 5, 0, 0, 0, 4, 6, 7, 0, 0, 0, 8, 9, 0,
+    0, 0, 10, 0, 4, 9, 0, 0, 0, 10, 11, 0, 0, 0, 12, 0, 4, 11, 0, 0, 0, 12, 14, 13, 13, 13, 15, 14,
+    16, 16, 16, 15, 16, 17, 18, 16, 16, 16, 17, 19, 20, 16, 16, 16, 21, 22, 16, 16, 16, 23, 16, 17,
+    22, 16, 16, 16, 23, 24, 16, 16, 16, 25, 16, 17, 24, 16, 16, 16, 25, 14, 16, 16, 26, 15, 16, 17,
+    29, 28, 30, 2, 31, 28, 15, 19, 17, 23, 25, 21, 33, 32, 34, 2, 3, 6, 4, 10, 12, 8, 35, 32, 36,
+    32, 3, 6, 4, 10, 12, 8, 5, 32, 36, 32, 4, 6, 32, 32, 32, 8, 6, 7, 32, 36, 32, 8, 6, 37, 32, 36,
+    32, 10, 6, 4, 32, 32, 8, 38, 32, 36, 32, 12, 6, 4, 10, 32, 8, 35, 32, 34, 32, 3, 6, 4, 10, 12,
+    8, 29, 14, 39, 39, 39, 15, 39, 17, 41, 40, 42, 40, 15, 19, 17, 23, 25, 21, 18, 40, 42, 40, 17,
+    19, 40, 40, 40, 21, 19, 20, 40, 42, 40, 21, 19, 43, 40, 42, 40, 23, 19, 17, 40, 40, 21, 44, 40,
+    42, 40, 25, 19, 17, 23, 40, 21, 45, 46, 40, 31, 26, 15, 19, 17, 23, 25, 21, 41, 40, 31, 40, 15,
+    19, 17, 23, 25, 21, 0, 0,
 ];
-static _khmer_syllable_machine_cond_actions: [i8; 246] = [
-    5, 5, 5, 0, 15, 5, 0, 15, 5, 5, 0, 15, 5, 0, 15, 0, 0, 15, 5, 0, 15, 5, 5, 0, 15, 5, 0, 15, 5,
-    5, 0, 15, 5, 0, 15, 21, 0, 19, 21, 5, 0, 17, 5, 0, 17, 0, 0, 17, 5, 0, 17, 5, 5, 0, 17, 5, 0,
-    17, 5, 5, 0, 17, 5, 0, 17, 21, 21, 5, 0, 17, 0, 5, 21, 0, 5, 5, 5, 5, 5, 24, 5, 7, 0, 5, 5, 0,
-    5, 5, 5, 5, 0, 9, 0, 5, 0, 5, 5, 5, 5, 0, 9, 0, 5, 0, 5, 0, 9, 0, 9, 0, 5, 0, 0, 9, 0, 5, 0, 5,
-    5, 0, 9, 0, 5, 0, 5, 5, 5, 0, 9, 0, 5, 0, 5, 5, 5, 5, 0, 9, 5, 5, 9, 21, 5, 0, 13, 0, 21, 0, 5,
-    5, 5, 5, 0, 11, 0, 5, 0, 5, 0, 11, 0, 11, 0, 5, 0, 0, 11, 0, 5, 0, 5, 5, 0, 11, 0, 5, 0, 5, 5,
-    5, 0, 11, 21, 21, 11, 0, 21, 21, 0, 5, 5, 5, 5, 0, 11, 0, 21, 0, 5, 5, 5, 5, 0, 11, 15, 15, 15,
-    15, 15, 15, 15, 15, 15, 15, 19, 17, 17, 17, 17, 17, 17, 17, 17, 17, 0, 9, 9, 9, 9, 9, 9, 9, 9,
-    9, 13, 11, 11, 11, 11, 11, 11, 11, 11, 11, 0, 0,
+static _khmer_syllable_machine_index_defaults: [i8; 42] = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 16, 16, 16, 16, 16, 16, 16, 16, 16, 28, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 39, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0,
+];
+static _khmer_syllable_machine_cond_targs: [i8; 49] = [
+    20, 1, 28, 22, 23, 3, 24, 5, 25, 7, 26, 9, 27, 20, 10, 31, 20, 32, 12, 33, 14, 34, 16, 35, 18,
+    36, 39, 20, 20, 21, 30, 37, 20, 0, 29, 2, 4, 6, 8, 20, 20, 11, 13, 15, 17, 38, 19, 0, 0,
+];
+static _khmer_syllable_machine_cond_actions: [i8; 49] = [
+    1, 0, 2, 2, 2, 0, 0, 0, 2, 0, 2, 0, 2, 3, 0, 4, 5, 2, 0, 0, 0, 2, 0, 2, 0, 2, 4, 0, 8, 2, 9, 0,
+    10, 0, 0, 0, 0, 0, 0, 11, 12, 0, 0, 0, 0, 4, 0, 0, 0,
 ];
 static _khmer_syllable_machine_to_state_actions: [i8; 42] = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ];
 static _khmer_syllable_machine_from_state_actions: [i8; 42] = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ];
-static _khmer_syllable_machine_eof_trans: [i16; 42] = [
-    205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
-    224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242,
-    243, 244, 0, 0,
+static _khmer_syllable_machine_eof_trans: [i8; 42] = [
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 14, 17, 17, 17, 17, 17, 17, 17, 17, 17, 28, 33, 33, 33, 33, 33,
+    33, 33, 33, 33, 40, 41, 41, 41, 41, 41, 41, 41, 41, 41, 0, 0,
 ];
 static khmer_syllable_machine_start: i32 = 20;
 static khmer_syllable_machine_first_final: i32 = 20;
@@ -116,27 +99,18 @@ pub fn find_syllables_khmer(buffer: &mut Buffer) {
     }
 
     {
-        let mut _klen = 0;
         let mut _trans = 0;
         let mut _keys: i32 = 0;
-        let mut _acts: i32 = 0;
-        let mut _nacts = 0;
-        let mut __have = 0;
+        let mut _inds: i32 = 0;
+        let mut _ic = 0;
         '_resume: while (p != pe || p == eof) {
             '_again: while (true) {
-                _acts = (_khmer_syllable_machine_from_state_actions[(cs) as usize]) as i32;
-                _nacts = (_khmer_syllable_machine_actions[(_acts) as usize]) as u32;
-                _acts += 1;
-                while (_nacts > 0) {
-                    match (_khmer_syllable_machine_actions[(_acts) as usize]) {
-                        1 => {
-                            ts = p;
-                        }
-
-                        _ => {}
+                match (_khmer_syllable_machine_from_state_actions[(cs) as usize]) {
+                    7 => {
+                        ts = p;
                     }
-                    _nacts -= 1;
-                    _acts += 1;
+
+                    _ => {}
                 }
                 if (p == eof) {
                     {
@@ -149,71 +123,38 @@ pub fn find_syllables_khmer(buffer: &mut Buffer) {
                     }
                 } else {
                     {
-                        _keys = (_khmer_syllable_machine_key_offsets[(cs) as usize]) as i32;
-                        _trans = (_khmer_syllable_machine_index_offsets[(cs) as usize]) as u32;
-                        _klen = (_khmer_syllable_machine_single_lengths[(cs) as usize]) as i32;
-                        __have = 0;
-                        if (_klen > 0) {
+                        _keys = (cs << 1) as i32;
+                        _inds = (_khmer_syllable_machine_index_offsets[(cs) as usize]) as i32;
+                        if ((buffer.info[p].indic_category() as u8) <= 29
+                            && (buffer.info[p].indic_category() as u8) >= 1)
+                        {
                             {
-                                let mut _lower: i32 = _keys;
-                                let mut _upper: i32 = _keys + _klen - 1;
-                                let mut _mid: i32 = 0;
-                                while (true) {
-                                    if (_upper < _lower) {
-                                        {
-                                            _keys += _klen;
-                                            _trans += (_klen) as u32;
-                                            break;
-                                        }
-                                    }
-                                    _mid = _lower + ((_upper - _lower) >> 1);
-                                    if ((buffer.info[p].indic_category() as u8)
-                                        < _khmer_syllable_machine_trans_keys[(_mid) as usize])
-                                    {
-                                        _upper = _mid - 1;
-                                    } else if ((buffer.info[p].indic_category() as u8)
-                                        > _khmer_syllable_machine_trans_keys[(_mid) as usize])
-                                    {
-                                        _lower = _mid + 1;
-                                    } else {
-                                        {
-                                            __have = 1;
-                                            _trans += (_mid - _keys) as u32;
-                                            break;
-                                        }
-                                    }
+                                _ic = (_khmer_syllable_machine_char_class
+                                    [((buffer.info[p].indic_category() as u8) as i32 - 1) as usize])
+                                    as i32;
+                                if (_ic
+                                    <= (_khmer_syllable_machine_trans_keys[(_keys + 1) as usize])
+                                        as i32
+                                    && _ic
+                                        >= (_khmer_syllable_machine_trans_keys[(_keys) as usize])
+                                            as i32)
+                                {
+                                    _trans = (_khmer_syllable_machine_indices[(_inds
+                                        + (_ic
+                                            - (_khmer_syllable_machine_trans_keys[(_keys) as usize])
+                                                as i32)
+                                            as i32)
+                                        as usize])
+                                        as u32;
+                                } else {
+                                    _trans = (_khmer_syllable_machine_index_defaults[(cs) as usize])
+                                        as u32;
                                 }
                             }
-                        }
-                        _klen = (_khmer_syllable_machine_range_lengths[(cs) as usize]) as i32;
-                        if (__have == 0 && _klen > 0) {
+                        } else {
                             {
-                                let mut _lower: i32 = _keys;
-                                let mut _upper: i32 = _keys + (_klen << 1) - 2;
-                                let mut _mid: i32 = 0;
-                                while (true) {
-                                    if (_upper < _lower) {
-                                        {
-                                            _trans += (_klen) as u32;
-                                            break;
-                                        }
-                                    }
-                                    _mid = _lower + (((_upper - _lower) >> 1) & !1);
-                                    if ((buffer.info[p].indic_category() as u8)
-                                        < _khmer_syllable_machine_trans_keys[(_mid) as usize])
-                                    {
-                                        _upper = _mid - 2;
-                                    } else if ((buffer.info[p].indic_category() as u8)
-                                        > _khmer_syllable_machine_trans_keys[(_mid + 1) as usize])
-                                    {
-                                        _lower = _mid + 2;
-                                    } else {
-                                        {
-                                            _trans += ((_mid - _keys) >> 1) as u32;
-                                            break;
-                                        }
-                                    }
-                                }
+                                _trans =
+                                    (_khmer_syllable_machine_index_defaults[(cs) as usize]) as u32;
                             }
                         }
                     }
@@ -221,80 +162,91 @@ pub fn find_syllables_khmer(buffer: &mut Buffer) {
                 cs = (_khmer_syllable_machine_cond_targs[(_trans) as usize]) as i32;
                 if (_khmer_syllable_machine_cond_actions[(_trans) as usize] != 0) {
                     {
-                        _acts = (_khmer_syllable_machine_cond_actions[(_trans) as usize]) as i32;
-                        _nacts = (_khmer_syllable_machine_actions[(_acts) as usize]) as u32;
-                        _acts += 1;
-                        while (_nacts > 0) {
-                            match (_khmer_syllable_machine_actions[(_acts) as usize]) {
+                        match (_khmer_syllable_machine_cond_actions[(_trans) as usize]) {
+                            2 => {
+                                te = p + 1;
+                            }
+                            8 => {
+                                te = p + 1;
+                                {
+                                    found_syllable!(SyllableType::NonKhmerCluster);
+                                }
+                            }
+                            10 => {
+                                te = p;
+                                p = p - 1;
+                                {
+                                    found_syllable!(SyllableType::ConsonantSyllable);
+                                }
+                            }
+                            12 => {
+                                te = p;
+                                p = p - 1;
+                                {
+                                    found_syllable!(SyllableType::BrokenCluster);
+                                }
+                            }
+                            11 => {
+                                te = p;
+                                p = p - 1;
+                                {
+                                    found_syllable!(SyllableType::NonKhmerCluster);
+                                }
+                            }
+                            1 => {
+                                p = (te) - 1;
+                                {
+                                    found_syllable!(SyllableType::ConsonantSyllable);
+                                }
+                            }
+                            5 => {
+                                p = (te) - 1;
+                                {
+                                    found_syllable!(SyllableType::BrokenCluster);
+                                }
+                            }
+                            3 => match (act) {
                                 2 => {
-                                    te = p + 1;
+                                    p = (te) - 1;
+                                    {
+                                        found_syllable!(SyllableType::BrokenCluster);
+                                    }
                                 }
                                 3 => {
-                                    act = 2;
-                                }
-                                4 => {
-                                    act = 3;
-                                }
-                                5 => {
-                                    te = p + 1;
+                                    p = (te) - 1;
                                     {
                                         found_syllable!(SyllableType::NonKhmerCluster);
                                     }
                                 }
-                                6 => {
-                                    te = p;
-                                    p = p - 1;
-                                    {
-                                        found_syllable!(SyllableType::ConsonantSyllable);
-                                    }
-                                }
-                                7 => {
-                                    te = p;
-                                    p = p - 1;
-                                    {
-                                        found_syllable!(SyllableType::BrokenCluster);
-                                    }
-                                }
-                                8 => {
-                                    te = p;
-                                    p = p - 1;
-                                    {
-                                        found_syllable!(SyllableType::NonKhmerCluster);
-                                    }
-                                }
-                                9 => {
-                                    p = (te) - 1;
-                                    {
-                                        found_syllable!(SyllableType::ConsonantSyllable);
-                                    }
-                                }
-                                10 => {
-                                    p = (te) - 1;
-                                    {
-                                        found_syllable!(SyllableType::BrokenCluster);
-                                    }
-                                }
-                                11 => match (act) {
-                                    2 => {
-                                        p = (te) - 1;
-                                        {
-                                            found_syllable!(SyllableType::BrokenCluster);
-                                        }
-                                    }
-                                    3 => {
-                                        p = (te) - 1;
-                                        {
-                                            found_syllable!(SyllableType::NonKhmerCluster);
-                                        }
-                                    }
-
-                                    _ => {}
-                                },
 
                                 _ => {}
+                            },
+                            4 => {
+                                {
+                                    {
+                                        te = p + 1;
+                                    }
+                                }
+                                {
+                                    {
+                                        act = 2;
+                                    }
+                                }
                             }
-                            _nacts -= 1;
-                            _acts += 1;
+                            9 => {
+                                {
+                                    {
+                                        te = p + 1;
+                                    }
+                                }
+                                {
+                                    {
+                                        act = 3;
+                                    }
+                                }
+                            }
+
+                            _ => {}
                         }
                     }
                 }
@@ -308,19 +260,12 @@ pub fn find_syllables_khmer(buffer: &mut Buffer) {
                 }
             } else {
                 {
-                    _acts = (_khmer_syllable_machine_to_state_actions[(cs) as usize]) as i32;
-                    _nacts = (_khmer_syllable_machine_actions[(_acts) as usize]) as u32;
-                    _acts += 1;
-                    while (_nacts > 0) {
-                        match (_khmer_syllable_machine_actions[(_acts) as usize]) {
-                            0 => {
-                                ts = 0;
-                            }
-
-                            _ => {}
+                    match (_khmer_syllable_machine_to_state_actions[(cs) as usize]) {
+                        6 => {
+                            ts = 0;
                         }
-                        _nacts -= 1;
-                        _acts += 1;
+
+                        _ => {}
                     }
                     p += 1;
                     continue '_resume;
