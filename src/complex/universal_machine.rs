@@ -1,419 +1,400 @@
-use core::cell::Cell;
+#![allow(
+dead_code,
+non_upper_case_globals,
+unused_assignments,
+unused_parens,
+while_true,
+clippy::assign_op_pattern,
+clippy::collapsible_if,
+clippy::comparison_chain,
+clippy::double_parens,
+clippy::unnecessary_cast,
+clippy::single_match,
+clippy::never_loop
+)]
 
-use alloc::vec::Vec;
+use crate::buffer::Buffer;
+use crate::complex::universal::category;
+use crate::GlyphInfo;
 
-use crate::{buffer::Buffer, GlyphInfo};
-
-use super::universal::category;
-
-const MACHINE_TRANS_KEYS: &[u8] = &[
-    12, 48, 1, 15, 1, 1, 12, 48, 1, 1, 0, 48, 11, 48, 11, 48, 1, 15, 1, 1, 22, 48, 23, 48, 24, 47,
-    25, 47, 26, 47, 45, 46, 46, 46, 24, 48, 24, 48, 24, 48, 1, 1, 24, 48, 23, 48, 23, 48, 23, 48,
-    22, 48, 22, 48, 22, 48, 22, 48, 11, 48, 1, 48, 13, 13, 4, 4, 11, 48, 41, 42, 42, 42, 11, 48,
-    22, 48, 23, 48, 24, 47, 25, 47, 26, 47, 45, 46, 46, 46, 24, 48, 24, 48, 24, 48, 24, 48, 23, 48,
-    23, 48, 23, 48, 22, 48, 22, 48, 22, 48, 22, 48, 11, 48, 1, 48, 1, 15, 4, 4, 13, 13, 12, 48, 1,
-    48, 11, 48, 41, 42, 42, 42, 1, 5, 0,
-];
-
-const MACHINE_KEY_SPANS: &[u8] = &[
-    37, 15, 1, 37, 1, 49, 38, 38, 15, 1, 27, 26, 24, 23, 22, 2, 1, 25, 25, 25, 1, 25, 26, 26, 26,
-    27, 27, 27, 27, 38, 48, 1, 1, 38, 2, 1, 38, 27, 26, 24, 23, 22, 2, 1, 25, 25, 25, 25, 26, 26,
-    26, 27, 27, 27, 27, 38, 48, 15, 1, 1, 37, 48, 38, 2, 1, 5,
-];
-
-const MACHINE_INDEX_OFFSETS: &[u16] = &[
-    0, 38, 54, 56, 94, 96, 146, 185, 224, 240, 242, 270, 297, 322, 346, 369, 372, 374, 400, 426,
-    452, 454, 480, 507, 534, 561, 589, 617, 645, 673, 712, 761, 763, 765, 804, 807, 809, 848, 876,
-    903, 928, 952, 975, 978, 980, 1006, 1032, 1058, 1084, 1111, 1138, 1165, 1193, 1221, 1249, 1277,
-    1316, 1365, 1381, 1383, 1385, 1423, 1472, 1511, 1514, 1516,
-];
-
-const MACHINE_INDICIES: &[u8] = &[
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1, 0, 0, 0, 1, 0, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 3, 2, 6, 5, 5, 5, 5, 5, 5, 5,
-    5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 6, 5, 7, 5,
-    8, 9, 10, 8, 11, 12, 10, 10, 10, 10, 10, 3, 13, 14, 10, 15, 8, 8, 16, 17, 10, 10, 18, 19, 20,
-    21, 22, 23, 24, 18, 25, 26, 27, 28, 29, 30, 10, 31, 32, 33, 10, 34, 35, 36, 37, 38, 39, 40, 13,
-    10, 42, 1, 41, 41, 43, 41, 41, 41, 41, 41, 41, 44, 45, 46, 47, 48, 49, 50, 44, 51, 9, 52, 53,
-    54, 55, 41, 56, 57, 58, 41, 41, 41, 41, 59, 60, 61, 62, 1, 41, 42, 1, 41, 41, 43, 41, 41, 41,
-    41, 41, 41, 44, 45, 46, 47, 48, 49, 50, 44, 51, 52, 52, 53, 54, 55, 41, 56, 57, 58, 41, 41, 41,
-    41, 59, 60, 61, 62, 1, 41, 42, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 64, 63, 42,
-    63, 44, 45, 46, 47, 48, 41, 41, 41, 41, 41, 41, 53, 54, 55, 41, 56, 57, 58, 41, 41, 41, 41, 45,
-    60, 61, 62, 65, 41, 45, 46, 47, 48, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 56, 57, 58, 41, 41,
-    41, 41, 41, 60, 61, 62, 65, 41, 46, 47, 48, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41,
-    41, 41, 41, 41, 41, 60, 61, 62, 41, 47, 48, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41,
-    41, 41, 41, 41, 41, 60, 61, 62, 41, 48, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41,
-    41, 41, 41, 41, 60, 61, 62, 41, 60, 61, 41, 61, 41, 46, 47, 48, 41, 41, 41, 41, 41, 41, 41, 41,
-    41, 41, 56, 57, 58, 41, 41, 41, 41, 41, 60, 61, 62, 65, 41, 46, 47, 48, 41, 41, 41, 41, 41, 41,
-    41, 41, 41, 41, 41, 57, 58, 41, 41, 41, 41, 41, 60, 61, 62, 65, 41, 46, 47, 48, 41, 41, 41, 41,
-    41, 41, 41, 41, 41, 41, 41, 41, 58, 41, 41, 41, 41, 41, 60, 61, 62, 65, 41, 67, 66, 46, 47, 48,
-    41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 60, 61, 62, 65, 41, 45,
-    46, 47, 48, 41, 41, 41, 41, 41, 41, 53, 54, 55, 41, 56, 57, 58, 41, 41, 41, 41, 45, 60, 61, 62,
-    65, 41, 45, 46, 47, 48, 41, 41, 41, 41, 41, 41, 41, 54, 55, 41, 56, 57, 58, 41, 41, 41, 41, 45,
-    60, 61, 62, 65, 41, 45, 46, 47, 48, 41, 41, 41, 41, 41, 41, 41, 41, 55, 41, 56, 57, 58, 41, 41,
-    41, 41, 45, 60, 61, 62, 65, 41, 44, 45, 46, 47, 48, 41, 50, 44, 41, 41, 41, 53, 54, 55, 41, 56,
-    57, 58, 41, 41, 41, 41, 45, 60, 61, 62, 65, 41, 44, 45, 46, 47, 48, 41, 68, 44, 41, 41, 41, 53,
-    54, 55, 41, 56, 57, 58, 41, 41, 41, 41, 45, 60, 61, 62, 65, 41, 44, 45, 46, 47, 48, 41, 41, 44,
-    41, 41, 41, 53, 54, 55, 41, 56, 57, 58, 41, 41, 41, 41, 45, 60, 61, 62, 65, 41, 44, 45, 46, 47,
-    48, 49, 50, 44, 41, 41, 41, 53, 54, 55, 41, 56, 57, 58, 41, 41, 41, 41, 45, 60, 61, 62, 65, 41,
-    42, 1, 41, 41, 43, 41, 41, 41, 41, 41, 41, 44, 45, 46, 47, 48, 49, 50, 44, 51, 41, 52, 53, 54,
-    55, 41, 56, 57, 58, 41, 41, 41, 41, 59, 60, 61, 62, 1, 41, 42, 63, 63, 63, 63, 63, 63, 63, 63,
-    63, 63, 63, 63, 63, 64, 63, 63, 63, 63, 63, 63, 63, 45, 46, 47, 48, 63, 63, 63, 63, 63, 63, 63,
-    63, 63, 63, 56, 57, 58, 63, 63, 63, 63, 63, 60, 61, 62, 65, 63, 70, 69, 11, 71, 42, 1, 41, 41,
-    43, 41, 41, 41, 41, 41, 41, 44, 45, 46, 47, 48, 49, 50, 44, 51, 9, 52, 53, 54, 55, 41, 56, 57,
-    58, 41, 17, 72, 41, 59, 60, 61, 62, 1, 41, 17, 72, 73, 72, 73, 3, 6, 74, 74, 75, 74, 74, 74,
-    74, 74, 74, 18, 19, 20, 21, 22, 23, 24, 18, 25, 27, 27, 28, 29, 30, 74, 31, 32, 33, 74, 74, 74,
-    74, 37, 38, 39, 40, 6, 74, 18, 19, 20, 21, 22, 74, 74, 74, 74, 74, 74, 28, 29, 30, 74, 31, 32,
-    33, 74, 74, 74, 74, 19, 38, 39, 40, 76, 74, 19, 20, 21, 22, 74, 74, 74, 74, 74, 74, 74, 74, 74,
-    74, 31, 32, 33, 74, 74, 74, 74, 74, 38, 39, 40, 76, 74, 20, 21, 22, 74, 74, 74, 74, 74, 74, 74,
-    74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 38, 39, 40, 74, 21, 22, 74, 74, 74, 74, 74, 74, 74,
-    74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 38, 39, 40, 74, 22, 74, 74, 74, 74, 74, 74, 74, 74,
-    74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 38, 39, 40, 74, 38, 39, 74, 39, 74, 20, 21, 22, 74, 74,
-    74, 74, 74, 74, 74, 74, 74, 74, 31, 32, 33, 74, 74, 74, 74, 74, 38, 39, 40, 76, 74, 20, 21, 22,
-    74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 32, 33, 74, 74, 74, 74, 74, 38, 39, 40, 76, 74, 20,
-    21, 22, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 33, 74, 74, 74, 74, 74, 38, 39, 40, 76,
-    74, 20, 21, 22, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 38, 39,
-    40, 76, 74, 19, 20, 21, 22, 74, 74, 74, 74, 74, 74, 28, 29, 30, 74, 31, 32, 33, 74, 74, 74, 74,
-    19, 38, 39, 40, 76, 74, 19, 20, 21, 22, 74, 74, 74, 74, 74, 74, 74, 29, 30, 74, 31, 32, 33, 74,
-    74, 74, 74, 19, 38, 39, 40, 76, 74, 19, 20, 21, 22, 74, 74, 74, 74, 74, 74, 74, 74, 30, 74, 31,
-    32, 33, 74, 74, 74, 74, 19, 38, 39, 40, 76, 74, 18, 19, 20, 21, 22, 74, 24, 18, 74, 74, 74, 28,
-    29, 30, 74, 31, 32, 33, 74, 74, 74, 74, 19, 38, 39, 40, 76, 74, 18, 19, 20, 21, 22, 74, 77, 18,
-    74, 74, 74, 28, 29, 30, 74, 31, 32, 33, 74, 74, 74, 74, 19, 38, 39, 40, 76, 74, 18, 19, 20, 21,
-    22, 74, 74, 18, 74, 74, 74, 28, 29, 30, 74, 31, 32, 33, 74, 74, 74, 74, 19, 38, 39, 40, 76, 74,
-    18, 19, 20, 21, 22, 23, 24, 18, 74, 74, 74, 28, 29, 30, 74, 31, 32, 33, 74, 74, 74, 74, 19, 38,
-    39, 40, 76, 74, 3, 6, 74, 74, 75, 74, 74, 74, 74, 74, 74, 18, 19, 20, 21, 22, 23, 24, 18, 25,
-    74, 27, 28, 29, 30, 74, 31, 32, 33, 74, 74, 74, 74, 37, 38, 39, 40, 6, 74, 3, 74, 74, 74, 74,
-    74, 74, 74, 74, 74, 74, 74, 74, 74, 4, 74, 74, 74, 74, 74, 74, 74, 19, 20, 21, 22, 74, 74, 74,
-    74, 74, 74, 74, 74, 74, 74, 31, 32, 33, 74, 74, 74, 74, 74, 38, 39, 40, 76, 74, 3, 78, 78, 78,
-    78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 4, 78, 79, 74, 14, 74, 6, 78, 78, 78, 78, 78, 78, 78,
-    78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78,
-    6, 78, 78, 78, 6, 78, 9, 74, 74, 74, 9, 74, 74, 74, 74, 74, 3, 6, 14, 74, 75, 74, 74, 74, 74,
-    74, 74, 18, 19, 20, 21, 22, 23, 24, 18, 25, 26, 27, 28, 29, 30, 74, 31, 32, 33, 74, 34, 35, 74,
-    37, 38, 39, 40, 6, 74, 3, 6, 74, 74, 75, 74, 74, 74, 74, 74, 74, 18, 19, 20, 21, 22, 23, 24,
-    18, 25, 26, 27, 28, 29, 30, 74, 31, 32, 33, 74, 74, 74, 74, 37, 38, 39, 40, 6, 74, 34, 35, 74,
-    35, 74, 9, 78, 78, 78, 9, 78, 0,
-];
-
-const MACHINE_TRANS_TARGS: &[u8] = &[
-    5, 8, 5, 36, 2, 5, 1, 47, 5, 6, 5, 31, 33, 57, 58, 60, 61, 34, 37, 38, 39, 40, 41, 51, 52, 54,
-    62, 55, 48, 49, 50, 44, 45, 46, 63, 64, 65, 56, 42, 43, 5, 5, 7, 0, 10, 11, 12, 13, 14, 25, 26,
-    28, 29, 22, 23, 24, 17, 18, 19, 30, 15, 16, 5, 5, 9, 20, 5, 21, 27, 5, 32, 5, 35, 5, 5, 3, 4,
-    53, 5, 59,
-];
-
-const MACHINE_TRANS_ACTIONS: &[u8] = &[
-    1, 0, 2, 3, 0, 4, 0, 5, 8, 5, 9, 0, 5, 10, 0, 10, 3, 0, 5, 5, 0, 0, 0, 5, 5, 5, 3, 3, 5, 5, 5,
-    5, 5, 5, 0, 0, 0, 3, 0, 0, 11, 12, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    13, 14, 0, 0, 15, 0, 0, 16, 0, 17, 0, 18, 19, 0, 0, 5, 20, 0,
-];
-
-const MACHINE_TO_STATE_ACTIONS: &[u8] = &[
-    0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0,
-];
-
-const MACHINE_FROM_STATE_ACTIONS: &[u8] = &[
-    0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0,
-];
-
-const MACHINE_EOF_TRANS: &[u8] = &[
-    1, 3, 3, 6, 6, 0, 42, 42, 64, 64, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 67, 42, 42, 42, 42,
-    42, 42, 42, 42, 42, 64, 70, 72, 42, 74, 74, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75,
-    75, 75, 75, 75, 75, 75, 75, 75, 79, 75, 75, 79, 75, 75, 75, 75, 79,
-];
-
+static _use_syllable_machine_actions: [i8 ; 37] = [ 0, 1, 0, 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 1, 12, 1, 13, 1, 14, 1, 15, 1, 16, 0 , 0 ];
+static _use_syllable_machine_key_offsets: [i16 ; 64] = [ 0, 1, 2, 38, 62, 86, 87, 103, 114, 120, 125, 129, 131, 132, 142, 151, 159, 160, 167, 182, 196, 209, 227, 244, 263, 286, 298, 299, 300, 326, 328, 329, 353, 369, 380, 386, 391, 395, 397, 398, 408, 417, 425, 432, 447, 461, 474, 492, 509, 528, 551, 563, 564, 565, 566, 595, 619, 621, 622, 624, 626, 629, 0 , 0 ];
+static _use_syllable_machine_trans_keys: [u8 ; 633] = [ 1, 1, 0, 1, 4, 5, 11, 12, 13, 18, 19, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 22, 29, 11, 12, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 29, 11, 12, 23, 24, 25, 26, 27, 28, 30, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 29, 31, 32, 1, 22, 23, 24, 25, 26, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 23, 24, 25, 26, 37, 38, 39, 45, 46, 47, 48, 24, 25, 26, 45, 46, 47, 25, 26, 45, 46, 47, 26, 45, 46, 47, 45, 46, 46, 24, 25, 26, 37, 38, 39, 45, 46, 47, 48, 24, 25, 26, 38, 39, 45, 46, 47, 48, 24, 25, 26, 39, 45, 46, 47, 48, 1, 24, 25, 26, 45, 46, 47, 48, 23, 24, 25, 26, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 23, 24, 25, 26, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 23, 24, 25, 26, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 23, 24, 25, 26, 28, 29, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 23, 24, 25, 26, 29, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 23, 24, 25, 26, 27, 28, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 29, 11, 12, 23, 24, 25, 26, 27, 28, 30, 32, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 29, 1, 23, 24, 25, 26, 37, 38, 39, 45, 46, 47, 48, 13, 4, 11, 12, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 37, 38, 39, 41, 42, 44, 45, 46, 47, 48, 22, 29, 41, 42, 42, 11, 12, 23, 24, 25, 26, 27, 28, 30, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 29, 31, 32, 22, 23, 24, 25, 26, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 23, 24, 25, 26, 37, 38, 39, 45, 46, 47, 48, 24, 25, 26, 45, 46, 47, 25, 26, 45, 46, 47, 26, 45, 46, 47, 45, 46, 46, 24, 25, 26, 37, 38, 39, 45, 46, 47, 48, 24, 25, 26, 38, 39, 45, 46, 47, 48, 24, 25, 26, 39, 45, 46, 47, 48, 24, 25, 26, 45, 46, 47, 48, 23, 24, 25, 26, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 23, 24, 25, 26, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 23, 24, 25, 26, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 23, 24, 25, 26, 28, 29, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 23, 24, 25, 26, 29, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 23, 24, 25, 26, 27, 28, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 29, 11, 12, 23, 24, 25, 26, 27, 28, 30, 32, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 29, 1, 23, 24, 25, 26, 37, 38, 39, 45, 46, 47, 48, 1, 4, 13, 1, 5, 11, 12, 13, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 37, 38, 39, 41, 42, 44, 45, 46, 47, 48, 22, 29, 11, 12, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 37, 38, 39, 44, 45, 46, 47, 48, 22, 29, 41, 42, 42, 1, 5, 50, 52, 49, 50, 52, 49, 51, 0, 0 ];
+static _use_syllable_machine_single_lengths: [i8 ; 64] = [ 1, 1, 34, 22, 20, 1, 16, 11, 6, 5, 4, 2, 1, 10, 9, 8, 1, 7, 15, 14, 13, 18, 17, 17, 21, 12, 1, 1, 24, 2, 1, 20, 16, 11, 6, 5, 4, 2, 1, 10, 9, 8, 7, 15, 14, 13, 18, 17, 17, 21, 12, 1, 1, 1, 27, 22, 2, 1, 2, 2, 3, 2, 0 , 0 ];
+static _use_syllable_machine_range_lengths: [i8 ; 64] = [ 0, 0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0 , 0 ];
+static _use_syllable_machine_index_offsets: [i16 ; 64] = [ 0, 2, 4, 40, 64, 87, 89, 106, 118, 125, 131, 136, 139, 141, 152, 162, 171, 173, 181, 197, 212, 226, 245, 263, 282, 305, 318, 320, 322, 348, 351, 353, 376, 393, 405, 412, 418, 423, 426, 428, 439, 449, 458, 466, 482, 497, 511, 530, 548, 567, 590, 603, 605, 607, 609, 638, 662, 665, 667, 670, 673, 677, 0 , 0 ];
+static _use_syllable_machine_cond_targs: [i8 ; 744] = [ 31, 2, 42, 2, 2, 3, 26, 28, 31, 51, 52, 54, 29, 33, 34, 35, 36, 46, 47, 48, 55, 49, 43, 44, 45, 39, 40, 41, 56, 57, 58, 50, 37, 38, 2, 51, 59, 61, 32, 2, 4, 5, 7, 8, 9, 10, 21, 22, 23, 3, 24, 18, 19, 20, 13, 14, 15, 25, 11, 12, 2, 5, 6, 2, 4, 5, 7, 8, 9, 10, 21, 22, 23, 18, 19, 20, 13, 14, 15, 25, 11, 12, 2, 5, 6, 24, 2, 4, 2, 6, 7, 8, 9, 10, 18, 19, 20, 13, 14, 15, 7, 11, 12, 2, 16, 2, 7, 8, 9, 10, 13, 14, 15, 11, 12, 2, 16, 2, 8, 9, 10, 11, 12, 2, 2, 9, 10, 11, 12, 2, 2, 10, 11, 12, 2, 2, 11, 12, 2, 12, 2, 8, 9, 10, 13, 14, 15, 11, 12, 2, 16, 2, 8, 9, 10, 14, 15, 11, 12, 2, 16, 2, 8, 9, 10, 15, 11, 12, 2, 16, 2, 17, 2, 8, 9, 10, 11, 12, 2, 16, 2, 7, 8, 9, 10, 18, 19, 20, 13, 14, 15, 7, 11, 12, 2, 16, 2, 7, 8, 9, 10, 19, 20, 13, 14, 15, 7, 11, 12, 2, 16, 2, 7, 8, 9, 10, 20, 13, 14, 15, 7, 11, 12, 2, 16, 2, 6, 7, 8, 9, 10, 22, 6, 18, 19, 20, 13, 14, 15, 7, 11, 12, 2, 16, 2, 6, 7, 8, 9, 10, 6, 18, 19, 20, 13, 14, 15, 7, 11, 12, 2, 16, 2, 7, 8, 9, 10, 21, 22, 18, 19, 20, 13, 14, 15, 7, 11, 12, 2, 16, 6, 2, 4, 5, 7, 8, 9, 10, 21, 22, 23, 24, 18, 19, 20, 13, 14, 15, 25, 11, 12, 2, 5, 6, 2, 4, 7, 8, 9, 10, 13, 14, 15, 11, 12, 2, 16, 2, 27, 2, 26, 2, 4, 5, 7, 8, 9, 10, 21, 22, 23, 3, 24, 18, 19, 20, 13, 14, 15, 29, 30, 25, 11, 12, 2, 5, 6, 2, 29, 30, 2, 30, 2, 31, 0, 33, 34, 35, 36, 46, 47, 48, 43, 44, 45, 39, 40, 41, 50, 37, 38, 2, 0, 32, 49, 2, 32, 33, 34, 35, 36, 43, 44, 45, 39, 40, 41, 33, 37, 38, 2, 1, 2, 33, 34, 35, 36, 39, 40, 41, 37, 38, 2, 1, 2, 34, 35, 36, 37, 38, 2, 2, 35, 36, 37, 38, 2, 2, 36, 37, 38, 2, 2, 37, 38, 2, 38, 2, 34, 35, 36, 39, 40, 41, 37, 38, 2, 1, 2, 34, 35, 36, 40, 41, 37, 38, 2, 1, 2, 34, 35, 36, 41, 37, 38, 2, 1, 2, 34, 35, 36, 37, 38, 2, 1, 2, 33, 34, 35, 36, 43, 44, 45, 39, 40, 41, 33, 37, 38, 2, 1, 2, 33, 34, 35, 36, 44, 45, 39, 40, 41, 33, 37, 38, 2, 1, 2, 33, 34, 35, 36, 45, 39, 40, 41, 33, 37, 38, 2, 1, 2, 32, 33, 34, 35, 36, 47, 32, 43, 44, 45, 39, 40, 41, 33, 37, 38, 2, 1, 2, 32, 33, 34, 35, 36, 32, 43, 44, 45, 39, 40, 41, 33, 37, 38, 2, 1, 2, 33, 34, 35, 36, 46, 47, 43, 44, 45, 39, 40, 41, 33, 37, 38, 2, 1, 32, 2, 31, 0, 33, 34, 35, 36, 46, 47, 48, 49, 43, 44, 45, 39, 40, 41, 50, 37, 38, 2, 0, 32, 2, 31, 33, 34, 35, 36, 39, 40, 41, 37, 38, 2, 1, 2, 31, 2, 53, 2, 52, 2, 3, 3, 31, 0, 52, 33, 34, 35, 36, 46, 47, 48, 55, 49, 43, 44, 45, 39, 40, 41, 56, 57, 50, 37, 38, 2, 0, 32, 2, 31, 0, 33, 34, 35, 36, 46, 47, 48, 55, 49, 43, 44, 45, 39, 40, 41, 50, 37, 38, 2, 0, 32, 2, 56, 57, 2, 57, 2, 3, 3, 2, 60, 59, 2, 59, 60, 60, 2, 59, 61, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0 , 0 ];
+static _use_syllable_machine_cond_actions: [i8 ; 744] = [ 5, 33, 5, 33, 7, 0, 0, 0, 5, 0, 0, 5, 0, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 0, 0, 11, 0, 0, 0, 5, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 19, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 9, 19, 0, 0, 0, 0, 9, 19, 0, 0, 0, 9, 19, 0, 0, 19, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 17, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 15, 0, 23, 0, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 19, 0, 0, 25, 0, 25, 5, 0, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 11, 0, 5, 5, 29, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 0, 0, 11, 0, 29, 5, 0, 0, 0, 5, 5, 5, 0, 0, 11, 0, 29, 0, 0, 0, 0, 0, 11, 29, 0, 0, 0, 0, 11, 29, 0, 0, 0, 11, 29, 0, 0, 29, 0, 29, 0, 0, 0, 5, 5, 5, 0, 0, 11, 0, 29, 0, 0, 0, 5, 5, 0, 0, 11, 0, 29, 0, 0, 0, 5, 0, 0, 11, 0, 29, 0, 0, 0, 0, 0, 11, 0, 29, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 0, 0, 11, 0, 29, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 0, 11, 0, 29, 5, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 11, 0, 29, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 11, 0, 29, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 11, 0, 29, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 11, 0, 5, 29, 5, 0, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 11, 0, 5, 29, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 11, 0, 29, 5, 31, 0, 29, 0, 29, 0, 0, 5, 0, 0, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 5, 0, 0, 11, 0, 5, 29, 5, 0, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 11, 0, 5, 29, 0, 0, 29, 0, 29, 0, 0, 31, 0, 0, 27, 0, 0, 0, 27, 0, 0, 27, 33, 33, 0, 19, 19, 15, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 17, 19, 19, 19, 19, 19, 19, 19, 19, 15, 23, 21, 19, 25, 25, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 31, 29, 29, 29, 29, 29, 29, 31, 27, 27, 27, 0 , 0 ];
+static _use_syllable_machine_to_state_actions: [i8 ; 64] = [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0 ];
+static _use_syllable_machine_from_state_actions: [i8 ; 64] = [ 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0 ];
+static _use_syllable_machine_eof_trans: [i16 ; 64] = [ 681, 682, 683, 684, 685, 686, 687, 688, 689, 690, 691, 692, 693, 694, 695, 696, 697, 698, 699, 700, 701, 702, 703, 704, 705, 706, 707, 708, 709, 710, 711, 712, 713, 714, 715, 716, 717, 718, 719, 720, 721, 722, 723, 724, 725, 726, 727, 728, 729, 730, 731, 732, 733, 734, 735, 736, 737, 738, 739, 740, 741, 742, 0 , 0 ];
+static use_syllable_machine_start : i32 = 2;
+static use_syllable_machine_first_final : i32 = 2;
+static use_syllable_machine_error : i32 = -1;
+static use_syllable_machine_en_main : i32 = 2;
 #[derive(Clone, Copy)]
 pub enum SyllableType {
-    IndependentCluster,
-    ViramaTerminatedCluster,
-    SakotTerminatedCluster,
-    StandardCluster,
-    NumberJoinerTerminatedCluster,
-    NumeralCluster,
-    SymbolCluster,
-    HieroglyphCluster,
-    BrokenCluster,
-    NonCluster,
-}
-
-fn not_standard_default_ignorable(i: &GlyphInfo) -> bool {
-    !(matches!(i.use_category(), category::O | category::RSV) && i.is_default_ignorable())
+	IndependentCluster,
+	ViramaTerminatedCluster,
+	SakotTerminatedCluster,
+	StandardCluster,
+	NumberJoinerTerminatedCluster,
+	NumeralCluster,
+	SymbolCluster,
+	HieroglyphCluster,
+	BrokenCluster,
+	NonCluster,
 }
 
 pub fn find_syllables(buffer: &mut Buffer) {
-    let mut cs = 5usize;
-    let mut ts = 0;
-    let mut te = 0;
-    let mut act = 0;
-    let infos = &mut buffer.info;
-    let eof = infos.len();
-    let first_glyph = (0..eof).find(|i| included(*i, infos)).unwrap_or(eof);
-    let mut p = first_glyph;
-    let pe = eof;
-    let mut syllable_serial = 1u8;
-    let mut reset = true;
-    let mut slen;
-    let mut trans = 0;
-    if p == pe {
-        if MACHINE_EOF_TRANS[cs] > 0 {
-            trans = (MACHINE_EOF_TRANS[cs] - 1) as usize;
-        }
-    }
-
-    loop {
-        if reset {
-            if MACHINE_FROM_STATE_ACTIONS[cs] == 7 {
-                ts = p;
-            }
-
-            slen = MACHINE_KEY_SPANS[cs] as usize;
-            let cs_idx = ((cs as i32) << 1) as usize;
-            let glyph = &infos[p];
-            let i = if slen > 0
-                && MACHINE_TRANS_KEYS[cs_idx] <= glyph.indic_category() as u8
-                && glyph.indic_category() as u8 <= MACHINE_TRANS_KEYS[cs_idx + 1]
-            {
-                (glyph.indic_category() as u8 - MACHINE_TRANS_KEYS[cs_idx]) as usize
-            } else {
-                slen
-            };
-            trans = MACHINE_INDICIES[MACHINE_INDEX_OFFSETS[cs] as usize + i] as usize;
-        }
-        reset = true;
-
-        cs = MACHINE_TRANS_TARGS[trans] as usize;
-
-        if MACHINE_TRANS_ACTIONS[trans] != 0 {
-            match MACHINE_TRANS_ACTIONS[trans] {
-                5 => {
-                    te = next_glyph(p, infos);
-                }
-                8 => {
-                    te = next_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::IndependentCluster,
-                        infos,
-                    );
-                }
-                13 => {
-                    te = next_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::StandardCluster,
-                        infos,
-                    );
-                }
-                11 => {
-                    te = next_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::BrokenCluster,
-                        infos,
-                    );
-                }
-                9 => {
-                    te = next_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::NonCluster,
-                        infos,
-                    );
-                }
-                14 => {
-                    te = p;
-                    p = prev_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::ViramaTerminatedCluster,
-                        infos,
-                    );
-                }
-                15 => {
-                    te = p;
-                    p = prev_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::SakotTerminatedCluster,
-                        infos,
-                    );
-                }
-                12 => {
-                    te = p;
-                    p = prev_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::StandardCluster,
-                        infos,
-                    );
-                }
-                17 => {
-                    te = p;
-                    p = prev_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::NumberJoinerTerminatedCluster,
-                        infos,
-                    );
-                }
-                16 => {
-                    te = p;
-                    p = prev_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::NumeralCluster,
-                        infos,
-                    );
-                }
-                18 => {
-                    te = p;
-                    p = prev_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::SymbolCluster,
-                        infos,
-                    );
-                }
-                19 => {
-                    te = p;
-                    p = prev_glyph(p, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::BrokenCluster,
-                        infos,
-                    );
-                }
-                1 => {
-                    p = prev_glyph(te, infos);
-                    found_syllable(
-                        ts,
-                        te,
-                        &mut syllable_serial,
-                        SyllableType::StandardCluster,
-                        infos,
-                    );
-                }
-                2 => match act {
-                    8 => {
-                        p = prev_glyph(te, infos);
-                        found_syllable(
-                            ts,
-                            te,
-                            &mut syllable_serial,
-                            SyllableType::BrokenCluster,
-                            infos,
-                        );
-                    }
-                    9 => {
-                        p = prev_glyph(te, infos);
-                        found_syllable(
-                            ts,
-                            te,
-                            &mut syllable_serial,
-                            SyllableType::NonCluster,
-                            infos,
-                        );
-                    }
-                    _ => {}
-                },
-                3 => {
-                    te = next_glyph(p, infos);
-                    act = 8;
-                }
-                10 => {
-                    te = next_glyph(p, infos);
-                    act = 9;
-                }
-                _ => {}
-            }
-        }
-
-        if MACHINE_TO_STATE_ACTIONS[cs] == 6 {
-            ts = 0;
-        }
-
-        p = next_glyph(p, infos);
-        if p != pe {
-            continue;
-        }
-
-        if p == eof {
-            if MACHINE_EOF_TRANS[cs] > 0 {
-                trans = (MACHINE_EOF_TRANS[cs] - 1) as usize;
-                reset = false;
-                continue;
-            }
-        }
-
-        break;
-    }
+	let mut cs = 0;
+	let mut ts = 0;
+	let mut te = 0;
+	let mut p = 0;
+	let mut ixs: std::vec::Vec<_> = (0..buffer.info.len()).filter(|i| included(*i, &buffer.info)).collect();
+	let pe = ixs.len();
+	let eof = ixs.len();
+	ixs.push(buffer.info.len());
+	let mut syllable_serial = 1u8;
+	
+	macro_rules! found_syllable {
+		($kind:expr) => {{
+				found_syllable(ixs[ts], ixs[te], &mut syllable_serial, $kind, buffer);
+			}}
+	}
+	
+	
+	{
+		cs = ( use_syllable_machine_start ) as i32;
+		ts = 0;
+		te = 0;
+	}
+	
+	{
+		let mut _klen = 0;
+		let mut _trans  = 0;
+		let mut _keys :i32= 0;
+		let mut _acts :i32= 0;
+		let mut _nacts = 0;
+		let mut __have = 0;
+		'_resume: while ( p != pe || p == eof  ) {
+			'_again: while ( true  ) {
+				_acts = ( _use_syllable_machine_from_state_actions[(cs) as usize] ) as i32;
+				_nacts = ( _use_syllable_machine_actions[(_acts ) as usize]
+				) as u32;
+				_acts += 1;
+				while ( _nacts > 0  ) {
+					match ( _use_syllable_machine_actions[(_acts ) as usize]
+					) {
+						1  => {
+							{{ts = p;
+								}}
+							
+						}
+						
+						_ => {}
+					}
+					_nacts -= 1;
+					_acts += 1;
+					
+				}
+				if ( p == eof  ) {
+					{
+						if ( _use_syllable_machine_eof_trans[(cs) as usize]> 0  ) {
+							{
+								_trans = ( _use_syllable_machine_eof_trans[(cs) as usize] ) as u32- 1;
+							}
+							
+						}
+					}
+					
+				}
+				else {
+					{
+						_keys = ( _use_syllable_machine_key_offsets[(cs) as usize] ) as i32;
+						_trans = ( _use_syllable_machine_index_offsets[(cs) as usize] ) as u32;
+						_klen = ( _use_syllable_machine_single_lengths[(cs) as usize] ) as i32;
+						__have = 0;
+						if ( _klen > 0  ) {
+							{
+								let mut _lower  :i32= _keys;
+								let mut _upper  :i32= _keys + _klen - 1;
+								let mut _mid :i32= 0;
+								while ( true  ) {
+									if ( _upper < _lower  ) {
+										{
+											_keys += _klen;
+											_trans += ( _klen ) as u32;
+											break;
+										}
+										
+										
+									}
+									_mid = _lower + ((_upper-_lower) >> 1);
+									if ( ((buffer.info[ixs[p]].use_category() as u8)) < _use_syllable_machine_trans_keys[(_mid ) as usize]
+									) {
+										_upper = _mid - 1;
+										
+									}
+									else if ( ((buffer.info[ixs[p]].use_category() as u8)) > _use_syllable_machine_trans_keys[(_mid ) as usize]
+									) {
+										_lower = _mid + 1;
+										
+									}
+									else {
+										{
+											__have = 1;
+											_trans += ( (_mid - _keys) ) as u32;
+											break;
+										}
+										
+									}
+									
+								}
+							}
+							
+							
+						}
+						_klen = ( _use_syllable_machine_range_lengths[(cs) as usize] ) as i32;
+						if ( __have == 0 && _klen > 0  ) {
+							{
+								let mut _lower  :i32= _keys;
+								let mut _upper  :i32= _keys + (_klen<<1) - 2;
+								let mut _mid :i32= 0;
+								while ( true  ) {
+									if ( _upper < _lower  ) {
+										{
+											_trans += ( _klen ) as u32;
+											break;
+										}
+										
+										
+									}
+									_mid = _lower + (((_upper-_lower) >> 1) & !1
+									);
+									if ( ((buffer.info[ixs[p]].use_category() as u8)) < _use_syllable_machine_trans_keys[(_mid ) as usize]
+									) {
+										_upper = _mid - 2;
+										
+									}
+									else if ( ((buffer.info[ixs[p]].use_category() as u8)) > _use_syllable_machine_trans_keys[(_mid + 1 ) as usize]
+									) {
+										_lower = _mid + 2;
+										
+									}
+									else {
+										{
+											_trans += ( ((_mid - _keys)>>1) ) as u32;
+											break;
+										}
+										
+									}
+									
+								}
+							}
+							
+							
+						}
+					}
+					
+				}
+				cs = ( _use_syllable_machine_cond_targs[(_trans) as usize] ) as i32;
+				if ( _use_syllable_machine_cond_actions[(_trans) as usize]!= 0  ) {
+					{
+					
+						_acts = ( _use_syllable_machine_cond_actions[(_trans) as usize] ) as i32;
+						_nacts = ( _use_syllable_machine_actions[(_acts ) as usize]
+						) as u32;
+						_acts += 1;
+						while ( _nacts > 0  ) {
+							match ( _use_syllable_machine_actions[(_acts ) as usize]
+							) {
+								2  => {
+									{{te = p+1;
+										}}
+									
+								}
+								3  => {
+									{{te = p+1;
+											{found_syllable!(SyllableType::IndependentCluster); }
+										}}
+									
+								}
+								4  => {
+									{{te = p+1;
+											{found_syllable!(SyllableType::StandardCluster); }
+										}}
+									
+								}
+								5  => {
+									{{te = p+1;
+											{found_syllable!(SyllableType::BrokenCluster); }
+										}}
+									
+								}
+								6  => {
+									{{te = p+1;
+											{found_syllable!(SyllableType::NonCluster); }
+										}}
+									
+								}
+								7  => {
+									{{te = p;
+											p = p - 1;
+											{found_syllable!(SyllableType::ViramaTerminatedCluster); }
+										}}
+									
+								}
+								8  => {
+									{{te = p;
+											p = p - 1;
+											{found_syllable!(SyllableType::SakotTerminatedCluster); }
+										}}
+									
+								}
+								9  => {
+									{{te = p;
+											p = p - 1;
+											{found_syllable!(SyllableType::StandardCluster); }
+										}}
+									
+								}
+								10  => {
+									{{te = p;
+											p = p - 1;
+											{found_syllable!(SyllableType::NumberJoinerTerminatedCluster); }
+										}}
+									
+								}
+								11  => {
+									{{te = p;
+											p = p - 1;
+											{found_syllable!(SyllableType::NumeralCluster); }
+										}}
+									
+								}
+								12  => {
+									{{te = p;
+											p = p - 1;
+											{found_syllable!(SyllableType::SymbolCluster); }
+										}}
+									
+								}
+								13  => {
+									{{te = p;
+											p = p - 1;
+											{found_syllable! (SyllableType::HieroglyphCluster); }
+										}}
+									
+								}
+								14  => {
+									{{te = p;
+											p = p - 1;
+											{found_syllable!(SyllableType::BrokenCluster); }
+										}}
+									
+								}
+								15  => {
+									{{te = p;
+											p = p - 1;
+											{found_syllable!(SyllableType::NonCluster); }
+										}}
+									
+								}
+								16  => {
+									{{p = ((te))-1;
+											{found_syllable!(SyllableType::BrokenCluster); }
+										}}
+									
+								}
+								
+								_ => {}
+							}
+							_nacts -= 1;
+							_acts += 1;
+							
+						}
+					}
+					
+				}
+				break '_again;
+				
+			}
+			if ( p == eof  ) {
+				{
+					if ( cs >= 2  ) {
+						break '_resume;
+						
+					}
+				}
+				
+			}
+			else {
+				{
+					_acts = ( _use_syllable_machine_to_state_actions[(cs) as usize] ) as i32;
+					_nacts = ( _use_syllable_machine_actions[(_acts ) as usize]
+					) as u32;
+					_acts += 1;
+					while ( _nacts > 0  ) {
+						match ( _use_syllable_machine_actions[(_acts ) as usize]
+						) {
+							0  => {
+								{{ts = 0;
+									}}
+								
+							}
+							
+							_ => {}
+						}
+						_nacts -= 1;
+						_acts += 1;
+						
+					}
+					p += 1;
+					continue '_resume;
+				}
+				
+			}
+			break '_resume;
+			
+		}
+	}
 }
 
 #[inline]
 fn found_syllable(
-    start: usize,
-    end: usize,
-    syllable_serial: &mut u8,
-    kind: SyllableType,
-    infos: &mut [GlyphInfo],
+start: usize,
+end: usize,
+syllable_serial: &mut u8,
+kind: SyllableType,
+buffer: &mut Buffer,
 ) {
-    for i in start..end {
-        infos[i].set_syllable((*syllable_serial << 4) | kind as u8);
-    }
+	for i in start..end {
+		buffer.info[i].set_syllable((*syllable_serial << 4) | kind as u8);
+	}
+	
+	*syllable_serial += 1;
+	
+	if *syllable_serial == 16 {
+		*syllable_serial = 1;
+	}
+}
 
-    *syllable_serial += 1;
-
-    if *syllable_serial == 16 {
-        *syllable_serial = 1;
-    }
+fn not_standard_default_ignorable(i: &GlyphInfo) -> bool {
+	!(matches!(i.use_category(), category::O | category::RSV) && i.is_default_ignorable())
 }
 
 fn included(i: usize, infos: &[GlyphInfo]) -> bool {
-    let glyph = &infos[i];
-    if !not_standard_default_ignorable(glyph) {
-        return false;
-    }
-    if glyph.use_category() == category::ZWNJ {
-        for glyph2 in &infos[i + 1..] {
-            if not_standard_default_ignorable(glyph2) {
-                return !glyph2.is_unicode_mark();
-            }
-        }
-    }
-    true
-}
-
-fn next_glyph(p: usize, infos: &[GlyphInfo]) -> usize {
-    (p + 1..infos.len())
-        .find(|q| included(*q, infos))
-        .unwrap_or(infos.len())
-}
-
-fn prev_glyph(p: usize, infos: &[GlyphInfo]) -> usize {
-    (0..p).rev().find(|q| included(*q, infos)).unwrap_or(0)
+	let glyph = &infos[i];
+	if !not_standard_default_ignorable(glyph) {
+		return false;
+	}
+	if glyph.use_category() == category::ZWNJ {
+		for glyph2 in &infos[i + 1..] {
+			if not_standard_default_ignorable(glyph2) {
+				return !glyph2.is_unicode_mark();
+			}
+		}
+	}
+	true
 }
