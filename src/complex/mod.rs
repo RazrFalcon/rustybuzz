@@ -10,6 +10,7 @@ mod arabic_table;
 mod indic_machine;
 mod indic_table;
 mod khmer_machine;
+mod machine_cursor;
 mod myanmar_machine;
 mod universal_machine;
 mod universal_table;

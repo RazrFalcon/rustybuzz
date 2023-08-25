@@ -13,7 +13,9 @@ clippy::single_match,
 clippy::never_loop
 )]
 
+use core::cell::Cell;
 use crate::buffer::Buffer;
+use crate::complex::machine_cursor::MachineCursor;
 use crate::complex::universal::category;
 use crate::GlyphInfo;
 
@@ -48,26 +50,29 @@ pub enum SyllableType {
 
 pub fn find_syllables(buffer: &mut Buffer) {
 	let mut cs = 0;
-	let mut ts = 0;
-	let mut te = 0;
-	let mut p = 0;
-	let mut ixs: std::vec::Vec<_> = (0..buffer.info.len()).filter(|i| included(*i, &buffer.info)).collect();
-	let pe = ixs.len();
-	let eof = ixs.len();
-	ixs.push(buffer.info.len());
+	let infos = Cell::as_slice_of_cells(Cell::from_mut(&mut buffer.info));
+	let p0 = MachineCursor::new(infos, included);
+	let mut p = p0;
+	let mut ts = p0;
+	let mut te = p0;
+	let pe = p.end();
+	let eof = p.end();
 	let mut syllable_serial = 1u8;
+	
+	// Please manually replace assignments of 0 to p, ts, and te
+	// to use p0 instead
 	
 	macro_rules! found_syllable {
 		($kind:expr) => {{
-				found_syllable(ixs[ts], ixs[te], &mut syllable_serial, $kind, buffer);
+				found_syllable(ts.index(), te.index(), &mut syllable_serial, $kind, infos);
 			}}
 	}
 	
 	
 	{
 		cs = ( use_syllable_machine_start ) as i32;
-		ts = 0;
-		te = 0;
+		ts = p0;
+		te = p0;
 	}
 	
 	{
@@ -131,12 +136,12 @@ pub fn find_syllables(buffer: &mut Buffer) {
 										
 									}
 									_mid = _lower + ((_upper-_lower) >> 1);
-									if ( ((buffer.info[ixs[p]].use_category() as u8)) < _use_syllable_machine_trans_keys[(_mid ) as usize]
+									if ( ((infos[p.index()].get().use_category() as u8)) < _use_syllable_machine_trans_keys[(_mid ) as usize]
 									) {
 										_upper = _mid - 1;
 										
 									}
-									else if ( ((buffer.info[ixs[p]].use_category() as u8)) > _use_syllable_machine_trans_keys[(_mid ) as usize]
+									else if ( ((infos[p.index()].get().use_category() as u8)) > _use_syllable_machine_trans_keys[(_mid ) as usize]
 									) {
 										_lower = _mid + 1;
 										
@@ -172,12 +177,12 @@ pub fn find_syllables(buffer: &mut Buffer) {
 									}
 									_mid = _lower + (((_upper-_lower) >> 1) & !1
 									);
-									if ( ((buffer.info[ixs[p]].use_category() as u8)) < _use_syllable_machine_trans_keys[(_mid ) as usize]
+									if ( ((infos[p.index()].get().use_category() as u8)) < _use_syllable_machine_trans_keys[(_mid ) as usize]
 									) {
 										_upper = _mid - 2;
 										
 									}
-									else if ( ((buffer.info[ixs[p]].use_category() as u8)) > _use_syllable_machine_trans_keys[(_mid + 1 ) as usize]
+									else if ( ((infos[p.index()].get().use_category() as u8)) > _use_syllable_machine_trans_keys[(_mid + 1 ) as usize]
 									) {
 										_lower = _mid + 2;
 										
@@ -339,7 +344,7 @@ pub fn find_syllables(buffer: &mut Buffer) {
 						match ( _use_syllable_machine_actions[(_acts ) as usize]
 						) {
 							0  => {
-								{{ts = 0;
+								{{ts = p0;
 									}}
 								
 							}
@@ -367,10 +372,12 @@ start: usize,
 end: usize,
 syllable_serial: &mut u8,
 kind: SyllableType,
-buffer: &mut Buffer,
+buffer: &[Cell<GlyphInfo>],
 ) {
 	for i in start..end {
-		buffer.info[i].set_syllable((*syllable_serial << 4) | kind as u8);
+		let mut glyph = buffer[i].get();
+		glyph.set_syllable((*syllable_serial << 4) | kind as u8);
+		buffer[i].set(glyph);
 	}
 	
 	*syllable_serial += 1;
@@ -384,15 +391,15 @@ fn not_standard_default_ignorable(i: &GlyphInfo) -> bool {
 	!(matches!(i.use_category(), category::O | category::RSV) && i.is_default_ignorable())
 }
 
-fn included(i: usize, infos: &[GlyphInfo]) -> bool {
-	let glyph = &infos[i];
-	if !not_standard_default_ignorable(glyph) {
+fn included(infos: &[Cell<GlyphInfo>], i: usize) -> bool {
+	let glyph = infos[i].get();
+	if !not_standard_default_ignorable(&glyph) {
 		return false;
 	}
 	if glyph.use_category() == category::ZWNJ {
 		for glyph2 in &infos[i + 1..] {
-			if not_standard_default_ignorable(glyph2) {
-				return !glyph2.is_unicode_mark();
+			if not_standard_default_ignorable(&glyph2.get()) {
+				return !glyph2.get().is_unicode_mark();
 			}
 		}
 	}
