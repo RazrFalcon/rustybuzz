@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
+  COLM_HASH: 28b6e0a01157049b4cb279b0ef25ea9dcf3b46ed
+  RAGEL_HASH: 65540b65ff09330b0293423e3fecc44e63f30614
 
 jobs:
   build:
@@ -18,3 +20,65 @@ jobs:
 
     - name: Run tests
       run: cargo test --verbose
+  
+  codegen:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Cache colm
+      id: colm-cache
+      uses: actions/cache@v3
+      with:
+        path: ~/colm
+        key: colm-${{ env.COLM_HASH }}
+    
+    # Unfortunately ragel does not provide a binary release, so we have to build it ourselves.
+    # This is tracked in https://github.com/adrian-thurston/ragel/issues/100
+    - name: Install colm
+      if: ${{ steps.colm-cache.outputs.cache-hit != 'true' }}
+      run: |
+        mkdir ~/colm_build && pushd ~/colm_build
+        curl https://github.com/adrian-thurston/colm/archive/${{ env.COLM_HASH }}.tar.gz | tar xz --strip-components=1
+        ./configure --prefix ~/colm CC=clang CXX=clang++ CFLAGS="-O3 -static -flto" CXXFLAGS="-O3 -static -flto"
+        make -j$(nproc)
+        make install
+
+    - name: Cache ragel
+      id: ragel-cache
+      uses: actions/cache@v3
+      with:
+        path: ~/ragel
+        key: ragel-${{ env.RAGEL_HASH }}
+
+    - name: Install ragel
+      if: ${{ steps.ragel-cache.outputs.cache-hit != 'true' }}
+      run: |
+        mkdir ~/ragel_build && pushd ~/ragel_build
+        curl https://github.com/adrian-thurston/ragel/archive/${{ env.RAGEL_HASH }}.tar.gz | tar xz --strip-components=1
+        ./configure --prefix ~/ragel CC=clang CXX=clang++ CFLAGS="-O3 -static -flto" CXXFLAGS="-O3 -static -flto" --with-colm=~/colm
+        make -j$(nproc)
+        make install
+    
+    - name: Generate tables
+      run: |
+        python ./scripts/gen-universal-table.py > ./src/complex/universal_table.rs
+        python ./scripts/gen-vowel-constraints.py > ./src/complex/vowel_constraints.rs
+        rustfmt ./src/complex/universal_table.rs
+
+    - name: Generate ragel data
+      run: |
+        for RL in $(find . -name '*.rl'); do
+          ~/ragel/bin/ragel -G2 -o ${RL%.rl}.rs ${RL}
+          rustfmt ${RL%.rl}.rs
+        done
+
+    - name: Check for changes
+      run: if ! git diff --exit-code; then exit 1; fi
+     
