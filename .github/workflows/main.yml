@@ -75,7 +75,7 @@ jobs:
     - name: Generate ragel data
       run: |
         for RL in $(find . -name '*.rl'); do
-          ~/ragel/bin/ragel -G2 -o ${RL%.rl}.rs ${RL}
+          ~/ragel/bin/ragel-rust -e -F1 ${RL}
           rustfmt ${RL%.rl}.rs
         done
 
