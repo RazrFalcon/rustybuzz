@@ -119,7 +119,7 @@ const OTHER_FEATURES: &[Tag] = &[
 ];
 
 impl GlyphInfo {
-    fn use_category(&self) -> Category {
+    pub(crate) fn use_category(&self) -> Category {
         let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
         v[2]
     }
