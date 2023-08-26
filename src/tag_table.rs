@@ -525,7 +525,6 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "gug", 	tag: Tag::from_bytes(b"GUA ") }, // Paraguayan Guaraní -> Guarani
     LangTag { language: "gui", 	tag: Tag::from_bytes(b"GUA ") }, // Eastern Bolivian Guaraní -> Guarani
     LangTag { language: "guk", 	tag: Tag::from_bytes(b"GMZ ") }, // Gumuz
-    LangTag { language: "guk", 	tag: Tag::from_bytes(b"GUK ") }, // Gumuz(SIL fonts)
     LangTag { language: "gul", 	tag: Tag::from_bytes(b"CPP ") }, // Sea Island Creole English -> Creoles
     LangTag { language: "gun", 	tag: Tag::from_bytes(b"GUA ") }, // Mbyá Guaraní -> Guarani
 //  LangTag { language: "guz", 	tag: Tag::from_bytes(b"GUZ ") }, // Gusii

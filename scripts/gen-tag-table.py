@@ -678,10 +678,6 @@ ot.add_language('hy-arevmda', 'HYE')
 ot.remove_language_ot('KGE')
 ot.add_language('und-Geok', 'KGE')
 
-ot.add_language('guk', 'GUK')
-ot.names['GUK'] = 'Gumuz(SIL fonts)'
-ot.ranks['GUK'] = ot.ranks['GMZ'] + 1
-
 bcp_47.macrolanguages['id'] = {'in'}
 
 bcp_47.macrolanguages['ijo'] = {'ijc'}
@@ -698,6 +694,8 @@ ot.ranks['MLR'] += 1
 bcp_47.names['mhv'] = 'Arakanese'
 bcp_47.scopes['mhv'] = '(retired code)'
 
+# Downstream change due to note for Thailand Mon in Microsoft’s
+# page of language tags.
 ot.remove_language_ot('MONT')
 ot.add_language('mnw', 'MONT')
 
