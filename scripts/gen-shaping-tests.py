@@ -29,6 +29,9 @@ IGNORE_TEST_CASES = [
     'indic_decompose_001',
     # ttf-parser doesn't support phantom points
     'variations_space_001',
+    # Resource exhaustion tests with large outputs
+    'morx_34_001',
+    'morx_36_001',
 
     # text-rendering-tests tests
     # Unknown issue. Investigate.
@@ -65,13 +68,17 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
 
     unicodes_rs = convert_unicodes(unicodes)
 
-    test_name = file_name.replace('.tests', '').replace('-', '_') + f'_{idx:03d}'
+    test_name = file_name.replace(
+        '.tests', '').replace('-', '_') + f'_{idx:03d}'
     test_name = test_name.lower()
 
     options = options.replace('--shaper=ot', '')
-    options = options.replace(' --font-funcs=ft', '').replace('--font-funcs=ft', '')
-    options = options.replace(' --font-funcs=ot', '').replace('--font-funcs=ot', '')
-    options = options.replace('--font-size=1000', '')  # we don't support font scaling
+    options = options.replace(
+        ' --font-funcs=ft', '').replace('--font-funcs=ft', '')
+    options = options.replace(
+        ' --font-funcs=ot', '').replace('--font-funcs=ot', '')
+    # we don't support font scaling
+    options = options.replace('--font-size=1000', '')
     options = options.strip()
 
     # We have to actually run hb-shape instead of using predefined results,
@@ -178,7 +185,8 @@ for test_dir_name in test_dir_names:
 
     used_fonts += convert(hb_dir, hb_shape_exe, tests_dir, test_dir_name)
 
-    font_files += os.listdir(hb_dir / f'test/shaping/data/{test_dir_name}/fonts')
+    font_files += os.listdir(hb_dir /
+                             f'test/shaping/data/{test_dir_name}/fonts')
 
 # Check for unused fonts.
 unused_fonts = sorted(list(set(font_files).difference(used_fonts)))
