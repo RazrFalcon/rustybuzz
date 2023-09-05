@@ -13,7 +13,11 @@
     clippy::never_loop
 )]
 
+use core::cell::Cell;
 use crate::buffer::Buffer;
+use crate::complex::machine_cursor::MachineCursor;
+use crate::complex::universal::category;
+use crate::GlyphInfo;
 
 %%{
   machine use_syllable_machine;
@@ -26,31 +30,22 @@ use crate::buffer::Buffer;
 O	= 0; # OTHER
 
 B	= 1; # BASE
-IND	= 3; # BASE_IND
 N	= 4; # BASE_NUM
 GB	= 5; # BASE_OTHER
-CGJ	= 6; # CGJ
-#F	= 7; # CONS_FINAL
-#FM	= 8; # CONS_FINAL_MOD
-#M	= 9; # CONS_MED
-#CM	= 10; # CONS_MOD
 SUB	= 11; # CONS_SUB
 H	= 12; # HALANT
 
 HN	= 13; # HALANT_NUM
 ZWNJ	= 14; # Zero width non-joiner
-ZWJ	= 15; # Zero width joiner
-WJ	= 16; # Word joiner
-Rsv	= 17; # Reserved characters
 R	= 18; # REPHA
 S	= 19; # SYM
-#SM	= 20; # SYM_MOD
-VS	= 21; # VARIATION_SELECTOR
-#V	= 36; # VOWEL
-#VM	= 40; # VOWEL_MOD
 CS	= 43; # CONS_WITH_STACKER
 HVM	= 44; # HALANT_OR_VOWEL_MODIFIER
 Sk	= 48; # SAKOT
+G	= 49; # HIEROGLYPH
+J	= 50; # HIEROGLYPH_JOINER
+SB	= 51; # HIEROGLYPH_SEGMENT_BEGIN
+SE	= 52; # HIEROGLYPH_SEGMENT_END
 
 FAbv	= 24; # CONS_FINAL_ABOVE
 FBlw	= 25; # CONS_FINAL_BELOW
@@ -77,16 +72,14 @@ FMPst	= 47; # CONS_FINAL_MOD	UIPC = Not_Applicable
 
 h = H | HVM | Sk;
 
-# Override: Adhoc ZWJ placement. https://github.com/harfbuzz/harfbuzz/issues/542#issuecomment-353169729
-consonant_modifiers = CMAbv* CMBlw* ((ZWJ?.h.ZWJ? B | SUB) VS? CMAbv? CMBlw*)*;
-# Override: Allow two MBlw. https://github.com/harfbuzz/harfbuzz/issues/376
-medial_consonants = MPre? MAbv? MBlw?.MBlw? MPst?;
+consonant_modifiers = CMAbv* CMBlw* ((h B | SUB) CMAbv? CMBlw*)*;
+medial_consonants = MPre? MAbv? MBlw? MPst?;
 dependent_vowels = VPre* VAbv* VBlw* VPst*;
 vowel_modifiers = HVM? VMPre* VMAbv* VMBlw* VMPst*;
 final_consonants = FAbv* FBlw* FPst*;
 final_modifiers = FMAbv* FMBlw* | FMPst?;
 
-complex_syllable_start = (R | CS)? (B | GB) VS?;
+complex_syllable_start = (R | CS)? (B | GB);
 complex_syllable_middle =
 	consonant_modifiers
 	medial_consonants
@@ -99,14 +92,14 @@ complex_syllable_tail =
 	final_consonants
 	final_modifiers
 ;
-number_joiner_terminated_cluster_tail = (HN N VS?)* HN;
-numeral_cluster_tail = (HN N VS?)+;
+number_joiner_terminated_cluster_tail = (HN N)* HN;
+numeral_cluster_tail = (HN N)+;
 symbol_cluster_tail = SMAbv+ SMBlw* | SMBlw+;
 
 virama_terminated_cluster =
 	complex_syllable_start
 	consonant_modifiers
-	ZWJ?.h.ZWJ?
+	h
 ;
 sakot_terminated_cluster =
 	complex_syllable_start
@@ -122,10 +115,11 @@ broken_cluster =
 	(complex_syllable_tail | number_joiner_terminated_cluster_tail | numeral_cluster_tail | symbol_cluster_tail)
 ;
 
-number_joiner_terminated_cluster = N VS? number_joiner_terminated_cluster_tail;
-numeral_cluster = N VS? numeral_cluster_tail?;
-symbol_cluster = (S | GB) VS? symbol_cluster_tail?;
-independent_cluster = (IND | O | Rsv | WJ) VS?;
+number_joiner_terminated_cluster = N number_joiner_terminated_cluster_tail;
+numeral_cluster = N numeral_cluster_tail?;
+symbol_cluster = (S | GB) symbol_cluster_tail?;
+hieroglyph_cluster = SB+ | SB* G SE* (J SE* (G SE*)?)*;
+independent_cluster = O;
 other = any;
 
 main := |*
@@ -136,6 +130,7 @@ main := |*
 	number_joiner_terminated_cluster	=> { found_syllable!(SyllableType::NumberJoinerTerminatedCluster); };
 	numeral_cluster				=> { found_syllable!(SyllableType::NumeralCluster); };
 	symbol_cluster				=> { found_syllable!(SyllableType::SymbolCluster); };
+	hieroglyph_cluster			=> { found_syllable! (SyllableType::HieroglyphCluster); };
 	broken_cluster				=> { found_syllable!(SyllableType::BrokenCluster); };
 	other					=> { found_syllable!(SyllableType::NonCluster); };
 *|;
@@ -152,29 +147,34 @@ pub enum SyllableType {
     NumberJoinerTerminatedCluster,
     NumeralCluster,
     SymbolCluster,
+    HieroglyphCluster,
     BrokenCluster,
     NonCluster,
 }
 
 pub fn find_syllables(buffer: &mut Buffer) {
     let mut cs = 0;
-    let mut ts = 0;
-    let mut te = 0;
-    let mut p = 0;
-    let pe = buffer.len;
-    let eof = buffer.len;
+    let infos = Cell::as_slice_of_cells(Cell::from_mut(&mut buffer.info));
+    let p0 = MachineCursor::new(infos, included);
+    let mut p = p0;
+    let mut ts = p0;
+    let mut te = p0;
+    let pe = p.end();
+    let eof = p.end();
     let mut syllable_serial = 1u8;
-    let mut act;
+
+    // Please manually replace assignments of 0 to p, ts, and te
+    // to use p0 instead
 
     macro_rules! found_syllable {
         ($kind:expr) => {{
-            found_syllable(ts, te, &mut syllable_serial, $kind, buffer);
+            found_syllable(ts.index(), te.index(), &mut syllable_serial, $kind, infos);
         }}
     }
 
     %%{
         write init;
-        getkey (buffer.info[p].use_category() as u8);
+        getkey (infos[p.index()].get().use_category() as u8);
         write exec; 
     }%%
 }
@@ -185,10 +185,12 @@ fn found_syllable(
     end: usize,
     syllable_serial: &mut u8,
     kind: SyllableType,
-    buffer: &mut Buffer,
+    buffer: &[Cell<GlyphInfo>],
 ) {
     for i in start..end {
-        buffer.info[i].set_syllable((*syllable_serial << 4) | kind as u8);
+        let mut glyph = buffer[i].get();
+        glyph.set_syllable((*syllable_serial << 4) | kind as u8);
+        buffer[i].set(glyph);
     }
 
     *syllable_serial += 1;
@@ -196,4 +198,23 @@ fn found_syllable(
     if *syllable_serial == 16 {
         *syllable_serial = 1;
     }
+}
+
+fn not_standard_default_ignorable(i: &GlyphInfo) -> bool {
+    !(matches!(i.use_category(), category::O | category::RSV) && i.is_default_ignorable())
+}
+
+fn included(infos: &[Cell<GlyphInfo>], i: usize) -> bool {
+    let glyph = infos[i].get();
+    if !not_standard_default_ignorable(&glyph) {
+        return false;
+    }
+    if glyph.use_category() == category::ZWNJ {
+        for glyph2 in &infos[i + 1..] {
+            if not_standard_default_ignorable(&glyph2.get()) {
+                return !glyph2.get().is_unicode_mark();
+            }
+        }
+    }
+    true
 }

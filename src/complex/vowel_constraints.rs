@@ -297,7 +297,7 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                         matched = 0x0DD8 == buffer.cur(1).glyph_id;
                     }
                     0x0D91 => match buffer.cur(1).glyph_id {
-                        0x0DCA | 0x0DD9 | 0x0DDA | 0x0DDC | 0x0DDD => {
+                        0x0DCA | 0x0DD9 | 0x0DDA | 0x0DDC | 0x0DDD | 0x0DDE => {
                             matched = true;
                         }
                         _ => {}

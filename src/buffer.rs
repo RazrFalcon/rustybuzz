@@ -533,13 +533,13 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub const MAX_LEN_FACTOR: usize = 32;
-    pub const MAX_LEN_MIN: usize = 8192;
+    pub const MAX_LEN_FACTOR: usize = 64;
+    pub const MAX_LEN_MIN: usize = 16384;
     // Shaping more than a billion chars? Let us know!
     pub const MAX_LEN_DEFAULT: usize = 0x3FFFFFFF;
 
-    pub const MAX_OPS_FACTOR: i32 = 64;
-    pub const MAX_OPS_MIN: i32 = 1024;
+    pub const MAX_OPS_FACTOR: i32 = 1024;
+    pub const MAX_OPS_MIN: i32 = 16384;
     // Shaping more than a billion operations? Let us know!
     pub const MAX_OPS_DEFAULT: i32 = 0x1FFFFFFF;
 

@@ -26,8 +26,10 @@ impl FeatureMapping {
     }
 }
 
-// Table data courtesy of Apple.
-// Converted from mnemonics to integers when moving to this file.
+/// Mapping from OpenType feature tags to AAT feature names and selectors.
+///
+/// Table data courtesy of Apple.
+/// Converted from mnemonics to integers when moving to this file.
 pub const FEATURE_MAPPINGS: &[FeatureMapping] = &[
     FeatureMapping::new(b"afrc", FeatureType::Fractions, VERTICAL_FRACTIONS, NO_FRACTIONS),
     FeatureMapping::new(b"c2pc", FeatureType::UpperCase, UPPER_CASE_PETITE_CAPS, DEFAULT_UPPER_CASE),
