@@ -1,7 +1,4 @@
-use core::{
-    cmp::Ordering,
-    ops::{Add, AddAssign, Sub, SubAssign},
-};
+use core::ops::{Add, AddAssign, Sub, SubAssign};
 
 #[derive(Debug)]
 pub struct MachineCursor<'a, T, F> {
@@ -34,28 +31,8 @@ where
             .unwrap_or(0);
     }
 
-    pub fn seek(&mut self, p: usize) {
-        match p.cmp(&self.pos) {
-            Ordering::Greater => {
-                for _ in self.pos..p {
-                    self.advance1();
-                }
-            }
-            Ordering::Less => {
-                for _ in p..self.pos {
-                    self.recede1();
-                }
-            }
-            Ordering::Equal => (),
-        }
-    }
-
     pub fn index(&self) -> usize {
         self.pos
-    }
-
-    pub fn end_idx(&self) -> usize {
-        self.data.len()
     }
 
     pub fn end(&self) -> Self
