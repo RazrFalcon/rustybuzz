@@ -2,8 +2,8 @@ use core::str::FromStr;
 
 use smallvec::SmallVec;
 
-use crate::{Tag, Script, Language, script, tag_table};
 use crate::common::TagExt;
+use crate::{script, tag_table, Language, Script, Tag};
 
 type ThreeTags = SmallVec<[Tag; 3]>;
 
@@ -45,12 +45,12 @@ pub fn tags_from_script_and_language(
                     if bytes[i] == b'x' {
                         private_use_subtag = Some(&language[i..]);
                         if prefix.is_empty() {
-                            prefix = &language[..i-1];
+                            prefix = &language[..i - 1];
                         }
 
                         break;
                     } else {
-                        prefix = &language[..i-1];
+                        prefix = &language[..i - 1];
                     }
                 }
 
@@ -63,11 +63,17 @@ pub fn tags_from_script_and_language(
         }
 
         needs_script = !parse_private_use_subtag(
-            private_use_subtag, "-hbsc", u8::to_ascii_lowercase, &mut scripts,
+            private_use_subtag,
+            "-hbsc",
+            u8::to_ascii_lowercase,
+            &mut scripts,
         );
 
         let needs_language = !parse_private_use_subtag(
-            private_use_subtag, "-hbot", u8::to_ascii_uppercase, &mut languages,
+            private_use_subtag,
+            "-hbot",
+            u8::to_ascii_uppercase,
+            &mut languages,
         );
 
         if needs_language {
@@ -134,10 +140,7 @@ fn lang_cmp(s1: &str, s2: &str) -> core::cmp::Ordering {
     s1[..ea].cmp(&s2[..eb])
 }
 
-fn tags_from_language(
-    language: &Language,
-    tags: &mut ThreeTags,
-) {
+fn tags_from_language(language: &Language, tags: &mut ThreeTags) {
     let language = language.as_str();
 
     // Check for matches of multiple subtags.
@@ -151,13 +154,13 @@ fn tags_from_language(
     if let Some(i) = language.find('-') {
         // If there is an extended language tag, use it.
         if language.len() >= 6 {
-            let extlang = match language[i+1..].find('-') {
+            let extlang = match language[i + 1..].find('-') {
                 Some(idx) => idx == 3,
                 None => language.len() - i - 1 == 3,
             };
 
-            if extlang && language.as_bytes()[i+1].is_ascii_alphabetic() {
-                sublang = &language[i+1..];
+            if extlang && language.as_bytes()[i + 1].is_ascii_alphabetic() {
+                sublang = &language[i + 1..];
             }
         }
     }
@@ -165,7 +168,7 @@ fn tags_from_language(
     use tag_table::OPEN_TYPE_LANGUAGES as LANGUAGES;
 
     if let Ok(mut idx) = LANGUAGES.binary_search_by(|v| lang_cmp(v.language, sublang)) {
-        while idx != 0 && LANGUAGES[idx].language == LANGUAGES[idx-1].language {
+        while idx != 0 && LANGUAGES[idx].language == LANGUAGES[idx - 1].language {
             idx -= 1;
         }
 
@@ -217,16 +220,16 @@ fn all_tags_from_script(script: Option<Script>, tags: &mut ThreeTags) {
 
 fn new_tag_from_script(script: Script) -> Option<Tag> {
     match script {
-        script::BENGALI     => Some(Tag::from_bytes(b"bng2")),
-        script::DEVANAGARI  => Some(Tag::from_bytes(b"dev2")),
-        script::GUJARATI    => Some(Tag::from_bytes(b"gjr2")),
-        script::GURMUKHI    => Some(Tag::from_bytes(b"gur2")),
-        script::KANNADA     => Some(Tag::from_bytes(b"knd2")),
-        script::MALAYALAM   => Some(Tag::from_bytes(b"mlm2")),
-        script::ORIYA       => Some(Tag::from_bytes(b"ory2")),
-        script::TAMIL       => Some(Tag::from_bytes(b"tml2")),
-        script::TELUGU      => Some(Tag::from_bytes(b"tel2")),
-        script::MYANMAR     => Some(Tag::from_bytes(b"mym2")),
+        script::BENGALI => Some(Tag::from_bytes(b"bng2")),
+        script::DEVANAGARI => Some(Tag::from_bytes(b"dev2")),
+        script::GUJARATI => Some(Tag::from_bytes(b"gjr2")),
+        script::GURMUKHI => Some(Tag::from_bytes(b"gur2")),
+        script::KANNADA => Some(Tag::from_bytes(b"knd2")),
+        script::MALAYALAM => Some(Tag::from_bytes(b"mlm2")),
+        script::ORIYA => Some(Tag::from_bytes(b"ory2")),
+        script::TAMIL => Some(Tag::from_bytes(b"tml2")),
+        script::TELUGU => Some(Tag::from_bytes(b"tel2")),
+        script::MYANMAR => Some(Tag::from_bytes(b"mym2")),
         _ => None,
     }
 }
@@ -235,21 +238,22 @@ fn old_tag_from_script(script: Script) -> Tag {
     // This seems to be accurate as of end of 2012.
     match script {
         // Katakana and Hiragana both map to 'kana'.
-        script::HIRAGANA    => Tag::from_bytes(b"kana"),
+        script::HIRAGANA => Tag::from_bytes(b"kana"),
 
         // Spaces at the end are preserved, unlike ISO 15924.
-        script::LAO         => Tag::from_bytes(b"lao "),
-        script::YI          => Tag::from_bytes(b"yi  "),
+        script::LAO => Tag::from_bytes(b"lao "),
+        script::YI => Tag::from_bytes(b"yi  "),
         // Unicode-5.0 additions.
-        script::NKO         => Tag::from_bytes(b"nko "),
+        script::NKO => Tag::from_bytes(b"nko "),
         // Unicode-5.1 additions.
-        script::VAI         => Tag::from_bytes(b"vai "),
+        script::VAI => Tag::from_bytes(b"vai "),
 
         // Else, just change first char to lowercase and return.
         _ => Tag(script.tag().as_u32() | 0x20000000),
     }
 }
 
+#[rustfmt::skip]
 #[cfg(test)]
 mod tests {
     #![allow(non_snake_case)]

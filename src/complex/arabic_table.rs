@@ -1,5 +1,6 @@
-use super::arabic::JoiningType::{self, U, L, R, D, GroupAlaph as A, GroupDalathRish as DR, T, X};
+use super::arabic::JoiningType::{self, GroupAlaph as A, GroupDalathRish as DR, D, L, R, T, U, X};
 
+#[rustfmt::skip]
 pub const JOINING_TABLE: &[JoiningType] = &[
     /* Arabic */
 

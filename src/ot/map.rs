@@ -1,12 +1,14 @@
 use alloc::vec::Vec;
 use core::ops::Range;
 
-use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, VariationIndex, ScriptIndex};
+use ttf_parser::opentype_layout::{
+    FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex, VariationIndex,
+};
 
-use crate::{tag, Face, Language, Mask, Tag, Script};
+use super::{LayoutTableExt, TableIndex};
 use crate::buffer::{glyph_flag, Buffer};
 use crate::plan::ShapePlan;
-use super::{LayoutTableExt, TableIndex};
+use crate::{tag, Face, Language, Mask, Script, Tag};
 
 pub struct Map {
     found_script: [bool; 2],
@@ -74,7 +76,9 @@ impl Map {
     pub fn mask(&self, feature_tag: Tag) -> (Mask, u32) {
         self.features
             .binary_search_by_key(&feature_tag, |f| f.tag)
-            .map_or((0, 0), |idx| (self.features[idx].mask, self.features[idx].shift))
+            .map_or((0, 0), |idx| {
+                (self.features[idx].mask, self.features[idx].shift)
+            })
     }
 
     #[inline]
@@ -119,8 +123,12 @@ impl Map {
     pub fn stage_lookup_range(&self, table_index: TableIndex, stage: usize) -> Range<usize> {
         let stages = &self.stages[table_index];
         let lookups = &self.lookups[table_index];
-        let start = stage.checked_sub(1).map_or(0, |prev| stages[prev].last_lookup);
-        let end = stages.get(stage).map_or(lookups.len(), |curr| curr.last_lookup);
+        let start = stage
+            .checked_sub(1)
+            .map_or(0, |prev| stages[prev].last_lookup);
+        let end = stages
+            .get(stage)
+            .map_or(lookups.len(), |curr| curr.last_lookup);
         start..end
     }
 }
@@ -227,7 +235,11 @@ impl<'a> MapBuilder<'a> {
                 seq,
                 max_value: value,
                 flags,
-                default_value: if flags.contains(FeatureFlags::GLOBAL) { value } else { 0 },
+                default_value: if flags.contains(FeatureFlags::GLOBAL) {
+                    value
+                } else {
+                    0
+                },
                 stage: self.current_stage,
             });
         }
@@ -287,7 +299,8 @@ impl<'a> MapBuilder<'a> {
         self.add_gsub_pause(None);
         self.add_gpos_pause(None);
 
-        let (lookups, stages) = self.collect_lookup_stages(&features, required_index, required_stage);
+        let (lookups, stages) =
+            self.collect_lookup_stages(&features, required_index, required_stage);
 
         Map {
             found_script: self.found_script,
@@ -324,7 +337,7 @@ impl<'a> MapBuilder<'a> {
 
             let bits_available = 8 * core::mem::size_of::<Mask>() as u32;
             if info.max_value == 0 || next_bit + bits_needed > bits_available {
-                 // Feature disabled, or not enough bits.
+                // Feature disabled, or not enough bits.
                 continue;
             }
 
@@ -358,7 +371,8 @@ impl<'a> MapBuilder<'a> {
                 continue;
             }
 
-            let (shift, mask) = if info.flags.contains(FeatureFlags::GLOBAL) && info.max_value == 1 {
+            let (shift, mask) = if info.flags.contains(FeatureFlags::GLOBAL) && info.max_value == 1
+            {
                 // Uses the global bit
                 (Self::GLOBAL_BIT_SHIFT, Self::GLOBAL_BIT_MASK)
             } else {
@@ -407,13 +421,16 @@ impl<'a> MapBuilder<'a> {
                     if feature_infos[j].flags.contains(FeatureFlags::GLOBAL) {
                         feature_infos[j].flags ^= FeatureFlags::GLOBAL;
                     }
-                    feature_infos[j].max_value = feature_infos[j].max_value.max(feature_infos[i].max_value);
+                    feature_infos[j].max_value =
+                        feature_infos[j].max_value.max(feature_infos[i].max_value);
                     // Inherit default_value from j
                 }
                 let flags = feature_infos[i].flags & FeatureFlags::HAS_FALLBACK;
                 feature_infos[j].flags |= flags;
-                feature_infos[j].stage[0] = feature_infos[j].stage[0].min(feature_infos[i].stage[0]);
-                feature_infos[j].stage[1] = feature_infos[j].stage[1].min(feature_infos[i].stage[1]);
+                feature_infos[j].stage[0] =
+                    feature_infos[j].stage[0].min(feature_infos[i].stage[0]);
+                feature_infos[j].stage[1] =
+                    feature_infos[j].stage[1].min(feature_infos[i].stage[1]);
             }
         }
 
@@ -435,7 +452,8 @@ impl<'a> MapBuilder<'a> {
             let mut last_lookup = 0;
 
             let coords = self.face.ttfp_face.variation_coordinates();
-            let variation_index = self.face
+            let variation_index = self
+                .face
                 .layout_table(table_index)
                 .and_then(|t| t.variations?.find_index(coords));
 
@@ -480,7 +498,7 @@ impl<'a> MapBuilder<'a> {
                     lookups[last_lookup..].sort();
 
                     let mut j = last_lookup;
-                    for i in j+1..len {
+                    for i in j + 1..len {
                         if lookups[i].index != lookups[j].index {
                             j += 1;
                             lookups[j] = lookups[i];
@@ -527,17 +545,22 @@ impl<'a> MapBuilder<'a> {
 
         let lookup_count = table.lookups.len();
         let feature = match variation_index {
-            Some(idx) => {
-                table.variations
-                    .and_then(|var| var.find_substitute(feature_index, idx))
-                    .or_else(|| table.features.get(feature_index))?
-            }
+            Some(idx) => table
+                .variations
+                .and_then(|var| var.find_substitute(feature_index, idx))
+                .or_else(|| table.features.get(feature_index))?,
             None => table.features.get(feature_index)?,
         };
 
         for index in feature.lookup_indices {
             if index < lookup_count {
-                lookups.push(LookupMap { mask, index, auto_zwnj, auto_zwj, random });
+                lookups.push(LookupMap {
+                    mask,
+                    index,
+                    auto_zwnj,
+                    auto_zwj,
+                    random,
+                });
             }
         }
 

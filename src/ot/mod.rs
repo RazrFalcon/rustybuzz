@@ -1,6 +1,6 @@
-pub mod feature;
 mod apply;
 mod contextual;
+pub mod feature;
 mod kerning;
 mod layout;
 mod map;
@@ -17,9 +17,9 @@ pub use substitute::*;
 
 use alloc::vec::Vec;
 
-use ttf_parser::opentype_layout::{Coverage, Lookup};
 use ttf_parser::gpos::PositioningSubtable;
 use ttf_parser::gsub::SubstitutionSubtable;
+use ttf_parser::opentype_layout::{Coverage, Lookup};
 
 use crate::glyph_set::{GlyphSet, GlyphSetBuilder};
 
@@ -32,7 +32,6 @@ pub mod lookup_flags {
     pub const IGNORE_FLAGS: u16 = 0x000E;
     pub const USE_MARK_FILTERING_SET: u16 = 0x0010;
     pub const MARK_ATTACHMENT_TYPE_MASK: u16 = 0xFF00;
-
 }
 
 #[derive(Clone)]
@@ -43,11 +42,13 @@ pub struct PositioningTable<'a> {
 
 impl<'a> PositioningTable<'a> {
     pub fn new(inner: ttf_parser::opentype_layout::LayoutTable<'a>) -> Self {
-        let lookups = inner.lookups.into_iter()
+        let lookups = inner
+            .lookups
+            .into_iter()
             .map(PositioningLookup::parse)
             .collect();
 
-        Self { inner, lookups}
+        Self { inner, lookups }
     }
 }
 
@@ -100,7 +101,6 @@ impl<'a> PositioningLookup<'a> {
     }
 }
 
-
 #[derive(Clone)]
 pub struct SubstitutionTable<'a> {
     pub inner: ttf_parser::opentype_layout::LayoutTable<'a>,
@@ -109,11 +109,9 @@ pub struct SubstitutionTable<'a> {
 
 impl<'a> SubstitutionTable<'a> {
     pub fn new(inner: ttf_parser::opentype_layout::LayoutTable<'a>) -> Self {
-        let lookups = inner.lookups.into_iter()
-            .map(SubstLookup::parse)
-            .collect();
+        let lookups = inner.lookups.into_iter().map(SubstLookup::parse).collect();
 
-        Self { inner, lookups}
+        Self { inner, lookups }
     }
 }
 

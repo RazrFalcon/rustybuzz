@@ -71,16 +71,24 @@ fn parse_args() -> Result<Args, pico_args::Error> {
         font_file: args.opt_value_from_str("--font-file")?,
         face_index: args.opt_value_from_str("--face-index")?.unwrap_or(0),
         font_ptem: args.opt_value_from_str("--font-ptem")?,
-        variations: args.opt_value_from_fn("--variations", parse_variations)?.unwrap_or_default(),
+        variations: args
+            .opt_value_from_fn("--variations", parse_variations)?
+            .unwrap_or_default(),
         text: args.opt_value_from_str("--text")?,
         text_file: args.opt_value_from_str("--text-file")?,
         unicodes: args.opt_value_from_fn(["-u", "--unicodes"], parse_unicodes)?,
         direction: args.opt_value_from_str("--direction")?,
-        language: args.opt_value_from_str("--language")?.unwrap_or(system_language()),
+        language: args
+            .opt_value_from_str("--language")?
+            .unwrap_or(system_language()),
         script: args.opt_value_from_str("--script")?,
         utf8_clusters: args.contains("--utf8-clusters"),
-        cluster_level: args.opt_value_from_fn("--cluster-level", parse_cluster)?.unwrap_or_default(),
-        features: args.opt_value_from_fn("--features", parse_features)?.unwrap_or_default(),
+        cluster_level: args
+            .opt_value_from_fn("--cluster-level", parse_cluster)?
+            .unwrap_or_default(),
+        features: args
+            .opt_value_from_fn("--features", parse_features)?
+            .unwrap_or_default(),
         no_glyph_names: args.contains("--no-glyph-names"),
         no_positions: args.contains("--no-positions"),
         no_advances: args.contains("--no-advances"),
@@ -88,7 +96,11 @@ fn parse_args() -> Result<Args, pico_args::Error> {
         show_extents: args.contains("--show-extents"),
         show_flags: args.contains("--show-flags"),
         ned: args.contains("--ned"),
-        free: args.finish().iter().map(|s| s.to_string_lossy().to_string()).collect(),
+        free: args
+            .finish()
+            .iter()
+            .map(|s| s.to_string_lossy().to_string())
+            .collect(),
     };
 
     Ok(args)
@@ -199,7 +211,7 @@ fn main() {
         format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
     }
 
-    println!("{}", glyph_buffer.serialize(&face,  format_flags));
+    println!("{}", glyph_buffer.serialize(&face, format_flags));
 }
 
 fn parse_unicodes(s: &str) -> Result<String, String> {
@@ -241,7 +253,7 @@ fn parse_cluster(s: &str) -> Result<rustybuzz::BufferClusterLevel, String> {
         "0" => Ok(rustybuzz::BufferClusterLevel::MonotoneGraphemes),
         "1" => Ok(rustybuzz::BufferClusterLevel::MonotoneCharacters),
         "2" => Ok(rustybuzz::BufferClusterLevel::Characters),
-        _ => Err(format!("invalid cluster level"))
+        _ => Err(format!("invalid cluster level")),
     }
 }
 

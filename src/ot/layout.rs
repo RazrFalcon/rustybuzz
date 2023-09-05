@@ -2,14 +2,14 @@
 
 use core::ops::{Index, IndexMut};
 
-use ttf_parser::GlyphId;
 use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex};
+use ttf_parser::GlyphId;
 
-use crate::{Face, Tag};
+use super::apply::{Apply, ApplyContext};
 use crate::buffer::Buffer;
 use crate::common::TagExt;
 use crate::plan::ShapePlan;
-use super::apply::{Apply, ApplyContext};
+use crate::{Face, Tag};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -69,7 +69,11 @@ pub trait LayoutLookup: Apply {
 
 pub trait LayoutTableExt {
     fn select_script(&self, script_tags: &[Tag]) -> Option<(bool, ScriptIndex, Tag)>;
-    fn select_script_language(&self, script_index: ScriptIndex, lang_tags: &[Tag]) -> Option<LanguageIndex>;
+    fn select_script_language(
+        &self,
+        script_index: ScriptIndex,
+        lang_tags: &[Tag],
+    ) -> Option<LanguageIndex>;
     fn get_required_language_feature(
         &self,
         script_index: ScriptIndex,
@@ -198,7 +202,7 @@ pub fn apply_layout_table<T: LayoutTable>(
             }
 
             if let Some(table) = &table {
-                if let Some(lookup) =  table.get_lookup(lookup.index) {
+                if let Some(lookup) = table.get_lookup(lookup.index) {
                     apply_string::<T>(&mut ctx, lookup);
                 }
             }

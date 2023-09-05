@@ -1,6 +1,6 @@
-use crate::Face;
 use crate::buffer::Buffer;
 use crate::plan::ShapePlan;
+use crate::Face;
 
 pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
     let trak_mask = plan.trak_mask;
@@ -58,7 +58,12 @@ impl TrackTableExt for ttf_parser::trak::Table<'_> {
 
 trait TrackTableDataExt {
     fn tracking(&self, ptem: f32) -> Option<i32>;
-    fn interpolate_at(&self, idx: u16, target_size: f32, track: &ttf_parser::trak::Track) -> Option<f32>;
+    fn interpolate_at(
+        &self,
+        idx: u16,
+        target_size: f32,
+        track: &ttf_parser::trak::Track,
+    ) -> Option<f32>;
 }
 
 impl TrackTableDataExt for ttf_parser::trak::TrackData<'_> {
@@ -71,14 +76,18 @@ impl TrackTableDataExt for ttf_parser::trak::TrackData<'_> {
             return None;
         }
 
-        let mut idx = self.sizes.into_iter().position(|s| s.0 >= ptem)
+        let mut idx = self
+            .sizes
+            .into_iter()
+            .position(|s| s.0 >= ptem)
             .unwrap_or(self.sizes.len() as usize - 1);
 
         if idx > 0 {
             idx -= 1;
         }
 
-        self.interpolate_at(idx as u16, ptem, &track).map(|n| crate::round(n) as i32)
+        self.interpolate_at(idx as u16, ptem, &track)
+            .map(|n| crate::round(n) as i32)
     }
 
     fn interpolate_at(
@@ -92,10 +101,14 @@ impl TrackTableDataExt for ttf_parser::trak::TrackData<'_> {
         let s0 = self.sizes.get(idx)?.0;
         let s1 = self.sizes.get(idx + 1)?.0;
 
-        let t = if s0 == s1 { 0.0 } else { (target_size - s0) / (s1 - s0) };
+        let t = if s0 == s1 {
+            0.0
+        } else {
+            (target_size - s0) / (s1 - s0)
+        };
 
-        let n = t * (track.values.get(idx + 1)? as f32)
-            + (1.0 - t) * (track.values.get(idx)? as f32);
+        let n =
+            t * (track.values.get(idx + 1)? as f32) + (1.0 - t) * (track.values.get(idx)? as f32);
 
         Some(n)
     }

@@ -66,7 +66,8 @@ impl<'a> TextParser<'a> {
 
     #[inline]
     pub fn consume_bytes<F>(&mut self, f: F) -> &'a str
-        where F: Fn(u8) -> bool
+    where
+        F: Fn(u8) -> bool,
     {
         let start = self.pos;
         self.skip_bytes(f);
@@ -74,7 +75,8 @@ impl<'a> TextParser<'a> {
     }
 
     pub fn skip_bytes<F>(&mut self, f: F)
-        where F: Fn(u8) -> bool
+    where
+        F: Fn(u8) -> bool,
     {
         while !self.at_end() && f(self.curr_byte_unchecked()) {
             self.advance(1);
@@ -124,15 +126,13 @@ impl<'a> TextParser<'a> {
 
         let value = self.consume_bytes(|c| c.is_ascii_alphabetic()).as_bytes();
         if value.len() == 2 {
-            if value[0].to_ascii_lowercase() == b'o' &&
-               value[1].to_ascii_lowercase() == b'n'
-            {
+            if value[0].to_ascii_lowercase() == b'o' && value[1].to_ascii_lowercase() == b'n' {
                 return Some(true);
             }
         } else if value.len() == 3 {
-            if value[0].to_ascii_lowercase() == b'o' &&
-               value[1].to_ascii_lowercase() == b'f' &&
-               value[2].to_ascii_lowercase() == b'f'
+            if value[0].to_ascii_lowercase() == b'o'
+                && value[1].to_ascii_lowercase() == b'f'
+                && value[2].to_ascii_lowercase() == b'f'
             {
                 return Some(false);
             }

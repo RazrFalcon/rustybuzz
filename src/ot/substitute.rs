@@ -1,17 +1,17 @@
 use core::convert::TryFrom;
 
-use ttf_parser::GlyphId;
 use ttf_parser::gsub::*;
+use ttf_parser::GlyphId;
 
-use crate::Face;
 use crate::buffer::{Buffer, GlyphPropsFlags};
 use crate::plan::ShapePlan;
 use crate::unicode::GeneralCategory;
+use crate::Face;
 
-use super::{Map, LayoutLookup, LayoutTable, TableIndex, SubstitutionTable, SubstLookup, MAX_NESTING_LEVEL};
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::matching::{
-    match_backtrack, match_glyph, match_input, match_lookahead, Matched,
+use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead, Matched};
+use super::{
+    LayoutLookup, LayoutTable, Map, SubstLookup, SubstitutionTable, TableIndex, MAX_NESTING_LEVEL,
 };
 use ttf_parser::opentype_layout::LookupIndex;
 
@@ -62,7 +62,10 @@ impl LayoutLookup for SubstLookup<'_> {
 impl WouldApply for SubstLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         self.covers(ctx.glyphs[0])
-            && self.subtables.iter().any(|subtable| subtable.would_apply(ctx))
+            && self
+                .subtables
+                .iter()
+                .any(|subtable| subtable.would_apply(ctx))
     }
 }
 
@@ -124,7 +127,10 @@ impl Apply for SingleSubstitution<'_> {
                 // limited to 16bit, so we explicitly want to truncate.
                 GlyphId((i32::from(glyph.0) + i32::from(delta)) as u16)
             }
-            Self::Format2 { coverage, substitutes } => {
+            Self::Format2 {
+                coverage,
+                substitutes,
+            } => {
                 let index = coverage.get(glyph)?;
                 substitutes.get(index)?
             }
@@ -223,7 +229,8 @@ impl Apply for AlternateSet<'_> {
 
 impl WouldApply for LigatureSubstitution<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        self.coverage.get(ctx.glyphs[0])
+        self.coverage
+            .get(ctx.glyphs[0])
             .and_then(|index| self.ligature_sets.get(index))
             .map_or(false, |set| set.would_apply(ctx))
     }
@@ -232,7 +239,8 @@ impl WouldApply for LigatureSubstitution<'_> {
 impl Apply for LigatureSubstitution<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
-        self.coverage.get(glyph)
+        self.coverage
+            .get(glyph)
             .and_then(|index| self.ligature_sets.get(index))
             .and_then(|set| set.apply(ctx))
     }
@@ -258,7 +266,8 @@ impl Apply for LigatureSet<'_> {
 impl WouldApply for Ligature<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
         ctx.glyphs.len() == usize::from(self.components.len()) + 1
-            && self.components
+            && self
+                .components
                 .into_iter()
                 .enumerate()
                 .all(|(i, comp)| ctx.glyphs[i + 1] == comp)
@@ -333,8 +342,16 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     }
 
     let is_ligature = !is_base_ligature && !is_mark_ligature;
-    let class = if is_ligature { GlyphPropsFlags::LIGATURE } else { GlyphPropsFlags::empty() };
-    let lig_id = if is_ligature { buffer.allocate_lig_id() } else { 0 };
+    let class = if is_ligature {
+        GlyphPropsFlags::LIGATURE
+    } else {
+        GlyphPropsFlags::empty()
+    };
+    let lig_id = if is_ligature {
+        buffer.allocate_lig_id()
+    } else {
+        0
+    };
     let first = buffer.cur_mut(0);
     let mut last_lig_id = first.lig_id();
     let mut last_num_comps = first.lig_num_comps();
@@ -427,7 +444,8 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
 
         if let Some(start_idx) = match_backtrack(ctx, self.backtrack_coverages.len(), &f1) {
             if let Some(end_idx) = match_lookahead(ctx, self.lookahead_coverages.len(), &f2, 1) {
-                ctx.buffer.unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                ctx.buffer
+                    .unsafe_to_break_from_outbuffer(start_idx, end_idx);
                 ctx.replace_glyph_inplace(subst);
 
                 // Note: We DON'T decrease buffer.idx.  The main loop does it

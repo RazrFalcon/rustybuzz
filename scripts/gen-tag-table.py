@@ -850,6 +850,7 @@ print('    pub language: &\'static str,')
 print('    pub tag: Tag,')
 print('}')
 print()
+print('#[rustfmt::skip]')
 print('pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[')
 
 

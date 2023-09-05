@@ -1,14 +1,16 @@
-use ttf_parser::GlyphId;
-use ttf_parser::opentype_layout::LookupIndex;
 use ttf_parser::gpos::*;
+use ttf_parser::opentype_layout::LookupIndex;
+use ttf_parser::GlyphId;
 
-use crate::{Direction, Face};
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
 use crate::plan::ShapePlan;
+use crate::{Direction, Face};
 
-use super::{lookup_flags, LayoutLookup, LayoutTable, TableIndex, PositioningTable, PositioningLookup};
 use super::apply::{Apply, ApplyContext};
 use super::matching::SkippyIter;
+use super::{
+    lookup_flags, LayoutLookup, LayoutTable, PositioningLookup, PositioningTable, TableIndex,
+};
 
 pub fn position_start(_: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
@@ -29,7 +31,10 @@ pub fn position_finish_offsets(_: &Face, buffer: &mut Buffer) {
     let direction = buffer.direction;
 
     // Handle attachments
-    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_GPOS_ATTACHMENT) {
+    if buffer
+        .scratch_flags
+        .contains(BufferScratchFlags::HAS_GPOS_ATTACHMENT)
+    {
         for i in 0..len {
             propagate_attachment_offsets(&mut buffer.pos, len, i, direction);
         }
@@ -71,7 +76,7 @@ fn propagate_attachment_offsets(
                     pos[i].y_offset -= pos[k].y_advance;
                 }
             } else {
-                for k in j+1..i+1 {
+                for k in j + 1..i + 1 {
                     pos[i].x_offset += pos[k].x_advance;
                     pos[i].y_offset += pos[k].y_advance;
                 }
@@ -175,10 +180,10 @@ impl Apply for PairAdjustment<'_> {
         let second = ctx.buffer.info[pos].as_glyph();
 
         let records = match self {
-            Self::Format1 { sets, .. } => {
-                sets.get(index)?.get(second)
-            }
-            Self::Format2 { classes, matrix, .. } => {
+            Self::Format1 { sets, .. } => sets.get(index)?.get(second),
+            Self::Format2 {
+                classes, matrix, ..
+            } => {
                 let classes = (classes.0.get(first), classes.1.get(second));
                 matrix.get(classes)
             }
@@ -368,7 +373,8 @@ impl Apply for MarkToBaseAdjustment<'_> {
         let base_glyph = info[idx].as_glyph();
         let base_index = self.base_coverage.get(base_glyph)?;
 
-        self.marks.apply(ctx, self.anchors, mark_index, base_index, idx)
+        self.marks
+            .apply(ctx, self.anchors, mark_index, base_index, idx)
     }
 }
 
@@ -406,9 +412,14 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         let mark_id = buffer.cur(0).lig_id();
         let mark_comp = u16::from(buffer.cur(0).lig_comp());
         let matches = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
-        let comp_index = if matches { mark_comp.min(comp_count) } else { comp_count } - 1;
+        let comp_index = if matches {
+            mark_comp.min(comp_count)
+        } else {
+            comp_count
+        } - 1;
 
-        self.marks.apply(ctx, lig_attach, mark_index, comp_index, idx)
+        self.marks
+            .apply(ctx, lig_attach, mark_index, comp_index, idx)
     }
 }
 
@@ -452,7 +463,8 @@ impl Apply for MarkToMarkAdjustment<'_> {
         let mark2_glyph = buffer.info[idx].as_glyph();
         let mark2_index = self.mark2_coverage.get(mark2_glyph)?;
 
-        self.marks.apply(ctx, self.mark2_matrix, mark1_index, mark2_index, idx)
+        self.marks
+            .apply(ctx, self.mark2_matrix, mark1_index, mark2_index, idx)
     }
 }
 
@@ -614,26 +626,33 @@ impl DeviceExt for Device<'_> {
     fn get_x_delta(&self, face: &Face) -> Option<i32> {
         match self {
             Device::Hinting(hinting) => hinting.x_delta(face.units_per_em, face.pixels_per_em()),
-            Device::Variation(variation) => {
-                face.tables().gdef?
-                    .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
-                    .and_then(|float| i32::try_num_from(crate::round(float)))
-            }
+            Device::Variation(variation) => face
+                .tables()
+                .gdef?
+                .glyph_variation_delta(
+                    variation.outer_index,
+                    variation.inner_index,
+                    face.variation_coordinates(),
+                )
+                .and_then(|float| i32::try_num_from(crate::round(float))),
         }
     }
 
     fn get_y_delta(&self, face: &Face) -> Option<i32> {
         match self {
             Device::Hinting(hinting) => hinting.y_delta(face.units_per_em, face.pixels_per_em()),
-            Device::Variation(variation) => {
-                face.tables().gdef?
-                    .glyph_variation_delta(variation.outer_index, variation.inner_index, face.variation_coordinates())
-                    .and_then(|float| i32::try_num_from(crate::round(float)))
-            }
+            Device::Variation(variation) => face
+                .tables()
+                .gdef?
+                .glyph_variation_delta(
+                    variation.outer_index,
+                    variation.inner_index,
+                    face.variation_coordinates(),
+                )
+                .and_then(|float| i32::try_num_from(crate::round(float))),
         }
     }
 }
-
 
 trait AnchorExt {
     fn get(&self, face: &Face) -> (i32, i32);

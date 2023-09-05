@@ -1,12 +1,13 @@
 use alloc::boxed::Box;
 
-use crate::{script, Tag, Face, GlyphInfo, Mask, Script};
+use super::*;
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
-use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, modified_combining_class, hb_gc};
-use super::*;
-
+use crate::unicode::{
+    hb_gc, modified_combining_class, CharExt, GeneralCategory, GeneralCategoryExt,
+};
+use crate::{script, Face, GlyphInfo, Mask, Script, Tag};
 
 pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -24,7 +25,6 @@ pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     fallback_position: true,
 };
 
-
 const ARABIC_HAS_STCH: BufferScratchFlags = BufferScratchFlags::COMPLEX0;
 
 const ARABIC_FEATURES: &[Tag] = &[
@@ -40,7 +40,6 @@ const ARABIC_FEATURES: &[Tag] = &[
 fn feature_is_syriac(tag: Tag) -> bool {
     matches!(tag.to_bytes()[3], b'2' | b'3')
 }
-
 
 mod action {
     pub const ISOL: u8 = 0;
@@ -62,54 +61,74 @@ mod action {
     }
 }
 
-
 const STATE_TABLE: &[[(u8, u8, u16); 6]] = &[
     // jt_U,          jt_L,          jt_R,
     // jt_D,          jg_ALAPH,      jg_DALATH_RISH
 
     // State 0: prev was U, not willing to join.
     [
-        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::NONE, action::ISOL, 1),
-        (action::NONE, action::ISOL, 2), (action::NONE, action::ISOL, 1), (action::NONE, action::ISOL, 6),
+        (action::NONE, action::NONE, 0),
+        (action::NONE, action::ISOL, 2),
+        (action::NONE, action::ISOL, 1),
+        (action::NONE, action::ISOL, 2),
+        (action::NONE, action::ISOL, 1),
+        (action::NONE, action::ISOL, 6),
     ],
-
     // State 1: prev was R or action::ISOL/ALAPH, not willing to join.
     [
-        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::NONE, action::ISOL, 1),
-        (action::NONE, action::ISOL, 2), (action::NONE, action::FIN2, 5), (action::NONE, action::ISOL, 6),
+        (action::NONE, action::NONE, 0),
+        (action::NONE, action::ISOL, 2),
+        (action::NONE, action::ISOL, 1),
+        (action::NONE, action::ISOL, 2),
+        (action::NONE, action::FIN2, 5),
+        (action::NONE, action::ISOL, 6),
     ],
-
     // State 2: prev was D/L in action::ISOL form, willing to join.
     [
-        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::INIT, action::FINA, 1),
-        (action::INIT, action::FINA, 3), (action::INIT, action::FINA, 4), (action::INIT, action::FINA, 6),
+        (action::NONE, action::NONE, 0),
+        (action::NONE, action::ISOL, 2),
+        (action::INIT, action::FINA, 1),
+        (action::INIT, action::FINA, 3),
+        (action::INIT, action::FINA, 4),
+        (action::INIT, action::FINA, 6),
     ],
-
     // State 3: prev was D in action::FINA form, willing to join.
     [
-        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::MEDI, action::FINA, 1),
-        (action::MEDI, action::FINA, 3), (action::MEDI, action::FINA, 4), (action::MEDI, action::FINA, 6),
+        (action::NONE, action::NONE, 0),
+        (action::NONE, action::ISOL, 2),
+        (action::MEDI, action::FINA, 1),
+        (action::MEDI, action::FINA, 3),
+        (action::MEDI, action::FINA, 4),
+        (action::MEDI, action::FINA, 6),
     ],
-
     // State 4: prev was action::FINA ALAPH, not willing to join.
     [
-        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::MED2, action::ISOL, 1),
-        (action::MED2, action::ISOL, 2), (action::MED2, action::FIN2, 5), (action::MED2, action::ISOL, 6),
+        (action::NONE, action::NONE, 0),
+        (action::NONE, action::ISOL, 2),
+        (action::MED2, action::ISOL, 1),
+        (action::MED2, action::ISOL, 2),
+        (action::MED2, action::FIN2, 5),
+        (action::MED2, action::ISOL, 6),
     ],
-
     // State 5: prev was FIN2/FIN3 ALAPH, not willing to join.
     [
-        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::ISOL, action::ISOL, 1),
-        (action::ISOL, action::ISOL, 2), (action::ISOL, action::FIN2, 5), (action::ISOL, action::ISOL, 6),
+        (action::NONE, action::NONE, 0),
+        (action::NONE, action::ISOL, 2),
+        (action::ISOL, action::ISOL, 1),
+        (action::ISOL, action::ISOL, 2),
+        (action::ISOL, action::FIN2, 5),
+        (action::ISOL, action::ISOL, 6),
     ],
-
     // State 6: prev was DALATH/RISH, not willing to join.
     [
-        (action::NONE, action::NONE, 0), (action::NONE, action::ISOL, 2), (action::NONE, action::ISOL, 1),
-        (action::NONE, action::ISOL, 2), (action::NONE, action::FIN3, 5), (action::NONE, action::ISOL, 6),
-    ]
+        (action::NONE, action::NONE, 0),
+        (action::NONE, action::ISOL, 2),
+        (action::NONE, action::ISOL, 1),
+        (action::NONE, action::ISOL, 2),
+        (action::NONE, action::FIN3, 5),
+        (action::NONE, action::ISOL, 6),
+    ],
 ];
-
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum JoiningType {
@@ -124,7 +143,6 @@ pub enum JoiningType {
     X = 8, // means: use general-category to choose between U or T.
 }
 
-
 impl GlyphInfo {
     fn arabic_shaping_action(&self) -> u8 {
         let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
@@ -137,7 +155,6 @@ impl GlyphInfo {
     }
 }
 
-
 pub struct ArabicShapePlan {
     // The "+ 1" in the next array is to accommodate for the "NONE" command,
     // which is not an OpenType feature, but this simplifies the code by not
@@ -149,17 +166,22 @@ pub struct ArabicShapePlan {
 
 impl ArabicShapePlan {
     pub fn new(plan: &ShapePlan) -> ArabicShapePlan {
-        let has_stch = plan.ot_map.one_mask(feature::STRETCHING_GLYPH_DECOMPOSITION) != 0;
+        let has_stch = plan
+            .ot_map
+            .one_mask(feature::STRETCHING_GLYPH_DECOMPOSITION)
+            != 0;
 
         let mut mask_array = [0; ARABIC_FEATURES.len() + 1];
         for i in 0..ARABIC_FEATURES.len() {
             mask_array[i] = plan.ot_map.one_mask(ARABIC_FEATURES[i]);
         }
 
-        ArabicShapePlan { mask_array, has_stch }
+        ArabicShapePlan {
+            mask_array,
+            has_stch,
+        }
     }
 }
-
 
 fn collect_features(planner: &mut ShapePlanner) {
     // We apply features according to the Arabic spec, with pauses
@@ -183,17 +205,31 @@ fn collect_features(planner: &mut ShapePlanner) {
     // A pause after calt is required to make KFGQPC Uthmanic Script HAFS
     // work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
 
-    planner.ot_map.enable_feature(feature::STRETCHING_GLYPH_DECOMPOSITION, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(
+        feature::STRETCHING_GLYPH_DECOMPOSITION,
+        FeatureFlags::empty(),
+        1,
+    );
     planner.ot_map.add_gsub_pause(Some(record_stch));
 
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::empty(), 1);
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(
+        feature::GLYPH_COMPOSITION_DECOMPOSITION,
+        FeatureFlags::empty(),
+        1,
+    );
+    planner
+        .ot_map
+        .enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
 
     planner.ot_map.add_gsub_pause(None);
 
     for feature in ARABIC_FEATURES {
         let has_fallback = planner.script == Some(script::ARABIC) && !feature_is_syriac(*feature);
-        let flags = if has_fallback { FeatureFlags::HAS_FALLBACK } else { FeatureFlags::empty() };
+        let flags = if has_fallback {
+            FeatureFlags::HAS_FALLBACK
+        } else {
+            FeatureFlags::empty()
+        };
         planner.ot_map.add_feature(*feature, flags, 1);
         planner.ot_map.add_gsub_pause(None);
     }
@@ -202,8 +238,11 @@ fn collect_features(planner: &mut ShapePlanner) {
     // however, it says a ZWJ should also mean "don't ligate".  So we run
     // the main ligating features as MANUAL_ZWJ.
 
-    planner.ot_map.enable_feature(feature::REQUIRED_LIGATURES,
-                                  FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK, 1);
+    planner.ot_map.enable_feature(
+        feature::REQUIRED_LIGATURES,
+        FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK,
+        1,
+    );
 
     if planner.script == Some(script::ARABIC) {
         planner.ot_map.add_gsub_pause(Some(fallback_shape));
@@ -211,8 +250,14 @@ fn collect_features(planner: &mut ShapePlanner) {
 
     // No pause after rclt.
     // See 98460779bae19e4d64d29461ff154b3527bf8420
-    planner.ot_map.enable_feature(feature::REQUIRED_CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
+    planner.ot_map.enable_feature(
+        feature::REQUIRED_CONTEXTUAL_ALTERNATES,
+        FeatureFlags::MANUAL_ZWJ,
+        1,
+    );
+    planner
+        .ot_map
+        .enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(None);
 
     // The spec includes 'cswh'.  Earlier versions of Windows
@@ -225,7 +270,11 @@ fn collect_features(planner: &mut ShapePlanner) {
     // Test case: U+0643,U+0640,U+0631.
 
     // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, FeatureFlags::empty(), 1);
-    planner.ot_map.enable_feature(feature::MARK_POSITIONING_VIA_SUBSTITUTION, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(
+        feature::MARK_POSITIONING_VIA_SUBSTITUTION,
+        FeatureFlags::empty(),
+        1,
+    );
 }
 
 fn fallback_shape(_: &ShapePlan, _: &Face, _: &mut Buffer) {}
@@ -306,8 +355,8 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
 
             // Yay, justification!
 
-            let mut w_total = 0;     // Total to be filled
-            let mut w_fixed = 0;     // Sum of fixed tiles
+            let mut w_total = 0; // Total to be filled
+            let mut w_fixed = 0; // Sum of fixed tiles
             let mut w_repeating = 0; // Sum of repeating tiles
             let mut n_repeating: i32 = 0;
 
@@ -326,10 +375,10 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
 
             let start = i;
             let mut context = i;
-            while context != 0 &&
-                !action::is_stch(buffer.info[context - 1].arabic_shaping_action()) &&
-                (buffer.info[context - 1].is_default_ignorable() ||
-                    is_word_category(buffer.info[context - 1].general_category()))
+            while context != 0
+                && !action::is_stch(buffer.info[context - 1].arabic_shaping_action())
+                && (buffer.info[context - 1].is_default_ignorable()
+                    || is_word_category(buffer.info[context - 1].general_category()))
             {
                 context -= 1;
                 w_total += buffer.pos[context].x_advance;
@@ -361,7 +410,7 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
             } else {
                 buffer.unsafe_to_break(context, end);
                 let mut x_offset = 0;
-                for k in (start+1..=end).rev() {
+                for k in (start + 1..=end).rev() {
                     let width = face.glyph_h_advance(buffer.info[k - 1].as_glyph()) as i32;
 
                     let mut repeat = 1;
@@ -400,22 +449,22 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
 // See:
 // https://github.com/harfbuzz/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516
 fn is_word_category(gc: GeneralCategory) -> bool {
-    (rb_flag_unsafe(gc.to_rb()) &
-        (   rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_SPACING_MARK) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL)
-        )) != 0
+    (rb_flag_unsafe(gc.to_rb())
+        & (rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_SPACING_MARK)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL)))
+        != 0
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
@@ -423,7 +472,11 @@ fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     setup_masks_inner(arabic_plan, plan.script, buffer)
 }
 
-pub fn setup_masks_inner(arabic_plan: &ArabicShapePlan, script: Option<Script>, buffer: &mut Buffer) {
+pub fn setup_masks_inner(
+    arabic_plan: &ArabicShapePlan,
+    script: Option<Script>,
+    buffer: &mut Buffer,
+) {
     arabic_joining(buffer);
     if script == Some(script::MONGOLIAN) {
         mongolian_variation_selectors(buffer);
@@ -451,10 +504,8 @@ fn arabic_joining(buffer: &mut Buffer) {
     }
 
     for i in 0..buffer.len {
-        let this_type = get_joining_type(
-            buffer.info[i].as_char(),
-            buffer.info[i].general_category(),
-        );
+        let this_type =
+            get_joining_type(buffer.info[i].as_char(), buffer.info[i].general_category());
         if this_type == JoiningType::T {
             buffer.info[i].set_arabic_shaping_action(action::NONE);
             continue;
@@ -493,7 +544,7 @@ fn arabic_joining(buffer: &mut Buffer) {
 }
 
 fn mongolian_variation_selectors(buffer: &mut Buffer) {
-   // Copy arabic_shaping_action() from base to Mongolian variation selectors.
+    // Copy arabic_shaping_action() from base to Mongolian variation selectors.
     let len = buffer.len;
     let info = &mut buffer.info;
     for i in 1..len {
@@ -510,12 +561,16 @@ fn get_joining_type(u: char, gc: GeneralCategory) -> JoiningType {
         return j_type;
     }
 
-    let ok = rb_flag_unsafe(gc.to_rb()) &
-        (   rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) |
-            rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_FORMAT));
+    let ok = rb_flag_unsafe(gc.to_rb())
+        & (rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK)
+            | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_FORMAT));
 
-    if ok != 0 { JoiningType::T } else { JoiningType::U }
+    if ok != 0 {
+        JoiningType::T
+    } else {
+        JoiningType::U
+    }
 }
 
 // http://www.unicode.org/reports/tr53/
@@ -547,9 +602,9 @@ fn reorder_marks(_: &ShapePlan, buffer: &mut Buffer, mut start: usize, end: usiz
         }
 
         let mut j = i;
-        while j < end &&
-            buffer.info[j].modified_combining_class() == cc &&
-            MODIFIER_COMBINING_MARKS.contains(&buffer.info[j].glyph_id)
+        while j < end
+            && buffer.info[j].modified_combining_class() == cc
+            && MODIFIER_COMBINING_MARKS.contains(&buffer.info[j].glyph_id)
         {
             j += 1;
         }
@@ -565,7 +620,7 @@ fn reorder_marks(_: &ShapePlan, buffer: &mut Buffer, mut start: usize, end: usiz
 
         temp[..j - i].copy_from_slice(&buffer.info[i..j]);
 
-        for k in (0..i-start).rev() {
+        for k in (0..i - start).rev() {
             buffer.info[k + start + j - i] = buffer.info[k + start];
         }
 

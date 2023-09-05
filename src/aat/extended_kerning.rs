@@ -1,12 +1,12 @@
 use core::convert::TryFrom;
 
-use ttf_parser::{apple_layout, ankr, kerx, GlyphId, FromData};
+use ttf_parser::{ankr, apple_layout, kerx, FromData, GlyphId};
 
-use crate::Face;
-use crate::buffer::{BufferScratchFlags, Buffer};
+use crate::buffer::{Buffer, BufferScratchFlags};
+use crate::ot::matching::SkippyIter;
 use crate::ot::{attach_type, lookup_flags, ApplyContext, TableIndex};
 use crate::plan::ShapePlan;
-use crate::ot::matching::SkippyIter;
+use crate::Face;
 
 trait ExtendedStateTableExt<T: FromData + Copy> {
     fn class(&self, glyph_id: GlyphId) -> Option<u16>;
@@ -18,7 +18,11 @@ impl ExtendedStateTableExt<kerx::EntryData> for kerx::Subtable1<'_> {
         self.state_table.class(glyph_id)
     }
 
-    fn entry(&self, state: u16, class: u16) -> Option<apple_layout::GenericStateEntry<kerx::EntryData>> {
+    fn entry(
+        &self,
+        state: u16,
+        class: u16,
+    ) -> Option<apple_layout::GenericStateEntry<kerx::EntryData>> {
         self.state_table.entry(state, class)
     }
 }
@@ -28,7 +32,11 @@ impl ExtendedStateTableExt<kerx::EntryData> for kerx::Subtable4<'_> {
         self.state_table.class(glyph_id)
     }
 
-    fn entry(&self, state: u16, class: u16) -> Option<apple_layout::GenericStateEntry<kerx::EntryData>> {
+    fn entry(
+        &self,
+        state: u16,
+        class: u16,
+    ) -> Option<apple_layout::GenericStateEntry<kerx::EntryData>> {
         self.state_table.entry(state, class)
     }
 }
@@ -140,7 +148,9 @@ fn apply_simple_kerning(
         let j = iter.index();
 
         let info = &ctx.buffer.info;
-        let kern = subtable.glyphs_kerning(info[i].as_glyph(), info[j].as_glyph()).unwrap_or(0);
+        let kern = subtable
+            .glyphs_kerning(info[i].as_glyph(), info[j].as_glyph())
+            .unwrap_or(0);
         let kern = i32::from(kern);
 
         let pos = &mut ctx.buffer.pos;
@@ -184,8 +194,12 @@ trait KerxEntryDataExt {
 }
 
 impl KerxEntryDataExt for apple_layout::GenericStateEntry<kerx::EntryData> {
-    fn action_index(self) -> u16 { self.extra.action_index }
-    fn is_actionable(&self) -> bool { self.extra.action_index != 0xFFFF }
+    fn action_index(self) -> u16 {
+        self.extra.action_index
+    }
+    fn is_actionable(&self) -> bool {
+        self.extra.action_index != 0xFFFF
+    }
 }
 
 fn apply_state_machine_kerning<T, E>(
@@ -194,16 +208,18 @@ fn apply_state_machine_kerning<T, E>(
     driver: &mut dyn StateTableDriver<T, E>,
     plan: &ShapePlan,
     buffer: &mut Buffer,
-)
-where T: ExtendedStateTableExt<E>,
-      E: FromData + Copy,
-      apple_layout::GenericStateEntry<E>: KerxEntryDataExt
+) where
+    T: ExtendedStateTableExt<E>,
+    E: FromData + Copy,
+    apple_layout::GenericStateEntry<E>: KerxEntryDataExt,
 {
     let mut state = START_OF_TEXT;
     buffer.idx = 0;
     loop {
         let class = if buffer.idx < buffer.len {
-            state_table.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
+            state_table
+                .class(buffer.info[buffer.idx].as_glyph())
+                .unwrap_or(1)
         } else {
             u16::from(apple_layout::class::END_OF_TEXT)
         };
@@ -215,13 +231,9 @@ where T: ExtendedStateTableExt<E>,
 
         // Unsafe-to-break before this if not in state 0, as things might
         // go differently if we start from state 0 here.
-        if state != START_OF_TEXT &&
-            buffer.backtrack_len() != 0 &&
-            buffer.idx < buffer.len
-        {
+        if state != START_OF_TEXT && buffer.backtrack_len() != 0 && buffer.idx < buffer.len {
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
-            if   entry.is_actionable() ||
-                !(entry.new_state == START_OF_TEXT && !entry.has_advance())
+            if entry.is_actionable() || !(entry.new_state == START_OF_TEXT && !entry.has_advance())
             {
                 buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
@@ -229,8 +241,8 @@ where T: ExtendedStateTableExt<E>,
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry: Option<apple_layout::GenericStateEntry<E>>
-                = state_table.entry(state, u16::from(apple_layout::class::END_OF_TEXT));
+            let end_entry: Option<apple_layout::GenericStateEntry<E>> =
+                state_table.entry(state, u16::from(apple_layout::class::END_OF_TEXT));
             let end_entry = match end_entry {
                 Some(v) => v,
                 None => break,
@@ -241,7 +253,14 @@ where T: ExtendedStateTableExt<E>,
             }
         }
 
-        let _ = driver.transition(state_table, entry, subtable.has_cross_stream, subtable.tuple_count, plan, buffer);
+        let _ = driver.transition(
+            state_table,
+            entry,
+            subtable.has_cross_stream,
+            subtable.tuple_count,
+            plan,
+            buffer,
+        );
 
         state = entry.new_state;
 
@@ -256,13 +275,18 @@ where T: ExtendedStateTableExt<E>,
     }
 }
 
-
 trait StateTableDriver<Table, E: FromData> {
     fn is_actionable(&self, entry: apple_layout::GenericStateEntry<E>) -> bool;
-    fn transition(&mut self, aat: &Table, entry: apple_layout::GenericStateEntry<E>,
-                  has_cross_stream: bool, tuple_count: u32, plan: &ShapePlan, buffer: &mut Buffer) -> Option<()>;
+    fn transition(
+        &mut self,
+        aat: &Table,
+        entry: apple_layout::GenericStateEntry<E>,
+        has_cross_stream: bool,
+        tuple_count: u32,
+        plan: &ShapePlan,
+        buffer: &mut Buffer,
+    ) -> Option<()>;
 }
-
 
 struct Driver1 {
     stack: [usize; 8],
@@ -371,7 +395,6 @@ impl StateTableDriver<kerx::Subtable1<'_>, kerx::EntryData> for Driver1 {
     }
 }
 
-
 struct Driver4<'a> {
     mark_set: bool,
     mark: usize,
@@ -416,7 +439,9 @@ impl StateTableDriver<kerx::Subtable4<'_>, kerx::EntryData> for Driver4<'_> {
 
             buffer.cur_pos_mut().set_attach_type(attach_type::MARK);
             let idx = buffer.idx;
-            buffer.cur_pos_mut().set_attach_chain(self.mark as i16 - idx as i16);
+            buffer
+                .cur_pos_mut()
+                .set_attach_chain(self.mark as i16 - idx as i16);
             buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
         }
 

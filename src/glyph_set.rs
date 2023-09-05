@@ -20,15 +20,17 @@ impl GlyphSet {
 
     /// Check whether the glyph is contained in the set.
     pub fn contains(&self, glyph: GlyphId) -> bool {
-        self.ranges.binary_search_by(|range| {
-            if glyph < *range.start() {
-                Ordering::Greater
-            } else if glyph <= *range.end() {
-                Ordering::Equal
-            } else {
-                Ordering::Less
-            }
-        }).is_ok()
+        self.ranges
+            .binary_search_by(|range| {
+                if glyph < *range.start() {
+                    Ordering::Greater
+                } else if glyph <= *range.end() {
+                    Ordering::Equal
+                } else {
+                    Ordering::Less
+                }
+            })
+            .is_ok()
     }
 }
 
@@ -125,12 +127,15 @@ mod tests {
         builder.insert(GlyphId(9));
         builder.insert_range(GlyphId(18)..=GlyphId(21));
         builder.insert_range(GlyphId(11)..=GlyphId(14));
-        assert_eq!(builder.finish().ranges, vec![
-            GlyphId(0)..=GlyphId(0),
-            GlyphId(2)..=GlyphId(7),
-            GlyphId(9)..=GlyphId(14),
-            GlyphId(18)..=GlyphId(21),
-        ])
+        assert_eq!(
+            builder.finish().ranges,
+            vec![
+                GlyphId(0)..=GlyphId(0),
+                GlyphId(2)..=GlyphId(7),
+                GlyphId(9)..=GlyphId(14),
+                GlyphId(18)..=GlyphId(21),
+            ]
+        )
     }
 
     #[test]
@@ -139,6 +144,9 @@ mod tests {
         builder.insert_range(GlyphId(3)..=GlyphId(u16::MAX));
         builder.insert(GlyphId(u16::MAX - 1));
         builder.insert(GlyphId(2));
-        assert_eq!(builder.finish().ranges, vec![GlyphId(2)..=GlyphId(u16::MAX)]);
+        assert_eq!(
+            builder.finish().ranges,
+            vec![GlyphId(2)..=GlyphId(u16::MAX)]
+        );
     }
 }

@@ -7,9 +7,9 @@ mod tracking;
 
 pub use map::*;
 
-use crate::Face;
 use crate::buffer::Buffer;
 use crate::plan::ShapePlan;
+use crate::Face;
 
 pub fn substitute(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     metamorphosis::apply(plan, face, buffer);
@@ -35,5 +35,5 @@ pub fn zero_width_deleted_glyphs(buffer: &mut Buffer) {
 }
 
 pub fn remove_deleted_glyphs(buffer: &mut Buffer) {
-    buffer.delete_glyphs_inplace(|info| info.glyph_id == 0xFFFF )
+    buffer.delete_glyphs_inplace(|info| info.glyph_id == 0xFFFF)
 }

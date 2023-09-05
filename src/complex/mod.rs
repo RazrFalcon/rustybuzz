@@ -1,17 +1,17 @@
 pub mod arabic;
+mod arabic_table;
 pub mod hangul;
 pub mod hebrew;
 pub mod indic;
-pub mod khmer;
-pub mod myanmar;
-pub mod thai;
-pub mod universal;
-mod arabic_table;
 mod indic_machine;
 mod indic_table;
+pub mod khmer;
 mod khmer_machine;
 mod machine_cursor;
+pub mod myanmar;
 mod myanmar_machine;
+pub mod thai;
+pub mod universal;
 mod universal_machine;
 mod universal_table;
 mod vowel_constraints;
@@ -19,11 +19,11 @@ mod vowel_constraints;
 use alloc::boxed::Box;
 use core::any::Any;
 
-use crate::{script, Direction, Face, Script, Tag};
 use crate::buffer::Buffer;
 use crate::common::TagExt;
-use crate::normalize::{ShapeNormalizeContext, ShapeNormalizationMode};
+use crate::normalize::{ShapeNormalizationMode, ShapeNormalizeContext};
 use crate::plan::{ShapePlan, ShapePlanner};
+use crate::{script, Direction, Face, Script, Tag};
 
 pub const MAX_COMBINING_MARKS: usize = 32;
 
@@ -350,7 +350,11 @@ pub const fn rb_flag(x: u32) -> u32 {
 
 #[inline]
 pub fn rb_flag_unsafe(x: u32) -> u32 {
-    if x < 32 { 1 << x } else { 0 }
+    if x < 32 {
+        1 << x
+    } else {
+        0
+    }
 }
 
 #[inline]
@@ -365,5 +369,9 @@ pub const fn rb_flag64(x: u32) -> u64 {
 
 #[inline]
 pub fn rb_flag64_unsafe(x: u32) -> u64 {
-    if x < 64 { 1 << (x as u64) } else { 0 }
+    if x < 64 {
+        1 << (x as u64)
+    } else {
+        0
+    }
 }

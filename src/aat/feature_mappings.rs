@@ -1,7 +1,7 @@
 use ttf_parser::Tag;
 
-use crate::aat::FeatureType;
 use crate::aat::feature_selector::*;
+use crate::aat::FeatureType;
 
 pub struct FeatureMapping {
     pub ot_feature_tag: Tag,
@@ -30,6 +30,7 @@ impl FeatureMapping {
 ///
 /// Table data courtesy of Apple.
 /// Converted from mnemonics to integers when moving to this file.
+#[rustfmt::skip]
 pub const FEATURE_MAPPINGS: &[FeatureMapping] = &[
     FeatureMapping::new(b"afrc", FeatureType::Fractions, VERTICAL_FRACTIONS, NO_FRACTIONS),
     FeatureMapping::new(b"c2pc", FeatureType::UpperCase, UPPER_CASE_PETITE_CAPS, DEFAULT_UPPER_CASE),

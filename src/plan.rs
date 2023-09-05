@@ -1,9 +1,9 @@
 use alloc::boxed::Box;
 use core::any::Any;
 
-use crate::{aat, Direction, Face, Feature, Language, Mask, Tag, Script};
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
 use crate::ot::{self, feature, FeatureFlags, TableIndex};
+use crate::{aat, Direction, Face, Feature, Language, Mask, Script, Tag};
 
 pub struct ShapePlan {
     pub direction: Direction,
@@ -79,11 +79,9 @@ impl<'a> ShapePlanner<'a> {
         let aat_map = aat::MapBuilder::default();
 
         let mut shaper = match script {
-            Some(script) => complex_categorize(
-                script,
-                direction,
-                ot_map.chosen_script(TableIndex::GSUB),
-            ),
+            Some(script) => {
+                complex_categorize(script, direction, ot_map.chosen_script(TableIndex::GSUB))
+            }
             None => &DEFAULT_SHAPER,
         };
 
@@ -91,7 +89,8 @@ impl<'a> ShapePlanner<'a> {
         let script_fallback_mark_positioning = shaper.fallback_position;
 
         // https://github.com/harfbuzz/harfbuzz/issues/2124
-        let apply_morx = face.tables().morx.is_some() && (direction.is_horizontal() || face.gsub.is_none());
+        let apply_morx =
+            face.tables().morx.is_some() && (direction.is_horizontal() || face.gsub.is_none());
 
         // https://github.com/harfbuzz/harfbuzz/issues/1528
         if apply_morx && shaper as *const _ != &DEFAULT_SHAPER as *const _ {
@@ -115,10 +114,19 @@ impl<'a> ShapePlanner<'a> {
         const COMMON_FEATURES: &[(Tag, FeatureFlags)] = &[
             (feature::ABOVE_BASE_MARK_POSITIONING, FeatureFlags::GLOBAL),
             (feature::BELOW_BASE_MARK_POSITIONING, FeatureFlags::GLOBAL),
-            (feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::GLOBAL),
+            (
+                feature::GLYPH_COMPOSITION_DECOMPOSITION,
+                FeatureFlags::GLOBAL,
+            ),
             (feature::LOCALIZED_FORMS, FeatureFlags::GLOBAL),
-            (feature::MARK_POSITIONING, FeatureFlags::GLOBAL_MANUAL_JOINERS),
-            (feature::MARK_TO_MARK_POSITIONING, FeatureFlags::GLOBAL_MANUAL_JOINERS),
+            (
+                feature::MARK_POSITIONING,
+                FeatureFlags::GLOBAL_MANUAL_JOINERS,
+            ),
+            (
+                feature::MARK_TO_MARK_POSITIONING,
+                FeatureFlags::GLOBAL_MANUAL_JOINERS,
+            ),
             (feature::REQUIRED_LIGATURES, FeatureFlags::GLOBAL),
         ];
 
@@ -129,22 +137,30 @@ impl<'a> ShapePlanner<'a> {
             (feature::DISTANCES, FeatureFlags::GLOBAL),
             (feature::KERNING, FeatureFlags::GLOBAL_HAS_FALLBACK),
             (feature::STANDARD_LIGATURES, FeatureFlags::GLOBAL),
-            (feature::REQUIRED_CONTEXTUAL_ALTERNATES, FeatureFlags::GLOBAL),
+            (
+                feature::REQUIRED_CONTEXTUAL_ALTERNATES,
+                FeatureFlags::GLOBAL,
+            ),
         ];
 
         let empty = FeatureFlags::empty();
 
-        self.ot_map.enable_feature(feature::REQUIRED_VARIATION_ALTERNATES, empty, 1);
+        self.ot_map
+            .enable_feature(feature::REQUIRED_VARIATION_ALTERNATES, empty, 1);
         self.ot_map.add_gsub_pause(None);
 
         match self.direction {
             Direction::LeftToRight => {
-                self.ot_map.enable_feature(feature::LEFT_TO_RIGHT_ALTERNATES, empty, 1);
-                self.ot_map.enable_feature(feature::LEFT_TO_RIGHT_MIRRORED_FORMS, empty, 1);
+                self.ot_map
+                    .enable_feature(feature::LEFT_TO_RIGHT_ALTERNATES, empty, 1);
+                self.ot_map
+                    .enable_feature(feature::LEFT_TO_RIGHT_MIRRORED_FORMS, empty, 1);
             }
             Direction::RightToLeft => {
-                self.ot_map.enable_feature(feature::RIGHT_TO_LEFT_ALTERNATES, empty, 1);
-                self.ot_map.add_feature(feature::RIGHT_TO_LEFT_MIRRORED_FORMS, empty, 1);
+                self.ot_map
+                    .enable_feature(feature::RIGHT_TO_LEFT_ALTERNATES, empty, 1);
+                self.ot_map
+                    .add_feature(feature::RIGHT_TO_LEFT_MIRRORED_FORMS, empty, 1);
             }
             _ => {}
         }
@@ -155,20 +171,24 @@ impl<'a> ShapePlanner<'a> {
         self.ot_map.add_feature(feature::DENOMINATORS, empty, 1);
 
         // Random!
-        self.ot_map.enable_feature(feature::RANDOMIZE, FeatureFlags::RANDOM, ot::Map::MAX_VALUE);
+        self.ot_map
+            .enable_feature(feature::RANDOMIZE, FeatureFlags::RANDOM, ot::Map::MAX_VALUE);
 
         // Tracking.  We enable dummy feature here just to allow disabling
         // AAT 'trak' table using features.
         // https://github.com/harfbuzz/harfbuzz/issues/1303
-        self.ot_map.enable_feature(Tag::from_bytes(b"trak"), FeatureFlags::HAS_FALLBACK, 1);
+        self.ot_map
+            .enable_feature(Tag::from_bytes(b"trak"), FeatureFlags::HAS_FALLBACK, 1);
 
-        self.ot_map.enable_feature(Tag::from_bytes(b"HARF"), empty, 1);
+        self.ot_map
+            .enable_feature(Tag::from_bytes(b"HARF"), empty, 1);
 
         if let Some(func) = self.shaper.collect_features {
             func(self);
         }
 
-        self.ot_map.enable_feature(Tag::from_bytes(b"BUZZ"), empty, 1);
+        self.ot_map
+            .enable_feature(Tag::from_bytes(b"BUZZ"), empty, 1);
 
         for &(tag, flags) in COMMON_FEATURES {
             self.ot_map.add_feature(tag, flags, 1);
@@ -183,17 +203,23 @@ impl<'a> ShapePlanner<'a> {
             // matter which script/langsys it is listed (or not) under.
             // See various bugs referenced from:
             // https://github.com/harfbuzz/harfbuzz/issues/63
-            self.ot_map.enable_feature(feature::VERTICAL_WRITING, FeatureFlags::GLOBAL_SEARCH, 1);
+            self.ot_map
+                .enable_feature(feature::VERTICAL_WRITING, FeatureFlags::GLOBAL_SEARCH, 1);
         }
 
         for feature in user_features {
-            let flags = if feature.is_global() { FeatureFlags::GLOBAL } else { empty };
+            let flags = if feature.is_global() {
+                FeatureFlags::GLOBAL
+            } else {
+                empty
+            };
             self.ot_map.add_feature(feature.tag, flags, feature.value);
         }
 
         if self.apply_morx {
             for feature in user_features {
-                self.aat_map.add_feature(self.face, feature.tag, feature.value);
+                self.aat_map
+                    .add_feature(self.face, feature.tag, feature.value);
             }
         }
 
@@ -221,7 +247,11 @@ impl<'a> ShapePlanner<'a> {
         let has_vert = ot_map.one_mask(feature::VERTICAL_WRITING) != 0;
 
         let horizontal = self.direction.is_horizontal();
-        let kern_tag = if horizontal { feature::KERNING } else { feature::VERTICAL_KERNING };
+        let kern_tag = if horizontal {
+            feature::KERNING
+        } else {
+            feature::VERTICAL_KERNING
+        };
         let kern_mask = ot_map.mask(kern_tag).0;
         let requested_kerning = kern_mask != 0;
         let trak_mask = ot_map.mask(Tag::from_bytes(b"trak")).0;
@@ -232,7 +262,10 @@ impl<'a> ShapePlanner<'a> {
             && self.shaper.gpos_tag != ot_map.chosen_script(TableIndex::GPOS);
 
         // Decide who provides glyph classes. GDEF or Unicode.
-        let fallback_glyph_classes = !self.face.tables().gdef
+        let fallback_glyph_classes = !self
+            .face
+            .tables()
+            .gdef
             .map_or(false, |table| table.has_glyph_classes());
 
         // Decide who does substitutions. GSUB, morx, or fallback.
@@ -258,21 +291,17 @@ impl<'a> ShapePlanner<'a> {
             }
         }
 
-        let zero_marks =
-            self.script_zero_marks
+        let zero_marks = self.script_zero_marks
             && !apply_kerx
             && (!apply_kern || !ot::has_machine_kerning(self.face));
 
         let has_gpos_mark = ot_map.one_mask(feature::MARK_POSITIONING) != 0;
 
         let adjust_mark_positioning_when_zeroing =
-            !apply_gpos
-            && !apply_kerx
-            && (!apply_kern || !ot::has_cross_kerning(self.face));
+            !apply_gpos && !apply_kerx && (!apply_kern || !ot::has_cross_kerning(self.face));
 
         let fallback_mark_positioning =
-            adjust_mark_positioning_when_zeroing
-            && self.script_fallback_mark_positioning;
+            adjust_mark_positioning_when_zeroing && self.script_fallback_mark_positioning;
 
         // Currently we always apply trak.
         let apply_trak = requested_tracking && self.face.tables().trak.is_some();

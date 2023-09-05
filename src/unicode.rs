@@ -1,7 +1,7 @@
 use core::convert::TryFrom;
 
-pub use unicode_properties::GeneralCategory;
-pub use unicode_ccc::CanonicalCombiningClass; // TODO: prefer unic-ucd-normal::CanonicalCombiningClass
+pub use unicode_ccc::CanonicalCombiningClass;
+pub use unicode_properties::GeneralCategory; // TODO: prefer unic-ucd-normal::CanonicalCombiningClass
 
 use crate::Script;
 
@@ -10,7 +10,7 @@ use crate::Script;
 // https://docs.microsoft.com/en-us/typography/develop/character-design-standards/whitespace
 pub type Space = u8;
 pub mod space {
-    pub const SPACE_EM: u8  = 1;
+    pub const SPACE_EM: u8 = 1;
     pub const SPACE_EM_2: u8 = 2;
     pub const SPACE_EM_3: u8 = 3;
     pub const SPACE_EM_4: u8 = 4;
@@ -88,7 +88,7 @@ pub mod modified_combining_class {
     // Modify U+0E38 and U+0E39 (ccc=103) to be reordered before U+0E3A (ccc=9).
     // Assign 3, which is unassigned otherwise.
     // Uniscribe does this reordering too.
-    pub const CCC103: u8 = 3;   // sara u / sara uu
+    pub const CCC103: u8 = 3; // sara u / sara uu
     pub const CCC107: u8 = 107; // mai *
 
     // Lao
@@ -104,6 +104,7 @@ pub mod modified_combining_class {
     pub const CCC132: u8 = 131; // sign u
 }
 
+#[rustfmt::skip]
 const MODIFIED_COMBINING_CLASS: &[u8; 256] = &[
     CanonicalCombiningClass::NotReordered as u8,
     CanonicalCombiningClass::Overlay as u8,
@@ -220,6 +221,7 @@ pub trait GeneralCategoryExt {
     fn is_mark(&self) -> bool;
 }
 
+#[rustfmt::skip]
 impl GeneralCategoryExt for GeneralCategory {
     fn to_rb(&self) -> u32 {
         match *self {
@@ -317,8 +319,8 @@ pub trait CharExt {
 
 impl CharExt for char {
     fn script(self) -> Script {
-        use unicode_script as us;
         use crate::script;
+        use unicode_script as us;
 
         match unicode_script::UnicodeScript::script(&self) {
             us::Script::Common => script::COMMON,
@@ -492,23 +494,23 @@ impl CharExt for char {
     fn space_fallback(self) -> Option<Space> {
         // All GC=Zs chars that can use a fallback.
         match self {
-            '\u{0020}' => Some(space::SPACE),               // SPACE
-            '\u{00A0}' => Some(space::SPACE),               // NO-BREAK SPACE
-            '\u{2000}' => Some(space::SPACE_EM_2),          // EN QUAD
-            '\u{2001}' => Some(space::SPACE_EM),            // EM QUAD
-            '\u{2002}' => Some(space::SPACE_EM_2),          // EN SPACE
-            '\u{2003}' => Some(space::SPACE_EM),            // EM SPACE
-            '\u{2004}' => Some(space::SPACE_EM_3),          // THREE-PER-EM SPACE
-            '\u{2005}' => Some(space::SPACE_EM_4),          // FOUR-PER-EM SPACE
-            '\u{2006}' => Some(space::SPACE_EM_6),          // SIX-PER-EM SPACE
-            '\u{2007}' => Some(space::SPACE_FIGURE),        // FIGURE SPACE
-            '\u{2008}' => Some(space::SPACE_PUNCTUATION),   // PUNCTUATION SPACE
-            '\u{2009}' => Some(space::SPACE_EM_5),          // THIN SPACE
-            '\u{200A}' => Some(space::SPACE_EM_16),         // HAIR SPACE
-            '\u{202F}' => Some(space::SPACE_NARROW),        // NARROW NO-BREAK SPACE
-            '\u{205F}' => Some(space::SPACE_4_EM_18),       // MEDIUM MATHEMATICAL SPACE
-            '\u{3000}' => Some(space::SPACE_EM),            // IDEOGRAPHIC SPACE
-            _ => None,                                      // OGHAM SPACE MARK
+            '\u{0020}' => Some(space::SPACE),             // SPACE
+            '\u{00A0}' => Some(space::SPACE),             // NO-BREAK SPACE
+            '\u{2000}' => Some(space::SPACE_EM_2),        // EN QUAD
+            '\u{2001}' => Some(space::SPACE_EM),          // EM QUAD
+            '\u{2002}' => Some(space::SPACE_EM_2),        // EN SPACE
+            '\u{2003}' => Some(space::SPACE_EM),          // EM SPACE
+            '\u{2004}' => Some(space::SPACE_EM_3),        // THREE-PER-EM SPACE
+            '\u{2005}' => Some(space::SPACE_EM_4),        // FOUR-PER-EM SPACE
+            '\u{2006}' => Some(space::SPACE_EM_6),        // SIX-PER-EM SPACE
+            '\u{2007}' => Some(space::SPACE_FIGURE),      // FIGURE SPACE
+            '\u{2008}' => Some(space::SPACE_PUNCTUATION), // PUNCTUATION SPACE
+            '\u{2009}' => Some(space::SPACE_EM_5),        // THIN SPACE
+            '\u{200A}' => Some(space::SPACE_EM_16),       // HAIR SPACE
+            '\u{202F}' => Some(space::SPACE_NARROW),      // NARROW NO-BREAK SPACE
+            '\u{205F}' => Some(space::SPACE_4_EM_18),     // MEDIUM MATHEMATICAL SPACE
+            '\u{3000}' => Some(space::SPACE_EM),          // IDEOGRAPHIC SPACE
+            _ => None,                                    // OGHAM SPACE MARK
         }
     }
 
@@ -516,7 +518,7 @@ impl CharExt for char {
         let mut u = self;
 
         // XXX This hack belongs to the Myanmar shaper.
-        if u == '\u{1037}'{
+        if u == '\u{1037}' {
             u = '\u{103A}';
         }
 
@@ -677,9 +679,11 @@ impl CharExt for char {
                 0x06 => ch == 0x061C,
                 0x17 => (0x17B4..=0x17B5).contains(&ch),
                 0x18 => (0x180B..=0x180E).contains(&ch),
-                0x20 => (0x200B..=0x200F).contains(&ch) ||
-                        (0x202A..=0x202E).contains(&ch) ||
-                        (0x2060..=0x206F).contains(&ch),
+                0x20 => {
+                    (0x200B..=0x200F).contains(&ch)
+                        || (0x202A..=0x202E).contains(&ch)
+                        || (0x2060..=0x206F).contains(&ch)
+                }
                 0xFE => (0xFE00..=0xFE0F).contains(&ch) || ch == 0xFEFF,
                 0xFF => (0xFFF0..=0xFFF8).contains(&ch),
                 _ => false,
@@ -699,7 +703,7 @@ impl CharExt for char {
         // Arabic shaper. No need to match them here.
         let ch = u32::from(self);
         (0x0FE00..=0x0FE0F).contains(&ch) || // VARIATION SELECTOR - 1..16
-        (0xE0100..=0xE01EF).contains(&ch)    // VARIATION SELECTOR - 17..256
+        (0xE0100..=0xE01EF).contains(&ch) // VARIATION SELECTOR - 17..256
     }
 
     fn vertical(self) -> Option<char> {
@@ -748,7 +752,7 @@ impl CharExt for char {
                 '\u{ff5b}' => '\u{fe37}', // FULLWIDTH LEFT CURLY BRACKET
                 '\u{ff5d}' => '\u{fe38}', // FULLWIDTH RIGHT CURLY BRACKET
                 _ => return None,
-            }
+            },
             _ => return None,
         })
     }
@@ -782,8 +786,10 @@ fn compose_hangul(a: char, b: char) -> Option<char> {
     if L_BASE <= l && l < (L_BASE + L_COUNT) && V_BASE <= v && v < (V_BASE + V_COUNT) {
         let r = S_BASE + (l - L_BASE) * N_COUNT + (v - V_BASE) * T_COUNT;
         Some(char::try_from(r).unwrap())
-    } else if S_BASE <= l && l <= (S_BASE + S_COUNT - T_COUNT)
-        && T_BASE <= v && v < (T_BASE + T_COUNT)
+    } else if S_BASE <= l
+        && l <= (S_BASE + S_COUNT - T_COUNT)
+        && T_BASE <= v
+        && v < (T_BASE + T_COUNT)
         && (l - S_BASE) % T_COUNT == 0
     {
         let r = l + (v - T_BASE);
@@ -828,44 +834,44 @@ pub fn decompose_hangul(ab: char) -> Option<(char, char)> {
 mod tests {
     #[test]
     fn check_unicode_version() {
-        assert_eq!(unicode_bidi_mirroring::UNICODE_VERSION,     (13, 0, 0));
-        assert_eq!(unicode_ccc::UNICODE_VERSION,                (13, 0, 0));
-        assert_eq!(unicode_properties::UNICODE_VERSION,         (15, 0, 0));
-        assert_eq!(unicode_script::UNICODE_VERSION,             (15, 0, 0));
-        assert_eq!(crate::unicode_norm::UNICODE_VERSION,        (13, 0, 0));
+        assert_eq!(unicode_bidi_mirroring::UNICODE_VERSION, (13, 0, 0));
+        assert_eq!(unicode_ccc::UNICODE_VERSION, (13, 0, 0));
+        assert_eq!(unicode_properties::UNICODE_VERSION, (15, 0, 0));
+        assert_eq!(unicode_script::UNICODE_VERSION, (15, 0, 0));
+        assert_eq!(crate::unicode_norm::UNICODE_VERSION, (13, 0, 0));
     }
 }
 
 // TODO: remove
 pub mod hb_gc {
-    pub const RB_UNICODE_GENERAL_CATEGORY_CONTROL: u32                  = 0;
-    pub const RB_UNICODE_GENERAL_CATEGORY_FORMAT: u32                   = 1;
-    pub const RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED: u32               = 2;
-    pub const RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE: u32              = 3;
-    pub const RB_UNICODE_GENERAL_CATEGORY_SURROGATE: u32                = 4;
-    pub const RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER: u32         = 5;
-    pub const RB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER: u32          = 6;
-    pub const RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER: u32             = 7;
-    pub const RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER: u32         = 8;
-    pub const RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER: u32         = 9;
-    pub const RB_UNICODE_GENERAL_CATEGORY_SPACING_MARK: u32             = 10;
-    pub const RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK: u32           = 11;
-    pub const RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK: u32         = 12;
-    pub const RB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER: u32           = 13;
-    pub const RB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER: u32            = 14;
-    pub const RB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER: u32             = 15;
-    pub const RB_UNICODE_GENERAL_CATEGORY_CONNECT_PUNCTUATION: u32      = 16;
-    pub const RB_UNICODE_GENERAL_CATEGORY_DASH_PUNCTUATION: u32         = 17;
-    pub const RB_UNICODE_GENERAL_CATEGORY_CLOSE_PUNCTUATION: u32        = 18;
-    pub const RB_UNICODE_GENERAL_CATEGORY_FINAL_PUNCTUATION: u32        = 19;
-    pub const RB_UNICODE_GENERAL_CATEGORY_INITIAL_PUNCTUATION: u32      = 20;
-    pub const RB_UNICODE_GENERAL_CATEGORY_OTHER_PUNCTUATION: u32        = 21;
-    pub const RB_UNICODE_GENERAL_CATEGORY_OPEN_PUNCTUATION: u32         = 22;
-    pub const RB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL: u32          = 23;
-    pub const RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL: u32          = 24;
-    pub const RB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL: u32              = 25;
-    pub const RB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL: u32             = 26;
-    pub const RB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR: u32           = 27;
-    pub const RB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR: u32      = 28;
-    pub const RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR: u32          = 29;
+    pub const RB_UNICODE_GENERAL_CATEGORY_CONTROL: u32 = 0;
+    pub const RB_UNICODE_GENERAL_CATEGORY_FORMAT: u32 = 1;
+    pub const RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED: u32 = 2;
+    pub const RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE: u32 = 3;
+    pub const RB_UNICODE_GENERAL_CATEGORY_SURROGATE: u32 = 4;
+    pub const RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER: u32 = 5;
+    pub const RB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER: u32 = 6;
+    pub const RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER: u32 = 7;
+    pub const RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER: u32 = 8;
+    pub const RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER: u32 = 9;
+    pub const RB_UNICODE_GENERAL_CATEGORY_SPACING_MARK: u32 = 10;
+    pub const RB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK: u32 = 11;
+    pub const RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK: u32 = 12;
+    pub const RB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER: u32 = 13;
+    pub const RB_UNICODE_GENERAL_CATEGORY_LETTER_NUMBER: u32 = 14;
+    pub const RB_UNICODE_GENERAL_CATEGORY_OTHER_NUMBER: u32 = 15;
+    pub const RB_UNICODE_GENERAL_CATEGORY_CONNECT_PUNCTUATION: u32 = 16;
+    pub const RB_UNICODE_GENERAL_CATEGORY_DASH_PUNCTUATION: u32 = 17;
+    pub const RB_UNICODE_GENERAL_CATEGORY_CLOSE_PUNCTUATION: u32 = 18;
+    pub const RB_UNICODE_GENERAL_CATEGORY_FINAL_PUNCTUATION: u32 = 19;
+    pub const RB_UNICODE_GENERAL_CATEGORY_INITIAL_PUNCTUATION: u32 = 20;
+    pub const RB_UNICODE_GENERAL_CATEGORY_OTHER_PUNCTUATION: u32 = 21;
+    pub const RB_UNICODE_GENERAL_CATEGORY_OPEN_PUNCTUATION: u32 = 22;
+    pub const RB_UNICODE_GENERAL_CATEGORY_CURRENCY_SYMBOL: u32 = 23;
+    pub const RB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL: u32 = 24;
+    pub const RB_UNICODE_GENERAL_CATEGORY_MATH_SYMBOL: u32 = 25;
+    pub const RB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL: u32 = 26;
+    pub const RB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR: u32 = 27;
+    pub const RB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR: u32 = 28;
+    pub const RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR: u32 = 29;
 }

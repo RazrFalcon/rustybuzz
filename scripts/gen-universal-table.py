@@ -560,6 +560,7 @@ offset = 0
 starts = []
 ends = []
 print()
+print('#[rustfmt::skip]')
 print('const USE_TABLE: &[Category] = &[')
 offsets = []
 for u in uu:
@@ -600,6 +601,7 @@ print()
 for o in offsets:
     print(o)
 print()
+print('#[rustfmt::skip]')
 print('pub fn get_category(u: u32) -> Category {')
 print('    match u >> %d {' % page_bits)
 pages = set([u >> page_bits for u in starts + ends])

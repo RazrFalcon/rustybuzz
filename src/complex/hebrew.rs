@@ -1,6 +1,5 @@
-use crate::{unicode, Tag};
 use super::*;
-
+use crate::{unicode, Tag};
 
 pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: None,
@@ -17,7 +16,6 @@ pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
     zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
     fallback_position: true,
 };
-
 
 const S_DAGESH_FORMS: &[char] = &[
     '\u{FB30}', // ALEF
@@ -62,43 +60,53 @@ fn compose(ctx: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
             let a = a as u32;
             let b = b as u32;
             match b {
-                0x05B4 => { // HIRIQ
+                0x05B4 => {
+                    // HIRIQ
                     match a {
                         0x05D9 => Some('\u{FB1D}'), // YOD
                         _ => None,
                     }
                 }
-                0x05B7 => { // patah
+                0x05B7 => {
+                    // patah
                     match a {
                         0x05D9 => Some('\u{FB1F}'), // YIDDISH YOD YOD
                         0x05D0 => Some('\u{FB2E}'), // ALEF
                         _ => None,
                     }
                 }
-                0x05B8 => { // QAMATS
+                0x05B8 => {
+                    // QAMATS
                     match a {
                         0x05D0 => Some('\u{FB2F}'), // ALEF
                         _ => None,
                     }
                 }
-                0x05B9 => { // HOLAM
+                0x05B9 => {
+                    // HOLAM
                     match a {
                         0x05D5 => Some('\u{FB4B}'), // VAV
                         _ => None,
                     }
                 }
-                0x05BC => { // DAGESH
+                0x05BC => {
+                    // DAGESH
                     match a {
                         0x05D0..=0x05EA => {
                             let c = S_DAGESH_FORMS[a as usize - 0x05D0];
-                            if c != '\0' { Some(c) } else { None }
+                            if c != '\0' {
+                                Some(c)
+                            } else {
+                                None
+                            }
                         }
                         0xFB2A => Some('\u{FB2C}'), // SHIN WITH SHIN DOT
                         0xFB2B => Some('\u{FB2D}'), // SHIN WITH SIN DOT
                         _ => None,
                     }
                 }
-                0x05BF => { // RAFE
+                0x05BF => {
+                    // RAFE
                     match a {
                         0x05D1 => Some('\u{FB4C}'), // BET
                         0x05DB => Some('\u{FB4D}'), // KAF
@@ -106,14 +114,16 @@ fn compose(ctx: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
                         _ => None,
                     }
                 }
-                0x05C1 => { // SHIN DOT
+                0x05C1 => {
+                    // SHIN DOT
                     match a {
                         0x05E9 => Some('\u{FB2A}'), // SHIN
                         0xFB49 => Some('\u{FB2C}'), // SHIN WITH DAGESH
                         _ => None,
                     }
                 }
-                0x05C2 => { // SIN DOT
+                0x05C2 => {
+                    // SIN DOT
                     match a {
                         0x05E9 => Some('\u{FB2B}'), // SHIN
                         0xFB49 => Some('\u{FB2D}'), // SHIN WITH DAGESH

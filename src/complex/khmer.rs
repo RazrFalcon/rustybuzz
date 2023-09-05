@@ -1,13 +1,12 @@
 use alloc::boxed::Box;
 
-use crate::{Tag, Mask, Face, GlyphInfo};
+use super::indic::{category, position};
+use super::*;
 use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use super::indic::{category, position};
-use super::*;
-
+use crate::{Face, GlyphInfo, Mask, Tag};
 
 pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -25,7 +24,6 @@ pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
     fallback_position: false,
 };
 
-
 const KHMER_FEATURES: &[(Tag, FeatureFlags)] = &[
     // Basic features.
     // These features are applied in order, one at a time, after reordering.
@@ -33,13 +31,28 @@ const KHMER_FEATURES: &[(Tag, FeatureFlags)] = &[
     (feature::BELOW_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
     (feature::ABOVE_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
     (feature::POST_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::CONJUNCT_FORM_AFTER_RO, FeatureFlags::MANUAL_JOINERS),
+    (
+        feature::CONJUNCT_FORM_AFTER_RO,
+        FeatureFlags::MANUAL_JOINERS,
+    ),
     // Other features.
     // These features are applied all at once after clearing syllables.
-    (feature::PRE_BASE_SUBSTITUTIONS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (feature::ABOVE_BASE_SUBSTITUTIONS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (feature::BELOW_BASE_SUBSTITUTIONS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (feature::POST_BASE_SUBSTITUTIONS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
+    (
+        feature::PRE_BASE_SUBSTITUTIONS,
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
+    (
+        feature::ABOVE_BASE_SUBSTITUTIONS,
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
+    (
+        feature::BELOW_BASE_SUBSTITUTIONS,
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
+    (
+        feature::POST_BASE_SUBSTITUTIONS,
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
 ];
 
 // Must be in the same order as the KHMER_FEATURES array.
@@ -100,9 +113,7 @@ impl KhmerShapePlan {
             }
         }
 
-        KhmerShapePlan {
-            mask_array,
-        }
+        KhmerShapePlan { mask_array }
     }
 }
 
@@ -120,14 +131,22 @@ fn collect_features(planner: &mut ShapePlanner) {
     //   U+1789,U+17D2,U+1789,U+17BC
     //
     // https://github.com/harfbuzz/harfbuzz/issues/974
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::empty(), 1);
+    planner
+        .ot_map
+        .enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(
+        feature::GLYPH_COMPOSITION_DECOMPOSITION,
+        FeatureFlags::empty(),
+        1,
+    );
 
     for feature in KHMER_FEATURES.iter().take(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 
-    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_syllables));
+    planner
+        .ot_map
+        .add_gsub_pause(Some(crate::ot::clear_syllables));
 
     for feature in KHMER_FEATURES.iter().skip(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
@@ -163,13 +182,18 @@ fn reorder(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
     use super::khmer_machine::SyllableType;
 
-    if buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
+    if buffer
+        .flags
+        .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
+    {
         return;
     }
 
     // Note: This loop is extra overhead, but should not be measurable.
     // TODO Use a buffer scratch flag to remove the loop.
-    let has_broken_syllables = buffer.info_slice().iter()
+    let has_broken_syllables = buffer
+        .info_slice()
+        .iter()
         .any(|info| info.syllable() & 0x0F == SyllableType::BrokenCluster as u8);
 
     if !has_broken_syllables {
@@ -204,9 +228,9 @@ fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
             ginfo.set_syllable(buffer.cur(0).syllable());
 
             // Insert dottedcircle after possible Repha.
-            while buffer.idx < buffer.len &&
-                last_syllable == buffer.cur(0).syllable() &&
-                buffer.cur(0).indic_category() == category::REPHA
+            while buffer.idx < buffer.len
+                && last_syllable == buffer.cur(0).syllable()
+                && buffer.cur(0).indic_category() == category::REPHA
             {
                 buffer.next_glyph();
             }
@@ -220,12 +244,7 @@ fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
     buffer.swap_buffers();
 }
 
-fn reorder_syllable(
-    khmer_plan: &KhmerShapePlan,
-    start: usize,
-    end: usize,
-    buffer: &mut Buffer,
-) {
+fn reorder_syllable(khmer_plan: &KhmerShapePlan, start: usize, end: usize, buffer: &mut Buffer) {
     use super::khmer_machine::SyllableType;
 
     let syllable_type = match buffer.info[start].syllable() & 0x0F {
@@ -254,16 +273,16 @@ fn reorder_consonant_syllable(
     // Setup masks.
     {
         // Post-base
-        let mask = plan.mask_array[khmer_feature::BLWF] |
-            plan.mask_array[khmer_feature::ABVF] |
-            plan.mask_array[khmer_feature::PSTF];
-        for info in &mut buffer.info[start+1..end] {
+        let mask = plan.mask_array[khmer_feature::BLWF]
+            | plan.mask_array[khmer_feature::ABVF]
+            | plan.mask_array[khmer_feature::PSTF];
+        for info in &mut buffer.info[start + 1..end] {
             info.mask |= mask;
         }
     }
 
     let mut num_coengs = 0;
-    for i in start+1..end {
+    for i in start + 1..end {
         // When a COENG + (Cons | IndV) combination are found (and subscript count
         // is less than two) the character combination is handled according to the
         // subscript type of the character following the COENG.
@@ -285,7 +304,7 @@ fn reorder_consonant_syllable(
                 buffer.merge_clusters(start, i + 2);
                 let t0 = buffer.info[i];
                 let t1 = buffer.info[i + 1];
-                for k in (0..i-start).rev() {
+                for k in (0..i - start).rev() {
                     buffer.info[k + start + 2] = buffer.info[k + start];
                 }
 
@@ -298,7 +317,7 @@ fn reorder_consonant_syllable(
                 // U+1784,U+17D2,U+179A,U+17D2,U+1782
                 // U+1784,U+17D2,U+1782,U+17D2,U+179A
                 if plan.mask_array[khmer_feature::CFAR] != 0 {
-                    for j in i+2..end {
+                    for j in i + 2..end {
                         buffer.info[j].mask |= plan.mask_array[khmer_feature::CFAR];
                     }
                 }
@@ -311,7 +330,7 @@ fn reorder_consonant_syllable(
             // Move to the start.
             buffer.merge_clusters(start, i + 1);
             let t = buffer.info[i];
-            for k in (0..i-start).rev() {
+            for k in (0..i - start).rev() {
                 buffer.info[k + start + 1] = buffer.info[k + start];
             }
             buffer.info[start] = t;
@@ -323,7 +342,9 @@ fn override_features(planner: &mut ShapePlanner) {
     // Khmer spec has 'clig' as part of required shaping features:
     // "Apply feature 'clig' to form ligatures that are desired for
     // typographical correctness.", hence in overrides...
-    planner.ot_map.enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
+    planner
+        .ot_map
+        .enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
 
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
@@ -331,12 +352,8 @@ fn override_features(planner: &mut ShapePlanner) {
 fn decompose(_: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
     // Decompose split matras that don't have Unicode decompositions.
     match ab {
-        '\u{17BE}' |
-        '\u{17BF}' |
-        '\u{17C0}' |
-        '\u{17C4}' |
-        '\u{17C5}' => Some(('\u{17C1}', ab)),
-        _ => crate::unicode::decompose(ab)
+        '\u{17BE}' | '\u{17BF}' | '\u{17C0}' | '\u{17C4}' | '\u{17C5}' => Some(('\u{17C1}', ab)),
+        _ => crate::unicode::decompose(ab),
     }
 }
 

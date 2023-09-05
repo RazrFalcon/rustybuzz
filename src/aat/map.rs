@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 
-use crate::{Face, Tag, Mask};
 use super::feature_mappings::FEATURE_MAPPINGS;
+use crate::{Face, Mask, Tag};
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq)]
@@ -29,12 +29,10 @@ pub enum FeatureType {
     UpperCase = 38,
 }
 
-
 #[derive(Default)]
 pub struct Map {
     pub chain_flags: Vec<Mask>,
 }
-
 
 #[derive(Copy, Clone)]
 pub struct FeatureInfo {
@@ -42,7 +40,6 @@ pub struct FeatureInfo {
     pub setting: u16,
     pub is_exclusive: bool,
 }
-
 
 #[derive(Default)]
 pub struct MapBuilder {
@@ -56,7 +53,9 @@ impl MapBuilder {
         let feat = face.tables().feat?;
 
         if tag == Tag::from_bytes(b"aalt") {
-            let exposes_feature = feat.names.find(FEATURE_TYPE_CHARACTER_ALTERNATIVES)
+            let exposes_feature = feat
+                .names
+                .find(FEATURE_TYPE_CHARACTER_ALTERNATIVES)
                 .map(|f| f.setting_names.len() != 0)
                 .unwrap_or(false);
 
@@ -71,7 +70,9 @@ impl MapBuilder {
             });
         }
 
-        let idx = FEATURE_MAPPINGS.binary_search_by(|map| map.ot_feature_tag.cmp(&tag)).ok()?;
+        let idx = FEATURE_MAPPINGS
+            .binary_search_by(|map| map.ot_feature_tag.cmp(&tag))
+            .ok()?;
         let mapping = &FEATURE_MAPPINGS[idx];
 
         let mut feature = feat.names.find(mapping.aat_feature_type as u16);
@@ -82,8 +83,8 @@ impl MapBuilder {
                 // Special case: Chain::compile_flags will fall back to the deprecated version of
                 // small-caps if necessary, so we need to check for that possibility.
                 // https://github.com/harfbuzz/harfbuzz/issues/2307
-                if  mapping.aat_feature_type == FeatureType::LowerCase &&
-                    mapping.selector_to_enable == super::feature_selector::LOWER_CASE_SMALL_CAPS
+                if mapping.aat_feature_type == FeatureType::LowerCase
+                    && mapping.selector_to_enable == super::feature_selector::LOWER_CASE_SMALL_CAPS
                 {
                     feature = feat.names.find(FeatureType::LetterCase as u16);
                 }
@@ -111,13 +112,15 @@ impl MapBuilder {
     }
 
     pub fn has_feature(&self, kind: u16, setting: u16) -> bool {
-        self.features.binary_search_by(|probe| {
-            if probe.kind != kind {
-                probe.kind.cmp(&kind)
-            } else {
-                probe.setting.cmp(&setting)
-            }
-        }).is_ok()
+        self.features
+            .binary_search_by(|probe| {
+                if probe.kind != kind {
+                    probe.kind.cmp(&kind)
+                } else {
+                    probe.setting.cmp(&setting)
+                }
+            })
+            .is_ok()
     }
 
     pub fn compile(&mut self, face: &Face) -> Map {
@@ -137,8 +140,8 @@ impl MapBuilder {
             // Nonexclusive feature selectors come in even/odd pairs to turn a setting on/off
             // respectively, so we mask out the low-order bit when checking for "duplicates"
             // (selectors referring to the same feature setting) here.
-            let non_exclusive = !self.features[i].is_exclusive &&
-                (self.features[i].setting & !1) != (self.features[j].setting & !1);
+            let non_exclusive = !self.features[i].is_exclusive
+                && (self.features[i].setting & !1) != (self.features[j].setting & !1);
 
             if self.features[i].kind != self.features[j].kind || non_exclusive {
                 j += 1;

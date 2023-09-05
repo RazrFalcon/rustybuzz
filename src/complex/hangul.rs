@@ -1,11 +1,10 @@
 use alloc::boxed::Box;
 
-use crate::{Face, GlyphInfo, Mask};
-use crate::buffer::{Buffer, BufferFlags, BufferClusterLevel};
+use super::*;
+use crate::buffer::{Buffer, BufferClusterLevel, BufferFlags};
 use crate::ot::{feature, FeatureFlags, Map};
 use crate::plan::{ShapePlan, ShapePlanner};
-use super::*;
-
+use crate::{Face, GlyphInfo, Mask};
 
 pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -23,7 +22,6 @@ pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
     fallback_position: false,
 };
 
-
 const L_BASE: u32 = 0x1100;
 const V_BASE: u32 = 0x1161;
 const T_BASE: u32 = 0x11A7;
@@ -38,7 +36,6 @@ const LJMO: u8 = 1;
 const VJMO: u8 = 2;
 const TJMO: u8 = 3;
 
-
 impl GlyphInfo {
     fn hangul_shaping_feature(&self) -> u8 {
         let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
@@ -50,7 +47,6 @@ impl GlyphInfo {
         v[2] = feature;
     }
 }
-
 
 struct HangulShapePlan {
     mask_array: [Mask; 4],
@@ -64,23 +60,30 @@ impl HangulShapePlan {
                 map.one_mask(feature::LEADING_JAMO_FORMS),
                 map.one_mask(feature::VOWEL_JAMO_FORMS),
                 map.one_mask(feature::TRAILING_JAMO_FORMS),
-            ]
+            ],
         }
     }
 }
 
-
 fn collect_features(planner: &mut ShapePlanner) {
-    planner.ot_map.add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::empty(), 1);
-    planner.ot_map.add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::empty(), 1);
-    planner.ot_map.add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::empty(), 1);
+    planner
+        .ot_map
+        .add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::empty(), 1);
+    planner
+        .ot_map
+        .add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::empty(), 1);
+    planner
+        .ot_map
+        .add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::empty(), 1);
 }
 
 fn override_features(planner: &mut ShapePlanner) {
     // Uniscribe does not apply 'calt' for Hangul, and certain fonts
     // (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
     // in calt, which is not desirable.
-    planner.ot_map.disable_feature(feature::CONTEXTUAL_ALTERNATES);
+    planner
+        .ot_map
+        .disable_feature(feature::CONTEXTUAL_ALTERNATES);
 }
 
 fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
@@ -152,14 +155,18 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                     buffer.merge_out_clusters(start, end + 1);
                     let out_info = buffer.out_info_mut();
                     let tone = out_info[end];
-                    for i in (0..end-start).rev() {
+                    for i in (0..end - start).rev() {
                         out_info[i + start + 1] = out_info[i + start];
                     }
                     out_info[start] = tone;
                 }
             } else {
                 // No valid syllable as base for tone mark; try to insert dotted circle.
-                if !buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) && face.has_glyph(0x25CC) {
+                if !buffer
+                    .flags
+                    .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
+                    && face.has_glyph(0x25CC)
+                {
                     let mut chars = [0; 2];
                     if !is_zero_width_char(face, c) {
                         chars[0] = u;
@@ -250,7 +257,8 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             let vindex = nindex / T_COUNT;
             let tindex = nindex % T_COUNT;
 
-            if tindex == 0 && buffer.idx + 1 < buffer.len && is_combining_t(buffer.cur(1).glyph_id) {
+            if tindex == 0 && buffer.idx + 1 < buffer.len && is_combining_t(buffer.cur(1).glyph_id)
+            {
                 // <LV,T>, try to combine.
                 let new_tindex = buffer.cur(1).glyph_id - T_BASE;
                 let new_s = s + new_tindex;
@@ -268,10 +276,13 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             // Otherwise, decompose if font doesn't support <LV> or <LVT>,
             // or if having non-combining <LV,T>.  Note that we already handled
             // combining <LV,T> above.
-            if !has_glyph || (tindex == 0 && buffer.idx + 1 < buffer.len && is_t(buffer.cur(1).glyph_id)) {
+            if !has_glyph
+                || (tindex == 0 && buffer.idx + 1 < buffer.len && is_t(buffer.cur(1).glyph_id))
+            {
                 let decomposed = [L_BASE + lindex, V_BASE + vindex, T_BASE + tindex];
-                if face.has_glyph(decomposed[0]) && face.has_glyph(decomposed[1]) &&
-                    (tindex == 0 || face.has_glyph(decomposed[2]))
+                if face.has_glyph(decomposed[0])
+                    && face.has_glyph(decomposed[1])
+                    && (tindex == 0 || face.has_glyph(decomposed[2]))
                 {
                     let mut s_len = if tindex != 0 { 3 } else { 2 };
                     buffer.replace_glyphs(1, s_len, &decomposed);
@@ -298,7 +309,8 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                     }
 
                     continue;
-                } else if tindex == 0 && buffer.idx + 1 > buffer.len && is_t(buffer.cur(1).glyph_id) {
+                } else if tindex == 0 && buffer.idx + 1 > buffer.len && is_t(buffer.cur(1).glyph_id)
+                {
                     // Mark unsafe between LV and T.
                     buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
                 }
@@ -345,19 +357,19 @@ fn is_t(u: u32) -> bool {
 }
 
 fn is_combining_l(u: u32) -> bool {
-    (L_BASE ..= L_BASE + L_COUNT - 1).contains(&u)
+    (L_BASE..=L_BASE + L_COUNT - 1).contains(&u)
 }
 
 fn is_combining_v(u: u32) -> bool {
-    (V_BASE ..= V_BASE + V_COUNT - 1).contains(&u)
+    (V_BASE..=V_BASE + V_COUNT - 1).contains(&u)
 }
 
 fn is_combining_t(u: u32) -> bool {
-    (T_BASE + 1 ..= T_BASE + T_COUNT - 1).contains(&u)
+    (T_BASE + 1..=T_BASE + T_COUNT - 1).contains(&u)
 }
 
 fn is_combined_s(u: u32) -> bool {
-    (S_BASE ..= S_BASE + S_COUNT - 1).contains(&u)
+    (S_BASE..=S_BASE + S_COUNT - 1).contains(&u)
 }
 
 fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {

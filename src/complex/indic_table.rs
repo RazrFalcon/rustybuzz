@@ -3,62 +3,62 @@
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
 
-use super::indic::{SyllabicCategory, MatraCategory};
+use super::indic::{MatraCategory, SyllabicCategory};
 
-use SyllabicCategory::Avagraha                  as ISC_A;
-use SyllabicCategory::Bindu                     as ISC_Bi;
-use SyllabicCategory::BrahmiJoiningNumber       as ISC_BJN;
-use SyllabicCategory::CantillationMark          as ISC_Ca;
-use SyllabicCategory::Consonant                 as ISC_C;
-use SyllabicCategory::ConsonantDead             as ISC_CD;
-use SyllabicCategory::ConsonantFinal            as ISC_CF;
-use SyllabicCategory::ConsonantHeadLetter       as ISC_CHL;
+use SyllabicCategory::Avagraha as ISC_A;
+use SyllabicCategory::Bindu as ISC_Bi;
+use SyllabicCategory::BrahmiJoiningNumber as ISC_BJN;
+use SyllabicCategory::CantillationMark as ISC_Ca;
+use SyllabicCategory::Consonant as ISC_C;
+use SyllabicCategory::ConsonantDead as ISC_CD;
+use SyllabicCategory::ConsonantFinal as ISC_CF;
+use SyllabicCategory::ConsonantHeadLetter as ISC_CHL;
 use SyllabicCategory::ConsonantInitialPostfixed as ISC_CIP;
-use SyllabicCategory::ConsonantKiller           as ISC_CK;
-use SyllabicCategory::ConsonantMedial           as ISC_CM;
-use SyllabicCategory::ConsonantPlaceholder      as ISC_CP;
-use SyllabicCategory::ConsonantPrecedingRepha   as ISC_CPR;
-use SyllabicCategory::ConsonantPrefixed         as ISC_CPrf;
-use SyllabicCategory::ConsonantSubjoined        as ISC_CS;
-use SyllabicCategory::ConsonantSucceedingRepha  as ISC_CSR;
-use SyllabicCategory::ConsonantWithStacker      as ISC_CWS;
-use SyllabicCategory::GeminationMark            as ISC_GM;
-use SyllabicCategory::InvisibleStacker          as ISC_IS;
-use SyllabicCategory::Joiner                    as ISC_ZWJ;
-use SyllabicCategory::ModifyingLetter           as ISC_ML;
-use SyllabicCategory::NonJoiner                 as ISC_ZWNJ;
-use SyllabicCategory::Nukta                     as ISC_N;
-use SyllabicCategory::Number                    as ISC_Nd;
-use SyllabicCategory::NumberJoiner              as ISC_NJ;
-use SyllabicCategory::Other                     as ISC_x;
-use SyllabicCategory::PureKiller                as ISC_PK;
-use SyllabicCategory::RegisterShifter           as ISC_RS;
-use SyllabicCategory::SyllableModifier          as ISC_SM;
-use SyllabicCategory::ToneLetter                as ISC_TL;
-use SyllabicCategory::ToneMark                  as ISC_TM;
-use SyllabicCategory::Virama                    as ISC_V;
-use SyllabicCategory::Visarga                   as ISC_Vs;
-use SyllabicCategory::Vowel                     as ISC_Vo;
-use SyllabicCategory::VowelDependent            as ISC_M;
-use SyllabicCategory::VowelIndependent          as ISC_VI;
+use SyllabicCategory::ConsonantKiller as ISC_CK;
+use SyllabicCategory::ConsonantMedial as ISC_CM;
+use SyllabicCategory::ConsonantPlaceholder as ISC_CP;
+use SyllabicCategory::ConsonantPrecedingRepha as ISC_CPR;
+use SyllabicCategory::ConsonantPrefixed as ISC_CPrf;
+use SyllabicCategory::ConsonantSubjoined as ISC_CS;
+use SyllabicCategory::ConsonantSucceedingRepha as ISC_CSR;
+use SyllabicCategory::ConsonantWithStacker as ISC_CWS;
+use SyllabicCategory::GeminationMark as ISC_GM;
+use SyllabicCategory::InvisibleStacker as ISC_IS;
+use SyllabicCategory::Joiner as ISC_ZWJ;
+use SyllabicCategory::ModifyingLetter as ISC_ML;
+use SyllabicCategory::NonJoiner as ISC_ZWNJ;
+use SyllabicCategory::Nukta as ISC_N;
+use SyllabicCategory::Number as ISC_Nd;
+use SyllabicCategory::NumberJoiner as ISC_NJ;
+use SyllabicCategory::Other as ISC_x;
+use SyllabicCategory::PureKiller as ISC_PK;
+use SyllabicCategory::RegisterShifter as ISC_RS;
+use SyllabicCategory::SyllableModifier as ISC_SM;
+use SyllabicCategory::ToneLetter as ISC_TL;
+use SyllabicCategory::ToneMark as ISC_TM;
+use SyllabicCategory::Virama as ISC_V;
+use SyllabicCategory::Visarga as ISC_Vs;
+use SyllabicCategory::Vowel as ISC_Vo;
+use SyllabicCategory::VowelDependent as ISC_M;
+use SyllabicCategory::VowelIndependent as ISC_VI;
 
-use MatraCategory::Bottom                       as IMC_B;
-use MatraCategory::BottomAndLeft                as IMC_BL;
-use MatraCategory::BottomAndRight               as IMC_BR;
-use MatraCategory::Left                         as IMC_L;
-use MatraCategory::LeftAndRight                 as IMC_LR;
-use MatraCategory::NotApplicable                as IMC_x;
-use MatraCategory::Overstruck                   as IMC_O;
-use MatraCategory::Right                        as IMC_R;
-use MatraCategory::Top                          as IMC_T;
-use MatraCategory::TopAndBottom                 as IMC_TB;
-use MatraCategory::TopAndBottomAndRight         as IMC_TBR;
-use MatraCategory::TopAndLeft                   as IMC_TL;
-use MatraCategory::TopAndLeftAndRight           as IMC_TLR;
-use MatraCategory::TopAndRight                  as IMC_TR;
-use MatraCategory::VisualOrderLeft              as IMC_VOL;
+use MatraCategory::Bottom as IMC_B;
+use MatraCategory::BottomAndLeft as IMC_BL;
+use MatraCategory::BottomAndRight as IMC_BR;
+use MatraCategory::Left as IMC_L;
+use MatraCategory::LeftAndRight as IMC_LR;
+use MatraCategory::NotApplicable as IMC_x;
+use MatraCategory::Overstruck as IMC_O;
+use MatraCategory::Right as IMC_R;
+use MatraCategory::Top as IMC_T;
+use MatraCategory::TopAndBottom as IMC_TB;
+use MatraCategory::TopAndBottomAndRight as IMC_TBR;
+use MatraCategory::TopAndLeft as IMC_TL;
+use MatraCategory::TopAndLeftAndRight as IMC_TLR;
+use MatraCategory::TopAndRight as IMC_TR;
+use MatraCategory::VisualOrderLeft as IMC_VOL;
 
-
+#[rustfmt::skip]
 const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
 
 
@@ -360,6 +360,7 @@ const OFFSET_0XA8E0: usize = 1696;
 const OFFSET_0XA9E0: usize = 1728;
 const OFFSET_0XAA60: usize = 1760;
 
+#[rustfmt::skip]
 pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
     match u >> 12 {
         0x0 => {

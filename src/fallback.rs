@@ -1,10 +1,10 @@
 use ttf_parser::GlyphId;
 
-use crate::{Direction, Face};
-use crate::face::GlyphExtents;
 use crate::buffer::{Buffer, GlyphPosition};
-use crate::unicode::{space, modified_combining_class, CanonicalCombiningClass, GeneralCategory};
+use crate::face::GlyphExtents;
 use crate::plan::ShapePlan;
+use crate::unicode::{modified_combining_class, space, CanonicalCombiningClass, GeneralCategory};
+use crate::{Direction, Face};
 
 pub fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
@@ -18,8 +18,8 @@ pub fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 }
 
 fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
-    use CanonicalCombiningClass as Class;
     use modified_combining_class as mcc;
+    use CanonicalCombiningClass as Class;
 
     if class >= 200 {
         return class;
@@ -29,24 +29,13 @@ fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
     if u & !0xFF == 0x0E00 {
         if class == 0 {
             match u {
-                0x0E31 |
-                0x0E34 |
-                0x0E35 |
-                0x0E36 |
-                0x0E37 |
-                0x0E47 |
-                0x0E4C |
-                0x0E4D |
-                0x0E4E => class = Class::AboveRight as u8,
+                0x0E31 | 0x0E34 | 0x0E35 | 0x0E36 | 0x0E37 | 0x0E47 | 0x0E4C | 0x0E4D | 0x0E4E => {
+                    class = Class::AboveRight as u8
+                }
 
-                0x0EB1 |
-                0x0EB4 |
-                0x0EB5 |
-                0x0EB6 |
-                0x0EB7 |
-                0x0EBB |
-                0x0ECC |
-                0x0ECD => class = Class::Above as u8,
+                0x0EB1 | 0x0EB4 | 0x0EB5 | 0x0EB6 | 0x0EB7 | 0x0EBB | 0x0ECC | 0x0ECD => {
+                    class = Class::Above as u8
+                }
 
                 0x0EBC => class = Class::Below as u8,
 
@@ -203,14 +192,18 @@ fn position_around_base(
     let mut component_extents = base_extents;
     let mut cluster_extents = base_extents;
 
-    for (info, pos) in buffer.info[base+1..end].iter().zip(&mut buffer.pos[base+1..end]) {
+    for (info, pos) in buffer.info[base + 1..end]
+        .iter()
+        .zip(&mut buffer.pos[base + 1..end])
+    {
         if info.modified_combining_class() != 0 {
             if num_lig_components > 1 {
                 let this_lig_id = info.lig_id() as u32;
                 let mut this_lig_component = info.lig_comp() as i32 - 1;
 
                 // Conditions for attaching to the last component.
-                if lig_id == 0 || lig_id != this_lig_id || this_lig_component >= num_lig_components {
+                if lig_id == 0 || lig_id != this_lig_id || this_lig_component >= num_lig_components
+                {
                     this_lig_component = num_lig_components - 1;
                 }
 
@@ -229,12 +222,12 @@ fn position_around_base(
                         };
                     }
 
-                    component_extents.x_bearing +=
-                        (if horizontal_dir == Direction::LeftToRight {
-                            this_lig_component
-                        } else {
-                            num_lig_components - 1 - this_lig_component
-                        } * component_extents.width) / num_lig_components;
+                    component_extents.x_bearing += (if horizontal_dir == Direction::LeftToRight {
+                        this_lig_component
+                    } else {
+                        num_lig_components - 1 - this_lig_component
+                    } * component_extents.width)
+                        / num_lig_components;
 
                     component_extents.width /= num_lig_components;
                 }
@@ -278,7 +271,10 @@ fn zero_mark_advances(
     end: usize,
     adjust_offsets_when_zeroing: bool,
 ) {
-    for (info, pos) in buffer.info[start..end].iter().zip(&mut buffer.pos[start..end]) {
+    for (info, pos) in buffer.info[start..end]
+        .iter()
+        .zip(&mut buffer.pos[start..end])
+    {
         if info.general_category() == GeneralCategory::NonspacingMark {
             if adjust_offsets_when_zeroing {
                 pos.x_offset -= pos.x_advance;
@@ -314,63 +310,58 @@ fn position_mark(
 
     // X positioning
     match combining_class {
-        Class::DoubleBelow |
-        Class::DoubleAbove if direction.is_horizontal() => {
+        Class::DoubleBelow | Class::DoubleAbove if direction.is_horizontal() => {
             pos.x_offset += base_extents.x_bearing
-                + if direction.is_forward() { base_extents.width } else { 0 }
-                - mark_extents.width / 2 - mark_extents.x_bearing;
+                + if direction.is_forward() {
+                    base_extents.width
+                } else {
+                    0
+                }
+                - mark_extents.width / 2
+                - mark_extents.x_bearing;
         }
 
-        Class::AttachedBelowLeft |
-        Class::BelowLeft |
-        Class::AboveLeft => {
+        Class::AttachedBelowLeft | Class::BelowLeft | Class::AboveLeft => {
             // Left align.
             pos.x_offset += base_extents.x_bearing - mark_extents.x_bearing;
         }
 
-        Class::AttachedAboveRight |
-        Class::BelowRight |
-        Class::AboveRight => {
+        Class::AttachedAboveRight | Class::BelowRight | Class::AboveRight => {
             // Right align.
             pos.x_offset += base_extents.x_bearing + base_extents.width
-                - mark_extents.width - mark_extents.x_bearing;
+                - mark_extents.width
+                - mark_extents.x_bearing;
         }
 
-        Class::AttachedBelow |
-        Class::AttachedAbove |
-        Class::Below |
-        Class::Above |
-        _ => {
+        Class::AttachedBelow | Class::AttachedAbove | Class::Below | Class::Above | _ => {
             // Center align.
-            pos.x_offset += base_extents.x_bearing
-                + (base_extents.width - mark_extents.width) / 2
+            pos.x_offset += base_extents.x_bearing + (base_extents.width - mark_extents.width) / 2
                 - mark_extents.x_bearing;
         }
     }
 
     let is_attached = matches!(
         combining_class,
-        Class::AttachedBelowLeft |
-        Class::AttachedBelow |
-        Class::AttachedAbove |
-        Class::AttachedAboveRight
+        Class::AttachedBelowLeft
+            | Class::AttachedBelow
+            | Class::AttachedAbove
+            | Class::AttachedAboveRight
     );
 
     // Y positioning.
     match combining_class {
-        Class::DoubleBelow |
-        Class::BelowLeft |
-        Class::Below |
-        Class::BelowRight |
-        Class::AttachedBelowLeft |
-        Class::AttachedBelow => {
+        Class::DoubleBelow
+        | Class::BelowLeft
+        | Class::Below
+        | Class::BelowRight
+        | Class::AttachedBelowLeft
+        | Class::AttachedBelow => {
             if !is_attached {
                 // Add gap.
                 base_extents.height -= y_gap;
             }
 
-            pos.y_offset = base_extents.y_bearing + base_extents.height
-                - mark_extents.y_bearing;
+            pos.y_offset = base_extents.y_bearing + base_extents.height - mark_extents.y_bearing;
 
             // Never shift up "below" marks.
             if (y_gap > 0) == (pos.y_offset > 0) {
@@ -381,20 +372,19 @@ fn position_mark(
             base_extents.height += mark_extents.height;
         }
 
-        Class::DoubleAbove |
-        Class::AboveLeft |
-        Class::Above |
-        Class::AboveRight |
-        Class::AttachedAbove |
-        Class::AttachedAboveRight => {
+        Class::DoubleAbove
+        | Class::AboveLeft
+        | Class::Above
+        | Class::AboveRight
+        | Class::AttachedAbove
+        | Class::AttachedAboveRight => {
             if !is_attached {
                 // Add gap.
                 base_extents.y_bearing += y_gap;
                 base_extents.height -= y_gap;
             }
 
-            pos.y_offset = base_extents.y_bearing
-                - (mark_extents.y_bearing + mark_extents.height);
+            pos.y_offset = base_extents.y_bearing - (mark_extents.y_bearing + mark_extents.height);
 
             // Don't shift down "above" marks too much.
             if (y_gap > 0) != (pos.y_offset > 0) {
@@ -422,14 +412,15 @@ pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         };
 
         match space_type {
-            space::SPACE_EM |
-            space::SPACE_EM_2 |
-            space::SPACE_EM_3 |
-            space::SPACE_EM_4 |
-            space::SPACE_EM_5 |
-            space::SPACE_EM_6 |
-            space::SPACE_EM_16 => {
-                let length = (face.units_per_em as i32 + (space_type as i32) / 2) / space_type as i32;
+            space::SPACE_EM
+            | space::SPACE_EM_2
+            | space::SPACE_EM_3
+            | space::SPACE_EM_4
+            | space::SPACE_EM_5
+            | space::SPACE_EM_6
+            | space::SPACE_EM_16 => {
+                let length =
+                    (face.units_per_em as i32 + (space_type as i32) / 2) / space_type as i32;
                 if horizontal {
                     pos.x_advance = length;
                 } else {

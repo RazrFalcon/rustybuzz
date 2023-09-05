@@ -17,29 +17,28 @@ extern crate alloc;
 mod buffer;
 mod aat;
 mod common;
+mod complex;
+mod face;
 mod fallback;
 mod glyph_set;
 mod normalize;
-mod shape;
+mod ot;
 mod plan;
-mod face;
+mod shape;
 mod tag;
 mod tag_table;
 mod text_parser;
 mod unicode;
 mod unicode_norm;
-mod complex;
-mod ot;
 
 pub use ttf_parser;
 
 pub use ttf_parser::Tag;
 
 pub use crate::buffer::{
-    GlyphPosition, GlyphInfo, BufferClusterLevel,
-    SerializeFlags, UnicodeBuffer, GlyphBuffer
+    BufferClusterLevel, GlyphBuffer, GlyphInfo, GlyphPosition, SerializeFlags, UnicodeBuffer,
 };
-pub use crate::common::{Direction, Script, Language, Feature, Variation, script};
+pub use crate::common::{script, Direction, Feature, Language, Script, Variation};
 pub use crate::face::Face;
 pub use crate::shape::shape;
 

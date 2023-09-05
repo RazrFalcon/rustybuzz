@@ -1,8 +1,8 @@
-use crate::Face;
 use crate::buffer::{Buffer, BufferScratchFlags, GlyphInfo};
 use crate::complex::MAX_COMBINING_MARKS;
 use crate::plan::ShapePlan;
 use crate::unicode::{CharExt, GeneralCategory};
+use crate::Face;
 
 // HIGHLEVEL DESIGN:
 //
@@ -82,17 +82,30 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         mode = Some(ShapeNormalizationMode::ComposedDiacritics);
     }
 
-    let decompose = plan.shaper.decompose.unwrap_or(|_, ab| crate::unicode::decompose(ab));
-    let compose = plan.shaper.compose.unwrap_or(|_, a, b| crate::unicode::compose(a, b));
-    let mut ctx = ShapeNormalizeContext { plan, buffer, face, decompose, compose };
+    let decompose = plan
+        .shaper
+        .decompose
+        .unwrap_or(|_, ab| crate::unicode::decompose(ab));
+    let compose = plan
+        .shaper
+        .compose
+        .unwrap_or(|_, a, b| crate::unicode::compose(a, b));
+    let mut ctx = ShapeNormalizeContext {
+        plan,
+        buffer,
+        face,
+        decompose,
+        compose,
+    };
     let mut buffer = &mut ctx.buffer;
 
     let always_short_circuit = mode.is_none();
-    let might_short_circuit = always_short_circuit || !matches!(
-        mode,
-        Some(ShapeNormalizationMode::Decomposed) |
-        Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit)
-    );
+    let might_short_circuit = always_short_circuit
+        || !matches!(
+            mode,
+            Some(ShapeNormalizationMode::Decomposed)
+                | Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit)
+        );
 
     // We do a fairly straightforward yet custom normalization process in three
     // separate rounds: decompose, reorder, recompose (if desired).  Currently
@@ -178,7 +191,9 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 
             // We are going to do a O(n^2).  Only do this if the sequence is short.
             if end - i <= MAX_COMBINING_MARKS {
-                buffer.sort(i, end, |a, b| a.modified_combining_class() > b.modified_combining_class());
+                buffer.sort(i, end, |a, b| {
+                    a.modified_combining_class() > b.modified_combining_class()
+                });
 
                 if let Some(reorder_marks) = ctx.plan.shaper.reorder_marks {
                     reorder_marks(ctx.plan, buffer, i, end);
@@ -193,7 +208,9 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         // If it did NOT, then make it skippable.
         // https://github.com/harfbuzz/harfbuzz/issues/554
         for i in 1..buffer.len.saturating_sub(1) {
-            if buffer.info[i].glyph_id == 0x034F /* CGJ */ {
+            if buffer.info[i].glyph_id == 0x034F
+            /* CGJ */
+            {
                 let last = buffer.info[i - 1].modified_combining_class();
                 let next = buffer.info[i + 1].modified_combining_class();
                 if next == 0 || last <= next {
@@ -204,11 +221,13 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     }
 
     // Third round, recompose
-    if !all_simple && matches!(
-        mode,
-        Some(ShapeNormalizationMode::ComposedDiacritics) |
-        Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit)
-    ) {
+    if !all_simple
+        && matches!(
+            mode,
+            Some(ShapeNormalizationMode::ComposedDiacritics)
+                | Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit)
+        )
+    {
         // As noted in the comment earlier, we don't try to combine
         // ccc=0 chars with their previous Starter.
 
@@ -296,10 +315,9 @@ fn handle_variation_selector_cluster(ctx: &mut ShapeNormalizeContext, end: usize
     let buffer = &mut ctx.buffer;
     while buffer.idx < end - 1 && buffer.successful {
         if buffer.cur(1).as_char().is_variation_selector() {
-            if let Some(glyph_id) = face.glyph_variation_index(
-                buffer.cur(0).as_char(),
-                buffer.cur(1).as_char(),
-            ) {
+            if let Some(glyph_id) =
+                face.glyph_variation_index(buffer.cur(0).as_char(), buffer.cur(1).as_char())
+            {
                 buffer.cur_mut(0).set_glyph_index(u32::from(glyph_id.0));
                 let unicode = buffer.cur(0).glyph_id;
                 buffer.replace_glyphs(2, 1, &[unicode]);

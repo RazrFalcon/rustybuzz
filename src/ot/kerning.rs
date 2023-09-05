@@ -1,12 +1,12 @@
 use ttf_parser::{apple_layout, kern, GlyphId};
 
-use crate::{Face, Mask};
-use crate::buffer::{Buffer, BufferScratchFlags};
-use crate::plan::ShapePlan;
-use super::{lookup_flags, TableIndex};
 use super::apply::ApplyContext;
 use super::matching::SkippyIter;
+use super::{lookup_flags, TableIndex};
+use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::attach_type;
+use crate::plan::ShapePlan;
+use crate::{Face, Mask};
 
 pub fn has_kerning(face: &Face) -> bool {
     face.tables().kern.is_some()
@@ -14,18 +14,14 @@ pub fn has_kerning(face: &Face) -> bool {
 
 pub fn has_machine_kerning(face: &Face) -> bool {
     match face.tables().kern {
-        Some(ref kern) => {
-            kern.subtables.into_iter().any(|s| s.has_state_machine)
-        }
+        Some(ref kern) => kern.subtables.into_iter().any(|s| s.has_state_machine),
         None => false,
     }
 }
 
 pub fn has_cross_kerning(face: &Face) -> bool {
     match face.tables().kern {
-        Some(ref kern) => {
-            kern.subtables.into_iter().any(|s| s.has_cross_stream)
-        }
+        Some(ref kern) => kern.subtables.into_iter().any(|s| s.has_cross_stream),
         None => false,
     }
 }
@@ -152,10 +148,18 @@ fn apply_simple_kerning(
     kern_mask: Mask,
     buffer: &mut Buffer,
 ) {
-    machine_kern(face, buffer, kern_mask, subtable.has_cross_stream, |left, right| {
-        subtable.glyphs_kerning(GlyphId(left as u16), GlyphId(right as u16))
-            .map(i32::from).unwrap_or(0)
-    });
+    machine_kern(
+        face,
+        buffer,
+        kern_mask,
+        subtable.has_cross_stream,
+        |left, right| {
+            subtable
+                .glyphs_kerning(GlyphId(left as u16), GlyphId(right as u16))
+                .map(i32::from)
+                .unwrap_or(0)
+        },
+    );
 }
 
 struct StateMachineDriver {
@@ -163,11 +167,7 @@ struct StateMachineDriver {
     depth: usize,
 }
 
-fn apply_state_machine_kerning(
-    subtable: &kern::Subtable,
-    kern_mask: Mask,
-    buffer: &mut Buffer,
-) {
+fn apply_state_machine_kerning(subtable: &kern::Subtable, kern_mask: Mask, buffer: &mut Buffer) {
     let state_table = match subtable.format {
         kern::Format::Format1(ref state_table) => state_table,
         _ => return,
@@ -182,7 +182,9 @@ fn apply_state_machine_kerning(
     buffer.idx = 0;
     loop {
         let class = if buffer.idx < buffer.len {
-            state_table.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
+            state_table
+                .class(buffer.info[buffer.idx].as_glyph())
+                .unwrap_or(1)
         } else {
             apple_layout::class::END_OF_TEXT as u8
         };
@@ -194,13 +196,13 @@ fn apply_state_machine_kerning(
 
         // Unsafe-to-break before this if not in state 0, as things might
         // go differently if we start from state 0 here.
-        if state != apple_layout::state::START_OF_TEXT &&
-            buffer.backtrack_len() != 0 &&
-            buffer.idx < buffer.len
+        if state != apple_layout::state::START_OF_TEXT
+            && buffer.backtrack_len() != 0
+            && buffer.idx < buffer.len
         {
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
-            if entry.has_offset() ||
-                !(entry.new_state == apple_layout::state::START_OF_TEXT && !entry.has_advance())
+            if entry.has_offset()
+                || !(entry.new_state == apple_layout::state::START_OF_TEXT && !entry.has_advance())
             {
                 buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
@@ -218,8 +220,14 @@ fn apply_state_machine_kerning(
             }
         }
 
-        state_machine_transition(entry, subtable.has_cross_stream, kern_mask,
-                                 state_table, &mut driver, buffer);
+        state_machine_transition(
+            entry,
+            subtable.has_cross_stream,
+            kern_mask,
+            state_table,
+            &mut driver,
+            buffer,
+        );
 
         state = state_table.new_state(entry.new_state);
 

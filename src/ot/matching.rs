@@ -2,10 +2,10 @@
 
 use ttf_parser::GlyphId;
 
-use crate::Mask;
-use crate::buffer::GlyphInfo;
-use super::{TableIndex, MAX_CONTEXT_LENGTH};
 use super::apply::ApplyContext;
+use super::{TableIndex, MAX_CONTEXT_LENGTH};
+use crate::buffer::GlyphInfo;
+use crate::Mask;
 
 pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 
@@ -136,7 +136,7 @@ pub fn match_input(
 pub fn match_backtrack(
     ctx: &ApplyContext,
     backtrack_len: u16,
-    match_func: &MatchingFunc
+    match_func: &MatchingFunc,
 ) -> Option<usize> {
     let mut iter = SkippyIter::new(ctx, ctx.buffer.backtrack_len(), backtrack_len, true);
     iter.enable_matching(match_func);
@@ -197,7 +197,11 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
             ignore_zwnj: ctx.table_index == TableIndex::GPOS || (context_match && ctx.auto_zwnj),
             // Ignore ZWJ if we are matching context, or asked to.
             ignore_zwj: context_match || ctx.auto_zwj,
-            mask: if context_match { u32::MAX } else { ctx.lookup_mask },
+            mask: if context_match {
+                u32::MAX
+            } else {
+                ctx.lookup_mask
+            },
             syllable: if ctx.buffer.idx == start_buf_index {
                 ctx.buffer.cur(0).syllable()
             } else {
@@ -206,7 +210,7 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
             matching: None,
             buf_len: ctx.buffer.len,
             buf_idx: start_buf_index,
-            num_items
+            num_items,
         }
     }
 
@@ -277,7 +281,8 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
     }
 
     fn may_match(&self, info: &GlyphInfo) -> Option<bool> {
-        if (info.mask & self.mask) != 0 && (self.syllable == 0 || self.syllable == info.syllable()) {
+        if (info.mask & self.mask) != 0 && (self.syllable == 0 || self.syllable == info.syllable())
+        {
             self.matching.map(|f| f(info.as_glyph(), self.num_items))
         } else {
             Some(false)

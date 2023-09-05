@@ -1,11 +1,10 @@
-use ttf_parser::GlyphId;
 use ttf_parser::gdef::GlyphClass;
 use ttf_parser::opentype_layout::LayoutTable;
+use ttf_parser::GlyphId;
 
-use crate::Variation;
-use crate::ot::{TableIndex, PositioningTable, SubstitutionTable};
 use crate::buffer::GlyphPropsFlags;
-
+use crate::ot::{PositioningTable, SubstitutionTable, TableIndex};
+use crate::Variation;
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
 const WINDOWS_SYMBOL_ENCODING: u16 = 0;
@@ -20,7 +19,6 @@ const UNICODE_2_0_BMP_ENCODING: u16 = 3;
 const UNICODE_2_0_FULL_ENCODING: u16 = 4;
 //const UNICODE_VARIATION_ENCODING: u16 = 5;
 const UNICODE_FULL_ENCODING: u16 = 6;
-
 
 /// A font face handle.
 #[derive(Clone)]
@@ -139,8 +137,8 @@ impl<'a> Face<'a> {
             None => {
                 // Special case for Windows Symbol fonts.
                 // TODO: add tests
-                if  subtable.platform_id == ttf_parser::PlatformId::Windows &&
-                    subtable.encoding_id == WINDOWS_SYMBOL_ENCODING
+                if subtable.platform_id == ttf_parser::PlatformId::Windows
+                    && subtable.encoding_id == WINDOWS_SYMBOL_ENCODING
                 {
                     if c <= 0x00FF {
                         // For symbol-encoded OpenType fonts, we duplicate the
@@ -167,10 +165,10 @@ impl<'a> Face<'a> {
 
     fn glyph_advance(&self, glyph: GlyphId, is_vertical: bool) -> u32 {
         let face = &self.ttfp_face;
-        if face.is_variable() &&
-           face.has_non_default_variation_coordinates() &&
-           face.tables().hvar.is_none() &&
-           face.tables().vvar.is_none()
+        if face.is_variable()
+            && face.has_non_default_variation_coordinates()
+            && face.tables().hvar.is_none()
+            && face.tables().vvar.is_none()
         {
             return match face.glyph_bounding_box(glyph) {
                 Some(bbox) => {
@@ -200,21 +198,20 @@ impl<'a> Face<'a> {
     pub(crate) fn glyph_v_origin(&self, glyph: GlyphId) -> i32 {
         match self.ttfp_face.glyph_y_origin(glyph) {
             Some(y) => i32::from(y),
-            None => self.glyph_extents(glyph).map_or(0, |ext| ext.y_bearing)
-                + self.glyph_side_bearing(glyph, true)
+            None => {
+                self.glyph_extents(glyph).map_or(0, |ext| ext.y_bearing)
+                    + self.glyph_side_bearing(glyph, true)
+            }
         }
     }
 
     pub(crate) fn glyph_side_bearing(&self, glyph: GlyphId, is_vertical: bool) -> i32 {
         let face = &self.ttfp_face;
-        if  face.is_variable() &&
-            face.tables().hvar.is_none() &&
-            face.tables().vvar.is_none()
-        {
+        if face.is_variable() && face.tables().hvar.is_none() && face.tables().vvar.is_none() {
             return match face.glyph_bounding_box(glyph) {
                 Some(bbox) => (if is_vertical { bbox.x_min } else { bbox.y_min }) as i32,
                 None => 0,
-            }
+            };
         }
 
         if is_vertical {
@@ -236,7 +233,8 @@ impl<'a> Face<'a> {
                 let scale = self.units_per_em as f32 / img.pixels_per_em as f32;
                 return Some(GlyphExtents {
                     x_bearing: crate::round(f32::from(img.x) * scale) as i32,
-                    y_bearing: crate::round((f32::from(img.y) + f32::from(img.height)) * scale) as i32,
+                    y_bearing: crate::round((f32::from(img.y) + f32::from(img.height)) * scale)
+                        as i32,
                     width: crate::round(f32::from(img.width) * scale) as i32,
                     height: crate::round(-f32::from(img.height) * scale) as i32,
                 });
@@ -280,7 +278,9 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub(crate) fn layout_tables(&self) -> impl Iterator<Item = (TableIndex, &LayoutTable<'a>)> + '_ {
+    pub(crate) fn layout_tables(
+        &self,
+    ) -> impl Iterator<Item = (TableIndex, &LayoutTable<'a>)> + '_ {
         TableIndex::iter().filter_map(move |idx| self.layout_table(idx).map(|table| (idx, table)))
     }
 }
@@ -319,7 +319,7 @@ fn find_cmap_subtable(
 ) -> Option<u16> {
     for (i, subtable) in face.tables().cmap?.subtables.into_iter().enumerate() {
         if subtable.platform_id == platform_id && subtable.encoding_id == encoding_id {
-            return Some(i as u16)
+            return Some(i as u16);
         }
     }
 

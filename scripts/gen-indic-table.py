@@ -187,6 +187,7 @@ num = 0
 offset = 0
 starts = []
 ends = []
+print('#[rustfmt::skip]')
 print('const TABLE: &[(SyllabicCategory, MatraCategory)] = &[')
 offsets = []
 for u in uu:
@@ -226,6 +227,7 @@ print()
 for o in offsets:
     print(o)
 print()
+print('#[rustfmt::skip]')
 print('pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {')
 print('    match u >> %d {' % page_bits)
 pages = set([u >> page_bits for u in starts + ends + list(singles.keys())])

@@ -1,10 +1,9 @@
-use crate::{Tag, Face, GlyphInfo};
+use super::indic::{category, position};
+use super::*;
 use crate::buffer::{Buffer, BufferFlags};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
-use super::indic::{category, position};
-use super::*;
-
+use crate::{Face, GlyphInfo, Tag};
 
 pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -41,7 +40,6 @@ pub const MYANMAR_ZAWGYI_SHAPER: ComplexShaper = ComplexShaper {
     fallback_position: false,
 };
 
-
 const MYANMAR_FEATURES: &[Tag] = &[
     // Basic features.
     // These features are applied in order, one at a time, after reordering.
@@ -73,95 +71,43 @@ impl GlyphInfo {
             // The spec says C, IndicSyllableCategory doesn't have.
             0x104E => cat = category::C,
 
-            0x002D |
-            0x00A0 |
-            0x00D7 |
-            0x2012 |
-            0x2013 |
-            0x2014 |
-            0x2015 |
-            0x2022 |
-            0x25CC |
-            0x25FB |
-            0x25FC |
-            0x25FD |
-            0x25FE => cat = category::PLACEHOLDER,
+            0x002D | 0x00A0 | 0x00D7 | 0x2012 | 0x2013 | 0x2014 | 0x2015 | 0x2022 | 0x25CC
+            | 0x25FB | 0x25FC | 0x25FD | 0x25FE => cat = category::PLACEHOLDER,
 
-            0x1004 |
-            0x101B |
-            0x105A => cat = category::RA,
+            0x1004 | 0x101B | 0x105A => cat = category::RA,
 
-            0x1032 |
-            0x1036 => cat = category::A,
+            0x1032 | 0x1036 => cat = category::A,
 
             0x1039 => cat = category::H,
 
             0x103A => cat = category::SYMBOL,
 
-            0x1041 |
-            0x1042 |
-            0x1043 |
-            0x1044 |
-            0x1045 |
-            0x1046 |
-            0x1047 |
-            0x1048 |
-            0x1049 |
-            0x1090 |
-            0x1091 |
-            0x1092 |
-            0x1093 |
-            0x1094 |
-            0x1095 |
-            0x1096 |
-            0x1097 |
-            0x1098 |
-            0x1099 => cat = category::D,
+            0x1041 | 0x1042 | 0x1043 | 0x1044 | 0x1045 | 0x1046 | 0x1047 | 0x1048 | 0x1049
+            | 0x1090 | 0x1091 | 0x1092 | 0x1093 | 0x1094 | 0x1095 | 0x1096 | 0x1097 | 0x1098
+            | 0x1099 => cat = category::D,
 
             // XXX The spec says D0, but Uniscribe doesn't seem to do.
             0x1040 => cat = category::D,
 
-            0x103E |
-            0x1060 => cat = category::X_GROUP,
+            0x103E | 0x1060 => cat = category::X_GROUP,
 
             0x103C => cat = category::Y_GROUP,
 
-            0x103D |
-            0x1082 => cat = category::MW,
+            0x103D | 0x1082 => cat = category::MW,
 
-            0x103B |
-            0x105E |
-            0x105F => cat = category::MY,
+            0x103B | 0x105E | 0x105F => cat = category::MY,
 
-            0x1063 |
-            0x1064 |
-            0x1069 |
-            0x106A |
-            0x106B |
-            0x106C |
-            0x106D |
-            0xAA7B => cat = category::PT,
+            0x1063 | 0x1064 | 0x1069 | 0x106A | 0x106B | 0x106C | 0x106D | 0xAA7B => {
+                cat = category::PT
+            }
 
-            0x1038 |
-            0x1087 |
-            0x1088 |
-            0x1089 |
-            0x108A |
-            0x108B |
-            0x108C |
-            0x108D |
-            0x108F |
-            0x109A |
-            0x109B |
-            0x109C => cat = category::SM,
+            0x1038 | 0x1087 | 0x1088 | 0x1089 | 0x108A | 0x108B | 0x108C | 0x108D | 0x108F
+            | 0x109A | 0x109B | 0x109C => cat = category::SM,
 
-            0x104A |
-            0x104B => cat = category::P,
+            0x104A | 0x104B => cat = category::P,
 
             // https://github.com/harfbuzz/harfbuzz/issues/218
-            0xAA74 |
-            0xAA75 |
-            0xAA76 => cat = category::C,
+            0xAA74 | 0xAA75 | 0xAA76 => cat = category::C,
 
             _ => {}
         }
@@ -190,22 +136,34 @@ fn collect_features(planner: &mut ShapePlanner) {
     // Do this before any lookups have been applied.
     planner.ot_map.add_gsub_pause(Some(setup_syllables));
 
-    planner.ot_map.enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
+    planner
+        .ot_map
+        .enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.ot_map.enable_feature(feature::GLYPH_COMPOSITION_DECOMPOSITION, FeatureFlags::empty(), 1);
+    planner.ot_map.enable_feature(
+        feature::GLYPH_COMPOSITION_DECOMPOSITION,
+        FeatureFlags::empty(),
+        1,
+    );
 
     planner.ot_map.add_gsub_pause(Some(reorder));
 
     for feature in MYANMAR_FEATURES.iter().take(4) {
-        planner.ot_map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner
+            .ot_map
+            .enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
         planner.ot_map.add_gsub_pause(None);
     }
 
-    planner.ot_map.add_gsub_pause(Some(crate::ot::clear_syllables));
+    planner
+        .ot_map
+        .add_gsub_pause(Some(crate::ot::clear_syllables));
 
     for feature in MYANMAR_FEATURES.iter().skip(4) {
-        planner.ot_map.enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner
+            .ot_map
+            .enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
     }
 }
 
@@ -236,13 +194,18 @@ fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
     use super::myanmar_machine::SyllableType;
 
-    if buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE) {
+    if buffer
+        .flags
+        .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
+    {
         return;
     }
 
     // Note: This loop is extra overhead, but should not be measurable.
     // TODO Use a buffer scratch flag to remove the loop.
-    let has_broken_syllables = buffer.info_slice().iter()
+    let has_broken_syllables = buffer
+        .info_slice()
+        .iter()
         .any(|info| info.syllable() & 0x0F == SyllableType::BrokenCluster as u8);
 
     if !has_broken_syllables {
@@ -313,10 +276,10 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
 
     {
         let mut limit = start;
-        if start + 3 <= end &&
-            buffer.info[start + 0].indic_category() == category::RA &&
-            buffer.info[start + 1].indic_category() == category::SYMBOL &&
-            buffer.info[start + 2].indic_category() == category::H
+        if start + 3 <= end
+            && buffer.info[start + 0].indic_category() == category::RA
+            && buffer.info[start + 1].indic_category() == category::SYMBOL
+            && buffer.info[start + 2].indic_category() == category::H
         {
             limit += 3;
             base = start;
@@ -402,7 +365,9 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
         }
     }
 
-    buffer.sort(start, end, |a, b| a.indic_position().cmp(&b.indic_position()) == core::cmp::Ordering::Greater);
+    buffer.sort(start, end, |a, b| {
+        a.indic_position().cmp(&b.indic_position()) == core::cmp::Ordering::Greater
+    });
 }
 
 fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {

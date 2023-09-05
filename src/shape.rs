@@ -1,6 +1,5 @@
 use core::convert::TryFrom;
 
-use crate::{aat, ot, fallback, normalize, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
 use crate::buffer::{
     glyph_flag, Buffer, BufferClusterLevel, BufferFlags, BufferScratchFlags, GlyphInfo,
     GlyphPropsFlags,
@@ -8,6 +7,7 @@ use crate::buffer::{
 use crate::complex::ZeroWidthMarksMode;
 use crate::plan::ShapePlan;
 use crate::unicode::{CharExt, GeneralCategory};
+use crate::{aat, fallback, normalize, ot, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
 
 /// Shapes the buffer content using provided font and features.
 ///
@@ -154,11 +154,17 @@ fn position_default(ctx: &mut ShapeContext) {
     let len = ctx.buffer.len;
 
     if ctx.buffer.direction.is_horizontal() {
-        for (info, pos) in ctx.buffer.info[..len].iter().zip(&mut ctx.buffer.pos[..len]) {
+        for (info, pos) in ctx.buffer.info[..len]
+            .iter()
+            .zip(&mut ctx.buffer.pos[..len])
+        {
             pos.x_advance = ctx.face.glyph_h_advance(info.as_glyph());
         }
     } else {
-        for (info, pos) in ctx.buffer.info[..len].iter().zip(&mut ctx.buffer.pos[..len]) {
+        for (info, pos) in ctx.buffer.info[..len]
+            .iter()
+            .zip(&mut ctx.buffer.pos[..len])
+        {
             let glyph = info.as_glyph();
             pos.y_advance = ctx.face.glyph_v_advance(glyph);
             pos.x_offset -= ctx.face.glyph_h_origin(glyph);
@@ -166,7 +172,11 @@ fn position_default(ctx: &mut ShapeContext) {
         }
     }
 
-    if ctx.buffer.scratch_flags.contains(BufferScratchFlags::HAS_SPACE_FALLBACK) {
+    if ctx
+        .buffer
+        .scratch_flags
+        .contains(BufferScratchFlags::HAS_SPACE_FALLBACK)
+    {
         fallback::adjust_spaces(ctx.plan, ctx.face, ctx.buffer);
     }
 }
@@ -180,20 +190,24 @@ fn position_complex(ctx: &mut ShapeContext) {
     //
     // Note: If fallback positioning happens, we don't care about
     // this as it will be overriden.
-    let adjust_offsets_when_zeroing = ctx.plan.adjust_mark_positioning_when_zeroing
-        && ctx.buffer.direction.is_forward();
+    let adjust_offsets_when_zeroing =
+        ctx.plan.adjust_mark_positioning_when_zeroing && ctx.buffer.direction.is_forward();
 
     // We change glyph origin to what GPOS expects (horizontal), apply GPOS, change it back.
 
     ot::position_start(ctx.face, ctx.buffer);
 
-    if ctx.plan.zero_marks && ctx.plan.shaper.zero_width_marks == Some(ZeroWidthMarksMode::ByGdefEarly) {
+    if ctx.plan.zero_marks
+        && ctx.plan.shaper.zero_width_marks == Some(ZeroWidthMarksMode::ByGdefEarly)
+    {
         zero_mark_widths_by_gdef(ctx.buffer, adjust_offsets_when_zeroing);
     }
 
     position_by_plan(ctx.plan, ctx.face, ctx.buffer);
 
-    if ctx.plan.zero_marks && ctx.plan.shaper.zero_width_marks == Some(ZeroWidthMarksMode::ByGdefLate) {
+    if ctx.plan.zero_marks
+        && ctx.plan.shaper.zero_width_marks == Some(ZeroWidthMarksMode::ByGdefLate)
+    {
         zero_mark_widths_by_gdef(ctx.buffer, adjust_offsets_when_zeroing);
     }
 
@@ -241,21 +255,32 @@ fn setup_masks(ctx: &mut ShapeContext) {
     for feature in ctx.user_features {
         if !feature.is_global() {
             let (mask, shift) = ctx.plan.ot_map.mask(feature.tag);
-            ctx.buffer.set_masks(feature.value << shift, mask, feature.start, feature.end);
+            ctx.buffer
+                .set_masks(feature.value << shift, mask, feature.start, feature.end);
         }
     }
 }
 
 fn setup_masks_fraction(ctx: &mut ShapeContext) {
     let buffer = &mut ctx.buffer;
-    if !buffer.scratch_flags.contains(BufferScratchFlags::HAS_NON_ASCII) || !ctx.plan.has_frac {
+    if !buffer
+        .scratch_flags
+        .contains(BufferScratchFlags::HAS_NON_ASCII)
+        || !ctx.plan.has_frac
+    {
         return;
     }
 
     let (pre_mask, post_mask) = if buffer.direction.is_forward() {
-        (ctx.plan.numr_mask | ctx.plan.frac_mask, ctx.plan.frac_mask | ctx.plan.dnom_mask)
+        (
+            ctx.plan.numr_mask | ctx.plan.frac_mask,
+            ctx.plan.frac_mask | ctx.plan.dnom_mask,
+        )
     } else {
-        (ctx.plan.frac_mask | ctx.plan.dnom_mask, ctx.plan.numr_mask | ctx.plan.frac_mask)
+        (
+            ctx.plan.frac_mask | ctx.plan.dnom_mask,
+            ctx.plan.numr_mask | ctx.plan.frac_mask,
+        )
     };
 
     let len = buffer.len;
@@ -264,12 +289,15 @@ fn setup_masks_fraction(ctx: &mut ShapeContext) {
         // FRACTION SLASH
         if buffer.info[i].glyph_id == 0x2044 {
             let mut start = i;
-            while start > 0 && buffer.info[start - 1].general_category() == GeneralCategory::DecimalNumber {
+            while start > 0
+                && buffer.info[start - 1].general_category() == GeneralCategory::DecimalNumber
+            {
                 start -= 1;
             }
 
             let mut end = i + 1;
-            while end < len && buffer.info[end].general_category() == GeneralCategory::DecimalNumber {
+            while end < len && buffer.info[end].general_category() == GeneralCategory::DecimalNumber
+            {
                 end += 1;
             }
 
@@ -281,7 +309,7 @@ fn setup_masks_fraction(ctx: &mut ShapeContext) {
 
             buffer.info[i].mask |= ctx.plan.frac_mask;
 
-            for info in &mut buffer.info[i+1..end] {
+            for info in &mut buffer.info[i + 1..end] {
                 info.mask |= post_mask;
             }
 
@@ -343,7 +371,9 @@ fn set_unicode_props(buffer: &mut Buffer) {
 }
 
 fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
-    if !buffer.flags.contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
+    if !buffer
+        .flags
+        .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
         && buffer.flags.contains(BufferFlags::BEGINNING_OF_TEXT)
         && buffer.context_len[0] == 0
         && buffer.info[0].is_unicode_mark()
@@ -370,11 +400,12 @@ fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
 }
 
 fn form_clusters(buffer: &mut Buffer) {
-    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_NON_ASCII) {
+    if buffer
+        .scratch_flags
+        .contains(BufferScratchFlags::HAS_NON_ASCII)
+    {
         if buffer.cluster_level == BufferClusterLevel::MonotoneGraphemes {
-            foreach_grapheme!(buffer, start, end, {
-                buffer.merge_clusters(start, end)
-            });
+            foreach_grapheme!(buffer, start, end, { buffer.merge_clusters(start, end) });
         } else {
             foreach_grapheme!(buffer, start, end, {
                 buffer.unsafe_to_break(start, end);
@@ -385,7 +416,10 @@ fn form_clusters(buffer: &mut Buffer) {
 
 fn ensure_native_direction(buffer: &mut Buffer) {
     let dir = buffer.direction;
-    let hor = buffer.script.and_then(Direction::from_script).unwrap_or_default();
+    let hor = buffer
+        .script
+        .and_then(Direction::from_script)
+        .unwrap_or_default();
 
     if (dir.is_horizontal() && dir != hor && hor != Direction::Invalid)
         || (dir.is_vertical() && dir != Direction::TopToBottom)
@@ -467,9 +501,15 @@ fn synthesize_glyph_classes(buffer: &mut Buffer) {
 }
 
 fn zero_width_default_ignorables(buffer: &mut Buffer) {
-    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_DEFAULT_IGNORABLES)
-        && !buffer.flags.contains(BufferFlags::PRESERVE_DEFAULT_IGNORABLES)
-        && !buffer.flags.contains(BufferFlags::REMOVE_DEFAULT_IGNORABLES)
+    if buffer
+        .scratch_flags
+        .contains(BufferScratchFlags::HAS_DEFAULT_IGNORABLES)
+        && !buffer
+            .flags
+            .contains(BufferFlags::PRESERVE_DEFAULT_IGNORABLES)
+        && !buffer
+            .flags
+            .contains(BufferFlags::REMOVE_DEFAULT_IGNORABLES)
     {
         let len = buffer.len;
         for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
@@ -499,11 +539,21 @@ fn zero_mark_widths_by_gdef(buffer: &mut Buffer, adjust_offsets: bool) {
 }
 
 fn hide_default_ignorables(buffer: &mut Buffer, face: &Face) {
-    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_DEFAULT_IGNORABLES)
-        && !buffer.flags.contains(BufferFlags::PRESERVE_DEFAULT_IGNORABLES)
+    if buffer
+        .scratch_flags
+        .contains(BufferScratchFlags::HAS_DEFAULT_IGNORABLES)
+        && !buffer
+            .flags
+            .contains(BufferFlags::PRESERVE_DEFAULT_IGNORABLES)
     {
-        if !buffer.flags.contains(BufferFlags::REMOVE_DEFAULT_IGNORABLES) {
-            if let Some(invisible) = buffer.invisible.or_else(|| face.glyph_index(u32::from(' '))) {
+        if !buffer
+            .flags
+            .contains(BufferFlags::REMOVE_DEFAULT_IGNORABLES)
+        {
+            if let Some(invisible) = buffer
+                .invisible
+                .or_else(|| face.glyph_index(u32::from(' ')))
+            {
                 let len = buffer.len;
                 for info in &mut buffer.info[..len] {
                     if info.is_default_ignorable() {
@@ -521,7 +571,10 @@ fn hide_default_ignorables(buffer: &mut Buffer, face: &Face) {
 fn propagate_flags(buffer: &mut Buffer) {
     // Propagate cluster-level glyph flags to be the same on all cluster glyphs.
     // Simplifies using them.
-    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_UNSAFE_TO_BREAK) {
+    if buffer
+        .scratch_flags
+        .contains(BufferScratchFlags::HAS_UNSAFE_TO_BREAK)
+    {
         foreach_cluster!(buffer, start, end, {
             for info in &buffer.info[start..end] {
                 if info.mask & glyph_flag::UNSAFE_TO_BREAK != 0 {

@@ -5,7 +5,6 @@ use ttf_parser::Tag;
 
 use crate::text_parser::TextParser;
 
-
 /// Defines the direction in which text is to be read.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Direction {
@@ -172,7 +171,6 @@ impl core::str::FromStr for Direction {
     }
 }
 
-
 /// A script language.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Language(String);
@@ -196,7 +194,6 @@ impl core::str::FromStr for Language {
         }
     }
 }
-
 
 // In harfbuzz, despite having `hb_script_t`, script can actually have any tag.
 // So we're doing the same.
@@ -270,186 +267,185 @@ pub mod script {
     use crate::Script;
 
     // Since 1.1
-    pub const COMMON: Script                    = Script::from_bytes(b"Zyyy");
-    pub const INHERITED: Script                 = Script::from_bytes(b"Zinh");
-    pub const ARABIC: Script                    = Script::from_bytes(b"Arab");
-    pub const ARMENIAN: Script                  = Script::from_bytes(b"Armn");
-    pub const BENGALI: Script                   = Script::from_bytes(b"Beng");
-    pub const CYRILLIC: Script                  = Script::from_bytes(b"Cyrl");
-    pub const DEVANAGARI: Script                = Script::from_bytes(b"Deva");
-    pub const GEORGIAN: Script                  = Script::from_bytes(b"Geor");
-    pub const GREEK: Script                     = Script::from_bytes(b"Grek");
-    pub const GUJARATI: Script                  = Script::from_bytes(b"Gujr");
-    pub const GURMUKHI: Script                  = Script::from_bytes(b"Guru");
-    pub const HANGUL: Script                    = Script::from_bytes(b"Hang");
-    pub const HAN: Script                       = Script::from_bytes(b"Hani");
-    pub const HEBREW: Script                    = Script::from_bytes(b"Hebr");
-    pub const HIRAGANA: Script                  = Script::from_bytes(b"Hira");
-    pub const KANNADA: Script                   = Script::from_bytes(b"Knda");
-    pub const KATAKANA: Script                  = Script::from_bytes(b"Kana");
-    pub const LAO: Script                       = Script::from_bytes(b"Laoo");
-    pub const LATIN: Script                     = Script::from_bytes(b"Latn");
-    pub const MALAYALAM: Script                 = Script::from_bytes(b"Mlym");
-    pub const ORIYA: Script                     = Script::from_bytes(b"Orya");
-    pub const TAMIL: Script                     = Script::from_bytes(b"Taml");
-    pub const TELUGU: Script                    = Script::from_bytes(b"Telu");
-    pub const THAI: Script                      = Script::from_bytes(b"Thai");
+    pub const COMMON: Script = Script::from_bytes(b"Zyyy");
+    pub const INHERITED: Script = Script::from_bytes(b"Zinh");
+    pub const ARABIC: Script = Script::from_bytes(b"Arab");
+    pub const ARMENIAN: Script = Script::from_bytes(b"Armn");
+    pub const BENGALI: Script = Script::from_bytes(b"Beng");
+    pub const CYRILLIC: Script = Script::from_bytes(b"Cyrl");
+    pub const DEVANAGARI: Script = Script::from_bytes(b"Deva");
+    pub const GEORGIAN: Script = Script::from_bytes(b"Geor");
+    pub const GREEK: Script = Script::from_bytes(b"Grek");
+    pub const GUJARATI: Script = Script::from_bytes(b"Gujr");
+    pub const GURMUKHI: Script = Script::from_bytes(b"Guru");
+    pub const HANGUL: Script = Script::from_bytes(b"Hang");
+    pub const HAN: Script = Script::from_bytes(b"Hani");
+    pub const HEBREW: Script = Script::from_bytes(b"Hebr");
+    pub const HIRAGANA: Script = Script::from_bytes(b"Hira");
+    pub const KANNADA: Script = Script::from_bytes(b"Knda");
+    pub const KATAKANA: Script = Script::from_bytes(b"Kana");
+    pub const LAO: Script = Script::from_bytes(b"Laoo");
+    pub const LATIN: Script = Script::from_bytes(b"Latn");
+    pub const MALAYALAM: Script = Script::from_bytes(b"Mlym");
+    pub const ORIYA: Script = Script::from_bytes(b"Orya");
+    pub const TAMIL: Script = Script::from_bytes(b"Taml");
+    pub const TELUGU: Script = Script::from_bytes(b"Telu");
+    pub const THAI: Script = Script::from_bytes(b"Thai");
     // Since 2.0
-    pub const TIBETAN: Script                   = Script::from_bytes(b"Tibt");
+    pub const TIBETAN: Script = Script::from_bytes(b"Tibt");
     // Since 3.0
-    pub const BOPOMOFO: Script                  = Script::from_bytes(b"Bopo");
-    pub const BRAILLE: Script                   = Script::from_bytes(b"Brai");
-    pub const CANADIAN_SYLLABICS: Script        = Script::from_bytes(b"Cans");
-    pub const CHEROKEE: Script                  = Script::from_bytes(b"Cher");
-    pub const ETHIOPIC: Script                  = Script::from_bytes(b"Ethi");
-    pub const KHMER: Script                     = Script::from_bytes(b"Khmr");
-    pub const MONGOLIAN: Script                 = Script::from_bytes(b"Mong");
-    pub const MYANMAR: Script                   = Script::from_bytes(b"Mymr");
-    pub const OGHAM: Script                     = Script::from_bytes(b"Ogam");
-    pub const RUNIC: Script                     = Script::from_bytes(b"Runr");
-    pub const SINHALA: Script                   = Script::from_bytes(b"Sinh");
-    pub const SYRIAC: Script                    = Script::from_bytes(b"Syrc");
-    pub const THAANA: Script                    = Script::from_bytes(b"Thaa");
-    pub const YI: Script                        = Script::from_bytes(b"Yiii");
+    pub const BOPOMOFO: Script = Script::from_bytes(b"Bopo");
+    pub const BRAILLE: Script = Script::from_bytes(b"Brai");
+    pub const CANADIAN_SYLLABICS: Script = Script::from_bytes(b"Cans");
+    pub const CHEROKEE: Script = Script::from_bytes(b"Cher");
+    pub const ETHIOPIC: Script = Script::from_bytes(b"Ethi");
+    pub const KHMER: Script = Script::from_bytes(b"Khmr");
+    pub const MONGOLIAN: Script = Script::from_bytes(b"Mong");
+    pub const MYANMAR: Script = Script::from_bytes(b"Mymr");
+    pub const OGHAM: Script = Script::from_bytes(b"Ogam");
+    pub const RUNIC: Script = Script::from_bytes(b"Runr");
+    pub const SINHALA: Script = Script::from_bytes(b"Sinh");
+    pub const SYRIAC: Script = Script::from_bytes(b"Syrc");
+    pub const THAANA: Script = Script::from_bytes(b"Thaa");
+    pub const YI: Script = Script::from_bytes(b"Yiii");
     // Since 3.1
-    pub const DESERET: Script                   = Script::from_bytes(b"Dsrt");
-    pub const GOTHIC: Script                    = Script::from_bytes(b"Goth");
-    pub const OLD_ITALIC: Script                = Script::from_bytes(b"Ital");
+    pub const DESERET: Script = Script::from_bytes(b"Dsrt");
+    pub const GOTHIC: Script = Script::from_bytes(b"Goth");
+    pub const OLD_ITALIC: Script = Script::from_bytes(b"Ital");
     // Since 3.2
-    pub const BUHID: Script                     = Script::from_bytes(b"Buhd");
-    pub const HANUNOO: Script                   = Script::from_bytes(b"Hano");
-    pub const TAGALOG: Script                   = Script::from_bytes(b"Tglg");
-    pub const TAGBANWA: Script                  = Script::from_bytes(b"Tagb");
+    pub const BUHID: Script = Script::from_bytes(b"Buhd");
+    pub const HANUNOO: Script = Script::from_bytes(b"Hano");
+    pub const TAGALOG: Script = Script::from_bytes(b"Tglg");
+    pub const TAGBANWA: Script = Script::from_bytes(b"Tagb");
     // Since 4.0
-    pub const CYPRIOT: Script                   = Script::from_bytes(b"Cprt");
-    pub const LIMBU: Script                     = Script::from_bytes(b"Limb");
-    pub const LINEAR_B: Script                  = Script::from_bytes(b"Linb");
-    pub const OSMANYA: Script                   = Script::from_bytes(b"Osma");
-    pub const SHAVIAN: Script                   = Script::from_bytes(b"Shaw");
-    pub const TAI_LE: Script                    = Script::from_bytes(b"Tale");
-    pub const UGARITIC: Script                  = Script::from_bytes(b"Ugar");
+    pub const CYPRIOT: Script = Script::from_bytes(b"Cprt");
+    pub const LIMBU: Script = Script::from_bytes(b"Limb");
+    pub const LINEAR_B: Script = Script::from_bytes(b"Linb");
+    pub const OSMANYA: Script = Script::from_bytes(b"Osma");
+    pub const SHAVIAN: Script = Script::from_bytes(b"Shaw");
+    pub const TAI_LE: Script = Script::from_bytes(b"Tale");
+    pub const UGARITIC: Script = Script::from_bytes(b"Ugar");
     // Since 4.1
-    pub const BUGINESE: Script                  = Script::from_bytes(b"Bugi");
-    pub const COPTIC: Script                    = Script::from_bytes(b"Copt");
-    pub const GLAGOLITIC: Script                = Script::from_bytes(b"Glag");
-    pub const KHAROSHTHI: Script                = Script::from_bytes(b"Khar");
-    pub const NEW_TAI_LUE: Script               = Script::from_bytes(b"Talu");
-    pub const OLD_PERSIAN: Script               = Script::from_bytes(b"Xpeo");
-    pub const SYLOTI_NAGRI: Script              = Script::from_bytes(b"Sylo");
-    pub const TIFINAGH: Script                  = Script::from_bytes(b"Tfng");
+    pub const BUGINESE: Script = Script::from_bytes(b"Bugi");
+    pub const COPTIC: Script = Script::from_bytes(b"Copt");
+    pub const GLAGOLITIC: Script = Script::from_bytes(b"Glag");
+    pub const KHAROSHTHI: Script = Script::from_bytes(b"Khar");
+    pub const NEW_TAI_LUE: Script = Script::from_bytes(b"Talu");
+    pub const OLD_PERSIAN: Script = Script::from_bytes(b"Xpeo");
+    pub const SYLOTI_NAGRI: Script = Script::from_bytes(b"Sylo");
+    pub const TIFINAGH: Script = Script::from_bytes(b"Tfng");
     // Since 5.0
-    pub const UNKNOWN: Script                   = Script::from_bytes(b"Zzzz"); // Script can be Unknown, but not Invalid.
-    pub const BALINESE: Script                  = Script::from_bytes(b"Bali");
-    pub const CUNEIFORM: Script                 = Script::from_bytes(b"Xsux");
-    pub const NKO: Script                       = Script::from_bytes(b"Nkoo");
-    pub const PHAGS_PA: Script                  = Script::from_bytes(b"Phag");
-    pub const PHOENICIAN: Script                = Script::from_bytes(b"Phnx");
+    pub const UNKNOWN: Script = Script::from_bytes(b"Zzzz"); // Script can be Unknown, but not Invalid.
+    pub const BALINESE: Script = Script::from_bytes(b"Bali");
+    pub const CUNEIFORM: Script = Script::from_bytes(b"Xsux");
+    pub const NKO: Script = Script::from_bytes(b"Nkoo");
+    pub const PHAGS_PA: Script = Script::from_bytes(b"Phag");
+    pub const PHOENICIAN: Script = Script::from_bytes(b"Phnx");
     // Since 5.1
-    pub const CARIAN: Script                    = Script::from_bytes(b"Cari");
-    pub const CHAM: Script                      = Script::from_bytes(b"Cham");
-    pub const KAYAH_LI: Script                  = Script::from_bytes(b"Kali");
-    pub const LEPCHA: Script                    = Script::from_bytes(b"Lepc");
-    pub const LYCIAN: Script                    = Script::from_bytes(b"Lyci");
-    pub const LYDIAN: Script                    = Script::from_bytes(b"Lydi");
-    pub const OL_CHIKI: Script                  = Script::from_bytes(b"Olck");
-    pub const REJANG: Script                    = Script::from_bytes(b"Rjng");
-    pub const SAURASHTRA: Script                = Script::from_bytes(b"Saur");
-    pub const SUNDANESE: Script                 = Script::from_bytes(b"Sund");
-    pub const VAI: Script                       = Script::from_bytes(b"Vaii");
+    pub const CARIAN: Script = Script::from_bytes(b"Cari");
+    pub const CHAM: Script = Script::from_bytes(b"Cham");
+    pub const KAYAH_LI: Script = Script::from_bytes(b"Kali");
+    pub const LEPCHA: Script = Script::from_bytes(b"Lepc");
+    pub const LYCIAN: Script = Script::from_bytes(b"Lyci");
+    pub const LYDIAN: Script = Script::from_bytes(b"Lydi");
+    pub const OL_CHIKI: Script = Script::from_bytes(b"Olck");
+    pub const REJANG: Script = Script::from_bytes(b"Rjng");
+    pub const SAURASHTRA: Script = Script::from_bytes(b"Saur");
+    pub const SUNDANESE: Script = Script::from_bytes(b"Sund");
+    pub const VAI: Script = Script::from_bytes(b"Vaii");
     // Since 5.2
-    pub const AVESTAN: Script                   = Script::from_bytes(b"Avst");
-    pub const BAMUM: Script                     = Script::from_bytes(b"Bamu");
-    pub const EGYPTIAN_HIEROGLYPHS: Script      = Script::from_bytes(b"Egyp");
-    pub const IMPERIAL_ARAMAIC: Script          = Script::from_bytes(b"Armi");
-    pub const INSCRIPTIONAL_PAHLAVI: Script     = Script::from_bytes(b"Phli");
-    pub const INSCRIPTIONAL_PARTHIAN: Script    = Script::from_bytes(b"Prti");
-    pub const JAVANESE: Script                  = Script::from_bytes(b"Java");
-    pub const KAITHI: Script                    = Script::from_bytes(b"Kthi");
-    pub const LISU: Script                      = Script::from_bytes(b"Lisu");
-    pub const MEETEI_MAYEK: Script              = Script::from_bytes(b"Mtei");
-    pub const OLD_SOUTH_ARABIAN: Script         = Script::from_bytes(b"Sarb");
-    pub const OLD_TURKIC: Script                = Script::from_bytes(b"Orkh");
-    pub const SAMARITAN: Script                 = Script::from_bytes(b"Samr");
-    pub const TAI_THAM: Script                  = Script::from_bytes(b"Lana");
-    pub const TAI_VIET: Script                  = Script::from_bytes(b"Tavt");
+    pub const AVESTAN: Script = Script::from_bytes(b"Avst");
+    pub const BAMUM: Script = Script::from_bytes(b"Bamu");
+    pub const EGYPTIAN_HIEROGLYPHS: Script = Script::from_bytes(b"Egyp");
+    pub const IMPERIAL_ARAMAIC: Script = Script::from_bytes(b"Armi");
+    pub const INSCRIPTIONAL_PAHLAVI: Script = Script::from_bytes(b"Phli");
+    pub const INSCRIPTIONAL_PARTHIAN: Script = Script::from_bytes(b"Prti");
+    pub const JAVANESE: Script = Script::from_bytes(b"Java");
+    pub const KAITHI: Script = Script::from_bytes(b"Kthi");
+    pub const LISU: Script = Script::from_bytes(b"Lisu");
+    pub const MEETEI_MAYEK: Script = Script::from_bytes(b"Mtei");
+    pub const OLD_SOUTH_ARABIAN: Script = Script::from_bytes(b"Sarb");
+    pub const OLD_TURKIC: Script = Script::from_bytes(b"Orkh");
+    pub const SAMARITAN: Script = Script::from_bytes(b"Samr");
+    pub const TAI_THAM: Script = Script::from_bytes(b"Lana");
+    pub const TAI_VIET: Script = Script::from_bytes(b"Tavt");
     // Since 6.0
-    pub const BATAK: Script                     = Script::from_bytes(b"Batk");
-    pub const BRAHMI: Script                    = Script::from_bytes(b"Brah");
-    pub const MANDAIC: Script                   = Script::from_bytes(b"Mand");
+    pub const BATAK: Script = Script::from_bytes(b"Batk");
+    pub const BRAHMI: Script = Script::from_bytes(b"Brah");
+    pub const MANDAIC: Script = Script::from_bytes(b"Mand");
     // Since 6.1
-    pub const CHAKMA: Script                    = Script::from_bytes(b"Cakm");
-    pub const MEROITIC_CURSIVE: Script          = Script::from_bytes(b"Merc");
-    pub const MEROITIC_HIEROGLYPHS: Script      = Script::from_bytes(b"Mero");
-    pub const MIAO: Script                      = Script::from_bytes(b"Plrd");
-    pub const SHARADA: Script                   = Script::from_bytes(b"Shrd");
-    pub const SORA_SOMPENG: Script              = Script::from_bytes(b"Sora");
-    pub const TAKRI: Script                     = Script::from_bytes(b"Takr");
+    pub const CHAKMA: Script = Script::from_bytes(b"Cakm");
+    pub const MEROITIC_CURSIVE: Script = Script::from_bytes(b"Merc");
+    pub const MEROITIC_HIEROGLYPHS: Script = Script::from_bytes(b"Mero");
+    pub const MIAO: Script = Script::from_bytes(b"Plrd");
+    pub const SHARADA: Script = Script::from_bytes(b"Shrd");
+    pub const SORA_SOMPENG: Script = Script::from_bytes(b"Sora");
+    pub const TAKRI: Script = Script::from_bytes(b"Takr");
     // Since 7.0
-    pub const BASSA_VAH: Script                 = Script::from_bytes(b"Bass");
-    pub const CAUCASIAN_ALBANIAN: Script        = Script::from_bytes(b"Aghb");
-    pub const DUPLOYAN: Script                  = Script::from_bytes(b"Dupl");
-    pub const ELBASAN: Script                   = Script::from_bytes(b"Elba");
-    pub const GRANTHA: Script                   = Script::from_bytes(b"Gran");
-    pub const KHOJKI: Script                    = Script::from_bytes(b"Khoj");
-    pub const KHUDAWADI: Script                 = Script::from_bytes(b"Sind");
-    pub const LINEAR_A: Script                  = Script::from_bytes(b"Lina");
-    pub const MAHAJANI: Script                  = Script::from_bytes(b"Mahj");
-    pub const MANICHAEAN: Script                = Script::from_bytes(b"Mani");
-    pub const MENDE_KIKAKUI: Script             = Script::from_bytes(b"Mend");
-    pub const MODI: Script                      = Script::from_bytes(b"Modi");
-    pub const MRO: Script                       = Script::from_bytes(b"Mroo");
-    pub const NABATAEAN: Script                 = Script::from_bytes(b"Nbat");
-    pub const OLD_NORTH_ARABIAN: Script         = Script::from_bytes(b"Narb");
-    pub const OLD_PERMIC: Script                = Script::from_bytes(b"Perm");
-    pub const PAHAWH_HMONG: Script              = Script::from_bytes(b"Hmng");
-    pub const PALMYRENE: Script                 = Script::from_bytes(b"Palm");
-    pub const PAU_CIN_HAU: Script               = Script::from_bytes(b"Pauc");
-    pub const PSALTER_PAHLAVI: Script           = Script::from_bytes(b"Phlp");
-    pub const SIDDHAM: Script                   = Script::from_bytes(b"Sidd");
-    pub const TIRHUTA: Script                   = Script::from_bytes(b"Tirh");
-    pub const WARANG_CITI: Script               = Script::from_bytes(b"Wara");
+    pub const BASSA_VAH: Script = Script::from_bytes(b"Bass");
+    pub const CAUCASIAN_ALBANIAN: Script = Script::from_bytes(b"Aghb");
+    pub const DUPLOYAN: Script = Script::from_bytes(b"Dupl");
+    pub const ELBASAN: Script = Script::from_bytes(b"Elba");
+    pub const GRANTHA: Script = Script::from_bytes(b"Gran");
+    pub const KHOJKI: Script = Script::from_bytes(b"Khoj");
+    pub const KHUDAWADI: Script = Script::from_bytes(b"Sind");
+    pub const LINEAR_A: Script = Script::from_bytes(b"Lina");
+    pub const MAHAJANI: Script = Script::from_bytes(b"Mahj");
+    pub const MANICHAEAN: Script = Script::from_bytes(b"Mani");
+    pub const MENDE_KIKAKUI: Script = Script::from_bytes(b"Mend");
+    pub const MODI: Script = Script::from_bytes(b"Modi");
+    pub const MRO: Script = Script::from_bytes(b"Mroo");
+    pub const NABATAEAN: Script = Script::from_bytes(b"Nbat");
+    pub const OLD_NORTH_ARABIAN: Script = Script::from_bytes(b"Narb");
+    pub const OLD_PERMIC: Script = Script::from_bytes(b"Perm");
+    pub const PAHAWH_HMONG: Script = Script::from_bytes(b"Hmng");
+    pub const PALMYRENE: Script = Script::from_bytes(b"Palm");
+    pub const PAU_CIN_HAU: Script = Script::from_bytes(b"Pauc");
+    pub const PSALTER_PAHLAVI: Script = Script::from_bytes(b"Phlp");
+    pub const SIDDHAM: Script = Script::from_bytes(b"Sidd");
+    pub const TIRHUTA: Script = Script::from_bytes(b"Tirh");
+    pub const WARANG_CITI: Script = Script::from_bytes(b"Wara");
     // Since 8.0
-    pub const AHOM: Script                      = Script::from_bytes(b"Ahom");
-    pub const ANATOLIAN_HIEROGLYPHS: Script     = Script::from_bytes(b"Hluw");
-    pub const HATRAN: Script                    = Script::from_bytes(b"Hatr");
-    pub const MULTANI: Script                   = Script::from_bytes(b"Mult");
-    pub const OLD_HUNGARIAN: Script             = Script::from_bytes(b"Hung");
-    pub const SIGNWRITING: Script               = Script::from_bytes(b"Sgnw");
+    pub const AHOM: Script = Script::from_bytes(b"Ahom");
+    pub const ANATOLIAN_HIEROGLYPHS: Script = Script::from_bytes(b"Hluw");
+    pub const HATRAN: Script = Script::from_bytes(b"Hatr");
+    pub const MULTANI: Script = Script::from_bytes(b"Mult");
+    pub const OLD_HUNGARIAN: Script = Script::from_bytes(b"Hung");
+    pub const SIGNWRITING: Script = Script::from_bytes(b"Sgnw");
     // Since 9.0
-    pub const ADLAM: Script                     = Script::from_bytes(b"Adlm");
-    pub const BHAIKSUKI: Script                 = Script::from_bytes(b"Bhks");
-    pub const MARCHEN: Script                   = Script::from_bytes(b"Marc");
-    pub const OSAGE: Script                     = Script::from_bytes(b"Osge");
-    pub const TANGUT: Script                    = Script::from_bytes(b"Tang");
-    pub const NEWA: Script                      = Script::from_bytes(b"Newa");
+    pub const ADLAM: Script = Script::from_bytes(b"Adlm");
+    pub const BHAIKSUKI: Script = Script::from_bytes(b"Bhks");
+    pub const MARCHEN: Script = Script::from_bytes(b"Marc");
+    pub const OSAGE: Script = Script::from_bytes(b"Osge");
+    pub const TANGUT: Script = Script::from_bytes(b"Tang");
+    pub const NEWA: Script = Script::from_bytes(b"Newa");
     // Since 10.0
-    pub const MASARAM_GONDI: Script             = Script::from_bytes(b"Gonm");
-    pub const NUSHU: Script                     = Script::from_bytes(b"Nshu");
-    pub const SOYOMBO: Script                   = Script::from_bytes(b"Soyo");
-    pub const ZANABAZAR_SQUARE: Script          = Script::from_bytes(b"Zanb");
+    pub const MASARAM_GONDI: Script = Script::from_bytes(b"Gonm");
+    pub const NUSHU: Script = Script::from_bytes(b"Nshu");
+    pub const SOYOMBO: Script = Script::from_bytes(b"Soyo");
+    pub const ZANABAZAR_SQUARE: Script = Script::from_bytes(b"Zanb");
     // Since 11.0
-    pub const DOGRA: Script                     = Script::from_bytes(b"Dogr");
-    pub const GUNJALA_GONDI: Script             = Script::from_bytes(b"Gong");
-    pub const HANIFI_ROHINGYA: Script           = Script::from_bytes(b"Rohg");
-    pub const MAKASAR: Script                   = Script::from_bytes(b"Maka");
-    pub const MEDEFAIDRIN: Script               = Script::from_bytes(b"Medf");
-    pub const OLD_SOGDIAN: Script               = Script::from_bytes(b"Sogo");
-    pub const SOGDIAN: Script                   = Script::from_bytes(b"Sogd");
+    pub const DOGRA: Script = Script::from_bytes(b"Dogr");
+    pub const GUNJALA_GONDI: Script = Script::from_bytes(b"Gong");
+    pub const HANIFI_ROHINGYA: Script = Script::from_bytes(b"Rohg");
+    pub const MAKASAR: Script = Script::from_bytes(b"Maka");
+    pub const MEDEFAIDRIN: Script = Script::from_bytes(b"Medf");
+    pub const OLD_SOGDIAN: Script = Script::from_bytes(b"Sogo");
+    pub const SOGDIAN: Script = Script::from_bytes(b"Sogd");
     // Since 12.0
-    pub const ELYMAIC: Script                   = Script::from_bytes(b"Elym");
-    pub const NANDINAGARI: Script               = Script::from_bytes(b"Nand");
-    pub const NYIAKENG_PUACHUE_HMONG: Script    = Script::from_bytes(b"Hmnp");
-    pub const WANCHO: Script                    = Script::from_bytes(b"Wcho");
+    pub const ELYMAIC: Script = Script::from_bytes(b"Elym");
+    pub const NANDINAGARI: Script = Script::from_bytes(b"Nand");
+    pub const NYIAKENG_PUACHUE_HMONG: Script = Script::from_bytes(b"Hmnp");
+    pub const WANCHO: Script = Script::from_bytes(b"Wcho");
     // Since 13.0
-    pub const CHORASMIAN: Script                = Script::from_bytes(b"Chrs");
-    pub const DIVES_AKURU: Script               = Script::from_bytes(b"Diak");
-    pub const KHITAN_SMALL_SCRIPT: Script       = Script::from_bytes(b"Kits");
-    pub const YEZIDI: Script                    = Script::from_bytes(b"Yezi");
+    pub const CHORASMIAN: Script = Script::from_bytes(b"Chrs");
+    pub const DIVES_AKURU: Script = Script::from_bytes(b"Diak");
+    pub const KHITAN_SMALL_SCRIPT: Script = Script::from_bytes(b"Kits");
+    pub const YEZIDI: Script = Script::from_bytes(b"Yezi");
 
     // https://github.com/harfbuzz/harfbuzz/issues/1162
-    pub const MYANMAR_ZAWGYI: Script            = Script::from_bytes(b"Qaag");
+    pub const MYANMAR_ZAWGYI: Script = Script::from_bytes(b"Qaag");
 }
-
 
 /// A feature tag with an accompanying range specifying on which subslice of
 /// `shape`s input it should be applied.
@@ -522,8 +518,14 @@ impl core::str::FromStr for Feature {
             // Parse prefix.
             let mut value = 1;
             match p.curr_byte()? {
-                b'-' => { value = 0; p.advance(1); }
-                b'+' => { value = 1; p.advance(1); }
+                b'-' => {
+                    value = 0;
+                    p.advance(1);
+                }
+                b'+' => {
+                    value = 1;
+                    p.advance(1);
+                }
                 _ => {}
             }
 
@@ -565,7 +567,9 @@ impl core::str::FromStr for Feature {
 
             // Parse postfix.
             let had_equal = p.consume_byte(b'=').is_some();
-            let value1 = p.consume_i32().or_else(|| p.consume_bool().map(|b| b as i32));
+            let value1 = p
+                .consume_i32()
+                .or_else(|| p.consume_bool().map(|b| b as i32));
 
             if had_equal && value1.is_none() {
                 return None;
@@ -599,7 +603,7 @@ mod tests_features {
     use core::str::FromStr;
 
     macro_rules! test {
-        ($name:ident, $text:expr, $tag:expr, $value:expr, $range:expr) => (
+        ($name:ident, $text:expr, $tag:expr, $value:expr, $range:expr) => {
             #[test]
             fn $name() {
                 assert_eq!(
@@ -607,31 +611,30 @@ mod tests_features {
                     Feature::new(Tag::from_bytes($tag), $value, $range)
                 );
             }
-        )
+        };
     }
 
-    test!(parse_01, "kern",         b"kern", 1, ..);
-    test!(parse_02, "+kern",        b"kern", 1, ..);
-    test!(parse_03, "-kern",        b"kern", 0, ..);
-    test!(parse_04, "kern=0",       b"kern", 0, ..);
-    test!(parse_05, "kern=1",       b"kern", 1, ..);
-    test!(parse_06, "kern=2",       b"kern", 2, ..);
-    test!(parse_07, "kern[]",       b"kern", 1, ..);
-    test!(parse_08, "kern[:]",      b"kern", 1, ..);
-    test!(parse_09, "kern[5:]",     b"kern", 1, 5..);
-    test!(parse_10, "kern[:5]",     b"kern", 1, ..=5);
-    test!(parse_11, "kern[3:5]",    b"kern", 1, 3..=5);
-    test!(parse_12, "kern[3]",      b"kern", 1, 3..=4);
-    test!(parse_13, "kern[3:5]=2",  b"kern", 2, 3..=5);
-    test!(parse_14, "kern[3;5]=2",  b"kern", 2, 3..=5);
-    test!(parse_15, "kern[:-1]",    b"kern", 1, ..);
-    test!(parse_16, "kern[-1]",     b"kern", 1, core::u32::MAX as usize..);
-    test!(parse_17, "kern=on",      b"kern", 1, ..);
-    test!(parse_18, "kern=off",     b"kern", 0, ..);
-    test!(parse_19, "kern=oN",      b"kern", 1, ..);
-    test!(parse_20, "kern=oFf",     b"kern", 0, ..);
+    test!(parse_01, "kern", b"kern", 1, ..);
+    test!(parse_02, "+kern", b"kern", 1, ..);
+    test!(parse_03, "-kern", b"kern", 0, ..);
+    test!(parse_04, "kern=0", b"kern", 0, ..);
+    test!(parse_05, "kern=1", b"kern", 1, ..);
+    test!(parse_06, "kern=2", b"kern", 2, ..);
+    test!(parse_07, "kern[]", b"kern", 1, ..);
+    test!(parse_08, "kern[:]", b"kern", 1, ..);
+    test!(parse_09, "kern[5:]", b"kern", 1, 5..);
+    test!(parse_10, "kern[:5]", b"kern", 1, ..=5);
+    test!(parse_11, "kern[3:5]", b"kern", 1, 3..=5);
+    test!(parse_12, "kern[3]", b"kern", 1, 3..=4);
+    test!(parse_13, "kern[3:5]=2", b"kern", 2, 3..=5);
+    test!(parse_14, "kern[3;5]=2", b"kern", 2, 3..=5);
+    test!(parse_15, "kern[:-1]", b"kern", 1, ..);
+    test!(parse_16, "kern[-1]", b"kern", 1, core::u32::MAX as usize..);
+    test!(parse_17, "kern=on", b"kern", 1, ..);
+    test!(parse_18, "kern=off", b"kern", 0, ..);
+    test!(parse_19, "kern=oN", b"kern", 1, ..);
+    test!(parse_20, "kern=oFf", b"kern", 0, ..);
 }
-
 
 /// A font variation.
 #[repr(C)]
@@ -672,16 +675,12 @@ impl core::str::FromStr for Variation {
                 return None;
             }
 
-            Some(Variation {
-                tag,
-                value,
-            })
+            Some(Variation { tag, value })
         }
 
         parse(s).ok_or("invalid variation")
     }
 }
-
 
 pub trait TagExt {
     fn default_script() -> Self;

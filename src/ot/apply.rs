@@ -1,10 +1,10 @@
-use ttf_parser::GlyphId;
 use ttf_parser::opentype_layout::LookupIndex;
+use ttf_parser::GlyphId;
 
-use crate::{Face, Mask};
-use crate::buffer::{Buffer, GlyphInfo, GlyphPropsFlags};
-use super::{lookup_flags, TableIndex, MAX_NESTING_LEVEL};
 use super::layout::{LayoutLookup, LayoutTable};
+use super::{lookup_flags, TableIndex, MAX_NESTING_LEVEL};
+use crate::buffer::{Buffer, GlyphInfo, GlyphPropsFlags};
+use crate::{Face, Mask};
 
 /// Find out whether a lookup would be applied.
 pub trait WouldApply {
@@ -76,24 +76,24 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
 
         self.lookup_index = sub_lookup_index;
         let applied = match self.table_index {
-            TableIndex::GSUB => {
-                self.face.gsub
-                    .as_ref()
-                    .and_then(|table| table.get_lookup(sub_lookup_index))
-                    .and_then(|lookup| {
-                        self.lookup_props = lookup.props();
-                        lookup.apply(self)
-                    })
-            }
-            TableIndex::GPOS => {
-                self.face.gpos
-                    .as_ref()
-                    .and_then(|table| table.get_lookup(sub_lookup_index))
-                    .and_then(|lookup| {
-                        self.lookup_props = lookup.props();
-                        lookup.apply(self)
-                    })
-            }
+            TableIndex::GSUB => self
+                .face
+                .gsub
+                .as_ref()
+                .and_then(|table| table.get_lookup(sub_lookup_index))
+                .and_then(|lookup| {
+                    self.lookup_props = lookup.props();
+                    lookup.apply(self)
+                }),
+            TableIndex::GPOS => self
+                .face
+                .gpos
+                .as_ref()
+                .and_then(|table| table.get_lookup(sub_lookup_index))
+                .and_then(|lookup| {
+                    self.lookup_props = lookup.props();
+                    lookup.apply(self)
+                }),
         };
 
         self.lookup_props = saved_props;
@@ -165,7 +165,10 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
             props |= GlyphPropsFlags::MULTIPLIED.bits();
         }
 
-        let has_glyph_classes = self.face.tables().gdef
+        let has_glyph_classes = self
+            .face
+            .tables()
+            .gdef
             .map_or(false, |table| table.has_glyph_classes());
 
         if has_glyph_classes {

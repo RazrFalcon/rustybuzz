@@ -7,7 +7,8 @@ struct Args {
     direction: Option<rustybuzz::Direction>,
     language: Option<rustybuzz::Language>,
     script: Option<rustybuzz::Script>,
-    #[allow(dead_code)] remove_default_ignorables: bool, // we don't use it, but have to parse it anyway
+    #[allow(dead_code)]
+    remove_default_ignorables: bool, // we don't use it, but have to parse it anyway
     cluster_level: rustybuzz::BufferClusterLevel,
     features: Vec<String>,
     no_glyph_names: bool,
@@ -24,13 +25,19 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
     let args = Args {
         face_index: parser.opt_value_from_str("--face-index")?.unwrap_or(0),
         font_ptem: parser.opt_value_from_str("--font-ptem")?,
-        variations: parser.opt_value_from_fn("--variations", parse_string_list)?.unwrap_or_default(),
+        variations: parser
+            .opt_value_from_fn("--variations", parse_string_list)?
+            .unwrap_or_default(),
         direction: parser.opt_value_from_str("--direction")?,
         language: parser.opt_value_from_str("--language")?,
         script: parser.opt_value_from_str("--script")?,
         remove_default_ignorables: parser.contains("--remove-default-ignorables"),
-        cluster_level: parser.opt_value_from_fn("--cluster-level", parse_cluster)?.unwrap_or_default(),
-        features: parser.opt_value_from_fn("--features", parse_string_list)?.unwrap_or_default(),
+        cluster_level: parser
+            .opt_value_from_fn("--cluster-level", parse_cluster)?
+            .unwrap_or_default(),
+        features: parser
+            .opt_value_from_fn("--features", parse_string_list)?
+            .unwrap_or_default(),
         no_glyph_names: parser.contains("--no-glyph-names"),
         no_positions: parser.contains("--no-positions"),
         no_advances: parser.contains("--no-advances"),
@@ -52,12 +59,16 @@ fn parse_cluster(s: &str) -> Result<rustybuzz::BufferClusterLevel, String> {
         "0" => Ok(rustybuzz::BufferClusterLevel::MonotoneGraphemes),
         "1" => Ok(rustybuzz::BufferClusterLevel::MonotoneCharacters),
         "2" => Ok(rustybuzz::BufferClusterLevel::Characters),
-        _ => Err(format!("invalid cluster level"))
+        _ => Err(format!("invalid cluster level")),
     }
 }
 
 pub fn shape(font_path: &str, text: &str, options: &str) -> String {
-    let args = options.split(' ').filter(|s| !s.is_empty()).map(|s| std::ffi::OsString::from(s)).collect();
+    let args = options
+        .split(' ')
+        .filter(|s| !s.is_empty())
+        .map(|s| std::ffi::OsString::from(s))
+        .collect();
     let args = parse_args(args).unwrap();
 
     let font_data = std::fs::read(font_path).unwrap();
@@ -66,8 +77,11 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
     face.set_points_per_em(args.font_ptem);
 
     if !args.variations.is_empty() {
-        let variations: Vec<_> = args.variations.iter()
-            .map(|s| rustybuzz::Variation::from_str(s).unwrap()).collect();
+        let variations: Vec<_> = args
+            .variations
+            .iter()
+            .map(|s| rustybuzz::Variation::from_str(s).unwrap())
+            .collect();
         face.set_variations(&variations);
     }
 

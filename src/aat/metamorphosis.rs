@@ -1,10 +1,10 @@
-use ttf_parser::{apple_layout, morx, GlyphId, FromData, LazyArray32};
+use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
-use crate::{Face, GlyphInfo};
+use crate::aat::feature_selector;
+use crate::aat::{FeatureType, Map, MapBuilder};
 use crate::buffer::Buffer;
 use crate::plan::ShapePlan;
-use crate::aat::{Map, MapBuilder, FeatureType};
-use crate::aat::feature_selector;
+use crate::{Face, GlyphInfo};
 
 pub fn compile_flags(face: &Face, builder: &MapBuilder) -> Option<Map> {
     let mut map = Map::default();
@@ -18,9 +18,9 @@ pub fn compile_flags(face: &Face, builder: &MapBuilder) -> Option<Map> {
             if builder.has_feature(feature.kind, feature.setting) {
                 flags &= feature.disable_flags;
                 flags |= feature.enable_flags;
-            } else if feature.kind == FeatureType::LetterCase as u16 &&
-                feature.setting == u16::from(feature_selector::SMALL_CAPS) {
-
+            } else if feature.kind == FeatureType::LetterCase as u16
+                && feature.setting == u16::from(feature_selector::SMALL_CAPS)
+            {
                 // Deprecated. https://github.com/harfbuzz/harfbuzz/issues/1342
                 let ok = builder.has_feature(
                     FeatureType::LowerCase as u16,
@@ -47,8 +47,8 @@ pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
                 continue;
             }
 
-            if !subtable.coverage.is_all_directions() &&
-                buffer.direction.is_vertical() != subtable.coverage.is_vertical()
+            if !subtable.coverage.is_all_directions()
+                && buffer.direction.is_vertical() != subtable.coverage.is_vertical()
             {
                 continue;
             }
@@ -105,12 +105,20 @@ trait Driver<T: FromData> {
     fn in_place(&self) -> bool;
     fn can_advance(&self, entry: &apple_layout::GenericStateEntry<T>) -> bool;
     fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<T>, buffer: &Buffer) -> bool;
-    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<T>, buffer: &mut Buffer) -> Option<()>;
+    fn transition(
+        &mut self,
+        entry: &apple_layout::GenericStateEntry<T>,
+        buffer: &mut Buffer,
+    ) -> Option<()>;
 }
 
 const START_OF_TEXT: u16 = 0;
 
-fn drive<T: FromData>(machine: &apple_layout::ExtendedStateTable<T>, c: &mut dyn Driver<T>, buffer: &mut Buffer) {
+fn drive<T: FromData>(
+    machine: &apple_layout::ExtendedStateTable<T>,
+    c: &mut dyn Driver<T>,
+    buffer: &mut Buffer,
+) {
     if !c.in_place() {
         buffer.clear_output();
     }
@@ -119,7 +127,9 @@ fn drive<T: FromData>(machine: &apple_layout::ExtendedStateTable<T>, c: &mut dyn
     buffer.idx = 0;
     loop {
         let class = if buffer.idx < buffer.len {
-            machine.class(buffer.info[buffer.idx].as_glyph()).unwrap_or(1)
+            machine
+                .class(buffer.info[buffer.idx].as_glyph())
+                .unwrap_or(1)
         } else {
             u16::from(apple_layout::class::END_OF_TEXT)
         };
@@ -131,13 +141,10 @@ fn drive<T: FromData>(machine: &apple_layout::ExtendedStateTable<T>, c: &mut dyn
 
         // Unsafe-to-break before this if not in state 0, as things might
         // go differently if we start from state 0 here.
-        if state != START_OF_TEXT &&
-            buffer.backtrack_len() != 0 &&
-            buffer.idx < buffer.len
-        {
+        if state != START_OF_TEXT && buffer.backtrack_len() != 0 && buffer.idx < buffer.len {
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
-            if  c.is_actionable(&entry, buffer) ||
-                !(entry.new_state == START_OF_TEXT && !c.can_advance(&entry))
+            if c.is_actionable(&entry, buffer)
+                || !(entry.new_state == START_OF_TEXT && !c.can_advance(&entry))
             {
                 buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
@@ -145,10 +152,11 @@ fn drive<T: FromData>(machine: &apple_layout::ExtendedStateTable<T>, c: &mut dyn
 
         // Unsafe-to-break if end-of-text would kick in here.
         if buffer.idx + 2 <= buffer.len {
-            let end_entry: apple_layout::GenericStateEntry<T> = match machine.entry(state, u16::from(apple_layout::class::END_OF_TEXT)) {
-                Some(v) => v,
-                None => break,
-            };
+            let end_entry: apple_layout::GenericStateEntry<T> =
+                match machine.entry(state, u16::from(apple_layout::class::END_OF_TEXT)) {
+                    Some(v) => v,
+                    None => break,
+                };
 
             if c.is_actionable(&end_entry, buffer) {
                 buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
@@ -185,10 +193,7 @@ fn drive<T: FromData>(machine: &apple_layout::ExtendedStateTable<T>, c: &mut dyn
 fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut Buffer) {
     match kind {
         morx::SubtableKind::Rearrangement(ref table) => {
-            let mut c = RearrangementCtx {
-                start: 0,
-                end: 0,
-            };
+            let mut c = RearrangementCtx { start: 0, end: 0 };
 
             drive::<()>(table, &mut c, buffer);
         }
@@ -228,17 +233,16 @@ fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut Buffer) {
     }
 }
 
-
 struct RearrangementCtx {
     start: usize,
     end: usize,
 }
 
 impl RearrangementCtx {
-    const MARK_FIRST: u16   = 0x8000;
+    const MARK_FIRST: u16 = 0x8000;
     const DONT_ADVANCE: u16 = 0x4000;
-    const MARK_LAST: u16    = 0x2000;
-    const VERB: u16         = 0x000F;
+    const MARK_LAST: u16 = 0x2000;
+    const VERB: u16 = 0x000F;
 }
 
 impl Driver<()> for RearrangementCtx {
@@ -254,7 +258,11 @@ impl Driver<()> for RearrangementCtx {
         entry.flags & Self::VERB != 0 && self.start < self.end
     }
 
-    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<()>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(
+        &mut self,
+        entry: &apple_layout::GenericStateEntry<()>,
+        buffer: &mut Buffer,
+    ) -> Option<()> {
         let flags = entry.flags;
 
         if flags & Self::MARK_FIRST != 0 {
@@ -341,7 +349,6 @@ impl Driver<()> for RearrangementCtx {
     }
 }
 
-
 struct ContextualCtx<'a> {
     mark_set: bool,
     mark: usize,
@@ -349,8 +356,8 @@ struct ContextualCtx<'a> {
 }
 
 impl ContextualCtx<'_> {
-    const SET_MARK: u16         = 0x8000;
-    const DONT_ADVANCE: u16     = 0x4000;
+    const SET_MARK: u16 = 0x8000;
+    const DONT_ADVANCE: u16 = 0x4000;
 }
 
 impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
@@ -358,11 +365,18 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
         true
     }
 
-    fn can_advance(&self, entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>) -> bool {
+    fn can_advance(
+        &self,
+        entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>,
+    ) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>, buffer: &Buffer) -> bool {
+    fn is_actionable(
+        &self,
+        entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>,
+        buffer: &Buffer,
+    ) -> bool {
         if buffer.idx == buffer.len && !self.mark_set {
             return false;
         }
@@ -370,7 +384,11 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
         entry.extra.mark_index != 0xFFFF || entry.extra.current_index != 0xFFFF
     }
 
-    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(
+        &mut self,
+        entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>,
+        buffer: &mut Buffer,
+    ) -> Option<()> {
         // Looks like CoreText applies neither mark nor current substitution for
         // end-of-text if mark was not explicitly set.
         if buffer.idx == buffer.len && !self.mark_set {
@@ -385,7 +403,7 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
         }
 
         if let Some(replacement) = replacement {
-            buffer.unsafe_to_break(self.mark, (buffer.idx +1 ).min(buffer.len));
+            buffer.unsafe_to_break(self.mark, (buffer.idx + 1).min(buffer.len));
             buffer.info[self.mark].glyph_id = u32::from(replacement);
         }
 
@@ -415,12 +433,12 @@ struct InsertionCtx<'a> {
 }
 
 impl InsertionCtx<'_> {
-    const SET_MARK: u16                 = 0x8000;
-    const DONT_ADVANCE: u16             = 0x4000;
-    const CURRENT_INSERT_BEFORE: u16    = 0x0800;
-    const MARKED_INSERT_BEFORE: u16     = 0x0400;
-    const CURRENT_INSERT_COUNT: u16     = 0x03E0;
-    const MARKED_INSERT_COUNT: u16      = 0x001F;
+    const SET_MARK: u16 = 0x8000;
+    const DONT_ADVANCE: u16 = 0x4000;
+    const CURRENT_INSERT_BEFORE: u16 = 0x0800;
+    const MARKED_INSERT_BEFORE: u16 = 0x0400;
+    const CURRENT_INSERT_COUNT: u16 = 0x03E0;
+    const MARKED_INSERT_COUNT: u16 = 0x001F;
 }
 
 impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
@@ -428,16 +446,28 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
         false
     }
 
-    fn can_advance(&self, entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>) -> bool {
+    fn can_advance(
+        &self,
+        entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>,
+    ) -> bool {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>, _: &Buffer) -> bool {
-        (entry.flags & (Self::CURRENT_INSERT_COUNT | Self::MARKED_INSERT_COUNT) != 0) &&
-            (entry.extra.current_insert_index != 0xFFFF || entry.extra.marked_insert_index != 0xFFFF)
+    fn is_actionable(
+        &self,
+        entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>,
+        _: &Buffer,
+    ) -> bool {
+        (entry.flags & (Self::CURRENT_INSERT_COUNT | Self::MARKED_INSERT_COUNT) != 0)
+            && (entry.extra.current_insert_index != 0xFFFF
+                || entry.extra.marked_insert_index != 0xFFFF)
     }
 
-    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(
+        &mut self,
+        entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>,
+        buffer: &mut Buffer,
+    ) -> Option<()> {
         let flags = entry.flags;
         let mark_loc = buffer.out_len;
 
@@ -470,7 +500,10 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
 
             buffer.move_to(end + usize::from(count));
 
-            buffer.unsafe_to_break_from_outbuffer(self.mark as usize, (buffer.idx + 1).min(buffer.len));
+            buffer.unsafe_to_break_from_outbuffer(
+                self.mark as usize,
+                (buffer.idx + 1).min(buffer.len),
+            );
         }
 
         if flags & Self::SET_MARK != 0 {
@@ -516,14 +549,16 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
             // glyphs are now visible.
             //
             // https://github.com/harfbuzz/harfbuzz/issues/1224#issuecomment-427691417
-            buffer.move_to(if flags & Self::DONT_ADVANCE != 0 { end } else { end + usize::from(count) });
+            buffer.move_to(if flags & Self::DONT_ADVANCE != 0 {
+                end
+            } else {
+                end + usize::from(count)
+            });
         }
 
         Some(())
     }
 }
-
-
 
 const LIGATURE_MAX_MATCHES: usize = 64;
 
@@ -534,13 +569,13 @@ struct LigatureCtx<'a> {
 }
 
 impl LigatureCtx<'_> {
-    const SET_COMPONENT: u16    = 0x8000;
-    const DONT_ADVANCE: u16     = 0x4000;
-    const PERFORM_ACTION: u16   = 0x2000;
+    const SET_COMPONENT: u16 = 0x8000;
+    const DONT_ADVANCE: u16 = 0x4000;
+    const PERFORM_ACTION: u16 = 0x2000;
 
-    const LIG_ACTION_LAST: u32      = 0x80000000;
-    const LIG_ACTION_STORE: u32     = 0x40000000;
-    const LIG_ACTION_OFFSET: u32    = 0x3FFFFFFF;
+    const LIG_ACTION_LAST: u32 = 0x80000000;
+    const LIG_ACTION_STORE: u32 = 0x40000000;
+    const LIG_ACTION_OFFSET: u32 = 0x3FFFFFFF;
 }
 
 impl Driver<u16> for LigatureCtx<'_> {
@@ -556,11 +591,16 @@ impl Driver<u16> for LigatureCtx<'_> {
         entry.flags & Self::PERFORM_ACTION != 0
     }
 
-    fn transition(&mut self, entry: &apple_layout::GenericStateEntry<u16>, buffer: &mut Buffer) -> Option<()> {
+    fn transition(
+        &mut self,
+        entry: &apple_layout::GenericStateEntry<u16>,
+        buffer: &mut Buffer,
+    ) -> Option<()> {
         if entry.flags & Self::SET_COMPONENT != 0 {
             // Never mark same index twice, in case DONT_ADVANCE was used...
-            if self.match_length != 0 &&
-                self.match_positions[(self.match_length - 1) % LIGATURE_MAX_MATCHES] == buffer.out_len
+            if self.match_length != 0
+                && self.match_positions[(self.match_length - 1) % LIGATURE_MAX_MATCHES]
+                    == buffer.out_len
             {
                 self.match_length -= 1;
             }
@@ -596,7 +636,11 @@ impl Driver<u16> for LigatureCtx<'_> {
 
                 // We cannot use ? in this loop, because we must call
                 // buffer.move_to(end) in the end.
-                let action = match self.table.ligature_actions.get(u32::from(ligature_actions_index)) {
+                let action = match self
+                    .table
+                    .ligature_actions
+                    .get(u32::from(ligature_actions_index))
+                {
                     Some(v) => v,
                     None => break,
                 };
@@ -621,11 +665,14 @@ impl Driver<u16> for LigatureCtx<'_> {
 
                     buffer.replace_glyph(u32::from(lig.0));
 
-                    let lig_end = self.match_positions[(self.match_length - 1) % LIGATURE_MAX_MATCHES] + 1;
+                    let lig_end =
+                        self.match_positions[(self.match_length - 1) % LIGATURE_MAX_MATCHES] + 1;
                     // Now go and delete all subsequent components.
                     while self.match_length - 1 > cursor {
                         self.match_length -= 1;
-                        buffer.move_to(self.match_positions[self.match_length % LIGATURE_MAX_MATCHES]);
+                        buffer.move_to(
+                            self.match_positions[self.match_length % LIGATURE_MAX_MATCHES],
+                        );
                         buffer.replace_glyph(0xFFFF);
                     }
 

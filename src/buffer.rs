@@ -3,11 +3,10 @@ use core::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use crate::{script, Direction, Face, Language, Mask, Script};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
+use crate::{script, Direction, Face, Language, Mask, Script};
 
 const CONTEXT_LENGTH: usize = 5;
-
 
 pub mod glyph_flag {
     /// Indicates that if input text is broken at the
@@ -30,7 +29,6 @@ pub mod glyph_flag {
     /// All the currently defined flags.
     pub const DEFINED: u32 = 0x00000001; // OR of all defined flags
 }
-
 
 /// Holds the positions of the glyph in both horizontal and vertical directions.
 ///
@@ -85,7 +83,6 @@ impl GlyphPosition {
         v[2] = n;
     }
 }
-
 
 /// A glyph info.
 #[repr(C)]
@@ -211,7 +208,8 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn set_general_category(&mut self, gc: GeneralCategory) {
         let gc = gc.to_rb();
-        let n = (gc as u16) | (self.unicode_props() & (0xFF & !UnicodeProps::GENERAL_CATEGORY.bits));
+        let n =
+            (gc as u16) | (self.unicode_props() & (0xFF & !UnicodeProps::GENERAL_CATEGORY.bits));
         self.set_unicode_props(n);
     }
 
@@ -474,7 +472,6 @@ impl GlyphInfo {
     }
 }
 
-
 /// A cluster level.
 #[allow(missing_docs)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -490,7 +487,6 @@ impl Default for BufferClusterLevel {
         BufferClusterLevel::MonotoneGraphemes
     }
 }
-
 
 pub struct Buffer {
     // Information about how the text in the buffer should be treated.
@@ -565,7 +561,10 @@ impl Buffer {
             pos: Vec::new(),
             have_separate_output: false,
             serial: 0,
-            context: [['\0', '\0', '\0', '\0', '\0'], ['\0', '\0', '\0', '\0', '\0']],
+            context: [
+                ['\0', '\0', '\0', '\0', '\0'],
+                ['\0', '\0', '\0', '\0', '\0'],
+            ],
             context_len: [0, 0],
         }
     }
@@ -651,13 +650,20 @@ impl Buffer {
 
         self.serial = 0;
 
-        self.context = [['\0', '\0', '\0', '\0', '\0'], ['\0', '\0', '\0', '\0', '\0']];
+        self.context = [
+            ['\0', '\0', '\0', '\0', '\0'],
+            ['\0', '\0', '\0', '\0', '\0'],
+        ];
         self.context_len = [0, 0];
     }
 
     #[inline]
     pub fn backtrack_len(&self) -> usize {
-        if self.have_output { self.out_len } else { self.idx }
+        if self.have_output {
+            self.out_len
+        } else {
+            self.idx
+        }
     }
 
     #[inline]
@@ -717,9 +723,7 @@ impl Buffer {
         if self.script.is_none() {
             for info in &self.info {
                 match info.as_char().script() {
-                      crate::script::COMMON
-                    | crate::script::INHERITED
-                    | crate::script::UNKNOWN => {}
+                    crate::script::COMMON | crate::script::INHERITED | crate::script::UNKNOWN => {}
                     s => {
                         self.script = Some(s);
                         break;
@@ -932,13 +936,7 @@ impl Buffer {
         }
     }
 
-    pub fn set_masks(
-        &mut self,
-        mut value: Mask,
-        mask: Mask,
-        cluster_start: u32,
-        cluster_end: u32,
-    ) {
+    pub fn set_masks(&mut self, mut value: Mask, mask: Mask, cluster_start: u32, cluster_end: u32) {
         let not_mask = !mask;
         value &= mask;
 
@@ -977,7 +975,7 @@ impl Buffer {
 
         let mut cluster = self.info[start].cluster;
 
-        for i in start+1..end {
+        for i in start + 1..end {
             cluster = core::cmp::min(cluster, self.info[i].cluster);
         }
 
@@ -1016,7 +1014,7 @@ impl Buffer {
 
         let mut cluster = self.out_info()[start].cluster;
 
-        for i in start+1..end {
+        for i in start + 1..end {
             cluster = core::cmp::min(cluster, self.out_info()[i].cluster);
         }
 
@@ -1026,7 +1024,8 @@ impl Buffer {
         }
 
         // Extend end
-        while end < self.out_len && self.out_info()[end - 1].cluster == self.out_info()[end].cluster {
+        while end < self.out_len && self.out_info()[end - 1].cluster == self.out_info()[end].cluster
+        {
             end += 1;
         }
 
@@ -1156,11 +1155,13 @@ impl Buffer {
         assert!(self.idx <= end);
 
         let mut cluster = core::u32::MAX;
-        cluster = Self::_unsafe_to_break_find_min_cluster(self.out_info(), start, self.out_len, cluster);
+        cluster =
+            Self::_unsafe_to_break_find_min_cluster(self.out_info(), start, self.out_len, cluster);
         cluster = Self::_unsafe_to_break_find_min_cluster(&self.info, self.idx, end, cluster);
         let idx = self.idx;
         let out_len = self.out_len;
-        let unsafe_to_break1 = Self::_unsafe_to_break_set_mask(self.out_info_mut(), start, out_len, cluster);
+        let unsafe_to_break1 =
+            Self::_unsafe_to_break_set_mask(self.out_info_mut(), start, out_len, cluster);
         let unsafe_to_break2 = Self::_unsafe_to_break_set_mask(&mut self.info, idx, end, cluster);
 
         if unsafe_to_break1 || unsafe_to_break2 {
@@ -1268,7 +1269,7 @@ impl Buffer {
         }
 
         if self.idx + count > self.len {
-            for info in &mut self.info[self.len..self.idx+count] {
+            for info in &mut self.info[self.len..self.idx + count] {
                 *info = GlyphInfo::default();
             }
         }
@@ -1280,7 +1281,7 @@ impl Buffer {
     pub fn sort(&mut self, start: usize, end: usize, cmp: impl Fn(&GlyphInfo, &GlyphInfo) -> bool) {
         assert!(!self.have_positions);
 
-        for i in start+1..end {
+        for i in start + 1..end {
             let mut j = i;
             while j > start && cmp(&self.info[j - 1], &self.info[i]) {
                 j -= 1;
@@ -1295,7 +1296,7 @@ impl Buffer {
 
             {
                 let t = self.info[i];
-                for idx in (0..i-j).rev() {
+                for idx in (0..i - j).rev() {
                     self.info[idx + j + 1] = self.info[idx + j];
                 }
 
@@ -1316,7 +1317,12 @@ impl Buffer {
         info.cluster = cluster;
     }
 
-    fn _unsafe_to_break_find_min_cluster(info: &[GlyphInfo], start: usize, end: usize, mut cluster: u32) -> u32 {
+    fn _unsafe_to_break_find_min_cluster(
+        info: &[GlyphInfo],
+        start: usize,
+        end: usize,
+        mut cluster: u32,
+    ) -> u32 {
         for glyph_info in &info[start..end] {
             cluster = core::cmp::min(cluster, glyph_info.cluster);
         }
@@ -1324,7 +1330,12 @@ impl Buffer {
         cluster
     }
 
-    fn _unsafe_to_break_set_mask(info: &mut [GlyphInfo], start: usize, end: usize, cluster: u32) -> bool {
+    fn _unsafe_to_break_set_mask(
+        info: &mut [GlyphInfo],
+        start: usize,
+        end: usize,
+        cluster: u32,
+    ) -> bool {
         let mut unsafe_to_break = false;
         for glyph_info in &mut info[start..end] {
             if glyph_info.cluster != cluster {
@@ -1439,7 +1450,6 @@ macro_rules! foreach_grapheme {
     }};
 }
 
-
 bitflags::bitflags! {
     #[derive(Default)]
     pub struct UnicodeProps: u16 {
@@ -1454,7 +1464,6 @@ bitflags::bitflags! {
         const CF_ZWNJ           = 0x0200;
     }
 }
-
 
 bitflags::bitflags! {
     #[derive(Default)]
@@ -1474,7 +1483,6 @@ bitflags::bitflags! {
     }
 }
 
-
 bitflags::bitflags! {
     #[derive(Default)]
     pub struct BufferFlags: u32 {
@@ -1485,7 +1493,6 @@ bitflags::bitflags! {
         const DO_NOT_INSERT_DOTTED_CIRCLE   = 1 << 5;
     }
 }
-
 
 bitflags::bitflags! {
     #[derive(Default)]
@@ -1504,7 +1511,6 @@ bitflags::bitflags! {
         const COMPLEX3                  = 0x08000000;
     }
 }
-
 
 bitflags::bitflags! {
     /// Flags used for serialization with a `BufferSerializer`.
@@ -1525,7 +1531,6 @@ bitflags::bitflags! {
         const NO_ADVANCES       = 0b00100000;
     }
 }
-
 
 /// A buffer that contains an input string ready for shaping.
 pub struct UnicodeBuffer(pub(crate) Buffer);
@@ -1649,7 +1654,6 @@ impl Default for UnicodeBuffer {
     }
 }
 
-
 /// A buffer that contains the results of the shaping process.
 pub struct GlyphBuffer(pub(crate) Buffer);
 
@@ -1695,7 +1699,11 @@ impl GlyphBuffer {
         self.serialize_impl(face, flags).unwrap_or_default()
     }
 
-    fn serialize_impl(&self, face: &Face, flags: SerializeFlags) -> Result<String, core::fmt::Error> {
+    fn serialize_impl(
+        &self,
+        face: &Face,
+        flags: SerializeFlags,
+    ) -> Result<String, core::fmt::Error> {
         use core::fmt::Write;
 
         let mut s = String::with_capacity(64);
@@ -1739,7 +1747,11 @@ impl GlyphBuffer {
 
             if flags.contains(SerializeFlags::GLYPH_EXTENTS) {
                 let extents = face.glyph_extents(info.as_glyph()).unwrap_or_default();
-                write!(&mut s, "<{},{},{},{}>", extents.x_bearing, extents.y_bearing, extents.width, extents.height)?;
+                write!(
+                    &mut s,
+                    "<{},{},{},{}>",
+                    extents.x_bearing, extents.y_bearing, extents.width, extents.height
+                )?;
             }
 
             if flags.contains(SerializeFlags::NO_ADVANCES) {
