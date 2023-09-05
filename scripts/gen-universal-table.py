@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Based on harfbuzz/src/gen-use-table.py
 

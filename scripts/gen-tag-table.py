@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Generator of the mapping from OpenType tags to BCP 47 tags and vice
