@@ -1,6 +1,6 @@
 use super::arabic::ArabicShapePlan;
 use super::*;
-use crate::buffer::{Buffer, BufferFlags};
+use crate::buffer::Buffer;
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
@@ -130,13 +130,11 @@ const OTHER_FEATURES: &[Tag] = &[
 
 impl GlyphInfo {
     pub(crate) fn use_category(&self) -> Category {
-        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
-        v[3]
+        self.complex_var_u8_category()
     }
 
     fn set_use_category(&mut self, c: Category) {
-        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
-        v[3] = c;
+        self.set_complex_var_u8_category(c)
     }
 
     fn is_halant_use(&self) -> bool {
@@ -362,7 +360,15 @@ fn record_rphf(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 }
 
 fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    insert_dotted_circles(face, buffer);
+    use super::universal_machine::SyllableType;
+
+    syllabic::insert_dotted_circles(
+        face,
+        buffer,
+        SyllableType::BrokenCluster as u8,
+        category::B,
+        Some(category::R),
+    );
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -371,70 +377,6 @@ fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         start = end;
         end = buffer.next_syllable(start);
     }
-}
-
-fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
-    use super::universal_machine::SyllableType;
-
-    if buffer
-        .flags
-        .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
-    {
-        return;
-    }
-
-    // Note: This loop is extra overhead, but should not be measurable.
-    // TODO Use a buffer scratch flag to remove the loop.
-    let has_broken_syllables = buffer
-        .info_slice()
-        .iter()
-        .any(|info| info.syllable() & 0x0F == SyllableType::BrokenCluster as u8);
-
-    if !has_broken_syllables {
-        return;
-    }
-
-    let dottedcircle_glyph = match face.glyph_index(0x25CC) {
-        Some(g) => g.0 as u32,
-        None => return,
-    };
-
-    let mut dottedcircle = GlyphInfo {
-        glyph_id: dottedcircle_glyph,
-        ..GlyphInfo::default()
-    };
-    dottedcircle.set_use_category(super::universal_table::get_category(0x25CC));
-
-    buffer.clear_output();
-
-    buffer.idx = 0;
-    let mut last_syllable = 0;
-    while buffer.idx < buffer.len {
-        let syllable = buffer.cur(0).syllable();
-        let syllable_type = syllable & 0x0F;
-        if last_syllable != syllable && syllable_type == SyllableType::BrokenCluster as u8 {
-            last_syllable = syllable;
-
-            let mut ginfo = dottedcircle;
-            ginfo.cluster = buffer.cur(0).cluster;
-            ginfo.mask = buffer.cur(0).mask;
-            ginfo.set_syllable(buffer.cur(0).syllable());
-
-            // Insert dottedcircle after possible Repha.
-            while buffer.idx < buffer.len
-                && last_syllable == buffer.cur(0).syllable()
-                && buffer.cur(0).use_category() == category::R
-            {
-                buffer.next_glyph();
-            }
-
-            buffer.output_info(ginfo);
-        } else {
-            buffer.next_glyph();
-        }
-    }
-
-    buffer.swap_buffers();
 }
 
 const fn category_flag(c: Category) -> u32 {

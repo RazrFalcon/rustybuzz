@@ -1,6 +1,6 @@
 use super::indic::{category, position};
 use super::*;
-use crate::buffer::{Buffer, BufferFlags};
+use crate::buffer::Buffer;
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::{Face, GlyphInfo, Tag};
@@ -180,7 +180,15 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 }
 
 fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
-    insert_dotted_circles(face, buffer);
+    use super::myanmar_machine::SyllableType;
+
+    syllabic::insert_dotted_circles(
+        face,
+        buffer,
+        SyllableType::BrokenCluster as u8,
+        category::PLACEHOLDER,
+        None,
+    );
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -189,63 +197,6 @@ fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         start = end;
         end = buffer.next_syllable(start);
     }
-}
-
-fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
-    use super::myanmar_machine::SyllableType;
-
-    if buffer
-        .flags
-        .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
-    {
-        return;
-    }
-
-    // Note: This loop is extra overhead, but should not be measurable.
-    // TODO Use a buffer scratch flag to remove the loop.
-    let has_broken_syllables = buffer
-        .info_slice()
-        .iter()
-        .any(|info| info.syllable() & 0x0F == SyllableType::BrokenCluster as u8);
-
-    if !has_broken_syllables {
-        return;
-    }
-
-    let dottedcircle_glyph = match face.glyph_index(0x25CC) {
-        Some(g) => g.0 as u32,
-        None => return,
-    };
-
-    let mut dottedcircle = GlyphInfo {
-        glyph_id: 0x25CC,
-        ..GlyphInfo::default()
-    };
-    dottedcircle.set_myanmar_properties();
-    dottedcircle.glyph_id = dottedcircle_glyph;
-
-    buffer.clear_output();
-
-    buffer.idx = 0;
-    let mut last_syllable = 0;
-    while buffer.idx < buffer.len {
-        let syllable = buffer.cur(0).syllable();
-        let syllable_type = syllable & 0x0F;
-        if last_syllable != syllable && syllable_type == SyllableType::BrokenCluster as u8 {
-            last_syllable = syllable;
-
-            let mut ginfo = dottedcircle;
-            ginfo.cluster = buffer.cur(0).cluster;
-            ginfo.mask = buffer.cur(0).mask;
-            ginfo.set_syllable(buffer.cur(0).syllable());
-
-            buffer.output_info(ginfo);
-        } else {
-            buffer.next_glyph();
-        }
-    }
-
-    buffer.swap_buffers();
 }
 
 fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {

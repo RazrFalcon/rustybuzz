@@ -10,6 +10,7 @@ mod khmer_machine;
 mod machine_cursor;
 pub mod myanmar;
 mod myanmar_machine;
+mod syllabic;
 pub mod thai;
 pub mod universal;
 mod universal_machine;

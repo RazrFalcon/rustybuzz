@@ -6,7 +6,7 @@ use core::ops::Range;
 use ttf_parser::GlyphId;
 
 use super::*;
-use crate::buffer::{Buffer, BufferFlags};
+use crate::buffer::Buffer;
 use crate::normalize::ShapeNormalizationMode;
 use crate::ot::{
     feature, FeatureFlags, LayoutTable, Map, TableIndex, WouldApply, WouldApplyContext,
@@ -538,23 +538,19 @@ impl IndicShapePlan {
 
 impl GlyphInfo {
     pub(crate) fn indic_category(&self) -> Category {
-        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
-        v[2]
+        self.complex_var_u8_category()
     }
 
     pub(crate) fn set_indic_category(&mut self, c: Category) {
-        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
-        v[2] = c;
+        self.set_complex_var_u8_category(c)
     }
 
     pub(crate) fn indic_position(&self) -> Position {
-        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
-        v[3]
+        self.complex_var_u8_auxiliary()
     }
 
     pub(crate) fn set_indic_position(&mut self, c: Position) {
-        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
-        v[3] = c;
+        self.set_complex_var_u8_auxiliary(c)
     }
 
     fn is_one_of(&self, flags: u32) -> bool {
@@ -784,10 +780,18 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 }
 
 fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+    use super::indic_machine::SyllableType;
+
     let indic_plan = plan.data::<IndicShapePlan>();
 
     update_consonant_positions(plan, indic_plan, face, buffer);
-    insert_dotted_circles(face, buffer);
+    syllabic::insert_dotted_circles(
+        face,
+        buffer,
+        SyllableType::BrokenCluster as u8,
+        category::DOTTED_CIRCLE,
+        Some(category::REPHA),
+    );
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -883,71 +887,6 @@ fn consonant_position_from_face(
     }
 
     position::BASE_C
-}
-
-fn insert_dotted_circles(face: &Face, buffer: &mut Buffer) {
-    use super::indic_machine::SyllableType;
-
-    if buffer
-        .flags
-        .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
-    {
-        return;
-    }
-
-    // Note: This loop is extra overhead, but should not be measurable.
-    // TODO Use a buffer scratch flag to remove the loop.
-    let has_broken_syllables = buffer
-        .info_slice()
-        .iter()
-        .any(|info| info.syllable() & 0x0F == SyllableType::BrokenCluster as u8);
-
-    if !has_broken_syllables {
-        return;
-    }
-
-    let dottedcircle_glyph = match face.glyph_index(0x25CC) {
-        Some(g) => g.0 as u32,
-        None => return,
-    };
-
-    let mut dottedcircle = GlyphInfo {
-        glyph_id: 0x25CC,
-        ..GlyphInfo::default()
-    };
-    dottedcircle.set_indic_properties();
-    dottedcircle.glyph_id = dottedcircle_glyph;
-
-    buffer.clear_output();
-
-    buffer.idx = 0;
-    let mut last_syllable = 0;
-    while buffer.idx < buffer.len {
-        let syllable = buffer.cur(0).syllable();
-        let syllable_type = syllable & 0x0F;
-        if last_syllable != syllable && syllable_type == SyllableType::BrokenCluster as u8 {
-            last_syllable = syllable;
-
-            let mut ginfo = dottedcircle;
-            ginfo.cluster = buffer.cur(0).cluster;
-            ginfo.mask = buffer.cur(0).mask;
-            ginfo.set_syllable(buffer.cur(0).syllable());
-
-            // Insert dottedcircle after possible Repha.
-            while buffer.idx < buffer.len
-                && last_syllable == buffer.cur(0).syllable()
-                && buffer.cur(0).indic_category() == category::REPHA
-            {
-                buffer.next_glyph();
-            }
-
-            buffer.output_info(ginfo);
-        } else {
-            buffer.next_glyph();
-        }
-    }
-
-    buffer.swap_buffers();
 }
 
 fn initial_reordering_syllable(

@@ -138,6 +138,26 @@ impl GlyphInfo {
     // Var allocation: unicode_props
     // Used during the entire shaping process to store unicode properties
 
+    pub(crate) fn complex_var_u8_category(&self) -> u8 {
+        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
+        v[2]
+    }
+
+    pub(crate) fn set_complex_var_u8_category(&mut self, c: u8) {
+        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
+        v[2] = c;
+    }
+
+    pub(crate) fn complex_var_u8_auxiliary(&self) -> u8 {
+        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
+        v[3]
+    }
+
+    pub(crate) fn set_complex_var_u8_auxiliary(&mut self, c: u8) {
+        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
+        v[3] = c;
+    }
+
     #[inline]
     fn unicode_props(&self) -> u16 {
         let v: &[u16; 2] = bytemuck::cast_ref(&self.var2);
