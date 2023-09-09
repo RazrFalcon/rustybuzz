@@ -175,7 +175,7 @@ pub fn find_syllables(buffer: &mut Buffer) {
     %%{
         write init;
         getkey (infos[p.index()].get().use_category() as u8);
-        write exec; 
+        write exec;
     }%%
 }
 

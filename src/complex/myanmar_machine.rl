@@ -22,7 +22,7 @@ use crate::buffer::Buffer;
 }%%
 
 %%{
- 
+
 A    = 10;
 As   = 18;
 C    = 1;
@@ -104,7 +104,7 @@ pub fn find_syllables_myanmar(buffer: &mut Buffer) {
     %%{
         write init;
         getkey (buffer.info[p].indic_category() as u8);
-        write exec; 
+        write exec;
     }%%
 }
 

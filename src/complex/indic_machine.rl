@@ -105,7 +105,7 @@ pub fn find_syllables_indic(buffer: &mut Buffer) {
     %%{
         write init;
         getkey (buffer.info[p].indic_category() as u8);
-        write exec; 
+        write exec;
     }%%
 }
 
