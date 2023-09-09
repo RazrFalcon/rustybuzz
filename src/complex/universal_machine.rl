@@ -27,6 +27,9 @@ use crate::GlyphInfo;
 
 %%{
 
+# Categories used in the Universal Shaping Engine spec:
+# https://docs.microsoft.com/en-us/typography/script-development/use
+
 O	= 0; # OTHER
 
 B	= 1; # BASE

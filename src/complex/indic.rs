@@ -244,7 +244,6 @@ const RA_CHARS: &[u32] = &[
     0x0CB0, // Kannada
     0x0D30, // Malayalam. No Reph, Logical Repha
     0x0DBB, // Sinhala. Reph formed only with ZWJ
-    0x179A, // Khmer
 ];
 
 #[derive(Clone, Copy, PartialEq)]
