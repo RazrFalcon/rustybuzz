@@ -604,6 +604,8 @@ impl GlyphInfo {
             0x1133B | 0x1133C => cat = category::N,
             // https://github.com/harfbuzz/harfbuzz/issues/552
             0x0AFB => cat = category::N,
+            // https://github.com/harfbuzz/harfbuzz/issues/2849
+            0x0B55 => cat = category::N,
             // https://github.com/harfbuzz/harfbuzz/issues/538
             0x0980 => cat = category::PLACEHOLDER,
             // https://github.com/harfbuzz/harfbuzz/issues/1613

@@ -1322,6 +1322,34 @@ fn indic_syllable_010() {
 }
 
 #[test]
+fn indic_syllable_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b3075ca42b27dde7341c2d0ae16703c5b6640df0.ttf",
+            "\u{0B2C}\u{0B55}\u{0B3E}",
+            "",
+        ),
+        "uni0B2C=0+641|\
+         uni0B55=0+0|\
+         uni0B3E=0+253"
+    );
+}
+
+#[test]
+fn indic_syllable_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b3075ca42b27dde7341c2d0ae16703c5b6640df0.ttf",
+            "\u{0B2C}\u{0B3E}\u{0B55}",
+            "",
+        ),
+        "uni0B2C=0+641|\
+         uni0B3E=0+253|\
+         uni0B55=0+0"
+    );
+}
+
+#[test]
 fn indic_vowel_letter_spoofing_001() {
     assert_eq!(
         shape(
