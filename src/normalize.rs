@@ -264,7 +264,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 
                         // Modify starter and carry on.
                         let mut flags = buffer.scratch_flags;
-                        let mut info = &mut buffer.out_info_mut()[starter];
+                        let info = &mut buffer.out_info_mut()[starter];
                         info.glyph_id = u32::from(composed);
                         info.set_glyph_index(u32::from(glyph_id.0));
                         info.init_unicode_props(&mut flags);
