@@ -490,37 +490,21 @@ fn record_pref(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 
 fn has_arabic_joining(script: Script) -> bool {
     // List of scripts that have data in arabic-table.
-    match script {
-        // Unicode-1.1 additions.
-        script::ARABIC |
-
-        // Unicode-3.0 additions.
-        script::MONGOLIAN |
-        script::SYRIAC |
-
-        // Unicode-5.0 additions.
-        script::NKO |
-        script::PHAGS_PA |
-
-        // Unicode-6.0 additions.
-        script::MANDAIC |
-
-        // Unicode-7.0 additions.
-        script::MANICHAEAN |
-        script::PSALTER_PAHLAVI |
-
-        // Unicode-9.0 additions.
-        script::ADLAM |
-
-        // Unicode-11.0 additions.
-        script::HANIFI_ROHINGYA |
-        script::SOGDIAN |
-
-        // Unicode-13.0 additions.
-        script::CHORASMIAN => true,
-
-        _ => false,
-    }
+    matches!(
+        script,
+        script::ADLAM
+            | script::ARABIC
+            | script::CHORASMIAN
+            | script::HANIFI_ROHINGYA
+            | script::MANDAIC
+            | script::MANICHAEAN
+            | script::MONGOLIAN
+            | script::NKO
+            | script::PHAGS_PA
+            | script::PSALTER_PAHLAVI
+            | script::SOGDIAN
+            | script::SYRIAC
+    )
 }
 
 fn preprocess_text(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
