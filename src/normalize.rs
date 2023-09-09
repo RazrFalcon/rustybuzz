@@ -222,6 +222,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 
     // Third round, recompose
     if !all_simple
+        && buffer.successful
         && matches!(
             mode,
             Some(ShapeNormalizationMode::ComposedDiacritics)
