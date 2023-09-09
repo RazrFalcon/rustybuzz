@@ -167,7 +167,7 @@ fn drive<T: FromData>(
 
         state = entry.new_state;
 
-        if buffer.idx >= buffer.len {
+        if buffer.idx >= buffer.len || !buffer.successful {
             break;
         }
 
