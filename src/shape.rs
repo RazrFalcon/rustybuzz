@@ -383,8 +383,7 @@ fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
             glyph_id: 0x25CC,
             mask: buffer.cur(0).mask,
             cluster: buffer.cur(0).cluster,
-            var1: 0,
-            var2: 0,
+            ..GlyphInfo::default()
         };
 
         info.init_unicode_props(&mut buffer.scratch_flags);

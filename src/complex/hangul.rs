@@ -38,13 +38,11 @@ const TJMO: u8 = 3;
 
 impl GlyphInfo {
     fn hangul_shaping_feature(&self) -> u8 {
-        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
-        v[2]
+        self.complex_var_u8_auxiliary()
     }
 
     fn set_hangul_shaping_feature(&mut self, feature: u8) {
-        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
-        v[2] = feature;
+        self.set_complex_var_u8_auxiliary(feature)
     }
 }
 

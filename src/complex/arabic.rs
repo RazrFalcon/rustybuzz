@@ -145,13 +145,11 @@ pub enum JoiningType {
 
 impl GlyphInfo {
     fn arabic_shaping_action(&self) -> u8 {
-        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
-        v[2]
+        self.complex_var_u8_auxiliary()
     }
 
     fn set_arabic_shaping_action(&mut self, action: u8) {
-        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
-        v[2] = action;
+        self.set_complex_var_u8_auxiliary(action)
     }
 }
 
