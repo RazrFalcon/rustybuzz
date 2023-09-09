@@ -597,7 +597,7 @@ const USE_TABLE: &[Category] = &[
 
   /* 11700 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11710 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,  MBLW,  MPRE,  MABV,
-  /* 11720 */  VPST,  VPST,  VABV,  VABV,  VBLW,  VBLW,  VPRE,  VABV,  VBLW,  VABV,  VABV, VMABV,     O,     O,     O,     O,
+  /* 11720 */  VPST,  VPST,  VABV,  VABV,  VBLW,  VBLW,  VPRE,  VABV,  VBLW,  VABV,  VABV,  VABV,     O,     O,     O,     O,
   /* 11730 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,
 
   /* Dogra */
