@@ -151,7 +151,7 @@ fn drive<T: FromData>(
         }
 
         // Unsafe-to-break if end-of-text would kick in here.
-        if buffer.idx + 2 <= buffer.len {
+        if buffer.backtrack_len() > 0 && buffer.idx < buffer.len {
             let end_entry: apple_layout::GenericStateEntry<T> =
                 match machine.entry(state, u16::from(apple_layout::class::END_OF_TEXT)) {
                     Some(v) => v,
@@ -159,7 +159,7 @@ fn drive<T: FromData>(
                 };
 
             if c.is_actionable(&end_entry, buffer) {
-                buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
+                buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
         }
 
