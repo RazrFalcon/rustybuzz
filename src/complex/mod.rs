@@ -129,26 +129,7 @@ pub fn complex_categorize(
         script::ARABIC
 
         // Unicode-3.0 additions
-        | script::MONGOLIAN
-        | script::SYRIAC
-
-        // Unicode-5.0 additions
-        | script::NKO
-        | script::PHAGS_PA
-
-        // Unicode-6.0 additions
-        | script::MANDAIC
-
-        // Unicode-7.0 additions
-        | script::MANICHAEAN
-        | script::PSALTER_PAHLAVI
-
-        // Unicode-9.0 additions
-        | script::ADLAM
-
-        // Unicode-11.0 additions
-        | script::HANIFI_ROHINGYA
-        | script::SOGDIAN => {
+        | script::SYRIAC => {
             // For Arabic script, use the Arabic shaper even if no OT script tag was found.
             // This is because we do fallback shaping for Arabic script (and not others).
             // But note that Arabic shaping is applicable only to horizontal layout; for
@@ -229,7 +210,7 @@ pub fn complex_categorize(
         script::TIBETAN
 
         // Unicode-3.0 additions
-        // | script::MONGOLIAN
+        | script::MONGOLIAN
         // | script::SINHALA
 
         // Unicode-3.2 additions
@@ -250,8 +231,8 @@ pub fn complex_categorize(
 
         // Unicode-5.0 additions
         | script::BALINESE
-        // | script::NKO
-        // | script::PHAGS_PA
+        | script::NKO
+        | script::PHAGS_PA
 
         // Unicode-5.1 additions
         | script::CHAM
@@ -272,7 +253,7 @@ pub fn complex_categorize(
         // Unicode-6.0 additions
         | script::BATAK
         | script::BRAHMI
-        // | script::MANDAIC
+        | script::MANDAIC
 
         // Unicode-6.1 additions
         | script::CHAKMA
@@ -286,10 +267,10 @@ pub fn complex_categorize(
         | script::KHOJKI
         | script::KHUDAWADI
         | script::MAHAJANI
-        // | script::MANICHAEAN
+        | script::MANICHAEAN
         | script::MODI
         | script::PAHAWH_HMONG
-        // | script::PSALTER_PAHLAVI
+        | script::PSALTER_PAHLAVI
         | script::SIDDHAM
         | script::TIRHUTA
 
@@ -298,7 +279,7 @@ pub fn complex_categorize(
         | script::MULTANI
 
         // Unicode-9.0 additions
-        // | script::ADLAM
+        | script::ADLAM
         | script::BHAIKSUKI
         | script::MARCHEN
         | script::NEWA
@@ -311,11 +292,11 @@ pub fn complex_categorize(
         // Unicode-11.0 additions
         | script::DOGRA
         | script::GUNJALA_GONDI
-        // | script::HANIFI_ROHINGYA
+        | script::HANIFI_ROHINGYA
         | script::MAKASAR
         | script::MEDEFAIDRIN
         | script::OLD_SOGDIAN
-        // | script::SOGDIAN
+        | script::SOGDIAN
 
         // Unicode-12.0 additions
         | script::ELYMAIC

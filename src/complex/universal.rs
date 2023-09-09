@@ -266,6 +266,10 @@ fn setup_rphf_mask(plan: &ShapePlan, buffer: &mut Buffer) {
 fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
     use super::universal_machine::SyllableType;
 
+    if plan.data::<UniversalShapePlan>().arabic_plan.is_some() {
+        return;
+    }
+
     let mut masks = [0; 4];
     let mut all_masks = 0;
     for i in 0..4 {
