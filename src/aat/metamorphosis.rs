@@ -169,10 +169,6 @@ fn drive<T: FromData>(
         //
         //   https://github.com/harfbuzz/harfbuzz/issues/2860
 
-        if let Some(wouldbe_entry) = machine.entry(START_OF_TEXT, class) && wouldbe_entry.is_some() {
-            std::println!("qwe");
-        }
-
         let is_safe_to_break_extra = || {
             // 2c
             let wouldbe_entry = match machine.entry(START_OF_TEXT, class) {
