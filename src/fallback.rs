@@ -59,13 +59,13 @@ fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
         mcc::CCC15 => Class::Below as u8,         // tsere
         mcc::CCC16 => Class::Below as u8,         // segol
         mcc::CCC17 => Class::Below as u8,         // patah
-        mcc::CCC18 => Class::Below as u8,         // qamats
+        mcc::CCC18 => Class::Below as u8,         // qamats & qamats qatan
         mcc::CCC20 => Class::Below as u8,         // qubuts
         mcc::CCC22 => Class::Below as u8,         // meteg
         mcc::CCC23 => Class::AttachedAbove as u8, // rafe
         mcc::CCC24 => Class::AboveRight as u8,    // shin dot
         mcc::CCC25 => Class::AboveLeft as u8,     // sin dot
-        mcc::CCC19 => Class::AboveLeft as u8,     // holam
+        mcc::CCC19 => Class::AboveLeft as u8,     // holam & holam haser for vav
         mcc::CCC26 => Class::Above as u8,         // point varika
         mcc::CCC21 => class,                      // dagesh
 
