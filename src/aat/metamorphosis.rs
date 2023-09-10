@@ -139,33 +139,87 @@ fn drive<T: FromData>(
             None => break,
         };
 
-        // Unsafe-to-break before this if not in state 0, as things might
-        // go differently if we start from state 0 here.
-        if state != START_OF_TEXT && buffer.backtrack_len() != 0 && buffer.idx < buffer.len {
-            // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
-            if c.is_actionable(&entry, buffer)
-                || !(entry.new_state == START_OF_TEXT && !c.can_advance(&entry))
-            {
-                buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
-            }
+        let next_state = entry.new_state;
+
+        // Conditions under which it's guaranteed safe-to-break before current glyph:
+        //
+        // 1. There was no action in this transition; and
+        //
+        // 2. If we break before current glyph, the results will be the same. That
+        //    is guaranteed if:
+        //
+        //    2a. We were already in start-of-text state; or
+        //
+        //    2b. We are epsilon-transitioning to start-of-text state; or
+        //
+        //    2c. Starting from start-of-text state seeing current glyph:
+        //
+        //        2c'. There won't be any actions; and
+        //
+        //        2c". We would end up in the same state that we were going to end up
+        //             in now, including whether epsilon-transitioning.
+        //
+        //    and
+        //
+        // 3. If we break before current glyph, there won't be any end-of-text action
+        //    after previous glyph.
+        //
+        // This triples the transitions we need to look up, but is worth returning
+        // granular unsafe-to-break results. See eg.:
+        //
+        //   https://github.com/harfbuzz/harfbuzz/issues/2860
+
+        if let Some(wouldbe_entry) = machine.entry(START_OF_TEXT, class) && wouldbe_entry.is_some() {
+            std::println!("qwe");
         }
 
-        // Unsafe-to-break if end-of-text would kick in here.
-        if buffer.backtrack_len() > 0 && buffer.idx < buffer.len {
-            let end_entry: apple_layout::GenericStateEntry<T> =
-                match machine.entry(state, u16::from(apple_layout::class::END_OF_TEXT)) {
-                    Some(v) => v,
-                    None => break,
-                };
+        let is_safe_to_break_extra = || {
+            // 2c
+            let wouldbe_entry = match machine.entry(START_OF_TEXT, class) {
+                Some(v) => v,
+                None => return false,
+            };
 
-            if c.is_actionable(&end_entry, buffer) {
-                buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
+            // 2c'
+            if c.is_actionable(&wouldbe_entry, &buffer) {
+                return false;
             }
+
+            // 2c"
+            return next_state == wouldbe_entry.new_state
+                && c.can_advance(&entry) == c.can_advance(&wouldbe_entry);
+        };
+
+        let is_safe_to_break = || {
+            // 1
+            if c.is_actionable(&entry, &buffer) {
+                return false;
+            }
+
+            // 2
+            let ok = state == START_OF_TEXT
+                || (!c.can_advance(&entry) && next_state == START_OF_TEXT)
+                || is_safe_to_break_extra();
+            if !ok {
+                return false;
+            }
+
+            // 3
+            let end_entry = match machine.entry(state, u16::from(apple_layout::class::END_OF_TEXT))
+            {
+                Some(v) => v,
+                None => return false,
+            };
+            return !c.is_actionable(&end_entry, &buffer);
+        };
+
+        if !is_safe_to_break() && buffer.backtrack_len() > 0 && buffer.idx < buffer.len {
+            buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
         }
 
         c.transition(&entry, buffer);
 
-        state = entry.new_state;
+        state = next_state;
 
         if buffer.idx >= buffer.len || !buffer.successful {
             break;
