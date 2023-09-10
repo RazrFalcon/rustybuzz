@@ -1,5 +1,4 @@
-mod shaping_impl;
-use shaping_impl::shape;
+use crate::shape;
 
 // Some tests are known to have a different, but still valid output
 // and we gather them here.

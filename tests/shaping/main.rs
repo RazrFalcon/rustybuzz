@@ -1,3 +1,8 @@
+mod aots;
+mod extra;
+mod in_house;
+mod text_rendering_tests;
+
 use std::str::FromStr;
 
 struct Args {
