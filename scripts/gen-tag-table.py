@@ -7,7 +7,7 @@ versa.
 Based on harfbuzz/src/gen-tag-table.py
 
 Input files:
-- https://docs.microsoft.com/en-us/typography/opentype/spec/languagetags
+- https://docs.microsoft.com/en-us/typography/opentype/spec/languagetags (the whole page as HTML)
 - https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
 """
 
@@ -23,7 +23,7 @@ import sys
 import unicodedata
 
 if len(sys.argv) != 3:
-    print('Usage: ./gen-tag-table.py languagetags language-subtag-registry', file=sys.stderr)
+    print('Usage: ./gen-tag-table.py languagetags.html language-subtag-registry.txt', file=sys.stderr)
     sys.exit(1)
 
 
@@ -823,6 +823,7 @@ disambiguation = {
     'QWH': 'qwh',
     'SIG': 'stv',
     'SRB': 'sr',
+    'SXT': 'xnj',
     'ZHH': 'zh-HK',
     'ZHS': 'zh-Hans',
     'ZHT': 'zh-Hant',
