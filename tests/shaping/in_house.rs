@@ -509,6 +509,25 @@ fn cluster_002() {
 }
 
 #[test]
+fn cluster_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/6f36d056bad6d478fc0bf7397bd52dc3bd197d5f.ttf",
+            "\u{099B}\u{09CB}\u{09C8}\u{09C2}\u{09CB}\u{098C}",
+            "--cluster-level=1",
+        ),
+        "evowelsigninibeng=0+346|\
+         aivowelsignbeng=0+346|\
+         evowelsignbeng=0+346|\
+         chabeng=0+687|\
+         uuvowelsignlongbeng=0@-96,0+0|\
+         aavowelsignbeng=0+266|\
+         aavowelsignbeng=4+266|\
+         lvocalicbeng=5+639"
+    );
+}
+
+#[test]
 fn collections_004() {
     assert_eq!(
         shape(
