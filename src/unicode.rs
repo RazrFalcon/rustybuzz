@@ -46,8 +46,8 @@ pub mod modified_combining_class {
     pub const CCC15: u8 = 18; // tsere
     pub const CCC16: u8 = 19; // segol
     pub const CCC17: u8 = 20; // patah
-    pub const CCC18: u8 = 21; // qamats
-    pub const CCC19: u8 = 14; // holam
+    pub const CCC18: u8 = 21; // qamats & qamats qatan
+    pub const CCC19: u8 = 14; // holam & holam haser for vav
     pub const CCC20: u8 = 24; // qubuts
     pub const CCC21: u8 = 12; // dagesh
     pub const CCC22: u8 = 25; // meteg
