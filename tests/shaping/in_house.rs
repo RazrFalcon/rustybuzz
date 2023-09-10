@@ -720,6 +720,45 @@ fn default_ignorables_002() {
 }
 
 #[test]
+fn default_ignorables_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/6677074106f94a2644da6aaaacd5bbd48cbdc7de.ttf",
+            "\u{0647}\u{200D}",
+            "",
+        ),
+        "terminal=0+0|\
+         uni0647.init=0+702"
+    );
+}
+
+#[test]
+fn default_ignorables_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/fcea341ba6489536390384d8403ce5287ba71a4a.ttf",
+            "\u{0647}\u{200D}",
+            "",
+        ),
+        "uni0647200D=0+702"
+    );
+}
+
+#[test]
+fn default_ignorables_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/08b4b136f418add748dc641eb4a83033476f1170.ttf",
+            "\u{0647}\u{200D}",
+            "",
+        ),
+        "terminal=0+0|\
+         terminal=0+0|\
+         uni0647.init=0+702"
+    );
+}
+
+#[test]
 fn emoji_001() {
     assert_eq!(
         shape(
@@ -6041,7 +6080,7 @@ fn mongolian_variation_selector_019() {
         "uni182A1820.E875_ba.init=0+1000|\
          uni1822.E836_i.medi2=2+1000|\
          uni182D.E8E8_g.fina1=3+1250|\
-         space=4+0|\
+         uni180E.E80E_mvs=4+0|\
          uni1820.E827_a.fina2=5+600|\
          uni202F.nobreak=6+500|\
          uni1836.E92B_y.init1=7+500|\

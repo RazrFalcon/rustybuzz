@@ -319,7 +319,7 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn is_default_ignorable(&self) -> bool {
         let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
-        n != 0 && !self.is_ligated()
+        n != 0 && !self.is_substituted()
     }
 
     // Var allocation: lig_props (aka lig_id / lig_comp)

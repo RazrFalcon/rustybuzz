@@ -189,9 +189,9 @@ for test_dir_name in test_dir_names:
     font_files += os.listdir(hb_dir /
                              f'test/shaping/data/{test_dir_name}/fonts')
 
-# Check for unused fonts.
-unused_fonts = sorted(list(set(font_files).difference(used_fonts)))
-if len(unused_fonts) != 0:
-    print('Unused fonts:')
-    for font in unused_fonts:
-        print(font)
+# Check for unused fonts. Just for debugging.
+# unused_fonts = sorted(list(set(font_files).difference(used_fonts)))
+# if len(unused_fonts) != 0:
+#     print('Unused fonts:')
+#     for font in unused_fonts:
+#         print(font)
