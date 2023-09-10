@@ -437,9 +437,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
         _ => {}
     }
     if processed {
-        if buffer.idx < buffer.len {
-            buffer.next_glyph();
-        }
         buffer.swap_buffers();
     }
 }

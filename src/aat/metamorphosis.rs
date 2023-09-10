@@ -232,10 +232,6 @@ fn drive<T: FromData>(
     }
 
     if !c.in_place() {
-        while buffer.idx < buffer.len {
-            buffer.next_glyph();
-        }
-
         buffer.swap_buffers();
     }
 }

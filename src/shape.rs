@@ -389,11 +389,6 @@ fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
         info.init_unicode_props(&mut buffer.scratch_flags);
         buffer.clear_output();
         buffer.output_info(info);
-
-        while buffer.idx < buffer.len && buffer.successful {
-            buffer.next_glyph();
-        }
-
         buffer.swap_buffers();
     }
 }

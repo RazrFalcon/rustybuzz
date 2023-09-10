@@ -770,6 +770,9 @@ impl Buffer {
             return;
         }
 
+        assert!(self.idx <= self.len);
+        self.next_glyphs(self.len - self.idx);
+
         assert!(self.have_output);
         self.have_output = false;
 
