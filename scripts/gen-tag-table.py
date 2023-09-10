@@ -15,7 +15,7 @@ Input files:
 
 import collections
 from html.parser import HTMLParser
-from html import unescape
+import html
 import io
 import itertools
 import re
@@ -371,10 +371,10 @@ class OpenTypeRegistryParser(HTMLParser):
             self._current_tr[-1] += data
 
     def handle_charref(self, name):
-        self.handle_data(html_unescape(self, '&#%s;' % name))
+        self.handle_data(html.unescape('&#%s;' % name))
 
     def handle_entityref(self, name):
-        self.handle_data(html_unescape(self, '&%s;' % name))
+        self.handle_data(html.unescape('&%s;' % name))
 
     def parse(self, filename):
         """Parse the OpenType language system tag registry.

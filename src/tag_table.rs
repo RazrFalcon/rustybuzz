@@ -377,7 +377,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "dik", 	tag: Tag::from_bytes(b"DNK ") }, // Southwestern Dinka -> Dinka
     LangTag { language: "din", 	tag: Tag::from_bytes(b"DNK ") }, // Dinka [macrolanguage]
     LangTag { language: "dip", 	tag: Tag::from_bytes(b"DNK ") }, // Northeastern Dinka -> Dinka
-    LangTag { language: "diq", 	tag: Tag::from_bytes(b"DIQ ") }, // Dimli
+    LangTag { language: "diq", 	tag: Tag::from_bytes(b"DIQ ") }, // Dimli 
     LangTag { language: "diq", 	tag: Tag::from_bytes(b"ZZA ") }, // Dimli  -> Zazaki
     LangTag { language: "diw", 	tag: Tag::from_bytes(b"DNK ") }, // Northwestern Dinka -> Dinka
     LangTag { language: "dje", 	tag: Tag::from_bytes(b"DJR ") }, // Zarma
@@ -700,7 +700,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
 //  LangTag { language: "khw", 	tag: Tag::from_bytes(b"KHW ") }, // Khowar
     LangTag { language: "ki", 	tag: Tag::from_bytes(b"KIK ") }, // Kikuyu (Gikuyu)
     LangTag { language: "kis", 	tag: Tag(0)	            }, // Kis != Kisii
-    LangTag { language: "kiu", 	tag: Tag::from_bytes(b"KIU ") }, // Kirmanjki
+    LangTag { language: "kiu", 	tag: Tag::from_bytes(b"KIU ") }, // Kirmanjki 
     LangTag { language: "kiu", 	tag: Tag::from_bytes(b"ZZA ") }, // Kirmanjki  -> Zazaki
     LangTag { language: "kj", 	tag: Tag::from_bytes(b"KUA ") }, // Kuanyama
     LangTag { language: "kjb", 	tag: Tag::from_bytes(b"MYN ") }, // Q'anjob'al -> Mayan
@@ -729,7 +729,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "knc", 	tag: Tag::from_bytes(b"KNR ") }, // Central Kanuri -> Kanuri
     LangTag { language: "kng", 	tag: Tag::from_bytes(b"KON0") }, // Koongo -> Kongo
     LangTag { language: "knj", 	tag: Tag::from_bytes(b"MYN ") }, // Western Kanjobal -> Mayan
-    LangTag { language: "knn", 	tag: Tag::from_bytes(b"KOK ") }, // Konkani
+    LangTag { language: "knn", 	tag: Tag::from_bytes(b"KOK ") }, // Konkani 
     LangTag { language: "knr", 	tag: Tag(0)	            }, // Kaningra != Kanuri
     LangTag { language: "ko", 	tag: Tag::from_bytes(b"KOR ") }, // Korean
     LangTag { language: "ko", 	tag: Tag::from_bytes(b"KOH ") }, // Korean -> Korean Old Hangul
@@ -1046,7 +1046,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
 //  LangTag { language: "noe", 	tag: Tag::from_bytes(b"NOE ") }, // Nimadi
 //  LangTag { language: "nog", 	tag: Tag::from_bytes(b"NOG ") }, // Nogai
 //  LangTag { language: "nov", 	tag: Tag::from_bytes(b"NOV ") }, // Novial
-    LangTag { language: "npi", 	tag: Tag::from_bytes(b"NEP ") }, // Nepali
+    LangTag { language: "npi", 	tag: Tag::from_bytes(b"NEP ") }, // Nepali 
     LangTag { language: "npl", 	tag: Tag::from_bytes(b"NAH ") }, // Southeastern Puebla Nahuatl -> Nahuatl
     LangTag { language: "nqo", 	tag: Tag::from_bytes(b"NKO ") }, // N’Ko
     LangTag { language: "nr", 	tag: Tag::from_bytes(b"NDB ") }, // South Ndebele -> Ndebele
@@ -1376,7 +1376,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "sw", 	tag: Tag::from_bytes(b"SWK ") }, // Swahili  [macrolanguage]
     LangTag { language: "swb", 	tag: Tag::from_bytes(b"CMR ") }, // Maore Comorian -> Comorian
     LangTag { language: "swc", 	tag: Tag::from_bytes(b"SWK ") }, // Congo Swahili -> Swahili
-    LangTag { language: "swh", 	tag: Tag::from_bytes(b"SWK ") }, // Swahili
+    LangTag { language: "swh", 	tag: Tag::from_bytes(b"SWK ") }, // Swahili 
     LangTag { language: "swk", 	tag: Tag(0)	            }, // Malawi Sena != Swahili
     LangTag { language: "swn", 	tag: Tag::from_bytes(b"BBR ") }, // Sawknah -> Berber
     LangTag { language: "swv", 	tag: Tag::from_bytes(b"MAW ") }, // Shekhawati -> Marwari
@@ -1592,13 +1592,13 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "zhn", 	tag: Tag::from_bytes(b"ZHA ") }, // Nong Zhuang -> Zhuang
     LangTag { language: "zkb", 	tag: Tag::from_bytes(b"KHA ") }, // Koibal(retired code) -> Khakass
     LangTag { language: "zlj", 	tag: Tag::from_bytes(b"ZHA ") }, // Liujiang Zhuang -> Zhuang
-    LangTag { language: "zlm", 	tag: Tag::from_bytes(b"MLY ") }, // Malay
+    LangTag { language: "zlm", 	tag: Tag::from_bytes(b"MLY ") }, // Malay 
     LangTag { language: "zln", 	tag: Tag::from_bytes(b"ZHA ") }, // Lianshan Zhuang -> Zhuang
     LangTag { language: "zlq", 	tag: Tag::from_bytes(b"ZHA ") }, // Liuqian Zhuang -> Zhuang
     LangTag { language: "zmi", 	tag: Tag::from_bytes(b"MLY ") }, // Negeri Sembilan Malay -> Malay
     LangTag { language: "zmz", 	tag: Tag::from_bytes(b"BAD0") }, // Mbandja -> Banda
     LangTag { language: "znd", 	tag: Tag(0)	            }, // Zande  [family] != Zande
-    LangTag { language: "zne", 	tag: Tag::from_bytes(b"ZND ") }, // Zande
+    LangTag { language: "zne", 	tag: Tag::from_bytes(b"ZND ") }, // Zande 
     LangTag { language: "zom", 	tag: Tag::from_bytes(b"QIN ") }, // Zou -> Chin
     LangTag { language: "zqe", 	tag: Tag::from_bytes(b"ZHA ") }, // Qiubei Zhuang -> Zhuang
     LangTag { language: "zsm", 	tag: Tag::from_bytes(b"MLY ") }, // Standard Malay -> Malay
