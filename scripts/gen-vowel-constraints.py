@@ -167,7 +167,6 @@ print('    // vowel-sequences that look like another vowel.  Data for each scrip
 print('    // collected from the USE script development spec.')
 print('    //')
 print('    // https://github.com/harfbuzz/harfbuzz/issues/1019')
-print('    let mut processed = false;')
 print('    buffer.clear_output();')
 print('    match buffer.script {')
 
@@ -181,14 +180,11 @@ for script, constraints in sorted(constraints.items(), key=lambda s_c: script_or
     print('                buffer.next_glyph();')
     print('                if matched { output_with_dotted_circle(buffer); }')
     print('      }')
-    print('      processed = true;')
     print('      }')
     print()
 
 print('        _ => {}')
 print('    }')
-print('    if processed {')
-print('        buffer.swap_buffers();')
-print('    }')
+print('    buffer.swap_buffers();')
 print('}')
 print()

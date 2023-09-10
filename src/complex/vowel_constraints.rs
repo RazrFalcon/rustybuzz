@@ -29,7 +29,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
     // collected from the USE script development spec.
     //
     // https://github.com/harfbuzz/harfbuzz/issues/1019
-    let mut processed = false;
     buffer.clear_output();
     match buffer.script {
         Some(script::DEVANAGARI) => {
@@ -77,7 +76,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::BENGALI) => {
@@ -102,7 +100,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::GURMUKHI) => {
@@ -136,7 +133,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::GUJARATI) => {
@@ -161,7 +157,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::ORIYA) => {
@@ -183,7 +178,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::TAMIL) => {
@@ -200,7 +194,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::TELUGU) => {
@@ -225,7 +218,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::KANNADA) => {
@@ -247,7 +239,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::MALAYALAM) => {
@@ -275,7 +266,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::SINHALA) => {
@@ -309,7 +299,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::BRAHMI) => {
@@ -334,7 +323,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::KHUDAWADI) => {
@@ -356,7 +344,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::TIRHUTA) => {
@@ -384,7 +371,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::MODI) => {
@@ -406,7 +392,6 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         Some(script::TAKRI) => {
@@ -431,12 +416,9 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
                     output_with_dotted_circle(buffer);
                 }
             }
-            processed = true;
         }
 
         _ => {}
     }
-    if processed {
-        buffer.swap_buffers();
-    }
+    buffer.swap_buffers();
 }
