@@ -265,13 +265,14 @@ fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut Buffer, face: &Face) {
             drive::<u16>(&table.state, &mut c, buffer);
         }
         morx::SubtableKind::NonContextual(ref lookup) => {
+            let face_if_has_glyph_classes =
+                matches!(face.tables().gdef, Some(gdef) if gdef.has_glyph_classes())
+                    .then_some(face);
             for info in &mut buffer.info {
                 if let Some(replacement) = lookup.value(info.as_glyph()) {
                     info.glyph_id = u32::from(replacement);
-                    if let Some(gdef) = face.tables().gdef {
-                        if gdef.has_glyph_classes() {
-                            info.set_glyph_props(face.glyph_props(GlyphId(replacement)));
-                        }
+                    if let Some(face) = face_if_has_glyph_classes {
+                        info.set_glyph_props(face.glyph_props(GlyphId(replacement)));
                     }
                 }
             }
