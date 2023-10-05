@@ -63,8 +63,6 @@ fn shape_internal(ctx: &mut ShapeContext) {
         }
     }
 
-    ctx.buffer.clear_output();
-
     initialize_masks(ctx);
     set_unicode_props(ctx.buffer);
     insert_dotted_circle(ctx.buffer, ctx.face);

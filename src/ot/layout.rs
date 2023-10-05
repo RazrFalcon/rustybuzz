@@ -209,7 +209,6 @@ pub fn apply_layout_table<T: LayoutTable>(
         }
 
         if let Some(func) = stage.pause_func {
-            ctx.buffer.clear_output();
             func(plan, face, ctx.buffer);
         }
     }
@@ -224,9 +223,10 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
 
     if !lookup.is_reverse() {
         // in/out forward substitution/positioning
-        if T::INDEX == TableIndex::GSUB {
+        if !T::IN_PLACE {
             ctx.buffer.clear_output();
         }
+
         ctx.buffer.idx = 0;
 
         if apply_forward(ctx, lookup) {
@@ -238,10 +238,6 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
         }
     } else {
         // in-place backward substitution/positioning
-        if T::INDEX == TableIndex::GSUB {
-            ctx.buffer.remove_output();
-        }
-
         ctx.buffer.idx = ctx.buffer.len - 1;
         apply_backward(ctx, lookup);
     }
