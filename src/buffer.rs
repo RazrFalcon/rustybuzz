@@ -789,6 +789,14 @@ impl Buffer {
         self.idx = 0;
     }
 
+    pub fn remove_output(&mut self) {
+        self.have_output = false;
+        self.have_positions = false;
+
+        self.out_len = 0;
+        self.have_separate_output = false;
+    }
+
     pub fn clear_output(&mut self) {
         self.have_output = true;
         self.have_positions = false;
