@@ -90,7 +90,7 @@ pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
                 buffer.reverse();
             }
 
-            apply_subtable(&subtable.kind, buffer);
+            apply_subtable(&subtable.kind, buffer, face);
 
             if reverse {
                 buffer.reverse();
@@ -236,7 +236,7 @@ fn drive<T: FromData>(
     }
 }
 
-fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut Buffer) {
+fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut Buffer, face: &Face) {
     match kind {
         morx::SubtableKind::Rearrangement(ref table) => {
             let mut c = RearrangementCtx { start: 0, end: 0 };
@@ -246,6 +246,9 @@ fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut Buffer) {
         morx::SubtableKind::Contextual(ref table) => {
             let mut c = ContextualCtx {
                 mark_set: false,
+                face_if_has_glyph_classes:
+                    matches!(face.tables().gdef, Some(gdef) if gdef.has_glyph_classes())
+                        .then_some(face),
                 mark: 0,
                 table,
             };
@@ -265,6 +268,11 @@ fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut Buffer) {
             for info in &mut buffer.info {
                 if let Some(replacement) = lookup.value(info.as_glyph()) {
                     info.glyph_id = u32::from(replacement);
+                    if let Some(gdef) = face.tables().gdef {
+                        if gdef.has_glyph_classes() {
+                            info.set_glyph_props(face.glyph_props(GlyphId(replacement)));
+                        }
+                    }
                 }
             }
         }
@@ -397,6 +405,7 @@ impl Driver<()> for RearrangementCtx {
 
 struct ContextualCtx<'a> {
     mark_set: bool,
+    face_if_has_glyph_classes: Option<&'a Face<'a>>,
     mark: usize,
     table: &'a morx::ContextualSubtable<'a>,
 }
@@ -451,6 +460,10 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
         if let Some(replacement) = replacement {
             buffer.unsafe_to_break(self.mark, (buffer.idx + 1).min(buffer.len));
             buffer.info[self.mark].glyph_id = u32::from(replacement);
+
+            if let Some(face) = self.face_if_has_glyph_classes {
+                buffer.info[self.mark].set_glyph_props(face.glyph_props(GlyphId(replacement)));
+            }
         }
 
         replacement = None;
@@ -462,6 +475,10 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
 
         if let Some(replacement) = replacement {
             buffer.info[idx].glyph_id = u32::from(replacement);
+
+            if let Some(face) = self.face_if_has_glyph_classes {
+                buffer.info[self.mark].set_glyph_props(face.glyph_props(GlyphId(replacement)));
+            }
         }
 
         if entry.flags & Self::SET_MARK != 0 {
