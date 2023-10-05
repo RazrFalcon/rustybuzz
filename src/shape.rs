@@ -333,7 +333,11 @@ fn set_unicode_props(buffer: &mut Buffer) {
 
     let mut i = 0;
     while i < len {
-        let info = &mut buffer.info[i];
+        // Mutably borrow buffer.info[i] and immutably borrow
+        // buffer.info[i - 1] (if present) in a way that the borrow
+        // checker can understand.
+        let (prior, later) = buffer.info.split_at_mut(i);
+        let info = &mut later[0];
         info.init_unicode_props(&mut buffer.scratch_flags);
 
         // Marks are already set as continuation by the above line.
@@ -342,6 +346,13 @@ fn set_unicode_props(buffer: &mut Buffer) {
             && matches!(info.glyph_id, 0x1F3FB..=0x1F3FF)
         {
             info.set_continuation();
+        } else if i != 0 && matches!(info.glyph_id, 0x1F1E6..=0x1F1FF) {
+            // Should never fail because we checked for i > 0.
+            // TODO: use let chains when they become stable
+            let prev = prior.last().unwrap();
+            if matches!(prev.glyph_id, 0x1F1E6..=0x1F1FF) && !prev.is_continuation() {
+                info.set_continuation();
+            }
         } else if info.is_zwj() {
             info.set_continuation();
             if let Some(next) = buffer.info[..len].get_mut(i + 1) {
