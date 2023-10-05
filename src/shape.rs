@@ -6,7 +6,7 @@ use crate::buffer::{
 };
 use crate::complex::ZeroWidthMarksMode;
 use crate::plan::ShapePlan;
-use crate::unicode::{CharExt, GeneralCategory};
+use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt};
 use crate::{aat, fallback, normalize, ot, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
 
 /// Shapes the buffer content using provided font and features.
@@ -333,7 +333,11 @@ fn set_unicode_props(buffer: &mut Buffer) {
 
     let mut i = 0;
     while i < len {
-        let info = &mut buffer.info[i];
+        // Mutably borrow buffer.info[i] and immutably borrow
+        // buffer.info[i - 1] (if present) in a way that the borrow
+        // checker can understand.
+        let (prior, later) = buffer.info.split_at_mut(i);
+        let info = &mut later[0];
         info.init_unicode_props(&mut buffer.scratch_flags);
 
         // Marks are already set as continuation by the above line.
@@ -342,6 +346,13 @@ fn set_unicode_props(buffer: &mut Buffer) {
             && matches!(info.glyph_id, 0x1F3FB..=0x1F3FF)
         {
             info.set_continuation();
+        } else if i != 0 && matches!(info.glyph_id, 0x1F1E6..=0x1F1FF) {
+            // Should never fail because we checked for i > 0.
+            // TODO: use let chains when they become stable
+            let prev = prior.last().unwrap();
+            if matches!(prev.glyph_id, 0x1F1E6..=0x1F1FF) && !prev.is_continuation() {
+                info.set_continuation();
+            }
         } else if info.is_zwj() {
             info.set_continuation();
             if let Some(next) = buffer.info[..len].get_mut(i + 1) {
@@ -410,10 +421,37 @@ fn form_clusters(buffer: &mut Buffer) {
 
 fn ensure_native_direction(buffer: &mut Buffer) {
     let dir = buffer.direction;
-    let hor = buffer
+    let mut hor = buffer
         .script
         .and_then(Direction::from_script)
         .unwrap_or_default();
+
+    // Numeric runs in natively-RTL scripts are actually native-LTR, so we reset
+    // the horiz_dir if the run contains at least one decimal-number char, and no
+    // letter chars (ideally we should be checking for chars with strong
+    // directionality but hb-unicode currently lacks bidi categories).
+    //
+    // This allows digit sequences in Arabic etc to be shaped in "native"
+    // direction, so that features like ligatures will work as intended.
+    //
+    // https://github.com/harfbuzz/harfbuzz/issues/501
+
+    if hor == Direction::RightToLeft && dir == Direction::LeftToRight {
+        let mut found_number = false;
+        let mut found_letter = false;
+        for info in &buffer.info {
+            let gc = info.general_category();
+            if gc == GeneralCategory::DecimalNumber {
+                found_number = true;
+            } else if gc.is_letter() {
+                found_letter = true;
+                break;
+            }
+        }
+        if found_number && !found_letter {
+            hor = Direction::LeftToRight;
+        }
+    }
 
     if (dir.is_horizontal() && dir != hor && hor != Direction::Invalid)
         || (dir.is_vertical() && dir != Direction::TopToBottom)

@@ -6,7 +6,7 @@ import io
 import os
 import urllib.request
 
-BLACKLISTED_BLOCKS = ['Samaritan', 'Thai', 'Lao']
+DISABLED_BLOCKS = ['Samaritan', 'Thai', 'Lao']
 
 files = ['IndicSyllabicCategory.txt', 'IndicPositionalCategory.txt',
          'UnicodeData.txt', 'ArabicShaping.txt', 'Blocks.txt',
@@ -129,7 +129,7 @@ for i, d in enumerate(data):
             combined[u] = list(defaults)
         combined[u][i] = v
 combined = {k: v for k, v in combined.items(
-) if v[4] not in BLACKLISTED_BLOCKS}
+) if v[4] not in DISABLED_BLOCKS}
 data = combined
 del combined
 num = len(data)

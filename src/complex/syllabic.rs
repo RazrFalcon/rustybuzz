@@ -7,6 +7,7 @@ pub fn insert_dotted_circles(
     broken_syllable_type: u8,
     dottedcircle_category: u8,
     repha_category: Option<u8>,
+    dottedcircle_position: Option<u8>,
 ) {
     if buffer
         .flags
@@ -36,6 +37,9 @@ pub fn insert_dotted_circles(
         ..GlyphInfo::default()
     };
     dottedcircle.set_complex_var_u8_category(dottedcircle_category);
+    if let Some(dottedcircle_position) = dottedcircle_position {
+        dottedcircle.set_complex_var_u8_auxiliary(dottedcircle_position);
+    }
     dottedcircle.glyph_id = dottedcircle_glyph;
 
     buffer.clear_output();

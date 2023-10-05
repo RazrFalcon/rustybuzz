@@ -219,6 +219,7 @@ pub trait GeneralCategoryExt {
     fn to_rb(&self) -> u32;
     fn from_rb(gc: u32) -> Self;
     fn is_mark(&self) -> bool;
+    fn is_letter(&self) -> bool;
 }
 
 #[rustfmt::skip]
@@ -299,6 +300,17 @@ impl GeneralCategoryExt for GeneralCategory {
             GeneralCategory::SpacingMark |
             GeneralCategory::EnclosingMark |
             GeneralCategory::NonspacingMark => true,
+            _ => false,
+        }
+    }
+
+    fn is_letter(&self) -> bool {
+        match *self {
+            GeneralCategory::LowercaseLetter |
+            GeneralCategory::ModifierLetter |
+            GeneralCategory::OtherLetter |
+            GeneralCategory::TitlecaseLetter |
+            GeneralCategory::UppercaseLetter => true,
             _ => false,
         }
     }

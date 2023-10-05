@@ -276,9 +276,12 @@ impl<'a> ShapePlanner<'a> {
         let mut apply_kern = false;
 
         // Decide who does positioning. GPOS, kerx, kern, or fallback.
-        if self.face.tables().kerx.is_some() {
+        let has_gsub = self.face.tables().gsub.is_some();
+        let has_gpos = !disable_gpos && self.face.tables().gpos.is_some();
+
+        if self.face.tables().kerx.is_some() && !(has_gsub && has_gpos) {
             apply_kerx = true;
-        } else if !apply_morx && !disable_gpos && self.face.gpos.is_some() {
+        } else if !apply_morx && has_gpos {
             apply_gpos = true;
         }
 
@@ -297,11 +300,18 @@ impl<'a> ShapePlanner<'a> {
 
         let has_gpos_mark = ot_map.one_mask(feature::MARK_POSITIONING) != 0;
 
-        let adjust_mark_positioning_when_zeroing =
+        let mut adjust_mark_positioning_when_zeroing =
             !apply_gpos && !apply_kerx && (!apply_kern || !ot::has_cross_kerning(self.face));
 
         let fallback_mark_positioning =
             adjust_mark_positioning_when_zeroing && self.script_fallback_mark_positioning;
+
+        // If we're using morx shaping, we cancel mark position adjustment because
+        // Apple Color Emoji assumes this will NOT be done when forming emoji sequences;
+        // https://github.com/harfbuzz/harfbuzz/issues/2967.
+        if apply_morx {
+            adjust_mark_positioning_when_zeroing = false;
+        }
 
         // Currently we always apply trak.
         let apply_trak = requested_tracking && self.face.tables().trak.is_some();

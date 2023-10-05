@@ -476,7 +476,7 @@ impl IndicShapePlan {
             && plan
                 .ot_map
                 .chosen_script(TableIndex::GSUB)
-                .map_or(false, |tag| tag.to_bytes()[3] != b'2');
+                .map_or(true, |tag| tag.to_bytes()[3] != b'2');
 
         // Use zero-context would_substitute() matching for new-spec of the main
         // Indic scripts, and scripts with one spec only, but not for old-specs.
@@ -792,6 +792,7 @@ fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         SyllableType::BrokenCluster as u8,
         category::DOTTED_CIRCLE,
         Some(category::REPHA),
+        Some(position::END),
     );
 
     let mut start = 0;

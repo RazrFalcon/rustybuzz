@@ -188,6 +188,7 @@ fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         SyllableType::BrokenCluster as u8,
         category::PLACEHOLDER,
         None,
+        None,
     );
 
     let mut start = 0;
