@@ -476,7 +476,7 @@ impl IndicShapePlan {
             && plan
                 .ot_map
                 .chosen_script(TableIndex::GSUB)
-                .map_or(false, |tag| tag.to_bytes()[3] != b'2');
+                .map_or(true, |tag| tag.to_bytes()[3] != b'2');
 
         // Use zero-context would_substitute() matching for new-spec of the main
         // Indic scripts, and scripts with one spec only, but not for old-specs.
@@ -1323,8 +1323,10 @@ fn initial_reordering_consonant_syllable(
         // to merge things correctly.  See:
         // https://github.com/harfbuzz/harfbuzz/issues/2272
         if indic_plan.is_old_spec || end - start > 127 {
+            std::eprintln!("is old spec");
             buffer.merge_clusters(base, end);
         } else {
+            std::eprintln!("not old spec");
             // Note! syllable() is a one-byte field.
             for i in base..end {
                 if buffer.info[i].syllable() != 255 {
