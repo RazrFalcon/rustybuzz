@@ -297,11 +297,18 @@ impl<'a> ShapePlanner<'a> {
 
         let has_gpos_mark = ot_map.one_mask(feature::MARK_POSITIONING) != 0;
 
-        let adjust_mark_positioning_when_zeroing =
+        let mut adjust_mark_positioning_when_zeroing =
             !apply_gpos && !apply_kerx && (!apply_kern || !ot::has_cross_kerning(self.face));
 
         let fallback_mark_positioning =
             adjust_mark_positioning_when_zeroing && self.script_fallback_mark_positioning;
+
+        // If we're using morx shaping, we cancel mark position adjustment because
+        // Apple Color Emoji assumes this will NOT be done when forming emoji sequences;
+        // https://github.com/harfbuzz/harfbuzz/issues/2967.
+        if apply_morx {
+            adjust_mark_positioning_when_zeroing = false;
+        }
 
         // Currently we always apply trak.
         let apply_trak = requested_tracking && self.face.tables().trak.is_some();
