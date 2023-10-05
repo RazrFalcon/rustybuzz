@@ -774,6 +774,82 @@ fn default_ignorables_005() {
 }
 
 #[test]
+fn digits_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/a6b17da98b9f1565ba428719777bbf94a66403c1.ttf",
+            "\u{06DD}\u{0661}\u{0662}\u{0663}",
+            "--direction=ltr --script=arab",
+        ),
+        "uni06DD=0+1279|\
+         uni0661.small=1@-1079,0+0|\
+         uni0662.small=2@-786,0+0|\
+         uni0663.small=3@-493,0+0"
+    );
+}
+
+#[test]
+fn digits_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/e5ff44940364c2247abed50bdda30d2ef5aedfe4.ttf",
+            "\u{0661}\u{0662}\u{0668}\u{0663}\u{0667}",
+            "--direction=ltr --script=arab --features=pnum",
+        ),
+        "uni0661.prop=0+361|\
+         uni0662.prop=1+436|\
+         uni0668.prop=2+478|\
+         uni0663.prop=3+597|\
+         uni0667.prop=4+527"
+    );
+}
+
+#[test]
+fn digits_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b082211be29a3e2cf91f0fd43497e40b2a27b344.ttf",
+            "\u{06DD}\u{0661}\u{0662}\u{0628}",
+            "--direction=ltr --script=arab",
+        ),
+        "uni06DD=0+1279|\
+         uni0661=1+585|\
+         uni0662=2+585|\
+         uni0628=3+926"
+    );
+}
+
+#[test]
+fn digits_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3b791518a9ba89675df02f1eefbc9026a50648a6.ttf",
+            "\u{06DD}\u{0661}\u{0662}\u{0663}",
+            "--direction=ltr --script=arab",
+        ),
+        "AyahEnd.alt3=0+1724|\
+         OneArabic.encl=0@-1143,444+0|\
+         TwoArabic.encl=0@-864,444+0|\
+         ThreeArabic.encl=0@-584,444+0"
+    );
+}
+
+#[test]
+fn digits_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3b791518a9ba89675df02f1eefbc9026a50648a6.ttf",
+            "\u{06DD}\u{0661}\u{0662}\u{0663}",
+            "--direction=rtl --script=arab",
+        ),
+        "ThreeArabic.encl=0@1140,444+0|\
+         TwoArabic.encl=0@860,444+0|\
+         OneArabic.encl=0@581,444+0|\
+         AyahEnd.alt3=0+1724"
+    );
+}
+
+#[test]
 fn emoji_001() {
     assert_eq!(
         shape(
@@ -12458,3 +12534,4 @@ fn zero_width_marks_011() {
          A=2+1368"
     );
 }
+

@@ -6,7 +6,7 @@ use crate::buffer::{
 };
 use crate::complex::ZeroWidthMarksMode;
 use crate::plan::ShapePlan;
-use crate::unicode::{CharExt, GeneralCategory};
+use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt};
 use crate::{aat, fallback, normalize, ot, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
 
 /// Shapes the buffer content using provided font and features.
@@ -421,10 +421,37 @@ fn form_clusters(buffer: &mut Buffer) {
 
 fn ensure_native_direction(buffer: &mut Buffer) {
     let dir = buffer.direction;
-    let hor = buffer
+    let mut hor = buffer
         .script
         .and_then(Direction::from_script)
         .unwrap_or_default();
+
+    // Numeric runs in natively-RTL scripts are actually native-LTR, so we reset
+    // the horiz_dir if the run contains at least one decimal-number char, and no
+    // letter chars (ideally we should be checking for chars with strong
+    // directionality but hb-unicode currently lacks bidi categories).
+    //
+    // This allows digit sequences in Arabic etc to be shaped in "native"
+    // direction, so that features like ligatures will work as intended.
+    //
+    // https://github.com/harfbuzz/harfbuzz/issues/501
+
+    if hor == Direction::RightToLeft && dir == Direction::LeftToRight {
+        let mut found_number = false;
+        let mut found_letter = false;
+        foreach_grapheme!(buffer, start, end, {
+            let gc = buffer.info[start].general_category();
+            if gc == GeneralCategory::DecimalNumber {
+                found_number = true;
+            } else if gc.is_letter() {
+                found_letter = true;
+                break;
+            }
+        });
+        if found_number && !found_letter {
+            hor = Direction::LeftToRight;
+        }
+    }
 
     if (dir.is_horizontal() && dir != hor && hor != Direction::Invalid)
         || (dir.is_vertical() && dir != Direction::TopToBottom)
