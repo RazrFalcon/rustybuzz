@@ -792,6 +792,7 @@ fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         SyllableType::BrokenCluster as u8,
         category::DOTTED_CIRCLE,
         Some(category::REPHA),
+        Some(position::END),
     );
 
     let mut start = 0;

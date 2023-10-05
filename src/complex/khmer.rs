@@ -174,6 +174,7 @@ fn reorder(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         SyllableType::BrokenCluster as u8,
         category::DOTTED_CIRCLE,
         Some(category::REPHA),
+        None,
     );
 
     let khmer_plan = plan.data::<KhmerShapePlan>();

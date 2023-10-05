@@ -528,6 +528,21 @@ fn cluster_003() {
 }
 
 #[test]
+fn cluster_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/fd07ea46e4d8368ada1776208c07fd596f727852.ttf",
+            "\u{0D4E}\u{0D4D}\u{200D}",
+            "--cluster-level=1",
+        ),
+        "uni0D4E=0+0|\
+         uni25CC=0+418|\
+         uni0D4D=0+0|\
+         space=0+0"
+    );
+}
+
+#[test]
 fn collections_004() {
     assert_eq!(
         shape(
