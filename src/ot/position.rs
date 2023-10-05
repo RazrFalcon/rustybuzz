@@ -290,7 +290,7 @@ impl Apply for CursiveAdjustment<'_> {
             pos[child].x_offset = x_offset;
         }
 
-        // If parent was attached to child, break them free.
+        // If parent was attached to child, separate them.
         // https://github.com/harfbuzz/harfbuzz/issues/2469
         if pos[parent].attach_chain() == -pos[child].attach_chain() {
             pos[parent].set_attach_chain(0);
