@@ -439,15 +439,15 @@ fn ensure_native_direction(buffer: &mut Buffer) {
     if hor == Direction::RightToLeft && dir == Direction::LeftToRight {
         let mut found_number = false;
         let mut found_letter = false;
-        foreach_grapheme!(buffer, start, end, {
-            let gc = buffer.info[start].general_category();
+        for info in &buffer.info {
+            let gc = info.general_category();
             if gc == GeneralCategory::DecimalNumber {
                 found_number = true;
             } else if gc.is_letter() {
                 found_letter = true;
                 break;
             }
-        });
+        }
         if found_number && !found_letter {
             hor = Direction::LeftToRight;
         }
