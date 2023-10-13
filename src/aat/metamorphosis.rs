@@ -546,7 +546,7 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
             let before = flags & Self::MARKED_INSERT_BEFORE != 0;
 
             let end = buffer.out_len;
-            buffer.move_to(std::dbg!(self.mark) as usize);
+            buffer.move_to(self.mark as usize);
 
             if buffer.idx < buffer.len && !before {
                 buffer.copy_glyph();
