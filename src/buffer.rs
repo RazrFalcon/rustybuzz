@@ -1221,13 +1221,12 @@ impl Buffer {
             // This will blow in our face if memory allocation fails later
             // in this same lookup...
             //
-            // We used to shift with extra 32 items, instead of the 0 below.
+            // We used to shift with extra 32 items.
             // But that would leave empty slots in the buffer in case of allocation
-            // failures.  Setting to zero for now to avoid other problems (see
-            // comments in shift_forward().  This can cause O(N^2) behavior more
-            // severely than adding 32 empty slots can...
+            // failures.  See comments in shift_forward().  This can cause O(N^2)
+            // behavior more severely than adding 32 empty slots can...
             if self.idx < count {
-                self.shift_forward(count);
+                self.shift_forward(count - self.idx);
             }
 
             assert!(self.idx >= count);
@@ -1284,7 +1283,7 @@ impl Buffer {
         assert!(self.have_output);
         self.ensure(self.len + count);
 
-        for i in 0..(self.len - self.idx) {
+        for i in (0..(self.len - self.idx)).rev() {
             self.info[self.idx + count + i] = self.info[self.idx + i];
         }
 
