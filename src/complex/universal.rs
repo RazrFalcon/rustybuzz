@@ -92,7 +92,8 @@ pub mod category {
     pub const SE: u8 = 52; // HIEROGLYPH_SEGMENT_END
 }
 
-// These features are applied all at once, before reordering.
+// These features are applied all at once, before reordering,
+// constrained to the syllable.
 const BASIC_FEATURES: &[Tag] = &[
     feature::RAKAR_FORMS,
     feature::ABOVE_BASE_FORMS,
