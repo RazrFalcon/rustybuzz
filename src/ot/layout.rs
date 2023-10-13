@@ -220,7 +220,7 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
 
     if !lookup.is_reverse() {
         // in/out forward substitution/positioning
-        if T::INDEX == TableIndex::GSUB {
+        if !T::IN_PLACE {
             ctx.buffer.clear_output();
         }
         ctx.buffer.idx = 0;
