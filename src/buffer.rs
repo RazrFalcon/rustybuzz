@@ -527,7 +527,7 @@ pub struct Buffer {
     /// Allocations successful.
     pub successful: bool,
     /// Whether we have an output buffer going on.
-    have_output: bool,
+    pub(crate) have_output: bool,
     pub have_separate_output: bool,
     /// Whether we have positions
     pub have_positions: bool,
@@ -791,14 +791,6 @@ impl Buffer {
         self.have_output = false;
         self.out_len = 0;
         self.idx = 0;
-    }
-
-    pub fn remove_output(&mut self) {
-        self.have_output = false;
-        self.have_positions = false;
-
-        self.out_len = 0;
-        self.have_separate_output = false;
     }
 
     pub fn clear_output(&mut self) {

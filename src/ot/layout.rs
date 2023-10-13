@@ -233,9 +233,7 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
         }
     } else {
         // in-place backward substitution/positioning
-        if T::INDEX == TableIndex::GSUB {
-            ctx.buffer.remove_output();
-        }
+        assert!(!ctx.buffer.have_output);
 
         ctx.buffer.idx = ctx.buffer.len - 1;
         apply_backward(ctx, lookup);
