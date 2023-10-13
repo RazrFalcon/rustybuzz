@@ -766,15 +766,17 @@ impl Buffer {
     }
 
     pub fn swap_buffers(&mut self) {
+        assert!(self.have_output);
+
+        assert!(self.idx <= self.len);
         if !self.successful {
+            self.have_output = false;
+            self.out_len = 0;
+            self.idx = 0;
             return;
         }
 
-        assert!(self.idx <= self.len);
         self.next_glyphs(self.len - self.idx);
-
-        assert!(self.have_output);
-        self.have_output = false;
 
         if self.have_separate_output {
             // Swap info and pos buffers.
@@ -784,8 +786,10 @@ impl Buffer {
             self.info = pos;
         }
 
-        core::mem::swap(&mut self.len, &mut self.out_len);
+        self.len = self.out_len;
 
+        self.have_output = false;
+        self.out_len = 0;
         self.idx = 0;
     }
 
