@@ -402,6 +402,10 @@ fn position_mark(
     }
 }
 
+pub fn kern(_: &ShapePlan, _: &Face, _: &mut Buffer) {
+    // STUB: this is deprecated in HarfBuzz
+}
+
 pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     let len = buffer.len;
     let horizontal = buffer.direction.is_horizontal();

@@ -8713,6 +8713,21 @@ fn tibetan_vowels_011() {
 }
 
 #[test]
+fn tt_kern_gpos_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b121d4306b2e3add5abbaad21d95fcf04aacbd64.ttf",
+            "\u{0041}\u{0043}\u{0041}\u{0042}",
+            "",
+        ),
+        "A=0+1275|\
+         C=1@-20,0+1272|\
+         A=2+1296|\
+         B=3+1327"
+    );
+}
+
+#[test]
 fn use_indic3_001() {
     assert_eq!(
         shape(

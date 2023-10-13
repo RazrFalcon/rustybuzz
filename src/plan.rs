@@ -31,6 +31,7 @@ pub struct ShapePlan {
     pub adjust_mark_positioning_when_zeroing: bool,
 
     pub apply_gpos: bool,
+    pub apply_fallback_kern: bool,
     pub apply_kern: bool,
     pub apply_kerx: bool,
     pub apply_morx: bool,
@@ -294,6 +295,7 @@ impl<'a> ShapePlanner<'a> {
             }
         }
 
+        let apply_fallback_kern = !(apply_gpos || apply_kerx || apply_kern);
         let zero_marks = self.script_zero_marks
             && !apply_kerx
             && (!apply_kern || !ot::has_machine_kerning(self.face));
@@ -340,6 +342,7 @@ impl<'a> ShapePlanner<'a> {
             adjust_mark_positioning_when_zeroing,
             apply_gpos,
             apply_kern,
+            apply_fallback_kern,
             apply_kerx,
             apply_morx,
             apply_trak,
