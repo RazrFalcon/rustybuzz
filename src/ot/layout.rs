@@ -196,8 +196,8 @@ pub fn apply_layout_table<T: LayoutTable>(
             ctx.auto_zwj = lookup.auto_zwj;
             ctx.auto_zwnj = lookup.auto_zwnj;
 
-            if lookup.random {
-                ctx.random = true;
+            ctx.random = lookup.random;
+            if ctx.random {
                 ctx.buffer.unsafe_to_break(0, ctx.buffer.len);
             }
 
