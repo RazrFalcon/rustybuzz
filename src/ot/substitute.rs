@@ -173,10 +173,15 @@ impl Apply for Sequence<'_> {
                 } else {
                     GlyphPropsFlags::empty()
                 };
+                let lig_id = ctx.buffer.cur(0).lig_id();
 
                 for (i, subst) in self.substitutes.into_iter().enumerate() {
-                    // Index is truncated to 4 bits anway, so we can safely cast to u8.
-                    ctx.buffer.cur_mut(0).set_lig_props_for_component(i as u8);
+                    // If is attached to a ligature, don't disturb that.
+                    // https://github.com/harfbuzz/harfbuzz/issues/3069
+                    if lig_id == 0 {
+                        // Index is truncated to 4 bits anway, so we can safely cast to u8.
+                        ctx.buffer.cur_mut(0).set_lig_props_for_component(i as u8);
+                    }
                     ctx.output_glyph_for_component(subst, class);
                 }
 
