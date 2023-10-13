@@ -76,7 +76,8 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
         .collect();
     let args = parse_args(args).unwrap();
 
-    let font_data = std::fs::read(font_path).unwrap();
+    let font_data =
+        std::fs::read(font_path).unwrap_or_else(|e| panic!("Could not read {}: {}", font_path, e));
     let mut face = rustybuzz::Face::from_slice(&font_data, args.face_index).unwrap();
 
     face.set_points_per_em(args.font_ptem);

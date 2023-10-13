@@ -164,7 +164,7 @@ fn aat_trak_011() {
         shape(
             "tests/fonts/in-house/TRAK.ttf",
             "\u{0041}\u{0042}\u{0043}\u{0041}\u{0042}\u{0043}",
-            "--font-ptem=144 --features=-trak[1;3]",
+            "--font-ptem=144 --features=-trak[1:3]",
         ),
         "A.alt=0@-78,0+843|\
          B=1+1000|\
@@ -5784,6 +5784,21 @@ fn ligature_id_036() {
 }
 
 #[test]
+fn ligature_id_037() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b31e6c52a31edadc16f1bec9efe6019e2d59824a.ttf",
+            "\u{0644}\u{064E}\u{0644}\u{064F}\u{0647}",
+            "",
+        ),
+        "LIG=0+1200|\
+         uni064F=0@-216,196+0|\
+         uni064E=0@233,46+0|\
+         lam_lam_hehar=0+1200"
+    );
+}
+
+#[test]
 fn mark_attachment_001() {
     assert_eq!(
         shape(
@@ -6365,6 +6380,60 @@ fn reverse_sub_001() {
          space=1+1000|\
          A.alt1=2+1000|\
          B=3+1000"
+    );
+}
+
+#[test]
+fn reverse_sub_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3f24aff8b768e586162e9b9d03b15c36508dd2ae.ttf",
+            "\u{0635}\u{0644}\u{0637}\u{062E}\u{0644}\u{0637}\u{062C}",
+            "--features=salt=2",
+        ),
+        "gid43=6@143,-124+0|\
+         gid8=6+178|\
+         gid25=5@0,110+670|\
+         gid33=4@0,110+120|\
+         gid41=3@-8,343+0|\
+         gid10=3@0,110+88|\
+         gid26=2@0,220+670|\
+         gid34=1@0,220+120|\
+         gid21=0@0,220+670"
+    );
+}
+
+#[test]
+fn reverse_sub_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/1b66a1f4b076b734caa6397b3e57231af1feaafb.ttf",
+            "\u{0031}\u{0032}\u{0033}\u{0034}\u{0035}\u{0036}\u{0037}\u{0038}\u{0039}\u{0030}\
+             \u{2044}\u{0031}\u{0032}\u{0033}\u{0034}\u{0035}\u{0036}\u{0037}\u{0038}\u{0039}\
+             \u{0030}",
+            "",
+        ),
+        "one.numr=0+350|\
+         two.numr=1+350|\
+         three.numr=2+350|\
+         four.numr=3+350|\
+         five.numr=4+350|\
+         six.numr=5+350|\
+         seven.numr=6+350|\
+         eight.numr=7+350|\
+         nine.numr=8+350|\
+         zero.numr=9+350|\
+         fraction=10+130|\
+         one.dnom=11+350|\
+         two.dnom=12+350|\
+         three.dnom=13+350|\
+         four.dnom=14+350|\
+         five.dnom=15+350|\
+         six.dnom=16+350|\
+         seven.dnom=17+350|\
+         eight.dnom=18+350|\
+         nine.dnom=19+350|\
+         zero.dnom=20+350"
     );
 }
 
