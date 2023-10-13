@@ -197,9 +197,6 @@ pub fn apply_layout_table<T: LayoutTable>(
             ctx.auto_zwnj = lookup.auto_zwnj;
 
             ctx.random = lookup.random;
-            if ctx.random {
-                ctx.buffer.unsafe_to_break(0, ctx.buffer.len);
-            }
 
             if let Some(table) = &table {
                 if let Some(lookup) = table.get_lookup(lookup.index) {

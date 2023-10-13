@@ -217,6 +217,9 @@ impl Apply for AlternateSet<'_> {
 
         // If alt_index is MAX_VALUE, randomize feature if it is the rand feature.
         if alt_index == Map::MAX_VALUE && ctx.random {
+            // Maybe we can do better than unsafe-to-break all; but since we are
+            // changing random state, it would be hard to track that.  Good 'nough.
+            ctx.buffer.unsafe_to_break(0, ctx.buffer.len);
             alt_index = ctx.random_number() % u32::from(len) + 1;
         }
 
