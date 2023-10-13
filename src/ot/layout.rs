@@ -206,7 +206,6 @@ pub fn apply_layout_table<T: LayoutTable>(
         }
 
         if let Some(func) = stage.pause_func {
-            ctx.buffer.clear_output();
             func(plan, face, ctx.buffer);
         }
     }
