@@ -228,8 +228,6 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
 
         if !T::IN_PLACE {
             ctx.buffer.swap_buffers();
-        } else {
-            assert!(!ctx.buffer.have_separate_output);
         }
     } else {
         // in-place backward substitution/positioning
