@@ -801,6 +801,7 @@ impl Buffer {
         self.have_output = true;
         self.have_positions = false;
 
+        self.idx = 0;
         self.out_len = 0;
         self.have_separate_output = false;
     }
