@@ -28,7 +28,7 @@ IGNORE_TEST_CASES = [
     # no `hhea` table.
     'indic_decompose_001',
     # ttf-parser doesn't support phantom points
-    'variations_space_001',
+    'variations_003',
     # Resource exhaustion tests with large outputs
     'morx_34_001',
     'morx_36_001',

@@ -11070,30 +11070,6 @@ fn use_015() {
 }
 
 #[test]
-fn variations_rounding_001() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/HBTest-VF.ttf",
-            "\u{0041}",
-            "--variations=TEST=491",
-        ),
-        "A=0+496"
-    );
-}
-
-#[test]
-fn variations_rounding_002() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/HBTest-VF.ttf",
-            "\u{0041}",
-            "--variations=TEST=509",
-        ),
-        "A=0+505"
-    );
-}
-
-#[test]
 fn variations_rvrn_001() {
     assert_eq!(
         shape(
@@ -12294,7 +12270,31 @@ fn variations_rvrn_100() {
 }
 
 #[test]
-fn variations_space_002() {
+fn variations_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/HBTest-VF.ttf",
+            "\u{0041}",
+            "--variations=TEST=491",
+        ),
+        "A=0+496"
+    );
+}
+
+#[test]
+fn variations_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/HBTest-VF.ttf",
+            "\u{0041}",
+            "--variations=TEST=509",
+        ),
+        "A=0+505"
+    );
+}
+
+#[test]
+fn variations_004() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/ab40c89624a6104e5d0a2308e448a989302f515b.ttf",
@@ -12302,6 +12302,19 @@ fn variations_space_002() {
             "--variations=wdth=402",
         ),
         "space=0+639"
+    );
+}
+
+#[test]
+fn variations_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/e8691822f6a705e3e9fb48a0405c645b1a036590.ttf",
+            "\u{002E}\u{0065}",
+            "--variations=0001=500",
+        ),
+        "period=0+681|\
+         e=1+650"
     );
 }
 
