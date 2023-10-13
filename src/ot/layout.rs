@@ -224,13 +224,12 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
             ctx.buffer.clear_output();
         }
         ctx.buffer.idx = 0;
+        apply_forward(ctx, lookup);
 
-        if apply_forward(ctx, lookup) {
-            if !T::IN_PLACE {
-                ctx.buffer.swap_buffers();
-            } else {
-                assert!(!ctx.buffer.have_separate_output);
-            }
+        if !T::IN_PLACE {
+            ctx.buffer.swap_buffers();
+        } else {
+            assert!(!ctx.buffer.have_separate_output);
         }
     } else {
         // in-place backward substitution/positioning
