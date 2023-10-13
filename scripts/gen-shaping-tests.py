@@ -51,14 +51,17 @@ def update_relative_path(tests_name, fontfile):
     return f'tests/fonts/{tests_name}/{fontfile}'  # relative to the root dir
 
 
-# Converts `U+0041,U+0078` into `\u{0041}\u{0078}`
+# Converts `U+0041,U+0078` or `0041,0078` into `\u{0041}\u{0078}`
 def convert_unicodes(unicodes):
     text = ''
     for (i, u) in enumerate(unicodes.split(',')):
         if i > 0 and i % 10 == 0:
             text += '\\\n             '
 
-        text += f'\\u{{{u[2:]}}}'
+        if u.startswith("U+"):
+            u = u[2:]
+
+        text += f'\\u{{{u}}}'
 
     return text
 
