@@ -30,7 +30,7 @@ Imho, the only solution is a corporate funded/backed clean sheet implementation.
 `rustybuzz` is a complete [harfbuzz](https://github.com/harfbuzz/harfbuzz)'s
 shaping algorithm port to Rust.
 
-Matches `harfbuzz` v2.8.0
+Matches `harfbuzz` v2.9.0
 
 ## Why?
 
