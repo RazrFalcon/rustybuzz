@@ -26,7 +26,8 @@ pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
 
 const KHMER_FEATURES: &[(Tag, FeatureFlags)] = &[
     // Basic features.
-    // These features are applied in order, one at a time, after reordering.
+    // These features are applied all at once, before reordering, constrained
+    // to the syllable.
     (feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
     (feature::BELOW_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
     (feature::ABOVE_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),

@@ -527,7 +527,7 @@ pub struct Buffer {
     /// Allocations successful.
     pub successful: bool,
     /// Whether we have an output buffer going on.
-    have_output: bool,
+    pub(crate) have_output: bool,
     pub have_separate_output: bool,
     /// Whether we have positions
     pub have_positions: bool,
@@ -766,15 +766,17 @@ impl Buffer {
     }
 
     pub fn swap_buffers(&mut self) {
+        assert!(self.have_output);
+
+        assert!(self.idx <= self.len);
         if !self.successful {
+            self.have_output = false;
+            self.out_len = 0;
+            self.idx = 0;
             return;
         }
 
-        assert!(self.idx <= self.len);
         self.next_glyphs(self.len - self.idx);
-
-        assert!(self.have_output);
-        self.have_output = false;
 
         if self.have_separate_output {
             // Swap info and pos buffers.
@@ -784,23 +786,18 @@ impl Buffer {
             self.info = pos;
         }
 
-        core::mem::swap(&mut self.len, &mut self.out_len);
+        self.len = self.out_len;
 
-        self.idx = 0;
-    }
-
-    pub fn remove_output(&mut self) {
         self.have_output = false;
-        self.have_positions = false;
-
         self.out_len = 0;
-        self.have_separate_output = false;
+        self.idx = 0;
     }
 
     pub fn clear_output(&mut self) {
         self.have_output = true;
         self.have_positions = false;
 
+        self.idx = 0;
         self.out_len = 0;
         self.have_separate_output = false;
     }
@@ -1224,13 +1221,12 @@ impl Buffer {
             // This will blow in our face if memory allocation fails later
             // in this same lookup...
             //
-            // We used to shift with extra 32 items, instead of the 0 below.
+            // We used to shift with extra 32 items.
             // But that would leave empty slots in the buffer in case of allocation
-            // failures.  Setting to zero for now to avoid other problems (see
-            // comments in shift_forward().  This can cause O(N^2) behavior more
-            // severely than adding 32 empty slots can...
+            // failures.  See comments in shift_forward().  This can cause O(N^2)
+            // behavior more severely than adding 32 empty slots can...
             if self.idx < count {
-                self.shift_forward(count);
+                self.shift_forward(count - self.idx);
             }
 
             assert!(self.idx >= count);
@@ -1287,7 +1283,7 @@ impl Buffer {
         assert!(self.have_output);
         self.ensure(self.len + count);
 
-        for i in 0..(self.len - self.idx) {
+        for i in (0..(self.len - self.idx)).rev() {
             self.info[self.idx + count + i] = self.info[self.idx + i];
         }
 

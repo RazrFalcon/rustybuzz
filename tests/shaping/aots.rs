@@ -163,6 +163,237 @@ fn classdef2_single_001() {
 }
 
 #[test]
+fn cmap0_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap0_font1.otf",
+            "\u{0000}\u{0001}\u{0033}\u{0034}\u{0035}\u{0036}\u{0037}\u{FFFF}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         0|\
+         17|\
+         56|\
+         12|\
+         0|\
+         0"
+    );
+}
+
+#[test]
+fn cmap10_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap10_font1.otf",
+            "\u{0000}\u{0001}\u{9232}\u{109422}\u{109423}\u{109424}\u{109425}\u{FFFF}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         0|\
+         0|\
+         26|\
+         27|\
+         32|\
+         0"
+    );
+}
+
+#[test]
+fn cmap10_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap10_font2.otf",
+            "\u{0000}\u{0001}\u{0021}\u{0022}\u{0023}\u{0024}\u{0025}\u{FFFF}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0"
+    );
+}
+
+#[test]
+fn cmap12_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap12_font1.otf",
+            "\u{0000}\u{0001}\u{0010}\u{101723}\u{101724}\u{101727}\u{101728}\u{102522}\u{102523}\u{102527}\
+             \u{102528}\u{FFFF}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         0|\
+         23|\
+         24|\
+         27|\
+         0|\
+         0|\
+         53|\
+         57|\
+         0|\
+         0"
+    );
+}
+
+#[test]
+fn cmap4_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap4_font1.otf",
+            "\u{0000}\u{0001}\u{0010}\u{0011}\u{0012}\u{001E}\u{001F}\u{00C7}\u{00C8}\u{00CD}\
+             \u{00D2}\u{00D3}\u{FFFF}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         0|\
+         40|\
+         41|\
+         53|\
+         0|\
+         0|\
+         256|\
+         261|\
+         266|\
+         0|\
+         0"
+    );
+}
+
+#[test]
+fn cmap4_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap4_font2.otf",
+            "\u{0000}\u{0001}\u{0010}\u{0011}\u{0012}\u{001E}\u{001F}\u{00C7}\u{00C8}\u{00CD}\
+             \u{00D2}\u{00D3}\u{FFFF}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0"
+    );
+}
+
+#[test]
+fn cmap4_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap4_font3.otf",
+            "\u{0000}\u{0001}\u{0010}\u{0011}\u{0012}\u{001E}\u{001F}\u{00C7}\u{00C8}\u{00CD}\
+             \u{00D2}\u{00D3}\u{FFFF}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         65534"
+    );
+}
+
+#[test]
+fn cmap4_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap4_font4.otf",
+            "\u{0000}\u{AFC7}\u{AFC8}\u{AFC9}\u{B02B}\u{B02C}\u{B02D}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         44500|\
+         44501|\
+         44599|\
+         44600|\
+         0"
+    );
+}
+
+#[test]
+fn cmap4_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap4_font4.otf",
+            "\u{0000}\u{0063}\u{0064}\u{01F3}\u{01F4}\u{01F5}\u{03E8}\u{03E9}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         65136|\
+         65535|\
+         0|\
+         1|\
+         500|\
+         0"
+    );
+}
+
+#[test]
+fn cmap6_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap6_font1.otf",
+            "\u{0000}\u{0001}\u{0021}\u{0022}\u{0023}\u{0024}\u{0025}\u{FFFF}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         0|\
+         17|\
+         56|\
+         12|\
+         0|\
+         0"
+    );
+}
+
+#[test]
+fn cmap6_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/cmap6_font2.otf",
+            "\u{0000}\u{0001}\u{0021}\u{0022}\u{0023}\u{0024}\u{0025}\u{FFFF}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0|\
+         0"
+    );
+}
+
+#[test]
 fn gpos1_1_lookupflag_001() {
     assert_eq!(
         shape(
@@ -571,6 +802,112 @@ fn gpos3_011() {
 }
 
 #[test]
+fn gpos4_lookupflag_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos4_lookupflag_f1.otf",
+            "\u{0011}\u{0012}\u{0011}\u{0013}\u{0011}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "17|\
+         18@1500,0|\
+         17@3000,0|\
+         19@4500,0|\
+         17@4500,0"
+    );
+}
+
+#[test]
+fn gpos4_lookupflag_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos4_lookupflag_f2.otf",
+            "\u{0011}\u{0012}\u{0013}\u{0011}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "17|\
+         18@1500,0|\
+         19@3000,0|\
+         17@3000,0"
+    );
+}
+
+#[test]
+fn gpos4_simple_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos4_simple_1.otf",
+            "\u{0011}\u{0011}\u{0013}\u{0011}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "17|\
+         17@1500,0|\
+         19@3000,0|\
+         17@3000,0"
+    );
+}
+
+#[test]
+fn gpos4_simple_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos4_simple_1.otf",
+            "\u{0019}\u{0019}\u{0013}\u{0011}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "25|\
+         25@1500,0|\
+         19@3000,0|\
+         17@3000,0"
+    );
+}
+
+#[test]
+fn gpos5_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos5_font1.otf",
+            "\u{0011}\u{001E}\u{0013}\u{001F}\u{0011}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "17|\
+         18@1500,0|\
+         19@1400,-80|\
+         17@3000,0"
+    );
+}
+
+#[test]
+fn gpos6_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos6_font1.otf",
+            "\u{0011}\u{0011}\u{0013}\u{0011}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "17|\
+         17@1500,0|\
+         19@3000,0|\
+         17@3000,0"
+    );
+}
+
+#[test]
+fn gpos6_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos6_font1.otf",
+            "\u{0014}\u{0014}\u{0013}\u{0011}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "20|\
+         20|\
+         19|\
+         17"
+    );
+}
+
+#[test]
 fn gpos7_1_001() {
     assert_eq!(
         shape(
@@ -701,6 +1038,34 @@ fn gpos_chaining1_boundary_004() {
          22@4520,0|\
          23@6000,0|\
          0@7500,0"
+    );
+}
+
+#[test]
+fn gpos_chaining1_lookupflag_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_chaining1_lookupflag_f1.otf",
+            "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{0016}\u{005C}\u{0017}\u{005D}\u{005E}\
+             \u{0018}\u{005A}\u{0019}\u{005B}\u{001A}\u{0000}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1500,0|\
+         90@3000,0|\
+         21@3000,0|\
+         91@4500,0|\
+         22@4500,0|\
+         92@6000,0|\
+         23@6020,0|\
+         93@7500,0|\
+         94@7500,0|\
+         24@7500,0|\
+         90@9000,0|\
+         25@9000,0|\
+         91@10500,0|\
+         26@10500,0|\
+         0@12000,0"
     );
 }
 
@@ -1055,6 +1420,34 @@ fn gpos_chaining2_boundary_004() {
 }
 
 #[test]
+fn gpos_chaining2_lookupflag_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_chaining2_lookupflag_f1.otf",
+            "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{0016}\u{005C}\u{0017}\u{005D}\u{005E}\
+             \u{0018}\u{005A}\u{0019}\u{005B}\u{001A}\u{0000}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1500,0|\
+         90@3000,0|\
+         21@3000,0|\
+         91@4500,0|\
+         22@4500,0|\
+         92@6000,0|\
+         23@6020,0|\
+         93@7500,0|\
+         94@7500,0|\
+         24@7500,0|\
+         90@9000,0|\
+         25@9000,0|\
+         91@10500,0|\
+         26@10500,0|\
+         0@12000,0"
+    );
+}
+
+#[test]
 fn gpos_chaining2_multiple_subrules_001() {
     assert_eq!(
         shape(
@@ -1405,6 +1798,34 @@ fn gpos_chaining3_boundary_004() {
 }
 
 #[test]
+fn gpos_chaining3_lookupflag_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_chaining3_lookupflag_f1.otf",
+            "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{0016}\u{005C}\u{0017}\u{005D}\u{005E}\
+             \u{0018}\u{005A}\u{0019}\u{005B}\u{001A}\u{0000}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1500,0|\
+         90@3000,0|\
+         21@3000,0|\
+         91@4500,0|\
+         22@4500,0|\
+         92@6000,0|\
+         23@6020,0|\
+         93@7500,0|\
+         94@7500,0|\
+         24@7500,0|\
+         90@9000,0|\
+         25@9000,0|\
+         91@10500,0|\
+         26@10500,0|\
+         0@12000,0"
+    );
+}
+
+#[test]
 fn gpos_chaining3_next_glyph_001() {
     assert_eq!(
         shape(
@@ -1693,6 +2114,44 @@ fn gpos_context1_expansion_001() {
 }
 
 #[test]
+fn gpos_context1_lookupflag_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_context1_lookupflag_f1.otf",
+            "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1520,0|\
+         90@3000,0|\
+         21@3020,0|\
+         91@4500,0|\
+         92@4500,0|\
+         22@4520,0|\
+         0@6000,0"
+    );
+}
+
+#[test]
+fn gpos_context1_lookupflag_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_context1_lookupflag_f2.otf",
+            "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1500,0|\
+         90@3000,0|\
+         21@3020,0|\
+         91@4500,0|\
+         92@4500,0|\
+         22@4500,0|\
+         0@6000,0"
+    );
+}
+
+#[test]
 fn gpos_context1_multiple_subrules_001() {
     assert_eq!(
         shape(
@@ -1923,6 +2382,44 @@ fn gpos_context2_expansion_001() {
 }
 
 #[test]
+fn gpos_context2_lookupflag_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_context2_lookupflag_f1.otf",
+            "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1520,0|\
+         90@3000,0|\
+         21@3020,0|\
+         91@4500,0|\
+         92@4500,0|\
+         22@4520,0|\
+         0@6000,0"
+    );
+}
+
+#[test]
+fn gpos_context2_lookupflag_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_context2_lookupflag_f2.otf",
+            "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1500,0|\
+         90@3000,0|\
+         21@3020,0|\
+         91@4500,0|\
+         92@4500,0|\
+         22@4500,0|\
+         0@6000,0"
+    );
+}
+
+#[test]
 fn gpos_context2_multiple_subrules_001() {
     assert_eq!(
         shape(
@@ -2079,6 +2576,44 @@ fn gpos_context3_boundary_002() {
          20@6020,0|\
          20@7520,0|\
          0@9000,0"
+    );
+}
+
+#[test]
+fn gpos_context3_lookupflag_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_context3_lookupflag_f1.otf",
+            "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1520,0|\
+         90@3000,0|\
+         21@3020,0|\
+         91@4500,0|\
+         92@4500,0|\
+         22@4520,0|\
+         0@6000,0"
+    );
+}
+
+#[test]
+fn gpos_context3_lookupflag_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos_context3_lookupflag_f2.otf",
+            "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+        ),
+        "0|\
+         20@1500,0|\
+         90@3000,0|\
+         21@3020,0|\
+         91@4500,0|\
+         92@4500,0|\
+         22@4500,0|\
+         0@6000,0"
     );
 }
 
@@ -2342,6 +2877,31 @@ fn gsub3_1_multiple_001() {
          22|\
          23|\
          19|\
+         17"
+    );
+}
+
+#[test]
+fn gsub3_1_simple_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gsub3_1_simple_f1.otf",
+            "\u{0011}\u{0012}\u{0011}\u{0012}\u{0011}\u{0012}\u{0011}\u{0012}\u{0011}\u{0012}\
+             \u{0011}\u{0012}\u{0011}",
+            "--features=\"-test[1],test[3],test[5]=2,test[7]=3,-test[9],test[11]\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "17|\
+         18|\
+         17|\
+         20|\
+         17|\
+         21|\
+         17|\
+         22|\
+         17|\
+         18|\
+         17|\
+         20|\
          17"
     );
 }
@@ -4179,6 +4739,95 @@ fn gsub_context3_successive_001() {
          61|\
          63|\
          0"
+    );
+}
+
+#[test]
+fn lookupflag_ignore_attach_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
+            "\u{000A}\u{000B}\u{000D}\u{001A}\u{000A}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "10|\
+         15|\
+         10"
+    );
+}
+
+#[test]
+fn lookupflag_ignore_attach_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
+            "\u{000A}\u{000B}\u{0015}\u{000D}\u{0016}\u{0017}\u{001D}\u{001A}\u{000A}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "10|\
+         15|\
+         21|\
+         22|\
+         23|\
+         29|\
+         10"
+    );
+}
+
+#[test]
+fn lookupflag_ignore_attach_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
+            "\u{000A}\u{000B}\u{0015}\u{000D}\u{0016}\u{001B}\u{001A}\u{000A}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "10|\
+         11|\
+         21|\
+         13|\
+         22|\
+         27|\
+         26|\
+         10"
+    );
+}
+
+#[test]
+fn lookupflag_ignore_attach_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
+            "\u{000A}\u{000B}\u{001B}\u{000D}\u{0016}\u{0017}\u{001A}\u{000A}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "10|\
+         11|\
+         27|\
+         13|\
+         22|\
+         23|\
+         26|\
+         10"
+    );
+}
+
+#[test]
+fn lookupflag_ignore_attach_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
+            "\u{000A}\u{000B}\u{001B}\u{000D}\u{000E}\u{0017}\u{001A}\u{000A}",
+            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+        ),
+        "10|\
+         11|\
+         27|\
+         13|\
+         14|\
+         23|\
+         26|\
+         10"
     );
 }
 

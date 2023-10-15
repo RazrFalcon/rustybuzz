@@ -152,7 +152,8 @@ pub enum MatraCategory {
 
 const INDIC_FEATURES: &[(Tag, FeatureFlags)] = &[
     // Basic features.
-    // These features are applied in order, one at a time, after initial_reordering.
+    // These features are applied in order, one at a time, after initial_reordering,
+    // constrained to the syllable.
     (feature::NUKTA_FORMS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
     (feature::AKHANDS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
     (feature::REPH_FORMS, FeatureFlags::MANUAL_JOINERS),
@@ -165,8 +166,8 @@ const INDIC_FEATURES: &[(Tag, FeatureFlags)] = &[
     (feature::VATTU_VARIANTS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
     (feature::CONJUNCT_FORMS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
     // Other features.
-    // These features are applied all at once, after final_reordering
-    // but before clearing syllables.
+    // These features are applied all at once, after final_reordering, constrained
+    // to the syllable.
     // Default Bengali font in Windows for example has intermixed
     // lookups for init,pres,abvs,blws features.
     (feature::INITIAL_FORMS, FeatureFlags::MANUAL_JOINERS),

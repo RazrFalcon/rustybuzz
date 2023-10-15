@@ -63,8 +63,6 @@ fn shape_internal(ctx: &mut ShapeContext) {
         }
     }
 
-    ctx.buffer.clear_output();
-
     initialize_masks(ctx);
     set_unicode_props(ctx.buffer);
     insert_dotted_circle(ctx.buffer, ctx.face);
@@ -231,8 +229,11 @@ fn position_by_plan(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         ot::position(plan, face, buffer);
     } else if plan.apply_kerx {
         aat::position(plan, face, buffer);
-    } else if plan.apply_kern {
+    }
+    if plan.apply_kern {
         ot::kern(plan, face, buffer);
+    } else if plan.apply_fallback_kern {
+        fallback::kern(plan, face, buffer);
     }
 
     if plan.apply_trak {

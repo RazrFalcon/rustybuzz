@@ -196,10 +196,7 @@ pub fn apply_layout_table<T: LayoutTable>(
             ctx.auto_zwj = lookup.auto_zwj;
             ctx.auto_zwnj = lookup.auto_zwnj;
 
-            if lookup.random {
-                ctx.random = true;
-                ctx.buffer.unsafe_to_break(0, ctx.buffer.len);
-            }
+            ctx.random = lookup.random;
 
             if let Some(table) = &table {
                 if let Some(lookup) = table.get_lookup(lookup.index) {
@@ -209,7 +206,6 @@ pub fn apply_layout_table<T: LayoutTable>(
         }
 
         if let Some(func) = stage.pause_func {
-            ctx.buffer.clear_output();
             func(plan, face, ctx.buffer);
         }
     }
@@ -224,23 +220,18 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
 
     if !lookup.is_reverse() {
         // in/out forward substitution/positioning
-        if T::INDEX == TableIndex::GSUB {
+        if !T::IN_PLACE {
             ctx.buffer.clear_output();
         }
         ctx.buffer.idx = 0;
+        apply_forward(ctx, lookup);
 
-        if apply_forward(ctx, lookup) {
-            if !T::IN_PLACE {
-                ctx.buffer.swap_buffers();
-            } else {
-                assert!(!ctx.buffer.have_separate_output);
-            }
+        if !T::IN_PLACE {
+            ctx.buffer.swap_buffers();
         }
     } else {
         // in-place backward substitution/positioning
-        if T::INDEX == TableIndex::GSUB {
-            ctx.buffer.remove_output();
-        }
+        assert!(!ctx.buffer.have_output);
 
         ctx.buffer.idx = ctx.buffer.len - 1;
         apply_backward(ctx, lookup);

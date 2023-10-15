@@ -538,7 +538,7 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
         if entry.extra.marked_insert_index != 0xFFFF {
             let count = flags & Self::MARKED_INSERT_COUNT;
             buffer.max_ops -= i32::from(count);
-            if buffer.max_ops < 0 {
+            if buffer.max_ops <= 0 {
                 return Some(());
             }
 

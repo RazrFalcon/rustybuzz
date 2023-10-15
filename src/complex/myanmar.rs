@@ -42,7 +42,8 @@ pub const MYANMAR_ZAWGYI_SHAPER: ComplexShaper = ComplexShaper {
 
 const MYANMAR_FEATURES: &[Tag] = &[
     // Basic features.
-    // These features are applied in order, one at a time, after reordering.
+    // These features are applied in order, one at a time, after reordering,
+    // constrained to the syllable.
     feature::REPH_FORMS,
     feature::PRE_BASE_FORMS,
     feature::BELOW_BASE_FORMS,

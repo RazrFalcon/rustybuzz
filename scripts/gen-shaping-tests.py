@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import shutil
 import sys
 import subprocess
 from pathlib import Path
@@ -28,7 +29,7 @@ IGNORE_TEST_CASES = [
     # no `hhea` table.
     'indic_decompose_001',
     # ttf-parser doesn't support phantom points
-    'variations_space_001',
+    'variations_003',
     # Resource exhaustion tests with large outputs
     'morx_34_001',
     'morx_36_001',
@@ -51,20 +52,26 @@ def update_relative_path(tests_name, fontfile):
     return f'tests/fonts/{tests_name}/{fontfile}'  # relative to the root dir
 
 
-# Converts `U+0041,U+0078` into `\u{0041}\u{0078}`
+# Converts `U+0041,U+0078` or `0041,0078` into `\u{0041}\u{0078}`
 def convert_unicodes(unicodes):
     text = ''
     for (i, u) in enumerate(unicodes.split(',')):
         if i > 0 and i % 10 == 0:
             text += '\\\n             '
 
-        text += f'\\u{{{u[2:]}}}'
+        if u.startswith("U+"):
+            u = u[2:]
+
+        text += f'\\u{{{u}}}'
 
     return text
 
 
 def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
-    fontfile, options, unicodes, glyphs_expected = data.split(':')
+    if file_name == 'emoji-clusters.tests':
+        return ''  # There are a lot of these; let's skip them
+
+    fontfile, options, unicodes, glyphs_expected = data.split(';')
 
     fontfile_rs = update_relative_path(tests_name, fontfile)
 
@@ -97,7 +104,7 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
     # Force OT functions, since this is the only one we support in rustybuzz.
     options_list.append('--font-funcs=ot')
 
-    abs_font_path = hb_dir.joinpath('test/shaping/data')\
+    abs_font_path = hb_dir.joinpath('test/shape/data')\
         .joinpath(tests_name)\
         .joinpath('tests') \
         .joinpath(fontfile)
@@ -182,12 +189,17 @@ used_fonts = []
 font_files = []
 test_dir_names = ['aots', 'in-house', 'text-rendering-tests']
 for test_dir_name in test_dir_names:
-    tests_dir = hb_dir / f'test/shaping/data/{test_dir_name}/tests'
+    tests_dir = hb_dir / f'test/shape/data/{test_dir_name}/tests'
 
-    used_fonts += convert(hb_dir, hb_shape_exe, tests_dir, test_dir_name)
+    dir_used_fonts = convert(hb_dir, hb_shape_exe, tests_dir, test_dir_name)
+    for filename in dir_used_fonts:
+        shutil.copy(
+            hb_dir / f'test/shape/data/{test_dir_name}/fonts/{filename}',
+            f'../tests/fonts/{test_dir_name}')
+    used_fonts += dir_used_fonts
 
     font_files += os.listdir(hb_dir /
-                             f'test/shaping/data/{test_dir_name}/fonts')
+                             f'test/shape/data/{test_dir_name}/fonts')
 
 # Check for unused fonts. Just for debugging.
 # unused_fonts = sorted(list(set(font_files).difference(used_fonts)))
