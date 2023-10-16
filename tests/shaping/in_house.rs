@@ -176,296 +176,6 @@ fn aat_trak_011() {
 }
 
 #[test]
-fn arabic_decomposition_001() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
-            "\u{0627}\u{0653}\u{0020}\u{0628}\u{0627}\u{0653}\u{0020}\u{0627}\u{0654}\u{0020}\
-             \u{0628}\u{0627}\u{0654}\u{0020}\u{0648}\u{0654}\u{0020}\u{0628}\u{0648}\u{0654}\
-             \u{0020}\u{0627}\u{0655}\u{0020}\u{0628}\u{0627}\u{0655}\u{0020}\u{064A}\u{0654}\
-             \u{0020}\u{064A}\u{0654}\u{064A}\u{0654}\u{064A}\u{0654}\u{0020}\u{06D5}\u{0654}\
-             \u{0020}\u{0628}\u{06D5}\u{0654}\u{0020}\u{06C1}\u{0654}\u{0020}\u{0628}\u{06C1}\
-             \u{0654}\u{0020}\u{06D2}\u{0654}\u{0020}\u{0628}\u{06D2}\u{0654}",
-            "",
-        ),
-        "uni06D2.fina_PostToothFina=56+312|\
-         uni0626.medi_YaaBari=56+205|\
-         uni0628.init_BaaBaaYaaBari=55+642|\
-         space=54+292|\
-         uni06D3=52+1159|\
-         space=51+292|\
-         hamza.above=49@171,-130+0|\
-         uni06C1.fina=49+408|\
-         uni0628.init=48+190|\
-         space=47+292|\
-         uni06C2=45+369|\
-         space=44+292|\
-         hamza.above=42@195,73+0|\
-         uni06D5.fina=42+379|\
-         uni0628.init=41+190|\
-         space=40+292|\
-         uni06C0=38+369|\
-         space=37+292|\
-         uni0626.fina_BaaBaaYaa=35+457|\
-         uni0626.medi_BaaBaaYaa=33+357|\
-         uni0626.init_BaaBaaYaa=31+203|\
-         space=30+292|\
-         uni0626=28+764|\
-         space=27+292|\
-         uni0625.fina=25+229|\
-         uni0628.init_Wide=24+285|\
-         space=23+292|\
-         uni0625=21+217|\
-         space=20+292|\
-         uni0624.fina=18+345|\
-         uni0628.init=17+190|\
-         space=16+292|\
-         uni0624=14+400|\
-         space=13+292|\
-         uni0623.fina=11+289|\
-         uni0628.init=10+190|\
-         space=9+292|\
-         uni0623=7+234|\
-         space=6+292|\
-         uni0622.fina=4+327|\
-         uni0628.init=3+190|\
-         space=2+292|\
-         uni0622=0+217"
-    );
-}
-
-#[test]
-fn arabic_decomposition_002() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
-            "\u{0622}\u{0020}\u{0628}\u{0622}\u{0020}\u{0623}\u{0020}\u{0628}\u{0623}\u{0020}\
-             \u{0624}\u{0020}\u{0628}\u{0624}\u{0020}\u{0625}\u{0020}\u{0628}\u{0625}\u{0020}\
-             \u{0626}\u{0020}\u{0626}\u{0626}\u{0626}\u{0020}\u{06C0}\u{0020}\u{0628}\u{06C0}\
-             \u{0020}\u{06C2}\u{0020}\u{0628}\u{06C2}\u{0020}\u{06D3}\u{0020}\u{0628}\u{06D3}",
-            "",
-        ),
-        "uni06D2.fina_PostToothFina=39+312|\
-         uni0626.medi_YaaBari=39+205|\
-         uni0628.init_BaaBaaYaaBari=38+642|\
-         space=37+292|\
-         uni06D3=36+1159|\
-         space=35+292|\
-         hamza.above=34@171,-130+0|\
-         uni06C1.fina=34+408|\
-         uni0628.init=33+190|\
-         space=32+292|\
-         uni06C2=31+369|\
-         space=30+292|\
-         hamza.above=29@195,73+0|\
-         uni06D5.fina=29+379|\
-         uni0628.init=28+190|\
-         space=27+292|\
-         uni06C0=26+369|\
-         space=25+292|\
-         uni0626.fina_BaaBaaYaa=24+457|\
-         uni0626.medi_BaaBaaYaa=23+357|\
-         uni0626.init_BaaBaaYaa=22+203|\
-         space=21+292|\
-         uni0626=20+764|\
-         space=19+292|\
-         uni0625.fina=18+229|\
-         uni0628.init_Wide=17+285|\
-         space=16+292|\
-         uni0625=15+217|\
-         space=14+292|\
-         uni0624.fina=13+345|\
-         uni0628.init=12+190|\
-         space=11+292|\
-         uni0624=10+400|\
-         space=9+292|\
-         uni0623.fina=8+289|\
-         uni0628.init=7+190|\
-         space=6+292|\
-         uni0623=5+234|\
-         space=4+292|\
-         uni0622.fina=3+327|\
-         uni0628.init=2+190|\
-         space=1+292|\
-         uni0622=0+217"
-    );
-}
-
-#[test]
-fn arabic_decomposition_003() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
-            "\u{0627}\u{0653}\u{0020}\u{0628}\u{0627}\u{0653}\u{0020}\u{0627}\u{0654}\u{0020}\
-             \u{0628}\u{0627}\u{0654}\u{0020}\u{0648}\u{0654}\u{0020}\u{0628}\u{0648}\u{0654}\
-             \u{0020}\u{0627}\u{0655}\u{0020}\u{0628}\u{0627}\u{0655}\u{0020}\u{064A}\u{0654}\
-             \u{0020}\u{064A}\u{0654}\u{064A}\u{0654}\u{064A}\u{0654}\u{0020}\u{06D5}\u{0654}\
-             \u{0020}\u{0628}\u{06D5}\u{0654}\u{0020}\u{06C1}\u{0654}\u{0020}\u{0628}\u{06C1}\
-             \u{0654}\u{0020}\u{06D2}\u{0654}\u{0020}\u{0628}\u{06D2}\u{0654}",
-            "",
-        ),
-        "HamzaAboveNS=56@118,-477+0|\
-         YehBarreeFin=56+355|\
-         OneDotBelowNS=55@116,-151+0|\
-         BehxIni.outD2YB=55@0,419+984|\
-         space=54+132|\
-         HamzaAboveNS=52@144,-395+0|\
-         YehBarreeSep=52+1409|\
-         space=51+132|\
-         HamzaAboveNS=49@91,-587+0|\
-         HehFin=49+230|\
-         OneDotBelowNS=48@151,-188+0|\
-         sp0=48+0|\
-         BehxIni.outS1=48@0,-34+235|\
-         space=47+132|\
-         HamzaAboveNS=45@159,-266+0|\
-         HehSep=45+314|\
-         space=44+132|\
-         HamzaAboveNS=42@91,-587+0|\
-         HehFin=42+230|\
-         OneDotBelowNS=41@151,-188+0|\
-         sp0=41+0|\
-         BehxIni.outS1=41@0,-34+235|\
-         space=40+132|\
-         HamzaAboveNS=38@159,-266+0|\
-         HehSep=38+314|\
-         space=37+132|\
-         HamzaAboveNS=35@274,-375+0|\
-         YehxFin=35+520|\
-         HamzaAboveAltNS=33@65,-45+0|\
-         BehxMed.inT2outD2Y=33@0,379+294|\
-         HamzaAboveNS=31@101,-111+0|\
-         sp0=31+0|\
-         BehxIni.outT2=31@0,429+156|\
-         space=30+132|\
-         HamzaAboveNS=28@274,-374+0|\
-         YehxSep=28+860|\
-         space=27+132|\
-         HamzaBelowAltNS=25@116,-235+0|\
-         AlefFin.narrow=25+239|\
-         OneDotBelowAltNS=24@118,-77+0|\
-         sp0=24+0|\
-         BehxIni.A=24+236|\
-         space=23+132|\
-         HamzaBelowNS=21@103,102+0|\
-         AlefSep=21+330|\
-         space=20+132|\
-         HamzaAboveNS=18@191,-309+0|\
-         WawFin.inD2=18+371|\
-         OneDotBelowNS=17@108,-97+0|\
-         sp0=17+0|\
-         BehxIni.outD2WQ=17@0,323+158|\
-         space=16+132|\
-         HamzaAboveNS=14@216,-309+0|\
-         WawSep=14+422|\
-         space=13+132|\
-         HamzaAboveNS=11@208,26+0|\
-         AlefFin.narrow=11+239|\
-         OneDotBelowNS=10@73,-165+0|\
-         sp0=10+0|\
-         BehxIni.A=10+236|\
-         space=9+132|\
-         HamzaAboveNS=7@211,57+0|\
-         AlefSep=7+330|\
-         space=6+132|\
-         MaddaNS=4@208,-13+0|\
-         AlefFin.narrow=4+239|\
-         OneDotBelowNS=3@73,-165+0|\
-         sp0=3+0|\
-         BehxIni.A=3+236|\
-         space=2+132|\
-         MaddaNS=0@211,18+0|\
-         AlefSep=0+330"
-    );
-}
-
-#[test]
-fn arabic_decomposition_004() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
-            "\u{0622}\u{0020}\u{0628}\u{0622}\u{0020}\u{0623}\u{0020}\u{0628}\u{0623}\u{0020}\
-             \u{0624}\u{0020}\u{0628}\u{0624}\u{0020}\u{0625}\u{0020}\u{0628}\u{0625}\u{0020}\
-             \u{0626}\u{0020}\u{0626}\u{0626}\u{0626}\u{0020}\u{06C0}\u{0020}\u{0628}\u{06C0}\
-             \u{0020}\u{06C2}\u{0020}\u{0628}\u{06C2}\u{0020}\u{06D3}\u{0020}\u{0628}\u{06D3}",
-            "",
-        ),
-        "HamzaAboveNS=39@118,-477+0|\
-         YehBarreeFin=39+355|\
-         OneDotBelowNS=38@116,-151+0|\
-         BehxIni.outD2YB=38@0,419+984|\
-         space=37+132|\
-         HamzaAboveNS=36@144,-395+0|\
-         YehBarreeSep=36+1409|\
-         space=35+132|\
-         HamzaAboveNS=34@91,-587+0|\
-         HehFin=34+230|\
-         OneDotBelowNS=33@151,-188+0|\
-         sp0=33+0|\
-         BehxIni.outS1=33@0,-34+235|\
-         space=32+132|\
-         HamzaAboveNS=31@159,-266+0|\
-         HehSep=31+314|\
-         space=30+132|\
-         HamzaAboveNS=29@91,-587+0|\
-         HehFin=29+230|\
-         OneDotBelowNS=28@151,-188+0|\
-         sp0=28+0|\
-         BehxIni.outS1=28@0,-34+235|\
-         space=27+132|\
-         HamzaAboveNS=26@159,-266+0|\
-         HehSep=26+314|\
-         space=25+132|\
-         HamzaAboveNS=24@274,-375+0|\
-         YehxFin=24+520|\
-         HamzaAboveAltNS=23@65,-45+0|\
-         BehxMed.inT2outD2Y=23@0,379+294|\
-         HamzaAboveNS=22@101,-111+0|\
-         sp0=22+0|\
-         BehxIni.outT2=22@0,429+156|\
-         space=21+132|\
-         HamzaAboveNS=20@274,-374+0|\
-         YehxSep=20+860|\
-         space=19+132|\
-         HamzaBelowAltNS=18@116,-235+0|\
-         AlefFin.narrow=18+239|\
-         OneDotBelowAltNS=17@118,-77+0|\
-         sp0=17+0|\
-         BehxIni.A=17+236|\
-         space=16+132|\
-         HamzaBelowNS=15@103,102+0|\
-         AlefSep=15+330|\
-         space=14+132|\
-         HamzaAboveNS=13@191,-309+0|\
-         WawFin.inD2=13+371|\
-         OneDotBelowNS=12@108,-97+0|\
-         sp0=12+0|\
-         BehxIni.outD2WQ=12@0,323+158|\
-         space=11+132|\
-         HamzaAboveNS=10@216,-309+0|\
-         WawSep=10+422|\
-         space=9+132|\
-         HamzaAboveNS=8@208,26+0|\
-         AlefFin.narrow=8+239|\
-         OneDotBelowNS=7@73,-165+0|\
-         sp0=7+0|\
-         BehxIni.A=7+236|\
-         space=6+132|\
-         HamzaAboveNS=5@211,57+0|\
-         AlefSep=5+330|\
-         space=4+132|\
-         MaddaNS=3@208,-13+0|\
-         AlefFin.narrow=3+239|\
-         OneDotBelowNS=2@73,-165+0|\
-         sp0=2+0|\
-         BehxIni.A=2+236|\
-         space=1+132|\
-         MaddaNS=0@211,18+0|\
-         AlefSep=0+330"
-    );
-}
-
-#[test]
 fn arabic_feature_order_001() {
     assert_eq!(
         shape(
@@ -680,6 +390,880 @@ fn arabic_mark_order_006() {
          space=0+0|\
          uni0650=0@166,0+0|\
          uni0649=0+1566"
+    );
+}
+
+#[test]
+fn arabic_normalization_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0622}",
+            "",
+        ),
+        "uni0622=0+217"
+    );
+}
+
+#[test]
+fn arabic_normalization_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0627}\u{0653}",
+            "",
+        ),
+        "uni0622=0+217"
+    );
+}
+
+#[test]
+fn arabic_normalization_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0622}",
+            "",
+        ),
+        "uni0622.fina=1+327|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0627}\u{0653}",
+            "",
+        ),
+        "uni0622.fina=1+327|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0623}",
+            "",
+        ),
+        "uni0623=0+234"
+    );
+}
+
+#[test]
+fn arabic_normalization_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0627}\u{0654}",
+            "",
+        ),
+        "uni0623=0+234"
+    );
+}
+
+#[test]
+fn arabic_normalization_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0623}",
+            "",
+        ),
+        "uni0623.fina=1+289|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0627}\u{0654}",
+            "",
+        ),
+        "uni0623.fina=1+289|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0624}",
+            "",
+        ),
+        "uni0624=0+400"
+    );
+}
+
+#[test]
+fn arabic_normalization_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0648}\u{0654}",
+            "",
+        ),
+        "uni0624=0+400"
+    );
+}
+
+#[test]
+fn arabic_normalization_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0624}",
+            "",
+        ),
+        "uni0624.fina=1+345|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0648}\u{0654}",
+            "",
+        ),
+        "uni0624.fina=1+345|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0625}",
+            "",
+        ),
+        "uni0625=0+217"
+    );
+}
+
+#[test]
+fn arabic_normalization_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0627}\u{0655}",
+            "",
+        ),
+        "uni0625=0+217"
+    );
+}
+
+#[test]
+fn arabic_normalization_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0625}",
+            "",
+        ),
+        "uni0625.fina=1+229|\
+         uni0628.init_Wide=0+285"
+    );
+}
+
+#[test]
+fn arabic_normalization_016() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0627}\u{0655}",
+            "",
+        ),
+        "uni0625.fina=1+229|\
+         uni0628.init_Wide=0+285"
+    );
+}
+
+#[test]
+fn arabic_normalization_017() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0626}",
+            "",
+        ),
+        "uni0626=0+764"
+    );
+}
+
+#[test]
+fn arabic_normalization_018() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{064A}\u{0654}",
+            "",
+        ),
+        "uni0626=0+764"
+    );
+}
+
+#[test]
+fn arabic_normalization_019() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0626}\u{0626}\u{0626}",
+            "",
+        ),
+        "uni0626.fina_BaaBaaYaa=2+457|\
+         uni0626.medi_BaaBaaYaa=1+357|\
+         uni0626.init_BaaBaaYaa=0+203"
+    );
+}
+
+#[test]
+fn arabic_normalization_020() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{064A}\u{0654}\u{064A}\u{0654}\u{064A}\u{0654}",
+            "",
+        ),
+        "uni0626.fina_BaaBaaYaa=4+457|\
+         uni0626.medi_BaaBaaYaa=2+357|\
+         uni0626.init_BaaBaaYaa=0+203"
+    );
+}
+
+#[test]
+fn arabic_normalization_021() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06C0}",
+            "",
+        ),
+        "uni06C0=0+369"
+    );
+}
+
+#[test]
+fn arabic_normalization_022() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06D5}\u{0654}",
+            "",
+        ),
+        "uni06C0=0+369"
+    );
+}
+
+#[test]
+fn arabic_normalization_023() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06C0}",
+            "",
+        ),
+        "hamza.above=1@195,73+0|\
+         uni06D5.fina=1+379|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_024() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06D5}\u{0654}",
+            "",
+        ),
+        "hamza.above=1@195,73+0|\
+         uni06D5.fina=1+379|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_025() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06C2}",
+            "",
+        ),
+        "uni06C2=0+369"
+    );
+}
+
+#[test]
+fn arabic_normalization_026() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06C1}\u{0654}",
+            "",
+        ),
+        "uni06C2=0+369"
+    );
+}
+
+#[test]
+fn arabic_normalization_027() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06C2}",
+            "",
+        ),
+        "hamza.above=1@171,-130+0|\
+         uni06C1.fina=1+408|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_028() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06C1}\u{0654}",
+            "",
+        ),
+        "hamza.above=1@171,-130+0|\
+         uni06C1.fina=1+408|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_029() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06D3}",
+            "",
+        ),
+        "uni06D3=0+1159"
+    );
+}
+
+#[test]
+fn arabic_normalization_030() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06D2}\u{0654}",
+            "",
+        ),
+        "uni06D3=0+1159"
+    );
+}
+
+#[test]
+fn arabic_normalization_031() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06D3}",
+            "",
+        ),
+        "uni06D2.fina_PostToothFina=1+312|\
+         uni0626.medi_YaaBari=1+205|\
+         uni0628.init_BaaBaaYaaBari=0+642"
+    );
+}
+
+#[test]
+fn arabic_normalization_032() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06D2}\u{0654}",
+            "",
+        ),
+        "uni06D2.fina_PostToothFina=1+312|\
+         uni0626.medi_YaaBari=1+205|\
+         uni0628.init_BaaBaaYaaBari=0+642"
+    );
+}
+
+#[test]
+fn arabic_normalization_033() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0622}",
+            "",
+        ),
+        "MaddaNS=0@211,18+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_034() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0622}",
+            "",
+        ),
+        "MaddaNS=1@208,-13+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowNS=0@73,-165+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_035() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0623}",
+            "",
+        ),
+        "HamzaAboveNS=0@211,57+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_036() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0623}",
+            "",
+        ),
+        "HamzaAboveNS=1@208,26+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowNS=0@73,-165+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_037() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0624}",
+            "",
+        ),
+        "HamzaAboveNS=0@216,-309+0|\
+         WawSep=0+422"
+    );
+}
+
+#[test]
+fn arabic_normalization_038() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0624}",
+            "",
+        ),
+        "HamzaAboveNS=1@191,-309+0|\
+         WawFin.inD2=1+371|\
+         OneDotBelowNS=0@108,-97+0|\
+         sp0=0+0|\
+         BehxIni.outD2WQ=0@0,323+158"
+    );
+}
+
+#[test]
+fn arabic_normalization_039() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0625}",
+            "",
+        ),
+        "HamzaBelowNS=0@103,102+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_040() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0625}",
+            "",
+        ),
+        "HamzaBelowAltNS=1@116,-235+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowAltNS=0@118,-77+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_041() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0626}",
+            "",
+        ),
+        "HamzaAboveNS=0@274,-374+0|\
+         YehxSep=0+860"
+    );
+}
+
+#[test]
+fn arabic_normalization_042() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0626}\u{0626}\u{0626}",
+            "",
+        ),
+        "HamzaAboveNS=2@274,-375+0|\
+         YehxFin=2+520|\
+         HamzaAboveAltNS=1@65,-45+0|\
+         BehxMed.inT2outD2Y=1@0,379+294|\
+         HamzaAboveNS=0@101,-111+0|\
+         sp0=0+0|\
+         BehxIni.outT2=0@0,429+156"
+    );
+}
+
+#[test]
+fn arabic_normalization_043() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06C0}",
+            "",
+        ),
+        "HamzaAboveNS=0@159,-266+0|\
+         HehSep=0+314"
+    );
+}
+
+#[test]
+fn arabic_normalization_044() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06C0}",
+            "",
+        ),
+        "HamzaAboveNS=1@91,-587+0|\
+         HehFin=1+230|\
+         OneDotBelowNS=0@151,-188+0|\
+         sp0=0+0|\
+         BehxIni.outS1=0@0,-34+235"
+    );
+}
+
+#[test]
+fn arabic_normalization_045() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06C2}",
+            "",
+        ),
+        "HamzaAboveNS=0@159,-266+0|\
+         HehSep=0+314"
+    );
+}
+
+#[test]
+fn arabic_normalization_046() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06C2}",
+            "",
+        ),
+        "HamzaAboveNS=1@91,-587+0|\
+         HehFin=1+230|\
+         OneDotBelowNS=0@151,-188+0|\
+         sp0=0+0|\
+         BehxIni.outS1=0@0,-34+235"
+    );
+}
+
+#[test]
+fn arabic_normalization_047() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06D3}",
+            "",
+        ),
+        "HamzaAboveNS=0@144,-395+0|\
+         YehBarreeSep=0+1409"
+    );
+}
+
+#[test]
+fn arabic_normalization_048() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06D3}",
+            "",
+        ),
+        "HamzaAboveNS=1@118,-477+0|\
+         YehBarreeFin=1+355|\
+         OneDotBelowNS=0@116,-151+0|\
+         BehxIni.outD2YB=0@0,419+984"
+    );
+}
+
+#[test]
+fn arabic_normalization_049() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0627}\u{0653}",
+            "",
+        ),
+        "MaddaNS=0@211,18+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_050() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0627}\u{0653}",
+            "",
+        ),
+        "MaddaNS=1@208,-13+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowNS=0@73,-165+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_051() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0627}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@211,57+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_052() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0627}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@208,26+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowNS=0@73,-165+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_053() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0648}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@216,-309+0|\
+         WawSep=0+422"
+    );
+}
+
+#[test]
+fn arabic_normalization_054() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0648}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@191,-309+0|\
+         WawFin.inD2=1+371|\
+         OneDotBelowNS=0@108,-97+0|\
+         sp0=0+0|\
+         BehxIni.outD2WQ=0@0,323+158"
+    );
+}
+
+#[test]
+fn arabic_normalization_055() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0627}\u{0655}",
+            "",
+        ),
+        "HamzaBelowNS=0@103,102+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_056() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0627}\u{0655}",
+            "",
+        ),
+        "HamzaBelowAltNS=1@116,-235+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowAltNS=0@118,-77+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_057() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{064A}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@274,-374+0|\
+         YehxSep=0+860"
+    );
+}
+
+#[test]
+fn arabic_normalization_058() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{064A}\u{0654}\u{064A}\u{0654}\u{064A}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=4@274,-375+0|\
+         YehxFin=4+520|\
+         HamzaAboveAltNS=2@65,-45+0|\
+         BehxMed.inT2outD2Y=2@0,379+294|\
+         HamzaAboveNS=0@101,-111+0|\
+         sp0=0+0|\
+         BehxIni.outT2=0@0,429+156"
+    );
+}
+
+#[test]
+fn arabic_normalization_059() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06D5}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@159,-266+0|\
+         HehSep=0+314"
+    );
+}
+
+#[test]
+fn arabic_normalization_060() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06D5}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@91,-587+0|\
+         HehFin=1+230|\
+         OneDotBelowNS=0@151,-188+0|\
+         sp0=0+0|\
+         BehxIni.outS1=0@0,-34+235"
+    );
+}
+
+#[test]
+fn arabic_normalization_061() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06C1}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@159,-266+0|\
+         HehSep=0+314"
+    );
+}
+
+#[test]
+fn arabic_normalization_062() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06C1}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@91,-587+0|\
+         HehFin=1+230|\
+         OneDotBelowNS=0@151,-188+0|\
+         sp0=0+0|\
+         BehxIni.outS1=0@0,-34+235"
+    );
+}
+
+#[test]
+fn arabic_normalization_063() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06D2}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@144,-395+0|\
+         YehBarreeSep=0+1409"
+    );
+}
+
+#[test]
+fn arabic_normalization_064() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06D2}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@118,-477+0|\
+         YehBarreeFin=1+355|\
+         OneDotBelowNS=0@116,-151+0|\
+         BehxIni.outD2YB=0@0,419+984"
     );
 }
 
