@@ -5,6 +5,8 @@ mod text_rendering_tests;
 
 use std::str::FromStr;
 
+use rustybuzz::BufferFlags;
+
 struct Args {
     face_index: u32,
     font_ptem: Option<f32>,
@@ -16,6 +18,8 @@ struct Args {
     remove_default_ignorables: bool, // we don't use it, but have to parse it anyway
     cluster_level: rustybuzz::BufferClusterLevel,
     features: Vec<String>,
+    pre_context: Option<String>,
+    post_context: Option<String>,
     no_glyph_names: bool,
     no_positions: bool,
     no_advances: bool,
@@ -23,6 +27,8 @@ struct Args {
     show_extents: bool,
     show_flags: bool,
     ned: bool,
+    bot: bool,
+    eot: bool,
 }
 
 fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
@@ -43,6 +49,12 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
         features: parser
             .opt_value_from_fn("--features", parse_string_list)?
             .unwrap_or_default(),
+        pre_context: parser
+            .opt_value_from_fn("--unicodes-before", parse_unicodes)
+            .unwrap_or_default(),
+        post_context: parser
+            .opt_value_from_fn("--unicodes-after", parse_unicodes)
+            .unwrap_or_default(),
         no_glyph_names: parser.contains("--no-glyph-names"),
         no_positions: parser.contains("--no-positions"),
         no_advances: parser.contains("--no-advances"),
@@ -50,6 +62,8 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
         show_extents: parser.contains("--show-extents"),
         show_flags: parser.contains("--show-flags"),
         ned: parser.contains("--ned"),
+        bot: parser.contains("--bot"),
+        eot: parser.contains("--eot"),
     };
 
     Ok(args)
@@ -66,6 +80,16 @@ fn parse_cluster(s: &str) -> Result<rustybuzz::BufferClusterLevel, String> {
         "2" => Ok(rustybuzz::BufferClusterLevel::Characters),
         _ => Err(format!("invalid cluster level")),
     }
+}
+
+fn parse_unicodes(s: &str) -> Result<String, String> {
+    s.split(',')
+        .map(|s| {
+            let s = s.strip_prefix("U+").unwrap_or(&s);
+            let cp = u32::from_str_radix(s, 16).map_err(|e| format!("{e}"))?;
+            char::from_u32(cp).ok_or_else(|| format!("{cp:X} is not a valid codepoint"))
+        })
+        .collect()
 }
 
 pub fn shape(font_path: &str, text: &str, options: &str) -> String {
@@ -92,7 +116,13 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
     }
 
     let mut buffer = rustybuzz::UnicodeBuffer::new();
+    if let Some(pre_context) = args.pre_context {
+        buffer.set_pre_context(&pre_context);
+    }
     buffer.push_str(text);
+    if let Some(post_context) = args.post_context {
+        buffer.set_post_context(&post_context);
+    }
 
     if let Some(d) = args.direction {
         buffer.set_direction(d);
@@ -105,6 +135,11 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
     if let Some(script) = args.script {
         buffer.set_script(script);
     }
+
+    let mut buffer_flags = BufferFlags::default();
+    buffer_flags.set(BufferFlags::BEGINNING_OF_TEXT, args.bot);
+    buffer_flags.set(BufferFlags::END_OF_TEXT, args.eot);
+    buffer.set_flags(buffer_flags);
 
     buffer.set_cluster_level(args.cluster_level);
     buffer.reset_clusters();

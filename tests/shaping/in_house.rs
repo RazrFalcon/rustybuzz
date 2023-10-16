@@ -394,6 +394,880 @@ fn arabic_mark_order_006() {
 }
 
 #[test]
+fn arabic_normalization_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0622}",
+            "",
+        ),
+        "uni0622=0+217"
+    );
+}
+
+#[test]
+fn arabic_normalization_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0627}\u{0653}",
+            "",
+        ),
+        "uni0622=0+217"
+    );
+}
+
+#[test]
+fn arabic_normalization_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0622}",
+            "",
+        ),
+        "uni0622.fina=1+327|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0627}\u{0653}",
+            "",
+        ),
+        "uni0622.fina=1+327|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0623}",
+            "",
+        ),
+        "uni0623=0+234"
+    );
+}
+
+#[test]
+fn arabic_normalization_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0627}\u{0654}",
+            "",
+        ),
+        "uni0623=0+234"
+    );
+}
+
+#[test]
+fn arabic_normalization_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0623}",
+            "",
+        ),
+        "uni0623.fina=1+289|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0627}\u{0654}",
+            "",
+        ),
+        "uni0623.fina=1+289|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0624}",
+            "",
+        ),
+        "uni0624=0+400"
+    );
+}
+
+#[test]
+fn arabic_normalization_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0648}\u{0654}",
+            "",
+        ),
+        "uni0624=0+400"
+    );
+}
+
+#[test]
+fn arabic_normalization_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0624}",
+            "",
+        ),
+        "uni0624.fina=1+345|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0648}\u{0654}",
+            "",
+        ),
+        "uni0624.fina=1+345|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0625}",
+            "",
+        ),
+        "uni0625=0+217"
+    );
+}
+
+#[test]
+fn arabic_normalization_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0627}\u{0655}",
+            "",
+        ),
+        "uni0625=0+217"
+    );
+}
+
+#[test]
+fn arabic_normalization_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0625}",
+            "",
+        ),
+        "uni0625.fina=1+229|\
+         uni0628.init_Wide=0+285"
+    );
+}
+
+#[test]
+fn arabic_normalization_016() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{0627}\u{0655}",
+            "",
+        ),
+        "uni0625.fina=1+229|\
+         uni0628.init_Wide=0+285"
+    );
+}
+
+#[test]
+fn arabic_normalization_017() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0626}",
+            "",
+        ),
+        "uni0626=0+764"
+    );
+}
+
+#[test]
+fn arabic_normalization_018() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{064A}\u{0654}",
+            "",
+        ),
+        "uni0626=0+764"
+    );
+}
+
+#[test]
+fn arabic_normalization_019() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0626}\u{0626}\u{0626}",
+            "",
+        ),
+        "uni0626.fina_BaaBaaYaa=2+457|\
+         uni0626.medi_BaaBaaYaa=1+357|\
+         uni0626.init_BaaBaaYaa=0+203"
+    );
+}
+
+#[test]
+fn arabic_normalization_020() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{064A}\u{0654}\u{064A}\u{0654}\u{064A}\u{0654}",
+            "",
+        ),
+        "uni0626.fina_BaaBaaYaa=4+457|\
+         uni0626.medi_BaaBaaYaa=2+357|\
+         uni0626.init_BaaBaaYaa=0+203"
+    );
+}
+
+#[test]
+fn arabic_normalization_021() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06C0}",
+            "",
+        ),
+        "uni06C0=0+369"
+    );
+}
+
+#[test]
+fn arabic_normalization_022() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06D5}\u{0654}",
+            "",
+        ),
+        "uni06C0=0+369"
+    );
+}
+
+#[test]
+fn arabic_normalization_023() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06C0}",
+            "",
+        ),
+        "hamza.above=1@195,73+0|\
+         uni06D5.fina=1+379|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_024() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06D5}\u{0654}",
+            "",
+        ),
+        "hamza.above=1@195,73+0|\
+         uni06D5.fina=1+379|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_025() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06C2}",
+            "",
+        ),
+        "uni06C2=0+369"
+    );
+}
+
+#[test]
+fn arabic_normalization_026() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06C1}\u{0654}",
+            "",
+        ),
+        "uni06C2=0+369"
+    );
+}
+
+#[test]
+fn arabic_normalization_027() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06C2}",
+            "",
+        ),
+        "hamza.above=1@171,-130+0|\
+         uni06C1.fina=1+408|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_028() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06C1}\u{0654}",
+            "",
+        ),
+        "hamza.above=1@171,-130+0|\
+         uni06C1.fina=1+408|\
+         uni0628.init=0+190"
+    );
+}
+
+#[test]
+fn arabic_normalization_029() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06D3}",
+            "",
+        ),
+        "uni06D3=0+1159"
+    );
+}
+
+#[test]
+fn arabic_normalization_030() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{06D2}\u{0654}",
+            "",
+        ),
+        "uni06D3=0+1159"
+    );
+}
+
+#[test]
+fn arabic_normalization_031() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06D3}",
+            "",
+        ),
+        "uni06D2.fina_PostToothFina=1+312|\
+         uni0626.medi_YaaBari=1+205|\
+         uni0628.init_BaaBaaYaaBari=0+642"
+    );
+}
+
+#[test]
+fn arabic_normalization_032() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/872d2955d326bd6676a06f66b8238ebbaabc212f.ttf",
+            "\u{0628}\u{06D2}\u{0654}",
+            "",
+        ),
+        "uni06D2.fina_PostToothFina=1+312|\
+         uni0626.medi_YaaBari=1+205|\
+         uni0628.init_BaaBaaYaaBari=0+642"
+    );
+}
+
+#[test]
+fn arabic_normalization_033() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0622}",
+            "",
+        ),
+        "MaddaNS=0@211,18+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_034() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0622}",
+            "",
+        ),
+        "MaddaNS=1@208,-13+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowNS=0@73,-165+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_035() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0623}",
+            "",
+        ),
+        "HamzaAboveNS=0@211,57+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_036() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0623}",
+            "",
+        ),
+        "HamzaAboveNS=1@208,26+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowNS=0@73,-165+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_037() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0624}",
+            "",
+        ),
+        "HamzaAboveNS=0@216,-309+0|\
+         WawSep=0+422"
+    );
+}
+
+#[test]
+fn arabic_normalization_038() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0624}",
+            "",
+        ),
+        "HamzaAboveNS=1@191,-309+0|\
+         WawFin.inD2=1+371|\
+         OneDotBelowNS=0@108,-97+0|\
+         sp0=0+0|\
+         BehxIni.outD2WQ=0@0,323+158"
+    );
+}
+
+#[test]
+fn arabic_normalization_039() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0625}",
+            "",
+        ),
+        "HamzaBelowNS=0@103,102+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_040() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0625}",
+            "",
+        ),
+        "HamzaBelowAltNS=1@116,-235+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowAltNS=0@118,-77+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_041() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0626}",
+            "",
+        ),
+        "HamzaAboveNS=0@274,-374+0|\
+         YehxSep=0+860"
+    );
+}
+
+#[test]
+fn arabic_normalization_042() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0626}\u{0626}\u{0626}",
+            "",
+        ),
+        "HamzaAboveNS=2@274,-375+0|\
+         YehxFin=2+520|\
+         HamzaAboveAltNS=1@65,-45+0|\
+         BehxMed.inT2outD2Y=1@0,379+294|\
+         HamzaAboveNS=0@101,-111+0|\
+         sp0=0+0|\
+         BehxIni.outT2=0@0,429+156"
+    );
+}
+
+#[test]
+fn arabic_normalization_043() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06C0}",
+            "",
+        ),
+        "HamzaAboveNS=0@159,-266+0|\
+         HehSep=0+314"
+    );
+}
+
+#[test]
+fn arabic_normalization_044() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06C0}",
+            "",
+        ),
+        "HamzaAboveNS=1@91,-587+0|\
+         HehFin=1+230|\
+         OneDotBelowNS=0@151,-188+0|\
+         sp0=0+0|\
+         BehxIni.outS1=0@0,-34+235"
+    );
+}
+
+#[test]
+fn arabic_normalization_045() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06C2}",
+            "",
+        ),
+        "HamzaAboveNS=0@159,-266+0|\
+         HehSep=0+314"
+    );
+}
+
+#[test]
+fn arabic_normalization_046() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06C2}",
+            "",
+        ),
+        "HamzaAboveNS=1@91,-587+0|\
+         HehFin=1+230|\
+         OneDotBelowNS=0@151,-188+0|\
+         sp0=0+0|\
+         BehxIni.outS1=0@0,-34+235"
+    );
+}
+
+#[test]
+fn arabic_normalization_047() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06D3}",
+            "",
+        ),
+        "HamzaAboveNS=0@144,-395+0|\
+         YehBarreeSep=0+1409"
+    );
+}
+
+#[test]
+fn arabic_normalization_048() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06D3}",
+            "",
+        ),
+        "HamzaAboveNS=1@118,-477+0|\
+         YehBarreeFin=1+355|\
+         OneDotBelowNS=0@116,-151+0|\
+         BehxIni.outD2YB=0@0,419+984"
+    );
+}
+
+#[test]
+fn arabic_normalization_049() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0627}\u{0653}",
+            "",
+        ),
+        "MaddaNS=0@211,18+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_050() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0627}\u{0653}",
+            "",
+        ),
+        "MaddaNS=1@208,-13+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowNS=0@73,-165+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_051() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0627}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@211,57+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_052() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0627}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@208,26+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowNS=0@73,-165+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_053() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0648}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@216,-309+0|\
+         WawSep=0+422"
+    );
+}
+
+#[test]
+fn arabic_normalization_054() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0648}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@191,-309+0|\
+         WawFin.inD2=1+371|\
+         OneDotBelowNS=0@108,-97+0|\
+         sp0=0+0|\
+         BehxIni.outD2WQ=0@0,323+158"
+    );
+}
+
+#[test]
+fn arabic_normalization_055() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0627}\u{0655}",
+            "",
+        ),
+        "HamzaBelowNS=0@103,102+0|\
+         AlefSep=0+330"
+    );
+}
+
+#[test]
+fn arabic_normalization_056() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{0627}\u{0655}",
+            "",
+        ),
+        "HamzaBelowAltNS=1@116,-235+0|\
+         AlefFin.narrow=1+239|\
+         OneDotBelowAltNS=0@118,-77+0|\
+         sp0=0+0|\
+         BehxIni.A=0+236"
+    );
+}
+
+#[test]
+fn arabic_normalization_057() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{064A}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@274,-374+0|\
+         YehxSep=0+860"
+    );
+}
+
+#[test]
+fn arabic_normalization_058() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{064A}\u{0654}\u{064A}\u{0654}\u{064A}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=4@274,-375+0|\
+         YehxFin=4+520|\
+         HamzaAboveAltNS=2@65,-45+0|\
+         BehxMed.inT2outD2Y=2@0,379+294|\
+         HamzaAboveNS=0@101,-111+0|\
+         sp0=0+0|\
+         BehxIni.outT2=0@0,429+156"
+    );
+}
+
+#[test]
+fn arabic_normalization_059() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06D5}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@159,-266+0|\
+         HehSep=0+314"
+    );
+}
+
+#[test]
+fn arabic_normalization_060() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06D5}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@91,-587+0|\
+         HehFin=1+230|\
+         OneDotBelowNS=0@151,-188+0|\
+         sp0=0+0|\
+         BehxIni.outS1=0@0,-34+235"
+    );
+}
+
+#[test]
+fn arabic_normalization_061() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06C1}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@159,-266+0|\
+         HehSep=0+314"
+    );
+}
+
+#[test]
+fn arabic_normalization_062() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06C1}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@91,-587+0|\
+         HehFin=1+230|\
+         OneDotBelowNS=0@151,-188+0|\
+         sp0=0+0|\
+         BehxIni.outS1=0@0,-34+235"
+    );
+}
+
+#[test]
+fn arabic_normalization_063() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{06D2}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=0@144,-395+0|\
+         YehBarreeSep=0+1409"
+    );
+}
+
+#[test]
+fn arabic_normalization_064() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3e46c3b84c1370a06594736c7f8acebf810bbb3b.ttf",
+            "\u{0628}\u{06D2}\u{0654}",
+            "",
+        ),
+        "HamzaAboveNS=1@118,-477+0|\
+         YehBarreeFin=1+355|\
+         OneDotBelowNS=0@116,-151+0|\
+         BehxIni.outD2YB=0@0,419+984"
+    );
+}
+
+#[test]
 fn arabic_stch_001() {
     assert_eq!(
         shape(
@@ -2380,6 +3254,187 @@ fn indic_vowel_letter_spoofing_053() {
          gid8=2+1524|\
          gid14=2+1184|\
          gid13=2+1555"
+    );
+}
+
+#[test]
+fn item_context_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/65984dfce552a785f564422aadf4715fa07795ad.ttf",
+            "\u{0643}\u{0650}\u{062A}\u{064E}\u{0627}\u{0628}\u{064F}\u{0646}\u{064E}\u{0627}",
+            "",
+        ),
+        "uniFE8E=9+316|\
+         uni064E=7@169,-24+0|\
+         uniFEE8=7+341|\
+         uni064F=5@167,-222+0|\
+         uniFE91=5+301|\
+         uniFE8E=4+316|\
+         uni064E=2@196,-28+0|\
+         uniFE98=2+391|\
+         uni0650=0@288,44+0|\
+         uniFEDB=0+576"
+    );
+}
+
+#[test]
+fn item_context_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/65984dfce552a785f564422aadf4715fa07795ad.ttf",
+            "\u{062A}\u{064E}\u{0627}\u{0628}\u{064F}\u{0646}\u{064E}\u{0627}",
+            "--unicodes-before=U+0643,U+0650",
+        ),
+        "uniFE8E=7+316|\
+         uni064E=5@169,-24+0|\
+         uniFEE8=5+341|\
+         uni064F=3@167,-222+0|\
+         uniFE91=3+301|\
+         uniFE8E=2+316|\
+         uni064E=0@196,-28+0|\
+         uniFE98=0+391"
+    );
+}
+
+#[test]
+fn item_context_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/65984dfce552a785f564422aadf4715fa07795ad.ttf",
+            "\u{062A}\u{064E}\u{0627}\u{0628}\u{064F}\u{0646}\u{064E}\u{0627}",
+            "--unicodes-before=U+0643",
+        ),
+        "uniFE8E=7+316|\
+         uni064E=5@169,-24+0|\
+         uniFEE8=5+341|\
+         uni064F=3@167,-222+0|\
+         uniFE91=3+301|\
+         uniFE8E=2+316|\
+         uni064E=0@196,-28+0|\
+         uniFE98=0+391"
+    );
+}
+
+#[test]
+fn item_context_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/65984dfce552a785f564422aadf4715fa07795ad.ttf",
+            "\u{0643}\u{0650}\u{062A}\u{064E}\u{0627}\u{0628}\u{064F}",
+            "--unicodes-after=U+0646,U+064E,U+0627",
+        ),
+        "uni064F=5@167,-222+0|\
+         uniFE91=5+301|\
+         uniFE8E=4+316|\
+         uni064E=2@196,-28+0|\
+         uniFE98=2+391|\
+         uni0650=0@288,44+0|\
+         uniFEDB=0+576"
+    );
+}
+
+#[test]
+fn item_context_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/65984dfce552a785f564422aadf4715fa07795ad.ttf",
+            "\u{0643}\u{0650}\u{062A}\u{064E}\u{0627}\u{0628}\u{064F}",
+            "--unicodes-after=U+0646",
+        ),
+        "uni064F=5@167,-222+0|\
+         uniFE91=5+301|\
+         uniFE8E=4+316|\
+         uni064E=2@196,-28+0|\
+         uniFE98=2+391|\
+         uni0650=0@288,44+0|\
+         uniFEDB=0+576"
+    );
+}
+
+#[test]
+fn item_context_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/65984dfce552a785f564422aadf4715fa07795ad.ttf",
+            "\u{062A}\u{064E}\u{0627}\u{0628}\u{064F}",
+            "--unicodes-before=U+0643,U+0650 --unicodes-after=U+0646,U+064E,U+0627",
+        ),
+        "uni064F=3@167,-222+0|\
+         uniFE91=3+301|\
+         uniFE8E=2+316|\
+         uni064E=0@196,-28+0|\
+         uniFE98=0+391"
+    );
+}
+
+#[test]
+fn item_context_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/65984dfce552a785f564422aadf4715fa07795ad.ttf",
+            "\u{062A}\u{064E}\u{0627}\u{0628}\u{064F}",
+            "--unicodes-before=U+0643 --unicodes-after=U+0646",
+        ),
+        "uni064F=3@167,-222+0|\
+         uniFE91=3+301|\
+         uniFE8E=2+316|\
+         uni064E=0@196,-28+0|\
+         uniFE98=0+391"
+    );
+}
+
+#[test]
+fn item_context_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/65984dfce552a785f564422aadf4715fa07795ad.ttf",
+            "\u{0643}\u{062A}\u{0628}",
+            "--unicodes-before=U+0627",
+        ),
+        "uniFE90=2+821|\
+         uniFE98=1+391|\
+         uniFEDB=0+576"
+    );
+}
+
+#[test]
+fn item_context_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/65984dfce552a785f564422aadf4715fa07795ad.ttf",
+            "\u{0643}\u{062A}\u{0628}\u{0627}",
+            "--unicodes-after=U+0627",
+        ),
+        "uniFE8E=3+316|\
+         uniFE92=2+341|\
+         uniFE98=1+391|\
+         uniFEDB=0+576"
+    );
+}
+
+#[test]
+fn item_context_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3105b51976b879032c66aa93a634b3b3672cd344.ttf",
+            "\u{064E}",
+            "--bot",
+        ),
+        "uni25CC=0+679|\
+         uni064E=0@-607,-210+0"
+    );
+}
+
+#[test]
+fn item_context_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/3105b51976b879032c66aa93a634b3b3672cd344.ttf",
+            "\u{064E}",
+            "--bot --unicodes-before=0627",
+        ),
+        "uni064E=0+0"
     );
 }
 
@@ -12631,3 +13686,4 @@ fn zero_width_marks_011() {
          A=2+1368"
     );
 }
+
