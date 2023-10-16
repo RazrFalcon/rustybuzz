@@ -15,7 +15,7 @@ pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     create_data: Some(|plan| Box::new(ArabicShapePlan::new(plan))),
     preprocess_text: None,
     postprocess_glyphs: Some(postprocess_glyphs),
-    normalization_mode: Some(ShapeNormalizationMode::Decomposed),
+    normalization_mode: Some(ShapeNormalizationMode::Auto),
     decompose: None,
     compose: None,
     setup_masks: Some(setup_masks),
