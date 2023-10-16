@@ -1388,6 +1388,7 @@ impl Buffer {
         self.clear_context(0);
         for (i, c) in text.chars().rev().enumerate().take(CONTEXT_LENGTH) {
             self.context[0][i] = c;
+            self.context_len[0] += 1;
         }
     }
 
@@ -1395,6 +1396,7 @@ impl Buffer {
         self.clear_context(1);
         for (i, c) in text.chars().enumerate().take(CONTEXT_LENGTH) {
             self.context[1][i] = c;
+            self.context_len[1] += 1;
         }
     }
 
@@ -1522,12 +1524,18 @@ bitflags::bitflags! {
 }
 
 bitflags::bitflags! {
+    /// Flags for buffers.
     #[derive(Default, Debug, Clone, Copy)]
     pub struct BufferFlags: u32 {
+        /// Indicates that special handling of the beginning of text paragraph can be applied to this buffer. Should usually be set, unless you are passing to the buffer only part of the text without the full context.
         const BEGINNING_OF_TEXT             = 1 << 1;
+        /// Indicates that special handling of the end of text paragraph can be applied to this buffer, similar to [`BufferFlags::BEGINNING_OF_TEXT`].
         const END_OF_TEXT                   = 1 << 2;
+        /// Indicates that characters with `Default_Ignorable` Unicode property should use the corresponding glyph from the font, instead of hiding them (done by replacing them with the space glyph and zeroing the advance width.) This flag takes precedence over [`BufferFlags::REMOVE_DEFAULT_IGNORABLES`].
         const PRESERVE_DEFAULT_IGNORABLES   = 1 << 3;
+        /// Indicates that characters with `Default_Ignorable` Unicode property should be removed from glyph string instead of hiding them (done by replacing them with the space glyph and zeroing the advance width.) [`BufferFlags::PRESERVE_DEFAULT_IGNORABLES`] takes precedence over this flag.
         const REMOVE_DEFAULT_IGNORABLES     = 1 << 4;
+        /// Indicates that a dotted circle should not be inserted in the rendering of incorrect character sequences (such as `<0905 093E>`).
         const DO_NOT_INSERT_DOTTED_CIRCLE   = 1 << 5;
     }
 }
@@ -1660,6 +1668,18 @@ impl UnicodeBuffer {
     #[inline]
     pub fn guess_segment_properties(&mut self) {
         self.0.guess_segment_properties()
+    }
+
+    /// Set the flags for this buffer.
+    #[inline]
+    pub fn set_flags(&mut self, flags: BufferFlags) {
+        self.0.flags = flags;
+    }
+
+    /// Get the flags for this buffer.
+    #[inline]
+    pub fn flags(&self) -> BufferFlags {
+        self.0.flags
     }
 
     /// Set the cluster level of the buffer.

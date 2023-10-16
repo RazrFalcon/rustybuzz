@@ -36,7 +36,8 @@ pub use ttf_parser;
 pub use ttf_parser::Tag;
 
 pub use crate::buffer::{
-    BufferClusterLevel, GlyphBuffer, GlyphInfo, GlyphPosition, SerializeFlags, UnicodeBuffer,
+    BufferClusterLevel, BufferFlags, GlyphBuffer, GlyphInfo, GlyphPosition, SerializeFlags,
+    UnicodeBuffer,
 };
 pub use crate::common::{script, Direction, Feature, Language, Script, Variation};
 pub use crate::face::Face;
