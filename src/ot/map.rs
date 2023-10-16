@@ -135,7 +135,7 @@ impl Map {
 
 bitflags::bitflags! {
     /// Flags used for serialization with a `BufferSerializer`.
-    #[derive(Default)]
+    #[derive(Default, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
     pub struct FeatureFlags: u32 {
         /// Feature applies to all characters; results in no mask allocated for it.
         const GLOBAL = 0x01;
@@ -150,9 +150,9 @@ bitflags::bitflags! {
         /// Randomly select a glyph from an AlternateSubstFormat1 subtable.
         const RANDOM = 0x20;
 
-        const MANUAL_JOINERS        = Self::MANUAL_ZWNJ.bits | Self::MANUAL_ZWJ.bits;
-        const GLOBAL_MANUAL_JOINERS = Self::GLOBAL.bits | Self::MANUAL_JOINERS.bits;
-        const GLOBAL_HAS_FALLBACK   = Self::GLOBAL.bits | Self::HAS_FALLBACK.bits;
+        const MANUAL_JOINERS        = Self::MANUAL_ZWNJ.bits() | Self::MANUAL_ZWJ.bits();
+        const GLOBAL_MANUAL_JOINERS = Self::GLOBAL.bits() | Self::MANUAL_JOINERS.bits();
+        const GLOBAL_HAS_FALLBACK   = Self::GLOBAL.bits() | Self::HAS_FALLBACK.bits();
     }
 }
 

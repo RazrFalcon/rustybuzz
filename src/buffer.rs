@@ -179,12 +179,12 @@ impl GlyphInfo {
             *scratch_flags |= BufferScratchFlags::HAS_NON_ASCII;
 
             if u.is_default_ignorable() {
-                props |= UnicodeProps::IGNORABLE.bits;
+                props |= UnicodeProps::IGNORABLE.bits();
                 *scratch_flags |= BufferScratchFlags::HAS_DEFAULT_IGNORABLES;
 
                 match u as u32 {
-                    0x200C => props |= UnicodeProps::CF_ZWNJ.bits,
-                    0x200D => props |= UnicodeProps::CF_ZWJ.bits,
+                    0x200C => props |= UnicodeProps::CF_ZWNJ.bits(),
+                    0x200D => props |= UnicodeProps::CF_ZWJ.bits(),
 
                     // Mongolian Free Variation Selectors need to be remembered
                     // because although we need to hide them like default-ignorables,
@@ -193,16 +193,16 @@ impl GlyphInfo {
                     // FVSes are GC=Mn, we have use a separate bit to remember them.
                     // Fixes:
                     // https://github.com/harfbuzz/harfbuzz/issues/234
-                    0x180B..=0x180D => props |= UnicodeProps::HIDDEN.bits,
+                    0x180B..=0x180D => props |= UnicodeProps::HIDDEN.bits(),
 
                     // TAG characters need similar treatment. Fixes:
                     // https://github.com/harfbuzz/harfbuzz/issues/463
-                    0xE0020..=0xE007F => props |= UnicodeProps::HIDDEN.bits,
+                    0xE0020..=0xE007F => props |= UnicodeProps::HIDDEN.bits(),
 
                     // COMBINING GRAPHEME JOINER should not be skipped; at least some times.
                     // https://github.com/harfbuzz/harfbuzz/issues/554
                     0x034F => {
-                        props |= UnicodeProps::HIDDEN.bits;
+                        props |= UnicodeProps::HIDDEN.bits();
                         *scratch_flags |= BufferScratchFlags::HAS_CGJ;
                     }
 
@@ -211,7 +211,7 @@ impl GlyphInfo {
             }
 
             if gc.is_mark() {
-                props |= UnicodeProps::CONTINUATION.bits;
+                props |= UnicodeProps::CONTINUATION.bits();
                 props |= (u.modified_combining_class() as u16) << 8;
             }
         }
@@ -221,7 +221,7 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn general_category(&self) -> GeneralCategory {
-        let n = self.unicode_props() & UnicodeProps::GENERAL_CATEGORY.bits;
+        let n = self.unicode_props() & UnicodeProps::GENERAL_CATEGORY.bits();
         GeneralCategory::from_rb(n as u32)
     }
 
@@ -229,7 +229,7 @@ impl GlyphInfo {
     pub(crate) fn set_general_category(&mut self, gc: GeneralCategory) {
         let gc = gc.to_rb();
         let n =
-            (gc as u16) | (self.unicode_props() & (0xFF & !UnicodeProps::GENERAL_CATEGORY.bits));
+            (gc as u16) | (self.unicode_props() & (0xFF & !UnicodeProps::GENERAL_CATEGORY.bits()));
         self.set_unicode_props(n);
     }
 
@@ -259,13 +259,13 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn is_zwnj(&self) -> bool {
         self.general_category() == GeneralCategory::Format
-            && (self.unicode_props() & UnicodeProps::CF_ZWNJ.bits != 0)
+            && (self.unicode_props() & UnicodeProps::CF_ZWNJ.bits() != 0)
     }
 
     #[inline]
     pub(crate) fn is_zwj(&self) -> bool {
         self.general_category() == GeneralCategory::Format
-            && (self.unicode_props() & UnicodeProps::CF_ZWJ.bits != 0)
+            && (self.unicode_props() & UnicodeProps::CF_ZWJ.bits() != 0)
     }
 
     #[inline]
@@ -287,38 +287,38 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn is_hidden(&self) -> bool {
-        self.unicode_props() & UnicodeProps::HIDDEN.bits != 0
+        self.unicode_props() & UnicodeProps::HIDDEN.bits() != 0
     }
 
     #[inline]
     pub(crate) fn unhide(&mut self) {
         let mut n = self.unicode_props();
-        n &= !UnicodeProps::HIDDEN.bits;
+        n &= !UnicodeProps::HIDDEN.bits();
         self.set_unicode_props(n);
     }
 
     #[inline]
     pub(crate) fn set_continuation(&mut self) {
         let mut n = self.unicode_props();
-        n |= UnicodeProps::CONTINUATION.bits;
+        n |= UnicodeProps::CONTINUATION.bits();
         self.set_unicode_props(n);
     }
 
     #[inline]
     pub(crate) fn reset_continuation(&mut self) {
         let mut n = self.unicode_props();
-        n &= !UnicodeProps::CONTINUATION.bits;
+        n &= !UnicodeProps::CONTINUATION.bits();
         self.set_unicode_props(n);
     }
 
     #[inline]
     pub(crate) fn is_continuation(&self) -> bool {
-        self.unicode_props() & UnicodeProps::CONTINUATION.bits != 0
+        self.unicode_props() & UnicodeProps::CONTINUATION.bits() != 0
     }
 
     #[inline]
     pub(crate) fn is_default_ignorable(&self) -> bool {
-        let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits;
+        let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits();
         n != 0 && !self.is_substituted()
     }
 
@@ -392,7 +392,8 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn lig_num_comps(&self) -> u8 {
-        if self.glyph_props() & GlyphPropsFlags::LIGATURE.bits != 0 && self.is_ligated_internal() {
+        if self.glyph_props() & GlyphPropsFlags::LIGATURE.bits() != 0 && self.is_ligated_internal()
+        {
             self.lig_props() & 0x0F
         } else {
             1
@@ -416,32 +417,32 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn is_base_glyph(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::BASE_GLYPH.bits != 0
+        self.glyph_props() & GlyphPropsFlags::BASE_GLYPH.bits() != 0
     }
 
     #[inline]
     pub(crate) fn is_ligature(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::LIGATURE.bits != 0
+        self.glyph_props() & GlyphPropsFlags::LIGATURE.bits() != 0
     }
 
     #[inline]
     pub(crate) fn is_mark(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::MARK.bits != 0
+        self.glyph_props() & GlyphPropsFlags::MARK.bits() != 0
     }
 
     #[inline]
     pub(crate) fn is_substituted(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits != 0
+        self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits() != 0
     }
 
     #[inline]
     pub(crate) fn is_ligated(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::LIGATED.bits != 0
+        self.glyph_props() & GlyphPropsFlags::LIGATED.bits() != 0
     }
 
     #[inline]
     pub(crate) fn is_multiplied(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::MULTIPLIED.bits != 0
+        self.glyph_props() & GlyphPropsFlags::MULTIPLIED.bits() != 0
     }
 
     #[inline]
@@ -452,14 +453,14 @@ impl GlyphInfo {
     #[inline]
     pub(crate) fn clear_ligated_and_multiplied(&mut self) {
         let mut n = self.glyph_props();
-        n &= !(GlyphPropsFlags::LIGATED | GlyphPropsFlags::MULTIPLIED).bits;
+        n &= !(GlyphPropsFlags::LIGATED | GlyphPropsFlags::MULTIPLIED).bits();
         self.set_glyph_props(n);
     }
 
     #[inline]
     pub(crate) fn clear_substituted(&mut self) {
         let mut n = self.glyph_props();
-        n &= !GlyphPropsFlags::SUBSTITUTED.bits;
+        n &= !GlyphPropsFlags::SUBSTITUTED.bits();
         self.set_glyph_props(n);
     }
 
@@ -1470,7 +1471,7 @@ macro_rules! foreach_grapheme {
 }
 
 bitflags::bitflags! {
-    #[derive(Default)]
+    #[derive(Default, Debug, Clone, Copy)]
     pub struct UnicodeProps: u16 {
         const GENERAL_CATEGORY  = 0x001F;
         const IGNORABLE         = 0x0020;
@@ -1485,25 +1486,25 @@ bitflags::bitflags! {
 }
 
 bitflags::bitflags! {
-    #[derive(Default)]
+    #[derive(Default, Debug, Clone, Copy)]
     pub struct GlyphPropsFlags: u16 {
         // The following three match LookupFlags::Ignore* numbers.
         const BASE_GLYPH    = 0x02;
         const LIGATURE      = 0x04;
         const MARK          = 0x08;
-        const CLASS_MASK    = Self::BASE_GLYPH.bits | Self::LIGATURE.bits | Self::MARK.bits;
+        const CLASS_MASK    = Self::BASE_GLYPH.bits() | Self::LIGATURE.bits() | Self::MARK.bits();
 
         // The following are used internally; not derived from GDEF.
         const SUBSTITUTED   = 0x10;
         const LIGATED       = 0x20;
         const MULTIPLIED    = 0x40;
 
-        const PRESERVE      = Self::SUBSTITUTED.bits | Self::LIGATED.bits | Self::MULTIPLIED.bits;
+        const PRESERVE      = Self::SUBSTITUTED.bits() | Self::LIGATED.bits() | Self::MULTIPLIED.bits();
     }
 }
 
 bitflags::bitflags! {
-    #[derive(Default)]
+    #[derive(Default, Debug, Clone, Copy)]
     pub struct BufferFlags: u32 {
         const BEGINNING_OF_TEXT             = 1 << 1;
         const END_OF_TEXT                   = 1 << 2;
@@ -1514,7 +1515,7 @@ bitflags::bitflags! {
 }
 
 bitflags::bitflags! {
-    #[derive(Default)]
+    #[derive(Default, Debug, Clone, Copy)]
     pub struct BufferScratchFlags: u32 {
         const HAS_NON_ASCII             = 0x00000001;
         const HAS_DEFAULT_IGNORABLES    = 0x00000002;
