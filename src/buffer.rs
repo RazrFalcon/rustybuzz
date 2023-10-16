@@ -1298,6 +1298,10 @@ impl Buffer {
         self.idx += count;
     }
 
+    fn clear_context(&mut self, side: usize) {
+        self.context_len[side] = 0;
+    }
+
     pub fn sort(&mut self, start: usize, end: usize, cmp: impl Fn(&GlyphInfo, &GlyphInfo) -> bool) {
         assert!(!self.have_positions);
 
@@ -1377,6 +1381,20 @@ impl Buffer {
 
         for (i, c) in text.char_indices() {
             self.add(c as u32, i as u32);
+        }
+    }
+
+    fn set_pre_context(&mut self, text: &str) {
+        self.clear_context(0);
+        for (i, c) in text.chars().rev().enumerate().take(CONTEXT_LENGTH) {
+            self.context[0][i] = c;
+        }
+    }
+
+    fn set_post_context(&mut self, text: &str) {
+        self.clear_context(1);
+        for (i, c) in text.chars().enumerate().take(CONTEXT_LENGTH) {
+            self.context[1][i] = c;
         }
     }
 
@@ -1581,6 +1599,18 @@ impl UnicodeBuffer {
     #[inline]
     pub fn push_str(&mut self, str: &str) {
         self.0.push_str(str);
+    }
+
+    /// Sets the pre-context for this buffer.
+    #[inline]
+    pub fn set_pre_context(&mut self, str: &str) {
+        self.0.set_pre_context(str)
+    }
+
+    /// Sets the post-context for this buffer.
+    #[inline]
+    pub fn set_post_context(&mut self, str: &str) {
+        self.0.set_post_context(str)
     }
 
     /// Appends a character to a buffer with the given cluster value.
