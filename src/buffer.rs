@@ -1,6 +1,5 @@
 use alloc::{string::String, vec::Vec};
 use core::convert::TryFrom;
-use core::mem;
 
 use ttf_parser::GlyphId;
 
@@ -1382,7 +1381,7 @@ impl Buffer {
             return;
         }
 
-        self.ensure(self.len + item_length * mem::size_of::<u8>() / 4);
+        self.ensure(self.len + item_length / 4);
 
         // If buffer is empty and pre-context provided, install it.
         // This check is written this way, to make sure people can
