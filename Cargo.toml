@@ -13,7 +13,7 @@ categories = ["text-processing"]
 exclude = ["benches/", "tests/"]
 
 [dependencies]
-bitflags = "1.2"
+bitflags = "2.4.1"
 bytemuck = { version = "1.5", features = ["extern_crate_alloc"] }
 smallvec = "1.6"
 unicode-bidi-mirroring = "0.1"
