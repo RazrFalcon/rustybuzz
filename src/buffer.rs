@@ -1,5 +1,6 @@
 use alloc::{string::String, vec::Vec};
 use core::convert::TryFrom;
+use core::mem;
 
 use ttf_parser::GlyphId;
 
@@ -1298,6 +1299,10 @@ impl Buffer {
         self.idx += count;
     }
 
+    fn clear_context(&mut self, side: usize) {
+        self.context_len[side] = 0;
+    }
+
     pub fn sort(&mut self, start: usize, end: usize, cmp: impl Fn(&GlyphInfo, &GlyphInfo) -> bool) {
         assert!(!self.have_positions);
 
@@ -1372,11 +1377,44 @@ impl Buffer {
         self.len == 0
     }
 
-    fn push_str(&mut self, text: &str) {
-        self.ensure(self.len + text.chars().count());
+    fn add_utf8(&mut self, text: &str, item_offset: usize, item_length: usize) {
+        if item_length > (i32::MAX / 8) as usize {
+            return;
+        }
 
-        for (i, c) in text.char_indices() {
-            self.add(c as u32, i as u32);
+        self.ensure(self.len + item_length * mem::size_of::<u8>() / 4);
+
+        // If buffer is empty and pre-context provided, install it.
+        // This check is written this way, to make sure people can
+        // provide pre-context in one add_utf() call, then provide
+        // text in a follow-up call.  See:
+        //
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=801410#c13
+        if self.len == 0 && item_offset > 0 {
+            // Add pre-context
+            self.clear_context(0);
+            for (i, c) in text[..item_offset]
+                .chars()
+                .rev()
+                .enumerate()
+                .take(CONTEXT_LENGTH)
+            {
+                self.context[0][i] = c;
+            }
+        }
+
+        for (i, c) in text[item_offset..item_offset + item_length].char_indices() {
+            self.add(c as u32, (i + item_offset) as u32);
+        }
+
+        // Add post-context
+        self.clear_context(1);
+        for (i, c) in text[item_offset + item_length..]
+            .chars()
+            .enumerate()
+            .take(CONTEXT_LENGTH)
+        {
+            self.context[1][i] = c;
         }
     }
 
@@ -1580,7 +1618,14 @@ impl UnicodeBuffer {
     /// Pushes a string to a buffer.
     #[inline]
     pub fn push_str(&mut self, str: &str) {
-        self.0.push_str(str);
+        self.0.add_utf8(str, 0, str.len());
+    }
+
+    /// Pushes a substring of a larger string to a buffer.
+    /// The rest of the string acts as context for shaping.
+    #[inline]
+    pub fn add_utf8(&mut self, str: &str, item_offset: usize, item_length: usize) {
+        self.0.add_utf8(str, item_offset, item_length);
     }
 
     /// Appends a character to a buffer with the given cluster value.
