@@ -117,12 +117,10 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
 
     let mut buffer = rustybuzz::UnicodeBuffer::new();
     if let Some(pre_context) = args.pre_context {
-        eprintln!("precontext: {pre_context:#?}");
         buffer.set_pre_context(&pre_context);
     }
     buffer.push_str(text);
     if let Some(post_context) = args.post_context {
-        eprintln!("postcontext: {post_context:#?}");
         buffer.set_post_context(&post_context);
     }
 
@@ -138,19 +136,10 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
         buffer.set_script(script);
     }
 
-    buffer.set_flags(
-        BufferFlags::default()
-            | if args.bot {
-                BufferFlags::BEGINNING_OF_TEXT
-            } else {
-                BufferFlags::empty()
-            }
-            | if args.eot {
-                BufferFlags::END_OF_TEXT
-            } else {
-                BufferFlags::empty()
-            },
-    );
+    let mut buffer_flags = BufferFlags::default();
+    buffer_flags.set(BufferFlags::BEGINNING_OF_TEXT, args.bot);
+    buffer_flags.set(BufferFlags::END_OF_TEXT, args.eot);
+    buffer.set_flags(buffer_flags);
 
     buffer.set_cluster_level(args.cluster_level);
     buffer.reset_clusters();
