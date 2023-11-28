@@ -41,7 +41,8 @@ pub use crate::buffer::{
 };
 pub use crate::common::{script, Direction, Feature, Language, Script, Variation};
 pub use crate::face::Face;
-pub use crate::shape::shape;
+pub use crate::plan::ShapePlan;
+pub use crate::shape::{shape, shape_with_plan};
 
 type Mask = u32;
 
