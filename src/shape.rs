@@ -39,9 +39,7 @@ pub fn shape(face: &Face, features: &[Feature], mut buffer: UnicodeBuffer) -> Gl
 ///
 /// Will panic when debugging assertions are enabled if the buffer and plan have mismatched
 /// properties.
-pub fn shape_with_plan(face: &Face, plan: &ShapePlan, mut buffer: UnicodeBuffer) -> GlyphBuffer {
-    buffer.guess_segment_properties();
-
+pub fn shape_with_plan(face: &Face, plan: &ShapePlan, buffer: UnicodeBuffer) -> GlyphBuffer {
     let mut buffer = buffer.0;
     buffer.guess_segment_properties();
 
