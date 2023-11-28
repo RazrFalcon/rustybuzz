@@ -13,8 +13,12 @@ use crate::{
 
 /// Shapes the buffer content using provided font and features.
 ///
-/// Consumes the buffer. You can then run `GlyphBuffer::clear` to get the `UnicodeBuffer` back
+/// Consumes the buffer. You can then run [`GlyphBuffer::clear`] to get the [`UnicodeBuffer`] back
 /// without allocating a new one.
+///
+/// If you plan to shape multiple strings using the same [`Face`] prefer [`shape_with_plan`].
+/// This is because [`ShapePlan`] initialization is pretty slow and should preferably be called
+/// once for each [`Face`].
 pub fn shape(face: &Face, features: &[Feature], mut buffer: UnicodeBuffer) -> GlyphBuffer {
     buffer.0.guess_segment_properties();
     let plan = ShapePlan::new(
@@ -29,7 +33,7 @@ pub fn shape(face: &Face, features: &[Feature], mut buffer: UnicodeBuffer) -> Gl
 
 /// Shapes the buffer content using the provided font and plan.
 ///
-/// Consumes the buffer. You can then run `GlyphBuffer::clear` to get the `UnicodeBuffer` back
+/// Consumes the buffer. You can then run [`GlyphBuffer::clear`] to get the [`UnicodeBuffer`] back
 /// without allocating a new one.
 ///
 /// It is up to the caller to ensure that the shape plan matches the properties of the provided
