@@ -55,7 +55,7 @@ impl ShapePlan {
         assert_ne!(direction, Direction::Invalid);
         let mut planner = ShapePlanner::new(face, direction, script, language);
         planner.collect_features(user_features);
-        planner.compile()
+        planner.compile(user_features)
     }
 
     pub(crate) fn data<T: 'static>(&self) -> &T {
@@ -73,7 +73,6 @@ pub struct ShapePlanner<'a> {
     pub script_zero_marks: bool,
     pub script_fallback_mark_positioning: bool,
     pub shaper: &'static ComplexShaper,
-    pub user_features: Vec<Feature>,
 }
 
 impl<'a> ShapePlanner<'a> {
@@ -115,7 +114,6 @@ impl<'a> ShapePlanner<'a> {
             script_zero_marks,
             script_fallback_mark_positioning,
             shaper,
-            user_features: Default::default(),
         }
     }
 
@@ -228,7 +226,6 @@ impl<'a> ShapePlanner<'a> {
             };
             self.ot_map.add_feature(feature.tag, flags, feature.value);
         }
-        self.user_features = user_features.to_vec();
 
         if self.apply_morx {
             for feature in user_features {
@@ -242,7 +239,7 @@ impl<'a> ShapePlanner<'a> {
         }
     }
 
-    fn compile(mut self) -> ShapePlan {
+    fn compile(mut self, user_features: &[Feature]) -> ShapePlan {
         let ot_map = self.ot_map.compile();
 
         let aat_map = if self.apply_morx {
@@ -358,7 +355,7 @@ impl<'a> ShapePlanner<'a> {
             apply_kerx,
             apply_morx,
             apply_trak,
-            user_features: self.user_features,
+            user_features: user_features.to_vec(),
         };
 
         if let Some(func) = self.shaper.create_data {
