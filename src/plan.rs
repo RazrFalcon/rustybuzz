@@ -23,7 +23,6 @@ pub struct ShapePlan {
     pub(crate) trak_mask: Mask,
 
     pub(crate) requested_kerning: bool,
-    pub(crate) requested_tracking: bool,
     pub(crate) has_frac: bool,
     pub(crate) has_vert: bool,
     pub(crate) has_gpos_mark: bool,
@@ -341,7 +340,6 @@ impl<'a> ShapePlanner<'a> {
             kern_mask,
             trak_mask,
             requested_kerning,
-            requested_tracking,
             has_frac,
             has_vert,
             has_gpos_mark,
