@@ -7,32 +7,59 @@ use crate::buffer::{
 use crate::complex::ZeroWidthMarksMode;
 use crate::plan::ShapePlan;
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt};
-use crate::{aat, fallback, normalize, ot, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer};
+use crate::{
+    aat, fallback, normalize, ot, script, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer,
+};
 
 /// Shapes the buffer content using provided font and features.
 ///
-/// Consumes the buffer. You can then run `GlyphBuffer::clear` to get the `UnicodeBuffer` back
+/// Consumes the buffer. You can then run [`GlyphBuffer::clear`] to get the [`UnicodeBuffer`] back
 /// without allocating a new one.
-pub fn shape(face: &Face, features: &[Feature], buffer: UnicodeBuffer) -> GlyphBuffer {
+///
+/// If you plan to shape multiple strings using the same [`Face`] prefer [`shape_with_plan`].
+/// This is because [`ShapePlan`] initialization is pretty slow and should preferably be called
+/// once for each [`Face`].
+pub fn shape(face: &Face, features: &[Feature], mut buffer: UnicodeBuffer) -> GlyphBuffer {
+    buffer.0.guess_segment_properties();
+    let plan = ShapePlan::new(
+        face,
+        buffer.0.direction,
+        buffer.0.script,
+        buffer.0.language.as_ref(),
+        features,
+    );
+    shape_with_plan(face, &plan, buffer)
+}
+
+/// Shapes the buffer content using the provided font and plan.
+///
+/// Consumes the buffer. You can then run [`GlyphBuffer::clear`] to get the [`UnicodeBuffer`] back
+/// without allocating a new one.
+///
+/// It is up to the caller to ensure that the shape plan matches the properties of the provided
+/// buffer, otherwise the shaping result will likely be incorrect.
+///
+/// # Panics
+///
+/// Will panic when debugging assertions are enabled if the buffer and plan have mismatched
+/// properties.
+pub fn shape_with_plan(face: &Face, plan: &ShapePlan, buffer: UnicodeBuffer) -> GlyphBuffer {
     let mut buffer = buffer.0;
     buffer.guess_segment_properties();
 
-    if buffer.len > 0 {
-        let plan = ShapePlan::new(
-            face,
-            buffer.direction,
-            buffer.script,
-            buffer.language.as_ref(),
-            features,
-        );
+    debug_assert_eq!(buffer.direction, plan.direction);
+    debug_assert_eq!(
+        buffer.script.unwrap_or(script::UNKNOWN),
+        plan.script.unwrap_or(script::UNKNOWN)
+    );
 
+    if buffer.len > 0 {
         // Save the original direction, we use it later.
         let target_direction = buffer.direction;
         shape_internal(&mut ShapeContext {
-            plan: &plan,
+            plan,
             face,
             buffer: &mut buffer,
-            user_features: features,
             target_direction,
         });
     }
@@ -44,7 +71,6 @@ struct ShapeContext<'a> {
     plan: &'a ShapePlan,
     face: &'a Face<'a>,
     buffer: &'a mut Buffer,
-    user_features: &'a [Feature],
     // Transient stuff
     target_direction: Direction,
 }
@@ -253,7 +279,7 @@ fn setup_masks(ctx: &mut ShapeContext) {
         func(ctx.plan, ctx.face, ctx.buffer);
     }
 
-    for feature in ctx.user_features {
+    for feature in &ctx.plan.user_features {
         if !feature.is_global() {
             let (mask, shift) = ctx.plan.ot_map.mask(feature.tag);
             ctx.buffer

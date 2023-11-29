@@ -1,44 +1,50 @@
 use alloc::boxed::Box;
+use alloc::vec::Vec;
 use core::any::Any;
 
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
 use crate::ot::{self, feature, FeatureFlags, TableIndex};
 use crate::{aat, Direction, Face, Feature, Language, Mask, Script, Tag};
 
+/// A reusable plan for shaping a text buffer.
 pub struct ShapePlan {
-    pub direction: Direction,
-    pub script: Option<Script>,
-    pub shaper: &'static ComplexShaper,
-    pub ot_map: ot::Map,
-    pub aat_map: aat::Map,
+    pub(crate) direction: Direction,
+    pub(crate) script: Option<Script>,
+    pub(crate) shaper: &'static ComplexShaper,
+    pub(crate) ot_map: ot::Map,
+    pub(crate) aat_map: aat::Map,
     data: Option<Box<dyn Any>>,
 
-    pub frac_mask: Mask,
-    pub numr_mask: Mask,
-    pub dnom_mask: Mask,
-    pub rtlm_mask: Mask,
-    pub kern_mask: Mask,
-    pub trak_mask: Mask,
+    pub(crate) frac_mask: Mask,
+    pub(crate) numr_mask: Mask,
+    pub(crate) dnom_mask: Mask,
+    pub(crate) rtlm_mask: Mask,
+    pub(crate) kern_mask: Mask,
+    pub(crate) trak_mask: Mask,
 
-    pub requested_kerning: bool,
-    pub requested_tracking: bool,
-    pub has_frac: bool,
-    pub has_vert: bool,
-    pub has_gpos_mark: bool,
-    pub zero_marks: bool,
-    pub fallback_glyph_classes: bool,
-    pub fallback_mark_positioning: bool,
-    pub adjust_mark_positioning_when_zeroing: bool,
+    pub(crate) requested_kerning: bool,
+    pub(crate) requested_tracking: bool,
+    pub(crate) has_frac: bool,
+    pub(crate) has_vert: bool,
+    pub(crate) has_gpos_mark: bool,
+    pub(crate) zero_marks: bool,
+    pub(crate) fallback_glyph_classes: bool,
+    pub(crate) fallback_mark_positioning: bool,
+    pub(crate) adjust_mark_positioning_when_zeroing: bool,
 
-    pub apply_gpos: bool,
-    pub apply_fallback_kern: bool,
-    pub apply_kern: bool,
-    pub apply_kerx: bool,
-    pub apply_morx: bool,
-    pub apply_trak: bool,
+    pub(crate) apply_gpos: bool,
+    pub(crate) apply_fallback_kern: bool,
+    pub(crate) apply_kern: bool,
+    pub(crate) apply_kerx: bool,
+    pub(crate) apply_morx: bool,
+    pub(crate) apply_trak: bool,
+
+    pub(crate) user_features: Vec<Feature>,
 }
 
 impl ShapePlan {
+    /// Returns a plan that can be used for shaping any buffer with the
+    /// provided properties.
     pub fn new(
         face: &Face,
         direction: Direction,
@@ -49,10 +55,10 @@ impl ShapePlan {
         assert_ne!(direction, Direction::Invalid);
         let mut planner = ShapePlanner::new(face, direction, script, language);
         planner.collect_features(user_features);
-        planner.compile()
+        planner.compile(user_features)
     }
 
-    pub fn data<T: 'static>(&self) -> &T {
+    pub(crate) fn data<T: 'static>(&self) -> &T {
         self.data.as_ref().unwrap().downcast_ref().unwrap()
     }
 }
@@ -233,8 +239,7 @@ impl<'a> ShapePlanner<'a> {
         }
     }
 
-    // TODO: to just self
-    fn compile(&mut self) -> ShapePlan {
+    fn compile(mut self, user_features: &[Feature]) -> ShapePlan {
         let ot_map = self.ot_map.compile();
 
         let aat_map = if self.apply_morx {
@@ -350,6 +355,7 @@ impl<'a> ShapePlanner<'a> {
             apply_kerx,
             apply_morx,
             apply_trak,
+            user_features: user_features.to_vec(),
         };
 
         if let Some(func) = self.shaper.create_data {
