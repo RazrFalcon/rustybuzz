@@ -451,7 +451,7 @@ pub mod script {
 /// `shape`s input it should be applied.
 #[repr(C)]
 #[allow(missing_docs)]
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Hash, Debug)]
 pub struct Feature {
     pub tag: Tag,
     pub value: u32,
