@@ -13,7 +13,7 @@ pub struct ShapePlan {
     pub(crate) shaper: &'static ComplexShaper,
     pub(crate) ot_map: ot::Map,
     pub(crate) aat_map: aat::Map,
-    data: Option<Box<dyn Any>>,
+    data: Option<Box<dyn Any + Send + Sync>>,
 
     pub(crate) frac_mask: Mask,
     pub(crate) numr_mask: Mask,
@@ -361,5 +361,16 @@ impl<'a> ShapePlanner<'a> {
         }
 
         plan
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ShapePlan;
+
+    #[test]
+    fn test_shape_plan_is_send_and_sync() {
+        fn ensure_send_and_sync<T: Send + Sync>() {}
+        ensure_send_and_sync::<ShapePlan>();
     }
 }

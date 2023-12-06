@@ -74,7 +74,7 @@ pub struct ComplexShaper {
 
     /// Called at the end of `shape_plan()`.
     /// Whatever shapers return will be accessible through `plan.data()` later.
-    pub create_data: Option<fn(&ShapePlan) -> Box<dyn Any>>,
+    pub create_data: Option<fn(&ShapePlan) -> Box<dyn Any + Send + Sync>>,
 
     /// Called during `shape()`.
     /// Shapers can use to modify text before shaping starts.
