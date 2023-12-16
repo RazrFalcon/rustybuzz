@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.12.1] - 2023-12-16
+### Added
+- Derive `Hash` for `Feature`.
+  Thanks to [@laurmaedje](https://github.com/laurmaedje).
+- `ShapePlan` is `Send` and `Sync` now.
+  Thanks to [@laurmaedje](https://github.com/laurmaedje).
+
 ## [0.12.0] - 2023-11-29
 ### Added
 - Sync with HarfBuzz 2.9.1.
@@ -168,7 +175,8 @@ At this point, this is just a simple Rust bindings to a stripped down harfbuzz.
   Embedded harfbuzz relies only on internal TrueType implementation.
 - Most of the non-shaping harfbuzz API.
 
-[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/RazrFalcon/rustybuzz/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.9.0...v0.10.0
