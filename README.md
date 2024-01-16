@@ -1,24 +1,13 @@
-# Deprecation warning
+# Development status
 
-This project is effectively dead and will be archived eventually.
-Unless someone would take ownership of it.
+This project is in a semi-abandoned state.
 
-Since v2.7.1, harfbuzz received 5813 commits.
-Syncing all of those changes would take months of work.
-In part thanks to the generally [cryptic C++](https://github.com/harfbuzz/harfbuzz/blob/e8eb1dc5ff695427abc137d3d15c4eec64ab6c78/src/hb-ot-shaper-use-machine.hh#L713-L791) used
-and reliance on `ragel`, which makes porting extremely difficult.
+The port is complete. All tests are passing. But we're are a couple of years and thousands commits
+behind harfbuzz.
 
-There are still no real Rust alternatives to harfbuzz/rustybuzz.
-[swash](https://github.com/dfrg/swash) is probably the closest,
-but it looks abandoned as well (it had like 10 commits in 2 years) and has zero tests.
-
-Sadly, the only solution right now is to simply use harfbuzz bindings.
-
-This was an interesting and challenging project, but the complexity simply isn't worth it.
-Text shaping engine isn't something one can develop as a hobby.
-It took me 6 months full time to write this version with an immense help from
-[@laurmaedje](https://github.com/laurmaedje). It's simply unsustainable.
-Imho, the only solution is a corporate funded/backed clean sheet implementation.
+Backporting takes a lot of time and I have barely any.
+If you are interested in helping the project checkout
+[this discussion](https://github.com/RazrFalcon/rustybuzz/discussions/79) for details.
 
 ---
 
