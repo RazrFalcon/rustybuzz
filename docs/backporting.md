@@ -12,6 +12,15 @@ by anyone with even basic CS knowledge.
 
 If you have any questions, we have a dedicated [discussion] for backporting.
 
+## Working Environment
+
+Ideally, you should use Linux or macOS. While working on Windows is potentially possible,
+it would be pain. Mainly because of `harfbuzz` and not `rustybuzz`. `harfbuzz` relies on
+many Unix tools.
+
+For one, you would need at least: git, Python, Rust, clang/gcc and meson.
+Potentially even [ragel](./ragel.md), but it has to be built from sources.
+
 ## General Algorithm
 
 The porting algorithm is quite simple and applies to most projects.
@@ -22,6 +31,7 @@ The porting algorithm is quite simple and applies to most projects.
 1. Port it to `rustybuzz`.
 1. Port `harfbuzz` tests (if needed).
 1. Run `rustybuzz` tests (`cargo test`).
+1. Run auto-format `cargo fmt`.
 1. Commit.
 1. Rinse and repeat.
 
