@@ -7,7 +7,7 @@ behind harfbuzz.
 
 Backporting takes a lot of time and I have barely any.
 If you are interested in helping the project checkout
-[this discussion](https://github.com/RazrFalcon/rustybuzz/discussions/79) for details.
+[docs/backporting.md](./docs/backporting.md).
 
 ---
 
