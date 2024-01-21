@@ -81,7 +81,8 @@ Now you can run:
 
 ```sh
 # Pass harfbuzz clone dir, not `harfbuzz/src` one.
-rustybuzz/scripts/gen-shaping-tests.py /path/to/harfbuzz
+cd rustybuzz/scripts
+./gen-shaping-tests.py /path/to/harfbuzz
 ```
 
 It will do everything for you. All you need is to run `cargo test` afterward to make sure
