@@ -4,7 +4,6 @@
 
 import io
 import os
-import sys
 import urllib.request
 
 DEPENDENCIES = [
@@ -15,7 +14,7 @@ DEPENDENCIES = [
 
 for dep in DEPENDENCIES:
     if not os.path.exists(dep):
-        urllib.request.urlretrieve('https://unicode.org/Public/12.0.0/ucd/' + dep, dep)
+        urllib.request.urlretrieve('https://unicode.org/Public/14.0.0/ucd/' + dep, dep)
 
 ALLOWED_SINGLES = [0x00A0, 0x25CC]
 ALLOWED_BLOCKS = [

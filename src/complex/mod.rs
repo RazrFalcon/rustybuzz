@@ -306,7 +306,16 @@ pub fn complex_categorize(
 
         // Unicode-13.0 additions
         | script::CHORASMIAN
-        | script::DIVES_AKURU => {
+        | script::DIVES_AKURU
+        | script::KHITAN_SMALL_SCRIPT
+        | script::YEZIDI
+
+        // Unicode-14.0 additions
+        | script::CYPRO_MINOAN
+        | script::OLD_UYGHUR
+        | script::TANGSA
+        | script::TOTO
+        | script::VITHKUQI => {
             // If the designer designed the font for the 'DFLT' script,
             // (or we ended up arbitrarily pick 'latn'), use the default shaper.
             // Otherwise, use the specific shaper.

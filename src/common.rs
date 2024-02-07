@@ -129,7 +129,10 @@ impl Direction {
 
             // Unicode-13.0 additions
             script::CHORASMIAN |
-            script::YEZIDI => {
+            script::YEZIDI |
+
+            // Unicode-14.0 additions
+            script::OLD_UYGHUR => {
                 Some(Direction::RightToLeft)
             }
 
@@ -442,6 +445,12 @@ pub mod script {
     pub const DIVES_AKURU: Script = Script::from_bytes(b"Diak");
     pub const KHITAN_SMALL_SCRIPT: Script = Script::from_bytes(b"Kits");
     pub const YEZIDI: Script = Script::from_bytes(b"Yezi");
+    // Since 14.0
+    pub const CYPRO_MINOAN: Script = Script::from_bytes(b"Cpmn");
+    pub const OLD_UYGHUR: Script = Script::from_bytes(b"Ougr");
+    pub const TANGSA: Script = Script::from_bytes(b"Tnsa");
+    pub const TOTO: Script = Script::from_bytes(b"Toto");
+    pub const VITHKUQI: Script = Script::from_bytes(b"Vith");
 
     // https://github.com/harfbuzz/harfbuzz/issues/1162
     pub const MYANMAR_ZAWGYI: Script = Script::from_bytes(b"Qaag");

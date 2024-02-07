@@ -506,6 +506,7 @@ fn has_arabic_joining(script: Script) -> bool {
             | script::MANICHAEAN
             | script::MONGOLIAN
             | script::NKO
+            | script::OLD_UYGHUR
             | script::PHAGS_PA
             | script::PSALTER_PAHLAVI
             | script::SOGDIAN

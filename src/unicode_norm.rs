@@ -5,7 +5,7 @@
 //! The current implementation is not the fastest one. Just good enough.
 
 #[allow(dead_code)]
-pub const UNICODE_VERSION: (u8, u8, u8) = (13, 0, 0);
+pub const UNICODE_VERSION: (u8, u8, u8) = (14, 0, 0);
 
 // Rust support `Option<char>` layout optimization, so it will take only 4 bytes.
 pub const DECOMPOSITION_TABLE: &[(char, char, Option<char>)] = &[
