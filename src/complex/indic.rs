@@ -67,7 +67,7 @@ pub mod category {
     pub const VS: u8 = 30; // Variation selectors
     pub const P: u8 = 31; // Punctuation
     pub const D: u8 = 32; // Digits except zero
-pub const ML: u8 = 33; // Medial la
+    pub const ML: u8 = 33; // Medial la
 }
 
 pub type Position = u8;
