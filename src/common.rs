@@ -129,7 +129,10 @@ impl Direction {
 
             // Unicode-13.0 additions
             script::CHORASMIAN |
-            script::YEZIDI => {
+            script::YEZIDI |
+
+            // Unicode-14.0 additions
+            script::OLD_UYGHUR => {
                 Some(Direction::RightToLeft)
             }
 
