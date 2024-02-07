@@ -307,6 +307,8 @@ pub fn complex_categorize(
         // Unicode-13.0 additions
         | script::CHORASMIAN
         | script::DIVES_AKURU
+        | script::KHITAN_SMALL_SCRIPT
+        | script::YEZIDI
 
         // Unicode-14.0 additions
         | script::CYPRO_MINOAN
