@@ -376,18 +376,18 @@ fn found_syllable(
     }
 }
 
-fn not_standard_default_ignorable(i: &GlyphInfo) -> bool {
-    !(matches!(i.use_category(), category::O | category::RSV) && i.is_default_ignorable())
+fn not_ccs_default_ignorable(i: &GlyphInfo) -> bool {
+    !(matches!(i.use_category(), category::CGJ | category::RSV) && i.is_default_ignorable())
 }
 
 fn included(infos: &[Cell<GlyphInfo>], i: usize) -> bool {
     let glyph = infos[i].get();
-    if !not_standard_default_ignorable(&glyph) {
+    if !not_ccs_default_ignorable(&glyph) {
         return false;
     }
     if glyph.use_category() == category::ZWNJ {
         for glyph2 in &infos[i + 1..] {
-            if not_standard_default_ignorable(&glyph2.get()) {
+            if not_ccs_default_ignorable(&glyph2.get()) {
                 return !glyph2.get().is_unicode_mark();
             }
         }

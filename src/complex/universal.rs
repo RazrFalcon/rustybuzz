@@ -32,6 +32,7 @@ pub mod category {
 
     pub const N: u8 = 4; // BASE_NUM
     pub const GB: u8 = 5; // BASE_OTHER
+    pub const CGJ: u8 = 6;
 
     // pub const CGJ: u8     = 6;    // CGJ
     // pub const F: u8       = 7;    // CONS_FINAL

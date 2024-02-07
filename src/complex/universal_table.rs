@@ -17,6 +17,9 @@ const USE_TABLE: &[Category] = &[
   /* 00C0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 00D0 */     O,     O,     O,     O,     O,     O,     O,    GB,
 
+  /* Combining Diacritical Marks */
+                                                                         O,     O,     O,     O,     O,     O,     O,   CGJ,
+
   /* Arabic */
 
   /* 0640 */     B,     O,     O,     O,     O,     O,     O,     O,
@@ -196,7 +199,7 @@ const USE_TABLE: &[Category] = &[
   /* 1780 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 1790 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 17A0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
-  /* 17B0 */     B,     B,     B,     B,     O,     O,  VPST,  VABV,  VABV,  VABV,  VABV,  VBLW,  VBLW,  VBLW,  VPRE,  VPRE,
+  /* 17B0 */     B,     B,     B,     B,   CGJ,   CGJ,  VPST,  VABV,  VABV,  VABV,  VABV,  VBLW,  VBLW,  VBLW,  VPRE,  VPRE,
   /* 17C0 */  VPRE,  VPRE,  VPRE,  VPRE,  VPRE,  VPRE, VMABV, VMPST,  VPST, VMABV, VMABV, FMABV,  FABV, CMABV, FMABV, VMABV,
   /* 17D0 */ FMABV,  VABV,     H, FMABV,     O,     O,     O,     O,     O,     O,     O,     O,     B, FMABV,     O,     O,
   /* 17E0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,
@@ -204,7 +207,7 @@ const USE_TABLE: &[Category] = &[
 
   /* Mongolian */
 
-  /* 1800 */     B,     O,     O,     O,     O,     O,     O,     B,     O,     O,     B,     O,     O,     O,     O,     O,
+  /* 1800 */     B,     O,     O,     O,     O,     O,     O,     B,     O,     O,     B,   CGJ,   CGJ,   CGJ,     O,   CGJ,
   /* 1810 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 1820 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 1830 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
@@ -300,7 +303,7 @@ const USE_TABLE: &[Category] = &[
                                                                          O,     O,     O, FMABV,     O,     O,     O,     O,
 
   /* General Punctuation */
-                                                                         O,     O,     O,     O,  ZWNJ,     O,     O,     O,
+                                                                         O,     O,     O,     O,  ZWNJ,   CGJ,     O,     O,
   /* 2010 */    GB,    GB,    GB,    GB,    GB,     O,     O,     O,
 
   /* Superscripts and Subscripts */
@@ -413,6 +416,10 @@ const USE_TABLE: &[Category] = &[
   /* ABD0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* ABE0 */     B,     B,     B,  VPST,  VPST,  VABV,  VPST,  VPST,  VBLW,  VPST,  VPST,     O, VMPST,  VBLW,     O,     O,
   /* ABF0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,
+
+  /* Variation Selectors */
+
+  /* FE00 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
 
   /* Vithkuqi */
 
@@ -880,54 +887,75 @@ const USE_TABLE: &[Category] = &[
   /* 1E940 */     B,     B,     B,     B, CMABV, CMABV, CMABV, CMABV, CMABV, CMABV, CMABV,     B,     O,     O,     O,     O,
   /* 1E950 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,
 
+  /* Variation Selectors Supplement */
+
+  /* E0100 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0110 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0120 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0130 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0140 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0150 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0160 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0170 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0180 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0190 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01A0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01B0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01C0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01D0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01E0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+
 ];
 
 const USE_OFFSET_0X0028: usize = 0;
 const USE_OFFSET_0X00A0: usize = 24;
-const USE_OFFSET_0X0640: usize = 80;
-const USE_OFFSET_0X07C8: usize = 88;
-const USE_OFFSET_0X0840: usize = 144;
-const USE_OFFSET_0X0900: usize = 176;
-const USE_OFFSET_0X0F00: usize = 1448;
-const USE_OFFSET_0X1000: usize = 1648;
-const USE_OFFSET_0X1700: usize = 1808;
-const USE_OFFSET_0X1900: usize = 2240;
-const USE_OFFSET_0X1B00: usize = 2656;
-const USE_OFFSET_0X1CD0: usize = 2992;
-const USE_OFFSET_0X1DF8: usize = 3040;
-const USE_OFFSET_0X2008: usize = 3048;
-const USE_OFFSET_0X2070: usize = 3064;
-const USE_OFFSET_0X20F0: usize = 3088;
-const USE_OFFSET_0X25C8: usize = 3096;
-const USE_OFFSET_0X2D30: usize = 3104;
-const USE_OFFSET_0XA800: usize = 3184;
-const USE_OFFSET_0XABC0: usize = 3944;
-const USE_OFFSET_0X10570: usize = 4008;
-const USE_OFFSET_0X10A00: usize = 4088;
-const USE_OFFSET_0X10AC0: usize = 4168;
-const USE_OFFSET_0X10B80: usize = 4208;
-const USE_OFFSET_0X10D00: usize = 4256;
-const USE_OFFSET_0X10E80: usize = 4320;
-const USE_OFFSET_0X10F30: usize = 4376;
-const USE_OFFSET_0X11100: usize = 4784;
-const USE_OFFSET_0X11280: usize = 5104;
-const USE_OFFSET_0X11400: usize = 5352;
-const USE_OFFSET_0X11580: usize = 5576;
-const USE_OFFSET_0X11800: usize = 6032;
-const USE_OFFSET_0X11900: usize = 6096;
-const USE_OFFSET_0X119A0: usize = 6192;
-const USE_OFFSET_0X11C00: usize = 6448;
-const USE_OFFSET_0X11D00: usize = 6632;
-const USE_OFFSET_0X11EE0: usize = 6808;
-const USE_OFFSET_0X13000: usize = 6832;
-const USE_OFFSET_0X16AC0: usize = 7920;
-const USE_OFFSET_0X16F00: usize = 8040;
-const USE_OFFSET_0X16FE0: usize = 8192;
-const USE_OFFSET_0X18B00: usize = 8200;
-const USE_OFFSET_0X1BC00: usize = 8672;
-const USE_OFFSET_0X1E100: usize = 8832;
-const USE_OFFSET_0X1E290: usize = 8912;
-const USE_OFFSET_0X1E900: usize = 9024;
+const USE_OFFSET_0X0348: usize = 80;
+const USE_OFFSET_0X0640: usize = 88;
+const USE_OFFSET_0X07C8: usize = 96;
+const USE_OFFSET_0X0840: usize = 152;
+const USE_OFFSET_0X0900: usize = 184;
+const USE_OFFSET_0X0F00: usize = 1456;
+const USE_OFFSET_0X1000: usize = 1656;
+const USE_OFFSET_0X1700: usize = 1816;
+const USE_OFFSET_0X1900: usize = 2248;
+const USE_OFFSET_0X1B00: usize = 2664;
+const USE_OFFSET_0X1CD0: usize = 3000;
+const USE_OFFSET_0X1DF8: usize = 3048;
+const USE_OFFSET_0X2008: usize = 3056;
+const USE_OFFSET_0X2070: usize = 3072;
+const USE_OFFSET_0X20F0: usize = 3096;
+const USE_OFFSET_0X25C8: usize = 3104;
+const USE_OFFSET_0X2D30: usize = 3112;
+const USE_OFFSET_0XA800: usize = 3192;
+const USE_OFFSET_0XABC0: usize = 3952;
+const USE_OFFSET_0XFE00: usize = 4016;
+const USE_OFFSET_0X10570: usize = 4032;
+const USE_OFFSET_0X10A00: usize = 4112;
+const USE_OFFSET_0X10AC0: usize = 4192;
+const USE_OFFSET_0X10B80: usize = 4232;
+const USE_OFFSET_0X10D00: usize = 4280;
+const USE_OFFSET_0X10E80: usize = 4344;
+const USE_OFFSET_0X10F30: usize = 4400;
+const USE_OFFSET_0X11100: usize = 4808;
+const USE_OFFSET_0X11280: usize = 5128;
+const USE_OFFSET_0X11400: usize = 5376;
+const USE_OFFSET_0X11580: usize = 5600;
+const USE_OFFSET_0X11800: usize = 6056;
+const USE_OFFSET_0X11900: usize = 6120;
+const USE_OFFSET_0X119A0: usize = 6216;
+const USE_OFFSET_0X11C00: usize = 6472;
+const USE_OFFSET_0X11D00: usize = 6656;
+const USE_OFFSET_0X11EE0: usize = 6832;
+const USE_OFFSET_0X13000: usize = 6856;
+const USE_OFFSET_0X16AC0: usize = 7944;
+const USE_OFFSET_0X16F00: usize = 8064;
+const USE_OFFSET_0X16FE0: usize = 8216;
+const USE_OFFSET_0X18B00: usize = 8224;
+const USE_OFFSET_0X1BC00: usize = 8696;
+const USE_OFFSET_0X1E100: usize = 8856;
+const USE_OFFSET_0X1E290: usize = 8936;
+const USE_OFFSET_0X1E900: usize = 9048;
+const USE_OFFSET_0XE0100: usize = 9144;
 
 #[rustfmt::skip]
 pub fn get_category(u: u32) -> Category {
@@ -935,6 +963,7 @@ pub fn get_category(u: u32) -> Category {
         0x0 => {
             if (0x0028..=0x003F).contains(&u) { return USE_TABLE[u as usize - 0x0028 + USE_OFFSET_0X0028]; }
             if (0x00A0..=0x00D7).contains(&u) { return USE_TABLE[u as usize - 0x00A0 + USE_OFFSET_0X00A0]; }
+            if (0x0348..=0x034F).contains(&u) { return USE_TABLE[u as usize - 0x0348 + USE_OFFSET_0X0348]; }
             if (0x0640..=0x0647).contains(&u) { return USE_TABLE[u as usize - 0x0640 + USE_OFFSET_0X0640]; }
             if (0x07C8..=0x07FF).contains(&u) { return USE_TABLE[u as usize - 0x07C8 + USE_OFFSET_0X07C8]; }
             if (0x0840..=0x085F).contains(&u) { return USE_TABLE[u as usize - 0x0840 + USE_OFFSET_0X0840]; }
@@ -959,6 +988,9 @@ pub fn get_category(u: u32) -> Category {
         0xA => {
             if (0xA800..=0xAAF7).contains(&u) { return USE_TABLE[u as usize - 0xA800 + USE_OFFSET_0XA800]; }
             if (0xABC0..=0xABFF).contains(&u) { return USE_TABLE[u as usize - 0xABC0 + USE_OFFSET_0XABC0]; }
+        }
+        0xF => {
+            if (0xFE00..=0xFE0F).contains(&u) { return USE_TABLE[u as usize - 0xFE00 + USE_OFFSET_0XFE00]; }
         }
         0x10 => {
             if (0x10570..=0x105BF).contains(&u) { return USE_TABLE[u as usize - 0x10570 + USE_OFFSET_0X10570]; }
@@ -1000,6 +1032,9 @@ pub fn get_category(u: u32) -> Category {
             if (0x1E100..=0x1E14F).contains(&u) { return USE_TABLE[u as usize - 0x1E100 + USE_OFFSET_0X1E100]; }
             if (0x1E290..=0x1E2FF).contains(&u) { return USE_TABLE[u as usize - 0x1E290 + USE_OFFSET_0X1E290]; }
             if (0x1E900..=0x1E95F).contains(&u) { return USE_TABLE[u as usize - 0x1E900 + USE_OFFSET_0X1E900]; }
+        }
+        0xE0 => {
+            if (0xE0100..=0xE01EF).contains(&u) { return USE_TABLE[u as usize - 0xE0100 + USE_OFFSET_0XE0100]; }
         }
         _ => {}
     }
