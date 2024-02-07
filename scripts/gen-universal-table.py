@@ -32,14 +32,14 @@ for j in range(7, 9):
         if not line:
             break
         headers[j - 1].append(line)
-headers.append (["UnicodeData.txt does not have a header."])
+headers.append(["UnicodeData.txt does not have a header."])
 
 data = [{} for _ in files]
 values = [{} for _ in files]
-for i, f in enumerate (files):
+for i, f in enumerate(files):
     for line in f:
 
-        j = line.find ('#')
+        j = line.find('#')
         if j >= 0:
             line = line[:j]
 
@@ -47,7 +47,7 @@ for i, f in enumerate (files):
         if len(fields) == 1:
             continue
 
-        uu = fields[0].split ('..')
+        uu = fields[0].split('..')
         start = int(uu[0], 16)
         if len(uu) == 1:
             end = start
