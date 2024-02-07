@@ -4,7 +4,6 @@
 
 import io
 import os
-import sys
 import urllib.request
 
 DEPENDENCIES = [
