@@ -19,6 +19,22 @@ fn aat_morx_001() {
 }
 
 #[test]
+fn aat_morx_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/e6185e88b04432fbf373594d5971686bb7dd698d.ttf",
+            "\u{0B95}\u{0BCD}\u{0020}\u{0B9A}\u{0BCD}",
+            "",
+        ),
+        "ka-tamil=0+825|\
+         pulli-tamil=0@-392,0+0|\
+         space=2+260|\
+         ca-tamil=3+723|\
+         pulli-tamil=3@-320,0+0"
+    );
+}
+
+#[test]
 fn aat_trak_001() {
     assert_eq!(
         shape(
