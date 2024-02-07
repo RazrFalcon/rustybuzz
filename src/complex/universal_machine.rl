@@ -42,7 +42,6 @@ H	= 12; # HALANT
 HN	= 13; # HALANT_NUM
 ZWNJ	= 14; # Zero width non-joiner
 R	= 18; # REPHA
-S	= 19; # SYM
 CS	= 43; # CONS_WITH_STACKER
 HVM	= 44; # HALANT_OR_VOWEL_MODIFIER
 Sk	= 48; # SAKOT
@@ -121,13 +120,11 @@ broken_cluster =
 
 number_joiner_terminated_cluster = N number_joiner_terminated_cluster_tail;
 numeral_cluster = N numeral_cluster_tail?;
-symbol_cluster = (S | GB) symbol_cluster_tail?;
+symbol_cluster = (O | GB) symbol_cluster_tail?;
 hieroglyph_cluster = SB+ | SB* G SE* (J SE* (G SE*)?)*;
-independent_cluster = O;
 other = any;
 
 main := |*
-	independent_cluster			=> { found_syllable!(SyllableType::IndependentCluster); };
 	virama_terminated_cluster		=> { found_syllable!(SyllableType::ViramaTerminatedCluster); };
 	sakot_terminated_cluster		=> { found_syllable!(SyllableType::SakotTerminatedCluster); };
 	standard_cluster			=> { found_syllable!(SyllableType::StandardCluster); };
