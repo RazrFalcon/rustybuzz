@@ -711,8 +711,8 @@ impl CharExt for char {
     }
 
     fn is_variation_selector(self) -> bool {
-        // U+180B..180D MONGOLIAN FREE VARIATION SELECTORs are handled in the
-        // Arabic shaper. No need to match them here.
+        // U+180B..180D, U+180F MONGOLIAN FREE VARIATION SELECTORs are handled in the
+        //Arabic shaper. No need to match them here.
         let ch = u32::from(self);
         (0x0FE00..=0x0FE0F).contains(&ch) || // VARIATION SELECTOR - 1..16
         (0xE0100..=0xE01EF).contains(&ch) // VARIATION SELECTOR - 17..256

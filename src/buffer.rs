@@ -193,7 +193,7 @@ impl GlyphInfo {
                     // FVSes are GC=Mn, we have use a separate bit to remember them.
                     // Fixes:
                     // https://github.com/harfbuzz/harfbuzz/issues/234
-                    0x180B..=0x180D => props |= UnicodeProps::HIDDEN.bits(),
+                    0x180B..=0x180D | 0x180F => props |= UnicodeProps::HIDDEN.bits(),
 
                     // TAG characters need similar treatment. Fixes:
                     // https://github.com/harfbuzz/harfbuzz/issues/463
