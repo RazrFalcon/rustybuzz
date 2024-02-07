@@ -1495,7 +1495,7 @@ bitflags::bitflags! {
     pub struct UnicodeProps: u16 {
         const GENERAL_CATEGORY  = 0x001F;
         const IGNORABLE         = 0x0020;
-        // MONGOLIAN FREE VARIATION SELECTOR 1..3, or TAG characters
+        // MONGOLIAN FREE VARIATION SELECTOR 1..4, or TAG characters
         const HIDDEN            = 0x0040;
         const CONTINUATION      = 0x0080;
 
