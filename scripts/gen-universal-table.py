@@ -43,16 +43,16 @@ for i, f in enumerate (files):
         if j >= 0:
             line = line[:j]
 
-        fields = [x.strip () for x in line.split (';')]
-        if len (fields) == 1:
+        fields = [x.strip() for x in line.split(';')]
+        if len(fields) == 1:
             continue
 
         uu = fields[0].split ('..')
-        start = int (uu[0], 16)
-        if len (uu) == 1:
+        start = int(uu[0], 16)
+        if len(uu) == 1:
             end = start
         else:
-            end = int (uu[1], 16)
+            end = int(uu[1], 16)
 
         t = fields[1 if i not in [2, 4] else 2]
 
@@ -67,9 +67,9 @@ for i, f in enumerate (files):
             t = 'Not_Applicable'
 
         i0 = i if i < 7 else i - 7
-        for u in range (start, end + 1):
+        for u in range(start, end + 1):
             data[i0][u] = t
-        values[i0][t] = values[i0].get (t, 0) + end - start + 1
+        values[i0][t] = values[i0].get(t, 0) + end - start + 1
 
 defaults = ('Other', 'Not_Applicable', 'jt_X', '', 'Cn', 'No_Block', 'Unknown')
 
@@ -97,14 +97,14 @@ data[0][0x111C8] = 'Consonant_Placeholder'
 
 # Merge data into one dict:
 for i, v in enumerate(defaults):
-    values[i][v] = values[i].get (v, 0) + 1
+    values[i][v] = values[i].get(v, 0) + 1
 combined = {}
 for i, d in enumerate(data):
     for u, v in d.items():
         if not u in combined:
             if i >= 4:
                 continue
-            combined[u] = list (defaults)
+            combined[u] = list(defaults)
         combined[u][i] = v
 combined = {k: v for k, v in combined.items(
 ) if v[6] not in DISABLED_SCRIPTS}
