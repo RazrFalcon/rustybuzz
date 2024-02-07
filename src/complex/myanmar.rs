@@ -90,7 +90,9 @@ impl GlyphInfo {
             // XXX The spec says D0, but Uniscribe doesn't seem to do.
             0x1040 => cat = category::D,
 
-            0x103E | 0x1060 => cat = category::X_GROUP,
+            0x103E => cat = category::X_GROUP,
+
+            0x1060 => cat = category::ML,
 
             0x103C => cat = category::Y_GROUP,
 
