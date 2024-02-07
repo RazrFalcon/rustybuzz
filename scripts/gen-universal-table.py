@@ -31,14 +31,7 @@ headers.append(['UnicodeData.txt does not have a header.'])
 data = [{} for f in files]
 values = [{} for f in files]
 for i, f in enumerate(files):
-    extended = False
-
     for line in f:
-        # TODO: https://github.com/MicrosoftDocs/typography-issues/issues/522
-        if extended and line.startswith('# ') and line.find(';'):
-            line = line[2:]
-        elif 'USE_Syllabic_Category' in line:
-            extended = True
 
         j = line.find('#')
         if j >= 0:
