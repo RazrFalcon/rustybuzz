@@ -24,7 +24,8 @@ for f in files:
 
 files = [io.open(x, encoding='utf-8') for x in files]
 
-headers = [[f.readline () for i in range (2)] for j,f in enumerate(files) if j != 4]
+headers = [[f.readline() for i in range(2)]
+           for j, f in enumerate(files) if j != 2]
 for j in range(7, 9):
     for line in files[j]:
         line = line.rstrip()
@@ -95,17 +96,18 @@ data[0][0x11C45] = 'Consonant_Placeholder'
 data[0][0x111C8] = 'Consonant_Placeholder'
 
 # Merge data into one dict:
-for i,v in enumerate (defaults):
+for i, v in enumerate(defaults):
     values[i][v] = values[i].get (v, 0) + 1
 combined = {}
-for i,d in enumerate (data):
-    for u,v in d.items ():
+for i, d in enumerate(data):
+    for u, v in d.items():
         if not u in combined:
             if i >= 4:
                 continue
             combined[u] = list (defaults)
         combined[u][i] = v
-combined = {k: v for k, v in combined.items() if v[6] not in DISABLED_SCRIPTS}
+combined = {k: v for k, v in combined.items(
+) if v[6] not in DISABLED_SCRIPTS}
 data = combined
 del combined
 
@@ -186,14 +188,19 @@ property_names = [
 class PropertyValue(object):
     def __init__(self, name_):
         self.name = name_
+
     def __str__(self):
         return self.name
+
     def __eq__(self, other):
         return self.name == (other if isinstance(other, str) else other.name)
+
     def __ne__(self, other):
         return not (self == other)
+
     def __hash__(self):
         return hash(str(self))
+
 
 property_values = {}
 
@@ -214,50 +221,87 @@ def is_BASE(U, UISC, UDI, UGC, AJT):
             AJT in [jt_C, jt_D, jt_L, jt_R] and UISC != Joiner or
             (UGC == Lo and UISC in [Avagraha, Bindu, Consonant_Final, Consonant_Medial,
                                     Consonant_Subjoined, Vowel, Vowel_Dependent]))
+
+
 def is_BASE_NUM(U, UISC, UDI, UGC, AJT):
     return UISC == Brahmi_Joining_Number
+
+
 def is_BASE_OTHER(U, UISC, UDI, UGC, AJT):
-    if UISC == Consonant_Placeholder: return True
+    if UISC == Consonant_Placeholder:
+        return True
     return U in [0x2015, 0x2022, 0x25FB, 0x25FC, 0x25FD, 0x25FE]
+
+
 def is_CGJ(U, UISC, UDI, UGC, AJT):
     # Also includes VARIATION_SELECTOR, WJ, and ZWJ
     return U == 0x200D or UDI and UGC in [Mc, Me, Mn]
+
+
 def is_CONS_FINAL(U, UISC, UDI, UGC, AJT):
     return ((UISC == Consonant_Final and UGC != Lo) or
             UISC == Consonant_Succeeding_Repha)
+
+
 def is_CONS_FINAL_MOD(U, UISC, UDI, UGC, AJT):
     return UISC == Syllable_Modifier
+
+
 def is_CONS_MED(U, UISC, UDI, UGC, AJT):
     # Consonant_Initial_Postfixed is new in Unicode 11; not in the spec.
     return (UISC == Consonant_Medial and UGC != Lo or
             UISC == Consonant_Initial_Postfixed)
+
+
 def is_CONS_MOD(U, UISC, UDI, UGC, AJT):
     return (UISC in [Nukta, Gemination_Mark, Consonant_Killer] and
             not is_SYM_MOD(U, UISC, UDI, UGC, AJT))
+
+
 def is_CONS_SUB(U, UISC, UDI, UGC, AJT):
     return UISC == Consonant_Subjoined and UGC != Lo
+
+
 def is_CONS_WITH_STACKER(U, UISC, UDI, UGC, AJT):
     return UISC == Consonant_With_Stacker
+
+
 def is_HALANT(U, UISC, UDI, UGC, AJT):
     return (UISC in [Virama, Invisible_Stacker]
             and not is_HALANT_OR_VOWEL_MODIFIER(U, UISC, UDI, UGC, AJT)
             and not is_SAKOT(U, UISC, UDI, UGC, AJT))
+
+
 def is_HALANT_OR_VOWEL_MODIFIER(U, UISC, UDI, UGC, AJT):
     # Split off of HALANT
     # https://github.com/harfbuzz/harfbuzz/issues/1379
     return U == 0x1134D
+
+
 def is_HALANT_NUM(U, UISC, UDI, UGC, AJT):
     return UISC == Number_Joiner
+
+
 def is_HIEROGLYPH(U, UISC, UDI, UGC, AJT):
     return UISC == Hieroglyph
+
+
 def is_HIEROGLYPH_JOINER(U, UISC, UDI, UGC, AJT):
     return UISC == Hieroglyph_Joiner
+
+
 def is_HIEROGLYPH_SEGMENT_BEGIN(U, UISC, UDI, UGC, AJT):
     return UISC == Hieroglyph_Segment_Begin
+
+
 def is_HIEROGLYPH_SEGMENT_END(U, UISC, UDI, UGC, AJT):
     return UISC == Hieroglyph_Segment_End
+
+
 def is_ZWNJ(U, UISC, UDI, UGC, AJT):
     return UISC == Non_Joiner
+
+
 def is_OTHER(U, UISC, UDI, UGC, AJT):
     # Also includes BASE_IND, Rsv, and SYM
     return ((UGC in [Cn, Po] or UISC in [Consonant_Dead, Joiner, Modifying_Letter, Other])
@@ -266,92 +310,104 @@ def is_OTHER(U, UISC, UDI, UGC, AJT):
             and not is_CGJ(U, UISC, UDI, UGC, AJT)
             and not is_SYM_MOD(U, UISC, UDI, UGC, AJT)
             )
+
+
 def is_REPHA(U, UISC, UDI, UGC, AJT):
     return UISC in [Consonant_Preceding_Repha, Consonant_Prefixed]
+
+
 def is_SAKOT(U, UISC, UDI, UGC, AJT):
     # Split off of HALANT
     return U == 0x1A60
+
+
 def is_SYM_MOD(U, UISC, UDI, UGC, AJT):
     return U in [0x1B6B, 0x1B6C, 0x1B6D, 0x1B6E, 0x1B6F, 0x1B70, 0x1B71, 0x1B72, 0x1B73]
+
+
 def is_VOWEL(U, UISC, UDI, UGC, AJT):
     # https://github.com/harfbuzz/harfbuzz/issues/376
     return (UISC == Pure_Killer or
             (UGC != Lo and UISC in [Vowel, Vowel_Dependent] and U not in [0xAA29]))
+
+
 def is_VOWEL_MOD(U, UISC, UDI, UGC, AJT):
     # https://github.com/harfbuzz/harfbuzz/issues/376
     return (UISC in [Tone_Mark, Cantillation_Mark, Register_Shifter, Visarga] or
             (UGC != Lo and (UISC == Bindu or U in [0xAA29])))
 
+
 use_mapping = {
-    'B':	is_BASE,
-    'N':	is_BASE_NUM,
-    'GB':	is_BASE_OTHER,
-    'CGJ':	is_CGJ,
-    'F':	is_CONS_FINAL,
-    'FM':	is_CONS_FINAL_MOD,
-    'M':	is_CONS_MED,
-    'CM':	is_CONS_MOD,
-    'SUB':	is_CONS_SUB,
-    'CS':	is_CONS_WITH_STACKER,
-    'H':	is_HALANT,
-    'HVM':	is_HALANT_OR_VOWEL_MODIFIER,
-    'HN':	is_HALANT_NUM,
-    'G':	is_HIEROGLYPH,
-    'J':	is_HIEROGLYPH_JOINER,
-    'SB':	is_HIEROGLYPH_SEGMENT_BEGIN,
-    'SE':	is_HIEROGLYPH_SEGMENT_END,
-    'ZWNJ':	is_ZWNJ,
-    'O':	is_OTHER,
-    'R':	is_REPHA,
-    'Sk':	is_SAKOT,
-    'SM':	is_SYM_MOD,
-    'V':	is_VOWEL,
-    'VM':	is_VOWEL_MOD,
+    'B': is_BASE,
+    'N': is_BASE_NUM,
+    'GB': is_BASE_OTHER,
+    'CGJ': is_CGJ,
+    'F': is_CONS_FINAL,
+    'FM': is_CONS_FINAL_MOD,
+    'M': is_CONS_MED,
+    'CM': is_CONS_MOD,
+    'SUB': is_CONS_SUB,
+    'CS': is_CONS_WITH_STACKER,
+    'H': is_HALANT,
+    'HVM': is_HALANT_OR_VOWEL_MODIFIER,
+    'HN': is_HALANT_NUM,
+    'G': is_HIEROGLYPH,
+    'J': is_HIEROGLYPH_JOINER,
+    'SB': is_HIEROGLYPH_SEGMENT_BEGIN,
+    'SE': is_HIEROGLYPH_SEGMENT_END,
+    'ZWNJ': is_ZWNJ,
+    'O': is_OTHER,
+    'R': is_REPHA,
+    'SK': is_SAKOT,
+    'SM': is_SYM_MOD,
+    'V': is_VOWEL,
+    'VM': is_VOWEL_MOD,
 }
 
 use_positions = {
     'F': {
-        'Abv': [Top],
-        'Blw': [Bottom],
-        'Pst': [Right],
+        'ABV': [Top],
+        'BLW': [Bottom],
+        'PST': [Right],
     },
     'M': {
-        'Abv': [Top],
-        'Blw': [Bottom, Bottom_And_Left, Bottom_And_Right],
-        'Pst': [Right],
-        'Pre': [Left, Top_And_Bottom_And_Left],
+        'ABV': [Top],
+        'BLW': [Bottom, Bottom_And_Left, Bottom_And_Right],
+        'PST': [Right],
+        'PRE': [Left, Top_And_Bottom_And_Left],
     },
     'CM': {
-        'Abv': [Top],
-        'Blw': [Bottom, Overstruck],
+        'ABV': [Top],
+        'BLW': [Bottom, Overstruck],
     },
     'V': {
-        'Abv': [Top, Top_And_Bottom, Top_And_Bottom_And_Right, Top_And_Right],
-        'Blw': [Bottom, Overstruck, Bottom_And_Right],
-        'Pst': [Right],
-        'Pre': [Left, Top_And_Left, Top_And_Left_And_Right, Left_And_Right],
+        'ABV': [Top, Top_And_Bottom, Top_And_Bottom_And_Right, Top_And_Right],
+        'BLW': [Bottom, Overstruck, Bottom_And_Right],
+        'PST': [Right],
+        'PRE': [Left, Top_And_Left, Top_And_Left_And_Right, Left_And_Right],
     },
     'VM': {
-        'Abv': [Top],
-        'Blw': [Bottom, Overstruck],
-        'Pst': [Right],
-        'Pre': [Left],
+        'ABV': [Top],
+        'BLW': [Bottom, Overstruck],
+        'PST': [Right],
+        'PRE': [Left],
     },
     'SM': {
-        'Abv': [Top],
-        'Blw': [Bottom],
+        'ABV': [Top],
+        'BLW': [Bottom],
     },
     'H': None,
     'HVM': None,
     'B': None,
     'FM': {
-        'Abv': [Top],
-        'Blw': [Bottom],
-        'Pst': [Not_Applicable],
+        'ABV': [Top],
+        'BLW': [Bottom],
+        'PST': [Not_Applicable],
     },
     'R': None,
     'SUB': None,
 }
+
 
 def map_to_use(data):
     out = {}
@@ -361,42 +417,56 @@ def map_to_use(data):
         # Resolve Indic_Syllabic_Category
 
         # TODO: These don't have UISC assigned in Unicode 13.0.0, but have UIPC
-        if 0x1CE2 <= U <= 0x1CE8: UISC = Cantillation_Mark
+        if 0x1CE2 <= U <= 0x1CE8:
+            UISC = Cantillation_Mark
 
         # Tibetan:
         # TODO: These don't have UISC assigned in Unicode 13.0.0, but have UIPC
-        if 0x0F18 <= U <= 0x0F19 or 0x0F3E <= U <= 0x0F3F: UISC = Vowel_Dependent
+        if 0x0F18 <= U <= 0x0F19 or 0x0F3E <= U <= 0x0F3F:
+            UISC = Vowel_Dependent
 
         # TODO: https://github.com/harfbuzz/harfbuzz/pull/627
-        if 0x1BF2 <= U <= 0x1BF3: UISC = Nukta; UIPC = Bottom
+        if 0x1BF2 <= U <= 0x1BF3:
+            UISC = Nukta
+            UIPC = Bottom
 
         # TODO: U+1CED should only be allowed after some of
         # the nasalization marks, maybe only for U+1CE9..U+1CF1.
-        if U == 0x1CED: UISC = Tone_Mark
+        if U == 0x1CED:
+            UISC = Tone_Mark
 
         # TODO: https://github.com/microsoft/font-tools/issues/1
-        if U == 0xA982: UISC = Consonant_Succeeding_Repha
+        if U == 0xA982:
+            UISC = Consonant_Succeeding_Repha
 
         values = [k for k,v in items if v(U, UISC, UDI, UGC, AJT)]
-        assert len(values) == 1, "%s %s %s %s %s %s" % (hex(U), UISC, UDI, UGC, AJT, values)
+        assert len(values) == 1, "%s %s %s %s %s %s" % (
+            hex(U), UISC, UDI, UGC, AJT, values)
         USE = values[0]
 
         # Resolve Indic_Positional_Category
 
         # TODO: These should die, but have UIPC in Unicode 13.0.0
-        if U in [0x953, 0x954]: UIPC = Not_Applicable
+        if U in [0x953, 0x954]:
+            UIPC = Not_Applicable
 
         # TODO: These are not in USE's override list that we have, nor are they in Unicode 13.0.0
-        if 0xA926 <= U <= 0xA92A: UIPC = Top
+        if 0xA926 <= U <= 0xA92A:
+            UIPC = Top
+
         # TODO: https://github.com/harfbuzz/harfbuzz/pull/1037
         #  and https://github.com/harfbuzz/harfbuzz/issues/1631
-        if U in [0x11302, 0x11303, 0x114C1]: UIPC = Top
-        if 0x1CF8 <= U <= 0x1CF9: UIPC = Top
+        if U in [0x11302, 0x11303, 0x114C1]:
+            UIPC = Top
+        if 0x1CF8 <= U <= 0x1CF9:
+            UIPC = Top
 
         # TODO: https://github.com/harfbuzz/harfbuzz/pull/982
         # also  https://github.com/harfbuzz/harfbuzz/issues/1012
-        if 0x1112A <= U <= 0x1112B: UIPC = Top
-        if 0x11131 <= U <= 0x11132: UIPC = Top
+        if 0x1112A <= U <= 0x1112B:
+            UIPC = Top
+        if 0x11131 <= U <= 0x11132:
+            UIPC = Top
 
         assert (UIPC in [Not_Applicable, Visual_Order_Left] or U == 0x0F7F or
                 USE in use_positions), "%s %s %s %s %s %s %s" % (hex(U), UIPC, USE, UISC, UDI, UGC, AJT)
@@ -404,11 +474,13 @@ def map_to_use(data):
         pos_mapping = use_positions.get(USE, None)
         if pos_mapping:
             values = [k for k,v in pos_mapping.items() if v and UIPC in v]
-            assert len(values) == 1, "%s %s %s %s %s %s %s %s" % (hex(U), UIPC, USE, UISC, UDI, UGC, AJT, values)
+            assert len(values) == 1, "%s %s %s %s %s %s %s %s" % (
+                hex(U), UIPC, USE, UISC, UDI, UGC, AJT, values)
             USE = USE + values[0]
 
         out[U] = (USE, UBlock)
     return out
+
 
 defaults = ('O', 'No_Block')
 data = map_to_use(data)
@@ -440,7 +512,7 @@ def print_block(block, start, end, data):
         if u in data:
             num += 1
         d = data.get(u, defaults)
-        print('%6s,' % d[0].upper(), end='')
+        print('%6s,' % d[0], end='')
 
     total += end - start + 1
     used += num
