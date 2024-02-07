@@ -14,7 +14,7 @@ files = ['IndicSyllabicCategory.txt', 'IndicPositionalCategory.txt',
 for f in files:
     if not os.path.exists(f):
         urllib.request.urlretrieve(
-            'https://unicode.org/Public/13.0.0/ucd/' + f, f)
+            'https://unicode.org/Public/14.0.0/ucd/' + f, f)
 
 files = [io.open(x, encoding='utf-8') for x in files]
 
