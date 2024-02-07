@@ -187,14 +187,18 @@ impl<'a> ShapePlanner<'a> {
             .enable_feature(Tag::from_bytes(b"trak"), FeatureFlags::HAS_FALLBACK, 1);
 
         self.ot_map
-            .enable_feature(Tag::from_bytes(b"HARF"), empty, 1);
+            .enable_feature(Tag::from_bytes(b"Harf"), empty, 1); // Considered required.
+        self.ot_map
+            .enable_feature(Tag::from_bytes(b"HARF"), empty, 1); // Considered discretionary.
 
         if let Some(func) = self.shaper.collect_features {
             func(self);
         }
 
         self.ot_map
-            .enable_feature(Tag::from_bytes(b"BUZZ"), empty, 1);
+            .enable_feature(Tag::from_bytes(b"Buzz"), empty, 1); // Considered required.
+        self.ot_map
+            .enable_feature(Tag::from_bytes(b"BUZZ"), empty, 1); // Considered discretionary.
 
         for &(tag, flags) in COMMON_FEATURES {
             self.ot_map.add_feature(tag, flags, 1);
