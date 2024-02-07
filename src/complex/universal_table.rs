@@ -441,7 +441,7 @@ const USE_TABLE: &[Category] = &[
 
   /* 10AC0 */     B,     B,     B,     B,     B,     B,     B,     B,     O,     B,     B,     B,     B,     B,     B,     B,
   /* 10AD0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
-  /* 10AE0 */     B,     B,     B,     B,     B, CMBLW, CMBLW,     O,
+  /* 10AE0 */     B,     B,     B,     B,     B, CMBLW, CMBLW,     O,     O,     O,     O,     B,     B,     B,     B,     B,
 
   /* Psalter Pahlavi */
 
@@ -469,11 +469,11 @@ const USE_TABLE: &[Category] = &[
   /* 10F40 */     B,     B,     B,     B,     B,     B, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW,
   /* 10F50 */ VMBLW,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 10F60 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
-  /* 10F70 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
 
   /* Old Uyghur */
 
-  /* 10F80 */     O,     O, CMBLW, CMBLW, CMBLW, CMBLW,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 10F70 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 10F80 */     B,     B, CMBLW, CMBLW, CMBLW, CMBLW,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 10F90 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 10FA0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
 
@@ -932,30 +932,30 @@ const USE_OFFSET_0XFE00: usize = 4016;
 const USE_OFFSET_0X10570: usize = 4032;
 const USE_OFFSET_0X10A00: usize = 4112;
 const USE_OFFSET_0X10AC0: usize = 4192;
-const USE_OFFSET_0X10B80: usize = 4232;
-const USE_OFFSET_0X10D00: usize = 4280;
-const USE_OFFSET_0X10E80: usize = 4344;
-const USE_OFFSET_0X10F30: usize = 4400;
-const USE_OFFSET_0X11100: usize = 4808;
-const USE_OFFSET_0X11280: usize = 5128;
-const USE_OFFSET_0X11400: usize = 5376;
-const USE_OFFSET_0X11580: usize = 5600;
-const USE_OFFSET_0X11800: usize = 6056;
-const USE_OFFSET_0X11900: usize = 6120;
-const USE_OFFSET_0X119A0: usize = 6216;
-const USE_OFFSET_0X11C00: usize = 6472;
-const USE_OFFSET_0X11D00: usize = 6656;
-const USE_OFFSET_0X11EE0: usize = 6832;
-const USE_OFFSET_0X13000: usize = 6856;
-const USE_OFFSET_0X16AC0: usize = 7944;
-const USE_OFFSET_0X16F00: usize = 8064;
-const USE_OFFSET_0X16FE0: usize = 8216;
-const USE_OFFSET_0X18B00: usize = 8224;
-const USE_OFFSET_0X1BC00: usize = 8696;
-const USE_OFFSET_0X1E100: usize = 8856;
-const USE_OFFSET_0X1E290: usize = 8936;
-const USE_OFFSET_0X1E900: usize = 9048;
-const USE_OFFSET_0XE0100: usize = 9144;
+const USE_OFFSET_0X10B80: usize = 4240;
+const USE_OFFSET_0X10D00: usize = 4288;
+const USE_OFFSET_0X10E80: usize = 4352;
+const USE_OFFSET_0X10F30: usize = 4408;
+const USE_OFFSET_0X11100: usize = 4816;
+const USE_OFFSET_0X11280: usize = 5136;
+const USE_OFFSET_0X11400: usize = 5384;
+const USE_OFFSET_0X11580: usize = 5608;
+const USE_OFFSET_0X11800: usize = 6064;
+const USE_OFFSET_0X11900: usize = 6128;
+const USE_OFFSET_0X119A0: usize = 6224;
+const USE_OFFSET_0X11C00: usize = 6480;
+const USE_OFFSET_0X11D00: usize = 6664;
+const USE_OFFSET_0X11EE0: usize = 6840;
+const USE_OFFSET_0X13000: usize = 6864;
+const USE_OFFSET_0X16AC0: usize = 7952;
+const USE_OFFSET_0X16F00: usize = 8072;
+const USE_OFFSET_0X16FE0: usize = 8224;
+const USE_OFFSET_0X18B00: usize = 8232;
+const USE_OFFSET_0X1BC00: usize = 8704;
+const USE_OFFSET_0X1E100: usize = 8864;
+const USE_OFFSET_0X1E290: usize = 8944;
+const USE_OFFSET_0X1E900: usize = 9056;
+const USE_OFFSET_0XE0100: usize = 9152;
 
 #[rustfmt::skip]
 pub fn get_category(u: u32) -> Category {
@@ -995,7 +995,7 @@ pub fn get_category(u: u32) -> Category {
         0x10 => {
             if (0x10570..=0x105BF).contains(&u) { return USE_TABLE[u as usize - 0x10570 + USE_OFFSET_0X10570]; }
             if (0x10A00..=0x10A4F).contains(&u) { return USE_TABLE[u as usize - 0x10A00 + USE_OFFSET_0X10A00]; }
-            if (0x10AC0..=0x10AE7).contains(&u) { return USE_TABLE[u as usize - 0x10AC0 + USE_OFFSET_0X10AC0]; }
+            if (0x10AC0..=0x10AEF).contains(&u) { return USE_TABLE[u as usize - 0x10AC0 + USE_OFFSET_0X10AC0]; }
             if (0x10B80..=0x10BAF).contains(&u) { return USE_TABLE[u as usize - 0x10B80 + USE_OFFSET_0X10B80]; }
             if (0x10D00..=0x10D3F).contains(&u) { return USE_TABLE[u as usize - 0x10D00 + USE_OFFSET_0X10D00]; }
             if (0x10E80..=0x10EB7).contains(&u) { return USE_TABLE[u as usize - 0x10E80 + USE_OFFSET_0X10E80]; }

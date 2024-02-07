@@ -6,10 +6,16 @@ import io
 import os
 import urllib.request
 
-DISABLED_BLOCKS = ['Samaritan', 'Thai', 'Lao']
+DISABLED_SCRIPTS = {
+    'Arabic',
+    'Lao',
+    'Samaritan',
+    'Syriac',
+    'Thai',
+}
 
-files = ['IndicSyllabicCategory.txt', 'IndicPositionalCategory.txt', 'DerivedCoreProperties.txt',
-         'UnicodeData.txt', 'ArabicShaping.txt', 'Blocks.txt',
+files = ['IndicSyllabicCategory.txt', 'IndicPositionalCategory.txt', 'ArabicShaping.txt',
+         'DerivedCoreProperties.txt', 'UnicodeData.txt',  'Blocks.txt', 'Scripts.txt',
          'ms-use/IndicSyllabicCategory-Additional.txt', 'ms-use/IndicPositionalCategory-Additional.txt']
 for f in files:
     if not os.path.exists(f):
@@ -18,8 +24,8 @@ for f in files:
 
 files = [io.open(x, encoding='utf-8') for x in files]
 
-headers = [[f.readline () for i in range (2)] for j,f in enumerate(files) if j != 3]
-for j in range(6, 8):
+headers = [[f.readline () for i in range (2)] for j,f in enumerate(files) if j != 4]
+for j in range(7, 9):
     for line in files[j]:
         line = line.rstrip()
         if not line:
@@ -47,27 +53,26 @@ for i, f in enumerate (files):
         else:
             end = int (uu[1], 16)
 
-        t = fields[1 if i not in [3, 4] else 2]
+        t = fields[1 if i not in [2, 4] else 2]
 
-        if i == 2 and t != 'Default_Ignorable_Code_Point':
-            continue
-        elif i == 4:
+        if i == 2:
             t = 'jt_' + t
-        elif i == 6 and t == 'Consonant_Final_Modifier':
+        elif i == 3 and t != 'Default_Ignorable_Code_Point':
+            continue
+        elif i == 7 and t == 'Consonant_Final_Modifier':
             # TODO: https://github.com/MicrosoftDocs/typography-issues/issues/336
             t = 'Syllable_Modifier'
-        elif i == 7 and t == 'NA':
+        elif i == 8 and t == 'NA':
             t = 'Not_Applicable'
 
-        i0 = i if i < 6 else i - 6
+        i0 = i if i < 7 else i - 7
         for u in range (start, end + 1):
             data[i0][u] = t
         values[i0][t] = values[i0].get (t, 0) + end - start + 1
 
-defaults = ('Other', 'Not_Applicable', '', 'Cn', 'jt_X', 'No_Block')
+defaults = ('Other', 'Not_Applicable', 'jt_X', '', 'Cn', 'No_Block', 'Unknown')
 
 # TODO Characters that are not in Unicode Indic files, but used in USE
-data[0][0x0640] = defaults[0]
 data[0][0x1B61] = defaults[0]
 data[0][0x1B63] = defaults[0]
 data[0][0x1B64] = defaults[0]
@@ -77,29 +82,6 @@ data[0][0x1B67] = defaults[0]
 data[0][0x1B69] = defaults[0]
 data[0][0x1B6A] = defaults[0]
 data[0][0x2060] = defaults[0]
-for u in range (0x07CA, 0x07EA + 1):
-    data[0][u] = defaults[0]
-data[0][0x07FA] = defaults[0]
-for u in range (0x0840, 0x0858 + 1):
-    data[0][u] = defaults[0]
-for u in range (0x1887, 0x18A8 + 1):
-    data[0][u] = defaults[0]
-data[0][0x18AA] = defaults[0]
-for u in range (0xA840, 0xA872 + 1):
-    data[0][u] = defaults[0]
-for u in range (0x10B80, 0x10B91 + 1):
-    data[0][u] = defaults[0]
-for u in range (0x10BA9, 0x10BAE + 1):
-    data[0][u] = defaults[0]
-data[0][0x10FB0] = defaults[0]
-for u in range (0x10FB2, 0x10FB6 + 1):
-    data[0][u] = defaults[0]
-for u in range (0x10FB8, 0x10FBF + 1):
-    data[0][u] = defaults[0]
-for u in range (0x10FC1, 0x10FC4 + 1):
-    data[0][u] = defaults[0]
-for u in range (0x10FC9, 0x10FCB + 1):
-    data[0][u] = defaults[0]
 # TODO https://github.com/harfbuzz/harfbuzz/pull/1685
 data[0][0x1B5B] = 'Consonant_Placeholder'
 data[0][0x1B5C] = 'Consonant_Placeholder'
@@ -118,12 +100,12 @@ for i,v in enumerate (defaults):
 combined = {}
 for i,d in enumerate (data):
     for u,v in d.items ():
-        if i >= 3 and not u in combined:
-            continue
         if not u in combined:
+            if i >= 4:
+                continue
             combined[u] = list (defaults)
         combined[u][i] = v
-combined = {k: v for k, v in combined.items() if v[5] not in DISABLED_BLOCKS}
+combined = {k: v for k, v in combined.items() if v[6] not in DISABLED_SCRIPTS}
 data = combined
 del combined
 
@@ -374,7 +356,7 @@ use_positions = {
 def map_to_use(data):
     out = {}
     items = use_mapping.items()
-    for U, (UISC, UIPC, UDI, UGC, AJT, UBlock) in data.items():
+    for U, (UISC, UIPC, AJT, UDI, UGC, UBlock, _) in data.items():
 
         # Resolve Indic_Syllabic_Category
 
