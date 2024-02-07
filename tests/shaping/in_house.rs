@@ -2372,6 +2372,20 @@ fn indic_syllable_012() {
 }
 
 #[test]
+fn indic_syllable_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/e2b17207c4b7ad78d843e1b0c4d00b09398a1137.ttf",
+            "\u{0BAA}\u{0BAA}\u{0BCD}",
+            "",
+        ),
+        "pa-tamil=0+778|\
+         pa-tamil.001=1+778|\
+         pulli-tamil=1@-385,0+0"
+    );
+}
+
+#[test]
 fn indic_vowel_letter_spoofing_001() {
     assert_eq!(
         shape(
