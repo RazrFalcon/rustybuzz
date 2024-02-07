@@ -491,7 +491,7 @@ const USE_TABLE: &[Category] = &[
   /* 11010 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11020 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11030 */     B,     B,     B,     B,     B,     B,     B,     B,  VABV,  VABV,  VABV,  VABV,  VBLW,  VBLW,  VBLW,  VBLW,
-  /* 11040 */  VBLW,  VBLW,  VABV,  VABV,  VABV,  VABV,   HVM,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 11040 */  VBLW,  VBLW,  VABV,  VABV,  VABV,  VABV,     H,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 11050 */     O,     O,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,
   /* 11060 */     N,     N,     N,     N,     N,     N,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11070 */  VABV,     B,     B,  VABV,  VABV,     B,     O,     O,     O,     O,     O,     O,     O,     O,     O,    HN,
