@@ -678,13 +678,6 @@ fn collect_features(planner: &mut ShapePlanner) {
 
     planner
         .ot_map
-        .enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::empty(), 1);
-    planner
-        .ot_map
-        .enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
-
-    planner
-        .ot_map
         .add_gsub_pause(Some(crate::ot::clear_syllables));
 }
 
