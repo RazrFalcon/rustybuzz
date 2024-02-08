@@ -763,6 +763,13 @@ impl Buffer {
         }
     }
 
+    pub fn reverse_graphemes(&mut self) {
+        self.reverse_groups(
+            _grapheme_group_func,
+            self.cluster_level == BufferClusterLevel::MonotoneCharacters,
+        )
+    }
+
     pub fn group_end<F>(&self, mut start: usize, group: F) -> usize
     where
         F: Fn(&GlyphInfo, &GlyphInfo) -> bool,
