@@ -1159,7 +1159,7 @@ impl Buffer {
 
     fn unsafe_to_break_impl(&mut self, start: usize, end: usize) {
         let mut cluster = core::u32::MAX;
-        cluster = Self::_unsafe_to_break_find_min_cluster(&self.info, start, end, cluster);
+        cluster = Self::_infos_find_min_cluster(&self.info, start, end, cluster);
         let unsafe_to_break = Self::_unsafe_to_break_set_mask(&mut self.info, start, end, cluster);
         if unsafe_to_break {
             self.scratch_flags |= BufferScratchFlags::HAS_UNSAFE_TO_BREAK;
@@ -1177,8 +1177,8 @@ impl Buffer {
 
         let mut cluster = core::u32::MAX;
         cluster =
-            Self::_unsafe_to_break_find_min_cluster(self.out_info(), start, self.out_len, cluster);
-        cluster = Self::_unsafe_to_break_find_min_cluster(&self.info, self.idx, end, cluster);
+            Self::_infos_find_min_cluster(self.out_info(), start, self.out_len, cluster);
+        cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, cluster);
         let idx = self.idx;
         let out_len = self.out_len;
         let unsafe_to_break1 =
@@ -1341,7 +1341,7 @@ impl Buffer {
         info.cluster = cluster;
     }
 
-    fn _unsafe_to_break_find_min_cluster(
+    fn _infos_find_min_cluster(
         info: &[GlyphInfo],
         start: usize,
         end: usize,
