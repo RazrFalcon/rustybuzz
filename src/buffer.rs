@@ -733,7 +733,7 @@ impl Buffer {
         }
     }
 
-    pub fn reverse_groups<F>(&mut self, group: F)
+    pub fn reverse_groups<F>(&mut self, group: F, merge_clusters: bool)
     where
         F: Fn(&GlyphInfo, &GlyphInfo) -> bool,
     {
@@ -747,8 +747,16 @@ impl Buffer {
 
         for i in 1..self.len {
             if !group(&self.info[i - 1], &self.info[i]) {
+                if merge_clusters {
+                    self.merge_clusters(start, i);
+                }
+
                 self.reverse_range(start, i);
                 start = i;
+            }
+
+            if merge_clusters {
+                self.merge_clusters(start, i);
             }
 
             self.reverse_range(start, i);
@@ -777,7 +785,7 @@ impl Buffer {
     }
 
     pub fn reverse_clusters(&mut self) {
-        self.reverse_groups(Self::_cluster_group_func);
+        self.reverse_groups(Self::_cluster_group_func, false);
     }
 
     #[inline]
