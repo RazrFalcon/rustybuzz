@@ -776,16 +776,8 @@ impl Buffer {
         start
     }
 
-    pub(crate) fn _cluster_group_func(a: &GlyphInfo, b: &GlyphInfo) -> bool {
-        a.cluster == b.cluster
-    }
-
-    pub(crate) fn _grapheme_group_func(_: &GlyphInfo, b: &GlyphInfo) -> bool {
-        b.is_continuation()
-    }
-
     pub fn reverse_clusters(&mut self) {
-        self.reverse_groups(Self::_cluster_group_func, false);
+        self.reverse_groups(_cluster_group_func, false);
     }
 
     #[inline]
@@ -1506,11 +1498,19 @@ impl Buffer {
     }
 }
 
+pub(crate) fn _cluster_group_func(a: &GlyphInfo, b: &GlyphInfo) -> bool {
+    a.cluster == b.cluster
+}
+
+pub(crate) fn _grapheme_group_func(_: &GlyphInfo, b: &GlyphInfo) -> bool {
+    b.is_continuation()
+}
+
 // TODO: to iter if possible
 
 macro_rules! foreach_cluster {
     ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {
-        foreach_group!($buffer, $start, $end, Buffer::_cluster_group_func, $($body)*)
+        foreach_group!($buffer, $start, $end, crate::buffer::_cluster_group_func, $($body)*)
     };
 }
 
@@ -1542,7 +1542,7 @@ macro_rules! foreach_syllable {
 
 macro_rules! foreach_grapheme {
     ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {
-        foreach_group!($buffer, $start, $end, Buffer::_grapheme_group_func, $($body)*)
+        foreach_group!($buffer, $start, $end, crate::buffer::_grapheme_group_func, $($body)*)
     };
 }
 
