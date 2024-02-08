@@ -741,8 +741,6 @@ impl Buffer {
             return;
         }
 
-        self.reverse();
-
         let mut start = 0;
 
         for i in 1..self.len {
@@ -760,6 +758,8 @@ impl Buffer {
             }
 
             self.reverse_range(start, i);
+
+            self.reverse();
         }
     }
 
