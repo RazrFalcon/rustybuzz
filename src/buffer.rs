@@ -733,6 +733,49 @@ impl Buffer {
         }
     }
 
+    pub fn reverse_groups<F>(&mut self, group: F)
+    where
+        F: Fn(&GlyphInfo, &GlyphInfo) -> bool,
+    {
+        if self.is_empty() {
+            return;
+        }
+
+        self.reverse();
+
+        let mut start = 0;
+
+        for i in 1..self.len {
+            if !group(&self.info[i - 1], &self.info[i]) {
+                self.reverse_range(start, i);
+                start = i;
+            }
+
+            self.reverse_range(start, i);
+        }
+    }
+
+    pub fn group_end<F>(&self, mut start: usize, group: F) -> usize
+    where
+        F: Fn(&GlyphInfo, &GlyphInfo) -> bool,
+    {
+        start += 1;
+
+        while start < self.len && group(&self.info[start - 1], &self.info[start]) {
+            start += 1;
+        }
+
+        start
+    }
+
+    pub(crate) fn _cluster_group_func(a: &GlyphInfo, b: &GlyphInfo) -> bool {
+        a.cluster == b.cluster
+    }
+
+    pub fn reverse_clusters(&mut self) {
+        self.reverse_groups(Self::_cluster_group_func);
+    }
+
     #[inline]
     fn reset_clusters(&mut self) {
         for (i, info) in self.info.iter_mut().enumerate() {
@@ -1176,8 +1219,7 @@ impl Buffer {
         assert!(self.idx <= end);
 
         let mut cluster = core::u32::MAX;
-        cluster =
-            Self::_infos_find_min_cluster(self.out_info(), start, self.out_len, cluster);
+        cluster = Self::_infos_find_min_cluster(self.out_info(), start, self.out_len, cluster);
         cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, cluster);
         let idx = self.idx;
         let out_len = self.out_len;
@@ -1455,13 +1497,21 @@ impl Buffer {
 // TODO: to iter if possible
 
 macro_rules! foreach_cluster {
-    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {{
+    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {
+        foreach_group!($buffer, $start, $end, Buffer::_cluster_group_func, $($body)*)
+    };
+}
+
+macro_rules! foreach_group {
+    ($buffer:expr, $start:ident, $end:ident, $group_func:expr, $($body:tt)*) => {{
+        let count = $buffer.len;
         let mut $start = 0;
-        let mut $end = $buffer.next_cluster(0);
-        while $start < $buffer.len {
+        let mut $end = if count > 0 { $buffer.group_end(0, $group_func) } else { 0 };
+
+        while $start < count {
             $($body)*;
             $start = $end;
-            $end = $buffer.next_cluster($start);
+            $end = $buffer.group_end($start, $group_func);
         }
     }};
 }
