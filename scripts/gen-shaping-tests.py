@@ -10,6 +10,9 @@ from pathlib import Path
 # There is no sane way to test them.
 IGNORE_TESTS = [
     'macos.tests',
+    'coretext.tests',
+    'directwrite.tests',
+    'uniscribe.tests',
 ]
 
 IGNORE_TEST_CASES = [

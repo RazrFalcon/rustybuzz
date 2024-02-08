@@ -8,7 +8,7 @@ fn classdef1_001() {
         shape(
             "tests/fonts/aots/classdef1_font4.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -24,7 +24,7 @@ fn classdef1_empty_001() {
         shape(
             "tests/fonts/aots/classdef1_font2.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -41,7 +41,7 @@ fn classdef1_multiple_001() {
             "tests/fonts/aots/classdef1_font3.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\
              \u{001B}\u{001C}\u{001D}\u{001E}\u{001F}\u{0020}\u{0021}\u{0022}\u{0023}\u{0024}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "20|\
          23|\
@@ -72,7 +72,7 @@ fn classdef1_single_001() {
         shape(
             "tests/fonts/aots/classdef2_font1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -88,7 +88,7 @@ fn classdef2_001() {
         shape(
             "tests/fonts/aots/classdef2_font4.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -104,7 +104,7 @@ fn classdef2_empty_001() {
         shape(
             "tests/fonts/aots/classdef2_font2.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -121,7 +121,7 @@ fn classdef2_multiple_001() {
             "tests/fonts/aots/classdef2_font3.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\
              \u{001B}\u{001C}\u{001D}\u{001E}\u{001F}\u{0020}\u{0021}\u{0022}\u{0023}\u{0024}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "20|\
          23|\
@@ -152,7 +152,7 @@ fn classdef2_single_001() {
         shape(
             "tests/fonts/aots/classdef2_font1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -168,7 +168,7 @@ fn cmap0_001() {
         shape(
             "tests/fonts/aots/cmap0_font1.otf",
             "\u{0000}\u{0001}\u{0033}\u{0034}\u{0035}\u{0036}\u{0037}\u{FFFF}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -187,7 +187,7 @@ fn cmap10_001() {
         shape(
             "tests/fonts/aots/cmap10_font1.otf",
             "\u{0000}\u{0001}\u{9232}\u{109422}\u{109423}\u{109424}\u{109425}\u{FFFF}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -206,7 +206,7 @@ fn cmap10_002() {
         shape(
             "tests/fonts/aots/cmap10_font2.otf",
             "\u{0000}\u{0001}\u{0021}\u{0022}\u{0023}\u{0024}\u{0025}\u{FFFF}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -226,7 +226,7 @@ fn cmap12_001() {
             "tests/fonts/aots/cmap12_font1.otf",
             "\u{0000}\u{0001}\u{0010}\u{101723}\u{101724}\u{101727}\u{101728}\u{102522}\u{102523}\u{102527}\
              \u{102528}\u{FFFF}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -250,7 +250,7 @@ fn cmap4_001() {
             "tests/fonts/aots/cmap4_font1.otf",
             "\u{0000}\u{0001}\u{0010}\u{0011}\u{0012}\u{001E}\u{001F}\u{00C7}\u{00C8}\u{00CD}\
              \u{00D2}\u{00D3}\u{FFFF}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -275,7 +275,7 @@ fn cmap4_002() {
             "tests/fonts/aots/cmap4_font2.otf",
             "\u{0000}\u{0001}\u{0010}\u{0011}\u{0012}\u{001E}\u{001F}\u{00C7}\u{00C8}\u{00CD}\
              \u{00D2}\u{00D3}\u{FFFF}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -300,7 +300,7 @@ fn cmap4_003() {
             "tests/fonts/aots/cmap4_font3.otf",
             "\u{0000}\u{0001}\u{0010}\u{0011}\u{0012}\u{001E}\u{001F}\u{00C7}\u{00C8}\u{00CD}\
              \u{00D2}\u{00D3}\u{FFFF}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -324,7 +324,7 @@ fn cmap4_004() {
         shape(
             "tests/fonts/aots/cmap4_font4.otf",
             "\u{0000}\u{AFC7}\u{AFC8}\u{AFC9}\u{B02B}\u{B02C}\u{B02D}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -342,7 +342,7 @@ fn cmap4_006() {
         shape(
             "tests/fonts/aots/cmap4_font4.otf",
             "\u{0000}\u{0063}\u{0064}\u{01F3}\u{01F4}\u{01F5}\u{03E8}\u{03E9}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -361,7 +361,7 @@ fn cmap6_001() {
         shape(
             "tests/fonts/aots/cmap6_font1.otf",
             "\u{0000}\u{0001}\u{0021}\u{0022}\u{0023}\u{0024}\u{0025}\u{FFFF}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -380,7 +380,7 @@ fn cmap6_002() {
         shape(
             "tests/fonts/aots/cmap6_font2.otf",
             "\u{0000}\u{0001}\u{0021}\u{0022}\u{0023}\u{0024}\u{0025}\u{FFFF}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -399,7 +399,7 @@ fn gpos1_1_lookupflag_001() {
         shape(
             "tests/fonts/aots/gpos1_1_lookupflag_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -415,7 +415,7 @@ fn gpos1_1_simple_001() {
         shape(
             "tests/fonts/aots/gpos1_1_simple_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1300,0|\
@@ -431,7 +431,7 @@ fn gpos1_1_simple_002() {
         shape(
             "tests/fonts/aots/gpos1_1_simple_f2.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,-200|\
@@ -447,7 +447,7 @@ fn gpos1_1_simple_003() {
         shape(
             "tests/fonts/aots/gpos1_1_simple_f3.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -463,7 +463,7 @@ fn gpos1_2_001() {
         shape(
             "tests/fonts/aots/gpos1_2_font1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1300,0|\
@@ -479,7 +479,7 @@ fn gpos1_2_lookupflag_001() {
         shape(
             "tests/fonts/aots/gpos1_2_font2.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -495,7 +495,7 @@ fn gpos2_1_001() {
         shape(
             "tests/fonts/aots/gpos2_1_font6.otf",
             "\u{0011}\u{0012}\u{0013}\u{0011}\u{0012}\u{0014}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1300,0|\
@@ -513,7 +513,7 @@ fn gpos2_1_002() {
         shape(
             "tests/fonts/aots/gpos2_1_font7.otf",
             "\u{0011}\u{0012}\u{0013}\u{0011}\u{0012}\u{0014}\u{0011}\u{0015}\u{0016}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1300,0|\
@@ -534,7 +534,7 @@ fn gpos2_1_lookupflag_001() {
         shape(
             "tests/fonts/aots/gpos2_1_lookupflag_f1.otf",
             "\u{0011}\u{0013}\u{0014}\u{0011}\u{0013}\u{0012}\u{0014}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          19@1300,0|\
@@ -553,7 +553,7 @@ fn gpos2_1_lookupflag_002() {
         shape(
             "tests/fonts/aots/gpos2_1_lookupflag_f2.otf",
             "\u{0011}\u{0013}\u{0014}\u{0011}\u{0013}\u{0012}\u{0014}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          19@1500,0|\
@@ -572,7 +572,7 @@ fn gpos2_1_next_glyph_001() {
         shape(
             "tests/fonts/aots/gpos2_1_next_glyph_f1.otf",
             "\u{0012}\u{0012}\u{0012}\u{0012}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "18@-100,0|\
          18@1500,-100|\
@@ -587,7 +587,7 @@ fn gpos2_1_next_glyph_002() {
         shape(
             "tests/fonts/aots/gpos2_1_next_glyph_f2.otf",
             "\u{0012}\u{0012}\u{0012}\u{0012}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "18@-100,0|\
          18@1400,0|\
@@ -602,7 +602,7 @@ fn gpos2_1_simple_001() {
         shape(
             "tests/fonts/aots/gpos2_1_simple_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0011}\u{0012}\u{0014}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1300,0|\
@@ -619,7 +619,7 @@ fn gpos2_1_simple_002() {
         shape(
             "tests/fonts/aots/gpos2_1_simple_f1.otf",
             "\u{0011}\u{0012}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0"
@@ -632,7 +632,7 @@ fn gpos2_2_001() {
         shape(
             "tests/fonts/aots/gpos2_2_font1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0011}\u{0012}\u{0014}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1300,0|\
@@ -649,7 +649,7 @@ fn gpos2_2_002() {
         shape(
             "tests/fonts/aots/gpos2_2_font2.otf",
             "\u{0011}\u{0013}\u{0014}\u{0011}\u{0013}\u{0012}\u{0014}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          19@1300,0|\
@@ -668,7 +668,7 @@ fn gpos2_2_003() {
         shape(
             "tests/fonts/aots/gpos2_2_font3.otf",
             "\u{0011}\u{0013}\u{0014}\u{0011}\u{0013}\u{0012}\u{0014}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          19@1500,0|\
@@ -687,7 +687,7 @@ fn gpos2_2_004() {
         shape(
             "tests/fonts/aots/gpos2_2_font4.otf",
             "\u{0012}\u{0012}\u{0012}\u{0012}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "18@-100,0|\
          18@1500,-100|\
@@ -702,7 +702,7 @@ fn gpos2_2_005() {
         shape(
             "tests/fonts/aots/gpos2_2_font5.otf",
             "\u{0012}\u{0012}\u{0012}\u{0012}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "18@-100,0|\
          18@1400,0|\
@@ -717,7 +717,7 @@ fn gpos3_002() {
         shape(
             "tests/fonts/aots/gpos3_font1.otf",
             "\u{0011}\u{0012}\u{0011}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -733,7 +733,7 @@ fn gpos3_007() {
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
             "\u{0011}\u{0012}\u{0014}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -748,7 +748,7 @@ fn gpos3_008() {
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
             "\u{0011}\u{0013}\u{0012}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          19@1500,0|\
@@ -763,7 +763,7 @@ fn gpos3_009() {
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
             "\u{0011}\u{0013}\u{0014}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          19@1500,0|\
@@ -778,7 +778,7 @@ fn gpos3_010() {
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
             "\u{0011}\u{0012}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0"
@@ -791,7 +791,7 @@ fn gpos3_011() {
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
             "\u{0011}\u{0012}\u{0015}\u{0015}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -807,7 +807,7 @@ fn gpos4_lookupflag_001() {
         shape(
             "tests/fonts/aots/gpos4_lookupflag_f1.otf",
             "\u{0011}\u{0012}\u{0011}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -823,7 +823,7 @@ fn gpos4_lookupflag_002() {
         shape(
             "tests/fonts/aots/gpos4_lookupflag_f2.otf",
             "\u{0011}\u{0012}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -838,7 +838,7 @@ fn gpos4_simple_002() {
         shape(
             "tests/fonts/aots/gpos4_simple_1.otf",
             "\u{0011}\u{0011}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          17@1500,0|\
@@ -853,7 +853,7 @@ fn gpos4_simple_003() {
         shape(
             "tests/fonts/aots/gpos4_simple_1.otf",
             "\u{0019}\u{0019}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "25|\
          25@1500,0|\
@@ -868,7 +868,7 @@ fn gpos5_001() {
         shape(
             "tests/fonts/aots/gpos5_font1.otf",
             "\u{0011}\u{001E}\u{0013}\u{001F}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -883,7 +883,7 @@ fn gpos6_002() {
         shape(
             "tests/fonts/aots/gpos6_font1.otf",
             "\u{0011}\u{0011}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          17@1500,0|\
@@ -898,7 +898,7 @@ fn gpos6_003() {
         shape(
             "tests/fonts/aots/gpos6_font1.otf",
             "\u{0014}\u{0014}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "20|\
          20|\
@@ -913,7 +913,7 @@ fn gpos7_1_001() {
         shape(
             "tests/fonts/aots/gpos7_1_font1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1600,0|\
@@ -929,7 +929,7 @@ fn gpos7_1_002() {
         shape(
             "tests/fonts/aots/gpos7_1_font1.otf",
             "\u{0011}\u{0012}\u{0011}\u{0012}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -946,7 +946,7 @@ fn gpos9_001() {
         shape(
             "tests/fonts/aots/gpos9_font1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1300,0|\
@@ -962,7 +962,7 @@ fn gpos9_002() {
         shape(
             "tests/fonts/aots/gpos9_font2.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1300,0|\
@@ -979,7 +979,7 @@ fn gpos_chaining1_boundary_001() {
         shape(
             "tests/fonts/aots/gpos_chaining1_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -996,7 +996,7 @@ fn gpos_chaining1_boundary_002() {
         shape(
             "tests/fonts/aots/gpos_chaining1_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1013,7 +1013,7 @@ fn gpos_chaining1_boundary_003() {
         shape(
             "tests/fonts/aots/gpos_chaining1_boundary_f3.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1030,7 +1030,7 @@ fn gpos_chaining1_boundary_004() {
         shape(
             "tests/fonts/aots/gpos_chaining1_boundary_f4.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1048,7 +1048,7 @@ fn gpos_chaining1_lookupflag_001() {
             "tests/fonts/aots/gpos_chaining1_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{0016}\u{005C}\u{0017}\u{005D}\u{005E}\
              \u{0018}\u{005A}\u{0019}\u{005B}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1076,7 +1076,7 @@ fn gpos_chaining1_multiple_subrules_001() {
             "tests/fonts/aots/gpos_chaining1_multiple_subrules_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}\u{0014}\u{0015}\u{0016}\
              \u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1100,7 +1100,7 @@ fn gpos_chaining1_multiple_subrules_002() {
             "tests/fonts/aots/gpos_chaining1_multiple_subrules_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}\u{0014}\u{0015}\u{0016}\
              \u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1123,7 +1123,7 @@ fn gpos_chaining1_next_glyph_001() {
         shape(
             "tests/fonts/aots/gpos_chaining1_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1140,7 +1140,7 @@ fn gpos_chaining1_simple_001() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1157,7 +1157,7 @@ fn gpos_chaining1_simple_002() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1177,7 +1177,7 @@ fn gpos_chaining1_simple_003() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{0000}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1197,7 +1197,7 @@ fn gpos_chaining1_simple_004() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1215,7 +1215,7 @@ fn gpos_chaining1_simple_005() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1232,7 +1232,7 @@ fn gpos_chaining1_simple_006() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0000}\u{0000}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          0@1500,0|\
@@ -1252,7 +1252,7 @@ fn gpos_chaining1_simple_007() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "21|\
          22@1500,0|\
@@ -1270,7 +1270,7 @@ fn gpos_chaining1_simple_008() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "22|\
          23@1500,0|\
@@ -1287,7 +1287,7 @@ fn gpos_chaining1_simple_009() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1307,7 +1307,7 @@ fn gpos_chaining1_simple_010() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1323,7 +1323,7 @@ fn gpos_chaining1_simple_011() {
         shape(
             "tests/fonts/aots/gpos_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1338,7 +1338,7 @@ fn gpos_chaining1_successive_001() {
         shape(
             "tests/fonts/aots/gpos_chaining1_successive_f1.otf",
             "\u{0000}\u{0019}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          25@1500,0|\
@@ -1357,7 +1357,7 @@ fn gpos_chaining2_boundary_001() {
         shape(
             "tests/fonts/aots/gpos_chaining2_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1374,7 +1374,7 @@ fn gpos_chaining2_boundary_002() {
         shape(
             "tests/fonts/aots/gpos_chaining2_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1391,7 +1391,7 @@ fn gpos_chaining2_boundary_003() {
         shape(
             "tests/fonts/aots/gpos_chaining2_boundary_f3.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1408,7 +1408,7 @@ fn gpos_chaining2_boundary_004() {
         shape(
             "tests/fonts/aots/gpos_chaining2_boundary_f4.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1426,7 +1426,7 @@ fn gpos_chaining2_lookupflag_001() {
             "tests/fonts/aots/gpos_chaining2_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{0016}\u{005C}\u{0017}\u{005D}\u{005E}\
              \u{0018}\u{005A}\u{0019}\u{005B}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1454,7 +1454,7 @@ fn gpos_chaining2_multiple_subrules_001() {
             "tests/fonts/aots/gpos_chaining2_multiple_subrules_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}\u{0014}\u{0015}\u{0016}\
              \u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1478,7 +1478,7 @@ fn gpos_chaining2_multiple_subrules_002() {
             "tests/fonts/aots/gpos_chaining2_multiple_subrules_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}\u{0014}\u{0015}\u{0016}\
              \u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1501,7 +1501,7 @@ fn gpos_chaining2_next_glyph_001() {
         shape(
             "tests/fonts/aots/gpos_chaining2_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1518,7 +1518,7 @@ fn gpos_chaining2_simple_001() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1535,7 +1535,7 @@ fn gpos_chaining2_simple_002() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1555,7 +1555,7 @@ fn gpos_chaining2_simple_003() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{0000}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1575,7 +1575,7 @@ fn gpos_chaining2_simple_004() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1593,7 +1593,7 @@ fn gpos_chaining2_simple_005() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1610,7 +1610,7 @@ fn gpos_chaining2_simple_006() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0000}\u{0000}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          0@1500,0|\
@@ -1630,7 +1630,7 @@ fn gpos_chaining2_simple_007() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "21|\
          22@1500,0|\
@@ -1648,7 +1648,7 @@ fn gpos_chaining2_simple_008() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "22|\
          23@1500,0|\
@@ -1665,7 +1665,7 @@ fn gpos_chaining2_simple_009() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1685,7 +1685,7 @@ fn gpos_chaining2_simple_010() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1701,7 +1701,7 @@ fn gpos_chaining2_simple_011() {
         shape(
             "tests/fonts/aots/gpos_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1716,7 +1716,7 @@ fn gpos_chaining2_successive_001() {
         shape(
             "tests/fonts/aots/gpos_chaining2_successive_f1.otf",
             "\u{0000}\u{0019}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          25@1500,0|\
@@ -1735,7 +1735,7 @@ fn gpos_chaining3_boundary_001() {
         shape(
             "tests/fonts/aots/gpos_chaining3_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1752,7 +1752,7 @@ fn gpos_chaining3_boundary_002() {
         shape(
             "tests/fonts/aots/gpos_chaining3_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1769,7 +1769,7 @@ fn gpos_chaining3_boundary_003() {
         shape(
             "tests/fonts/aots/gpos_chaining3_boundary_f3.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1786,7 +1786,7 @@ fn gpos_chaining3_boundary_004() {
         shape(
             "tests/fonts/aots/gpos_chaining3_boundary_f4.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1804,7 +1804,7 @@ fn gpos_chaining3_lookupflag_001() {
             "tests/fonts/aots/gpos_chaining3_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{0016}\u{005C}\u{0017}\u{005D}\u{005E}\
              \u{0018}\u{005A}\u{0019}\u{005B}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1831,7 +1831,7 @@ fn gpos_chaining3_next_glyph_001() {
         shape(
             "tests/fonts/aots/gpos_chaining3_next_glyph_f1.otf",
             "\u{0000}\u{0016}\u{0015}\u{0016}\u{0015}\u{0016}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          22@1500,0|\
@@ -1850,7 +1850,7 @@ fn gpos_chaining3_simple_001() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1867,7 +1867,7 @@ fn gpos_chaining3_simple_002() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1887,7 +1887,7 @@ fn gpos_chaining3_simple_003() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{0000}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1907,7 +1907,7 @@ fn gpos_chaining3_simple_004() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1925,7 +1925,7 @@ fn gpos_chaining3_simple_005() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -1942,7 +1942,7 @@ fn gpos_chaining3_simple_006() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0000}\u{0000}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          0@1500,0|\
@@ -1962,7 +1962,7 @@ fn gpos_chaining3_simple_007() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "21|\
          22@1500,0|\
@@ -1980,7 +1980,7 @@ fn gpos_chaining3_simple_008() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "22|\
          23@1500,0|\
@@ -1997,7 +1997,7 @@ fn gpos_chaining3_simple_009() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2017,7 +2017,7 @@ fn gpos_chaining3_simple_010() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2033,7 +2033,7 @@ fn gpos_chaining3_simple_011() {
         shape(
             "tests/fonts/aots/gpos_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2048,7 +2048,7 @@ fn gpos_chaining3_successive_001() {
         shape(
             "tests/fonts/aots/gpos_chaining3_successive_f1.otf",
             "\u{0000}\u{0019}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          25@1500,0|\
@@ -2067,7 +2067,7 @@ fn gpos_context1_boundary_001() {
         shape(
             "tests/fonts/aots/gpos_context1_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2085,7 +2085,7 @@ fn gpos_context1_boundary_002() {
         shape(
             "tests/fonts/aots/gpos_context1_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2103,7 +2103,7 @@ fn gpos_context1_expansion_001() {
         shape(
             "tests/fonts/aots/gpos_context1_expansion_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2119,7 +2119,7 @@ fn gpos_context1_lookupflag_001() {
         shape(
             "tests/fonts/aots/gpos_context1_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2138,7 +2138,7 @@ fn gpos_context1_lookupflag_002() {
         shape(
             "tests/fonts/aots/gpos_context1_lookupflag_f2.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2157,7 +2157,7 @@ fn gpos_context1_multiple_subrules_001() {
         shape(
             "tests/fonts/aots/gpos_context1_multiple_subrules_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2176,7 +2176,7 @@ fn gpos_context1_multiple_subrules_002() {
         shape(
             "tests/fonts/aots/gpos_context1_multiple_subrules_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2195,7 +2195,7 @@ fn gpos_context1_next_glyph_001() {
         shape(
             "tests/fonts/aots/gpos_context1_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2213,7 +2213,7 @@ fn gpos_context1_simple_001() {
         shape(
             "tests/fonts/aots/gpos_context1_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2229,7 +2229,7 @@ fn gpos_context1_simple_002() {
         shape(
             "tests/fonts/aots/gpos_context1_simple_f1.otf",
             "\u{0000}\u{0014}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2246,7 +2246,7 @@ fn gpos_context1_simple_003() {
         shape(
             "tests/fonts/aots/gpos_context1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2264,7 +2264,7 @@ fn gpos_context1_successive_001() {
         shape(
             "tests/fonts/aots/gpos_context1_successive_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2281,7 +2281,7 @@ fn gpos_context2_boundary_001() {
         shape(
             "tests/fonts/aots/gpos_context2_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2299,7 +2299,7 @@ fn gpos_context2_boundary_002() {
         shape(
             "tests/fonts/aots/gpos_context2_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2318,7 +2318,7 @@ fn gpos_context2_classes_001() {
             "tests/fonts/aots/gpos_context2_classes_f1.otf",
             "\u{0000}\u{0014}\u{001A}\u{001C}\u{0018}\u{0000}\u{0015}\u{001B}\u{001A}\u{0018}\
              \u{0000}\u{0016}\u{001B}\u{001A}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2345,7 +2345,7 @@ fn gpos_context2_classes_002() {
             "tests/fonts/aots/gpos_context2_classes_f2.otf",
             "\u{0000}\u{0016}\u{001B}\u{001A}\u{0018}\u{0000}\u{0018}\u{0018}\u{001D}\u{0016}\
              \u{0000}\u{0016}\u{001B}\u{001A}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          22@1500,0|\
@@ -2371,7 +2371,7 @@ fn gpos_context2_expansion_001() {
         shape(
             "tests/fonts/aots/gpos_context2_expansion_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2387,7 +2387,7 @@ fn gpos_context2_lookupflag_001() {
         shape(
             "tests/fonts/aots/gpos_context2_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2406,7 +2406,7 @@ fn gpos_context2_lookupflag_002() {
         shape(
             "tests/fonts/aots/gpos_context2_lookupflag_f2.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2425,7 +2425,7 @@ fn gpos_context2_multiple_subrules_001() {
         shape(
             "tests/fonts/aots/gpos_context2_multiple_subrules_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2444,7 +2444,7 @@ fn gpos_context2_multiple_subrules_002() {
         shape(
             "tests/fonts/aots/gpos_context2_multiple_subrules_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2463,7 +2463,7 @@ fn gpos_context2_next_glyph_001() {
         shape(
             "tests/fonts/aots/gpos_context2_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2481,7 +2481,7 @@ fn gpos_context2_simple_001() {
         shape(
             "tests/fonts/aots/gpos_context2_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2497,7 +2497,7 @@ fn gpos_context2_simple_002() {
         shape(
             "tests/fonts/aots/gpos_context2_simple_f1.otf",
             "\u{0000}\u{0014}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2514,7 +2514,7 @@ fn gpos_context2_simple_003() {
         shape(
             "tests/fonts/aots/gpos_context2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2532,7 +2532,7 @@ fn gpos_context2_successive_001() {
         shape(
             "tests/fonts/aots/gpos_context2_successive_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2549,7 +2549,7 @@ fn gpos_context3_boundary_001() {
         shape(
             "tests/fonts/aots/gpos_context3_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2567,7 +2567,7 @@ fn gpos_context3_boundary_002() {
         shape(
             "tests/fonts/aots/gpos_context3_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2585,7 +2585,7 @@ fn gpos_context3_lookupflag_001() {
         shape(
             "tests/fonts/aots/gpos_context3_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2604,7 +2604,7 @@ fn gpos_context3_lookupflag_002() {
         shape(
             "tests/fonts/aots/gpos_context3_lookupflag_f2.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2623,7 +2623,7 @@ fn gpos_context3_next_glyph_001() {
         shape(
             "tests/fonts/aots/gpos_context3_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2641,7 +2641,7 @@ fn gpos_context3_simple_001() {
         shape(
             "tests/fonts/aots/gpos_context3_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1520,0|\
@@ -2657,7 +2657,7 @@ fn gpos_context3_simple_002() {
         shape(
             "tests/fonts/aots/gpos_context3_simple_f1.otf",
             "\u{0000}\u{0014}\u{0000}\u{0014}\u{0015}\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2678,7 +2678,7 @@ fn gpos_context3_successive_001() {
         shape(
             "tests/fonts/aots/gpos_context3_successive_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
         ),
         "0|\
          20@1500,0|\
@@ -2695,7 +2695,7 @@ fn gsub1_1_lookupflag_001() {
         shape(
             "tests/fonts/aots/gsub1_1_lookupflag_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -2711,7 +2711,7 @@ fn gsub1_1_modulo_001() {
         shape(
             "tests/fonts/aots/gsub1_1_modulo_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -2730,7 +2730,7 @@ fn gsub1_1_simple_001() {
         shape(
             "tests/fonts/aots/gsub1_1_simple_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -2746,7 +2746,7 @@ fn gsub1_2_lookupflag_001() {
         shape(
             "tests/fonts/aots/gsub1_2_lookupflag_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -2762,7 +2762,7 @@ fn gsub1_2_simple_001() {
         shape(
             "tests/fonts/aots/gsub1_2_simple_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          22|\
@@ -2778,7 +2778,7 @@ fn gsub2_1_lookupflag_001() {
         shape(
             "tests/fonts/aots/gsub2_1_lookupflag_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -2794,7 +2794,7 @@ fn gsub2_1_multiple_sequences_001() {
         shape(
             "tests/fonts/aots/gsub2_1_multiple_sequences_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0011}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          20|\
@@ -2811,7 +2811,7 @@ fn gsub2_1_simple_001() {
         shape(
             "tests/fonts/aots/gsub2_1_simple_f1.otf",
             "\u{0011}\u{0012}\u{0013}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          20|\
@@ -2827,7 +2827,7 @@ fn gsub2_1_simple_002() {
         shape(
             "tests/fonts/aots/gsub2_1_simple_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0012}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          20|\
@@ -2846,7 +2846,7 @@ fn gsub3_1_lookupflag_001() {
         shape(
             "tests/fonts/aots/gsub3_1_lookupflag_f1.otf",
             "\u{0011}\u{0012}\u{0012}\u{0012}\u{0013}\u{0013}\u{0013}\u{0013}\u{0011}",
-            "--features=\"-test[4],test[5],test[6]=2,-test[7]\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"-test[4],test[5],test[6]=2,-test[7]\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -2866,7 +2866,7 @@ fn gsub3_1_multiple_001() {
         shape(
             "tests/fonts/aots/gsub3_1_multiple_f1.otf",
             "\u{0011}\u{0012}\u{0012}\u{0012}\u{0012}\u{0013}\u{0013}\u{0013}\u{0013}\u{0011}",
-            "--features=\"-test[1],test[2],test[3]=2,-test[4],-test[5],test[6],test[7]=2,-test[8]\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"-test[1],test[2],test[3]=2,-test[4],-test[5],test[6],test[7]=2,-test[8]\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -2888,7 +2888,7 @@ fn gsub3_1_simple_001() {
             "tests/fonts/aots/gsub3_1_simple_f1.otf",
             "\u{0011}\u{0012}\u{0011}\u{0012}\u{0011}\u{0012}\u{0011}\u{0012}\u{0011}\u{0012}\
              \u{0011}\u{0012}\u{0011}",
-            "--features=\"-test[1],test[3],test[5]=2,test[7]=3,-test[9],test[11]\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"-test[1],test[3],test[5]=2,test[7]=3,-test[9],test[11]\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -2913,7 +2913,7 @@ fn gsub4_1_lookupflag_001() {
             "tests/fonts/aots/gsub4_1_lookupflag_f1.otf",
             "\u{0011}\u{0018}\u{0012}\u{0018}\u{0013}\u{0018}\u{0018}\u{0014}\u{0018}\u{0011}\
              \u{0012}\u{0013}\u{0016}\u{0014}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          24|\
@@ -2936,7 +2936,7 @@ fn gsub4_1_multiple_ligatures_001() {
         shape(
             "tests/fonts/aots/gsub4_1_multiple_ligatures_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0011}\u{0012}\u{0013}\u{0016}\u{0014}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -2953,7 +2953,7 @@ fn gsub4_1_multiple_ligatures_002() {
         shape(
             "tests/fonts/aots/gsub4_1_multiple_ligatures_f2.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0011}\u{0012}\u{0013}\u{0016}\u{0014}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          24|\
@@ -2971,7 +2971,7 @@ fn gsub4_1_multiple_ligsets_001() {
         shape(
             "tests/fonts/aots/gsub4_1_multiple_ligsets_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0015}\u{0014}\u{0013}\u{0016}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -2987,7 +2987,7 @@ fn gsub4_1_simple_001() {
         shape(
             "tests/fonts/aots/gsub4_1_simple_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0011}\u{0012}\u{0013}\u{0016}\u{0014}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -3005,7 +3005,7 @@ fn gsub7_001() {
         shape(
             "tests/fonts/aots/gsub7_font1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -3021,7 +3021,7 @@ fn gsub7_002() {
         shape(
             "tests/fonts/aots/gsub7_font2.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -3037,7 +3037,7 @@ fn gsub_chaining1_boundary_001() {
         shape(
             "tests/fonts/aots/gsub_chaining1_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3054,7 +3054,7 @@ fn gsub_chaining1_boundary_002() {
         shape(
             "tests/fonts/aots/gsub_chaining1_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3071,7 +3071,7 @@ fn gsub_chaining1_boundary_003() {
         shape(
             "tests/fonts/aots/gsub_chaining1_boundary_f3.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3088,7 +3088,7 @@ fn gsub_chaining1_boundary_004() {
         shape(
             "tests/fonts/aots/gsub_chaining1_boundary_f4.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3106,7 +3106,7 @@ fn gsub_chaining1_lookupflag_001() {
             "tests/fonts/aots/gsub_chaining1_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{0016}\u{005C}\u{0017}\u{005D}\u{005E}\
              \u{0018}\u{005A}\u{0019}\u{005B}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3134,7 +3134,7 @@ fn gsub_chaining1_multiple_subrules_001() {
             "tests/fonts/aots/gsub_chaining1_multiple_subrules_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}\u{0014}\u{0015}\u{0016}\
              \u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3158,7 +3158,7 @@ fn gsub_chaining1_multiple_subrules_002() {
             "tests/fonts/aots/gsub_chaining1_multiple_subrules_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}\u{0014}\u{0015}\u{0016}\
              \u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3181,7 +3181,7 @@ fn gsub_chaining1_next_glyph_001() {
         shape(
             "tests/fonts/aots/gsub_chaining1_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3198,7 +3198,7 @@ fn gsub_chaining1_simple_001() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3215,7 +3215,7 @@ fn gsub_chaining1_simple_002() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3235,7 +3235,7 @@ fn gsub_chaining1_simple_003() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{0000}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3255,7 +3255,7 @@ fn gsub_chaining1_simple_004() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3273,7 +3273,7 @@ fn gsub_chaining1_simple_005() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3290,7 +3290,7 @@ fn gsub_chaining1_simple_006() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0000}\u{0000}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -3310,7 +3310,7 @@ fn gsub_chaining1_simple_007() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "21|\
          22|\
@@ -3328,7 +3328,7 @@ fn gsub_chaining1_simple_008() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "22|\
          23|\
@@ -3345,7 +3345,7 @@ fn gsub_chaining1_simple_009() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3365,7 +3365,7 @@ fn gsub_chaining1_simple_010() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3381,7 +3381,7 @@ fn gsub_chaining1_simple_011() {
         shape(
             "tests/fonts/aots/gsub_chaining1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3396,7 +3396,7 @@ fn gsub_chaining1_successive_001() {
         shape(
             "tests/fonts/aots/gsub_chaining1_successive_f1.otf",
             "\u{0000}\u{0019}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          25|\
@@ -3414,7 +3414,7 @@ fn gsub_chaining2_boundary_001() {
         shape(
             "tests/fonts/aots/gsub_chaining2_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3431,7 +3431,7 @@ fn gsub_chaining2_boundary_002() {
         shape(
             "tests/fonts/aots/gsub_chaining2_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3448,7 +3448,7 @@ fn gsub_chaining2_boundary_003() {
         shape(
             "tests/fonts/aots/gsub_chaining2_boundary_f3.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3465,7 +3465,7 @@ fn gsub_chaining2_boundary_004() {
         shape(
             "tests/fonts/aots/gsub_chaining2_boundary_f4.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3483,7 +3483,7 @@ fn gsub_chaining2_lookupflag_001() {
             "tests/fonts/aots/gsub_chaining2_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{0016}\u{005C}\u{0017}\u{005D}\u{005E}\
              \u{0018}\u{005A}\u{0019}\u{005B}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3511,7 +3511,7 @@ fn gsub_chaining2_multiple_subrules_001() {
             "tests/fonts/aots/gsub_chaining2_multiple_subrules_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}\u{0014}\u{0015}\u{0016}\
              \u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3535,7 +3535,7 @@ fn gsub_chaining2_multiple_subrules_002() {
             "tests/fonts/aots/gsub_chaining2_multiple_subrules_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}\u{0014}\u{0015}\u{0016}\
              \u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3558,7 +3558,7 @@ fn gsub_chaining2_next_glyph_001() {
         shape(
             "tests/fonts/aots/gsub_chaining2_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3575,7 +3575,7 @@ fn gsub_chaining2_simple_001() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3592,7 +3592,7 @@ fn gsub_chaining2_simple_002() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3612,7 +3612,7 @@ fn gsub_chaining2_simple_003() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{0000}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3632,7 +3632,7 @@ fn gsub_chaining2_simple_004() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3650,7 +3650,7 @@ fn gsub_chaining2_simple_005() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3667,7 +3667,7 @@ fn gsub_chaining2_simple_006() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0000}\u{0000}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -3687,7 +3687,7 @@ fn gsub_chaining2_simple_007() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "21|\
          22|\
@@ -3705,7 +3705,7 @@ fn gsub_chaining2_simple_008() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "22|\
          23|\
@@ -3722,7 +3722,7 @@ fn gsub_chaining2_simple_009() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3742,7 +3742,7 @@ fn gsub_chaining2_simple_010() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3758,7 +3758,7 @@ fn gsub_chaining2_simple_011() {
         shape(
             "tests/fonts/aots/gsub_chaining2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3773,7 +3773,7 @@ fn gsub_chaining2_successive_001() {
         shape(
             "tests/fonts/aots/gsub_chaining2_successive_f1.otf",
             "\u{0000}\u{0019}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          25|\
@@ -3791,7 +3791,7 @@ fn gsub_chaining3_boundary_001() {
         shape(
             "tests/fonts/aots/gsub_chaining3_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3808,7 +3808,7 @@ fn gsub_chaining3_boundary_002() {
         shape(
             "tests/fonts/aots/gsub_chaining3_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3825,7 +3825,7 @@ fn gsub_chaining3_boundary_003() {
         shape(
             "tests/fonts/aots/gsub_chaining3_boundary_f3.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3842,7 +3842,7 @@ fn gsub_chaining3_boundary_004() {
         shape(
             "tests/fonts/aots/gsub_chaining3_boundary_f4.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3860,7 +3860,7 @@ fn gsub_chaining3_lookupflag_001() {
             "tests/fonts/aots/gsub_chaining3_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{0016}\u{005C}\u{0017}\u{005D}\u{005E}\
              \u{0018}\u{005A}\u{0019}\u{005B}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3887,7 +3887,7 @@ fn gsub_chaining3_next_glyph_001() {
         shape(
             "tests/fonts/aots/gsub_chaining3_next_glyph_f1.otf",
             "\u{0000}\u{0016}\u{0015}\u{0016}\u{0015}\u{0016}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          22|\
@@ -3906,7 +3906,7 @@ fn gsub_chaining3_simple_001() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3923,7 +3923,7 @@ fn gsub_chaining3_simple_002() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3943,7 +3943,7 @@ fn gsub_chaining3_simple_003() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{0000}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3963,7 +3963,7 @@ fn gsub_chaining3_simple_004() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3981,7 +3981,7 @@ fn gsub_chaining3_simple_005() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -3998,7 +3998,7 @@ fn gsub_chaining3_simple_006() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0000}\u{0000}\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          0|\
@@ -4018,7 +4018,7 @@ fn gsub_chaining3_simple_007() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0015}\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "21|\
          22|\
@@ -4036,7 +4036,7 @@ fn gsub_chaining3_simple_008() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0016}\u{0017}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "22|\
          23|\
@@ -4053,7 +4053,7 @@ fn gsub_chaining3_simple_009() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0018}\u{0019}\u{001A}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4073,7 +4073,7 @@ fn gsub_chaining3_simple_010() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4089,7 +4089,7 @@ fn gsub_chaining3_simple_011() {
         shape(
             "tests/fonts/aots/gsub_chaining3_simple_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4104,7 +4104,7 @@ fn gsub_chaining3_successive_001() {
         shape(
             "tests/fonts/aots/gsub_chaining3_successive_f1.otf",
             "\u{0000}\u{0019}\u{0014}\u{0015}\u{0016}\u{0017}\u{0018}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          25|\
@@ -4122,7 +4122,7 @@ fn gsub_context1_boundary_001() {
         shape(
             "tests/fonts/aots/gsub_context1_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4140,7 +4140,7 @@ fn gsub_context1_boundary_002() {
         shape(
             "tests/fonts/aots/gsub_context1_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4158,7 +4158,7 @@ fn gsub_context1_expansion_001() {
         shape(
             "tests/fonts/aots/gsub_context1_expansion_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4176,7 +4176,7 @@ fn gsub_context1_lookupflag_001() {
         shape(
             "tests/fonts/aots/gsub_context1_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4195,7 +4195,7 @@ fn gsub_context1_lookupflag_002() {
         shape(
             "tests/fonts/aots/gsub_context1_lookupflag_f2.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4213,7 +4213,7 @@ fn gsub_context1_multiple_subrules_001() {
         shape(
             "tests/fonts/aots/gsub_context1_multiple_subrules_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4232,7 +4232,7 @@ fn gsub_context1_multiple_subrules_002() {
         shape(
             "tests/fonts/aots/gsub_context1_multiple_subrules_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4251,7 +4251,7 @@ fn gsub_context1_next_glyph_001() {
         shape(
             "tests/fonts/aots/gsub_context1_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4269,7 +4269,7 @@ fn gsub_context1_simple_001() {
         shape(
             "tests/fonts/aots/gsub_context1_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4285,7 +4285,7 @@ fn gsub_context1_simple_002() {
         shape(
             "tests/fonts/aots/gsub_context1_simple_f1.otf",
             "\u{0000}\u{0014}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4302,7 +4302,7 @@ fn gsub_context1_simple_003() {
         shape(
             "tests/fonts/aots/gsub_context1_simple_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4320,7 +4320,7 @@ fn gsub_context1_successive_001() {
         shape(
             "tests/fonts/aots/gsub_context1_successive_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4336,7 +4336,7 @@ fn gsub_context2_boundary_001() {
         shape(
             "tests/fonts/aots/gsub_context2_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4354,7 +4354,7 @@ fn gsub_context2_boundary_002() {
         shape(
             "tests/fonts/aots/gsub_context2_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4373,7 +4373,7 @@ fn gsub_context2_classes_001() {
             "tests/fonts/aots/gsub_context2_classes_f1.otf",
             "\u{0000}\u{0014}\u{001A}\u{001C}\u{0018}\u{0000}\u{0015}\u{001B}\u{001A}\u{0018}\
              \u{0000}\u{0016}\u{001B}\u{001A}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4400,7 +4400,7 @@ fn gsub_context2_classes_002() {
             "tests/fonts/aots/gsub_context2_classes_f2.otf",
             "\u{0000}\u{0016}\u{001B}\u{001A}\u{0018}\u{0000}\u{0018}\u{0018}\u{001D}\u{0016}\
              \u{0000}\u{0016}\u{001B}\u{001A}\u{0018}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          22|\
@@ -4426,7 +4426,7 @@ fn gsub_context2_expansion_001() {
         shape(
             "tests/fonts/aots/gsub_context2_expansion_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4444,7 +4444,7 @@ fn gsub_context2_lookupflag_001() {
         shape(
             "tests/fonts/aots/gsub_context2_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4463,7 +4463,7 @@ fn gsub_context2_lookupflag_002() {
         shape(
             "tests/fonts/aots/gsub_context2_lookupflag_f2.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4481,7 +4481,7 @@ fn gsub_context2_multiple_subrules_001() {
         shape(
             "tests/fonts/aots/gsub_context2_multiple_subrules_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4500,7 +4500,7 @@ fn gsub_context2_multiple_subrules_002() {
         shape(
             "tests/fonts/aots/gsub_context2_multiple_subrules_f2.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4519,7 +4519,7 @@ fn gsub_context2_next_glyph_001() {
         shape(
             "tests/fonts/aots/gsub_context2_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4537,7 +4537,7 @@ fn gsub_context2_simple_001() {
         shape(
             "tests/fonts/aots/gsub_context2_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4553,7 +4553,7 @@ fn gsub_context2_simple_002() {
         shape(
             "tests/fonts/aots/gsub_context2_simple_f1.otf",
             "\u{0000}\u{0014}\u{0000}\u{0014}\u{0015}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4570,7 +4570,7 @@ fn gsub_context2_simple_003() {
         shape(
             "tests/fonts/aots/gsub_context2_simple_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4588,7 +4588,7 @@ fn gsub_context2_successive_001() {
         shape(
             "tests/fonts/aots/gsub_context2_successive_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4604,7 +4604,7 @@ fn gsub_context3_boundary_001() {
         shape(
             "tests/fonts/aots/gsub_context3_boundary_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4622,7 +4622,7 @@ fn gsub_context3_boundary_002() {
         shape(
             "tests/fonts/aots/gsub_context3_boundary_f2.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4640,7 +4640,7 @@ fn gsub_context3_lookupflag_001() {
         shape(
             "tests/fonts/aots/gsub_context3_lookupflag_f1.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4659,7 +4659,7 @@ fn gsub_context3_lookupflag_002() {
         shape(
             "tests/fonts/aots/gsub_context3_lookupflag_f2.otf",
             "\u{0000}\u{0014}\u{005A}\u{0015}\u{005B}\u{005C}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4677,7 +4677,7 @@ fn gsub_context3_next_glyph_001() {
         shape(
             "tests/fonts/aots/gsub_context3_next_glyph_f1.otf",
             "\u{0000}\u{0014}\u{0014}\u{0014}\u{0014}\u{0014}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4695,7 +4695,7 @@ fn gsub_context3_simple_001() {
         shape(
             "tests/fonts/aots/gsub_context3_simple_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          60|\
@@ -4711,7 +4711,7 @@ fn gsub_context3_simple_002() {
         shape(
             "tests/fonts/aots/gsub_context3_simple_f1.otf",
             "\u{0000}\u{0014}\u{0000}\u{0014}\u{0015}\u{0000}\u{0014}\u{0015}\u{0016}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4732,7 +4732,7 @@ fn gsub_context3_successive_001() {
         shape(
             "tests/fonts/aots/gsub_context3_successive_f1.otf",
             "\u{0000}\u{0014}\u{0015}\u{0016}\u{0017}\u{0000}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "0|\
          20|\
@@ -4748,7 +4748,7 @@ fn lookupflag_ignore_attach_001() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
             "\u{000A}\u{000B}\u{000D}\u{001A}\u{000A}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "10|\
          15|\
@@ -4762,7 +4762,7 @@ fn lookupflag_ignore_attach_002() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
             "\u{000A}\u{000B}\u{0015}\u{000D}\u{0016}\u{0017}\u{001D}\u{001A}\u{000A}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "10|\
          15|\
@@ -4780,7 +4780,7 @@ fn lookupflag_ignore_attach_003() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
             "\u{000A}\u{000B}\u{0015}\u{000D}\u{0016}\u{001B}\u{001A}\u{000A}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "10|\
          11|\
@@ -4799,7 +4799,7 @@ fn lookupflag_ignore_attach_004() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
             "\u{000A}\u{000B}\u{001B}\u{000D}\u{0016}\u{0017}\u{001A}\u{000A}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "10|\
          11|\
@@ -4818,7 +4818,7 @@ fn lookupflag_ignore_attach_005() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_attach_f1.otf",
             "\u{000A}\u{000B}\u{001B}\u{000D}\u{000E}\u{0017}\u{001A}\u{000A}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "10|\
          11|\
@@ -4837,7 +4837,7 @@ fn lookupflag_ignore_base_001() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_base_f1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -4851,7 +4851,7 @@ fn lookupflag_ignore_base_002() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_base_f1.otf",
             "\u{0011}\u{0012}\u{0018}\u{0018}\u{0013}\u{0019}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -4868,7 +4868,7 @@ fn lookupflag_ignore_combination_001() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_combination_f1.otf",
             "\u{0011}\u{0012}\u{001A}\u{0013}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -4883,7 +4883,7 @@ fn lookupflag_ignore_combination_002() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_combination_f1.otf",
             "\u{0011}\u{0012}\u{001A}\u{0013}\u{0018}\u{001E}\u{001F}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -4901,7 +4901,7 @@ fn lookupflag_ignore_combination_003() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_combination_f1.otf",
             "\u{0011}\u{0012}\u{001A}\u{0013}\u{0018}\u{001E}\u{0020}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -4921,7 +4921,7 @@ fn lookupflag_ignore_ligatures_001() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_ligatures_f1.otf",
             "\u{0011}\u{0012}\u{001A}\u{001B}\u{0013}\u{001B}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
@@ -4938,7 +4938,7 @@ fn lookupflag_ignore_ligatures_002() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_ligatures_f1.otf",
             "\u{0011}\u{0012}\u{001A}\u{0018}\u{0013}\u{001B}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -4957,7 +4957,7 @@ fn lookupflag_ignore_ligatures_003() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_ligatures_f1.otf",
             "\u{0011}\u{0012}\u{001A}\u{002A}\u{0013}\u{001B}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          18|\
@@ -4976,7 +4976,7 @@ fn lookupflag_ignore_marks_001() {
         shape(
             "tests/fonts/aots/lookupflag_ignore_marks_f1.otf",
             "\u{0011}\u{0012}\u{001C}\u{001D}\u{0013}\u{001D}\u{0014}\u{0015}",
-            "--features=\"test\" --no-clusters --no-glyph-names --no-positions",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --no-positions",
         ),
         "17|\
          23|\
