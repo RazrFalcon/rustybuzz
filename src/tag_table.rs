@@ -176,7 +176,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "bmb", 	tag: Tag(0)	            }, // Bembe != Bambara (Bamanankan)
     LangTag { language: "bml", 	tag: Tag(0)	            }, // Bomboli != Bamileke
     LangTag { language: "bmm", 	tag: Tag::from_bytes(b"MLG ") }, // Northern Betsimisaraka Malagasy -> Malagasy
-    LangTag { language: "bn", 	tag: Tag::from_bytes(b"BEN ") }, // Bengali
+    LangTag { language: "bn", 	tag: Tag::from_bytes(b"BEN ") }, // Bangla
     LangTag { language: "bo", 	tag: Tag::from_bytes(b"TIB ") }, // Tibetan
     LangTag { language: "bpd", 	tag: Tag::from_bytes(b"BAD0") }, // Banda-Banda -> Banda
     LangTag { language: "bpl", 	tag: Tag::from_bytes(b"CPP ") }, // Broome Pearling Lugger Pidgin -> Creoles
@@ -473,7 +473,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "gaa", 	tag: Tag::from_bytes(b"GAD ") }, // Ga
     LangTag { language: "gac", 	tag: Tag::from_bytes(b"CPP ") }, // Mixed Great Andamanese -> Creoles
     LangTag { language: "gad", 	tag: Tag(0)	            }, // Gaddang != Ga
-    LangTag { language: "gae", 	tag: Tag(0)	            }, // Guarequena != Scottish Gaelic (Gaelic)
+    LangTag { language: "gae", 	tag: Tag(0)	            }, // Guarequena != Scottish Gaelic
 //  LangTag { language: "gag", 	tag: Tag::from_bytes(b"GAG ") }, // Gagauz
     LangTag { language: "gal", 	tag: Tag(0)	            }, // Galolen != Galician
     LangTag { language: "gan", 	tag: Tag::from_bytes(b"ZHS ") }, // Gan Chinese -> Chinese, Simplified
@@ -486,7 +486,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "gcf", 	tag: Tag::from_bytes(b"CPP ") }, // Guadeloupean Creole French -> Creoles
     LangTag { language: "gcl", 	tag: Tag::from_bytes(b"CPP ") }, // Grenadian Creole English -> Creoles
     LangTag { language: "gcr", 	tag: Tag::from_bytes(b"CPP ") }, // Guianese Creole French -> Creoles
-    LangTag { language: "gd", 	tag: Tag::from_bytes(b"GAE ") }, // Scottish Gaelic (Gaelic)
+    LangTag { language: "gd", 	tag: Tag::from_bytes(b"GAE ") }, // Scottish Gaelic
     LangTag { language: "gda", 	tag: Tag::from_bytes(b"RAJ ") }, // Gade Lohar -> Rajasthani
 //  LangTag { language: "gez", 	tag: Tag::from_bytes(b"GEZ ") }, // Geez
     LangTag { language: "ggo", 	tag: Tag::from_bytes(b"GON ") }, // Southern Gondi(retired code) -> Gondi
@@ -934,7 +934,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "mnw", 	tag: Tag::from_bytes(b"MON ") }, // Mon
     LangTag { language: "mnw", 	tag: Tag::from_bytes(b"MONT") }, // Mon -> Thailand Mon
     LangTag { language: "mnx", 	tag: Tag(0)	            }, // Manikion != Manx
-    LangTag { language: "mo", 	tag: Tag::from_bytes(b"MOL ") }, // Moldavian(retired code)
+    LangTag { language: "mo", 	tag: Tag::from_bytes(b"MOL ") }, // Moldavian(retired code) -> Romanian (Moldova)
     LangTag { language: "mod", 	tag: Tag::from_bytes(b"CPP ") }, // Mobilian -> Creoles
 //  LangTag { language: "moh", 	tag: Tag::from_bytes(b"MOH ") }, // Mohawk
     LangTag { language: "mok", 	tag: Tag(0)	            }, // Morori != Moksha
@@ -1081,13 +1081,13 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "om", 	tag: Tag::from_bytes(b"ORO ") }, // Oromo [macrolanguage]
     LangTag { language: "onx", 	tag: Tag::from_bytes(b"CPP ") }, // Onin Based Pidgin -> Creoles
     LangTag { language: "oor", 	tag: Tag::from_bytes(b"CPP ") }, // Oorlams -> Creoles
-    LangTag { language: "or", 	tag: Tag::from_bytes(b"ORI ") }, // Odia (formerly Oriya) [macrolanguage]
+    LangTag { language: "or", 	tag: Tag::from_bytes(b"ORI ") }, // Odia  [macrolanguage]
     LangTag { language: "orc", 	tag: Tag::from_bytes(b"ORO ") }, // Orma -> Oromo
     LangTag { language: "orn", 	tag: Tag::from_bytes(b"MLY ") }, // Orang Kanaq -> Malay
     LangTag { language: "oro", 	tag: Tag(0)	            }, // Orokolo != Oromo
     LangTag { language: "orr", 	tag: Tag::from_bytes(b"IJO ") }, // Oruma -> Ijo
     LangTag { language: "ors", 	tag: Tag::from_bytes(b"MLY ") }, // Orang Seletar -> Malay
-    LangTag { language: "ory", 	tag: Tag::from_bytes(b"ORI ") }, // Odia (formerly Oriya)
+    LangTag { language: "ory", 	tag: Tag::from_bytes(b"ORI ") }, // Odia 
     LangTag { language: "os", 	tag: Tag::from_bytes(b"OSS ") }, // Ossetian
     LangTag { language: "otw", 	tag: Tag::from_bytes(b"OJB ") }, // Ottawa -> Ojibway
     LangTag { language: "oua", 	tag: Tag::from_bytes(b"BBR ") }, // Tagargrent -> Berber
@@ -1345,7 +1345,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "so", 	tag: Tag::from_bytes(b"SML ") }, // Somali
     LangTag { language: "sog", 	tag: Tag(0)	            }, // Sogdian != Sodo Gurage
 //  LangTag { language: "sop", 	tag: Tag::from_bytes(b"SOP ") }, // Songe
-    LangTag { language: "spv", 	tag: Tag::from_bytes(b"ORI ") }, // Sambalpuri -> Odia (formerly Oriya)
+    LangTag { language: "spv", 	tag: Tag::from_bytes(b"ORI ") }, // Sambalpuri -> Odia
     LangTag { language: "spy", 	tag: Tag::from_bytes(b"KAL ") }, // Sabaot -> Kalenjin
     LangTag { language: "sq", 	tag: Tag::from_bytes(b"SQI ") }, // Albanian [macrolanguage]
     LangTag { language: "sr", 	tag: Tag::from_bytes(b"SRB ") }, // Serbian
@@ -2252,6 +2252,11 @@ pub fn tags_from_complex_language(language: &str, tags: &mut smallvec::SmallVec<
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
+            if strncmp(&language[1..], "nw-", 3) && subtag_matches(language, "-th") {
+                // Mon; Thailand
+                tags.push(Tag::from_bytes(b"MONT")); // Thailand Mon
+                return true;
+            }
         }
         b'n' => {
             if lang_matches(&language[1..], "an-hant-hk") {
@@ -2315,7 +2320,7 @@ pub fn tags_from_complex_language(language: &str, tags: &mut smallvec::SmallVec<
         b'r' => {
             if strncmp(&language[1..], "o-", 2) && subtag_matches(language, "-md") {
                 // Romanian; Moldova
-                tags.push(Tag::from_bytes(b"MOL ")); // Moldavian
+                tags.push(Tag::from_bytes(b"MOL ")); // Romanian (Moldova)
                 return true;
             }
         }

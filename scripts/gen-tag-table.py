@@ -330,11 +330,15 @@ class OpenTypeRegistryParser(HTMLParser):
         self.from_bcp_47 = collections.defaultdict(set)
         # Whether the parser is in a <td> element
         self._td = False
+        # Whether the parser is after a <br> element within the current <tr> element
+        self._br = False
         # The text of the <td> elements of the current <tr> element.
         self._current_tr = []
 
     def handle_starttag(self, tag, attrs):
-        if tag == 'meta':
+        if tag == 'br':
+            self._br = True
+        elif tag == 'meta':
             for attr, value in attrs:
                 if attr == 'name' and value == 'updated_at':
                     self.header = self.get_starttag_text()
@@ -343,6 +347,7 @@ class OpenTypeRegistryParser(HTMLParser):
             self._td = True
             self._current_tr.append('')
         elif tag == 'tr':
+            self._br = False
             self._current_tr = []
 
     def handle_endtag(self, tag):
@@ -367,7 +372,7 @@ class OpenTypeRegistryParser(HTMLParser):
             self.ranks[tag] = rank
 
     def handle_data(self, data):
-        if self._td:
+        if self._td and not self._br:
             self._current_tr[-1] += data
 
     def handle_charref(self, name):
@@ -698,6 +703,8 @@ bcp_47.scopes['mhv'] = '(retired code)'
 # page of language tags.
 ot.remove_language_ot('MONT')
 ot.add_language('mnw', 'MONT')
+
+ot.add_language ('mnw-TH', 'MONT')
 
 ot.add_language('no', 'NOR')
 
