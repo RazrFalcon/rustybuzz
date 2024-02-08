@@ -772,6 +772,10 @@ impl Buffer {
         a.cluster == b.cluster
     }
 
+    pub(crate) fn _grapheme_group_func(_: &GlyphInfo, b: &GlyphInfo) -> bool {
+        b.is_continuation()
+    }
+
     pub fn reverse_clusters(&mut self) {
         self.reverse_groups(Self::_cluster_group_func);
     }
@@ -1529,15 +1533,9 @@ macro_rules! foreach_syllable {
 }
 
 macro_rules! foreach_grapheme {
-    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {{
-        let mut $start = 0;
-        let mut $end = $buffer.next_grapheme(0);
-        while $start < $buffer.len {
-            $($body)*;
-            $start = $end;
-            $end = $buffer.next_grapheme($start);
-        }
-    }};
+    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {
+        foreach_group!($buffer, $start, $end, Buffer::_grapheme_group_func, $($body)*)
+    };
 }
 
 bitflags::bitflags! {
