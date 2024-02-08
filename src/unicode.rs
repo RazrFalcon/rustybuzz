@@ -651,7 +651,7 @@ impl CharExt for char {
     /// As such, we make exceptions for those four.
     /// Also ignoring U+1BCA0..1BCA3. https://github.com/harfbuzz/harfbuzz/issues/503
     ///
-    /// Unicode 7.0:
+    /// Unicode 14.0:
     /// $ grep '; Default_Ignorable_Code_Point ' DerivedCoreProperties.txt | sed 's/;.*#/#/'
     /// 00AD          # Cf       SOFT HYPHEN
     /// 034F          # Mn       COMBINING GRAPHEME JOINER
@@ -660,6 +660,7 @@ impl CharExt for char {
     /// 17B4..17B5    # Mn   [2] KHMER VOWEL INHERENT AQ..KHMER VOWEL INHERENT AA
     /// 180B..180D    # Mn   [3] MONGOLIAN FREE VARIATION SELECTOR ONE..MONGOLIAN FREE VARIATION SELECTOR THREE
     /// 180E          # Cf       MONGOLIAN VOWEL SEPARATOR
+    /// 180F          # Mn       MONGOLIAN FREE VARIATION SELECTOR FOUR
     /// 200B..200F    # Cf   [5] ZERO WIDTH SPACE..RIGHT-TO-LEFT MARK
     /// 202A..202E    # Cf   [5] LEFT-TO-RIGHT EMBEDDING..RIGHT-TO-LEFT OVERRIDE
     /// 2060..2064    # Cf   [5] WORD JOINER..INVISIBLE PLUS
@@ -711,8 +712,8 @@ impl CharExt for char {
     }
 
     fn is_variation_selector(self) -> bool {
-        // U+180B..180D MONGOLIAN FREE VARIATION SELECTORs are handled in the
-        // Arabic shaper. No need to match them here.
+        // U+180B..180D, U+180F MONGOLIAN FREE VARIATION SELECTORs are handled in the
+        //Arabic shaper. No need to match them here.
         let ch = u32::from(self);
         (0x0FE00..=0x0FE0F).contains(&ch) || // VARIATION SELECTOR - 1..16
         (0xE0100..=0xE01EF).contains(&ch) // VARIATION SELECTOR - 17..256

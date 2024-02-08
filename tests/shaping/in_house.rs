@@ -19,6 +19,22 @@ fn aat_morx_001() {
 }
 
 #[test]
+fn aat_morx_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/e6185e88b04432fbf373594d5971686bb7dd698d.ttf",
+            "\u{0B95}\u{0BCD}\u{0020}\u{0B9A}\u{0BCD}",
+            "",
+        ),
+        "ka-tamil=0+825|\
+         pulli-tamil=0@-392,0+0|\
+         space=2+260|\
+         ca-tamil=3+723|\
+         pulli-tamil=3@-320,0+0"
+    );
+}
+
+#[test]
 fn aat_trak_001() {
     assert_eq!(
         shape(
@@ -2368,6 +2384,20 @@ fn indic_syllable_012() {
         "uni0B2C=0+641|\
          uni0B3E=0+253|\
          uni0B55=0+0"
+    );
+}
+
+#[test]
+fn indic_syllable_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/e2b17207c4b7ad78d843e1b0c4d00b09398a1137.ttf",
+            "\u{0BAA}\u{0BAA}\u{0BCD}",
+            "",
+        ),
+        "pa-tamil=0+778|\
+         pa-tamil.001=1+778|\
+         pulli-tamil=1@-385,0+0"
     );
 }
 
@@ -10627,6 +10657,7 @@ fn use_syllable_022() {
             "",
         ),
         "u11124=0+514|\
+         uni25CC=1+547|\
          u11127=1+0"
     );
 }

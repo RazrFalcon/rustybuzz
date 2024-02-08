@@ -32,6 +32,7 @@ pub mod category {
 
     pub const N: u8 = 4; // BASE_NUM
     pub const GB: u8 = 5; // BASE_OTHER
+    pub const CGJ: u8 = 6;
 
     // pub const CGJ: u8     = 6;    // CGJ
     // pub const F: u8       = 7;    // CONS_FINAL
@@ -294,8 +295,7 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
         let syllable = buffer.info[start].syllable() & 0x0F;
-        if syllable == SyllableType::IndependentCluster as u8
-            || syllable == SyllableType::SymbolCluster as u8
+        if syllable == SyllableType::SymbolCluster as u8
             || syllable == SyllableType::HieroglyphCluster as u8
             || syllable == SyllableType::NonCluster as u8
         {

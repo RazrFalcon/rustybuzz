@@ -17,6 +17,9 @@ const USE_TABLE: &[Category] = &[
   /* 00C0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 00D0 */     O,     O,     O,     O,     O,     O,     O,    GB,
 
+  /* Combining Diacritical Marks */
+                                                                         O,     O,     O,     O,     O,     O,     O,   CGJ,
+
   /* Arabic */
 
   /* 0640 */     B,     O,     O,     O,     O,     O,     O,     O,
@@ -196,7 +199,7 @@ const USE_TABLE: &[Category] = &[
   /* 1780 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 1790 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 17A0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
-  /* 17B0 */     B,     B,     B,     B,     O,     O,  VPST,  VABV,  VABV,  VABV,  VABV,  VBLW,  VBLW,  VBLW,  VPRE,  VPRE,
+  /* 17B0 */     B,     B,     B,     B,   CGJ,   CGJ,  VPST,  VABV,  VABV,  VABV,  VABV,  VBLW,  VBLW,  VBLW,  VPRE,  VPRE,
   /* 17C0 */  VPRE,  VPRE,  VPRE,  VPRE,  VPRE,  VPRE, VMABV, VMPST,  VPST, VMABV, VMABV, FMABV,  FABV, CMABV, FMABV, VMABV,
   /* 17D0 */ FMABV,  VABV,     H, FMABV,     O,     O,     O,     O,     O,     O,     O,     O,     B, FMABV,     O,     O,
   /* 17E0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,
@@ -204,7 +207,7 @@ const USE_TABLE: &[Category] = &[
 
   /* Mongolian */
 
-  /* 1800 */     B,     O,     O,     O,     O,     O,     O,     B,     O,     O,     B,     O,     O,     O,     O,     O,
+  /* 1800 */     B,     O,     O,     O,     O,     O,     O,     B,     O,     O,     B,   CGJ,   CGJ,   CGJ,     O,   CGJ,
   /* 1810 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 1820 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 1830 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
@@ -265,7 +268,7 @@ const USE_TABLE: &[Category] = &[
   /* 1B30 */     B,     B,     B,     B, CMABV,  VPST,  VABV,  VABV,  VBLW,  VBLW,  VBLW,  VBLW,  VABV,  VABV,  VPRE,  VPRE,
   /* 1B40 */  VPRE,  VPRE,  VABV,  VABV,     H,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,
   /* 1B50 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,    GB,    GB,     O,     O,    GB,
-  /* 1B60 */     O,     S,    GB,     S,     S,     S,     S,     S,    GB,     S,     S, SMABV, SMBLW, SMABV, SMABV, SMABV,
+  /* 1B60 */     O,     O,    GB,     O,     O,     O,     O,     O,    GB,     O,     O, SMABV, SMBLW, SMABV, SMABV, SMABV,
   /* 1B70 */ SMABV, SMABV, SMABV, SMABV,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
 
   /* Sundanese */
@@ -300,7 +303,7 @@ const USE_TABLE: &[Category] = &[
                                                                          O,     O,     O, FMABV,     O,     O,     O,     O,
 
   /* General Punctuation */
-                                                                         O,     O,     O,     O,  ZWNJ,     O,     O,     O,
+                                                                         O,     O,     O,     O,  ZWNJ,   CGJ,     O,     O,
   /* 2010 */    GB,    GB,    GB,    GB,    GB,     O,     O,     O,
 
   /* Superscripts and Subscripts */
@@ -414,6 +417,18 @@ const USE_TABLE: &[Category] = &[
   /* ABE0 */     B,     B,     B,  VPST,  VPST,  VABV,  VPST,  VPST,  VBLW,  VPST,  VPST,     O, VMPST,  VBLW,     O,     O,
   /* ABF0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,
 
+  /* Variation Selectors */
+
+  /* FE00 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+
+  /* Vithkuqi */
+
+  /* 10570 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     B,     B,     B,     B,
+  /* 10580 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     B,     B,     B,     B,
+  /* 10590 */     B,     B,     B,     O,     B,     B,     O,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 105A0 */     B,     B,     O,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 105B0 */     B,     B,     O,     B,     B,     B,     B,     B,     B,     B,     O,     B,     B,     O,     O,     O,
+
   /* Kharoshthi */
 
   /* 10A00 */     B,  VBLW,  VBLW,  VBLW,     O,  VABV,  VBLW,     O,     O,     O,     O,     O,  VPST, VMBLW, VMBLW, VMABV,
@@ -426,7 +441,7 @@ const USE_TABLE: &[Category] = &[
 
   /* 10AC0 */     B,     B,     B,     B,     B,     B,     B,     B,     O,     B,     B,     B,     B,     B,     B,     B,
   /* 10AD0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
-  /* 10AE0 */     B,     B,     B,     B,     B, CMBLW, CMBLW,     O,
+  /* 10AE0 */     B,     B,     B,     B,     B, CMBLW, CMBLW,     O,     O,     O,     O,     B,     B,     B,     B,     B,
 
   /* Psalter Pahlavi */
 
@@ -452,7 +467,15 @@ const USE_TABLE: &[Category] = &[
 
   /* 10F30 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 10F40 */     B,     B,     B,     B,     B,     B, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW, VMBLW,
-  /* 10F50 */ VMBLW,     B,     B,     B,     B,     O,     O,     O,
+  /* 10F50 */ VMBLW,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 10F60 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+
+  /* Old Uyghur */
+
+  /* 10F70 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 10F80 */     B,     B, CMBLW, CMBLW, CMBLW, CMBLW,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 10F90 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 10FA0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
 
   /* Chorasmian */
 
@@ -468,7 +491,7 @@ const USE_TABLE: &[Category] = &[
   /* 11010 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11020 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11030 */     B,     B,     B,     B,     B,     B,     B,     B,  VABV,  VABV,  VABV,  VABV,  VBLW,  VBLW,  VBLW,  VBLW,
-  /* 11040 */  VBLW,  VBLW,  VABV,  VABV,  VABV,  VABV,   HVM,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 11040 */  VBLW,  VBLW,  VABV,  VABV,  VABV,  VABV,     H,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 11050 */     O,     O,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,     N,
   /* 11060 */     N,     N,     N,     N,     N,     N,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11070 */  VABV,     B,     B,  VABV,  VABV,     B,     O,     O,     O,     O,     O,     O,     O,     O,     O,    HN,
@@ -685,77 +708,84 @@ const USE_TABLE: &[Category] = &[
 
   /* Egyptian Hieroglyphs */
 
-  /* 13000 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13010 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13020 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13030 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13040 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13050 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13060 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13070 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13080 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13090 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 130A0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 130B0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 130C0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 130D0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 130E0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 130F0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13100 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13110 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13120 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13130 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13140 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13150 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13160 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13170 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13180 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13190 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 131A0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 131B0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 131C0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 131D0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 131E0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 131F0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13200 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13210 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13220 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13230 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13240 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13250 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13260 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13270 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13280 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13290 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 132A0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 132B0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 132C0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 132D0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 132E0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 132F0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13300 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13310 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13320 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13330 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13340 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13350 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13360 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13370 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13380 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13390 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 133A0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 133B0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 133C0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 133D0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 133E0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 133F0 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13400 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13410 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,
-  /* 13420 */     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     G,     O,
+  /* 13000 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13010 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13020 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13030 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13040 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13050 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13060 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13070 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13080 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13090 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 130A0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 130B0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 130C0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 130D0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 130E0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 130F0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13100 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13110 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13120 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13130 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13140 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13150 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13160 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13170 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13180 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13190 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 131A0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 131B0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 131C0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 131D0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 131E0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 131F0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13200 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13210 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13220 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13230 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13240 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13250 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13260 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13270 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13280 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13290 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 132A0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 132B0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 132C0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 132D0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 132E0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 132F0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13300 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13310 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13320 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13330 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13340 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13350 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13360 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13370 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13380 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13390 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 133A0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 133B0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 133C0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 133D0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 133E0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 133F0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13400 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13410 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 13420 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,
 
   /* Egyptian Hieroglyph Format Controls */
 
-  /* 13430 */     J,     J,     J,     J,     J,     J,     J,    SB,    SE,     O,     O,     O,     O,     O,     O,     O,
+  /* 13430 */     H,     H,     H,     H,     H,     H,     H,     B,     B,     O,     O,     O,     O,     O,     O,     O,
+
+  /* Tangsa */
+
+  /* 16AC0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,
+  /* 16AD0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 16AE0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 16AF0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
 
   /* Pahawh Hmong */
 
@@ -835,6 +865,12 @@ const USE_TABLE: &[Category] = &[
   /* 1E130 */ VMABV, VMABV, VMABV, VMABV, VMABV, VMABV, VMABV,     B,     B,     B,     B,     B,     B,     B,     O,     O,
   /* 1E140 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     B,     B,
 
+  /* Toto */
+
+  /* 1E290 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 1E2A0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B, VMABV,     O,
+  /* 1E2B0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+
   /* Wancho */
 
   /* 1E2C0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
@@ -851,54 +887,75 @@ const USE_TABLE: &[Category] = &[
   /* 1E940 */     B,     B,     B,     B, CMABV, CMABV, CMABV, CMABV, CMABV, CMABV, CMABV,     B,     O,     O,     O,     O,
   /* 1E950 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,
 
+  /* Variation Selectors Supplement */
+
+  /* E0100 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0110 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0120 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0130 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0140 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0150 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0160 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0170 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0180 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E0190 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01A0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01B0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01C0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01D0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+  /* E01E0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+
 ];
 
 const USE_OFFSET_0X0028: usize = 0;
 const USE_OFFSET_0X00A0: usize = 24;
-const USE_OFFSET_0X0640: usize = 80;
-const USE_OFFSET_0X07C8: usize = 88;
-const USE_OFFSET_0X0840: usize = 144;
-const USE_OFFSET_0X0900: usize = 176;
-const USE_OFFSET_0X0F00: usize = 1448;
-const USE_OFFSET_0X1000: usize = 1648;
-const USE_OFFSET_0X1700: usize = 1808;
-const USE_OFFSET_0X1900: usize = 2240;
-const USE_OFFSET_0X1B00: usize = 2656;
-const USE_OFFSET_0X1CD0: usize = 2992;
-const USE_OFFSET_0X1DF8: usize = 3040;
-const USE_OFFSET_0X2008: usize = 3048;
-const USE_OFFSET_0X2070: usize = 3064;
-const USE_OFFSET_0X20F0: usize = 3088;
-const USE_OFFSET_0X25C8: usize = 3096;
-const USE_OFFSET_0X2D30: usize = 3104;
-const USE_OFFSET_0XA800: usize = 3184;
-const USE_OFFSET_0XABC0: usize = 3944;
-const USE_OFFSET_0X10A00: usize = 4008;
-const USE_OFFSET_0X10AC0: usize = 4088;
-const USE_OFFSET_0X10B80: usize = 4128;
-const USE_OFFSET_0X10D00: usize = 4176;
-const USE_OFFSET_0X10E80: usize = 4240;
-const USE_OFFSET_0X10F30: usize = 4296;
-const USE_OFFSET_0X10FB0: usize = 4336;
-const USE_OFFSET_0X11100: usize = 4616;
-const USE_OFFSET_0X11280: usize = 4936;
-const USE_OFFSET_0X11400: usize = 5184;
-const USE_OFFSET_0X11580: usize = 5408;
-const USE_OFFSET_0X11800: usize = 5864;
-const USE_OFFSET_0X11900: usize = 5928;
-const USE_OFFSET_0X119A0: usize = 6024;
-const USE_OFFSET_0X11C00: usize = 6280;
-const USE_OFFSET_0X11D00: usize = 6464;
-const USE_OFFSET_0X11EE0: usize = 6640;
-const USE_OFFSET_0X13000: usize = 6664;
-const USE_OFFSET_0X16B00: usize = 7752;
-const USE_OFFSET_0X16F00: usize = 7808;
-const USE_OFFSET_0X16FE0: usize = 7960;
-const USE_OFFSET_0X18B00: usize = 7968;
-const USE_OFFSET_0X1BC00: usize = 8440;
-const USE_OFFSET_0X1E100: usize = 8600;
-const USE_OFFSET_0X1E2C0: usize = 8680;
-const USE_OFFSET_0X1E900: usize = 8744;
+const USE_OFFSET_0X0348: usize = 80;
+const USE_OFFSET_0X0640: usize = 88;
+const USE_OFFSET_0X07C8: usize = 96;
+const USE_OFFSET_0X0840: usize = 152;
+const USE_OFFSET_0X0900: usize = 184;
+const USE_OFFSET_0X0F00: usize = 1456;
+const USE_OFFSET_0X1000: usize = 1656;
+const USE_OFFSET_0X1700: usize = 1816;
+const USE_OFFSET_0X1900: usize = 2248;
+const USE_OFFSET_0X1B00: usize = 2664;
+const USE_OFFSET_0X1CD0: usize = 3000;
+const USE_OFFSET_0X1DF8: usize = 3048;
+const USE_OFFSET_0X2008: usize = 3056;
+const USE_OFFSET_0X2070: usize = 3072;
+const USE_OFFSET_0X20F0: usize = 3096;
+const USE_OFFSET_0X25C8: usize = 3104;
+const USE_OFFSET_0X2D30: usize = 3112;
+const USE_OFFSET_0XA800: usize = 3192;
+const USE_OFFSET_0XABC0: usize = 3952;
+const USE_OFFSET_0XFE00: usize = 4016;
+const USE_OFFSET_0X10570: usize = 4032;
+const USE_OFFSET_0X10A00: usize = 4112;
+const USE_OFFSET_0X10AC0: usize = 4192;
+const USE_OFFSET_0X10B80: usize = 4240;
+const USE_OFFSET_0X10D00: usize = 4288;
+const USE_OFFSET_0X10E80: usize = 4352;
+const USE_OFFSET_0X10F30: usize = 4408;
+const USE_OFFSET_0X11100: usize = 4816;
+const USE_OFFSET_0X11280: usize = 5136;
+const USE_OFFSET_0X11400: usize = 5384;
+const USE_OFFSET_0X11580: usize = 5608;
+const USE_OFFSET_0X11800: usize = 6064;
+const USE_OFFSET_0X11900: usize = 6128;
+const USE_OFFSET_0X119A0: usize = 6224;
+const USE_OFFSET_0X11C00: usize = 6480;
+const USE_OFFSET_0X11D00: usize = 6664;
+const USE_OFFSET_0X11EE0: usize = 6840;
+const USE_OFFSET_0X13000: usize = 6864;
+const USE_OFFSET_0X16AC0: usize = 7952;
+const USE_OFFSET_0X16F00: usize = 8072;
+const USE_OFFSET_0X16FE0: usize = 8224;
+const USE_OFFSET_0X18B00: usize = 8232;
+const USE_OFFSET_0X1BC00: usize = 8704;
+const USE_OFFSET_0X1E100: usize = 8864;
+const USE_OFFSET_0X1E290: usize = 8944;
+const USE_OFFSET_0X1E900: usize = 9056;
+const USE_OFFSET_0XE0100: usize = 9152;
 
 #[rustfmt::skip]
 pub fn get_category(u: u32) -> Category {
@@ -906,6 +963,7 @@ pub fn get_category(u: u32) -> Category {
         0x0 => {
             if (0x0028..=0x003F).contains(&u) { return USE_TABLE[u as usize - 0x0028 + USE_OFFSET_0X0028]; }
             if (0x00A0..=0x00D7).contains(&u) { return USE_TABLE[u as usize - 0x00A0 + USE_OFFSET_0X00A0]; }
+            if (0x0348..=0x034F).contains(&u) { return USE_TABLE[u as usize - 0x0348 + USE_OFFSET_0X0348]; }
             if (0x0640..=0x0647).contains(&u) { return USE_TABLE[u as usize - 0x0640 + USE_OFFSET_0X0640]; }
             if (0x07C8..=0x07FF).contains(&u) { return USE_TABLE[u as usize - 0x07C8 + USE_OFFSET_0X07C8]; }
             if (0x0840..=0x085F).contains(&u) { return USE_TABLE[u as usize - 0x0840 + USE_OFFSET_0X0840]; }
@@ -931,17 +989,20 @@ pub fn get_category(u: u32) -> Category {
             if (0xA800..=0xAAF7).contains(&u) { return USE_TABLE[u as usize - 0xA800 + USE_OFFSET_0XA800]; }
             if (0xABC0..=0xABFF).contains(&u) { return USE_TABLE[u as usize - 0xABC0 + USE_OFFSET_0XABC0]; }
         }
+        0xF => {
+            if (0xFE00..=0xFE0F).contains(&u) { return USE_TABLE[u as usize - 0xFE00 + USE_OFFSET_0XFE00]; }
+        }
         0x10 => {
+            if (0x10570..=0x105BF).contains(&u) { return USE_TABLE[u as usize - 0x10570 + USE_OFFSET_0X10570]; }
             if (0x10A00..=0x10A4F).contains(&u) { return USE_TABLE[u as usize - 0x10A00 + USE_OFFSET_0X10A00]; }
-            if (0x10AC0..=0x10AE7).contains(&u) { return USE_TABLE[u as usize - 0x10AC0 + USE_OFFSET_0X10AC0]; }
+            if (0x10AC0..=0x10AEF).contains(&u) { return USE_TABLE[u as usize - 0x10AC0 + USE_OFFSET_0X10AC0]; }
             if (0x10B80..=0x10BAF).contains(&u) { return USE_TABLE[u as usize - 0x10B80 + USE_OFFSET_0X10B80]; }
             if (0x10D00..=0x10D3F).contains(&u) { return USE_TABLE[u as usize - 0x10D00 + USE_OFFSET_0X10D00]; }
             if (0x10E80..=0x10EB7).contains(&u) { return USE_TABLE[u as usize - 0x10E80 + USE_OFFSET_0X10E80]; }
-            if (0x10F30..=0x10F57).contains(&u) { return USE_TABLE[u as usize - 0x10F30 + USE_OFFSET_0X10F30]; }
-            if (0x10FB0..=0x110C7).contains(&u) { return USE_TABLE[u as usize - 0x10FB0 + USE_OFFSET_0X10FB0]; }
+            if (0x10F30..=0x110C7).contains(&u) { return USE_TABLE[u as usize - 0x10F30 + USE_OFFSET_0X10F30]; }
         }
         0x11 => {
-            if (0x10FB0..=0x110C7).contains(&u) { return USE_TABLE[u as usize - 0x10FB0 + USE_OFFSET_0X10FB0]; }
+            if (0x10F30..=0x110C7).contains(&u) { return USE_TABLE[u as usize - 0x10F30 + USE_OFFSET_0X10F30]; }
             if (0x11100..=0x1123F).contains(&u) { return USE_TABLE[u as usize - 0x11100 + USE_OFFSET_0X11100]; }
             if (0x11280..=0x11377).contains(&u) { return USE_TABLE[u as usize - 0x11280 + USE_OFFSET_0X11280]; }
             if (0x11400..=0x114DF).contains(&u) { return USE_TABLE[u as usize - 0x11400 + USE_OFFSET_0X11400]; }
@@ -957,7 +1018,7 @@ pub fn get_category(u: u32) -> Category {
             if (0x13000..=0x1343F).contains(&u) { return USE_TABLE[u as usize - 0x13000 + USE_OFFSET_0X13000]; }
         }
         0x16 => {
-            if (0x16B00..=0x16B37).contains(&u) { return USE_TABLE[u as usize - 0x16B00 + USE_OFFSET_0X16B00]; }
+            if (0x16AC0..=0x16B37).contains(&u) { return USE_TABLE[u as usize - 0x16AC0 + USE_OFFSET_0X16AC0]; }
             if (0x16F00..=0x16F97).contains(&u) { return USE_TABLE[u as usize - 0x16F00 + USE_OFFSET_0X16F00]; }
             if (0x16FE0..=0x16FE7).contains(&u) { return USE_TABLE[u as usize - 0x16FE0 + USE_OFFSET_0X16FE0]; }
         }
@@ -969,8 +1030,11 @@ pub fn get_category(u: u32) -> Category {
         }
         0x1E => {
             if (0x1E100..=0x1E14F).contains(&u) { return USE_TABLE[u as usize - 0x1E100 + USE_OFFSET_0X1E100]; }
-            if (0x1E2C0..=0x1E2FF).contains(&u) { return USE_TABLE[u as usize - 0x1E2C0 + USE_OFFSET_0X1E2C0]; }
+            if (0x1E290..=0x1E2FF).contains(&u) { return USE_TABLE[u as usize - 0x1E290 + USE_OFFSET_0X1E290]; }
             if (0x1E900..=0x1E95F).contains(&u) { return USE_TABLE[u as usize - 0x1E900 + USE_OFFSET_0X1E900]; }
+        }
+        0xE0 => {
+            if (0xE0100..=0xE01EF).contains(&u) { return USE_TABLE[u as usize - 0xE0100 + USE_OFFSET_0XE0100]; }
         }
         _ => {}
     }

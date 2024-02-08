@@ -35,13 +35,13 @@ O	= 0; # OTHER
 B	= 1; # BASE
 N	= 4; # BASE_NUM
 GB	= 5; # BASE_OTHER
+CGJ	= 6; # CGJ
 SUB	= 11; # CONS_SUB
 H	= 12; # HALANT
 
 HN	= 13; # HALANT_NUM
 ZWNJ	= 14; # Zero width non-joiner
 R	= 18; # REPHA
-S	= 19; # SYM
 CS	= 43; # CONS_WITH_STACKER
 HVM	= 44; # HALANT_OR_VOWEL_MODIFIER
 Sk	= 48; # SAKOT
@@ -99,15 +99,21 @@ number_joiner_terminated_cluster_tail = (HN N)* HN;
 numeral_cluster_tail = (HN N)+;
 symbol_cluster_tail = SMAbv+ SMBlw* | SMBlw+;
 
-virama_terminated_cluster =
-	complex_syllable_start
+virama_terminated_cluster_tail =
 	consonant_modifiers
 	h
 ;
-sakot_terminated_cluster =
+virama_terminated_cluster =
 	complex_syllable_start
+	virama_terminated_cluster_tail
+;
+sakot_terminated_cluster_tail =
 	complex_syllable_middle
 	Sk
+;
+sakot_terminated_cluster =
+	complex_syllable_start
+	sakot_terminated_cluster_tail
 ;
 standard_cluster =
 	complex_syllable_start
@@ -115,18 +121,16 @@ standard_cluster =
 ;
 broken_cluster =
 	R?
-	(complex_syllable_tail | number_joiner_terminated_cluster_tail | numeral_cluster_tail | symbol_cluster_tail)
+	(complex_syllable_tail | number_joiner_terminated_cluster_tail | numeral_cluster_tail | symbol_cluster_tail | virama_terminated_cluster_tail | sakot_terminated_cluster_tail)
 ;
 
 number_joiner_terminated_cluster = N number_joiner_terminated_cluster_tail;
 numeral_cluster = N numeral_cluster_tail?;
-symbol_cluster = (S | GB) symbol_cluster_tail?;
+symbol_cluster = (O | GB) symbol_cluster_tail?;
 hieroglyph_cluster = SB+ | SB* G SE* (J SE* (G SE*)?)*;
-independent_cluster = O;
 other = any;
 
 main := |*
-	independent_cluster			=> { found_syllable!(SyllableType::IndependentCluster); };
 	virama_terminated_cluster		=> { found_syllable!(SyllableType::ViramaTerminatedCluster); };
 	sakot_terminated_cluster		=> { found_syllable!(SyllableType::SakotTerminatedCluster); };
 	standard_cluster			=> { found_syllable!(SyllableType::StandardCluster); };
@@ -203,18 +207,18 @@ fn found_syllable(
     }
 }
 
-fn not_standard_default_ignorable(i: &GlyphInfo) -> bool {
-    !(matches!(i.use_category(), category::O | category::RSV) && i.is_default_ignorable())
+fn not_ccs_default_ignorable(i: &GlyphInfo) -> bool {
+    !(matches!(i.use_category(), category::CGJ | category::RSV) && i.is_default_ignorable())
 }
 
 fn included(infos: &[Cell<GlyphInfo>], i: usize) -> bool {
     let glyph = infos[i].get();
-    if !not_standard_default_ignorable(&glyph) {
+    if !not_ccs_default_ignorable(&glyph) {
         return false;
     }
     if glyph.use_category() == category::ZWNJ {
         for glyph2 in &infos[i + 1..] {
-            if not_standard_default_ignorable(&glyph2.get()) {
+            if not_ccs_default_ignorable(&glyph2.get()) {
                 return !glyph2.get().is_unicode_mark();
             }
         }

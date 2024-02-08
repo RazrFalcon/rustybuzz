@@ -193,7 +193,7 @@ impl GlyphInfo {
                     // FVSes are GC=Mn, we have use a separate bit to remember them.
                     // Fixes:
                     // https://github.com/harfbuzz/harfbuzz/issues/234
-                    0x180B..=0x180D => props |= UnicodeProps::HIDDEN.bits(),
+                    0x180B..=0x180D | 0x180F => props |= UnicodeProps::HIDDEN.bits(),
 
                     // TAG characters need similar treatment. Fixes:
                     // https://github.com/harfbuzz/harfbuzz/issues/463
@@ -1495,7 +1495,7 @@ bitflags::bitflags! {
     pub struct UnicodeProps: u16 {
         const GENERAL_CATEGORY  = 0x001F;
         const IGNORABLE         = 0x0020;
-        // MONGOLIAN FREE VARIATION SELECTOR 1..3, or TAG characters
+        // MONGOLIAN FREE VARIATION SELECTOR 1..4, or TAG characters
         const HIDDEN            = 0x0040;
         const CONTINUATION      = 0x0080;
 

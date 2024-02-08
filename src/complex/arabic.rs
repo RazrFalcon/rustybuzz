@@ -546,7 +546,7 @@ fn mongolian_variation_selectors(buffer: &mut Buffer) {
     let len = buffer.len;
     let info = &mut buffer.info;
     for i in 1..len {
-        if (0x180B..=0x180D).contains(&info[i].glyph_id) {
+        if (0x180B..=0x180D).contains(&info[i].glyph_id) || info[i].glyph_id == 0x180F {
             let a = info[i - 1].arabic_shaping_action();
             info[i].set_arabic_shaping_action(a);
         }

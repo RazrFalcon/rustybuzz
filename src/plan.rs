@@ -289,18 +289,20 @@ impl<'a> ShapePlanner<'a> {
         let mut apply_kern = false;
 
         // Decide who does positioning. GPOS, kerx, kern, or fallback.
+        let has_kerx = self.face.tables().kerx.is_some();
         let has_gsub = self.face.tables().gsub.is_some();
         let has_gpos = !disable_gpos && self.face.tables().gpos.is_some();
 
-        if self.face.tables().kerx.is_some() && !(has_gsub && has_gpos) {
+        // Prefer GPOS over kerx if GSUB is present;
+        // https://github.com/harfbuzz/harfbuzz/issues/3008
+        if has_kerx && !(has_gsub && has_gpos) {
             apply_kerx = true;
-        } else if !apply_morx && has_gpos {
+        } else if has_gpos {
             apply_gpos = true;
         }
 
         if !apply_kerx && (!has_gpos_kern || !apply_gpos) {
-            // Apparently Apple applies kerx if GPOS kern was not applied.
-            if self.face.tables().kerx.is_some() {
+            if has_kerx {
                 apply_kerx = true;
             } else if ot::has_kerning(self.face) {
                 apply_kern = true;

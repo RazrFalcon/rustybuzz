@@ -33,6 +33,7 @@ GB   = 11;
 H    = 4;
 IV   = 2;
 MH   = 21;
+ML   = 33;
 MR   = 22;
 MW   = 23;
 MY   = 24;
@@ -54,9 +55,9 @@ k = (Ra As H);			# Kinzi
 
 c = C|Ra;			# is_consonant
 
-medial_group = MY? As? MR? ((MW MH? | MH) As?)?;
+medial_group = MY? As? MR? ((MW MH? ML? | MH ML? | ML) As?)?;
 main_vowel_group = (VPre.VS?)* VAbv* VBlw* A* (DB As?)?;
-post_vowel_group = VPst MH? As* VAbv* A* (DB As?)?;
+post_vowel_group = VPst MH? ML? As* VAbv* A* (DB As?)?;
 pwo_tone_group = PT A* DB? As?;
 
 complex_syllable_tail = As* medial_group main_vowel_group post_vowel_group* pwo_tone_group* V* j?;

@@ -67,6 +67,7 @@ pub mod category {
     pub const VS: u8 = 30; // Variation selectors
     pub const P: u8 = 31; // Punctuation
     pub const D: u8 = 32; // Digits except zero
+    pub const ML: u8 = 33; // Medial la
 }
 
 pub type Position = u8;
@@ -674,13 +675,6 @@ fn collect_features(planner: &mut ShapePlanner) {
     for feature in INDIC_FEATURES.iter().skip(10) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
-
-    planner
-        .ot_map
-        .enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::empty(), 1);
-    planner
-        .ot_map
-        .enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
 
     planner
         .ot_map
