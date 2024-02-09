@@ -514,11 +514,6 @@ pub struct Buffer {
     pub flags: BufferFlags,
     pub cluster_level: BufferClusterLevel,
     pub invisible: Option<GlyphId>,
-    pub scratch_flags: BufferScratchFlags,
-    // Maximum allowed len.
-    pub max_len: usize,
-    /// Maximum allowed operations.
-    pub max_ops: i32,
 
     // Buffer contents.
     pub direction: Direction,
@@ -540,13 +535,19 @@ pub struct Buffer {
     pub info: Vec<GlyphInfo>,
     pub pos: Vec<GlyphPosition>,
 
-    serial: u32,
-
     // Text before / after the main buffer contents.
     // Always in Unicode, and ordered outward.
     // Index 0 is for "pre-context", 1 for "post-context".
     pub context: [[char; CONTEXT_LENGTH]; 2],
     pub context_len: [usize; 2],
+
+    // Not part of content
+    pub scratch_flags: BufferScratchFlags,
+    serial: u32,
+    /// Maximum allowed len.
+    pub max_len: usize,
+    /// Maximum allowed operations.
+    pub max_ops: i32,
 }
 
 impl Buffer {
@@ -656,7 +657,6 @@ impl Buffer {
         self.direction = Direction::Invalid;
         self.script = None;
         self.language = None;
-        self.scratch_flags = BufferScratchFlags::default();
 
         self.successful = true;
         self.have_output = false;
@@ -669,6 +669,7 @@ impl Buffer {
         self.out_len = 0;
         self.have_separate_output = false;
 
+        self.scratch_flags = BufferScratchFlags::default();
         self.serial = 0;
 
         self.context = [
