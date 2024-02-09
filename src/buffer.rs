@@ -733,6 +733,60 @@ impl Buffer {
         }
     }
 
+    pub fn reverse_groups<F>(&mut self, group: F, merge_clusters: bool)
+    where
+        F: Fn(&GlyphInfo, &GlyphInfo) -> bool,
+    {
+        if self.is_empty() {
+            return;
+        }
+
+        let mut start = 0;
+
+        for i in 1..self.len {
+            if !group(&self.info[i - 1], &self.info[i]) {
+                if merge_clusters {
+                    self.merge_clusters(start, i);
+                }
+
+                self.reverse_range(start, i);
+                start = i;
+            }
+
+            if merge_clusters {
+                self.merge_clusters(start, i);
+            }
+
+            self.reverse_range(start, i);
+
+            self.reverse();
+        }
+    }
+
+    pub fn reverse_graphemes(&mut self) {
+        self.reverse_groups(
+            _grapheme_group_func,
+            self.cluster_level == BufferClusterLevel::MonotoneCharacters,
+        )
+    }
+
+    pub fn group_end<F>(&self, mut start: usize, group: F) -> usize
+    where
+        F: Fn(&GlyphInfo, &GlyphInfo) -> bool,
+    {
+        start += 1;
+
+        while start < self.len && group(&self.info[start - 1], &self.info[start]) {
+            start += 1;
+        }
+
+        start
+    }
+
+    pub fn reverse_clusters(&mut self) {
+        self.reverse_groups(_cluster_group_func, false);
+    }
+
     #[inline]
     fn reset_clusters(&mut self) {
         for (i, info) in self.info.iter_mut().enumerate() {
@@ -1159,7 +1213,7 @@ impl Buffer {
 
     fn unsafe_to_break_impl(&mut self, start: usize, end: usize) {
         let mut cluster = core::u32::MAX;
-        cluster = Self::_unsafe_to_break_find_min_cluster(&self.info, start, end, cluster);
+        cluster = Self::_infos_find_min_cluster(&self.info, start, end, cluster);
         let unsafe_to_break = Self::_unsafe_to_break_set_mask(&mut self.info, start, end, cluster);
         if unsafe_to_break {
             self.scratch_flags |= BufferScratchFlags::HAS_UNSAFE_TO_BREAK;
@@ -1176,9 +1230,8 @@ impl Buffer {
         assert!(self.idx <= end);
 
         let mut cluster = core::u32::MAX;
-        cluster =
-            Self::_unsafe_to_break_find_min_cluster(self.out_info(), start, self.out_len, cluster);
-        cluster = Self::_unsafe_to_break_find_min_cluster(&self.info, self.idx, end, cluster);
+        cluster = Self::_infos_find_min_cluster(self.out_info(), start, self.out_len, cluster);
+        cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, cluster);
         let idx = self.idx;
         let out_len = self.out_len;
         let unsafe_to_break1 =
@@ -1341,7 +1394,7 @@ impl Buffer {
         info.cluster = cluster;
     }
 
-    fn _unsafe_to_break_find_min_cluster(
+    fn _infos_find_min_cluster(
         info: &[GlyphInfo],
         start: usize,
         end: usize,
@@ -1452,16 +1505,32 @@ impl Buffer {
     }
 }
 
+pub(crate) fn _cluster_group_func(a: &GlyphInfo, b: &GlyphInfo) -> bool {
+    a.cluster == b.cluster
+}
+
+pub(crate) fn _grapheme_group_func(_: &GlyphInfo, b: &GlyphInfo) -> bool {
+    b.is_continuation()
+}
+
 // TODO: to iter if possible
 
 macro_rules! foreach_cluster {
-    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {{
+    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {
+        foreach_group!($buffer, $start, $end, crate::buffer::_cluster_group_func, $($body)*)
+    };
+}
+
+macro_rules! foreach_group {
+    ($buffer:expr, $start:ident, $end:ident, $group_func:expr, $($body:tt)*) => {{
+        let count = $buffer.len;
         let mut $start = 0;
-        let mut $end = $buffer.next_cluster(0);
-        while $start < $buffer.len {
+        let mut $end = if count > 0 { $buffer.group_end(0, $group_func) } else { 0 };
+
+        while $start < count {
             $($body)*;
             $start = $end;
-            $end = $buffer.next_cluster($start);
+            $end = $buffer.group_end($start, $group_func);
         }
     }};
 }
@@ -1479,15 +1548,9 @@ macro_rules! foreach_syllable {
 }
 
 macro_rules! foreach_grapheme {
-    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {{
-        let mut $start = 0;
-        let mut $end = $buffer.next_grapheme(0);
-        while $start < $buffer.len {
-            $($body)*;
-            $start = $end;
-            $end = $buffer.next_grapheme($start);
-        }
-    }};
+    ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {
+        foreach_group!($buffer, $start, $end, crate::buffer::_grapheme_group_func, $($body)*)
+    };
 }
 
 bitflags::bitflags! {

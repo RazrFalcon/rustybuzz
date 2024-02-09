@@ -480,22 +480,14 @@ fn ensure_native_direction(buffer: &mut Buffer) {
         }
     }
 
+    // TODO vertical:
+    // The only BTT vertical script is Ogham, but it's not clear to me whether OpenType
+    // Ogham fonts are supposed to be implemented BTT or not.  Need to research that
+    // first.
     if (dir.is_horizontal() && dir != hor && hor != Direction::Invalid)
         || (dir.is_vertical() && dir != Direction::TopToBottom)
     {
-        if buffer.cluster_level == BufferClusterLevel::MonotoneCharacters {
-            foreach_grapheme!(buffer, start, end, {
-                buffer.merge_clusters(start, end);
-                buffer.reverse_range(start, end);
-            });
-        } else {
-            foreach_grapheme!(buffer, start, end, {
-                // form_clusters() merged clusters already, we don't merge.
-                buffer.reverse_range(start, end);
-            })
-        }
-
-        buffer.reverse();
+        buffer.reverse_graphemes();
         buffer.direction = buffer.direction.reverse();
     }
 }

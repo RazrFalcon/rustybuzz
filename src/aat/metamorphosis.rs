@@ -87,13 +87,13 @@ pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
             };
 
             if reverse {
-                buffer.reverse();
+                buffer.reverse_graphemes();
             }
 
             apply_subtable(&subtable.kind, buffer, face);
 
             if reverse {
-                buffer.reverse();
+                buffer.reverse_graphemes();
             }
         }
     }

@@ -30,6 +30,7 @@ OPTIONS:
         --no-clusters                   Do not output cluster indices
         --show-extents                  Output glyph extents
         --show-flags                    Output glyph flags
+        --single-par                    Treat the input string as a single paragraph
         --ned                           No Extra Data; Do not output clusters or advances
 
 ARGS:
@@ -59,6 +60,7 @@ struct Args {
     no_clusters: bool,
     show_extents: bool,
     show_flags: bool,
+    single_par: bool,
     ned: bool,
     free: Vec<String>,
 }
@@ -95,6 +97,7 @@ fn parse_args() -> Result<Args, pico_args::Error> {
         no_clusters: args.contains("--no-clusters"),
         show_extents: args.contains("--show-extents"),
         show_flags: args.contains("--show-flags"),
+        single_par: args.contains("--single-par"),
         ned: args.contains("--ned"),
         free: args
             .finish()
@@ -165,53 +168,61 @@ fn main() {
         std::process::exit(1);
     };
 
-    let mut buffer = rustybuzz::UnicodeBuffer::new();
-    buffer.push_str(&text);
+    let lines = if args.single_par {
+        vec![text.as_str()]
+    } else {
+        text.split("\n").filter(|s| !s.is_empty()).collect()
+    };
 
-    if let Some(d) = args.direction {
-        buffer.set_direction(d);
+    for text in lines {
+        let mut buffer = rustybuzz::UnicodeBuffer::new();
+        buffer.push_str(&text);
+
+        if let Some(d) = args.direction {
+            buffer.set_direction(d);
+        }
+
+        buffer.set_language(args.language.clone());
+
+        if let Some(script) = args.script {
+            buffer.set_script(script);
+        }
+
+        buffer.set_cluster_level(args.cluster_level);
+
+        if !args.utf8_clusters {
+            buffer.reset_clusters();
+        }
+
+        let glyph_buffer = rustybuzz::shape(&face, &args.features, buffer);
+
+        let mut format_flags = rustybuzz::SerializeFlags::default();
+        if args.no_glyph_names {
+            format_flags |= rustybuzz::SerializeFlags::NO_GLYPH_NAMES;
+        }
+
+        if args.no_clusters || args.ned {
+            format_flags |= rustybuzz::SerializeFlags::NO_CLUSTERS;
+        }
+
+        if args.no_positions {
+            format_flags |= rustybuzz::SerializeFlags::NO_POSITIONS;
+        }
+
+        if args.no_advances || args.ned {
+            format_flags |= rustybuzz::SerializeFlags::NO_ADVANCES;
+        }
+
+        if args.show_extents {
+            format_flags |= rustybuzz::SerializeFlags::GLYPH_EXTENTS;
+        }
+
+        if args.show_flags {
+            format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
+        }
+
+        println!("{}", glyph_buffer.serialize(&face, format_flags));
     }
-
-    buffer.set_language(args.language);
-
-    if let Some(script) = args.script {
-        buffer.set_script(script);
-    }
-
-    buffer.set_cluster_level(args.cluster_level);
-
-    if !args.utf8_clusters {
-        buffer.reset_clusters();
-    }
-
-    let glyph_buffer = rustybuzz::shape(&face, &args.features, buffer);
-
-    let mut format_flags = rustybuzz::SerializeFlags::default();
-    if args.no_glyph_names {
-        format_flags |= rustybuzz::SerializeFlags::NO_GLYPH_NAMES;
-    }
-
-    if args.no_clusters || args.ned {
-        format_flags |= rustybuzz::SerializeFlags::NO_CLUSTERS;
-    }
-
-    if args.no_positions {
-        format_flags |= rustybuzz::SerializeFlags::NO_POSITIONS;
-    }
-
-    if args.no_advances || args.ned {
-        format_flags |= rustybuzz::SerializeFlags::NO_ADVANCES;
-    }
-
-    if args.show_extents {
-        format_flags |= rustybuzz::SerializeFlags::GLYPH_EXTENTS;
-    }
-
-    if args.show_flags {
-        format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
-    }
-
-    println!("{}", glyph_buffer.serialize(&face, format_flags));
 }
 
 fn parse_unicodes(s: &str) -> Result<String, String> {
