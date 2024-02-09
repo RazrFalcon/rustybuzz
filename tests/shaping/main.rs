@@ -26,7 +26,6 @@ struct Args {
     no_clusters: bool,
     show_extents: bool,
     show_flags: bool,
-    single_par: bool,
     ned: bool,
     bot: bool,
     eot: bool,
@@ -62,7 +61,6 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
         no_clusters: parser.contains("--no-clusters"),
         show_extents: parser.contains("--show-extents"),
         show_flags: parser.contains("--show-flags"),
-        single_par: parser.contains("--single-par"),
         ned: parser.contains("--ned"),
         bot: parser.contains("--bot"),
         eot: parser.contains("--eot"),
@@ -117,79 +115,67 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
         face.set_variations(&variations);
     }
 
-    let lines = if args.single_par {
-        vec![text]
-    } else {
-        text.split("\n").filter(|s| !s.is_empty()).collect()
-    };
+    let mut buffer = rustybuzz::UnicodeBuffer::new();
+    if let Some(pre_context) = args.pre_context {
+        buffer.set_pre_context(&pre_context);
+    }
+    buffer.push_str(text);
+    if let Some(post_context) = args.post_context {
+        buffer.set_post_context(&post_context);
+    }
 
-    lines
-        .into_iter()
-        .map(|text| {
-            let mut buffer = rustybuzz::UnicodeBuffer::new();
-            if let Some(ref pre_context) = args.pre_context {
-                buffer.set_pre_context(pre_context);
-            }
-            buffer.push_str(text);
-            if let Some(ref post_context) = args.post_context {
-                buffer.set_post_context(post_context);
-            }
+    if let Some(d) = args.direction {
+        buffer.set_direction(d);
+    }
 
-            if let Some(d) = args.direction {
-                buffer.set_direction(d);
-            }
+    if let Some(lang) = args.language {
+        buffer.set_language(lang);
+    }
 
-            if let Some(lang) = args.language.clone() {
-                buffer.set_language(lang);
-            }
+    if let Some(script) = args.script {
+        buffer.set_script(script);
+    }
 
-            if let Some(script) = args.script {
-                buffer.set_script(script);
-            }
+    let mut buffer_flags = BufferFlags::default();
+    buffer_flags.set(BufferFlags::BEGINNING_OF_TEXT, args.bot);
+    buffer_flags.set(BufferFlags::END_OF_TEXT, args.eot);
+    buffer.set_flags(buffer_flags);
 
-            let mut buffer_flags = BufferFlags::default();
-            buffer_flags.set(BufferFlags::BEGINNING_OF_TEXT, args.bot);
-            buffer_flags.set(BufferFlags::END_OF_TEXT, args.eot);
-            buffer.set_flags(buffer_flags);
+    buffer.set_cluster_level(args.cluster_level);
+    buffer.reset_clusters();
 
-            buffer.set_cluster_level(args.cluster_level);
-            buffer.reset_clusters();
+    let mut features = Vec::new();
+    for feature_str in args.features {
+        let feature = rustybuzz::Feature::from_str(&feature_str).unwrap();
+        features.push(feature);
+    }
 
-            let mut features = Vec::new();
-            for feature_str in &args.features {
-                let feature = rustybuzz::Feature::from_str(feature_str).unwrap();
-                features.push(feature);
-            }
+    let glyph_buffer = rustybuzz::shape(&face, &features, buffer);
 
-            let glyph_buffer = rustybuzz::shape(&face, &features, buffer);
+    let mut format_flags = rustybuzz::SerializeFlags::default();
+    if args.no_glyph_names {
+        format_flags |= rustybuzz::SerializeFlags::NO_GLYPH_NAMES;
+    }
 
-            let mut format_flags = rustybuzz::SerializeFlags::default();
-            if args.no_glyph_names {
-                format_flags |= rustybuzz::SerializeFlags::NO_GLYPH_NAMES;
-            }
+    if args.no_clusters || args.ned {
+        format_flags |= rustybuzz::SerializeFlags::NO_CLUSTERS;
+    }
 
-            if args.no_clusters || args.ned {
-                format_flags |= rustybuzz::SerializeFlags::NO_CLUSTERS;
-            }
+    if args.no_positions {
+        format_flags |= rustybuzz::SerializeFlags::NO_POSITIONS;
+    }
 
-            if args.no_positions {
-                format_flags |= rustybuzz::SerializeFlags::NO_POSITIONS;
-            }
+    if args.no_advances || args.ned {
+        format_flags |= rustybuzz::SerializeFlags::NO_ADVANCES;
+    }
 
-            if args.no_advances || args.ned {
-                format_flags |= rustybuzz::SerializeFlags::NO_ADVANCES;
-            }
+    if args.show_extents {
+        format_flags |= rustybuzz::SerializeFlags::GLYPH_EXTENTS;
+    }
 
-            if args.show_extents {
-                format_flags |= rustybuzz::SerializeFlags::GLYPH_EXTENTS;
-            }
+    if args.show_flags {
+        format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
+    }
 
-            if args.show_flags {
-                format_flags |= rustybuzz::SerializeFlags::GLYPH_FLAGS;
-            }
-
-            glyph_buffer.serialize(&face, format_flags)
-        })
-        .collect::<Vec<String>>()
-        .join("\n")
+    glyph_buffer.serialize(&face, format_flags)
 }

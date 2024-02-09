@@ -122,6 +122,7 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
     glyphs_expected = glyphs_expected.replace('|', '|\\\n         ')
 
     options = options.replace('"', '\\"')
+    options = options.replace(' --single-par', '')
 
     fonts.add(os.path.split(fontfile_rs)[1])
 
