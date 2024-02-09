@@ -191,8 +191,8 @@ impl Apply for PairAdjustment<'_> {
 
         let flag1 = records.0.apply(ctx, ctx.buffer.idx);
         let flag2 = records.1.apply(ctx, pos);
-        // Note the intentional use of "|" instead of short-circuit "||".
-        if flag1 | flag2 {
+
+        if flag1 || flag2 {
             ctx.buffer.unsafe_to_break(ctx.buffer.idx, pos + 1);
         }
 
