@@ -415,7 +415,7 @@ fn preprocess_text(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         }
     }
 
-    buffer.swap_buffers();
+    buffer.sync();
 
     // If font has Thai GSUB, we are done.
     if plan.script == Some(script::THAI) && !plan.ot_map.found_script(TableIndex::GSUB) {

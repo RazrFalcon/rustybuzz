@@ -171,7 +171,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             }
         }
 
-        buffer.swap_buffers();
+        buffer.sync();
     }
 
     // Second round, reorder (inplace)
@@ -285,7 +285,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             }
         }
 
-        buffer.swap_buffers();
+        buffer.sync();
     }
 }
 

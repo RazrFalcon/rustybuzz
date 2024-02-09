@@ -232,7 +232,7 @@ fn drive<T: FromData>(
     }
 
     if !c.in_place() {
-        buffer.swap_buffers();
+        buffer.sync();
     }
 }
 

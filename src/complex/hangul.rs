@@ -327,7 +327,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         buffer.next_glyph();
     }
 
-    buffer.swap_buffers();
+    buffer.sync();
 }
 
 fn is_hangul_tone(u: u32) -> bool {

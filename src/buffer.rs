@@ -826,7 +826,7 @@ impl Buffer {
         // TODO: language must be set
     }
 
-    pub fn swap_buffers(&mut self) {
+    pub fn sync(&mut self) {
         assert!(self.have_output);
 
         assert!(self.idx <= self.len);

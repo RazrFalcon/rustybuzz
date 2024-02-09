@@ -416,7 +416,7 @@ fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
         info.init_unicode_props(&mut buffer.scratch_flags);
         buffer.clear_output();
         buffer.output_info(info);
-        buffer.swap_buffers();
+        buffer.sync();
     }
 }
 
