@@ -77,6 +77,7 @@ struct ShapeContext<'a> {
 
 // Pull it all together!
 fn shape_internal(ctx: &mut ShapeContext) {
+    ctx.buffer.serial = 0;
     ctx.buffer.scratch_flags = BufferScratchFlags::empty();
 
     if let Some(len) = ctx.buffer.len.checked_mul(Buffer::MAX_LEN_FACTOR) {
@@ -110,6 +111,7 @@ fn shape_internal(ctx: &mut ShapeContext) {
     ctx.buffer.direction = ctx.target_direction;
     ctx.buffer.max_len = Buffer::MAX_LEN_DEFAULT;
     ctx.buffer.max_ops = Buffer::MAX_OPS_DEFAULT;
+    ctx.buffer.serial = 0;
 }
 
 fn substitute_pre(ctx: &mut ShapeContext) {

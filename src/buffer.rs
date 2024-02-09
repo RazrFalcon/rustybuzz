@@ -542,8 +542,8 @@ pub struct Buffer {
     pub context_len: [usize; 2],
 
     // Not part of content
+    pub serial: u8,
     pub scratch_flags: BufferScratchFlags,
-    serial: u32,
     /// Maximum allowed len.
     pub max_len: usize,
     /// Maximum allowed operations.
@@ -669,14 +669,14 @@ impl Buffer {
         self.out_len = 0;
         self.have_separate_output = false;
 
-        self.scratch_flags = BufferScratchFlags::default();
-        self.serial = 0;
-
         self.context = [
             ['\0', '\0', '\0', '\0', '\0'],
             ['\0', '\0', '\0', '\0', '\0'],
         ];
         self.context_len = [0, 0];
+
+        self.serial = 0;
+        self.scratch_flags = BufferScratchFlags::default();
     }
 
     #[inline]
@@ -694,8 +694,13 @@ impl Buffer {
     }
 
     #[inline]
-    fn next_serial(&mut self) -> u32 {
+    fn next_serial(&mut self) -> u8 {
         self.serial += 1;
+
+        if self.serial == 0 {
+            self.serial += 1;
+        }
+
         self.serial
     }
 
@@ -1498,11 +1503,7 @@ impl Buffer {
     #[inline]
     pub fn allocate_lig_id(&mut self) -> u8 {
         let mut lig_id = self.next_serial() & 0x07;
-        if lig_id == 0 {
-            // In case of overflow.
-            lig_id = self.next_serial() & 0x07;
-        }
-        lig_id as u8
+        lig_id
     }
 }
 
