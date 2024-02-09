@@ -366,7 +366,9 @@ fn decompose_current_character(ctx: &mut ShapeNormalizeContext, shortest: bool) 
     // Handle space characters.
     if ctx.buffer.cur(0).general_category() == GeneralCategory::SpaceSeparator {
         if let Some(space_type) = u.space_fallback() {
-            let space_glyph = ctx.face.glyph_index(u32::from(' '))
+            let space_glyph = ctx
+                .face
+                .glyph_index(u32::from(' '))
                 .or(ctx.buffer.invisible);
 
             if let Some(space_glyph) = space_glyph {

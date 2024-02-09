@@ -1825,6 +1825,19 @@ fn fallback_positioning_002() {
 }
 
 #[test]
+fn glyph_props_no_gdef_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/FallbackPlus-Javanese-no-GDEF.otf",
+            "\u{A995}\u{A9BF}",
+            "",
+        ),
+        "glyph01=0+600|\
+         uniA995=0+600"
+    );
+}
+
+#[test]
 fn hangul_jamo_001() {
     assert_eq!(
         shape(

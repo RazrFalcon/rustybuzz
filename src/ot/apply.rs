@@ -177,7 +177,7 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
         } else if !class_guess.is_empty() {
             props &= GlyphPropsFlags::PRESERVE.bits();
             props = (props & !GlyphPropsFlags::CLASS_MASK.bits()) | class_guess.bits();
-        }   else {
+        } else {
             props = props & !GlyphPropsFlags::CLASS_MASK.bits();
         }
 
