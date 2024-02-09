@@ -568,7 +568,7 @@ impl MarkArrayExt for MarkArray<'_> {
         let (mark_x, mark_y) = mark_anchor.get(ctx.face);
         let (base_x, base_y) = base_anchor.get(ctx.face);
 
-        ctx.buffer.unsafe_to_break(glyph_pos, ctx.buffer.idx);
+        ctx.buffer.unsafe_to_break(glyph_pos, ctx.buffer.idx + 1);
 
         let idx = ctx.buffer.idx;
         let pos = ctx.buffer.cur_pos_mut();
