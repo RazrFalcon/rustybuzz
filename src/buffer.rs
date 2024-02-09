@@ -541,7 +541,7 @@ pub struct Buffer {
     pub context: [[char; CONTEXT_LENGTH]; 2],
     pub context_len: [usize; 2],
 
-    // Not part of content
+    // Managed by enter / leave
     pub serial: u8,
     pub scratch_flags: BufferScratchFlags,
     /// Maximum allowed len.
@@ -1398,6 +1398,29 @@ impl Buffer {
         }
 
         info.cluster = cluster;
+    }
+
+    // Called around shape()
+    pub(crate) fn enter(&mut self) {
+        self.serial = 0;
+        self.scratch_flags = BufferScratchFlags::empty();
+
+        if let Some(len) = self.len.checked_mul(Buffer::MAX_LEN_FACTOR) {
+            self.max_len = len.max(Buffer::MAX_LEN_MIN);
+        }
+
+        if let Ok(len) = i32::try_from(self.len) {
+            if let Some(ops) = len.checked_mul(Buffer::MAX_OPS_FACTOR) {
+                self.max_ops = ops.max(Buffer::MAX_OPS_MIN);
+            }
+        }
+    }
+
+    // Called around shape()
+    pub(crate) fn leave(&mut self) {
+        self.max_len = Buffer::MAX_LEN_DEFAULT;
+        self.max_ops = Buffer::MAX_OPS_DEFAULT;
+        self.serial = 0;
     }
 
     fn _infos_find_min_cluster(
