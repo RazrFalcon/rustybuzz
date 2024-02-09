@@ -152,13 +152,13 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
         props |= GlyphPropsFlags::SUBSTITUTED.bits();
 
         if ligature {
+            props |= GlyphPropsFlags::LIGATED.bits();
             // In the only place that the MULTIPLIED bit is used, Uniscribe
             // seems to only care about the "last" transformation between
             // Ligature and Multiple substitutions.  Ie. if you ligate, expand,
             // and ligate again, it forgives the multiplication and acts as
             // if only ligation happened.  As such, clear MULTIPLIED bit.
             props &= !GlyphPropsFlags::MULTIPLIED.bits();
-            props |= GlyphPropsFlags::LIGATED.bits();
         }
 
         if component {
@@ -172,9 +172,13 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
             .map_or(false, |table| table.has_glyph_classes());
 
         if has_glyph_classes {
+            props &= GlyphPropsFlags::PRESERVE.bits();
             props = (props & !GlyphPropsFlags::CLASS_MASK.bits()) | self.face.glyph_props(glyph_id);
         } else if !class_guess.is_empty() {
+            props &= GlyphPropsFlags::PRESERVE.bits();
             props = (props & !GlyphPropsFlags::CLASS_MASK.bits()) | class_guess.bits();
+        }   else {
+            props = props & !GlyphPropsFlags::CLASS_MASK.bits();
         }
 
         cur.set_glyph_props(props);
