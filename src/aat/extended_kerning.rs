@@ -140,7 +140,10 @@ fn apply_simple_kerning(
         }
 
         let mut iter = SkippyIter::new(&ctx, i, 1, false);
-        if !iter.next(None) {
+
+        let mut unsafe_to = 0;
+        if !iter.next(Some(&mut unsafe_to)) {
+            ctx.buffer.unsafe_to_concat(i, unsafe_to);
             i += 1;
             continue;
         }
