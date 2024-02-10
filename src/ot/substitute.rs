@@ -453,7 +453,7 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
         if let Some(start_idx) = match_backtrack(ctx, self.backtrack_coverages.len(), &f1) {
             if let Some(end_idx) = match_lookahead(ctx, self.lookahead_coverages.len(), &f2, 1) {
                 ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                    .unsafe_to_break_from_outbuffer(start_idx, end_idx, None);
                 ctx.replace_glyph_inplace(subst);
 
                 // Note: We DON'T decrease buffer.idx.  The main loop does it

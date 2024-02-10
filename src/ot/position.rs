@@ -173,7 +173,7 @@ impl Apply for PairAdjustment<'_> {
         let first_glyph_coverage_index = self.coverage().get(first_glyph)?;
 
         let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
-        if !iter.next() {
+        if !iter.next(None) {
             return None;
         }
 
@@ -313,7 +313,7 @@ impl Apply for CursiveAdjustment<'_> {
         let entry_this = self.sets.entry(index_this)?;
 
         let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
-        if !iter.prev() {
+        if !iter.prev(None) {
             return None;
         }
 
@@ -449,7 +449,7 @@ impl Apply for MarkToBaseAdjustment<'_> {
 
         let info = &buffer.info;
         loop {
-            if !iter.prev() {
+            if !iter.prev(None) {
                 return None;
             }
 
@@ -491,7 +491,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         // Now we search backwards for a non-mark glyph
         let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
         iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
-        if !iter.prev() {
+        if !iter.prev(None) {
             return None;
         }
 
@@ -536,7 +536,7 @@ impl Apply for MarkToMarkAdjustment<'_> {
         // Now we search backwards for a suitable mark glyph until a non-mark glyph
         let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
         iter.set_lookup_props(ctx.lookup_props & !u32::from(lookup_flags::IGNORE_FLAGS));
-        if !iter.prev() {
+        if !iter.prev(None) {
             return None;
         }
 

@@ -1,5 +1,6 @@
 //! Matching of glyph patterns.
 
+use std::cmp::max;
 use ttf_parser::GlyphId;
 
 use super::apply::ApplyContext;
@@ -22,7 +23,7 @@ pub struct Matched {
 }
 
 pub fn match_input(
-    ctx: &ApplyContext,
+    ctx: &mut ApplyContext,
     input_len: u16,
     match_func: &MatchingFunc,
 ) -> Option<Matched> {
@@ -73,7 +74,9 @@ pub fn match_input(
     positions[0] = ctx.buffer.idx;
 
     for position in &mut positions[1..count] {
-        if !iter.next() {
+        let mut unsafe_to = 0;
+        if !iter.next(Some(&mut unsafe_to)) {
+            ctx.buffer.unsafe_to_concat(ctx.buffer.idx, unsafe_to);
             return None;
         }
 
@@ -134,7 +137,7 @@ pub fn match_input(
 }
 
 pub fn match_backtrack(
-    ctx: &ApplyContext,
+    ctx: &mut ApplyContext,
     backtrack_len: u16,
     match_func: &MatchingFunc,
 ) -> Option<usize> {
@@ -142,7 +145,10 @@ pub fn match_backtrack(
     iter.enable_matching(match_func);
 
     for _ in 0..backtrack_len {
-        if !iter.prev() {
+        let mut unsafe_from = 0;
+        if !iter.prev(Some(&mut unsafe_from)) {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx);
             return None;
         }
     }
@@ -151,7 +157,7 @@ pub fn match_backtrack(
 }
 
 pub fn match_lookahead(
-    ctx: &ApplyContext,
+    ctx: &mut ApplyContext,
     lookahead_len: u16,
     match_func: &MatchingFunc,
     offset: usize,
@@ -160,7 +166,10 @@ pub fn match_lookahead(
     iter.enable_matching(match_func);
 
     for _ in 0..lookahead_len {
-        if !iter.next() {
+        let mut unsafe_to = 0;
+        if !iter.next(Some(&mut unsafe_to)) {
+            ctx.buffer
+                .unsafe_to_concat(ctx.buffer.idx + offset, unsafe_to);
             return None;
         }
     }
@@ -226,7 +235,7 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
         self.buf_idx
     }
 
-    pub fn next(&mut self) -> bool {
+    pub fn next(&mut self, unsafe_to: Option<&mut usize>) -> bool {
         assert!(self.num_items > 0);
         while self.buf_idx + usize::from(self.num_items) < self.buf_len {
             self.buf_idx += 1;
@@ -244,14 +253,22 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
             }
 
             if skip == Some(false) {
+                if let Some(unsafe_to) = unsafe_to {
+                    *unsafe_to = self.buf_idx + 1;
+                }
+
                 return false;
             }
+        }
+
+        if let Some(unsafe_to) = unsafe_to {
+            *unsafe_to = self.buf_idx + 1;
         }
 
         false
     }
 
-    pub fn prev(&mut self) -> bool {
+    pub fn prev(&mut self, unsafe_from: Option<&mut usize>) -> bool {
         assert!(self.num_items > 0);
         while self.buf_idx >= usize::from(self.num_items) {
             self.buf_idx -= 1;
@@ -269,8 +286,16 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
             }
 
             if skip == Some(false) {
+                if let Some(unsafe_from) = unsafe_from {
+                    *unsafe_from = max(1, self.buf_idx) - 1;
+                }
+
                 return false;
             }
+        }
+
+        if let Some(unsafe_from) = unsafe_from {
+            *unsafe_from = 0;
         }
 
         false

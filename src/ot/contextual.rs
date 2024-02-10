@@ -215,7 +215,7 @@ impl Apply for ChainedContextLookup<'_> {
                             match_lookahead(ctx, lookahead_coverages.len(), &ahead, matched.len)
                         {
                             ctx.buffer
-                                .unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                                .unsafe_to_break_from_outbuffer(start_idx, end_idx, None);
                             apply_lookup(ctx, usize::from(input_coverages.len()), matched, lookups);
                             return Some(());
                         }
@@ -328,7 +328,7 @@ fn apply_chain_context(
         if let Some(start_idx) = match_backtrack(ctx, backtrack.len(), &f1) {
             if let Some(end_idx) = match_lookahead(ctx, lookahead.len(), &f2, matched.len) {
                 ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                    .unsafe_to_break_from_outbuffer(start_idx, end_idx, None);
                 apply_lookup(ctx, usize::from(input.len()), matched, lookups);
                 return Some(());
             }

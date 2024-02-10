@@ -12,22 +12,67 @@ pub mod glyph_flag {
     /// Indicates that if input text is broken at the
     /// beginning of the cluster this glyph is part of,
     /// then both sides need to be re-shaped, as the
-    /// result might be different.  On the flip side,
-    /// it means that when this flag is not present,
-    /// then it's safe to break the glyph-run at the
-    /// beginning of this cluster, and the two sides
-    /// represent the exact same result one would get
-    /// if breaking input text at the beginning of
-    /// this cluster and shaping the two sides
-    /// separately.  This can be used to optimize
-    /// paragraph layout, by avoiding re-shaping
-    /// of each line after line-breaking, or limiting
-    /// the reshaping to a small piece around the
-    /// breaking point only.
+    /// result might be different.
+    ///
+    /// On the flip side, it means that when
+    /// this flag is not present, then it is safe
+    /// to break the glyph-run at the beginning of
+    /// this cluster, and the two sides will represent
+    /// the exact same result one would get if breaking
+    /// input text at the beginning of this cluster and
+    /// shaping the two sides separately.
+    ///
+    /// This can be used to optimize paragraph layout,
+    /// by avoiding re-shaping of each line after line-breaking.
     pub const UNSAFE_TO_BREAK: u32 = 0x00000001;
+    /// Indicates that if input text is changed on one side
+    /// of the beginning of the cluster this glyph is part
+    /// of, then the shaping results for the other side
+    /// might change.
+    ///
+    /// Note that the absence of this flag will NOT by
+    /// itself mean that it IS safe to concat text. Only
+    /// two pieces of text both of which clear of this
+    /// flag can be concatenated safely.
+    ///
+    /// This can be used to optimize paragraph layout,
+    /// by avoiding re-shaping of each line after
+    /// line-breaking, by limiting the reshaping to a
+    /// small piece around the breaking position only,
+    /// even if the breaking position carries the
+    /// UNSAFE_TO_BREAK or when hyphenation or
+    /// other text transformation happens at
+    /// line-break position, in the following way:
+    ///
+    /// 1. Iterate back from the line-break
+    /// position till the first cluster
+    /// start position that is NOT unsafe-to-concat,
+    /// 2. shape the segment from there till the
+    /// end of line, 3. check whether the resulting
+    /// glyph-run also is clear of the unsafe-to-concat
+    /// at its start-of-text position; if it is, just
+    /// splice it into place and the line is shaped;
+    /// If not, move on to a position further back that
+    /// is clear of unsafe-to-concat and retry from
+    /// there, and repeat.
+    ///
+    /// At the start of next line a similar
+    /// algorithm can be implemented. A slight
+    /// complication will arise, because while
+    /// our buffer API has a way to return flags
+    /// for position corresponding to
+    /// start-of-text, there is currently no
+    /// position corresponding to end-of-text.
+    /// This limitation can be alleviated by
+    /// shaping more text than needed and
+    /// looking for unsafe-to-concat flag
+    /// within text clusters.
+    ///
+    /// The UNSAFE_TO_BREAK flag will always imply this flag.
+    pub const UNSAFE_TO_CONCAT: u32 = 0x00000002;
 
     /// All the currently defined flags.
-    pub const DEFINED: u32 = 0x00000001; // OR of all defined flags
+    pub const DEFINED: u32 = 0x00000003; // OR of all defined flags
 }
 
 /// Holds the positions of the glyph in both horizontal and vertical directions.
@@ -1220,21 +1265,33 @@ impl Buffer {
             return;
         }
 
-        self.unsafe_to_break_impl(start, end);
+        self.unsafe_to_break_impl(start, end, None);
     }
 
-    fn unsafe_to_break_impl(&mut self, start: usize, end: usize) {
+    fn unsafe_to_break_impl(&mut self, start: usize, end: usize, mask: Option<Mask>) {
+        let mask = mask.unwrap_or(glyph_flag::DEFINED);
+
         let mut cluster = core::u32::MAX;
         cluster = Self::_infos_find_min_cluster(&self.info, start, end, cluster);
-        let unsafe_to_break = Self::_unsafe_to_break_set_mask(&mut self.info, start, end, cluster);
-        if unsafe_to_break {
-            self.scratch_flags |= BufferScratchFlags::HAS_UNSAFE_TO_BREAK;
+
+        if Self::_unsafe_to_break_set_mask(&mut self.info, start, end, cluster, mask) {
+            self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
         }
     }
 
-    pub fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize) {
+    pub fn unsafe_to_concat(&mut self, start: usize, end: usize) {
+        if end - start < 2 {
+            return;
+        }
+
+        self.unsafe_to_break_impl(start, end, Some(glyph_flag::UNSAFE_TO_CONCAT));
+    }
+
+    pub fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize, mask: Option<Mask>) {
+        let mask = mask.unwrap_or(glyph_flag::DEFINED);
+
         if !self.have_output {
-            self.unsafe_to_break_impl(start, end);
+            self.unsafe_to_break_impl(start, end, Some(glyph_flag::DEFINED));
             return;
         }
 
@@ -1246,13 +1303,19 @@ impl Buffer {
         cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, cluster);
         let idx = self.idx;
         let out_len = self.out_len;
+
         let unsafe_to_break1 =
-            Self::_unsafe_to_break_set_mask(self.out_info_mut(), start, out_len, cluster);
-        let unsafe_to_break2 = Self::_unsafe_to_break_set_mask(&mut self.info, idx, end, cluster);
+            Self::_unsafe_to_break_set_mask(self.out_info_mut(), start, out_len, cluster, mask);
+        let unsafe_to_break2 =
+            Self::_unsafe_to_break_set_mask(&mut self.info, idx, end, cluster, mask);
 
         if unsafe_to_break1 || unsafe_to_break2 {
-            self.scratch_flags |= BufferScratchFlags::HAS_UNSAFE_TO_BREAK;
+            self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
         }
+    }
+
+    pub fn unsafe_to_concat_from_outbuffer(&mut self, start: usize, end: usize) {
+        self.unsafe_to_break_from_outbuffer(start, end, Some(glyph_flag::UNSAFE_TO_CONCAT));
     }
 
     pub fn move_to(&mut self, i: usize) -> bool {
@@ -1396,11 +1459,7 @@ impl Buffer {
 
     pub fn set_cluster(info: &mut GlyphInfo, cluster: u32, mask: Mask) {
         if info.cluster != cluster {
-            if mask & glyph_flag::UNSAFE_TO_BREAK != 0 {
-                info.mask |= glyph_flag::UNSAFE_TO_BREAK;
-            } else {
-                info.mask &= !glyph_flag::UNSAFE_TO_BREAK;
-            }
+            info.mask = (info.mask & !glyph_flag::DEFINED) | (mask & glyph_flag::DEFINED);
         }
 
         info.cluster = cluster;
@@ -1447,12 +1506,17 @@ impl Buffer {
         start: usize,
         end: usize,
         cluster: u32,
+        mask: Mask,
     ) -> bool {
+        // NOTE: Because of problems with ownership, we don't pass the scratch flags to this
+        // function, unlike in harfbuzz. Because of this, each time you call this function you
+        // the caller needs to set the "BufferScratchFlags::HAS_GLYPH_FLAGS" scratch flag
+        // themselves if the function returns true.
         let mut unsafe_to_break = false;
         for glyph_info in &mut info[start..end] {
             if glyph_info.cluster != cluster {
+                glyph_info.mask |= mask;
                 unsafe_to_break = true;
-                glyph_info.mask |= glyph_flag::UNSAFE_TO_BREAK;
             }
         }
 
@@ -1641,8 +1705,8 @@ bitflags::bitflags! {
         const HAS_DEFAULT_IGNORABLES    = 0x00000002;
         const HAS_SPACE_FALLBACK        = 0x00000004;
         const HAS_GPOS_ATTACHMENT       = 0x00000008;
-        const HAS_UNSAFE_TO_BREAK       = 0x00000010;
-        const HAS_CGJ                   = 0x00000020;
+        const HAS_CGJ                   = 0x00000010;
+        const HAS_GLYPH_FLAGS       = 0x00000020;
 
         // Reserved for complex shapers' internal use.
         const COMPLEX0                  = 0x01000000;

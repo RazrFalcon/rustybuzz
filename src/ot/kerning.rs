@@ -99,7 +99,7 @@ fn machine_kern(
         }
 
         let mut iter = SkippyIter::new(&ctx, i, 1, false);
-        if !iter.next() {
+        if !iter.next(None) {
             i += 1;
             continue;
         }
@@ -204,7 +204,11 @@ fn apply_state_machine_kerning(subtable: &kern::Subtable, kern_mask: Mask, buffe
             if entry.has_offset()
                 || !(entry.new_state == apple_layout::state::START_OF_TEXT && !entry.has_advance())
             {
-                buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
+                buffer.unsafe_to_break_from_outbuffer(
+                    buffer.backtrack_len() - 1,
+                    buffer.idx + 1,
+                    None,
+                );
             }
         }
 

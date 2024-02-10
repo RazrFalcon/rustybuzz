@@ -140,7 +140,7 @@ fn apply_simple_kerning(
         }
 
         let mut iter = SkippyIter::new(&ctx, i, 1, false);
-        if !iter.next() {
+        if !iter.next(None) {
             i += 1;
             continue;
         }
@@ -235,7 +235,11 @@ fn apply_state_machine_kerning<T, E>(
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
             if entry.is_actionable() || !(entry.new_state == START_OF_TEXT && !entry.has_advance())
             {
-                buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
+                buffer.unsafe_to_break_from_outbuffer(
+                    buffer.backtrack_len() - 1,
+                    buffer.idx + 1,
+                    None,
+                );
             }
         }
 

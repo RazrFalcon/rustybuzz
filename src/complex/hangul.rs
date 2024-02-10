@@ -147,7 +147,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             // I didn't bother for now.
             if start < end && end == buffer.out_len {
                 // Tone mark follows a valid syllable; move it in front, unless it's zero width.
-                buffer.unsafe_to_break_from_outbuffer(start, buffer.idx);
+                buffer.unsafe_to_break_from_outbuffer(start, buffer.idx, None);
                 buffer.next_glyph();
                 if !is_zero_width_char(face, c) {
                     buffer.merge_out_clusters(start, end + 1);

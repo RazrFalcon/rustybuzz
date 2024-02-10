@@ -613,15 +613,17 @@ fn propagate_flags(buffer: &mut Buffer) {
     // Simplifies using them.
     if buffer
         .scratch_flags
-        .contains(BufferScratchFlags::HAS_UNSAFE_TO_BREAK)
+        .contains(BufferScratchFlags::HAS_GLYPH_FLAGS)
     {
         foreach_cluster!(buffer, start, end, {
+            let mut mask = 0;
             for info in &buffer.info[start..end] {
-                if info.mask & glyph_flag::UNSAFE_TO_BREAK != 0 {
-                    for info in &mut buffer.info[start..end] {
-                        info.mask |= glyph_flag::UNSAFE_TO_BREAK;
-                    }
-                    break;
+                mask |= info.mask * glyph_flag::DEFINED;
+            }
+
+            if mask != 0 {
+                for info in &mut buffer.info[start..end] {
+                    info.mask |= mask;
                 }
             }
         });
