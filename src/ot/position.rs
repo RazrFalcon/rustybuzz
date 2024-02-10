@@ -168,36 +168,140 @@ impl Apply for SingleAdjustment<'_> {
 
 impl Apply for PairAdjustment<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let first = ctx.buffer.cur(0).as_glyph();
-        let index = self.coverage().get(first)?;
+        let first_glyph = ctx.buffer.cur(0).as_glyph();
+        let first_glyph_index = ctx.buffer.idx;
+        let first_glyph_coverage_index = self.coverage().get(first_glyph)?;
 
         let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
         if !iter.next() {
             return None;
         }
 
-        let pos = iter.index();
-        let second = ctx.buffer.info[pos].as_glyph();
+        let second_glyph_index = iter.index();
+        let second_glyph = ctx.buffer.info[second_glyph_index].as_glyph();
 
-        let records = match self {
-            Self::Format1 { sets, .. } => sets.get(index)?.get(second),
+        let finish = |ctx: &mut ApplyContext, len2| {
+            ctx.buffer.idx = second_glyph_index;
+
+            if len2 != 0 {
+                ctx.buffer.idx += 1;
+            }
+
+            Some(())
+        };
+
+        let check_unsafe_to_break = |ctx: &mut ApplyContext, flag1, flag2, len2| {
+            if flag1 || flag2 {
+                ctx.buffer
+                    .unsafe_to_break(ctx.buffer.idx, second_glyph_index + 1);
+            }
+
+            finish(ctx, len2)
+        };
+
+        let apply_kerns = |ctx: &mut ApplyContext, records: (ValueRecord, ValueRecord), len2| {
+            let flag1 = records.0.apply(ctx, ctx.buffer.idx);
+            let flag2 = records.1.apply(ctx, second_glyph_index);
+
+            check_unsafe_to_break(ctx, flag1, flag2, len2)
+        };
+
+        let (records, len2) = match self {
+            Self::Format1 { sets, .. } => (
+                sets.get(first_glyph_coverage_index)?.get(second_glyph)?,
+                sets.flags().1.len(),
+            ),
             Self::Format2 {
                 classes, matrix, ..
             } => {
-                let classes = (classes.0.get(first), classes.1.get(second));
-                matrix.get(classes)
+                let classes = (classes.0.get(first_glyph), classes.1.get(second_glyph));
+
+                let records = matrix.get(classes)?;
+                let flags = matrix.value_format_flags();
+                let len2 = flags.1.len();
+
+                // Isolate simple kerning and apply it half to each side.
+                // Results in better cursor positioning / underline drawing.
+                if len2 == 0 {
+                    let dir = ctx.buffer.direction;
+                    let mut mask = if dir.is_horizontal() {
+                        ValueFormatFlags::x_advance()
+                    } else {
+                        ValueFormatFlags::y_advance()
+                    };
+
+                    if dir.is_backward() {
+                        mask |= mask >> 2;
+                    }
+
+                    mask |= mask << 4;
+
+                    if (flags.0.bits() & !mask) == 1 {
+                        return apply_kerns(ctx, records, len2);
+                    } else {
+                        let mut dummy_pos = GlyphPosition::default();
+                        if records.0.apply_to_pos(ctx, &mut dummy_pos) {
+                            let src = &mut dummy_pos;
+                            let (arr1, arr2) = ctx.buffer.pos.split_at_mut(second_glyph_index);
+                            let dst1 = &mut arr1[first_glyph_index];
+                            let dst2 = &mut arr2[0];
+
+                            let (
+                                src_advance,
+                                dst1_advance,
+                                dst2_advance,
+                                src_offset,
+                                dst1_offset,
+                                dst2_offset,
+                            ) = if dir.is_horizontal() {
+                                (
+                                    &mut src.x_advance,
+                                    &mut dst1.x_advance,
+                                    &mut dst2.x_advance,
+                                    &mut src.x_offset,
+                                    &mut dst1.x_offset,
+                                    &mut dst2.x_offset,
+                                )
+                            } else {
+                                (
+                                    &mut src.y_advance,
+                                    &mut dst1.y_advance,
+                                    &mut dst2.y_advance,
+                                    &mut src.y_offset,
+                                    &mut dst1.y_offset,
+                                    &mut dst2.y_offset,
+                                )
+                            };
+
+                            let kern = *src_advance;
+                            let kern1 = kern >> 1;
+                            let kern2 = kern - kern1;
+
+                            if !dir.is_backward() {
+                                *dst1_advance += kern1;
+                                *dst2_advance += kern2;
+                                *dst2_offset += kern2;
+                            } else {
+                                *dst1_advance += kern1;
+                                *dst1_offset += *src_offset - kern2;
+                                *dst2_advance += kern2;
+                            }
+
+                            let applied_first = kern != 0;
+                            let applied_second = kern != 0;
+
+                            return check_unsafe_to_break(ctx, applied_first, applied_second, len2);
+                        } else {
+                            return finish(ctx, len2);
+                        }
+                    }
+                } else {
+                    return apply_kerns(ctx, records, len2);
+                }
             }
-        }?;
+        };
 
-        let flag1 = records.0.apply(ctx, ctx.buffer.idx);
-        let flag2 = records.1.apply(ctx, pos);
-
-        if flag1 || flag2 {
-            ctx.buffer.unsafe_to_break(ctx.buffer.idx, pos + 1);
-        }
-
-        ctx.buffer.idx = pos + usize::from(flag2);
-        Some(())
+        apply_kerns(ctx, records, len2)
     }
 }
 
@@ -470,12 +574,19 @@ impl Apply for MarkToMarkAdjustment<'_> {
 
 trait ValueRecordExt {
     fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool;
+    fn apply_to_pos(&self, ctx: &mut ApplyContext, pos: &mut GlyphPosition) -> bool;
 }
 
 impl ValueRecordExt for ValueRecord<'_> {
     fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool {
-        let horizontal = ctx.buffer.direction.is_horizontal();
         let mut pos = ctx.buffer.pos[idx];
+        let worked = self.apply_to_pos(ctx, &mut pos);
+        ctx.buffer.pos[idx] = pos;
+        worked
+    }
+
+    fn apply_to_pos(&self, ctx: &mut ApplyContext, pos: &mut GlyphPosition) -> bool {
+        let horizontal = ctx.buffer.direction.is_horizontal();
         let mut worked = false;
 
         if self.x_placement != 0 {
@@ -535,7 +646,6 @@ impl ValueRecordExt for ValueRecord<'_> {
             }
         }
 
-        ctx.buffer.pos[idx] = pos;
         worked
     }
 }

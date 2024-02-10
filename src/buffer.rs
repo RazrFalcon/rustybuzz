@@ -636,6 +636,12 @@ impl Buffer {
     }
 
     #[inline]
+    pub fn cur_pos(&mut self) -> &GlyphPosition {
+        let i = self.idx;
+        &self.pos[i]
+    }
+
+    #[inline]
     pub fn cur_pos_mut(&mut self) -> &mut GlyphPosition {
         let i = self.idx;
         &mut self.pos[i]
