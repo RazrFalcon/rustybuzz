@@ -197,6 +197,8 @@ impl Apply for PairAdjustment<'_> {
             if flag1 || flag2 {
                 ctx.buffer
                     .unsafe_to_break(ctx.buffer.idx, second_glyph_index + 1);
+            }   else {
+                ctx.buffer.unsafe_to_concat(ctx.buffer.idx, second_glyph_index + 1);
             }
 
             finish(ctx, len2)
