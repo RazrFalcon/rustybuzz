@@ -38,15 +38,6 @@ IGNORE_TEST_CASES = [
     'morx_36_001',
     # ttf-parser uses different rounding, not a bug
     'fallback_positioning_001',
-
-    # text-rendering-tests tests
-    # Unknown issue. Investigate.
-    'cmap_1_004',
-    'shknda_3_031',
-    'shlana_10_028',
-    'shlana_10_041',
-    'shlana_5_010',
-    'shlana_5_012',
 ]
 
 

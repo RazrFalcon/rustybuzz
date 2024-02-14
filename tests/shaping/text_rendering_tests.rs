@@ -663,6 +663,18 @@ fn cmap_1_003() {
 }
 
 #[test]
+fn cmap_1_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestCMAP14.otf",
+            "\u{82A6}\u{E0102}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni82A6_uE0100"
+    );
+}
+
+#[test]
 fn cmap_2_001() {
     assert_eq!(
         shape(
@@ -9898,6 +9910,21 @@ fn shknda_3_030() {
 }
 
 #[test]
+fn shknda_3_031() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/NotoSansKannada-Regular.ttf",
+            "\u{0C86}\u{0CCD}\u{0CAF}\u{0C95}\u{0CCD}\u{0CB7}\u{0CBF}\u{0CB8}\u{0CCD}\u{200C}",
+            "--ned --remove-default-ignorables",
+        ),
+        "gid7|\
+         gid122@1717,0|\
+         gid285@2249,0|\
+         gid200@3425,0"
+    );
+}
+
+#[test]
 fn shlana_1_001() {
     assert_eq!(
         shape(
@@ -11082,6 +11109,24 @@ fn shlana_10_027() {
 }
 
 #[test]
+fn shlana_10_028() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A32}\u{1A6C}\u{1A74}\u{1A75}\u{034F}\u{1A6F}\u{1A60}\u{1A36}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A32|\
+         uni1A6C.wide@1910,0|\
+         uni1A74@1560,0|\
+         uni1A75@1560,732|\
+         uni1A6F@1910,0|\
+         uni25CC@4154,0|\
+         uni1A601A36@5366,0"
+    );
+}
+
+#[test]
 fn shlana_10_029() {
     assert_eq!(
         shape(
@@ -11274,6 +11319,21 @@ fn shlana_10_040() {
          uni1A621A621A76@3636,0|\
          uni25CC@3636,0|\
          uni1A63@4848,0"
+    );
+}
+
+#[test]
+fn shlana_10_041() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A32}\u{1A66}\u{034F}\u{1A63}\u{1A60}\u{1A3F}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A32|\
+         uni1A66@1560,0|\
+         uni1A63@1910,0|\
+         uni1A601A3F@3122,0"
     );
 }
 
@@ -12342,6 +12402,24 @@ fn shlana_5_009() {
 }
 
 #[test]
+fn shlana_5_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A34}\u{1A64}\u{1A74}\u{1A36}\u{1A60}\u{1A45}\u{200C}\u{1A63}\u{1A60}\u{1A3F}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A34|\
+         uni1A74@1212,0|\
+         uni1A64@1212,0|\
+         uni1A36@1676,0|\
+         uni1A601A45@2888,0|\
+         uni1A63@2888,0|\
+         uni1A601A3F@4100,0"
+    );
+}
+
+#[test]
 fn shlana_5_011() {
     assert_eq!(
         shape(
@@ -12356,6 +12434,19 @@ fn shlana_5_011() {
          uni1A361A63@4334,0|\
          uni1A601A45@5546,0|\
          uni1A601A3F@5546,0"
+    );
+}
+
+#[test]
+fn shlana_5_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestShapeLana.ttf",
+            "\u{1A36}\u{200C}\u{1A63}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni1A36|\
+         uni1A63@1212,0"
     );
 }
 
