@@ -176,7 +176,7 @@ impl Apply for PairAdjustment<'_> {
 
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {
-            ctx.buffer.unsafe_to_concat(ctx.buffer.idx, unsafe_to);
+            ctx.buffer.unsafe_to_concat(Some(ctx.buffer.idx), Some(unsafe_to));
             return None;
         }
 
@@ -195,14 +195,14 @@ impl Apply for PairAdjustment<'_> {
 
         let boring = |ctx: &mut ApplyContext, len2| {
             ctx.buffer
-                .unsafe_to_concat(ctx.buffer.idx, second_glyph_index + 1);
+                .unsafe_to_concat(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
             finish(ctx, len2)
         };
 
         let success = |ctx: &mut ApplyContext, flag1, flag2, len2| {
             if flag1 || flag2 {
                 ctx.buffer
-                    .unsafe_to_break(ctx.buffer.idx, second_glyph_index + 1);
+                    .unsafe_to_break(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
                 finish(ctx, len2)
             } else {
                 boring(ctx, len2)
@@ -228,7 +228,7 @@ impl Apply for PairAdjustment<'_> {
 
                 if classes.0 >= matrix.counts().0 || classes.1 >= matrix.counts().1 {
                     ctx.buffer
-                        .unsafe_to_concat(ctx.buffer.idx, iter.index() + 1);
+                        .unsafe_to_concat(Some(ctx.buffer.idx), Some(iter.index() + 1));
                     return None;
                 }
 
@@ -333,7 +333,7 @@ impl Apply for CursiveAdjustment<'_> {
         let mut unsafe_from = 0;
         if !iter.prev(Some(&mut unsafe_from)) {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx + 1);
+                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
             return None;
         }
 
@@ -342,7 +342,7 @@ impl Apply for CursiveAdjustment<'_> {
         let index_prev = self.coverage.get(prev)?;
         let Some(exit_prev) = self.sets.exit(index_prev) else {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(iter.index(), ctx.buffer.idx + 1);
+                .unsafe_to_concat_from_outbuffer(Some(iter.index()), Some(ctx.buffer.idx + 1));
             return None;
         };
 
@@ -351,7 +351,7 @@ impl Apply for CursiveAdjustment<'_> {
 
         let direction = ctx.buffer.direction;
         let j = ctx.buffer.idx;
-        ctx.buffer.unsafe_to_break(i, j);
+        ctx.buffer.unsafe_to_break(Some(i), Some(j));
 
         let pos = &mut ctx.buffer.pos;
         match direction {
@@ -476,7 +476,7 @@ impl Apply for MarkToBaseAdjustment<'_> {
             let mut unsafe_from = 0;
             if !iter.prev(Some(&mut unsafe_from)) {
                 ctx.buffer
-                    .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx + 1);
+                    .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
                 return None;
             }
 
@@ -504,7 +504,7 @@ impl Apply for MarkToBaseAdjustment<'_> {
         let base_glyph = info[iter_idx].as_glyph();
         let Some(base_index) = self.base_coverage.get(base_glyph) else {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         };
 
@@ -526,7 +526,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         let mut unsafe_from = 0;
         if !iter.prev(Some(&mut unsafe_from)) {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx + 1);
+                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
             return None;
         }
 
@@ -535,7 +535,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         let iter_idx = iter.index();
         let lig_glyph = buffer.info[iter_idx].as_glyph();
         let Some(lig_index) = self.ligature_coverage.get(lig_glyph) else {
-            ctx.buffer.unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
+            ctx.buffer.unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         };
         let lig_attach = self.ligature_array.get(lig_index)?;
@@ -543,7 +543,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         // Find component to attach to
         let comp_count = lig_attach.rows;
         if comp_count == 0 {
-            ctx.buffer.unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
+            ctx.buffer.unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
@@ -579,13 +579,13 @@ impl Apply for MarkToMarkAdjustment<'_> {
         let mut unsafe_from = 0;
         if !iter.prev(Some(&mut unsafe_from)) {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx + 1);
+                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
             return None;
         }
 
         let iter_idx = iter.index();
         if !buffer.info[iter_idx].is_mark() {
-            ctx.buffer.unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
+            ctx.buffer.unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
@@ -605,7 +605,7 @@ impl Apply for MarkToMarkAdjustment<'_> {
         };
 
         if !matches {
-            ctx.buffer.unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
+            ctx.buffer.unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
@@ -723,7 +723,7 @@ impl MarkArrayExt for MarkArray<'_> {
         let (mark_x, mark_y) = mark_anchor.get(ctx.face);
         let (base_x, base_y) = base_anchor.get(ctx.face);
 
-        ctx.buffer.unsafe_to_break(glyph_pos, ctx.buffer.idx + 1);
+        ctx.buffer.unsafe_to_break(Some(glyph_pos), Some(ctx.buffer.idx + 1));
 
         let idx = ctx.buffer.idx;
         let pos = ctx.buffer.cur_pos_mut();

@@ -770,7 +770,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
-        buffer.unsafe_to_break(start, end);
+        buffer.unsafe_to_break(Some(start), Some(end));
         start = end;
         end = buffer.next_syllable(start);
     }
@@ -1951,7 +1951,7 @@ fn final_reordering_impl(
         {
             buffer.info[start].mask |= plan.mask_array[indic_feature::INIT];
         } else {
-            buffer.unsafe_to_break(start - 1, start + 1);
+            buffer.unsafe_to_break(Some(start - 1), Some(start + 1));
         }
     }
 }

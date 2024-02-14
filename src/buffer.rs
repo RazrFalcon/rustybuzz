@@ -1102,7 +1102,7 @@ impl Buffer {
 
     fn merge_clusters_impl(&mut self, mut start: usize, mut end: usize) {
         if self.cluster_level == BufferClusterLevel::Characters {
-            self.unsafe_to_break(start, end);
+            self.unsafe_to_break(Some(start), Some(end));
             return;
         }
 
@@ -1261,11 +1261,11 @@ impl Buffer {
         self.len = j;
     }
 
-    pub fn unsafe_to_break(&mut self, start: usize, end: usize) {
+    pub fn unsafe_to_break(&mut self, start: Option<usize>, end: Option<usize>) {
         self.set_glyph_flags(
             UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
-            Some(start),
-            Some(end),
+            start,
+            end,
             Some(true),
             None,
         );
@@ -1340,25 +1340,25 @@ impl Buffer {
         }
     }
 
-    pub fn unsafe_to_concat(&mut self, start: usize, end: usize) {
-        self.set_glyph_flags(UNSAFE_TO_CONCAT, Some(start), Some(end), Some(true), None);
+    pub fn unsafe_to_concat(&mut self, start: Option<usize>, end: Option<usize>) {
+        self.set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(true), None);
     }
 
-    pub fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize) {
+    pub fn unsafe_to_break_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
         self.set_glyph_flags(
             UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
-            Some(start),
-            Some(end),
+            start,
+            end,
             Some(true),
             Some(true),
         );
     }
 
-    pub fn unsafe_to_concat_from_outbuffer(&mut self, start: usize, end: usize) {
+    pub fn unsafe_to_concat_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
         self.set_glyph_flags(
             UNSAFE_TO_CONCAT,
-            Some(start),
-            Some(end),
+            start,
+            end,
             Some(false),
             Some(true),
         );

@@ -154,7 +154,7 @@ fn position_around_base(
     adjust_offsets_when_zeroing: bool,
 ) {
     let mut horizontal_dir = Direction::Invalid;
-    buffer.unsafe_to_break(base, end);
+    buffer.unsafe_to_break(Some(base), Some(end));
 
     let base_info = &buffer.info[base];
     let base_pos = &buffer.pos[base];

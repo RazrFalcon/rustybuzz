@@ -73,7 +73,7 @@ impl Apply for ContextLookup<'_> {
                     &mut match_positions,
                     None,
                 ) {
-                    ctx.buffer.unsafe_to_break(ctx.buffer.idx, match_end);
+                    ctx.buffer.unsafe_to_break(Some(ctx.buffer.idx), Some(match_end));
                     apply_lookup(
                         ctx,
                         usize::from(coverages_len),
@@ -83,7 +83,7 @@ impl Apply for ContextLookup<'_> {
                     );
                     return Some(());
                 } else {
-                    ctx.buffer.unsafe_to_concat(ctx.buffer.idx, match_end);
+                    ctx.buffer.unsafe_to_concat(Some(ctx.buffer.idx), Some(match_end));
                     return None;
                 }
             }
@@ -251,7 +251,7 @@ impl Apply for ChainedContextLookup<'_> {
                         &mut end_index,
                     ))
                 {
-                    ctx.buffer.unsafe_to_concat(ctx.buffer.idx, end_index);
+                    ctx.buffer.unsafe_to_concat(Some(ctx.buffer.idx), Some(end_index));
                     return None;
                 }
 
@@ -259,12 +259,12 @@ impl Apply for ChainedContextLookup<'_> {
 
                 if !match_backtrack(ctx, backtrack_coverages.len(), &back, &mut start_index) {
                     ctx.buffer
-                        .unsafe_to_concat_from_outbuffer(start_index, end_index);
+                        .unsafe_to_concat_from_outbuffer(Some(start_index), Some(end_index));
                     return None;
                 }
 
                 ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_index, end_index);
+                    .unsafe_to_break_from_outbuffer(Some(start_index), Some(end_index));
                 apply_lookup(
                     ctx,
                     usize::from(input_coverages.len()),
@@ -353,7 +353,7 @@ fn apply_context(
         &mut match_positions,
         None,
     ) {
-        ctx.buffer.unsafe_to_break(ctx.buffer.idx, match_end);
+        ctx.buffer.unsafe_to_break(Some(ctx.buffer.idx), Some(match_end));
         apply_lookup(
             ctx,
             usize::from(input.len()),
@@ -413,7 +413,7 @@ fn apply_chain_context(
     }
 
     if !(input_matches && match_lookahead(ctx, lookahead.len(), &f2, match_end, &mut end_index)) {
-        ctx.buffer.unsafe_to_concat(ctx.buffer.idx, end_index);
+        ctx.buffer.unsafe_to_concat(Some(ctx.buffer.idx), Some(end_index));
         return None;
     }
 
@@ -421,12 +421,12 @@ fn apply_chain_context(
 
     if !match_backtrack(ctx, backtrack.len(), &f1, &mut start_index) {
         ctx.buffer
-            .unsafe_to_concat_from_outbuffer(start_index, end_index);
+            .unsafe_to_concat_from_outbuffer(Some(start_index), Some(end_index));
         return None;
     }
 
     ctx.buffer
-        .unsafe_to_break_from_outbuffer(start_index, end_index);
+        .unsafe_to_break_from_outbuffer(Some(start_index), Some(end_index));
     apply_lookup(
         ctx,
         usize::from(input.len()),

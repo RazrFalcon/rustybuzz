@@ -232,7 +232,7 @@ fn setup_syllables(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::universal_machine::find_syllables(buffer);
 
     foreach_syllable!(buffer, start, end, {
-        buffer.unsafe_to_break(start, end);
+        buffer.unsafe_to_break(Some(start), Some(end));
     });
 
     setup_rphf_mask(plan, buffer);

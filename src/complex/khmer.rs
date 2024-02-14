@@ -160,7 +160,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
-        buffer.unsafe_to_break(start, end);
+        buffer.unsafe_to_break(Some(start), Some(end));
         start = end;
         end = buffer.next_syllable(start);
     }

@@ -225,7 +225,7 @@ impl Apply for AlternateSet<'_> {
         if alt_index == Map::MAX_VALUE && ctx.random {
             // Maybe we can do better than unsafe-to-break all; but since we are
             // changing random state, it would be hard to track that.  Good 'nough.
-            ctx.buffer.unsafe_to_break(0, ctx.buffer.len);
+            ctx.buffer.unsafe_to_break(Some(0), Some(ctx.buffer.len));
             alt_index = ctx.random_number() % u32::from(len) + 1;
         }
 
@@ -309,7 +309,7 @@ impl Apply for Ligature<'_> {
                 &mut match_positions,
                 Some(&mut total_component_count),
             ) {
-                ctx.buffer.unsafe_to_concat(ctx.buffer.idx, match_end);
+                ctx.buffer.unsafe_to_concat(Some(ctx.buffer.idx), Some(match_end));
                 return None;
             }
 
@@ -494,7 +494,7 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
                 &mut end_index,
             ) {
                 ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_index, end_index);
+                    .unsafe_to_break_from_outbuffer(Some(start_index), Some(end_index));
                 ctx.replace_glyph_inplace(subst);
 
                 // Note: We DON'T decrease buffer.idx.  The main loop does it
@@ -505,7 +505,7 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
         }
 
         ctx.buffer
-            .unsafe_to_concat_from_outbuffer(start_index, end_index);
+            .unsafe_to_concat_from_outbuffer(Some(start_index), Some(end_index));
         return None;
     }
 }

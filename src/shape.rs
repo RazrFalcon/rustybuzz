@@ -317,7 +317,7 @@ fn setup_masks_fraction(ctx: &mut ShapeContext) {
                 end += 1;
             }
 
-            buffer.unsafe_to_break(start, end);
+            buffer.unsafe_to_break(Some(start), Some(end));
 
             for info in &mut buffer.info[start..i] {
                 info.mask |= pre_mask;
@@ -429,7 +429,7 @@ fn form_clusters(buffer: &mut Buffer) {
             foreach_grapheme!(buffer, start, end, { buffer.merge_clusters(start, end) });
         } else {
             foreach_grapheme!(buffer, start, end, {
-                buffer.unsafe_to_break(start, end);
+                buffer.unsafe_to_break(Some(start), Some(end));
             });
         }
     }

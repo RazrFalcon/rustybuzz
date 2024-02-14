@@ -210,7 +210,7 @@ fn drive<T: FromData>(
         };
 
         if !is_safe_to_break() && buffer.backtrack_len() > 0 && buffer.idx < buffer.len {
-            buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
+            buffer.unsafe_to_break_from_outbuffer(Some(buffer.backtrack_len() - 1), Some(buffer.idx + 1));
         }
 
         c.transition(&entry, buffer);
@@ -459,7 +459,7 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
         }
 
         if let Some(replacement) = replacement {
-            buffer.unsafe_to_break(self.mark, (buffer.idx + 1).min(buffer.len));
+            buffer.unsafe_to_break(Some(self.mark), Some((buffer.idx + 1).min(buffer.len)));
             buffer.info[self.mark].glyph_id = u32::from(replacement);
 
             if let Some(face) = self.face_if_has_glyph_classes {
@@ -565,8 +565,8 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
             buffer.move_to(end + usize::from(count));
 
             buffer.unsafe_to_break_from_outbuffer(
-                self.mark as usize,
-                (buffer.idx + 1).min(buffer.len),
+                Some(self.mark as usize),
+                Some((buffer.idx + 1).min(buffer.len)),
             );
         }
 

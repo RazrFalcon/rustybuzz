@@ -297,7 +297,7 @@ fn do_pua_shaping(face: &Face, buffer: &mut Buffer) {
             below_edge.action
         };
 
-        buffer.unsafe_to_break(base, i);
+        buffer.unsafe_to_break(Some(base), Some(i));
         if action == Action::RD {
             buffer.info[base].glyph_id = pua_shape(buffer.info[base].glyph_id, action, face);
         } else {

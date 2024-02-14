@@ -147,7 +147,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             // I didn't bother for now.
             if start < end && end == buffer.out_len {
                 // Tone mark follows a valid syllable; move it in front, unless it's zero width.
-                buffer.unsafe_to_break_from_outbuffer(start, buffer.idx);
+                buffer.unsafe_to_break_from_outbuffer(Some(start), Some(buffer.idx));
                 buffer.next_glyph();
                 if !is_zero_width_char(face, c) {
                     buffer.merge_out_clusters(start, end + 1);
@@ -209,7 +209,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 }
 
                 let offset = if t != 0 { 3 } else { 2 };
-                buffer.unsafe_to_break(buffer.idx, buffer.idx + offset);
+                buffer.unsafe_to_break(Some(buffer.idx), Some(buffer.idx + offset));
 
                 // We've got a syllable <L,V,T?>; see if it can potentially be composed.
                 if is_combining_l(l) && is_combining_v(v) && (t == 0 || is_combining_t(t)) {
@@ -267,7 +267,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                     continue;
                 } else {
                     // Mark unsafe between LV and T.
-                    buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
+                    buffer.unsafe_to_break(Some(buffer.idx), Some(buffer.idx + 2));
                 }
             }
 
@@ -310,7 +310,7 @@ fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
                 } else if tindex == 0 && buffer.idx + 1 > buffer.len && is_t(buffer.cur(1).glyph_id)
                 {
                     // Mark unsafe between LV and T.
-                    buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
+                    buffer.unsafe_to_break(Some(buffer.idx), Some(buffer.idx + 2));
                 }
             }
 
