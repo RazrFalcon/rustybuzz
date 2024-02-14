@@ -515,6 +515,11 @@ fn arabic_joining(buffer: &mut Buffer) {
                 buffer.info[prev].set_arabic_shaping_action(entry.0);
                 buffer.unsafe_to_break(prev, i + 1);
             }
+            // States that have a possible prev_action.
+        } else if 2 <= state && state <= 5 {
+            if let Some(prev) = prev {
+                buffer.unsafe_to_concat(prev, i + 1);
+            }
         }
 
         buffer.info[i].set_arabic_shaping_action(entry.1);
