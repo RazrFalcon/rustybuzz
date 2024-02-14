@@ -9993,6 +9993,19 @@ fn tt_kern_gpos_001() {
 }
 
 #[test]
+fn unsafe_to_concat_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/34da9aab7bee86c4dfc3b85e423435822fdf4b62.ttf",
+            "\u{0628}\u{200C}\u{0628}",
+            "--show-flags",
+        ),
+        "uni0628=1+993#2|\
+         uni0628=0+993#2"
+    );
+}
+
+#[test]
 fn use_indic3_001() {
     assert_eq!(
         shape(

@@ -1,7 +1,8 @@
 use alloc::boxed::Box;
+use std::println;
 
 use super::*;
-use crate::buffer::{Buffer, BufferScratchFlags};
+use crate::buffer::{glyph_flag, Buffer, BufferScratchFlags};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{
@@ -130,7 +131,7 @@ const STATE_TABLE: &[[(u8, u8, u16); 6]] = &[
     ],
 ];
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
 pub enum JoiningType {
     U = 0,
     L = 1,
@@ -517,9 +518,15 @@ fn arabic_joining(buffer: &mut Buffer) {
             }
         }
         // States that have a possible prev_action.
-        else if 2 <= state && state <= 5 {
+        else {
             if let Some(prev) = prev {
-                buffer.unsafe_to_concat(prev, i + 1);
+                if this_type >= JoiningType::R || (2 <= state && state <= 5) {
+                    buffer.unsafe_to_concat(prev, i + 1);
+                }
+            } else {
+                if this_type >= JoiningType::R {
+                    buffer.unsafe_to_concat_from_outbuffer(0, i + 1);
+                }
             }
         }
 

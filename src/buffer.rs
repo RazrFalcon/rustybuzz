@@ -1297,7 +1297,9 @@ impl Buffer {
                 }
             } else {
                 let cluster = Self::_infos_find_min_cluster(&self.info, start, end, None);
-                Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask);
+                if Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask) {
+                    self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
+                }
             }
         } else {
             assert!(start <= self.out_len);
@@ -1321,14 +1323,19 @@ impl Buffer {
                 );
 
                 let out_len = self.out_len;
-                Self::_infos_set_glyph_flags(
+                let first = Self::_infos_set_glyph_flags(
                     &mut self.out_info_mut(),
                     start,
                     out_len,
                     cluster,
                     mask,
                 );
-                Self::_infos_set_glyph_flags(&mut self.info, self.idx, end, cluster, mask);
+                let second =
+                    Self::_infos_set_glyph_flags(&mut self.info, self.idx, end, cluster, mask);
+
+                if first || second {
+                    self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
+                }
             }
         }
     }
@@ -1542,6 +1549,7 @@ impl Buffer {
         cluster
     }
 
+    #[must_use]
     fn _infos_set_glyph_flags(
         info: &mut [GlyphInfo],
         start: usize,
