@@ -193,23 +193,27 @@ impl Apply for PairAdjustment<'_> {
             Some(())
         };
 
-        let check_unsafe_to_break = |ctx: &mut ApplyContext, flag1, flag2, len2| {
-            if flag1 || flag2 {
-                ctx.buffer
-                    .unsafe_to_break(ctx.buffer.idx, second_glyph_index + 1);
-            } else {
-                ctx.buffer
-                    .unsafe_to_concat(ctx.buffer.idx, second_glyph_index + 1);
-            }
-
+        let boring = |ctx: &mut ApplyContext, len2| {
+            ctx.buffer
+                .unsafe_to_concat(ctx.buffer.idx, second_glyph_index + 1);
             finish(ctx, len2)
         };
 
-        let apply_kerns = |ctx: &mut ApplyContext, records: (ValueRecord, ValueRecord), len2| {
+        let success = |ctx: &mut ApplyContext, flag1, flag2, len2| {
+            if flag1 || flag2 {
+                ctx.buffer
+                    .unsafe_to_break(ctx.buffer.idx, second_glyph_index + 1);
+                finish(ctx, len2)
+            } else {
+                boring(ctx, len2)
+            }
+        };
+
+        let bail = |ctx: &mut ApplyContext, records: (ValueRecord, ValueRecord), len2| {
             let flag1 = records.0.apply(ctx, ctx.buffer.idx);
             let flag2 = records.1.apply(ctx, second_glyph_index);
 
-            check_unsafe_to_break(ctx, flag1, flag2, len2)
+            success(ctx, flag1, flag2, len2)
         };
 
         let (records, len2) = match self {
@@ -221,6 +225,12 @@ impl Apply for PairAdjustment<'_> {
                 classes, matrix, ..
             } => {
                 let classes = (classes.0.get(first_glyph), classes.1.get(second_glyph));
+
+                if classes.0 >= matrix.counts().0 || classes.1 >= matrix.counts().1 {
+                    ctx.buffer
+                        .unsafe_to_concat(ctx.buffer.idx, iter.index() + 1);
+                    return None;
+                }
 
                 let records = matrix.get(classes)?;
                 let flags = matrix.value_format_flags();
@@ -243,7 +253,7 @@ impl Apply for PairAdjustment<'_> {
                     mask |= mask << 4;
 
                     if (flags.0.bits() & !mask) == 1 {
-                        return apply_kerns(ctx, records, len2);
+                        return bail(ctx, records, len2);
                     } else {
                         let mut dummy_pos = GlyphPosition::default();
                         if records.0.apply_to_pos(ctx, &mut dummy_pos) {
@@ -296,18 +306,18 @@ impl Apply for PairAdjustment<'_> {
                             let applied_first = kern != 0;
                             let applied_second = kern != 0;
 
-                            return check_unsafe_to_break(ctx, applied_first, applied_second, len2);
+                            return success(ctx, applied_first, applied_second, len2);
                         } else {
-                            return finish(ctx, len2);
+                            return boring(ctx, len2);
                         }
                     }
                 } else {
-                    return apply_kerns(ctx, records, len2);
+                    return bail(ctx, records, len2);
                 }
             }
         };
 
-        apply_kerns(ctx, records, len2)
+        bail(ctx, records, len2)
     }
 }
 
