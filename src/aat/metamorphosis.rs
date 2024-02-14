@@ -210,7 +210,10 @@ fn drive<T: FromData>(
         };
 
         if !is_safe_to_break() && buffer.backtrack_len() > 0 && buffer.idx < buffer.len {
-            buffer.unsafe_to_break_from_outbuffer(Some(buffer.backtrack_len() - 1), Some(buffer.idx + 1));
+            buffer.unsafe_to_break_from_outbuffer(
+                Some(buffer.backtrack_len() - 1),
+                Some(buffer.idx + 1),
+            );
         }
 
         c.transition(&entry, buffer);

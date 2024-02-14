@@ -3,11 +3,11 @@ use ttf_parser::{apple_layout, kern, GlyphId};
 use super::apply::ApplyContext;
 use super::matching::SkippyIter;
 use super::{lookup_flags, TableIndex};
+use crate::buffer::glyph_flag::UNSAFE_TO_CONCAT;
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::attach_type;
 use crate::plan::ShapePlan;
 use crate::{Face, Mask};
-use crate::buffer::glyph_flag::UNSAFE_TO_CONCAT;
 
 pub fn has_kerning(face: &Face) -> bool {
     face.tables().kern.is_some()
@@ -208,7 +208,10 @@ fn apply_state_machine_kerning(subtable: &kern::Subtable, kern_mask: Mask, buffe
             if entry.has_offset()
                 || !(entry.new_state == apple_layout::state::START_OF_TEXT && !entry.has_advance())
             {
-                buffer.unsafe_to_break_from_outbuffer(Some(buffer.backtrack_len() - 1), Some(buffer.idx + 1));
+                buffer.unsafe_to_break_from_outbuffer(
+                    Some(buffer.backtrack_len() - 1),
+                    Some(buffer.idx + 1),
+                );
             }
         }
 

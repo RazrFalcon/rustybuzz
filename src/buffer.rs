@@ -1355,13 +1355,7 @@ impl Buffer {
     }
 
     pub fn unsafe_to_concat_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
-        self.set_glyph_flags(
-            UNSAFE_TO_CONCAT,
-            start,
-            end,
-            Some(false),
-            Some(true),
-        );
+        self.set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(false), Some(true));
     }
 
     pub fn move_to(&mut self, i: usize) -> bool {

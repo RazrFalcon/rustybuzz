@@ -176,7 +176,8 @@ impl Apply for PairAdjustment<'_> {
 
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {
-            ctx.buffer.unsafe_to_concat(Some(ctx.buffer.idx), Some(unsafe_to));
+            ctx.buffer
+                .unsafe_to_concat(Some(ctx.buffer.idx), Some(unsafe_to));
             return None;
         }
 
@@ -535,7 +536,8 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         let iter_idx = iter.index();
         let lig_glyph = buffer.info[iter_idx].as_glyph();
         let Some(lig_index) = self.ligature_coverage.get(lig_glyph) else {
-            ctx.buffer.unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         };
         let lig_attach = self.ligature_array.get(lig_index)?;
@@ -543,7 +545,8 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         // Find component to attach to
         let comp_count = lig_attach.rows;
         if comp_count == 0 {
-            ctx.buffer.unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
@@ -585,7 +588,8 @@ impl Apply for MarkToMarkAdjustment<'_> {
 
         let iter_idx = iter.index();
         if !buffer.info[iter_idx].is_mark() {
-            ctx.buffer.unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
@@ -605,7 +609,8 @@ impl Apply for MarkToMarkAdjustment<'_> {
         };
 
         if !matches {
-            ctx.buffer.unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
@@ -723,7 +728,8 @@ impl MarkArrayExt for MarkArray<'_> {
         let (mark_x, mark_y) = mark_anchor.get(ctx.face);
         let (base_x, base_y) = base_anchor.get(ctx.face);
 
-        ctx.buffer.unsafe_to_break(Some(glyph_pos), Some(ctx.buffer.idx + 1));
+        ctx.buffer
+            .unsafe_to_break(Some(glyph_pos), Some(ctx.buffer.idx + 1));
 
         let idx = ctx.buffer.idx;
         let pos = ctx.buffer.cur_pos_mut();

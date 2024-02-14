@@ -73,7 +73,8 @@ impl Apply for ContextLookup<'_> {
                     &mut match_positions,
                     None,
                 ) {
-                    ctx.buffer.unsafe_to_break(Some(ctx.buffer.idx), Some(match_end));
+                    ctx.buffer
+                        .unsafe_to_break(Some(ctx.buffer.idx), Some(match_end));
                     apply_lookup(
                         ctx,
                         usize::from(coverages_len),
@@ -83,7 +84,8 @@ impl Apply for ContextLookup<'_> {
                     );
                     return Some(());
                 } else {
-                    ctx.buffer.unsafe_to_concat(Some(ctx.buffer.idx), Some(match_end));
+                    ctx.buffer
+                        .unsafe_to_concat(Some(ctx.buffer.idx), Some(match_end));
                     return None;
                 }
             }
@@ -251,7 +253,8 @@ impl Apply for ChainedContextLookup<'_> {
                         &mut end_index,
                     ))
                 {
-                    ctx.buffer.unsafe_to_concat(Some(ctx.buffer.idx), Some(end_index));
+                    ctx.buffer
+                        .unsafe_to_concat(Some(ctx.buffer.idx), Some(end_index));
                     return None;
                 }
 
@@ -353,7 +356,8 @@ fn apply_context(
         &mut match_positions,
         None,
     ) {
-        ctx.buffer.unsafe_to_break(Some(ctx.buffer.idx), Some(match_end));
+        ctx.buffer
+            .unsafe_to_break(Some(ctx.buffer.idx), Some(match_end));
         apply_lookup(
             ctx,
             usize::from(input.len()),
@@ -413,7 +417,8 @@ fn apply_chain_context(
     }
 
     if !(input_matches && match_lookahead(ctx, lookahead.len(), &f2, match_end, &mut end_index)) {
-        ctx.buffer.unsafe_to_concat(Some(ctx.buffer.idx), Some(end_index));
+        ctx.buffer
+            .unsafe_to_concat(Some(ctx.buffer.idx), Some(end_index));
         return None;
     }
 
