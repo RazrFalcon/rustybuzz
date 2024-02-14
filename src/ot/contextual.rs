@@ -225,46 +225,55 @@ impl Apply for ChainedContextLookup<'_> {
                     coverage.contains(glyph)
                 };
 
-                let mut start_index = ctx.buffer.out_len;
                 let mut end_index = ctx.buffer.idx;
                 let mut match_end = 0;
                 let mut match_positions = [0; MAX_CONTEXT_LENGTH];
 
-                if match_input(
+                let input_matches = match_input(
                     ctx,
                     input_coverages.len(),
                     &input,
                     &mut match_end,
                     &mut match_positions,
                     None,
-                ) {
-                    end_index = match_end;
+                );
 
-                    if match_backtrack(ctx, backtrack_coverages.len(), &back, &mut start_index) {
-                        if match_lookahead(
-                            ctx,
-                            lookahead_coverages.len(),
-                            &ahead,
-                            match_end,
-                            &mut end_index,
-                        ) {
-                            ctx.buffer
-                                .unsafe_to_break_from_outbuffer(start_index, end_index, None);
-                            apply_lookup(
-                                ctx,
-                                usize::from(input_coverages.len()),
-                                &mut match_positions,
-                                match_end,
-                                lookups,
-                            );
-                            return Some(());
-                        }
-                    }
+                if input_matches {
+                    end_index = match_end;
+                }
+
+                if !(input_matches
+                    && match_lookahead(
+                        ctx,
+                        lookahead_coverages.len(),
+                        &ahead,
+                        match_end,
+                        &mut end_index,
+                    ))
+                {
+                    ctx.buffer.unsafe_to_concat(ctx.buffer.idx, end_index);
+                    return None;
+                }
+
+                let mut start_index = ctx.buffer.out_len;
+
+                if !match_backtrack(ctx, backtrack_coverages.len(), &back, &mut start_index) {
+                    ctx.buffer
+                        .unsafe_to_concat_from_outbuffer(start_index, end_index);
+                    return None;
                 }
 
                 ctx.buffer
-                    .unsafe_to_concat_from_outbuffer(start_index, end_index);
-                return None;
+                    .unsafe_to_break_from_outbuffer(start_index, end_index, None);
+                apply_lookup(
+                    ctx,
+                    usize::from(input_coverages.len()),
+                    &mut match_positions,
+                    match_end,
+                    lookups,
+                );
+
+                Some(())
             }
         }
     }
@@ -386,40 +395,47 @@ fn apply_chain_context(
         match_funcs[1](glyph, value)
     };
 
-    let mut start_index = ctx.buffer.out_len;
     let mut end_index = ctx.buffer.idx;
     let mut match_end = 0;
     let mut match_positions = [0; MAX_CONTEXT_LENGTH];
 
-    if match_input(
+    let input_matches = match_input(
         ctx,
         input.len(),
         &f3,
         &mut match_end,
         &mut match_positions,
         None,
-    ) {
-        end_index = match_end;
+    );
 
-        if match_backtrack(ctx, backtrack.len(), &f1, &mut start_index) {
-            if match_lookahead(ctx, lookahead.len(), &f2, match_end, &mut end_index) {
-                ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_index, end_index, None);
-                apply_lookup(
-                    ctx,
-                    usize::from(input.len()),
-                    &mut match_positions,
-                    match_end,
-                    lookups,
-                );
-                return Some(());
-            }
-        }
+    if input_matches {
+        end_index = match_end;
+    }
+
+    if !(input_matches && match_lookahead(ctx, lookahead.len(), &f2, match_end, &mut end_index)) {
+        ctx.buffer.unsafe_to_concat(ctx.buffer.idx, end_index);
+        return None;
+    }
+
+    let mut start_index = ctx.buffer.out_len;
+
+    if !match_backtrack(ctx, backtrack.len(), &f1, &mut start_index) {
+        ctx.buffer
+            .unsafe_to_concat_from_outbuffer(start_index, end_index);
+        return None;
     }
 
     ctx.buffer
-        .unsafe_to_concat_from_outbuffer(start_index, end_index);
-    return None;
+        .unsafe_to_break_from_outbuffer(start_index, end_index, None);
+    apply_lookup(
+        ctx,
+        usize::from(input.len()),
+        &mut match_positions,
+        match_end,
+        lookups,
+    );
+
+    Some(())
 }
 
 fn apply_lookup(
