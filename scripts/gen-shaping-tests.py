@@ -38,7 +38,6 @@ IGNORE_TEST_CASES = [
 
     # text-rendering-tests tests
     # Unknown issue. Investigate.
-    'cmap_1_004',
     'shknda_3_031',
     'shlana_10_028',
     'shlana_10_041',

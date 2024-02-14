@@ -663,6 +663,18 @@ fn cmap_1_003() {
 }
 
 #[test]
+fn cmap_1_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestCMAP14.otf",
+            "\u{82A6}\u{E0102}",
+            "--ned --remove-default-ignorables",
+        ),
+        "uni82A6_uE0100"
+    );
+}
+
+#[test]
 fn cmap_2_001() {
     assert_eq!(
         shape(

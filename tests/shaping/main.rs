@@ -15,7 +15,7 @@ struct Args {
     language: Option<rustybuzz::Language>,
     script: Option<rustybuzz::Script>,
     #[allow(dead_code)]
-    remove_default_ignorables: bool, // we don't use it, but have to parse it anyway
+    remove_default_ignorables: bool,
     cluster_level: rustybuzz::BufferClusterLevel,
     features: Vec<String>,
     pre_context: Option<String>,
@@ -139,6 +139,10 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
     let mut buffer_flags = BufferFlags::default();
     buffer_flags.set(BufferFlags::BEGINNING_OF_TEXT, args.bot);
     buffer_flags.set(BufferFlags::END_OF_TEXT, args.eot);
+    buffer_flags.set(
+        BufferFlags::REMOVE_DEFAULT_IGNORABLES,
+        args.remove_default_ignorables,
+    );
     buffer.set_flags(buffer_flags);
 
     buffer.set_cluster_level(args.cluster_level);
