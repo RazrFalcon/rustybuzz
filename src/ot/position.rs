@@ -333,7 +333,7 @@ impl Apply for CursiveAdjustment<'_> {
         let mut unsafe_from = 0;
         if !iter.prev(Some(&mut unsafe_from)) {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx);
+                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx + 1);
             return None;
         }
 
@@ -342,7 +342,7 @@ impl Apply for CursiveAdjustment<'_> {
         let index_prev = self.coverage.get(prev)?;
         let Some(exit_prev) = self.sets.exit(index_prev) else {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(iter.index(), ctx.buffer.idx);
+                .unsafe_to_concat_from_outbuffer(iter.index(), ctx.buffer.idx + 1);
             return None;
         };
 
@@ -476,7 +476,7 @@ impl Apply for MarkToBaseAdjustment<'_> {
             let mut unsafe_from = 0;
             if !iter.prev(Some(&mut unsafe_from)) {
                 ctx.buffer
-                    .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx);
+                    .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx + 1);
                 return None;
             }
 
@@ -522,7 +522,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         let mut unsafe_from = 0;
         if !iter.prev(Some(&mut unsafe_from)) {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx);
+                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx + 1);
             return None;
         }
 
@@ -571,7 +571,7 @@ impl Apply for MarkToMarkAdjustment<'_> {
         let mut unsafe_from = 0;
         if !iter.prev(Some(&mut unsafe_from)) {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx);
+                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx + 1);
             return None;
         }
 
