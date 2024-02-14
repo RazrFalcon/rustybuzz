@@ -297,7 +297,7 @@ impl Apply for Ligature<'_> {
                 match_glyph(glyph, value.0)
             };
 
-            let mut match_length = 0;
+            let mut match_end = 0;
             let mut match_positions = [0; MAX_CONTEXT_LENGTH];
             let mut total_component_count = 0;
 
@@ -305,7 +305,7 @@ impl Apply for Ligature<'_> {
                 ctx,
                 self.components.len(),
                 &f,
-                &mut match_length,
+                &mut match_end,
                 &mut match_positions,
                 Some(&mut total_component_count),
             ) {
@@ -317,7 +317,7 @@ impl Apply for Ligature<'_> {
                 ctx,
                 count,
                 &match_positions,
-                match_length,
+                match_end,
                 total_component_count,
                 self.glyph,
             );
@@ -332,7 +332,7 @@ fn ligate(
     count: usize,
     // Including the first glyph
     match_positions: &[usize; MAX_CONTEXT_LENGTH],
-    match_length: usize,
+    match_end: usize,
     total_component_count: u8,
     lig_glyph: GlyphId,
 ) {
@@ -369,7 +369,7 @@ fn ligate(
     //
 
     let mut buffer = &mut ctx.buffer;
-    buffer.merge_clusters(buffer.idx, buffer.idx + match_length);
+    buffer.merge_clusters(buffer.idx, match_end);
 
     let mut is_base_ligature = buffer.info[match_positions[0]].is_base_glyph();
     let mut is_mark_ligature = buffer.info[match_positions[0]].is_mark();
@@ -481,10 +481,19 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
             value.contains(glyph)
         };
 
-        if let Some(start_idx) = match_backtrack(ctx, self.backtrack_coverages.len(), &f1) {
-            if let Some(end_idx) = match_lookahead(ctx, self.lookahead_coverages.len(), &f2, 1) {
+        let mut start_index = 0;
+        let mut end_index = 0;
+
+        if match_backtrack(ctx, self.backtrack_coverages.len(), &f1, &mut start_index) {
+            if match_lookahead(
+                ctx,
+                self.lookahead_coverages.len(),
+                &f2,
+                ctx.buffer.idx + 1,
+                &mut end_index,
+            ) {
                 ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_idx, end_idx, None);
+                    .unsafe_to_break_from_outbuffer(start_index, end_index, None);
                 ctx.replace_glyph_inplace(subst);
 
                 // Note: We DON'T decrease buffer.idx.  The main loop does it
@@ -494,6 +503,8 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
             }
         }
 
-        None
+        ctx.buffer
+            .unsafe_to_concat_from_outbuffer(start_index, end_index);
+        return None;
     }
 }

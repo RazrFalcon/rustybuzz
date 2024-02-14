@@ -19,7 +19,7 @@ pub fn match_input(
     ctx: &mut ApplyContext,
     input_len: u16,
     match_func: &MatchingFunc,
-    end_offset: &mut usize,
+    end_position: &mut usize,
     match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
     p_total_component_count: Option<&mut u8>,
 ) -> bool {
@@ -71,7 +71,7 @@ pub fn match_input(
     for position in &mut match_positions[1..count] {
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {
-            ctx.buffer.unsafe_to_concat(ctx.buffer.idx, unsafe_to);
+            *end_position = unsafe_to;
             return false;
         }
 
@@ -124,7 +124,7 @@ pub fn match_input(
         total_component_count += this.lig_num_comps();
     }
 
-    *end_offset = iter.index() - ctx.buffer.idx + 1;
+    *end_position = iter.index() + 1;
 
     if let Some(p_total_component_count) = p_total_component_count {
         *p_total_component_count = total_component_count;
@@ -137,41 +137,43 @@ pub fn match_backtrack(
     ctx: &mut ApplyContext,
     backtrack_len: u16,
     match_func: &MatchingFunc,
-) -> Option<usize> {
+    match_start: &mut usize,
+) -> bool {
     let mut iter = SkippyIter::new(ctx, ctx.buffer.backtrack_len(), backtrack_len, true);
     iter.enable_matching(match_func);
 
     for _ in 0..backtrack_len {
         let mut unsafe_from = 0;
         if !iter.prev(Some(&mut unsafe_from)) {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(unsafe_from, ctx.buffer.idx);
-            return None;
+            *match_start = unsafe_from;
+            return false;
         }
     }
 
-    Some(iter.index())
+    *match_start = iter.index();
+    return true;
 }
 
 pub fn match_lookahead(
     ctx: &mut ApplyContext,
     lookahead_len: u16,
     match_func: &MatchingFunc,
-    offset: usize,
-) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, ctx.buffer.idx + offset - 1, lookahead_len, true);
+    start_index: usize,
+    end_index: &mut usize,
+) -> bool {
+    let mut iter = SkippyIter::new(ctx, start_index - 1, lookahead_len, true);
     iter.enable_matching(match_func);
 
     for _ in 0..lookahead_len {
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {
-            ctx.buffer
-                .unsafe_to_concat(ctx.buffer.idx + offset, unsafe_to);
-            return None;
+            *end_index = unsafe_to;
+            return false;
         }
     }
 
-    Some(iter.index() + 1)
+    *end_index = iter.index() + 1;
+    true
 }
 
 pub type MatchingFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
