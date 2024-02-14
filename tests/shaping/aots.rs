@@ -697,6 +697,21 @@ fn gpos2_2_004() {
 }
 
 #[test]
+fn gpos2_2_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos2_2_font5.otf",
+            "\u{0012}\u{0012}\u{0012}\u{0012}",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
+        ),
+        "18@-100,0|\
+         18@1400,0|\
+         18@2900,0|\
+         18@4500,0"
+    );
+}
+
+#[test]
 fn gpos3_002() {
     assert_eq!(
         shape(
