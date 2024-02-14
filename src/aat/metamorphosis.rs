@@ -210,7 +210,7 @@ fn drive<T: FromData>(
         };
 
         if !is_safe_to_break() && buffer.backtrack_len() > 0 && buffer.idx < buffer.len {
-            buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1, None);
+            buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
         }
 
         c.transition(&entry, buffer);
@@ -567,7 +567,6 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
             buffer.unsafe_to_break_from_outbuffer(
                 self.mark as usize,
                 (buffer.idx + 1).min(buffer.len),
-                None,
             );
         }
 

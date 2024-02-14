@@ -1262,17 +1262,25 @@ impl Buffer {
     }
 
     pub fn unsafe_to_break(&mut self, start: usize, end: usize) {
-        self.set_glyph_flags(start, end, UNSAFE_TO_BREAK, Some(true), None);
+        self.set_glyph_flags(
+            UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
+            Some(start),
+            Some(end),
+            Some(true),
+            None,
+        );
     }
 
     pub fn set_glyph_flags(
         &mut self,
-        start: usize,
-        end: usize,
         mask: Mask,
+        start: Option<usize>,
+        end: Option<usize>,
         interior: Option<bool>,
         from_out_buffer: Option<bool>,
     ) {
+        let start = start.unwrap_or(0);
+        let end = end.unwrap_or(self.len);
         let interior = interior.unwrap_or(false);
         let from_out_buffer = from_out_buffer.unwrap_or(false);
 
@@ -1326,15 +1334,27 @@ impl Buffer {
     }
 
     pub fn unsafe_to_concat(&mut self, start: usize, end: usize) {
-        self.set_glyph_flags(start, end, UNSAFE_TO_CONCAT, Some(true), None);
+        self.set_glyph_flags(UNSAFE_TO_CONCAT, Some(start), Some(end), Some(true), None);
     }
 
-    pub fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize, mask: Option<Mask>) {
-        self.set_glyph_flags(start, end, UNSAFE_TO_CONCAT, Some(true), Some(true));
+    pub fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize) {
+        self.set_glyph_flags(
+            UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
+            Some(start),
+            Some(end),
+            Some(true),
+            Some(true),
+        );
     }
 
     pub fn unsafe_to_concat_from_outbuffer(&mut self, start: usize, end: usize) {
-        self.unsafe_to_break_from_outbuffer(start, end, Some(UNSAFE_TO_CONCAT));
+        self.set_glyph_flags(
+            UNSAFE_TO_CONCAT,
+            Some(start),
+            Some(end),
+            Some(true),
+            Some(true),
+        );
     }
 
     pub fn move_to(&mut self, i: usize) -> bool {

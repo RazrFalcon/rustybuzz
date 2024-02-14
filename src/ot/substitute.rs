@@ -493,7 +493,7 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
                 &mut end_index,
             ) {
                 ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_index, end_index, None);
+                    .unsafe_to_break_from_outbuffer(start_index, end_index);
                 ctx.replace_glyph_inplace(subst);
 
                 // Note: We DON'T decrease buffer.idx.  The main loop does it

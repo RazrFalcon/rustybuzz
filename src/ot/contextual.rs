@@ -264,7 +264,7 @@ impl Apply for ChainedContextLookup<'_> {
                 }
 
                 ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_index, end_index, None);
+                    .unsafe_to_break_from_outbuffer(start_index, end_index);
                 apply_lookup(
                     ctx,
                     usize::from(input_coverages.len()),
@@ -426,7 +426,7 @@ fn apply_chain_context(
     }
 
     ctx.buffer
-        .unsafe_to_break_from_outbuffer(start_index, end_index, None);
+        .unsafe_to_break_from_outbuffer(start_index, end_index);
     apply_lookup(
         ctx,
         usize::from(input.len()),

@@ -2,6 +2,7 @@ use core::convert::TryFrom;
 
 use ttf_parser::{ankr, apple_layout, kerx, FromData, GlyphId};
 
+use crate::buffer::glyph_flag::UNSAFE_TO_CONCAT;
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::matching::SkippyIter;
 use crate::ot::{attach_type, lookup_flags, ApplyContext, TableIndex};
@@ -91,6 +92,8 @@ pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Optio
                 if !plan.requested_kerning {
                     continue;
                 }
+
+                buffer.set_glyph_flags(UNSAFE_TO_CONCAT, None, None, None, None);
 
                 apply_simple_kerning(&subtable, plan, face, buffer);
             }
@@ -238,11 +241,7 @@ fn apply_state_machine_kerning<T, E>(
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
             if entry.is_actionable() || !(entry.new_state == START_OF_TEXT && !entry.has_advance())
             {
-                buffer.unsafe_to_break_from_outbuffer(
-                    buffer.backtrack_len() - 1,
-                    buffer.idx + 1,
-                    None,
-                );
+                buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
             }
         }
 
