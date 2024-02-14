@@ -624,7 +624,6 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "ike", 	tag: Tag::from_bytes(b"INU ") }, // Eastern Canadian Inuktitut -> Inuktitut
     LangTag { language: "ike", 	tag: Tag::from_bytes(b"INUK") }, // Eastern Canadian Inuktitut -> Nunavik Inuktitut
     LangTag { language: "ikt", 	tag: Tag::from_bytes(b"INU ") }, // Inuinnaqtun -> Inuktitut
-    LangTag { language: "ikt", 	tag: Tag::from_bytes(b"INUK") }, // Inuinnaqtun -> Nunavik Inuktitut
 //  LangTag { language: "ilo", 	tag: Tag::from_bytes(b"ILO ") }, // Iloko -> Ilokano
     LangTag { language: "in", 	tag: Tag::from_bytes(b"IND ") }, // Indonesian(retired code)
     LangTag { language: "in", 	tag: Tag::from_bytes(b"MLY ") }, // Indonesian(retired code) -> Malay
@@ -1040,7 +1039,6 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "nln", 	tag: Tag::from_bytes(b"NAH ") }, // Durango Nahuatl(retired code) -> Nahuatl
     LangTag { language: "nlv", 	tag: Tag::from_bytes(b"NAH ") }, // Orizaba Nahuatl -> Nahuatl
     LangTag { language: "nn", 	tag: Tag::from_bytes(b"NYN ") }, // Norwegian Nynorsk (Nynorsk, Norwegian)
-    LangTag { language: "nn", 	tag: Tag::from_bytes(b"NOR ") }, // Norwegian Nynorsk -> Norwegian
     LangTag { language: "nnh", 	tag: Tag::from_bytes(b"BML ") }, // Ngiemboon -> Bamileke
     LangTag { language: "nnz", 	tag: Tag::from_bytes(b"BML ") }, // Nda'nda' -> Bamileke
     LangTag { language: "no", 	tag: Tag::from_bytes(b"NOR ") }, // Norwegian [macrolanguage]
@@ -2314,11 +2312,7 @@ pub fn tags_from_complex_language(language: &str, tags: &mut smallvec::SmallVec<
             }
             if &language[1..] == "o-nyn" {
                 // Norwegian Nynorsk(retired code)
-                let possible_tags = &[
-                    Tag::from_bytes(b"NYN "), // Norwegian Nynorsk (Nynorsk, Norwegian)
-                    Tag::from_bytes(b"NOR "), // Norwegian
-                ];
-                tags.extend_from_slice(possible_tags);
+                tags.push(Tag::from_bytes(b"NYN ")); // Norwegian Nynorsk (Nynorsk, Norwegian)
                 return true;
             }
         }
