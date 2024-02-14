@@ -340,7 +340,10 @@ impl Apply for CursiveAdjustment<'_> {
         let i = iter.index();
         let prev = ctx.buffer.info[i].as_glyph();
         let index_prev = self.coverage.get(prev)?;
-        let exit_prev = self.sets.exit(index_prev)?;
+        let Some(exit_prev) = self.sets.exit(index_prev) else {
+            ctx.buffer.unsafe_to_concat_from_outbuffer(iter.index(), ctx.buffer.idx);
+            return None;
+        };
 
         let (exit_x, exit_y) = exit_prev.get(ctx.face);
         let (entry_x, entry_y) = entry_this.get(ctx.face);
