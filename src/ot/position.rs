@@ -583,15 +583,16 @@ impl Apply for MarkToMarkAdjustment<'_> {
             return None;
         }
 
-        let idx = iter.index();
-        if !buffer.info[idx].is_mark() {
+        let iter_idx = iter.index();
+        if !buffer.info[iter_idx].is_mark() {
+            ctx.buffer.unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
             return None;
         }
 
         let id1 = buffer.cur(0).lig_id();
-        let id2 = buffer.info[idx].lig_id();
+        let id2 = buffer.info[iter_idx].lig_id();
         let comp1 = buffer.cur(0).lig_comp();
-        let comp2 = buffer.info[idx].lig_comp();
+        let comp2 = buffer.info[iter_idx].lig_comp();
 
         let matches = if id1 == id2 {
             // Marks belonging to the same base
@@ -604,14 +605,15 @@ impl Apply for MarkToMarkAdjustment<'_> {
         };
 
         if !matches {
+            ctx.buffer.unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
             return None;
         }
 
-        let mark2_glyph = buffer.info[idx].as_glyph();
+        let mark2_glyph = buffer.info[iter_idx].as_glyph();
         let mark2_index = self.mark2_coverage.get(mark2_glyph)?;
 
         self.marks
-            .apply(ctx, self.mark2_matrix, mark1_index, mark2_index, idx)
+            .apply(ctx, self.mark2_matrix, mark1_index, mark2_index, iter_idx)
     }
 }
 
