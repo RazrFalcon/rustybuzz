@@ -130,7 +130,7 @@ pub fn match_input(
         *p_total_component_count = total_component_count;
     }
 
-    return true;
+    true
 }
 
 pub fn match_backtrack(
@@ -151,7 +151,7 @@ pub fn match_backtrack(
     }
 
     *match_start = iter.index();
-    return true;
+    true
 }
 
 pub fn match_lookahead(
