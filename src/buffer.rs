@@ -736,6 +736,7 @@ impl Buffer {
 
         self.serial = 0;
         self.scratch_flags = BufferScratchFlags::default();
+        self.cluster_level = BufferClusterLevel::default();
     }
 
     #[inline]
