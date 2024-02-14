@@ -252,6 +252,8 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "chh", 	tag: Tag(0)	            }, // Chinook != Chattisgarhi
     LangTag { language: "chj", 	tag: Tag::from_bytes(b"CCHN") }, // Ojitlán Chinantec -> Chinantec
     LangTag { language: "chk", 	tag: Tag::from_bytes(b"CHK0") }, // Chuukese
+    LangTag { language: "chm", 	tag: Tag::from_bytes(b"HMA ") }, // Mari (Russia) [macrolanguage] -> High Mari
+    LangTag { language: "chm", 	tag: Tag::from_bytes(b"LMA ") }, // Mari (Russia) [macrolanguage] -> Low Mari
     LangTag { language: "chn", 	tag: Tag::from_bytes(b"CPP ") }, // Chinook jargon -> Creoles
 //  LangTag { language: "cho", 	tag: Tag::from_bytes(b"CHO ") }, // Choctaw
     LangTag { language: "chp", 	tag: Tag::from_bytes(b"CHP ") }, // Chipewyan
@@ -1308,6 +1310,9 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "sgo", 	tag: Tag(0)	            }, // Songa(retired code) != Sango
 //  LangTag { language: "sgs", 	tag: Tag::from_bytes(b"SGS ") }, // Samogitian
     LangTag { language: "sgw", 	tag: Tag::from_bytes(b"CHG ") }, // Sebat Bet Gurage -> Chaha Gurage
+    LangTag { language: "sh", 	tag: Tag::from_bytes(b"BOS ") }, // Serbo-Croatian [macrolanguage] -> Bosnian
+    LangTag { language: "sh", 	tag: Tag::from_bytes(b"HRV ") }, // Serbo-Croatian [macrolanguage] -> Croatian
+    LangTag { language: "sh", 	tag: Tag::from_bytes(b"SRB ") }, // Serbo-Croatian [macrolanguage] -> Serbian
     LangTag { language: "shi", 	tag: Tag::from_bytes(b"SHI ") }, // Tachelhit
     LangTag { language: "shi", 	tag: Tag::from_bytes(b"BBR ") }, // Tachelhit -> Berber
     LangTag { language: "shl", 	tag: Tag::from_bytes(b"QIN ") }, // Shendu -> Chin
