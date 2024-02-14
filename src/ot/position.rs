@@ -532,14 +532,18 @@ impl Apply for MarkToLigatureAdjustment<'_> {
 
         // Checking that matched glyph is actually a ligature by GDEF is too strong; disabled
 
-        let idx = iter.index();
-        let lig_glyph = buffer.info[idx].as_glyph();
-        let lig_index = self.ligature_coverage.get(lig_glyph)?;
+        let iter_idx = iter.index();
+        let lig_glyph = buffer.info[iter_idx].as_glyph();
+        let Some(lig_index) = self.ligature_coverage.get(lig_glyph) else {
+            ctx.buffer.unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
+            return None;
+        };
         let lig_attach = self.ligature_array.get(lig_index)?;
 
         // Find component to attach to
         let comp_count = lig_attach.rows;
         if comp_count == 0 {
+            ctx.buffer.unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
             return None;
         }
 
@@ -547,7 +551,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         // is identical to the ligature ID of the found ligature.  If yes, we
         // can directly use the component index.  If not, we attach the mark
         // glyph to the last component of the ligature.
-        let lig_id = buffer.info[idx].lig_id();
+        let lig_id = buffer.info[iter_idx].lig_id();
         let mark_id = buffer.cur(0).lig_id();
         let mark_comp = u16::from(buffer.cur(0).lig_comp());
         let matches = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
@@ -558,7 +562,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         } - 1;
 
         self.marks
-            .apply(ctx, lig_attach, mark_index, comp_index, idx)
+            .apply(ctx, lig_attach, mark_index, comp_index, iter_idx)
     }
 }
 
