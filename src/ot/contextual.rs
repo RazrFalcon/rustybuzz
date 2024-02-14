@@ -366,6 +366,8 @@ fn apply_chain_context(
     match_funcs: [&MatchFunc; 3],
     lookups: LazyArray16<SequenceLookupRecord>,
 ) -> Option<()> {
+    // NOTE: Whenever something in this method changes, we also need to
+    // change it in the `apply` implementation for ChainedContextLookup.
     let f1 = |glyph, num_items| {
         let index = backtrack.len() - num_items;
         let value = backtrack.get(index).unwrap();
