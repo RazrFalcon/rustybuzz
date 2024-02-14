@@ -3,6 +3,7 @@ use core::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
+use crate::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
 use crate::{script, Direction, Face, Language, Mask, Script};
 
@@ -1261,59 +1262,79 @@ impl Buffer {
     }
 
     pub fn unsafe_to_break(&mut self, start: usize, end: usize) {
-        if end - start < 2 {
+        self.set_glyph_flags(start, end, UNSAFE_TO_BREAK, Some(true), None);
+    }
+
+    pub fn set_glyph_flags(
+        &mut self,
+        start: usize,
+        end: usize,
+        mask: Mask,
+        interior: Option<bool>,
+        from_out_buffer: Option<bool>,
+    ) {
+        let interior = interior.unwrap_or(false);
+        let from_out_buffer = from_out_buffer.unwrap_or(false);
+
+        if interior && !from_out_buffer && end - start < 2 {
             return;
         }
 
-        self.unsafe_to_break_impl(start, end, None);
-    }
+        self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
 
-    fn unsafe_to_break_impl(&mut self, start: usize, end: usize, mask: Option<Mask>) {
-        let mask = mask.unwrap_or(glyph_flag::DEFINED);
+        if !from_out_buffer || !self.have_output {
+            if !interior {
+                for i in start..end {
+                    self.info[i].mask |= mask;
+                }
+            } else {
+                let cluster = Self::_infos_find_min_cluster(&self.info, start, end, None);
+                Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask);
+            }
+        } else {
+            assert!(start <= self.out_len);
+            assert!(self.idx <= end);
 
-        let cluster = Self::_infos_find_min_cluster(&self.info, start, end, None);
+            if !interior {
+                for i in start..self.out_len {
+                    self.out_info_mut()[i].mask |= mask;
+                }
 
-        if Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask) {
-            self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
+                for i in self.idx..end {
+                    self.info[i].mask |= mask;
+                }
+            } else {
+                let mut cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, None);
+                cluster = Self::_infos_find_min_cluster(
+                    &self.out_info(),
+                    start,
+                    self.out_len,
+                    Some(cluster),
+                );
+
+                let out_len = self.out_len;
+                Self::_infos_set_glyph_flags(
+                    &mut self.out_info_mut(),
+                    start,
+                    out_len,
+                    cluster,
+                    mask,
+                );
+                Self::_infos_set_glyph_flags(&mut self.info, self.idx, end, cluster, mask);
+            }
         }
     }
 
     pub fn unsafe_to_concat(&mut self, start: usize, end: usize) {
-        if end - start < 2 {
-            return;
-        }
-
-        self.unsafe_to_break_impl(start, end, Some(glyph_flag::UNSAFE_TO_CONCAT));
+        self.set_glyph_flags(start, end, UNSAFE_TO_CONCAT, Some(true), None);
     }
 
     pub fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize, mask: Option<Mask>) {
-        let mask = mask.unwrap_or(glyph_flag::DEFINED);
-
-        if !self.have_output {
-            self.unsafe_to_break_impl(start, end, Some(glyph_flag::DEFINED));
-            return;
-        }
-
-        assert!(start <= self.out_len);
-        assert!(self.idx <= end);
-
-        let mut cluster = Self::_infos_find_min_cluster(self.out_info(), start, self.out_len, None);
-        cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, Some(cluster));
-        let idx = self.idx;
-        let out_len = self.out_len;
-
-        let unsafe_to_break1 =
-            Self::_infos_set_glyph_flags(self.out_info_mut(), start, out_len, cluster, mask);
-        let unsafe_to_break2 =
-            Self::_infos_set_glyph_flags(&mut self.info, idx, end, cluster, mask);
-
-        if unsafe_to_break1 || unsafe_to_break2 {
-            self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
-        }
+        self.set_glyph_flags(start, end, UNSAFE_TO_CONCAT, Some(true), Some(true));
     }
 
     pub fn unsafe_to_concat_from_outbuffer(&mut self, start: usize, end: usize) {
-        self.unsafe_to_break_from_outbuffer(start, end, Some(glyph_flag::UNSAFE_TO_CONCAT));
+        self.unsafe_to_break_from_outbuffer(start, end, Some(UNSAFE_TO_CONCAT));
     }
 
     pub fn move_to(&mut self, i: usize) -> bool {
@@ -1492,7 +1513,7 @@ impl Buffer {
         end: usize,
         cluster: Option<u32>,
     ) -> u32 {
-        let mut cluster = cluster.unwrap_or( core::u32::MAX);
+        let mut cluster = cluster.unwrap_or(core::u32::MAX);
 
         for glyph_info in &info[start..end] {
             cluster = core::cmp::min(cluster, glyph_info.cluster);
