@@ -15,18 +15,14 @@ pub fn match_glyph(glyph: GlyphId, value: u16) -> bool {
     glyph == GlyphId(value)
 }
 
-// TODO: Find out whether returning this by value is slow.
-pub struct Matched {
-    pub len: usize,
-    pub positions: [usize; MAX_CONTEXT_LENGTH],
-    pub total_component_count: u8,
-}
-
 pub fn match_input(
     ctx: &mut ApplyContext,
     input_len: u16,
     match_func: &MatchingFunc,
-) -> Option<Matched> {
+    end_offset: &mut usize,
+    match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
+    p_total_component_count: Option<&mut u8>,
+) -> bool {
     // This is perhaps the trickiest part of OpenType...  Remarks:
     //
     // - If all components of the ligature were marks, we call this a mark ligature.
@@ -58,7 +54,7 @@ pub fn match_input(
 
     let count = usize::from(input_len) + 1;
     if count > MAX_CONTEXT_LENGTH {
-        return None;
+        return false;
     }
 
     let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, input_len, false);
@@ -67,17 +63,16 @@ pub fn match_input(
     let first = ctx.buffer.cur(0);
     let first_lig_id = first.lig_id();
     let first_lig_comp = first.lig_comp();
-    let mut positions = [0; MAX_CONTEXT_LENGTH];
     let mut total_component_count = first.lig_num_comps();
     let mut ligbase = Ligbase::NotChecked;
 
-    positions[0] = ctx.buffer.idx;
+    match_positions[0] = ctx.buffer.idx;
 
-    for position in &mut positions[1..count] {
+    for position in &mut match_positions[1..count] {
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {
             ctx.buffer.unsafe_to_concat(ctx.buffer.idx, unsafe_to);
-            return None;
+            return false;
         }
 
         *position = iter.index();
@@ -114,7 +109,7 @@ pub fn match_input(
                 }
 
                 if ligbase == Ligbase::MayNotSkip {
-                    return None;
+                    return false;
                 }
             }
         } else {
@@ -122,18 +117,20 @@ pub fn match_input(
             // all subsequent components should also NOT be attached to any ligature
             // component, unless they are attached to the first component itself!
             if this_lig_id != 0 && this_lig_comp != 0 && (this_lig_id != first_lig_id) {
-                return None;
+                return false;
             }
         }
 
         total_component_count += this.lig_num_comps();
     }
 
-    Some(Matched {
-        len: iter.index() - ctx.buffer.idx + 1,
-        positions,
-        total_component_count,
-    })
+    *end_offset = iter.index() - ctx.buffer.idx + 1;
+
+    if let Some(p_total_component_count) = p_total_component_count {
+        *p_total_component_count = total_component_count;
+    }
+
+    return true;
 }
 
 pub fn match_backtrack(

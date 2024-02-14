@@ -9,9 +9,10 @@ use crate::unicode::GeneralCategory;
 use crate::Face;
 
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead, Matched};
+use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead};
 use super::{
-    LayoutLookup, LayoutTable, Map, SubstLookup, SubstitutionTable, TableIndex, MAX_NESTING_LEVEL,
+    LayoutLookup, LayoutTable, Map, SubstLookup, SubstitutionTable, TableIndex, MAX_CONTEXT_LENGTH,
+    MAX_NESTING_LEVEL,
 };
 use ttf_parser::opentype_layout::LookupIndex;
 
@@ -296,15 +297,45 @@ impl Apply for Ligature<'_> {
                 match_glyph(glyph, value.0)
             };
 
-            match_input(ctx, self.components.len(), &f).map(|matched| {
-                let count = usize::from(self.components.len()) + 1;
-                ligate(ctx, count, matched, self.glyph);
-            })
+            let mut match_length = 0;
+            let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+            let mut total_component_count = 0;
+
+            if !match_input(
+                ctx,
+                self.components.len(),
+                &f,
+                &mut match_length,
+                &mut match_positions,
+                Some(&mut total_component_count),
+            ) {
+                return None;
+            }
+
+            let count = usize::from(self.components.len()) + 1;
+            ligate(
+                ctx,
+                count,
+                &match_positions,
+                match_length,
+                total_component_count,
+                self.glyph,
+            );
+            return Some(());
         }
     }
 }
 
-fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: GlyphId) {
+fn ligate(
+    ctx: &mut ApplyContext,
+    // Including the first glyph
+    count: usize,
+    // Including the first glyph
+    match_positions: &[usize; MAX_CONTEXT_LENGTH],
+    match_length: usize,
+    total_component_count: u8,
+    lig_glyph: GlyphId,
+) {
     // - If a base and one or more marks ligate, consider that as a base, NOT
     //   ligature, such that all following marks can still attach to it.
     //   https://github.com/harfbuzz/harfbuzz/issues/1109
@@ -338,12 +369,12 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     //
 
     let mut buffer = &mut ctx.buffer;
-    buffer.merge_clusters(buffer.idx, buffer.idx + matched.len);
+    buffer.merge_clusters(buffer.idx, buffer.idx + match_length);
 
-    let mut is_base_ligature = buffer.info[matched.positions[0]].is_base_glyph();
-    let mut is_mark_ligature = buffer.info[matched.positions[0]].is_mark();
+    let mut is_base_ligature = buffer.info[match_positions[0]].is_base_glyph();
+    let mut is_mark_ligature = buffer.info[match_positions[0]].is_mark();
     for i in 1..count {
-        if !buffer.info[matched.positions[i]].is_mark() {
+        if !buffer.info[match_positions[i]].is_mark() {
             is_base_ligature = false;
             is_mark_ligature = false;
         }
@@ -366,7 +397,7 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     let mut comps_so_far = last_num_comps;
 
     if is_ligature {
-        first.set_lig_props_for_ligature(lig_id, matched.total_component_count);
+        first.set_lig_props_for_ligature(lig_id, total_component_count);
         if first.general_category() == GeneralCategory::NonspacingMark {
             first.set_general_category(GeneralCategory::OtherLetter);
         }
@@ -376,7 +407,7 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     buffer = &mut ctx.buffer;
 
     for i in 1..count {
-        while buffer.idx < matched.positions[i] && buffer.successful {
+        while buffer.idx < match_positions[i] && buffer.successful {
             if is_ligature {
                 let cur = buffer.cur_mut(0);
                 let mut this_comp = cur.lig_comp();
