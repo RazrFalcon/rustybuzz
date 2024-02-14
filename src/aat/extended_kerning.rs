@@ -2,7 +2,6 @@ use core::convert::TryFrom;
 
 use ttf_parser::{ankr, apple_layout, kerx, FromData, GlyphId};
 
-use crate::buffer::glyph_flag::UNSAFE_TO_CONCAT;
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::matching::SkippyIter;
 use crate::ot::{attach_type, lookup_flags, ApplyContext, TableIndex};

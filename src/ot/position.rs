@@ -169,7 +169,6 @@ impl Apply for SingleAdjustment<'_> {
 impl Apply for PairAdjustment<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
         let first_glyph = ctx.buffer.cur(0).as_glyph();
-        let first_glyph_index = ctx.buffer.idx;
         let first_glyph_coverage_index = self.coverage().get(first_glyph)?;
 
         let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
@@ -220,7 +219,7 @@ impl Apply for PairAdjustment<'_> {
         let (records, len2) = match self {
             Self::Format1 { sets, .. } => (
                 sets.get(first_glyph_coverage_index)?.get(second_glyph)?,
-                sets.flags().1.len(),
+                sets.value_format_flags().1.len(),
             ),
             Self::Format2 {
                 classes, matrix, ..

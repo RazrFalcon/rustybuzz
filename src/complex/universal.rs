@@ -23,6 +23,7 @@ pub const UNIVERSAL_SHAPER: ComplexShaper = ComplexShaper {
 };
 
 pub type Category = u8;
+#[allow(dead_code)]
 pub mod category {
     pub const O: u8 = 0; // OTHER
 

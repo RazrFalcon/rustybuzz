@@ -1,8 +1,7 @@
 use alloc::boxed::Box;
-use std::println;
 
 use super::*;
-use crate::buffer::{glyph_flag, Buffer, BufferScratchFlags};
+use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::{feature, FeatureFlags};
 use crate::plan::{ShapePlan, ShapePlanner};
 use crate::unicode::{

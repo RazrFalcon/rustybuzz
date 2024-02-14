@@ -3,7 +3,6 @@ use ttf_parser::{apple_layout, kern, GlyphId};
 use super::apply::ApplyContext;
 use super::matching::SkippyIter;
 use super::{lookup_flags, TableIndex};
-use crate::buffer::glyph_flag::UNSAFE_TO_CONCAT;
 use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::attach_type;
 use crate::plan::ShapePlan;

@@ -695,12 +695,6 @@ impl Buffer {
     }
 
     #[inline]
-    pub fn cur_pos(&mut self) -> &GlyphPosition {
-        let i = self.idx;
-        &self.pos[i]
-    }
-
-    #[inline]
     pub fn cur_pos_mut(&mut self) -> &mut GlyphPosition {
         let i = self.idx;
         &mut self.pos[i]
@@ -852,10 +846,6 @@ impl Buffer {
         }
 
         start
-    }
-
-    pub fn reverse_clusters(&mut self) {
-        self.reverse_groups(_cluster_group_func, false);
     }
 
     #[inline]
@@ -1611,20 +1601,6 @@ impl Buffer {
         }
     }
 
-    pub fn next_cluster(&self, mut start: usize) -> usize {
-        if start >= self.len {
-            return start;
-        }
-
-        let cluster = self.info[start].cluster;
-        start += 1;
-        while start < self.len && cluster == self.info[start].cluster {
-            start += 1;
-        }
-
-        start
-    }
-
     pub fn next_syllable(&self, mut start: usize) -> usize {
         if start >= self.len {
             return start;
@@ -1639,23 +1615,9 @@ impl Buffer {
         start
     }
 
-    pub fn next_grapheme(&self, mut start: usize) -> usize {
-        if start >= self.len {
-            return start;
-        }
-
-        start += 1;
-        while start < self.len && self.info[start].is_continuation() {
-            start += 1;
-        }
-
-        start
-    }
-
     #[inline]
     pub fn allocate_lig_id(&mut self) -> u8 {
-        let mut lig_id = self.next_serial() & 0x07;
-        lig_id
+        self.next_serial() & 0x07
     }
 }
 

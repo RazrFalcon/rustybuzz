@@ -1,5 +1,3 @@
-use core::convert::TryFrom;
-
 use crate::buffer::{
     glyph_flag, Buffer, BufferClusterLevel, BufferFlags, BufferScratchFlags, GlyphInfo,
     GlyphPropsFlags,
