@@ -93,7 +93,7 @@ pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Optio
                     continue;
                 }
 
-                buffer.set_glyph_flags(UNSAFE_TO_CONCAT, None, None, None, None);
+                buffer.unsafe_to_concat(None, None);
 
                 apply_simple_kerning(&subtable, plan, face, buffer);
             }

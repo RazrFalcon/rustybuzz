@@ -1275,7 +1275,7 @@ impl Buffer {
     }
 
     pub fn unsafe_to_break(&mut self, start: Option<usize>, end: Option<usize>) {
-        self.set_glyph_flags(
+        self._set_glyph_flags(
             UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
             start,
             end,
@@ -1284,7 +1284,10 @@ impl Buffer {
         );
     }
 
-    pub fn set_glyph_flags(
+    /// Adds glyph flags in mask to infos with clusters between start and end.
+    /// The start index will be from out-buffer if from_out_buffer is true.
+    /// If interior is true, then the cluster having the minimum value is skipped. */
+    fn _set_glyph_flags(
         &mut self,
         mask: Mask,
         start: Option<usize>,
@@ -1354,11 +1357,11 @@ impl Buffer {
     }
 
     pub fn unsafe_to_concat(&mut self, start: Option<usize>, end: Option<usize>) {
-        self.set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(true), None);
+        self._set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(true), None);
     }
 
     pub fn unsafe_to_break_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
-        self.set_glyph_flags(
+        self._set_glyph_flags(
             UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
             start,
             end,
@@ -1368,7 +1371,7 @@ impl Buffer {
     }
 
     pub fn unsafe_to_concat_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
-        self.set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(false), Some(true));
+        self._set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(false), Some(true));
     }
 
     pub fn move_to(&mut self, i: usize) -> bool {
