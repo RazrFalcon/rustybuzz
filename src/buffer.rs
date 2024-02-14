@@ -1274,7 +1274,7 @@ impl Buffer {
         let mut cluster = core::u32::MAX;
         cluster = Self::_infos_find_min_cluster(&self.info, start, end, cluster);
 
-        if Self::_unsafe_to_break_set_mask(&mut self.info, start, end, cluster, mask) {
+        if Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask) {
             self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
         }
     }
@@ -1305,9 +1305,9 @@ impl Buffer {
         let out_len = self.out_len;
 
         let unsafe_to_break1 =
-            Self::_unsafe_to_break_set_mask(self.out_info_mut(), start, out_len, cluster, mask);
+            Self::_infos_set_glyph_flags(self.out_info_mut(), start, out_len, cluster, mask);
         let unsafe_to_break2 =
-            Self::_unsafe_to_break_set_mask(&mut self.info, idx, end, cluster, mask);
+            Self::_infos_set_glyph_flags(&mut self.info, idx, end, cluster, mask);
 
         if unsafe_to_break1 || unsafe_to_break2 {
             self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
@@ -1501,7 +1501,7 @@ impl Buffer {
         cluster
     }
 
-    fn _unsafe_to_break_set_mask(
+    fn _infos_set_glyph_flags(
         info: &mut [GlyphInfo],
         start: usize,
         end: usize,
