@@ -1,5 +1,6 @@
 use alloc::{string::String, vec::Vec};
 use core::convert::TryFrom;
+use std::cmp::min;
 
 use ttf_parser::GlyphId;
 
@@ -1287,7 +1288,7 @@ impl Buffer {
         from_out_buffer: Option<bool>,
     ) {
         let start = start.unwrap_or(0);
-        let end = end.unwrap_or(self.len);
+        let end = min(end.unwrap_or(self.len), self.len);
         let interior = interior.unwrap_or(false);
         let from_out_buffer = from_out_buffer.unwrap_or(false);
 
