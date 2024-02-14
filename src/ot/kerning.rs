@@ -7,6 +7,7 @@ use crate::buffer::{Buffer, BufferScratchFlags};
 use crate::ot::attach_type;
 use crate::plan::ShapePlan;
 use crate::{Face, Mask};
+use crate::buffer::glyph_flag::UNSAFE_TO_CONCAT;
 
 pub fn has_kerning(face: &Face) -> bool {
     face.tables().kern.is_some()
@@ -69,6 +70,7 @@ pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             }
 
             apply_simple_kerning(&subtable, face, plan.kern_mask, buffer);
+            buffer.set_glyph_flags(UNSAFE_TO_CONCAT, None, None, None, None);
         }
 
         if reverse {
@@ -85,6 +87,7 @@ fn machine_kern(
     cross_stream: bool,
     get_kerning: impl Fn(u32, u32) -> i32,
 ) {
+    buffer.set_glyph_flags(UNSAFE_TO_CONCAT, None, None, None, None);
     let mut ctx = ApplyContext::new(TableIndex::GPOS, face, buffer);
     ctx.lookup_mask = kern_mask;
     ctx.lookup_props = u32::from(lookup_flags::IGNORE_MARKS);
@@ -102,7 +105,6 @@ fn machine_kern(
 
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {
-            ctx.buffer.unsafe_to_concat(i, unsafe_to);
             i += 1;
             continue;
         }
