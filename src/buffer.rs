@@ -46,7 +46,7 @@ pub mod glyph_flag {
     /// line-break position, in the following way:
     ///
     /// 1. Iterate back from the line-break
-    /// position till the first cluster
+    /// position until the first cluster
     /// start position that is NOT unsafe-to-concat,
     /// 2. shape the segment from there till the
     /// end of line, 3. check whether the resulting
@@ -58,8 +58,21 @@ pub mod glyph_flag {
     /// there, and repeat.
     ///
     /// At the start of next line a similar
-    /// algorithm can be implemented. A slight
-    /// complication will arise, because while
+    /// algorithm can be implemented.
+    /// That is: 1. Iterate forward from
+    /// the line-break position until the first cluster
+    /// start position that is NOT unsafe-to-concat, 2.
+    /// shape the segment from beginning of the line to
+    /// that position, 3. check whether the resulting
+    /// glyph-run also is clear of the unsafe-to-concat
+    /// at its end-of-text position; if it is, just splice
+    /// it into place and the beginning is shaped; If not,
+    /// move on to a position further forward that is clear
+    /// of unsafe-to-concat and retry up to there, and repeat.
+    ///
+    /// A slight complication will arise in the
+    /// implementation of the algorithm above,
+    /// because while
     /// our buffer API has a way to return flags
     /// for position corresponding to
     /// start-of-text, there is currently no
@@ -1738,6 +1751,8 @@ bitflags::bitflags! {
         const REMOVE_DEFAULT_IGNORABLES     = 1 << 4;
         /// Indicates that a dotted circle should not be inserted in the rendering of incorrect character sequences (such as `<0905 093E>`).
         const DO_NOT_INSERT_DOTTED_CIRCLE   = 1 << 5;
+        /// Indicates that the shape() call and its variants should perform various verification processes on the results of the shaping operation on the buffer. If the verification fails, then either a buffer message is sent, if a message handler is installed on the buffer, or a message is written to standard error. In either case, the shaping result might be modified to show the failed output.
+        const VERIFY                        = 1 << 6;
     }
 }
 
