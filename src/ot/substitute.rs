@@ -309,6 +309,7 @@ impl Apply for Ligature<'_> {
                 &mut match_positions,
                 Some(&mut total_component_count),
             ) {
+                ctx.buffer.unsafe_to_concat(ctx.buffer.idx, match_end);
                 return None;
             }
 
