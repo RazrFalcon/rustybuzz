@@ -1352,7 +1352,7 @@ impl Buffer {
             UNSAFE_TO_CONCAT,
             Some(start),
             Some(end),
-            Some(true),
+            Some(false),
             Some(true),
         );
     }
