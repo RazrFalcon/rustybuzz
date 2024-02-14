@@ -561,7 +561,7 @@ class BCP47Parser(object):
                         if scope == 'macrolanguage':
                             scope = ' [macrolanguage]'
                         elif scope == 'collection':
-                            scope = ' [family]'
+                            scope = ' [collection]'
                         else:
                             continue
                         self.scopes[subtag] = scope
