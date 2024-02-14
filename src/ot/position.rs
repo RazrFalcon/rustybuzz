@@ -500,12 +500,16 @@ impl Apply for MarkToBaseAdjustment<'_> {
 
         // Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled
 
-        let idx = iter.index();
-        let base_glyph = info[idx].as_glyph();
-        let base_index = self.base_coverage.get(base_glyph)?;
+        let iter_idx = iter.index();
+        let base_glyph = info[iter_idx].as_glyph();
+        let Some(base_index) = self.base_coverage.get(base_glyph) else {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(iter_idx, buffer.idx + 1);
+            return None;
+        };
 
         self.marks
-            .apply(ctx, self.anchors, mark_index, base_index, idx)
+            .apply(ctx, self.anchors, mark_index, base_index, iter_idx)
     }
 }
 
