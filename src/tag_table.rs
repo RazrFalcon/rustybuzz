@@ -936,6 +936,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
     LangTag { language: "mnw", 	tag: Tag::from_bytes(b"MONT") }, // Mon -> Thailand Mon
     LangTag { language: "mnx", 	tag: Tag(0)	            }, // Manikion != Manx
     LangTag { language: "mo", 	tag: Tag::from_bytes(b"MOL ") }, // Moldavian(retired code) -> Romanian (Moldova)
+    LangTag { language: "mo", 	tag: Tag::from_bytes(b"ROM ") }, // Moldavian(retired code) -> Romanian
     LangTag { language: "mod", 	tag: Tag::from_bytes(b"CPP ") }, // Mobilian -> Creoles
 //  LangTag { language: "moh", 	tag: Tag::from_bytes(b"MOH ") }, // Mohawk
     LangTag { language: "mok", 	tag: Tag(0)	            }, // Morori != Moksha
@@ -2319,7 +2320,11 @@ pub fn tags_from_complex_language(language: &str, tags: &mut smallvec::SmallVec<
         b'r' => {
             if strncmp(&language[1..], "o-", 2) && subtag_matches(language, "-md") {
                 // Romanian; Moldova
-                tags.push(Tag::from_bytes(b"MOL ")); // Romanian (Moldova)
+                let possible_tags = &[
+                    Tag::from_bytes(b"MOL "), // Romanian (Moldova)
+                    Tag::from_bytes(b"ROM "), // Romanian
+                ];
+                tags.extend_from_slice(possible_tags);
                 return true;
             }
         }
