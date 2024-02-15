@@ -234,8 +234,8 @@ def is_BASE_OTHER(U, UISC, UDI, UGC, AJT):
 
 
 def is_CGJ(U, UISC, UDI, UGC, AJT):
-    # Also includes VARIATION_SELECTOR, WJ, and ZWJ
-    return U == 0x200D or UDI and UGC in [Mc, Me, Mn]
+    # Also includes VARIATION_SELECTOR and ZWJ
+    return UISC == Joiner or UDI and UGC in [Mc, Me, Mn]
 
 
 def is_CONS_FINAL(U, UISC, UDI, UGC, AJT):
@@ -309,6 +309,7 @@ def is_OTHER(U, UISC, UDI, UGC, AJT):
             and not is_BASE_OTHER(U, UISC, UDI, UGC, AJT)
             and not is_CGJ(U, UISC, UDI, UGC, AJT)
             and not is_SYM_MOD(U, UISC, UDI, UGC, AJT)
+            and not is_Word_Joiner(U, UISC, UDI, UGC, AJT)
             )
 
 
@@ -336,6 +337,11 @@ def is_VOWEL_MOD(U, UISC, UDI, UGC, AJT):
     return (UISC in [Tone_Mark, Cantillation_Mark, Register_Shifter, Visarga] or
             (UGC != Lo and (UISC == Bindu or U in [0xAA29])))
 
+def is_Word_Joiner(U, UISC, UDI, UGC, AJT):
+    return (UDI and U not in [0x115F, 0x1160, 0x3164, 0xFFA0, 0x1BCA0, 0x1BCA1, 0x1BCA2, 0x1BCA3]
+            and UISC == Other
+            and not is_CGJ(U, UISC, UDI, UGC, AJT)
+            )
 
 use_mapping = {
     'B': is_BASE,
@@ -362,6 +368,7 @@ use_mapping = {
     'SM': is_SYM_MOD,
     'V': is_VOWEL,
     'VM': is_VOWEL_MOD,
+    'WJ': is_Word_Joiner,
 }
 
 use_positions = {

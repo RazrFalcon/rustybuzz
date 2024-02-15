@@ -48,7 +48,7 @@ pub mod category {
     pub const ZWNJ: u8 = 14; // Zero width non-joiner
 
     // pub const ZWJ: u8     = 15;   // Zero width joiner
-    // pub const WJ: u8      = 16;   // Word joiner
+    pub const WJ: u8 = 16; // Word joiner
 
     pub const RSV: u8 = 17; // Reserved characters
     pub const R: u8 = 18; // REPHA

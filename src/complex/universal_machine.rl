@@ -41,6 +41,7 @@ H	= 12; # HALANT
 
 HN	= 13; # HALANT_NUM
 ZWNJ	= 14; # Zero width non-joiner
+WJ = 16; # Word joiner
 R	= 18; # REPHA
 CS	= 43; # CONS_WITH_STACKER
 HVM	= 44; # HALANT_OR_VOWEL_MODIFIER

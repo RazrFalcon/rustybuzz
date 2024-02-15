@@ -12,7 +12,7 @@ const USE_TABLE: &[Category] = &[
 
   /* Latin-1 Supplement */
 
-  /* 00A0 */    GB,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 00A0 */    GB,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,    WJ,     O,     O,
   /* 00B0 */     O,     O, FMPST, FMPST,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 00C0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 00D0 */     O,     O,     O,     O,     O,     O,     O,    GB,
@@ -207,7 +207,7 @@ const USE_TABLE: &[Category] = &[
 
   /* Mongolian */
 
-  /* 1800 */     B,     O,     O,     O,     O,     O,     O,     B,     O,     O,     B,   CGJ,   CGJ,   CGJ,     O,   CGJ,
+  /* 1800 */     B,     O,     O,     O,     O,     O,     O,     B,     O,     O,     B,   CGJ,   CGJ,   CGJ,    WJ,   CGJ,
   /* 1810 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 1820 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 1830 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
@@ -303,8 +303,13 @@ const USE_TABLE: &[Category] = &[
                                                                          O,     O,     O, FMABV,     O,     O,     O,     O,
 
   /* General Punctuation */
-                                                                         O,     O,     O,     O,  ZWNJ,   CGJ,     O,     O,
-  /* 2010 */    GB,    GB,    GB,    GB,    GB,     O,     O,     O,
+                                                                         O,     O,     O,    WJ,  ZWNJ,   CGJ,    WJ,    WJ,
+  /* 2010 */    GB,    GB,    GB,    GB,    GB,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 2020 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,    WJ,    WJ,    WJ,    WJ,    WJ,     O,
+  /* 2030 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 2040 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 2050 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 2060 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
 
   /* Superscripts and Subscripts */
 
@@ -420,6 +425,13 @@ const USE_TABLE: &[Category] = &[
   /* Variation Selectors */
 
   /* FE00 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
+
+  /* Arabic Presentation Forms-B */
+                                                                         O,     O,     O,     O,     O,     O,     O,    WJ,
+
+  /* Specials */
+
+  /* FFF0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,     O,     O,     O,     O,     O,     O,     O,
 
   /* Vithkuqi */
 
@@ -857,6 +869,10 @@ const USE_TABLE: &[Category] = &[
   /* 1BC80 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,     O,
   /* 1BC90 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O, CMBLW, CMBLW,     O,
 
+  /* Musical Symbols */
+
+  /* 1D170 */     O,     O,     O,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,     O,     O,     O,     O,     O,
+
   /* Nyiakeng Puachue Hmong */
 
   /* 1E100 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
@@ -887,6 +903,28 @@ const USE_TABLE: &[Category] = &[
   /* 1E940 */     B,     B,     B,     B, CMABV, CMABV, CMABV, CMABV, CMABV, CMABV, CMABV,     B,     O,     O,     O,     O,
   /* 1E950 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,
 
+  /* Tags */
+
+  /* E0000 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0010 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0020 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0030 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0040 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0050 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0060 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0070 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+
+  /* No_Block */
+
+  /* E0080 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0090 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E00A0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E00B0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E00C0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E00D0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E00E0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E00F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+
   /* Variation Selectors Supplement */
 
   /* E0100 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
@@ -905,6 +943,234 @@ const USE_TABLE: &[Category] = &[
   /* E01D0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
   /* E01E0 */   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,   CGJ,
 
+  /* No_Block */
+
+  /* E01F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0200 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0210 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0220 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0230 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0240 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0250 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0260 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0270 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0280 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0290 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E02A0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E02B0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E02C0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E02D0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E02E0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E02F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0300 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0310 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0320 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0330 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0340 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0350 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0360 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0370 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0380 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0390 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E03A0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E03B0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E03C0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E03D0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E03E0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E03F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0400 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0410 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0420 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0430 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0440 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0450 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0460 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0470 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0480 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0490 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E04A0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E04B0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E04C0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E04D0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E04E0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E04F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0500 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0510 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0520 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0530 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0540 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0550 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0560 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0570 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0580 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0590 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E05A0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E05B0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E05C0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E05D0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E05E0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E05F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0600 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0610 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0620 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0630 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0640 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0650 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0660 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0670 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0680 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0690 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E06A0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E06B0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E06C0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E06D0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E06E0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E06F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0700 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0710 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0720 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0730 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0740 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0750 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0760 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0770 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0780 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0790 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E07A0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E07B0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E07C0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E07D0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E07E0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E07F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0800 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0810 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0820 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0830 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0840 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0850 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0860 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0870 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0880 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0890 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E08A0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E08B0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E08C0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E08D0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E08E0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E08F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0900 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0910 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0920 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0930 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0940 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0950 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0960 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0970 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0980 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0990 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E09A0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E09B0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E09C0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E09D0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E09E0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E09F0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A00 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A10 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A20 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A30 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A40 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A50 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A60 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A70 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A80 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0A90 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0AA0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0AB0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0AC0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0AD0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0AE0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0AF0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B00 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B10 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B20 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B30 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B40 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B50 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B60 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B70 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B80 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0B90 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0BA0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0BB0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0BC0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0BD0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0BE0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0BF0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C00 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C10 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C20 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C30 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C40 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C50 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C60 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C70 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C80 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0C90 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0CA0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0CB0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0CC0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0CD0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0CE0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0CF0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D00 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D10 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D20 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D30 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D40 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D50 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D60 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D70 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D80 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0D90 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0DA0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0DB0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0DC0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0DD0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0DE0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0DF0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E00 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E10 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E20 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E30 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E40 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E50 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E60 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E70 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E80 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0E90 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0EA0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0EB0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0EC0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0ED0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0EE0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0EF0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F00 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F10 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F20 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F30 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F40 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F50 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F60 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F70 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F80 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0F90 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0FA0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0FB0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0FC0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0FD0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0FE0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* E0FF0 */    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+
 ];
 
 const USE_OFFSET_0X0028: usize = 0;
@@ -922,40 +1188,42 @@ const USE_OFFSET_0X1B00: usize = 2664;
 const USE_OFFSET_0X1CD0: usize = 3000;
 const USE_OFFSET_0X1DF8: usize = 3048;
 const USE_OFFSET_0X2008: usize = 3056;
-const USE_OFFSET_0X2070: usize = 3072;
-const USE_OFFSET_0X20F0: usize = 3096;
-const USE_OFFSET_0X25C8: usize = 3104;
-const USE_OFFSET_0X2D30: usize = 3112;
-const USE_OFFSET_0XA800: usize = 3192;
-const USE_OFFSET_0XABC0: usize = 3952;
-const USE_OFFSET_0XFE00: usize = 4016;
-const USE_OFFSET_0X10570: usize = 4032;
-const USE_OFFSET_0X10A00: usize = 4112;
-const USE_OFFSET_0X10AC0: usize = 4192;
-const USE_OFFSET_0X10B80: usize = 4240;
-const USE_OFFSET_0X10D00: usize = 4288;
-const USE_OFFSET_0X10E80: usize = 4352;
-const USE_OFFSET_0X10F30: usize = 4408;
-const USE_OFFSET_0X11100: usize = 4816;
-const USE_OFFSET_0X11280: usize = 5136;
-const USE_OFFSET_0X11400: usize = 5384;
-const USE_OFFSET_0X11580: usize = 5608;
-const USE_OFFSET_0X11800: usize = 6064;
-const USE_OFFSET_0X11900: usize = 6128;
-const USE_OFFSET_0X119A0: usize = 6224;
-const USE_OFFSET_0X11C00: usize = 6480;
-const USE_OFFSET_0X11D00: usize = 6664;
-const USE_OFFSET_0X11EE0: usize = 6840;
-const USE_OFFSET_0X13000: usize = 6864;
-const USE_OFFSET_0X16AC0: usize = 7952;
-const USE_OFFSET_0X16F00: usize = 8072;
-const USE_OFFSET_0X16FE0: usize = 8224;
-const USE_OFFSET_0X18B00: usize = 8232;
-const USE_OFFSET_0X1BC00: usize = 8704;
-const USE_OFFSET_0X1E100: usize = 8864;
-const USE_OFFSET_0X1E290: usize = 8944;
-const USE_OFFSET_0X1E900: usize = 9056;
-const USE_OFFSET_0XE0100: usize = 9152;
+const USE_OFFSET_0X20F0: usize = 3184;
+const USE_OFFSET_0X25C8: usize = 3192;
+const USE_OFFSET_0X2D30: usize = 3200;
+const USE_OFFSET_0XA800: usize = 3280;
+const USE_OFFSET_0XABC0: usize = 4040;
+const USE_OFFSET_0XFE00: usize = 4104;
+const USE_OFFSET_0XFEF8: usize = 4120;
+const USE_OFFSET_0XFFF0: usize = 4128;
+const USE_OFFSET_0X10570: usize = 4144;
+const USE_OFFSET_0X10A00: usize = 4224;
+const USE_OFFSET_0X10AC0: usize = 4304;
+const USE_OFFSET_0X10B80: usize = 4352;
+const USE_OFFSET_0X10D00: usize = 4400;
+const USE_OFFSET_0X10E80: usize = 4464;
+const USE_OFFSET_0X10F30: usize = 4520;
+const USE_OFFSET_0X11100: usize = 4928;
+const USE_OFFSET_0X11280: usize = 5248;
+const USE_OFFSET_0X11400: usize = 5496;
+const USE_OFFSET_0X11580: usize = 5720;
+const USE_OFFSET_0X11800: usize = 6176;
+const USE_OFFSET_0X11900: usize = 6240;
+const USE_OFFSET_0X119A0: usize = 6336;
+const USE_OFFSET_0X11C00: usize = 6592;
+const USE_OFFSET_0X11D00: usize = 6776;
+const USE_OFFSET_0X11EE0: usize = 6952;
+const USE_OFFSET_0X13000: usize = 6976;
+const USE_OFFSET_0X16AC0: usize = 8064;
+const USE_OFFSET_0X16F00: usize = 8184;
+const USE_OFFSET_0X16FE0: usize = 8336;
+const USE_OFFSET_0X18B00: usize = 8344;
+const USE_OFFSET_0X1BC00: usize = 8816;
+const USE_OFFSET_0X1D170: usize = 8976;
+const USE_OFFSET_0X1E100: usize = 8992;
+const USE_OFFSET_0X1E290: usize = 9072;
+const USE_OFFSET_0X1E900: usize = 9184;
+const USE_OFFSET_0XE0000: usize = 9280;
 
 #[rustfmt::skip]
 pub fn get_category(u: u32) -> Category {
@@ -979,8 +1247,7 @@ pub fn get_category(u: u32) -> Category {
             if (0x1DF8..=0x1DFF).contains(&u) { return USE_TABLE[u as usize - 0x1DF8 + USE_OFFSET_0X1DF8]; }
         }
         0x2 => {
-            if (0x2008..=0x2017).contains(&u) { return USE_TABLE[u as usize - 0x2008 + USE_OFFSET_0X2008]; }
-            if (0x2070..=0x2087).contains(&u) { return USE_TABLE[u as usize - 0x2070 + USE_OFFSET_0X2070]; }
+            if (0x2008..=0x2087).contains(&u) { return USE_TABLE[u as usize - 0x2008 + USE_OFFSET_0X2008]; }
             if (0x20F0..=0x20F7).contains(&u) { return USE_TABLE[u as usize - 0x20F0 + USE_OFFSET_0X20F0]; }
             if (0x25C8..=0x25CF).contains(&u) { return USE_TABLE[u as usize - 0x25C8 + USE_OFFSET_0X25C8]; }
             if (0x2D30..=0x2D7F).contains(&u) { return USE_TABLE[u as usize - 0x2D30 + USE_OFFSET_0X2D30]; }
@@ -991,8 +1258,11 @@ pub fn get_category(u: u32) -> Category {
         }
         0xF => {
             if (0xFE00..=0xFE0F).contains(&u) { return USE_TABLE[u as usize - 0xFE00 + USE_OFFSET_0XFE00]; }
+            if (0xFEF8..=0xFEFF).contains(&u) { return USE_TABLE[u as usize - 0xFEF8 + USE_OFFSET_0XFEF8]; }
+            if (0xFFF0..=0xFFFF).contains(&u) { return USE_TABLE[u as usize - 0xFFF0 + USE_OFFSET_0XFFF0]; }
         }
         0x10 => {
+            if (0xFFF0..=0xFFFF).contains(&u) { return USE_TABLE[u as usize - 0xFFF0 + USE_OFFSET_0XFFF0]; }
             if (0x10570..=0x105BF).contains(&u) { return USE_TABLE[u as usize - 0x10570 + USE_OFFSET_0X10570]; }
             if (0x10A00..=0x10A4F).contains(&u) { return USE_TABLE[u as usize - 0x10A00 + USE_OFFSET_0X10A00]; }
             if (0x10AC0..=0x10AEF).contains(&u) { return USE_TABLE[u as usize - 0x10AC0 + USE_OFFSET_0X10AC0]; }
@@ -1028,13 +1298,19 @@ pub fn get_category(u: u32) -> Category {
         0x1B => {
             if (0x1BC00..=0x1BC9F).contains(&u) { return USE_TABLE[u as usize - 0x1BC00 + USE_OFFSET_0X1BC00]; }
         }
+        0x1D => {
+            if (0x1D170..=0x1D17F).contains(&u) { return USE_TABLE[u as usize - 0x1D170 + USE_OFFSET_0X1D170]; }
+        }
         0x1E => {
             if (0x1E100..=0x1E14F).contains(&u) { return USE_TABLE[u as usize - 0x1E100 + USE_OFFSET_0X1E100]; }
             if (0x1E290..=0x1E2FF).contains(&u) { return USE_TABLE[u as usize - 0x1E290 + USE_OFFSET_0X1E290]; }
             if (0x1E900..=0x1E95F).contains(&u) { return USE_TABLE[u as usize - 0x1E900 + USE_OFFSET_0X1E900]; }
         }
         0xE0 => {
-            if (0xE0100..=0xE01EF).contains(&u) { return USE_TABLE[u as usize - 0xE0100 + USE_OFFSET_0XE0100]; }
+            if (0xE0000..=0xE0FFF).contains(&u) { return USE_TABLE[u as usize - 0xE0000 + USE_OFFSET_0XE0000]; }
+        }
+        0xE1 => {
+            if (0xE0000..=0xE0FFF).contains(&u) { return USE_TABLE[u as usize - 0xE0000 + USE_OFFSET_0XE0000]; }
         }
         _ => {}
     }
