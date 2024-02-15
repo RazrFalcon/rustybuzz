@@ -227,7 +227,7 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
         apply_forward(ctx, lookup);
 
         if !T::IN_PLACE {
-            ctx.buffer.swap_buffers();
+            ctx.buffer.sync();
         }
     } else {
         // in-place backward substitution/positioning

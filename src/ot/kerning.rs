@@ -85,6 +85,7 @@ fn machine_kern(
     cross_stream: bool,
     get_kerning: impl Fn(u32, u32) -> i32,
 ) {
+    buffer.unsafe_to_concat(None, None);
     let mut ctx = ApplyContext::new(TableIndex::GPOS, face, buffer);
     ctx.lookup_mask = kern_mask;
     ctx.lookup_props = u32::from(lookup_flags::IGNORE_MARKS);
@@ -99,7 +100,9 @@ fn machine_kern(
         }
 
         let mut iter = SkippyIter::new(&ctx, i, 1, false);
-        if !iter.next() {
+
+        let mut unsafe_to = 0;
+        if !iter.next(Some(&mut unsafe_to)) {
             i += 1;
             continue;
         }
@@ -135,7 +138,7 @@ fn machine_kern(
                 }
             }
 
-            ctx.buffer.unsafe_to_break(i, j + 1)
+            ctx.buffer.unsafe_to_break(Some(i), Some(j + 1))
         }
 
         i = j;
@@ -204,7 +207,10 @@ fn apply_state_machine_kerning(subtable: &kern::Subtable, kern_mask: Mask, buffe
             if entry.has_offset()
                 || !(entry.new_state == apple_layout::state::START_OF_TEXT && !entry.has_advance())
             {
-                buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
+                buffer.unsafe_to_break_from_outbuffer(
+                    Some(buffer.backtrack_len() - 1),
+                    Some(buffer.idx + 1),
+                );
             }
         }
 
@@ -216,7 +222,7 @@ fn apply_state_machine_kerning(subtable: &kern::Subtable, kern_mask: Mask, buffe
             };
 
             if end_entry.has_offset() {
-                buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
+                buffer.unsafe_to_break(Some(buffer.idx), Some(buffer.idx + 2));
             }
         }
 

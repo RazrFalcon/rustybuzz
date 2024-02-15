@@ -92,6 +92,8 @@ pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Optio
                     continue;
                 }
 
+                buffer.unsafe_to_concat(None, None);
+
                 apply_simple_kerning(&subtable, plan, face, buffer);
             }
             kerx::Format::Format4(ref sub) => {
@@ -140,7 +142,10 @@ fn apply_simple_kerning(
         }
 
         let mut iter = SkippyIter::new(&ctx, i, 1, false);
-        if !iter.next() {
+
+        let mut unsafe_to = 0;
+        if !iter.next(Some(&mut unsafe_to)) {
+            ctx.buffer.unsafe_to_concat(Some(i), Some(unsafe_to));
             i += 1;
             continue;
         }
@@ -179,7 +184,7 @@ fn apply_simple_kerning(
                 }
             }
 
-            ctx.buffer.unsafe_to_break(i, j + 1)
+            ctx.buffer.unsafe_to_break(Some(i), Some(j + 1))
         }
 
         i = j;
@@ -235,7 +240,10 @@ fn apply_state_machine_kerning<T, E>(
             // If there's no value and we're just epsilon-transitioning to state 0, safe to break.
             if entry.is_actionable() || !(entry.new_state == START_OF_TEXT && !entry.has_advance())
             {
-                buffer.unsafe_to_break_from_outbuffer(buffer.backtrack_len() - 1, buffer.idx + 1);
+                buffer.unsafe_to_break_from_outbuffer(
+                    Some(buffer.backtrack_len() - 1),
+                    Some(buffer.idx + 1),
+                );
             }
         }
 
@@ -249,7 +257,7 @@ fn apply_state_machine_kerning<T, E>(
             };
 
             if end_entry.is_actionable() {
-                buffer.unsafe_to_break(buffer.idx, buffer.idx + 2);
+                buffer.unsafe_to_break(Some(buffer.idx), Some(buffer.idx + 2));
             }
         }
 

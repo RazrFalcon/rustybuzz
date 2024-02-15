@@ -72,5 +72,5 @@ pub fn insert_dotted_circles(
         }
     }
 
-    buffer.swap_buffers();
+    buffer.sync();
 }

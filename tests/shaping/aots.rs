@@ -833,6 +833,21 @@ fn gpos4_lookupflag_002() {
 }
 
 #[test]
+fn gpos4_simple_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos4_simple_1.otf",
+            "\u{0011}\u{0012}\u{0013}\u{0011}",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
+        ),
+        "17|\
+         18@1500,0|\
+         19@1400,-80|\
+         17@3000,0"
+    );
+}
+
+#[test]
 fn gpos4_simple_002() {
     assert_eq!(
         shape(
@@ -873,6 +888,21 @@ fn gpos5_001() {
         "17|\
          18@1500,0|\
          19@1400,-80|\
+         17@3000,0"
+    );
+}
+
+#[test]
+fn gpos5_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/aots/gpos5_font1.otf",
+            "\u{0011}\u{001E}\u{001F}\u{0013}\u{0011}",
+            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
+        ),
+        "17|\
+         18@1500,0|\
+         19@1401,-79|\
          17@3000,0"
     );
 }

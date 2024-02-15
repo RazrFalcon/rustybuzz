@@ -297,7 +297,7 @@ fn do_pua_shaping(face: &Face, buffer: &mut Buffer) {
             below_edge.action
         };
 
-        buffer.unsafe_to_break(base, i);
+        buffer.unsafe_to_break(Some(base), Some(i));
         if action == Action::RD {
             buffer.info[base].glyph_id = pua_shape(buffer.info[base].glyph_id, action, face);
         } else {
@@ -415,7 +415,7 @@ fn preprocess_text(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
         }
     }
 
-    buffer.swap_buffers();
+    buffer.sync();
 
     // If font has Thai GSUB, we are done.
     if plan.script == Some(script::THAI) && !plan.ot_map.found_script(TableIndex::GSUB) {

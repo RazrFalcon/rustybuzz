@@ -2,9 +2,7 @@ use ttf_parser::opentype_layout::*;
 use ttf_parser::{GlyphId, LazyArray16};
 
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::matching::{
-    match_backtrack, match_glyph, match_input, match_lookahead, MatchFunc, Matched,
-};
+use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead, MatchFunc};
 use super::MAX_CONTEXT_LENGTH;
 
 impl WouldApply for ContextLookup<'_> {
@@ -64,11 +62,32 @@ impl Apply for ContextLookup<'_> {
                     coverage.get(glyph).is_some()
                 };
 
-                match_input(ctx, coverages_len as u16, &match_func).map(|matched| {
+                let mut match_end = 0;
+                let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+
+                if match_input(
+                    ctx,
+                    coverages_len,
+                    &match_func,
+                    &mut match_end,
+                    &mut match_positions,
+                    None,
+                ) {
                     ctx.buffer
-                        .unsafe_to_break(ctx.buffer.idx, ctx.buffer.idx + matched.len);
-                    apply_lookup(ctx, usize::from(coverages_len), matched, lookups);
-                })
+                        .unsafe_to_break(Some(ctx.buffer.idx), Some(match_end));
+                    apply_lookup(
+                        ctx,
+                        usize::from(coverages_len),
+                        &mut match_positions,
+                        match_end,
+                        lookups,
+                    );
+                    return Some(());
+                } else {
+                    ctx.buffer
+                        .unsafe_to_concat(Some(ctx.buffer.idx), Some(match_end));
+                    return None;
+                }
             }
         }
     }
@@ -208,21 +227,56 @@ impl Apply for ChainedContextLookup<'_> {
                     coverage.contains(glyph)
                 };
 
-                if let Some(matched) = match_input(ctx, input_coverages.len(), &input) {
-                    if let Some(start_idx) = match_backtrack(ctx, backtrack_coverages.len(), &back)
-                    {
-                        if let Some(end_idx) =
-                            match_lookahead(ctx, lookahead_coverages.len(), &ahead, matched.len)
-                        {
-                            ctx.buffer
-                                .unsafe_to_break_from_outbuffer(start_idx, end_idx);
-                            apply_lookup(ctx, usize::from(input_coverages.len()), matched, lookups);
-                            return Some(());
-                        }
-                    }
+                let mut end_index = ctx.buffer.idx;
+                let mut match_end = 0;
+                let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+
+                let input_matches = match_input(
+                    ctx,
+                    input_coverages.len(),
+                    &input,
+                    &mut match_end,
+                    &mut match_positions,
+                    None,
+                );
+
+                if input_matches {
+                    end_index = match_end;
                 }
 
-                None
+                if !(input_matches
+                    && match_lookahead(
+                        ctx,
+                        lookahead_coverages.len(),
+                        &ahead,
+                        match_end,
+                        &mut end_index,
+                    ))
+                {
+                    ctx.buffer
+                        .unsafe_to_concat(Some(ctx.buffer.idx), Some(end_index));
+                    return None;
+                }
+
+                let mut start_index = ctx.buffer.out_len;
+
+                if !match_backtrack(ctx, backtrack_coverages.len(), &back, &mut start_index) {
+                    ctx.buffer
+                        .unsafe_to_concat_from_outbuffer(Some(start_index), Some(end_index));
+                    return None;
+                }
+
+                ctx.buffer
+                    .unsafe_to_break_from_outbuffer(Some(start_index), Some(end_index));
+                apply_lookup(
+                    ctx,
+                    usize::from(input_coverages.len()),
+                    &mut match_positions,
+                    match_end,
+                    lookups,
+                );
+
+                Some(())
             }
         }
     }
@@ -291,11 +345,30 @@ fn apply_context(
         match_func(glyph, value)
     };
 
-    match_input(ctx, input.len(), &match_func).map(|matched| {
+    let mut match_end = 0;
+    let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+
+    if match_input(
+        ctx,
+        input.len(),
+        &match_func,
+        &mut match_end,
+        &mut match_positions,
+        None,
+    ) {
         ctx.buffer
-            .unsafe_to_break(ctx.buffer.idx, ctx.buffer.idx + matched.len);
-        apply_lookup(ctx, usize::from(input.len()), matched, lookups);
-    })
+            .unsafe_to_break(Some(ctx.buffer.idx), Some(match_end));
+        apply_lookup(
+            ctx,
+            usize::from(input.len()),
+            &mut match_positions,
+            match_end,
+            lookups,
+        );
+        return Some(());
+    }
+
+    None
 }
 
 fn apply_chain_context(
@@ -306,6 +379,8 @@ fn apply_chain_context(
     match_funcs: [&MatchFunc; 3],
     lookups: LazyArray16<SequenceLookupRecord>,
 ) -> Option<()> {
+    // NOTE: Whenever something in this method changes, we also need to
+    // change it in the `apply` implementation for ChainedContextLookup.
     let f1 = |glyph, num_items| {
         let index = backtrack.len() - num_items;
         let value = backtrack.get(index).unwrap();
@@ -324,24 +399,55 @@ fn apply_chain_context(
         match_funcs[1](glyph, value)
     };
 
-    if let Some(matched) = match_input(ctx, input.len(), &f3) {
-        if let Some(start_idx) = match_backtrack(ctx, backtrack.len(), &f1) {
-            if let Some(end_idx) = match_lookahead(ctx, lookahead.len(), &f2, matched.len) {
-                ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_idx, end_idx);
-                apply_lookup(ctx, usize::from(input.len()), matched, lookups);
-                return Some(());
-            }
-        }
+    let mut end_index = ctx.buffer.idx;
+    let mut match_end = 0;
+    let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+
+    let input_matches = match_input(
+        ctx,
+        input.len(),
+        &f3,
+        &mut match_end,
+        &mut match_positions,
+        None,
+    );
+
+    if input_matches {
+        end_index = match_end;
     }
 
-    None
+    if !(input_matches && match_lookahead(ctx, lookahead.len(), &f2, match_end, &mut end_index)) {
+        ctx.buffer
+            .unsafe_to_concat(Some(ctx.buffer.idx), Some(end_index));
+        return None;
+    }
+
+    let mut start_index = ctx.buffer.out_len;
+
+    if !match_backtrack(ctx, backtrack.len(), &f1, &mut start_index) {
+        ctx.buffer
+            .unsafe_to_concat_from_outbuffer(Some(start_index), Some(end_index));
+        return None;
+    }
+
+    ctx.buffer
+        .unsafe_to_break_from_outbuffer(Some(start_index), Some(end_index));
+    apply_lookup(
+        ctx,
+        usize::from(input.len()),
+        &mut match_positions,
+        match_end,
+        lookups,
+    );
+
+    Some(())
 }
 
 fn apply_lookup(
     ctx: &mut ApplyContext,
     input_len: usize,
-    mut matched: Matched,
+    match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
+    match_end: usize,
     lookups: LazyArray16<SequenceLookupRecord>,
 ) {
     let mut count = input_len + 1;
@@ -354,10 +460,10 @@ fn apply_lookup(
 
         // Convert positions to new indexing.
         for j in 0..count {
-            matched.positions[j] = (matched.positions[j] as isize + delta) as _;
+            match_positions[j] = (match_positions[j] as isize + delta) as _;
         }
 
-        backtrack_len + matched.len
+        backtrack_len + match_end - ctx.buffer.idx
     };
 
     for record in lookups {
@@ -376,7 +482,7 @@ fn apply_lookup(
             continue;
         }
 
-        if !ctx.buffer.move_to(matched.positions[idx]) {
+        if !ctx.buffer.move_to(match_positions[idx]) {
             break;
         }
 
@@ -419,12 +525,12 @@ fn apply_lookup(
         // It should be possible to construct tests for both of these cases.
 
         end = (end as isize + delta) as _;
-        if end <= matched.positions[idx] {
+        if end <= match_positions[idx] {
             // End might end up being smaller than match_positions[idx] if the recursed
             // lookup ended up removing many items, more than we have had matched.
             // Just never rewind end back and get out of here.
             // https://bugs.chromium.org/p/chromium/issues/detail?id=659496
-            end = matched.positions[idx];
+            end = match_positions[idx];
 
             // There can't be any further changes.
             break;
@@ -444,20 +550,18 @@ fn apply_lookup(
         }
 
         // Shift!
-        matched
-            .positions
-            .copy_within(next..count, (next as isize + delta) as _);
+        match_positions.copy_within(next..count, (next as isize + delta) as _);
         next = (next as isize + delta) as _;
         count = (count as isize + delta) as _;
 
         // Fill in new entries.
         for j in idx + 1..next {
-            matched.positions[j] = matched.positions[j - 1] + 1;
+            match_positions[j] = match_positions[j - 1] + 1;
         }
 
         // And fixup the rest.
         while next < count {
-            matched.positions[next] = (matched.positions[next] as isize + delta) as _;
+            match_positions[next] = (match_positions[next] as isize + delta) as _;
             next += 1;
         }
     }

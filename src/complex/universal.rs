@@ -23,6 +23,7 @@ pub const UNIVERSAL_SHAPER: ComplexShaper = ComplexShaper {
 };
 
 pub type Category = u8;
+#[allow(dead_code)]
 pub mod category {
     pub const O: u8 = 0; // OTHER
 
@@ -232,7 +233,7 @@ fn setup_syllables(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     super::universal_machine::find_syllables(buffer);
 
     foreach_syllable!(buffer, start, end, {
-        buffer.unsafe_to_break(start, end);
+        buffer.unsafe_to_break(Some(start), Some(end));
     });
 
     setup_rphf_mask(plan, buffer);

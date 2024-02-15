@@ -420,5 +420,5 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut Buffer) {
 
         _ => {}
     }
-    buffer.swap_buffers();
+    buffer.sync();
 }

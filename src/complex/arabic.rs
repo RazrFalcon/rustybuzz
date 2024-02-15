@@ -130,7 +130,7 @@ const STATE_TABLE: &[[(u8, u8, u16); 6]] = &[
     ],
 ];
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
 pub enum JoiningType {
     U = 0,
     L = 1,
@@ -406,7 +406,7 @@ fn apply_stch(face: &Face, buffer: &mut Buffer) {
             if step == MEASURE {
                 extra_glyphs_needed += (n_copies * n_repeating) as usize;
             } else {
-                buffer.unsafe_to_break(context, end);
+                buffer.unsafe_to_break(Some(context), Some(end));
                 let mut x_offset = 0;
                 for k in (start + 1..=end).rev() {
                     let width = face.glyph_h_advance(buffer.info[k - 1].as_glyph()) as i32;
@@ -513,7 +513,19 @@ fn arabic_joining(buffer: &mut Buffer) {
         if entry.0 != action::NONE && prev.is_some() {
             if let Some(prev) = prev {
                 buffer.info[prev].set_arabic_shaping_action(entry.0);
-                buffer.unsafe_to_break(prev, i + 1);
+                buffer.unsafe_to_break(Some(prev), Some(i + 1));
+            }
+        }
+        // States that have a possible prev_action.
+        else {
+            if let Some(prev) = prev {
+                if this_type >= JoiningType::R || (2 <= state && state <= 5) {
+                    buffer.unsafe_to_concat(Some(prev), Some(i + 1));
+                }
+            } else {
+                if this_type >= JoiningType::R {
+                    buffer.unsafe_to_concat_from_outbuffer(Some(0), Some(i + 1));
+                }
             }
         }
 
@@ -534,6 +546,13 @@ fn arabic_joining(buffer: &mut Buffer) {
         if entry.0 != action::NONE && prev.is_some() {
             if let Some(prev) = prev {
                 buffer.info[prev].set_arabic_shaping_action(entry.0);
+                buffer.unsafe_to_break(Some(prev), Some(buffer.len));
+            }
+        }
+        // States that have a possible prev_action.
+        else if 2 <= state && state <= 5 {
+            if let Some(prev) = prev {
+                buffer.unsafe_to_concat(Some(prev), Some(buffer.len));
             }
         }
 

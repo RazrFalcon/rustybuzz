@@ -171,7 +171,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             }
         }
 
-        buffer.swap_buffers();
+        buffer.sync();
     }
 
     // Second round, reorder (inplace)
@@ -285,7 +285,7 @@ pub fn normalize(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
             }
         }
 
-        buffer.swap_buffers();
+        buffer.sync();
     }
 }
 
@@ -366,7 +366,12 @@ fn decompose_current_character(ctx: &mut ShapeNormalizeContext, shortest: bool) 
     // Handle space characters.
     if ctx.buffer.cur(0).general_category() == GeneralCategory::SpaceSeparator {
         if let Some(space_type) = u.space_fallback() {
-            if let Some(space_glyph) = ctx.face.glyph_index(u32::from(' ')) {
+            let space_glyph = ctx
+                .face
+                .glyph_index(u32::from(' '))
+                .or(ctx.buffer.invisible);
+
+            if let Some(space_glyph) = space_glyph {
                 ctx.buffer.cur_mut(0).set_space_fallback(space_type);
                 ctx.buffer.next_char(u32::from(space_glyph.0));
                 ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_SPACE_FALLBACK;

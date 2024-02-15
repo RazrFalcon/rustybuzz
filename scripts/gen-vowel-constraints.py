@@ -185,6 +185,6 @@ for script, constraints in sorted(constraints.items(), key=lambda s_c: script_or
 
 print('        _ => {}')
 print('    }')
-print('    buffer.swap_buffers();')
+print('    buffer.sync();')
 print('}')
 print()

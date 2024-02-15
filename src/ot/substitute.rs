@@ -9,9 +9,10 @@ use crate::unicode::GeneralCategory;
 use crate::Face;
 
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead, Matched};
+use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead};
 use super::{
-    LayoutLookup, LayoutTable, Map, SubstLookup, SubstitutionTable, TableIndex, MAX_NESTING_LEVEL,
+    LayoutLookup, LayoutTable, Map, SubstLookup, SubstitutionTable, TableIndex, MAX_CONTEXT_LENGTH,
+    MAX_NESTING_LEVEL,
 };
 use ttf_parser::opentype_layout::LookupIndex;
 
@@ -224,7 +225,7 @@ impl Apply for AlternateSet<'_> {
         if alt_index == Map::MAX_VALUE && ctx.random {
             // Maybe we can do better than unsafe-to-break all; but since we are
             // changing random state, it would be hard to track that.  Good 'nough.
-            ctx.buffer.unsafe_to_break(0, ctx.buffer.len);
+            ctx.buffer.unsafe_to_break(Some(0), Some(ctx.buffer.len));
             alt_index = ctx.random_number() % u32::from(len) + 1;
         }
 
@@ -296,15 +297,47 @@ impl Apply for Ligature<'_> {
                 match_glyph(glyph, value.0)
             };
 
-            match_input(ctx, self.components.len(), &f).map(|matched| {
-                let count = usize::from(self.components.len()) + 1;
-                ligate(ctx, count, matched, self.glyph);
-            })
+            let mut match_end = 0;
+            let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+            let mut total_component_count = 0;
+
+            if !match_input(
+                ctx,
+                self.components.len(),
+                &f,
+                &mut match_end,
+                &mut match_positions,
+                Some(&mut total_component_count),
+            ) {
+                ctx.buffer
+                    .unsafe_to_concat(Some(ctx.buffer.idx), Some(match_end));
+                return None;
+            }
+
+            let count = usize::from(self.components.len()) + 1;
+            ligate(
+                ctx,
+                count,
+                &match_positions,
+                match_end,
+                total_component_count,
+                self.glyph,
+            );
+            return Some(());
         }
     }
 }
 
-fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: GlyphId) {
+fn ligate(
+    ctx: &mut ApplyContext,
+    // Including the first glyph
+    count: usize,
+    // Including the first glyph
+    match_positions: &[usize; MAX_CONTEXT_LENGTH],
+    match_end: usize,
+    total_component_count: u8,
+    lig_glyph: GlyphId,
+) {
     // - If a base and one or more marks ligate, consider that as a base, NOT
     //   ligature, such that all following marks can still attach to it.
     //   https://github.com/harfbuzz/harfbuzz/issues/1109
@@ -338,12 +371,12 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     //
 
     let mut buffer = &mut ctx.buffer;
-    buffer.merge_clusters(buffer.idx, buffer.idx + matched.len);
+    buffer.merge_clusters(buffer.idx, match_end);
 
-    let mut is_base_ligature = buffer.info[matched.positions[0]].is_base_glyph();
-    let mut is_mark_ligature = buffer.info[matched.positions[0]].is_mark();
+    let mut is_base_ligature = buffer.info[match_positions[0]].is_base_glyph();
+    let mut is_mark_ligature = buffer.info[match_positions[0]].is_mark();
     for i in 1..count {
-        if !buffer.info[matched.positions[i]].is_mark() {
+        if !buffer.info[match_positions[i]].is_mark() {
             is_base_ligature = false;
             is_mark_ligature = false;
         }
@@ -366,7 +399,7 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     let mut comps_so_far = last_num_comps;
 
     if is_ligature {
-        first.set_lig_props_for_ligature(lig_id, matched.total_component_count);
+        first.set_lig_props_for_ligature(lig_id, total_component_count);
         if first.general_category() == GeneralCategory::NonspacingMark {
             first.set_general_category(GeneralCategory::OtherLetter);
         }
@@ -376,7 +409,7 @@ fn ligate(ctx: &mut ApplyContext, count: usize, matched: Matched, lig_glyph: Gly
     buffer = &mut ctx.buffer;
 
     for i in 1..count {
-        while buffer.idx < matched.positions[i] && buffer.successful {
+        while buffer.idx < match_positions[i] && buffer.successful {
             if is_ligature {
                 let cur = buffer.cur_mut(0);
                 let mut this_comp = cur.lig_comp();
@@ -450,10 +483,19 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
             value.contains(glyph)
         };
 
-        if let Some(start_idx) = match_backtrack(ctx, self.backtrack_coverages.len(), &f1) {
-            if let Some(end_idx) = match_lookahead(ctx, self.lookahead_coverages.len(), &f2, 1) {
+        let mut start_index = 0;
+        let mut end_index = 0;
+
+        if match_backtrack(ctx, self.backtrack_coverages.len(), &f1, &mut start_index) {
+            if match_lookahead(
+                ctx,
+                self.lookahead_coverages.len(),
+                &f2,
+                ctx.buffer.idx + 1,
+                &mut end_index,
+            ) {
                 ctx.buffer
-                    .unsafe_to_break_from_outbuffer(start_idx, end_idx);
+                    .unsafe_to_break_from_outbuffer(Some(start_index), Some(end_index));
                 ctx.replace_glyph_inplace(subst);
 
                 // Note: We DON'T decrease buffer.idx.  The main loop does it
@@ -463,6 +505,8 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
             }
         }
 
-        None
+        ctx.buffer
+            .unsafe_to_concat_from_outbuffer(Some(start_index), Some(end_index));
+        return None;
     }
 }

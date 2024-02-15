@@ -1,5 +1,3 @@
-use core::convert::TryFrom;
-
 use crate::buffer::{
     glyph_flag, Buffer, BufferClusterLevel, BufferFlags, BufferScratchFlags, GlyphInfo,
     GlyphPropsFlags,
@@ -77,17 +75,7 @@ struct ShapeContext<'a> {
 
 // Pull it all together!
 fn shape_internal(ctx: &mut ShapeContext) {
-    ctx.buffer.scratch_flags = BufferScratchFlags::empty();
-
-    if let Some(len) = ctx.buffer.len.checked_mul(Buffer::MAX_LEN_FACTOR) {
-        ctx.buffer.max_len = len.max(Buffer::MAX_LEN_MIN);
-    }
-
-    if let Ok(len) = i32::try_from(ctx.buffer.len) {
-        if let Some(ops) = len.checked_mul(Buffer::MAX_OPS_FACTOR) {
-            ctx.buffer.max_ops = ops.max(Buffer::MAX_OPS_MIN);
-        }
-    }
+    ctx.buffer.enter();
 
     initialize_masks(ctx);
     set_unicode_props(ctx.buffer);
@@ -108,8 +96,7 @@ fn shape_internal(ctx: &mut ShapeContext) {
     propagate_flags(ctx.buffer);
 
     ctx.buffer.direction = ctx.target_direction;
-    ctx.buffer.max_len = Buffer::MAX_LEN_DEFAULT;
-    ctx.buffer.max_ops = Buffer::MAX_OPS_DEFAULT;
+    ctx.buffer.leave();
 }
 
 fn substitute_pre(ctx: &mut ShapeContext) {
@@ -213,7 +200,7 @@ fn position_complex(ctx: &mut ShapeContext) {
     // hanging over the next glyph after the final reordering.
     //
     // Note: If fallback positioning happens, we don't care about
-    // this as it will be overriden.
+    // this as it will be overridden.
     let adjust_offsets_when_zeroing =
         ctx.plan.adjust_mark_positioning_when_zeroing && ctx.buffer.direction.is_forward();
 
@@ -328,7 +315,7 @@ fn setup_masks_fraction(ctx: &mut ShapeContext) {
                 end += 1;
             }
 
-            buffer.unsafe_to_break(start, end);
+            buffer.unsafe_to_break(Some(start), Some(end));
 
             for info in &mut buffer.info[start..i] {
                 info.mask |= pre_mask;
@@ -427,7 +414,7 @@ fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
         info.init_unicode_props(&mut buffer.scratch_flags);
         buffer.clear_output();
         buffer.output_info(info);
-        buffer.swap_buffers();
+        buffer.sync();
     }
 }
 
@@ -440,7 +427,7 @@ fn form_clusters(buffer: &mut Buffer) {
             foreach_grapheme!(buffer, start, end, { buffer.merge_clusters(start, end) });
         } else {
             foreach_grapheme!(buffer, start, end, {
-                buffer.unsafe_to_break(start, end);
+                buffer.unsafe_to_break(Some(start), Some(end));
             });
         }
     }
@@ -624,15 +611,17 @@ fn propagate_flags(buffer: &mut Buffer) {
     // Simplifies using them.
     if buffer
         .scratch_flags
-        .contains(BufferScratchFlags::HAS_UNSAFE_TO_BREAK)
+        .contains(BufferScratchFlags::HAS_GLYPH_FLAGS)
     {
         foreach_cluster!(buffer, start, end, {
+            let mut mask = 0;
             for info in &buffer.info[start..end] {
-                if info.mask & glyph_flag::UNSAFE_TO_BREAK != 0 {
-                    for info in &mut buffer.info[start..end] {
-                        info.mask |= glyph_flag::UNSAFE_TO_BREAK;
-                    }
-                    break;
+                mask |= info.mask * glyph_flag::DEFINED;
+            }
+
+            if mask != 0 {
+                for info in &mut buffer.info[start..end] {
+                    info.mask |= mask;
                 }
             }
         });

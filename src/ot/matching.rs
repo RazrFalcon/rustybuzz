@@ -1,5 +1,6 @@
 //! Matching of glyph patterns.
 
+use std::cmp::max;
 use ttf_parser::GlyphId;
 
 use super::apply::ApplyContext;
@@ -14,18 +15,14 @@ pub fn match_glyph(glyph: GlyphId, value: u16) -> bool {
     glyph == GlyphId(value)
 }
 
-// TODO: Find out whether returning this by value is slow.
-pub struct Matched {
-    pub len: usize,
-    pub positions: [usize; MAX_CONTEXT_LENGTH],
-    pub total_component_count: u8,
-}
-
 pub fn match_input(
-    ctx: &ApplyContext,
+    ctx: &mut ApplyContext,
     input_len: u16,
     match_func: &MatchingFunc,
-) -> Option<Matched> {
+    end_position: &mut usize,
+    match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
+    p_total_component_count: Option<&mut u8>,
+) -> bool {
     // This is perhaps the trickiest part of OpenType...  Remarks:
     //
     // - If all components of the ligature were marks, we call this a mark ligature.
@@ -57,7 +54,7 @@ pub fn match_input(
 
     let count = usize::from(input_len) + 1;
     if count > MAX_CONTEXT_LENGTH {
-        return None;
+        return false;
     }
 
     let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, input_len, false);
@@ -66,15 +63,16 @@ pub fn match_input(
     let first = ctx.buffer.cur(0);
     let first_lig_id = first.lig_id();
     let first_lig_comp = first.lig_comp();
-    let mut positions = [0; MAX_CONTEXT_LENGTH];
     let mut total_component_count = first.lig_num_comps();
     let mut ligbase = Ligbase::NotChecked;
 
-    positions[0] = ctx.buffer.idx;
+    match_positions[0] = ctx.buffer.idx;
 
-    for position in &mut positions[1..count] {
-        if !iter.next() {
-            return None;
+    for position in &mut match_positions[1..count] {
+        let mut unsafe_to = 0;
+        if !iter.next(Some(&mut unsafe_to)) {
+            *end_position = unsafe_to;
+            return false;
         }
 
         *position = iter.index();
@@ -111,7 +109,7 @@ pub fn match_input(
                 }
 
                 if ligbase == Ligbase::MayNotSkip {
-                    return None;
+                    return false;
                 }
             }
         } else {
@@ -119,53 +117,63 @@ pub fn match_input(
             // all subsequent components should also NOT be attached to any ligature
             // component, unless they are attached to the first component itself!
             if this_lig_id != 0 && this_lig_comp != 0 && (this_lig_id != first_lig_id) {
-                return None;
+                return false;
             }
         }
 
         total_component_count += this.lig_num_comps();
     }
 
-    Some(Matched {
-        len: iter.index() - ctx.buffer.idx + 1,
-        positions,
-        total_component_count,
-    })
+    *end_position = iter.index() + 1;
+
+    if let Some(p_total_component_count) = p_total_component_count {
+        *p_total_component_count = total_component_count;
+    }
+
+    true
 }
 
 pub fn match_backtrack(
-    ctx: &ApplyContext,
+    ctx: &mut ApplyContext,
     backtrack_len: u16,
     match_func: &MatchingFunc,
-) -> Option<usize> {
+    match_start: &mut usize,
+) -> bool {
     let mut iter = SkippyIter::new(ctx, ctx.buffer.backtrack_len(), backtrack_len, true);
     iter.enable_matching(match_func);
 
     for _ in 0..backtrack_len {
-        if !iter.prev() {
-            return None;
+        let mut unsafe_from = 0;
+        if !iter.prev(Some(&mut unsafe_from)) {
+            *match_start = unsafe_from;
+            return false;
         }
     }
 
-    Some(iter.index())
+    *match_start = iter.index();
+    true
 }
 
 pub fn match_lookahead(
-    ctx: &ApplyContext,
+    ctx: &mut ApplyContext,
     lookahead_len: u16,
     match_func: &MatchingFunc,
-    offset: usize,
-) -> Option<usize> {
-    let mut iter = SkippyIter::new(ctx, ctx.buffer.idx + offset - 1, lookahead_len, true);
+    start_index: usize,
+    end_index: &mut usize,
+) -> bool {
+    let mut iter = SkippyIter::new(ctx, start_index - 1, lookahead_len, true);
     iter.enable_matching(match_func);
 
     for _ in 0..lookahead_len {
-        if !iter.next() {
-            return None;
+        let mut unsafe_to = 0;
+        if !iter.next(Some(&mut unsafe_to)) {
+            *end_index = unsafe_to;
+            return false;
         }
     }
 
-    Some(iter.index() + 1)
+    *end_index = iter.index() + 1;
+    true
 }
 
 pub type MatchingFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
@@ -226,7 +234,7 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
         self.buf_idx
     }
 
-    pub fn next(&mut self) -> bool {
+    pub fn next(&mut self, unsafe_to: Option<&mut usize>) -> bool {
         assert!(self.num_items > 0);
         while self.buf_idx + usize::from(self.num_items) < self.buf_len {
             self.buf_idx += 1;
@@ -244,14 +252,22 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
             }
 
             if skip == Some(false) {
+                if let Some(unsafe_to) = unsafe_to {
+                    *unsafe_to = self.buf_idx + 1;
+                }
+
                 return false;
             }
+        }
+
+        if let Some(unsafe_to) = unsafe_to {
+            *unsafe_to = self.buf_idx + 1;
         }
 
         false
     }
 
-    pub fn prev(&mut self) -> bool {
+    pub fn prev(&mut self, unsafe_from: Option<&mut usize>) -> bool {
         assert!(self.num_items > 0);
         while self.buf_idx >= usize::from(self.num_items) {
             self.buf_idx -= 1;
@@ -269,8 +285,16 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
             }
 
             if skip == Some(false) {
+                if let Some(unsafe_from) = unsafe_from {
+                    *unsafe_from = max(1, self.buf_idx) - 1;
+                }
+
                 return false;
             }
+        }
+
+        if let Some(unsafe_from) = unsafe_from {
+            *unsafe_from = 0;
         }
 
         false

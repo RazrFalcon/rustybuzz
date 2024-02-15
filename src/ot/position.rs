@@ -168,36 +168,78 @@ impl Apply for SingleAdjustment<'_> {
 
 impl Apply for PairAdjustment<'_> {
     fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
-        let first = ctx.buffer.cur(0).as_glyph();
-        let index = self.coverage().get(first)?;
+        let first_glyph = ctx.buffer.cur(0).as_glyph();
+        let first_glyph_coverage_index = self.coverage().get(first_glyph)?;
 
         let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
-        if !iter.next() {
+
+        let mut unsafe_to = 0;
+        if !iter.next(Some(&mut unsafe_to)) {
+            ctx.buffer
+                .unsafe_to_concat(Some(ctx.buffer.idx), Some(unsafe_to));
             return None;
         }
 
-        let pos = iter.index();
-        let second = ctx.buffer.info[pos].as_glyph();
+        let second_glyph_index = iter.index();
+        let second_glyph = ctx.buffer.info[second_glyph_index].as_glyph();
+
+        let finish = |ctx: &mut ApplyContext, has_record2| {
+            ctx.buffer.idx = second_glyph_index;
+
+            if has_record2 {
+                ctx.buffer.idx += 1;
+            }
+
+            Some(())
+        };
+
+        let boring = |ctx: &mut ApplyContext, has_record2| {
+            ctx.buffer
+                .unsafe_to_concat(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
+            finish(ctx, has_record2)
+        };
+
+        let success = |ctx: &mut ApplyContext, flag1, flag2, has_record2| {
+            if flag1 || flag2 {
+                ctx.buffer
+                    .unsafe_to_break(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
+                finish(ctx, has_record2)
+            } else {
+                boring(ctx, has_record2)
+            }
+        };
+
+        let bail = |ctx: &mut ApplyContext, records: (ValueRecord, ValueRecord)| {
+            let flag1 = records.0.apply(ctx, ctx.buffer.idx);
+            let flag2 = records.1.apply(ctx, second_glyph_index);
+
+            let has_record2 = !records.1.is_empty();
+            success(ctx, flag1, flag2, has_record2)
+        };
 
         let records = match self {
-            Self::Format1 { sets, .. } => sets.get(index)?.get(second),
+            Self::Format1 { sets, .. } => {
+                sets.get(first_glyph_coverage_index)?.get(second_glyph)?
+            }
             Self::Format2 {
                 classes, matrix, ..
             } => {
-                let classes = (classes.0.get(first), classes.1.get(second));
-                matrix.get(classes)
+                let classes = (classes.0.get(first_glyph), classes.1.get(second_glyph));
+
+                let records = match matrix.get(classes) {
+                    Some(v) => v,
+                    None => {
+                        ctx.buffer
+                            .unsafe_to_concat(Some(ctx.buffer.idx), Some(iter.index() + 1));
+                        return None;
+                    }
+                };
+
+                return bail(ctx, records);
             }
-        }?;
+        };
 
-        let flag1 = records.0.apply(ctx, ctx.buffer.idx);
-        let flag2 = records.1.apply(ctx, pos);
-        // Note the intentional use of "|" instead of short-circuit "||".
-        if flag1 | flag2 {
-            ctx.buffer.unsafe_to_break(ctx.buffer.idx, pos + 1);
-        }
-
-        ctx.buffer.idx = pos + usize::from(flag2);
-        Some(())
+        bail(ctx, records)
     }
 }
 
@@ -209,21 +251,29 @@ impl Apply for CursiveAdjustment<'_> {
         let entry_this = self.sets.entry(index_this)?;
 
         let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
-        if !iter.prev() {
+
+        let mut unsafe_from = 0;
+        if !iter.prev(Some(&mut unsafe_from)) {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
             return None;
         }
 
         let i = iter.index();
         let prev = ctx.buffer.info[i].as_glyph();
         let index_prev = self.coverage.get(prev)?;
-        let exit_prev = self.sets.exit(index_prev)?;
+        let Some(exit_prev) = self.sets.exit(index_prev) else {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter.index()), Some(ctx.buffer.idx + 1));
+            return None;
+        };
 
         let (exit_x, exit_y) = exit_prev.get(ctx.face);
         let (entry_x, entry_y) = entry_this.get(ctx.face);
 
         let direction = ctx.buffer.direction;
         let j = ctx.buffer.idx;
-        ctx.buffer.unsafe_to_break(i, j);
+        ctx.buffer.unsafe_to_break(Some(i), Some(j));
 
         let pos = &mut ctx.buffer.pos;
         match direction {
@@ -345,7 +395,10 @@ impl Apply for MarkToBaseAdjustment<'_> {
 
         let info = &buffer.info;
         loop {
-            if !iter.prev() {
+            let mut unsafe_from = 0;
+            if !iter.prev(Some(&mut unsafe_from)) {
+                ctx.buffer
+                    .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
                 return None;
             }
 
@@ -369,12 +422,16 @@ impl Apply for MarkToBaseAdjustment<'_> {
 
         // Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled
 
-        let idx = iter.index();
-        let base_glyph = info[idx].as_glyph();
-        let base_index = self.base_coverage.get(base_glyph)?;
+        let iter_idx = iter.index();
+        let base_glyph = info[iter_idx].as_glyph();
+        let Some(base_index) = self.base_coverage.get(base_glyph) else {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
+            return None;
+        };
 
         self.marks
-            .apply(ctx, self.anchors, mark_index, base_index, idx)
+            .apply(ctx, self.anchors, mark_index, base_index, iter_idx)
     }
 }
 
@@ -387,20 +444,30 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         // Now we search backwards for a non-mark glyph
         let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
         iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
-        if !iter.prev() {
+
+        let mut unsafe_from = 0;
+        if !iter.prev(Some(&mut unsafe_from)) {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
             return None;
         }
 
         // Checking that matched glyph is actually a ligature by GDEF is too strong; disabled
 
-        let idx = iter.index();
-        let lig_glyph = buffer.info[idx].as_glyph();
-        let lig_index = self.ligature_coverage.get(lig_glyph)?;
+        let iter_idx = iter.index();
+        let lig_glyph = buffer.info[iter_idx].as_glyph();
+        let Some(lig_index) = self.ligature_coverage.get(lig_glyph) else {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
+            return None;
+        };
         let lig_attach = self.ligature_array.get(lig_index)?;
 
         // Find component to attach to
         let comp_count = lig_attach.rows;
         if comp_count == 0 {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
@@ -408,7 +475,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         // is identical to the ligature ID of the found ligature.  If yes, we
         // can directly use the component index.  If not, we attach the mark
         // glyph to the last component of the ligature.
-        let lig_id = buffer.info[idx].lig_id();
+        let lig_id = buffer.info[iter_idx].lig_id();
         let mark_id = buffer.cur(0).lig_id();
         let mark_comp = u16::from(buffer.cur(0).lig_comp());
         let matches = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
@@ -419,7 +486,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         } - 1;
 
         self.marks
-            .apply(ctx, lig_attach, mark_index, comp_index, idx)
+            .apply(ctx, lig_attach, mark_index, comp_index, iter_idx)
     }
 }
 
@@ -432,19 +499,25 @@ impl Apply for MarkToMarkAdjustment<'_> {
         // Now we search backwards for a suitable mark glyph until a non-mark glyph
         let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
         iter.set_lookup_props(ctx.lookup_props & !u32::from(lookup_flags::IGNORE_FLAGS));
-        if !iter.prev() {
+
+        let mut unsafe_from = 0;
+        if !iter.prev(Some(&mut unsafe_from)) {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
             return None;
         }
 
-        let idx = iter.index();
-        if !buffer.info[idx].is_mark() {
+        let iter_idx = iter.index();
+        if !buffer.info[iter_idx].is_mark() {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
         let id1 = buffer.cur(0).lig_id();
-        let id2 = buffer.info[idx].lig_id();
+        let id2 = buffer.info[iter_idx].lig_id();
         let comp1 = buffer.cur(0).lig_comp();
-        let comp2 = buffer.info[idx].lig_comp();
+        let comp2 = buffer.info[iter_idx].lig_comp();
 
         let matches = if id1 == id2 {
             // Marks belonging to the same base
@@ -457,25 +530,46 @@ impl Apply for MarkToMarkAdjustment<'_> {
         };
 
         if !matches {
+            ctx.buffer
+                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
-        let mark2_glyph = buffer.info[idx].as_glyph();
+        let mark2_glyph = buffer.info[iter_idx].as_glyph();
         let mark2_index = self.mark2_coverage.get(mark2_glyph)?;
 
         self.marks
-            .apply(ctx, self.mark2_matrix, mark1_index, mark2_index, idx)
+            .apply(ctx, self.mark2_matrix, mark1_index, mark2_index, iter_idx)
     }
 }
 
 trait ValueRecordExt {
+    fn is_empty(&self) -> bool;
     fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool;
+    fn apply_to_pos(&self, ctx: &mut ApplyContext, pos: &mut GlyphPosition) -> bool;
 }
 
 impl ValueRecordExt for ValueRecord<'_> {
+    fn is_empty(&self) -> bool {
+        self.x_placement == 0
+            && self.y_placement == 0
+            && self.x_advance == 0
+            && self.y_advance == 0
+            && self.x_placement_device.is_none()
+            && self.y_placement_device.is_none()
+            && self.x_advance_device.is_none()
+            && self.y_advance_device.is_none()
+    }
+
     fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool {
-        let horizontal = ctx.buffer.direction.is_horizontal();
         let mut pos = ctx.buffer.pos[idx];
+        let worked = self.apply_to_pos(ctx, &mut pos);
+        ctx.buffer.pos[idx] = pos;
+        worked
+    }
+
+    fn apply_to_pos(&self, ctx: &mut ApplyContext, pos: &mut GlyphPosition) -> bool {
+        let horizontal = ctx.buffer.direction.is_horizontal();
         let mut worked = false;
 
         if self.x_placement != 0 {
@@ -535,7 +629,6 @@ impl ValueRecordExt for ValueRecord<'_> {
             }
         }
 
-        ctx.buffer.pos[idx] = pos;
         worked
     }
 }
@@ -568,7 +661,8 @@ impl MarkArrayExt for MarkArray<'_> {
         let (mark_x, mark_y) = mark_anchor.get(ctx.face);
         let (base_x, base_y) = base_anchor.get(ctx.face);
 
-        ctx.buffer.unsafe_to_break(glyph_pos, ctx.buffer.idx);
+        ctx.buffer
+            .unsafe_to_break(Some(glyph_pos), Some(ctx.buffer.idx + 1));
 
         let idx = ctx.buffer.idx;
         let pos = ctx.buffer.cur_pos_mut();

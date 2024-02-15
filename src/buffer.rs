@@ -1,8 +1,10 @@
 use alloc::{string::String, vec::Vec};
 use core::convert::TryFrom;
+use std::cmp::min;
 
 use ttf_parser::GlyphId;
 
+use crate::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
 use crate::{script, Direction, Face, Language, Mask, Script};
 
@@ -12,22 +14,80 @@ pub mod glyph_flag {
     /// Indicates that if input text is broken at the
     /// beginning of the cluster this glyph is part of,
     /// then both sides need to be re-shaped, as the
-    /// result might be different.  On the flip side,
-    /// it means that when this flag is not present,
-    /// then it's safe to break the glyph-run at the
-    /// beginning of this cluster, and the two sides
-    /// represent the exact same result one would get
-    /// if breaking input text at the beginning of
-    /// this cluster and shaping the two sides
-    /// separately.  This can be used to optimize
-    /// paragraph layout, by avoiding re-shaping
-    /// of each line after line-breaking, or limiting
-    /// the reshaping to a small piece around the
-    /// breaking point only.
+    /// result might be different.
+    ///
+    /// On the flip side, it means that when
+    /// this flag is not present, then it is safe
+    /// to break the glyph-run at the beginning of
+    /// this cluster, and the two sides will represent
+    /// the exact same result one would get if breaking
+    /// input text at the beginning of this cluster and
+    /// shaping the two sides separately.
+    ///
+    /// This can be used to optimize paragraph layout,
+    /// by avoiding re-shaping of each line after line-breaking.
     pub const UNSAFE_TO_BREAK: u32 = 0x00000001;
+    /// Indicates that if input text is changed on one side
+    /// of the beginning of the cluster this glyph is part
+    /// of, then the shaping results for the other side
+    /// might change.
+    ///
+    /// Note that the absence of this flag will NOT by
+    /// itself mean that it IS safe to concat text. Only
+    /// two pieces of text both of which clear of this
+    /// flag can be concatenated safely.
+    ///
+    /// This can be used to optimize paragraph layout,
+    /// by avoiding re-shaping of each line after
+    /// line-breaking, by limiting the reshaping to a
+    /// small piece around the breaking position only,
+    /// even if the breaking position carries the
+    /// UNSAFE_TO_BREAK or when hyphenation or
+    /// other text transformation happens at
+    /// line-break position, in the following way:
+    ///
+    /// 1. Iterate back from the line-break
+    /// position until the first cluster
+    /// start position that is NOT unsafe-to-concat,
+    /// 2. shape the segment from there till the
+    /// end of line, 3. check whether the resulting
+    /// glyph-run also is clear of the unsafe-to-concat
+    /// at its start-of-text position; if it is, just
+    /// splice it into place and the line is shaped;
+    /// If not, move on to a position further back that
+    /// is clear of unsafe-to-concat and retry from
+    /// there, and repeat.
+    ///
+    /// At the start of next line a similar
+    /// algorithm can be implemented.
+    /// That is: 1. Iterate forward from
+    /// the line-break position until the first cluster
+    /// start position that is NOT unsafe-to-concat, 2.
+    /// shape the segment from beginning of the line to
+    /// that position, 3. check whether the resulting
+    /// glyph-run also is clear of the unsafe-to-concat
+    /// at its end-of-text position; if it is, just splice
+    /// it into place and the beginning is shaped; If not,
+    /// move on to a position further forward that is clear
+    /// of unsafe-to-concat and retry up to there, and repeat.
+    ///
+    /// A slight complication will arise in the
+    /// implementation of the algorithm above,
+    /// because while
+    /// our buffer API has a way to return flags
+    /// for position corresponding to
+    /// start-of-text, there is currently no
+    /// position corresponding to end-of-text.
+    /// This limitation can be alleviated by
+    /// shaping more text than needed and
+    /// looking for unsafe-to-concat flag
+    /// within text clusters.
+    ///
+    /// The UNSAFE_TO_BREAK flag will always imply this flag.
+    pub const UNSAFE_TO_CONCAT: u32 = 0x00000002;
 
     /// All the currently defined flags.
-    pub const DEFINED: u32 = 0x00000001; // OR of all defined flags
+    pub const DEFINED: u32 = 0x00000003; // OR of all defined flags
 }
 
 /// Holds the positions of the glyph in both horizontal and vertical directions.
@@ -514,11 +574,6 @@ pub struct Buffer {
     pub flags: BufferFlags,
     pub cluster_level: BufferClusterLevel,
     pub invisible: Option<GlyphId>,
-    pub scratch_flags: BufferScratchFlags,
-    // Maximum allowed len.
-    pub max_len: usize,
-    /// Maximum allowed operations.
-    pub max_ops: i32,
 
     // Buffer contents.
     pub direction: Direction,
@@ -540,13 +595,19 @@ pub struct Buffer {
     pub info: Vec<GlyphInfo>,
     pub pos: Vec<GlyphPosition>,
 
-    serial: u32,
-
     // Text before / after the main buffer contents.
     // Always in Unicode, and ordered outward.
     // Index 0 is for "pre-context", 1 for "post-context".
     pub context: [[char; CONTEXT_LENGTH]; 2],
     pub context_len: [usize; 2],
+
+    // Managed by enter / leave
+    pub serial: u8,
+    pub scratch_flags: BufferScratchFlags,
+    /// Maximum allowed len.
+    pub max_len: usize,
+    /// Maximum allowed operations.
+    pub max_ops: i32,
 }
 
 impl Buffer {
@@ -656,7 +717,6 @@ impl Buffer {
         self.direction = Direction::Invalid;
         self.script = None;
         self.language = None;
-        self.scratch_flags = BufferScratchFlags::default();
 
         self.successful = true;
         self.have_output = false;
@@ -669,13 +729,15 @@ impl Buffer {
         self.out_len = 0;
         self.have_separate_output = false;
 
-        self.serial = 0;
-
         self.context = [
             ['\0', '\0', '\0', '\0', '\0'],
             ['\0', '\0', '\0', '\0', '\0'],
         ];
         self.context_len = [0, 0];
+
+        self.serial = 0;
+        self.scratch_flags = BufferScratchFlags::default();
+        self.cluster_level = BufferClusterLevel::default();
     }
 
     #[inline]
@@ -693,8 +755,13 @@ impl Buffer {
     }
 
     #[inline]
-    fn next_serial(&mut self) -> u32 {
+    fn next_serial(&mut self) -> u8 {
         self.serial += 1;
+
+        if self.serial == 0 {
+            self.serial += 1;
+        }
+
         self.serial
     }
 
@@ -783,10 +850,6 @@ impl Buffer {
         start
     }
 
-    pub fn reverse_clusters(&mut self) {
-        self.reverse_groups(_cluster_group_func, false);
-    }
-
     #[inline]
     fn reset_clusters(&mut self) {
         for (i, info) in self.info.iter_mut().enumerate() {
@@ -820,7 +883,7 @@ impl Buffer {
         // TODO: language must be set
     }
 
-    pub fn swap_buffers(&mut self) {
+    pub fn sync(&mut self) {
         assert!(self.have_output);
 
         assert!(self.idx <= self.len);
@@ -1044,7 +1107,7 @@ impl Buffer {
 
     fn merge_clusters_impl(&mut self, mut start: usize, mut end: usize) {
         if self.cluster_level == BufferClusterLevel::Characters {
-            self.unsafe_to_break(start, end);
+            self.unsafe_to_break(Some(start), Some(end));
             return;
         }
 
@@ -1203,44 +1266,104 @@ impl Buffer {
         self.len = j;
     }
 
-    pub fn unsafe_to_break(&mut self, start: usize, end: usize) {
-        if end - start < 2 {
+    pub fn unsafe_to_break(&mut self, start: Option<usize>, end: Option<usize>) {
+        self._set_glyph_flags(
+            UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
+            start,
+            end,
+            Some(true),
+            None,
+        );
+    }
+
+    /// Adds glyph flags in mask to infos with clusters between start and end.
+    /// The start index will be from out-buffer if from_out_buffer is true.
+    /// If interior is true, then the cluster having the minimum value is skipped. */
+    fn _set_glyph_flags(
+        &mut self,
+        mask: Mask,
+        start: Option<usize>,
+        end: Option<usize>,
+        interior: Option<bool>,
+        from_out_buffer: Option<bool>,
+    ) {
+        let start = start.unwrap_or(0);
+        let end = min(end.unwrap_or(self.len), self.len);
+        let interior = interior.unwrap_or(false);
+        let from_out_buffer = from_out_buffer.unwrap_or(false);
+
+        if interior && !from_out_buffer && end - start < 2 {
             return;
         }
 
-        self.unsafe_to_break_impl(start, end);
-    }
+        self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
 
-    fn unsafe_to_break_impl(&mut self, start: usize, end: usize) {
-        let mut cluster = core::u32::MAX;
-        cluster = Self::_infos_find_min_cluster(&self.info, start, end, cluster);
-        let unsafe_to_break = Self::_unsafe_to_break_set_mask(&mut self.info, start, end, cluster);
-        if unsafe_to_break {
-            self.scratch_flags |= BufferScratchFlags::HAS_UNSAFE_TO_BREAK;
+        if !from_out_buffer || !self.have_output {
+            if !interior {
+                for i in start..end {
+                    self.info[i].mask |= mask;
+                }
+            } else {
+                let cluster = Self::_infos_find_min_cluster(&self.info, start, end, None);
+                if Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask) {
+                    self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
+                }
+            }
+        } else {
+            assert!(start <= self.out_len);
+            assert!(self.idx <= end);
+
+            if !interior {
+                for i in start..self.out_len {
+                    self.out_info_mut()[i].mask |= mask;
+                }
+
+                for i in self.idx..end {
+                    self.info[i].mask |= mask;
+                }
+            } else {
+                let mut cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, None);
+                cluster = Self::_infos_find_min_cluster(
+                    &self.out_info(),
+                    start,
+                    self.out_len,
+                    Some(cluster),
+                );
+
+                let out_len = self.out_len;
+                let first = Self::_infos_set_glyph_flags(
+                    &mut self.out_info_mut(),
+                    start,
+                    out_len,
+                    cluster,
+                    mask,
+                );
+                let second =
+                    Self::_infos_set_glyph_flags(&mut self.info, self.idx, end, cluster, mask);
+
+                if first || second {
+                    self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
+                }
+            }
         }
     }
 
-    pub fn unsafe_to_break_from_outbuffer(&mut self, start: usize, end: usize) {
-        if !self.have_output {
-            self.unsafe_to_break_impl(start, end);
-            return;
-        }
+    pub fn unsafe_to_concat(&mut self, start: Option<usize>, end: Option<usize>) {
+        self._set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(true), None);
+    }
 
-        assert!(start <= self.out_len);
-        assert!(self.idx <= end);
+    pub fn unsafe_to_break_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
+        self._set_glyph_flags(
+            UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
+            start,
+            end,
+            Some(true),
+            Some(true),
+        );
+    }
 
-        let mut cluster = core::u32::MAX;
-        cluster = Self::_infos_find_min_cluster(self.out_info(), start, self.out_len, cluster);
-        cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, cluster);
-        let idx = self.idx;
-        let out_len = self.out_len;
-        let unsafe_to_break1 =
-            Self::_unsafe_to_break_set_mask(self.out_info_mut(), start, out_len, cluster);
-        let unsafe_to_break2 = Self::_unsafe_to_break_set_mask(&mut self.info, idx, end, cluster);
-
-        if unsafe_to_break1 || unsafe_to_break2 {
-            self.scratch_flags |= BufferScratchFlags::HAS_UNSAFE_TO_BREAK;
-        }
+    pub fn unsafe_to_concat_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
+        self._set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(false), Some(true));
     }
 
     pub fn move_to(&mut self, i: usize) -> bool {
@@ -1384,22 +1507,43 @@ impl Buffer {
 
     pub fn set_cluster(info: &mut GlyphInfo, cluster: u32, mask: Mask) {
         if info.cluster != cluster {
-            if mask & glyph_flag::UNSAFE_TO_BREAK != 0 {
-                info.mask |= glyph_flag::UNSAFE_TO_BREAK;
-            } else {
-                info.mask &= !glyph_flag::UNSAFE_TO_BREAK;
-            }
+            info.mask = (info.mask & !glyph_flag::DEFINED) | (mask & glyph_flag::DEFINED);
         }
 
         info.cluster = cluster;
+    }
+
+    // Called around shape()
+    pub(crate) fn enter(&mut self) {
+        self.serial = 0;
+        self.scratch_flags = BufferScratchFlags::empty();
+
+        if let Some(len) = self.len.checked_mul(Buffer::MAX_LEN_FACTOR) {
+            self.max_len = len.max(Buffer::MAX_LEN_MIN);
+        }
+
+        if let Ok(len) = i32::try_from(self.len) {
+            if let Some(ops) = len.checked_mul(Buffer::MAX_OPS_FACTOR) {
+                self.max_ops = ops.max(Buffer::MAX_OPS_MIN);
+            }
+        }
+    }
+
+    // Called around shape()
+    pub(crate) fn leave(&mut self) {
+        self.max_len = Buffer::MAX_LEN_DEFAULT;
+        self.max_ops = Buffer::MAX_OPS_DEFAULT;
+        self.serial = 0;
     }
 
     fn _infos_find_min_cluster(
         info: &[GlyphInfo],
         start: usize,
         end: usize,
-        mut cluster: u32,
+        cluster: Option<u32>,
     ) -> u32 {
+        let mut cluster = cluster.unwrap_or(core::u32::MAX);
+
         for glyph_info in &info[start..end] {
             cluster = core::cmp::min(cluster, glyph_info.cluster);
         }
@@ -1407,17 +1551,23 @@ impl Buffer {
         cluster
     }
 
-    fn _unsafe_to_break_set_mask(
+    #[must_use]
+    fn _infos_set_glyph_flags(
         info: &mut [GlyphInfo],
         start: usize,
         end: usize,
         cluster: u32,
+        mask: Mask,
     ) -> bool {
+        // NOTE: Because of problems with ownership, we don't pass the scratch flags to this
+        // function, unlike in harfbuzz. Because of this, each time you call this function you
+        // the caller needs to set the "BufferScratchFlags::HAS_GLYPH_FLAGS" scratch flag
+        // themselves if the function returns true.
         let mut unsafe_to_break = false;
         for glyph_info in &mut info[start..end] {
             if glyph_info.cluster != cluster {
+                glyph_info.mask |= mask;
                 unsafe_to_break = true;
-                glyph_info.mask |= glyph_flag::UNSAFE_TO_BREAK;
             }
         }
 
@@ -1453,20 +1603,6 @@ impl Buffer {
         }
     }
 
-    pub fn next_cluster(&self, mut start: usize) -> usize {
-        if start >= self.len {
-            return start;
-        }
-
-        let cluster = self.info[start].cluster;
-        start += 1;
-        while start < self.len && cluster == self.info[start].cluster {
-            start += 1;
-        }
-
-        start
-    }
-
     pub fn next_syllable(&self, mut start: usize) -> usize {
         if start >= self.len {
             return start;
@@ -1481,27 +1617,9 @@ impl Buffer {
         start
     }
 
-    pub fn next_grapheme(&self, mut start: usize) -> usize {
-        if start >= self.len {
-            return start;
-        }
-
-        start += 1;
-        while start < self.len && self.info[start].is_continuation() {
-            start += 1;
-        }
-
-        start
-    }
-
     #[inline]
     pub fn allocate_lig_id(&mut self) -> u8 {
-        let mut lig_id = self.next_serial() & 0x07;
-        if lig_id == 0 {
-            // In case of overflow.
-            lig_id = self.next_serial() & 0x07;
-        }
-        lig_id as u8
+        self.next_serial() & 0x07
     }
 }
 
@@ -1600,6 +1718,8 @@ bitflags::bitflags! {
         const REMOVE_DEFAULT_IGNORABLES     = 1 << 4;
         /// Indicates that a dotted circle should not be inserted in the rendering of incorrect character sequences (such as `<0905 093E>`).
         const DO_NOT_INSERT_DOTTED_CIRCLE   = 1 << 5;
+        /// Indicates that the shape() call and its variants should perform various verification processes on the results of the shaping operation on the buffer. If the verification fails, then either a buffer message is sent, if a message handler is installed on the buffer, or a message is written to standard error. In either case, the shaping result might be modified to show the failed output.
+        const VERIFY                        = 1 << 6;
     }
 }
 
@@ -1610,8 +1730,8 @@ bitflags::bitflags! {
         const HAS_DEFAULT_IGNORABLES    = 0x00000002;
         const HAS_SPACE_FALLBACK        = 0x00000004;
         const HAS_GPOS_ATTACHMENT       = 0x00000008;
-        const HAS_UNSAFE_TO_BREAK       = 0x00000010;
-        const HAS_CGJ                   = 0x00000020;
+        const HAS_CGJ                   = 0x00000010;
+        const HAS_GLYPH_FLAGS       = 0x00000020;
 
         // Reserved for complex shapers' internal use.
         const COMPLEX0                  = 0x01000000;
