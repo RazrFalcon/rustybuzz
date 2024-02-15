@@ -1630,7 +1630,13 @@ impl Buffer {
 
     #[inline]
     pub fn allocate_lig_id(&mut self) -> u8 {
-        self.next_serial() & 0x07
+        let mut lig_id = self.next_serial() & 0x07;
+
+        if lig_id == 0 {
+            lig_id = self.allocate_lig_id();
+        }
+
+        lig_id
     }
 }
 
