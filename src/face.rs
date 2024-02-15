@@ -182,8 +182,13 @@ impl<'a> Face<'a> {
             };
         }
 
-        if is_vertical && face.tables().vmtx.is_some() {
-            face.glyph_ver_advance(glyph).unwrap_or(0) as u32
+        if is_vertical {
+            if face.tables().vmtx.is_some() {
+                return face.glyph_ver_advance(glyph).unwrap_or(0) as u32;
+            } else {
+                // TODO: Original code calls `h_extents_with_fallback`
+                return (face.ascender() - face.descender()) as u32;
+            }
         } else if !is_vertical && face.tables().hmtx.is_some() {
             face.glyph_hor_advance(glyph).unwrap_or(0) as u32
         } else {
