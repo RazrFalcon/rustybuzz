@@ -27,6 +27,9 @@ pub enum FeatureType {
     ContextualAlternatives = 36,
     LowerCase = 37,
     UpperCase = 38,
+
+    // In harfbuzz, they just use the number 40 for "hist" but don't give it a name
+    Dummy = 40,
 }
 
 #[derive(Default)]
