@@ -199,8 +199,12 @@ impl<'a> Face<'a> {
         match self.ttfp_face.glyph_y_origin(glyph) {
             Some(y) => i32::from(y),
             None => {
-                self.glyph_extents(glyph).map_or(0, |ext| ext.y_bearing)
-                    + self.glyph_side_bearing(glyph, true)
+                if let (Some(extents), Some(_)) = (self.glyph_extents(glyph), self.ttfp_face.tables().vmtx) {
+                    extents.y_bearing + self.glyph_side_bearing(glyph, true)
+                } else {
+                    // TODO: Original code calls `h_extents_with_fallback`
+                    self.ttfp_face.ascender() as i32
+                }
             }
         }
     }
