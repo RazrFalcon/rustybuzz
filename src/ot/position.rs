@@ -183,64 +183,63 @@ impl Apply for PairAdjustment<'_> {
         let second_glyph_index = iter.index();
         let second_glyph = ctx.buffer.info[second_glyph_index].as_glyph();
 
-        let finish = |ctx: &mut ApplyContext, len2| {
+        let finish = |ctx: &mut ApplyContext, has_record2| {
             ctx.buffer.idx = second_glyph_index;
 
-            if len2 != 0 {
+            if has_record2 {
                 ctx.buffer.idx += 1;
             }
 
             Some(())
         };
 
-        let boring = |ctx: &mut ApplyContext, len2| {
+        let boring = |ctx: &mut ApplyContext, has_record2| {
             ctx.buffer
                 .unsafe_to_concat(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
-            finish(ctx, len2)
+            finish(ctx, has_record2)
         };
 
-        let success = |ctx: &mut ApplyContext, flag1, flag2, len2| {
+        let success = |ctx: &mut ApplyContext, flag1, flag2, has_record2| {
             if flag1 || flag2 {
                 ctx.buffer
                     .unsafe_to_break(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
-                finish(ctx, len2)
+                finish(ctx, has_record2)
             } else {
-                boring(ctx, len2)
+                boring(ctx, has_record2)
             }
         };
 
-        let bail = |ctx: &mut ApplyContext, records: (ValueRecord, ValueRecord), len2| {
+        let bail = |ctx: &mut ApplyContext, records: (ValueRecord, ValueRecord)| {
             let flag1 = records.0.apply(ctx, ctx.buffer.idx);
             let flag2 = records.1.apply(ctx, second_glyph_index);
 
-            success(ctx, flag1, flag2, len2)
+            let has_record2 = !records.1.is_empty();
+            success(ctx, flag1, flag2, has_record2)
         };
 
-        let (records, len2) = match self {
-            Self::Format1 { sets, .. } => (
-                sets.get(first_glyph_coverage_index)?.get(second_glyph)?,
-                sets.value_format_flags().1.len(),
-            ),
+        let records = match self {
+            Self::Format1 { sets, .. } => {
+                sets.get(first_glyph_coverage_index)?.get(second_glyph)?
+            }
             Self::Format2 {
                 classes, matrix, ..
             } => {
                 let classes = (classes.0.get(first_glyph), classes.1.get(second_glyph));
 
-                if classes.0 >= matrix.counts().0 || classes.1 >= matrix.counts().1 {
-                    ctx.buffer
-                        .unsafe_to_concat(Some(ctx.buffer.idx), Some(iter.index() + 1));
-                    return None;
-                }
+                let records = match matrix.get(classes) {
+                    Some(v) => v,
+                    None => {
+                        ctx.buffer
+                            .unsafe_to_concat(Some(ctx.buffer.idx), Some(iter.index() + 1));
+                        return None;
+                    }
+                };
 
-                let records = matrix.get(classes)?;
-                let flags = matrix.value_format_flags();
-                let len2 = flags.1.len();
-
-                return bail(ctx, records, len2);
+                return bail(ctx, records);
             }
         };
 
-        bail(ctx, records, len2)
+        bail(ctx, records)
     }
 }
 
@@ -545,11 +544,23 @@ impl Apply for MarkToMarkAdjustment<'_> {
 }
 
 trait ValueRecordExt {
+    fn is_empty(&self) -> bool;
     fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool;
     fn apply_to_pos(&self, ctx: &mut ApplyContext, pos: &mut GlyphPosition) -> bool;
 }
 
 impl ValueRecordExt for ValueRecord<'_> {
+    fn is_empty(&self) -> bool {
+        self.x_placement == 0
+            && self.y_placement == 0
+            && self.x_advance == 0
+            && self.y_advance == 0
+            && self.x_placement_device.is_none()
+            && self.y_placement_device.is_none()
+            && self.x_advance_device.is_none()
+            && self.y_advance_device.is_none()
+    }
+
     fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool {
         let mut pos = ctx.buffer.pos[idx];
         let worked = self.apply_to_pos(ctx, &mut pos);
