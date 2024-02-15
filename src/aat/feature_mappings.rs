@@ -45,7 +45,7 @@ pub const FEATURE_MAPPINGS: &[FeatureMapping] = &[
     FeatureMapping::new(b"frac", FeatureType::Fractions, DIAGONAL_FRACTIONS, NO_FRACTIONS),
     FeatureMapping::new(b"fwid", FeatureType::TextSpacing, MONOSPACED_TEXT, 7),
     FeatureMapping::new(b"halt", FeatureType::TextSpacing, ALT_HALF_WIDTH_TEXT, 7),
-    FeatureMapping::new(b"hist", FeatureType::Ligatures, HISTORICAL_LIGATURES_ON, HISTORICAL_LIGATURES_OFF),
+    FeatureMapping::new(b"hist", FeatureType::Dummy, 0, 1),
     FeatureMapping::new(b"hkna", FeatureType::AlternateKana, ALTERNATE_HORIZ_KANA_ON, ALTERNATE_HORIZ_KANA_OFF),
     FeatureMapping::new(b"hlig", FeatureType::Ligatures, HISTORICAL_LIGATURES_ON, HISTORICAL_LIGATURES_OFF),
     FeatureMapping::new(b"hngl", FeatureType::Transliteration, HANJA_TO_HANGUL, NO_TRANSLITERATION),
@@ -107,5 +107,6 @@ pub const FEATURE_MAPPINGS: &[FeatureMapping] = &[
     FeatureMapping::new(b"vkna", FeatureType::AlternateKana, ALTERNATE_VERT_KANA_ON, ALTERNATE_VERT_KANA_OFF),
     FeatureMapping::new(b"vpal", FeatureType::TextSpacing, ALT_PROPORTIONAL_TEXT, 7),
     FeatureMapping::new(b"vrt2", FeatureType::VerticalSubstitution, SUBSTITUTE_VERTICAL_FORMS_ON, SUBSTITUTE_VERTICAL_FORMS_OFF),
+    FeatureMapping::new(b"vrtr", FeatureType::VerticalSubstitution, 2, 3),
     FeatureMapping::new(b"zero", FeatureType::TypographicExtras, SLASHED_ZERO_ON, SLASHED_ZERO_OFF),
 ];

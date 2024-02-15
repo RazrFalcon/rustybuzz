@@ -452,6 +452,8 @@ pub mod script {
     pub const TOTO: Script = Script::from_bytes(b"Toto");
     pub const VITHKUQI: Script = Script::from_bytes(b"Vith");
 
+    pub const SCRIPT_MATH: Script = Script::from_bytes(b"Zmth");
+
     // https://github.com/harfbuzz/harfbuzz/issues/1162
     pub const MYANMAR_ZAWGYI: Script = Script::from_bytes(b"Qaag");
 }

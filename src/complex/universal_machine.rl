@@ -41,6 +41,7 @@ H	= 12; # HALANT
 
 HN	= 13; # HALANT_NUM
 ZWNJ	= 14; # Zero width non-joiner
+WJ = 16; # Word joiner
 R	= 18; # REPHA
 CS	= 43; # CONS_WITH_STACKER
 HVM	= 44; # HALANT_OR_VOWEL_MODIFIER
@@ -119,14 +120,15 @@ standard_cluster =
 	complex_syllable_start
 	complex_syllable_tail
 ;
+tail = complex_syllable_tail | sakot_terminated_cluster_tail | symbol_cluster_tail | virama_terminated_cluster_tail;
 broken_cluster =
 	R?
-	(complex_syllable_tail | number_joiner_terminated_cluster_tail | numeral_cluster_tail | symbol_cluster_tail | virama_terminated_cluster_tail | sakot_terminated_cluster_tail)
+	(tail | number_joiner_terminated_cluster_tail | numeral_cluster_tail)
 ;
 
 number_joiner_terminated_cluster = N number_joiner_terminated_cluster_tail;
 numeral_cluster = N numeral_cluster_tail?;
-symbol_cluster = (O | GB) symbol_cluster_tail?;
+symbol_cluster = (O | GB) tail?;
 hieroglyph_cluster = SB+ | SB* G SE* (J SE* (G SE*)?)*;
 other = any;
 
@@ -208,7 +210,7 @@ fn found_syllable(
 }
 
 fn not_ccs_default_ignorable(i: &GlyphInfo) -> bool {
-    !(matches!(i.use_category(), category::CGJ | category::RSV) && i.is_default_ignorable())
+    i.use_category() != category::CGJ
 }
 
 fn included(infos: &[Cell<GlyphInfo>], i: usize) -> bool {

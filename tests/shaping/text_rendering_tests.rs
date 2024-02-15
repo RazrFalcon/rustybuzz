@@ -11515,8 +11515,7 @@ fn shlana_2_005() {
             "--ned --remove-default-ignorables",
         ),
         "uni1AAD|\
-         uni25CC@1212,0|\
-         uni1A63@2424,0"
+         uni1A63@1212,0"
     );
 }
 

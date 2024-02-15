@@ -838,7 +838,7 @@ fn gpos4_simple_001() {
         shape(
             "tests/fonts/aots/gpos4_simple_1.otf",
             "\u{0011}\u{0012}\u{0013}\u{0011}",
-            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\
@@ -898,7 +898,7 @@ fn gpos5_002() {
         shape(
             "tests/fonts/aots/gpos5_font1.otf",
             "\u{0011}\u{001E}\u{001F}\u{0013}\u{0011}",
-            "--features=\"test\" --single-par --no-clusters --no-glyph-names --ned",
+            "--features=\"test\" --no-clusters --no-glyph-names --ned",
         ),
         "17|\
          18@1500,0|\

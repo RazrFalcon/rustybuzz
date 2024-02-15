@@ -84,6 +84,9 @@ pub mod glyph_flag {
     /// within text clusters.
     ///
     /// The UNSAFE_TO_BREAK flag will always imply this flag.
+    /// To use this flag, you must enable the buffer flag
+    ///	PRODUCE_UNSAFE_TO_CONCAT during shaping, otherwise
+    /// the buffer flag will not be reliably produced.
     pub const UNSAFE_TO_CONCAT: u32 = 0x00000002;
 
     /// All the currently defined flags.
@@ -1349,10 +1352,18 @@ impl Buffer {
     }
 
     pub fn unsafe_to_concat(&mut self, start: Option<usize>, end: Option<usize>) {
+        if !self.flags.contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT) {
+            return;
+        }
+
         self._set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(true), None);
     }
 
     pub fn unsafe_to_break_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
+        if !self.flags.contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT) {
+            return;
+        }
+
         self._set_glyph_flags(
             UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
             start,
@@ -1720,6 +1731,8 @@ bitflags::bitflags! {
         const DO_NOT_INSERT_DOTTED_CIRCLE   = 1 << 5;
         /// Indicates that the shape() call and its variants should perform various verification processes on the results of the shaping operation on the buffer. If the verification fails, then either a buffer message is sent, if a message handler is installed on the buffer, or a message is written to standard error. In either case, the shaping result might be modified to show the failed output.
         const VERIFY                        = 1 << 6;
+        /// Indicates that the `UNSAFE_TO_CONCAT` glyph-flag should be produced by the shaper. By default it will not be produced since it incurs a cost.
+        const PRODUCE_UNSAFE_TO_CONCAT      = 1 << 7;
     }
 }
 

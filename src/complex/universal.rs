@@ -48,7 +48,7 @@ pub mod category {
     pub const ZWNJ: u8 = 14; // Zero width non-joiner
 
     // pub const ZWJ: u8     = 15;   // Zero width joiner
-    // pub const WJ: u8      = 16;   // Word joiner
+    pub const WJ: u8 = 16; // Word joiner
 
     pub const RSV: u8 = 17; // Reserved characters
     pub const R: u8 = 18; // REPHA
@@ -296,8 +296,7 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
         let syllable = buffer.info[start].syllable() & 0x0F;
-        if syllable == SyllableType::SymbolCluster as u8
-            || syllable == SyllableType::HieroglyphCluster as u8
+        if syllable == SyllableType::HieroglyphCluster as u8
             || syllable == SyllableType::NonCluster as u8
         {
             last_form = None;
@@ -539,6 +538,6 @@ fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     // We cannot setup masks here. We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {
-        info.set_use_category(super::universal_table::get_category(info.glyph_id));
+        info.set_use_category(super::universal_table::get_category(info));
     }
 }
