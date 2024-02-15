@@ -538,6 +538,6 @@ fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     // We cannot setup masks here. We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {
-        info.set_use_category(super::universal_table::get_category(info.glyph_id));
+        info.set_use_category(super::universal_table::get_category(info));
     }
 }
