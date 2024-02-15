@@ -1937,6 +1937,19 @@ fn indic_consonant_with_stacker_004() {
 }
 
 #[test]
+fn indic_feature_order_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/190a621e48d4af1fffd8144bd41d2027e9a32fbf.ttf",
+            "\u{0B95}\u{0BC1}",
+            "--features=ss03",
+        ),
+        "uni0B95.ss03=0+1000|\
+         uni0BC1=0+0"
+    );
+}
+
+#[test]
 fn indic_init_001() {
     assert_eq!(
         shape(
