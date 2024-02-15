@@ -10543,6 +10543,20 @@ fn use_syllable_005() {
 fn use_syllable_006() {
     assert_eq!(
         shape(
+            "tests/fonts/in-house/23406a60ab081c4fb15e1596ea1cd4f27ae8443e.ttf",
+            "\u{A8AC}\u{A8B4}\u{A8C4}",
+            "",
+        ),
+        "uniA8AC=0+586|\
+         uniA8B4=0+316|\
+         uniA8C4=0+0"
+    );
+}
+
+#[test]
+fn use_syllable_007() {
+    assert_eq!(
+        shape(
             "tests/fonts/in-house/373e67bf41ca264e260a9716162b71a23549e885.ttf",
             "\u{A8AC}\u{A8B4}\u{A8B5}",
             "--no-glyph-names",
@@ -10554,7 +10568,7 @@ fn use_syllable_006() {
 }
 
 #[test]
-fn use_syllable_007() {
+fn use_syllable_008() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/59a585a63b3df608fbeef00956c8c108deec7de6.ttf",
@@ -10569,7 +10583,7 @@ fn use_syllable_007() {
 }
 
 #[test]
-fn use_syllable_008() {
+fn use_syllable_009() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/1ed7e9064f008f62de6ff0207bb4dd29409597a5.ttf",
@@ -10582,7 +10596,7 @@ fn use_syllable_008() {
 }
 
 #[test]
-fn use_syllable_009() {
+fn use_syllable_010() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/28f497629c04ceb15546c9a70e0730125ed6698d.ttf",
@@ -10596,7 +10610,7 @@ fn use_syllable_009() {
 }
 
 #[test]
-fn use_syllable_010() {
+fn use_syllable_011() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/28f497629c04ceb15546c9a70e0730125ed6698d.ttf",
@@ -10610,7 +10624,7 @@ fn use_syllable_010() {
 }
 
 #[test]
-fn use_syllable_011() {
+fn use_syllable_012() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/28f497629c04ceb15546c9a70e0730125ed6698d.ttf",
@@ -10623,7 +10637,7 @@ fn use_syllable_011() {
 }
 
 #[test]
-fn use_syllable_012() {
+fn use_syllable_013() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/86cdd983c4e4c4d7f27dd405d6ceb7d4b9ed3d35.ttf",
@@ -10637,7 +10651,7 @@ fn use_syllable_012() {
 }
 
 #[test]
-fn use_syllable_013() {
+fn use_syllable_014() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/3cc01fede4debd4b7794ccb1b16cdb9987ea7571.ttf",
@@ -10651,7 +10665,7 @@ fn use_syllable_013() {
 }
 
 #[test]
-fn use_syllable_014() {
+fn use_syllable_015() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/3cc01fede4debd4b7794ccb1b16cdb9987ea7571.ttf",
@@ -10669,7 +10683,7 @@ fn use_syllable_014() {
 }
 
 #[test]
-fn use_syllable_015() {
+fn use_syllable_016() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/3cc01fede4debd4b7794ccb1b16cdb9987ea7571.ttf",
@@ -10688,7 +10702,7 @@ fn use_syllable_015() {
 }
 
 #[test]
-fn use_syllable_016() {
+fn use_syllable_017() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/3cc01fede4debd4b7794ccb1b16cdb9987ea7571.ttf",
@@ -10706,7 +10720,7 @@ fn use_syllable_016() {
 }
 
 #[test]
-fn use_syllable_017() {
+fn use_syllable_018() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/573d3a3177c9a8646e94c8a0d7b224334340946a.ttf",
@@ -10720,7 +10734,7 @@ fn use_syllable_017() {
 }
 
 #[test]
-fn use_syllable_018() {
+fn use_syllable_019() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/573d3a3177c9a8646e94c8a0d7b224334340946a.ttf",
@@ -10734,7 +10748,7 @@ fn use_syllable_018() {
 }
 
 #[test]
-fn use_syllable_019() {
+fn use_syllable_020() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/573d3a3177c9a8646e94c8a0d7b224334340946a.ttf",
@@ -10747,7 +10761,7 @@ fn use_syllable_019() {
 }
 
 #[test]
-fn use_syllable_020() {
+fn use_syllable_021() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/e68a88939e0f06e34d2bc911f09b70890289c8fd.ttf",
@@ -10760,7 +10774,7 @@ fn use_syllable_020() {
 }
 
 #[test]
-fn use_syllable_021() {
+fn use_syllable_022() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/2a670df15b73a5dc75a5cc491bde5ac93c5077dc.ttf",
@@ -10773,7 +10787,7 @@ fn use_syllable_021() {
 }
 
 #[test]
-fn use_syllable_022() {
+fn use_syllable_023() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/2a670df15b73a5dc75a5cc491bde5ac93c5077dc.ttf",
@@ -12293,6 +12307,22 @@ fn use_011() {
 fn use_012() {
     assert_eq!(
         shape(
+            "tests/fonts/in-house/23406a60ab081c4fb15e1596ea1cd4f27ae8443e.ttf",
+            "\u{11328}\u{1133F}\u{1134D}\u{1CF4}",
+            "",
+        ),
+        "u11328=0+586|\
+         u1133F=0+316|\
+         uni25CC=0+652|\
+         u1134D=0+0|\
+         uni1CF4=0+0"
+    );
+}
+
+#[test]
+fn use_013() {
+    assert_eq!(
+        shape(
             "tests/fonts/in-house/4afb0e8b9a86bb9bd73a1247de4e33fbe3c1fd93.ttf",
             "\u{1C00}\u{1C27}\u{1C28}\u{1C34}\u{1C35}",
             "",
@@ -12306,7 +12336,7 @@ fn use_012() {
 }
 
 #[test]
-fn use_013() {
+fn use_014() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/4afb0e8b9a86bb9bd73a1247de4e33fbe3c1fd93.ttf",
@@ -12322,7 +12352,7 @@ fn use_013() {
 }
 
 #[test]
-fn use_014() {
+fn use_015() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/4afb0e8b9a86bb9bd73a1247de4e33fbe3c1fd93.ttf",
@@ -12337,7 +12367,7 @@ fn use_014() {
 }
 
 #[test]
-fn use_015() {
+fn use_016() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/4afb0e8b9a86bb9bd73a1247de4e33fbe3c1fd93.ttf",
