@@ -296,8 +296,7 @@ fn setup_topographical_masks(plan: &ShapePlan, buffer: &mut Buffer) {
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
         let syllable = buffer.info[start].syllable() & 0x0F;
-        if syllable == SyllableType::SymbolCluster as u8
-            || syllable == SyllableType::HieroglyphCluster as u8
+        if syllable == SyllableType::HieroglyphCluster as u8
             || syllable == SyllableType::NonCluster as u8
         {
             last_form = None;
