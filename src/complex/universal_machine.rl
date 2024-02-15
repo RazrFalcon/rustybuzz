@@ -210,7 +210,7 @@ fn found_syllable(
 }
 
 fn not_ccs_default_ignorable(i: &GlyphInfo) -> bool {
-    !(matches!(i.use_category(), category::CGJ | category::RSV) && i.is_default_ignorable())
+    i.use_category() != category::CGJ
 }
 
 fn included(infos: &[Cell<GlyphInfo>], i: usize) -> bool {
