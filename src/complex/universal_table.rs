@@ -267,8 +267,8 @@ const USE_TABLE: &[Category] = &[
   /* 1B20 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 1B30 */     B,     B,     B,     B, CMABV,  VPST,  VABV,  VABV,  VBLW,  VBLW,  VBLW,  VBLW,  VABV,  VABV,  VPRE,  VPRE,
   /* 1B40 */  VPRE,  VPRE,  VABV,  VABV,     H,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,
-  /* 1B50 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,    GB,    GB,     O,     O,    GB,
-  /* 1B60 */     O,     O,    GB,     O,     O,     O,     O,     O,    GB,     O,     O, SMABV, SMBLW, SMABV, SMABV, SMABV,
+  /* 1B50 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,     O,
+  /* 1B60 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O, SMABV, SMBLW, SMABV, SMABV, SMABV,
   /* 1B70 */ SMABV, SMABV, SMABV, SMABV,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
 
   /* Sundanese */
@@ -536,7 +536,7 @@ const USE_TABLE: &[Category] = &[
   /* 11190 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 111A0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 111B0 */     B,     B,     B,  VPST,  VPRE,  VPST,  VBLW,  VBLW,  VBLW,  VBLW,  VBLW,  VBLW,  VABV,  VABV,  VABV,  VABV,
-  /* 111C0 */     H,     B,     R,     R,     O,     O,     O,     O,    GB, FMBLW, CMBLW,  VABV,  VBLW,     O,  VPRE, VMABV,
+  /* 111C0 */     H,     B,     R,     R,     O,     O,     O,     O,     O, FMBLW, CMBLW,  VABV,  VBLW,     O,  VPRE, VMABV,
   /* 111D0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,     O,
 
   /* Sinhala Archaic Numbers */
@@ -684,7 +684,7 @@ const USE_TABLE: &[Category] = &[
   /* 11C10 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11C20 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,  VPST,
   /* 11C30 */  VABV,  VABV,  VBLW,  VBLW,  VBLW,  VBLW,  VBLW,     O,  VABV,  VABV,  VABV,  VABV, VMABV, VMABV, VMPST,     H,
-  /* 11C40 */     B,     O,     O,     O,    GB,    GB,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
+  /* 11C40 */     B,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,
   /* 11C50 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11C60 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,
 
