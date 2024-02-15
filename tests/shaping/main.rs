@@ -16,6 +16,7 @@ struct Args {
     script: Option<rustybuzz::Script>,
     #[allow(dead_code)]
     remove_default_ignorables: bool,
+    unsafe_to_concat: bool,
     cluster_level: rustybuzz::BufferClusterLevel,
     features: Vec<String>,
     pre_context: Option<String>,
@@ -43,6 +44,7 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
         language: parser.opt_value_from_str("--language")?,
         script: parser.opt_value_from_str("--script")?,
         remove_default_ignorables: parser.contains("--remove-default-ignorables"),
+        unsafe_to_concat: parser.contains("--unsafe-to-concat"),
         cluster_level: parser
             .opt_value_from_fn("--cluster-level", parse_cluster)?
             .unwrap_or_default(),
@@ -139,6 +141,7 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
     let mut buffer_flags = BufferFlags::default();
     buffer_flags.set(BufferFlags::BEGINNING_OF_TEXT, args.bot);
     buffer_flags.set(BufferFlags::END_OF_TEXT, args.eot);
+    buffer_flags.set(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT, args.unsafe_to_concat);
     buffer_flags.set(
         BufferFlags::REMOVE_DEFAULT_IGNORABLES,
         args.remove_default_ignorables,
