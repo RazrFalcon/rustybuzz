@@ -5,6 +5,7 @@ use std::cmp::min;
 use ttf_parser::GlyphId;
 
 use crate::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
+use crate::face::GlyphExtents;
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
 use crate::{script, Direction, Face, Language, Mask, Script};
 
@@ -2018,7 +2019,8 @@ impl GlyphBuffer {
             }
 
             if flags.contains(SerializeFlags::GLYPH_EXTENTS) {
-                let extents = face.glyph_extents(info.as_glyph()).unwrap_or_default();
+                let mut extents = GlyphExtents::default();
+                face.glyph_extents(info.as_glyph(), &mut extents);
                 write!(
                     &mut s,
                     "<{},{},{},{}>",

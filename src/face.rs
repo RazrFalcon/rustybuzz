@@ -204,10 +204,15 @@ impl<'a> Face<'a> {
         match self.ttfp_face.glyph_y_origin(glyph) {
             Some(y) => i32::from(y),
             None => {
-                if let (Some(extents), Some(_)) =
-                    (self.glyph_extents(glyph), self.ttfp_face.tables().vmtx)
-                {
-                    extents.y_bearing + self.glyph_side_bearing(glyph, true)
+                let mut extents = GlyphExtents::default();
+                if self.glyph_extents(glyph, &mut extents) {
+                    if self.ttfp_face.tables().vmtx.is_some() {
+                        extents.y_bearing + self.glyph_side_bearing(glyph, true)
+                    } else {
+                        let advance = self.ttfp_face.ascender() - self.ttfp_face.descender();
+                        let diff = advance as i32 - -extents.height;
+                        return extents.y_bearing + (diff >> 1);
+                    }
                 } else {
                     // TODO: Original code calls `h_extents_with_fallback`
                     self.ttfp_face.ascender() as i32
@@ -232,7 +237,7 @@ impl<'a> Face<'a> {
         }
     }
 
-    pub(crate) fn glyph_extents(&self, glyph: GlyphId) -> Option<GlyphExtents> {
+    pub(crate) fn glyph_extents(&self, glyph: GlyphId, glyph_extents: &mut GlyphExtents) -> bool {
         let pixels_per_em = match self.pixels_per_em {
             Some(ppem) => ppem.0,
             None => core::u16::MAX,
@@ -242,23 +247,32 @@ impl<'a> Face<'a> {
             // HarfBuzz also supports only PNG.
             if img.format == ttf_parser::RasterImageFormat::PNG {
                 let scale = self.units_per_em as f32 / img.pixels_per_em as f32;
-                return Some(GlyphExtents {
-                    x_bearing: crate::round(f32::from(img.x) * scale) as i32,
-                    y_bearing: crate::round((f32::from(img.y) + f32::from(img.height)) * scale)
-                        as i32,
-                    width: crate::round(f32::from(img.width) * scale) as i32,
-                    height: crate::round(-f32::from(img.height) * scale) as i32,
-                });
+                glyph_extents.x_bearing = crate::round(f32::from(img.x) * scale) as i32;
+                glyph_extents.y_bearing =
+                    crate::round((f32::from(img.y) + f32::from(img.height)) * scale) as i32;
+                glyph_extents.width = crate::round(f32::from(img.width) * scale) as i32;
+                glyph_extents.height = crate::round(-f32::from(img.height) * scale) as i32;
+                return true;
             }
         }
 
-        let bbox = self.ttfp_face.glyph_bounding_box(glyph)?;
-        Some(GlyphExtents {
-            x_bearing: i32::from(bbox.x_min),
-            y_bearing: i32::from(bbox.y_max),
-            width: i32::from(bbox.width()),
-            height: i32::from(bbox.y_min - bbox.y_max),
-        })
+        if let Some(glyf_table) = self.ttfp_face.tables().glyf {
+            if !glyf_table.has_contours(glyph) {
+                // Empty glyph; zero extents.
+                return true;
+            }
+        }
+
+        let Some(bbox) = self.ttfp_face.glyph_bounding_box(glyph) else {
+            return false;
+        };
+
+        glyph_extents.x_bearing = i32::from(bbox.x_min);
+        glyph_extents.y_bearing = i32::from(bbox.y_max);
+        glyph_extents.width = i32::from(bbox.width());
+        glyph_extents.height = i32::from(bbox.y_min - bbox.y_max);
+
+        return true;
     }
 
     pub(crate) fn glyph_name(&self, glyph: GlyphId) -> Option<&str> {
