@@ -256,14 +256,15 @@ impl<'a> Face<'a> {
             }
         }
 
-        if let Some(glyf_table) = self.ttfp_face.tables().glyf {
-            if !glyf_table.has_contours(glyph) {
-                // Empty glyph; zero extents.
-                return true;
-            }
+        let bbox = self.ttfp_face.glyph_bounding_box(glyph);
+
+        // See https://github.com/RazrFalcon/rustybuzz/pull/98#issuecomment-1948430785
+        if self.ttfp_face.tables().glyf.is_some() && bbox.is_none() {
+            // Empty glyph; zero extents.
+            return true;
         }
 
-        let Some(bbox) = self.ttfp_face.glyph_bounding_box(glyph) else {
+        let Some(bbox) = bbox else {
             return false;
         };
 
