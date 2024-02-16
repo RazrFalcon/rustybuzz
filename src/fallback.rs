@@ -160,13 +160,10 @@ fn position_around_base(
     let base_pos = &buffer.pos[base];
     let base_glyph = base_info.as_glyph();
 
-    let mut base_extents = match face.glyph_extents(base_glyph) {
-        Some(extents) => extents,
-        None => {
-            // If extents don't work, zero marks and go home.
-            zero_mark_advances(buffer, base + 1, end, adjust_offsets_when_zeroing);
-            return;
-        }
+    let mut base_extents = GlyphExtents::default();
+    if !face.glyph_extents(base_glyph, &mut base_extents) {
+        zero_mark_advances(buffer, base + 1, end, adjust_offsets_when_zeroing);
+        return;
     };
 
     base_extents.y_bearing += base_pos.y_offset;
@@ -297,9 +294,9 @@ fn position_mark(
 ) {
     use CanonicalCombiningClass as Class;
 
-    let mark_extents = match face.glyph_extents(glyph) {
-        Some(extents) => extents,
-        None => return,
+    let mut mark_extents = GlyphExtents::default();
+    if !face.glyph_extents(glyph, &mut mark_extents) {
+        return;
     };
 
     let y_gap = face.units_per_em as i32 / 16;

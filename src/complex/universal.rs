@@ -62,7 +62,7 @@ pub mod category {
     pub const CS: u8 = 43; // CONS_WITH_STACKER
 
     // https://github.com/harfbuzz/harfbuzz/issues/1102
-    pub const HVM: u8 = 44; // HALANT_OR_VOWEL_MODIFIER
+    pub const IS: u8 = 44; // HALANT_OR_VOWEL_MODIFIER
 
     pub const SK: u8 = 48; // SAKOT
 
@@ -141,7 +141,7 @@ impl GlyphInfo {
     }
 
     fn is_halant_use(&self) -> bool {
-        matches!(self.use_category(), category::H | category::HVM) && !self.is_ligated()
+        matches!(self.use_category(), category::H | category::IS) && !self.is_ligated()
     }
 }
 

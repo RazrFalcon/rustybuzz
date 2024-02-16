@@ -44,7 +44,7 @@ ZWNJ	= 14; # Zero width non-joiner
 WJ = 16; # Word joiner
 R	= 18; # REPHA
 CS	= 43; # CONS_WITH_STACKER
-HVM	= 44; # HALANT_OR_VOWEL_MODIFIER
+IS	= 44; # HALANT_OR_VOWEL_MODIFIER
 Sk	= 48; # SAKOT
 G	= 49; # HIEROGLYPH
 J	= 50; # HIEROGLYPH_JOINER
@@ -74,12 +74,12 @@ FMAbv	= 45; # CONS_FINAL_MOD	UIPC = Top
 FMBlw	= 46; # CONS_FINAL_MOD	UIPC = Bottom
 FMPst	= 47; # CONS_FINAL_MOD	UIPC = Not_Applicable
 
-h = H | HVM | Sk;
+h = H | IS | Sk;
 
 consonant_modifiers = CMAbv* CMBlw* ((h B | SUB) CMAbv? CMBlw*)*;
 medial_consonants = MPre? MAbv? MBlw? MPst?;
-dependent_vowels = VPre* VAbv* VBlw* VPst*;
-vowel_modifiers = HVM? VMPre* VMAbv* VMBlw* VMPst*;
+dependent_vowels = VPre* VAbv* VBlw* VPst* | H;
+vowel_modifiers = VMPre* VMAbv* VMBlw* VMPst*;
 final_consonants = FAbv* FBlw* FPst*;
 final_modifiers = FMAbv* FMBlw* | FMPst?;
 
@@ -102,7 +102,7 @@ symbol_cluster_tail = SMAbv+ SMBlw* | SMBlw+;
 
 virama_terminated_cluster_tail =
 	consonant_modifiers
-	h
+	IS
 ;
 virama_terminated_cluster =
 	complex_syllable_start
@@ -168,6 +168,7 @@ pub fn find_syllables(buffer: &mut Buffer) {
     let mut p = p0;
     let mut ts = p0;
     let mut te = p0;
+    let mut act = p0;
     let pe = p.end();
     let eof = p.end();
     let mut syllable_serial = 1u8;
