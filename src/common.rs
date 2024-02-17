@@ -5,6 +5,8 @@ use ttf_parser::Tag;
 
 use crate::text_parser::TextParser;
 
+pub type hb_codepoint_t = char; // uint32_t in C++
+
 /// Defines the direction in which text is to be read.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Direction {

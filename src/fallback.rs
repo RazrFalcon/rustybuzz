@@ -1,12 +1,12 @@
 use ttf_parser::GlyphId;
 
-use crate::buffer::{Buffer, GlyphPosition};
+use crate::buffer::{hb_buffer_t, GlyphPosition};
 use crate::face::GlyphExtents;
-use crate::plan::ShapePlan;
+use crate::plan::hb_ot_shape_plan_t;
 use crate::unicode::{modified_combining_class, space, CanonicalCombiningClass, GeneralCategory};
-use crate::{Direction, Face};
+use crate::{hb_font_t, Direction};
 
-pub fn recategorize_marks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+pub fn recategorize_marks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         if info.general_category() == GeneralCategory::NonspacingMark {
@@ -99,9 +99,9 @@ fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
 }
 
 pub fn position_marks(
-    plan: &ShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
     adjust_offsets_when_zeroing: bool,
 ) {
     let mut start = 0;
@@ -117,9 +117,9 @@ pub fn position_marks(
 }
 
 fn position_cluster(
-    plan: &ShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
     start: usize,
     end: usize,
     adjust_offsets_when_zeroing: bool,
@@ -146,9 +146,9 @@ fn position_cluster(
 }
 
 fn position_around_base(
-    plan: &ShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
     base: usize,
     end: usize,
     adjust_offsets_when_zeroing: bool,
@@ -263,7 +263,7 @@ fn position_around_base(
 }
 
 fn zero_mark_advances(
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
     start: usize,
     end: usize,
     adjust_offsets_when_zeroing: bool,
@@ -284,8 +284,8 @@ fn zero_mark_advances(
 }
 
 fn position_mark(
-    _: &ShapePlan,
-    face: &Face,
+    _: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
     direction: Direction,
     glyph: GlyphId,
     pos: &mut GlyphPosition,
@@ -399,11 +399,11 @@ fn position_mark(
     }
 }
 
-pub fn kern(_: &ShapePlan, _: &Face, _: &mut Buffer) {
+pub fn kern(_: &hb_ot_shape_plan_t, _: &hb_font_t, _: &mut hb_buffer_t) {
     // STUB: this is deprecated in HarfBuzz
 }
 
-pub fn adjust_spaces(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+pub fn adjust_spaces(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;
     let horizontal = buffer.direction.is_horizontal();
     for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {

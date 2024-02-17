@@ -1,12 +1,13 @@
 use crate::buffer::{
-    glyph_flag, Buffer, BufferClusterLevel, BufferFlags, BufferScratchFlags, GlyphInfo,
+    glyph_flag, hb_buffer_t, hb_glyph_info_t, BufferClusterLevel, BufferFlags, BufferScratchFlags,
     GlyphPropsFlags,
 };
 use crate::complex::ZeroWidthMarksMode;
-use crate::plan::ShapePlan;
+use crate::plan::hb_ot_shape_plan_t;
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt};
 use crate::{
-    aat, fallback, normalize, ot, script, Direction, Face, Feature, GlyphBuffer, UnicodeBuffer,
+    aat, fallback, hb_font_t, ot, ot_shape_normalize, script, Direction, Feature, GlyphBuffer,
+    UnicodeBuffer,
 };
 
 /// Shapes the buffer content using provided font and features.
@@ -17,9 +18,9 @@ use crate::{
 /// If you plan to shape multiple strings using the same [`Face`] prefer [`shape_with_plan`].
 /// This is because [`ShapePlan`] initialization is pretty slow and should preferably be called
 /// once for each [`Face`].
-pub fn shape(face: &Face, features: &[Feature], mut buffer: UnicodeBuffer) -> GlyphBuffer {
+pub fn shape(face: &hb_font_t, features: &[Feature], mut buffer: UnicodeBuffer) -> GlyphBuffer {
     buffer.0.guess_segment_properties();
-    let plan = ShapePlan::new(
+    let plan = hb_ot_shape_plan_t::new(
         face,
         buffer.0.direction,
         buffer.0.script,
@@ -41,7 +42,11 @@ pub fn shape(face: &Face, features: &[Feature], mut buffer: UnicodeBuffer) -> Gl
 ///
 /// Will panic when debugging assertions are enabled if the buffer and plan have mismatched
 /// properties.
-pub fn shape_with_plan(face: &Face, plan: &ShapePlan, buffer: UnicodeBuffer) -> GlyphBuffer {
+pub fn shape_with_plan(
+    face: &hb_font_t,
+    plan: &hb_ot_shape_plan_t,
+    buffer: UnicodeBuffer,
+) -> GlyphBuffer {
     let mut buffer = buffer.0;
     buffer.guess_segment_properties();
 
@@ -66,9 +71,9 @@ pub fn shape_with_plan(face: &Face, plan: &ShapePlan, buffer: UnicodeBuffer) -> 
 }
 
 struct ShapeContext<'a> {
-    plan: &'a ShapePlan,
-    face: &'a Face<'a>,
-    buffer: &'a mut Buffer,
+    plan: &'a hb_ot_shape_plan_t,
+    face: &'a hb_font_t<'a>,
+    buffer: &'a mut hb_buffer_t,
     // Transient stuff
     target_direction: Direction,
 }
@@ -119,7 +124,7 @@ fn substitute_post(ctx: &mut ShapeContext) {
 fn substitute_default(ctx: &mut ShapeContext) {
     rotate_chars(ctx);
 
-    normalize::normalize(ctx.plan, ctx.face, ctx.buffer);
+    ot_shape_normalize::_hb_ot_shape_normalize(ctx.plan, ctx.buffer, ctx.face);
 
     setup_masks(ctx);
 
@@ -141,7 +146,7 @@ fn substitute_complex(ctx: &mut ShapeContext) {
     substitute_by_plan(ctx.plan, ctx.face, ctx.buffer);
 }
 
-fn substitute_by_plan(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+fn substitute_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     if plan.apply_morx {
         aat::substitute(plan, face, buffer);
     } else {
@@ -237,7 +242,7 @@ fn position_complex(ctx: &mut ShapeContext) {
     }
 }
 
-fn position_by_plan(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     if plan.apply_gpos {
         ot::position(plan, face, buffer);
     } else if plan.apply_kerx {
@@ -334,7 +339,7 @@ fn setup_masks_fraction(ctx: &mut ShapeContext) {
     }
 }
 
-fn set_unicode_props(buffer: &mut Buffer) {
+fn set_unicode_props(buffer: &mut hb_buffer_t) {
     // Implement enough of Unicode Graphemes here that shaping
     // in reverse-direction wouldn't break graphemes.  Namely,
     // we mark all marks and ZWJ and ZWJ,Extended_Pictographic
@@ -395,7 +400,7 @@ fn set_unicode_props(buffer: &mut Buffer) {
     }
 }
 
-fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
+fn insert_dotted_circle(buffer: &mut hb_buffer_t, face: &hb_font_t) {
     if !buffer
         .flags
         .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
@@ -404,11 +409,11 @@ fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
         && buffer.info[0].is_unicode_mark()
         && face.has_glyph(0x25CC)
     {
-        let mut info = GlyphInfo {
+        let mut info = hb_glyph_info_t {
             glyph_id: 0x25CC,
             mask: buffer.cur(0).mask,
             cluster: buffer.cur(0).cluster,
-            ..GlyphInfo::default()
+            ..hb_glyph_info_t::default()
         };
 
         info.init_unicode_props(&mut buffer.scratch_flags);
@@ -418,7 +423,7 @@ fn insert_dotted_circle(buffer: &mut Buffer, face: &Face) {
     }
 }
 
-fn form_clusters(buffer: &mut Buffer) {
+fn form_clusters(buffer: &mut hb_buffer_t) {
     if buffer
         .scratch_flags
         .contains(BufferScratchFlags::HAS_NON_ASCII)
@@ -433,7 +438,7 @@ fn form_clusters(buffer: &mut Buffer) {
     }
 }
 
-fn ensure_native_direction(buffer: &mut Buffer) {
+fn ensure_native_direction(buffer: &mut hb_buffer_t) {
     let dir = buffer.direction;
     let mut hor = buffer
         .script
@@ -507,7 +512,7 @@ fn rotate_chars(ctx: &mut ShapeContext) {
     }
 }
 
-fn map_glyphs_fast(buffer: &mut Buffer) {
+fn map_glyphs_fast(buffer: &mut hb_buffer_t) {
     // Normalization process sets up glyph_index(), we just copy it.
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
@@ -515,7 +520,7 @@ fn map_glyphs_fast(buffer: &mut Buffer) {
     }
 }
 
-fn synthesize_glyph_classes(buffer: &mut Buffer) {
+fn synthesize_glyph_classes(buffer: &mut hb_buffer_t) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         // Never mark default-ignorables as marks.
@@ -538,7 +543,7 @@ fn synthesize_glyph_classes(buffer: &mut Buffer) {
     }
 }
 
-fn zero_width_default_ignorables(buffer: &mut Buffer) {
+fn zero_width_default_ignorables(buffer: &mut hb_buffer_t) {
     if buffer
         .scratch_flags
         .contains(BufferScratchFlags::HAS_DEFAULT_IGNORABLES)
@@ -561,7 +566,7 @@ fn zero_width_default_ignorables(buffer: &mut Buffer) {
     }
 }
 
-fn zero_mark_widths_by_gdef(buffer: &mut Buffer, adjust_offsets: bool) {
+fn zero_mark_widths_by_gdef(buffer: &mut hb_buffer_t, adjust_offsets: bool) {
     let len = buffer.len;
     for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
         if info.is_mark() {
@@ -576,7 +581,7 @@ fn zero_mark_widths_by_gdef(buffer: &mut Buffer, adjust_offsets: bool) {
     }
 }
 
-fn hide_default_ignorables(buffer: &mut Buffer, face: &Face) {
+fn hide_default_ignorables(buffer: &mut hb_buffer_t, face: &hb_font_t) {
     if buffer
         .scratch_flags
         .contains(BufferScratchFlags::HAS_DEFAULT_IGNORABLES)
@@ -602,11 +607,11 @@ fn hide_default_ignorables(buffer: &mut Buffer, face: &Face) {
             }
         }
 
-        buffer.delete_glyphs_inplace(GlyphInfo::is_default_ignorable);
+        buffer.delete_glyphs_inplace(hb_glyph_info_t::is_default_ignorable);
     }
 }
 
-fn propagate_flags(buffer: &mut Buffer) {
+fn propagate_flags(buffer: &mut hb_buffer_t) {
     // Propagate cluster-level glyph flags to be the same on all cluster glyphs.
     // Simplifies using them.
     if buffer

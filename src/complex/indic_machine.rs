@@ -16,7 +16,7 @@
     clippy::never_loop
 )]
 
-use crate::buffer::Buffer;
+use crate::buffer::hb_buffer_t;
 
 static _indic_syllable_machine_trans_keys: [u8; 284] = [
     7, 7, 3, 7, 4, 6, 4, 7, 3, 7, 5, 5, 14, 14, 3, 7, 3, 12, 3, 7, 7, 7, 4, 6, 4, 7, 3, 7, 5, 5,
@@ -161,7 +161,7 @@ pub enum SyllableType {
     NonIndicCluster,
 }
 
-pub fn find_syllables_indic(buffer: &mut Buffer) {
+pub fn find_syllables_indic(buffer: &mut hb_buffer_t) {
     let mut cs = 0;
     let mut ts = 0;
     let mut te = 0;
@@ -444,7 +444,7 @@ fn found_syllable(
     end: usize,
     syllable_serial: &mut u8,
     kind: SyllableType,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     for i in start..end {
         buffer.info[i].set_syllable((*syllable_serial << 4) | kind as u8);

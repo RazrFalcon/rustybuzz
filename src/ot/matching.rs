@@ -5,7 +5,7 @@ use ttf_parser::GlyphId;
 
 use super::apply::ApplyContext;
 use super::{TableIndex, MAX_CONTEXT_LENGTH};
-use crate::buffer::GlyphInfo;
+use crate::buffer::hb_glyph_info_t;
 use crate::Mask;
 
 pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
@@ -304,7 +304,7 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
         self.num_items += 1;
     }
 
-    fn may_match(&self, info: &GlyphInfo) -> Option<bool> {
+    fn may_match(&self, info: &hb_glyph_info_t) -> Option<bool> {
         if (info.mask & self.mask) != 0 && (self.syllable == 0 || self.syllable == info.syllable())
         {
             self.matching.map(|f| f(info.as_glyph(), self.num_items))
@@ -313,7 +313,7 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
         }
     }
 
-    fn may_skip(&self, info: &GlyphInfo) -> Option<bool> {
+    fn may_skip(&self, info: &hb_glyph_info_t) -> Option<bool> {
         if !self.ctx.check_glyph_property(info, self.lookup_props) {
             return Some(true);
         }

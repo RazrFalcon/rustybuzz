@@ -4,6 +4,8 @@ A complete [harfbuzz](https://github.com/harfbuzz/harfbuzz) shaping algorithm po
 
 #![no_std]
 #![warn(missing_docs)]
+// Match harfbuzz code style.
+#![allow(non_camel_case_types)]
 
 #[cfg(not(any(feature = "std", feature = "libm")))]
 compile_error!("You have to activate either the `std` or the `libm` feature.");
@@ -21,8 +23,8 @@ mod complex;
 mod face;
 mod fallback;
 mod glyph_set;
-mod normalize;
 mod ot;
+mod ot_shape_normalize;
 mod plan;
 mod shape;
 mod tag;
@@ -35,14 +37,17 @@ pub use ttf_parser;
 
 pub use ttf_parser::Tag;
 
+pub use crate::buffer::hb_glyph_info_t as GlyphInfo;
 pub use crate::buffer::{
-    BufferClusterLevel, BufferFlags, GlyphBuffer, GlyphInfo, GlyphPosition, SerializeFlags,
-    UnicodeBuffer,
+    BufferClusterLevel, BufferFlags, GlyphBuffer, GlyphPosition, SerializeFlags, UnicodeBuffer,
 };
 pub use crate::common::{script, Direction, Feature, Language, Script, Variation};
-pub use crate::face::Face;
-pub use crate::plan::ShapePlan;
+pub use crate::face::hb_font_t as Face;
+pub use crate::plan::hb_ot_shape_plan_t as ShapePlan;
 pub use crate::shape::{shape, shape_with_plan};
+
+use crate::buffer::hb_glyph_info_t;
+use crate::face::hb_font_t;
 
 type Mask = u32;
 

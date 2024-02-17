@@ -2,11 +2,12 @@ use alloc::boxed::Box;
 
 use super::indic::{category, position};
 use super::*;
-use crate::buffer::Buffer;
+use crate::buffer::hb_buffer_t;
 use crate::ot::{feature, FeatureFlags};
-use crate::plan::{ShapePlan, ShapePlanner};
+use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
+use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use crate::{Face, GlyphInfo, Mask, Tag};
+use crate::{hb_font_t, hb_glyph_info_t, Mask, Tag};
 
 pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -14,7 +15,7 @@ pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
     create_data: Some(|plan| Box::new(KhmerShapePlan::new(plan))),
     preprocess_text: None,
     postprocess_glyphs: None,
-    normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
     decompose: Some(decompose),
     compose: Some(compose),
     setup_masks: Some(setup_masks),
@@ -65,7 +66,7 @@ mod khmer_feature {
     pub const CFAR: usize = 4;
 }
 
-impl GlyphInfo {
+impl hb_glyph_info_t {
     fn set_khmer_properties(&mut self) {
         let u = self.glyph_id;
         let (mut cat, pos) = super::indic::get_category_and_position(u);
@@ -104,7 +105,7 @@ struct KhmerShapePlan {
 }
 
 impl KhmerShapePlan {
-    fn new(plan: &ShapePlan) -> Self {
+    fn new(plan: &hb_ot_shape_plan_t) -> Self {
         let mut mask_array = [0; KHMER_FEATURES.len()];
         for (i, feature) in KHMER_FEATURES.iter().enumerate() {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
@@ -154,7 +155,7 @@ fn collect_features(planner: &mut ShapePlanner) {
     }
 }
 
-fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     super::khmer_machine::find_syllables_khmer(buffer);
 
     let mut start = 0;
@@ -166,7 +167,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-fn reorder(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+fn reorder(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     use super::khmer_machine::SyllableType;
 
     syllabic::insert_dotted_circles(
@@ -189,7 +190,12 @@ fn reorder(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     }
 }
 
-fn reorder_syllable(khmer_plan: &KhmerShapePlan, start: usize, end: usize, buffer: &mut Buffer) {
+fn reorder_syllable(
+    khmer_plan: &KhmerShapePlan,
+    start: usize,
+    end: usize,
+    buffer: &mut hb_buffer_t,
+) {
     use super::khmer_machine::SyllableType;
 
     let syllable_type = match buffer.info[start].syllable() & 0x0F {
@@ -213,7 +219,7 @@ fn reorder_consonant_syllable(
     plan: &KhmerShapePlan,
     start: usize,
     end: usize,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     // Setup masks.
     {
@@ -294,7 +300,7 @@ fn override_features(planner: &mut ShapePlanner) {
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
-fn decompose(_: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
+fn decompose(_: &hb_ot_shape_normalize_context_t, ab: char) -> Option<(char, char)> {
     // Decompose split matras that don't have Unicode decompositions.
     match ab {
         '\u{17BE}' | '\u{17BF}' | '\u{17C0}' | '\u{17C4}' | '\u{17C5}' => Some(('\u{17C1}', ab)),
@@ -302,7 +308,7 @@ fn decompose(_: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
     }
 }
 
-fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
+fn compose(_: &hb_ot_shape_normalize_context_t, a: char, b: char) -> Option<char> {
     // Avoid recomposing split matras.
     if a.general_category().is_mark() {
         return None;
@@ -311,7 +317,7 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     crate::unicode::compose(a, b)
 }
 
-fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn setup_masks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     // We cannot setup masks here.  We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {

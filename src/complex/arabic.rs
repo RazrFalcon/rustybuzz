@@ -1,13 +1,14 @@
 use alloc::boxed::Box;
 
 use super::*;
-use crate::buffer::{Buffer, BufferScratchFlags};
+use crate::buffer::{hb_buffer_t, BufferScratchFlags};
 use crate::ot::{feature, FeatureFlags};
-use crate::plan::{ShapePlan, ShapePlanner};
+use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
+use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{
     hb_gc, modified_combining_class, CharExt, GeneralCategory, GeneralCategoryExt,
 };
-use crate::{script, Face, GlyphInfo, Mask, Script, Tag};
+use crate::{hb_font_t, hb_glyph_info_t, script, Mask, Script, Tag};
 
 pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -15,7 +16,7 @@ pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     create_data: Some(|plan| Box::new(ArabicShapePlan::new(plan))),
     preprocess_text: None,
     postprocess_glyphs: Some(postprocess_glyphs),
-    normalization_mode: Some(ShapeNormalizationMode::Auto),
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
     decompose: None,
     compose: None,
     setup_masks: Some(setup_masks),
@@ -143,7 +144,7 @@ pub enum JoiningType {
     X = 8, // means: use general-category to choose between U or T.
 }
 
-impl GlyphInfo {
+impl hb_glyph_info_t {
     fn arabic_shaping_action(&self) -> u8 {
         self.complex_var_u8_auxiliary()
     }
@@ -163,7 +164,7 @@ pub struct ArabicShapePlan {
 }
 
 impl ArabicShapePlan {
-    pub fn new(plan: &ShapePlan) -> ArabicShapePlan {
+    pub fn new(plan: &hb_ot_shape_plan_t) -> ArabicShapePlan {
         let has_stch = plan
             .ot_map
             .one_mask(feature::STRETCHING_GLYPH_DECOMPOSITION)
@@ -275,14 +276,14 @@ fn collect_features(planner: &mut ShapePlanner) {
     );
 }
 
-fn fallback_shape(_: &ShapePlan, _: &Face, _: &mut Buffer) {}
+fn fallback_shape(_: &hb_ot_shape_plan_t, _: &hb_font_t, _: &mut hb_buffer_t) {}
 
 // Stretch feature: "stch".
 // See example here:
 // https://docs.microsoft.com/en-us/typography/script-development/syriac
 // We implement this in a generic way, such that the Arabic subtending
 // marks can use it as well.
-fn record_stch(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn record_stch(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     let arabic_plan = plan.data::<ArabicShapePlan>();
     if !arabic_plan.has_stch {
         return;
@@ -314,11 +315,11 @@ fn record_stch(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-fn postprocess_glyphs(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+fn postprocess_glyphs(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     apply_stch(face, buffer)
 }
 
-fn apply_stch(face: &Face, buffer: &mut Buffer) {
+fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
     if !buffer.scratch_flags.contains(ARABIC_HAS_STCH) {
         return;
     }
@@ -465,7 +466,7 @@ fn is_word_category(gc: GeneralCategory) -> bool {
         != 0
 }
 
-fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn setup_masks(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     let arabic_plan = plan.data::<ArabicShapePlan>();
     setup_masks_inner(arabic_plan, plan.script, buffer)
 }
@@ -473,7 +474,7 @@ fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
 pub fn setup_masks_inner(
     arabic_plan: &ArabicShapePlan,
     script: Option<Script>,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     arabic_joining(buffer);
     if script == Some(script::MONGOLIAN) {
@@ -485,7 +486,7 @@ pub fn setup_masks_inner(
     }
 }
 
-fn arabic_joining(buffer: &mut Buffer) {
+fn arabic_joining(buffer: &mut hb_buffer_t) {
     let mut prev: Option<usize> = None;
     let mut state = 0;
 
@@ -560,7 +561,7 @@ fn arabic_joining(buffer: &mut Buffer) {
     }
 }
 
-fn mongolian_variation_selectors(buffer: &mut Buffer) {
+fn mongolian_variation_selectors(buffer: &mut hb_buffer_t) {
     // Copy arabic_shaping_action() from base to Mongolian variation selectors.
     let len = buffer.len;
     let info = &mut buffer.info;
@@ -608,7 +609,7 @@ const MODIFIER_COMBINING_MARKS: &[u32] = &[
     0x08F3, // ARABIC SMALL HIGH WAW
 ];
 
-fn reorder_marks(_: &ShapePlan, buffer: &mut Buffer, mut start: usize, end: usize) {
+fn reorder_marks(_: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t, mut start: usize, end: usize) {
     let mut i = start;
     for cc in [220u8, 230].iter().cloned() {
         while i < end && buffer.info[i].modified_combining_class() < cc {
@@ -636,7 +637,7 @@ fn reorder_marks(_: &ShapePlan, buffer: &mut Buffer, mut start: usize, end: usiz
         }
 
         // Shift it!
-        let mut temp = [GlyphInfo::default(); MAX_COMBINING_MARKS];
+        let mut temp = [hb_glyph_info_t::default(); MAX_COMBINING_MARKS];
         debug_assert!(j - i <= MAX_COMBINING_MARKS);
         buffer.merge_clusters(start, j);
 

@@ -1,10 +1,11 @@
 use alloc::boxed::Box;
 
 use super::*;
-use crate::buffer::{Buffer, BufferClusterLevel, BufferFlags};
+use crate::buffer::{hb_buffer_t, BufferClusterLevel, BufferFlags};
 use crate::ot::{feature, FeatureFlags, Map};
-use crate::plan::{ShapePlan, ShapePlanner};
-use crate::{Face, GlyphInfo, Mask};
+use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
+use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::{hb_font_t, hb_glyph_info_t, Mask};
 
 pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -12,7 +13,7 @@ pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
     create_data: Some(|plan| Box::new(HangulShapePlan::new(&plan.ot_map))),
     preprocess_text: Some(preprocess_text),
     postprocess_glyphs: None,
-    normalization_mode: None,
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
     decompose: None,
     compose: None,
     setup_masks: Some(setup_masks),
@@ -36,7 +37,7 @@ const LJMO: u8 = 1;
 const VJMO: u8 = 2;
 const TJMO: u8 = 3;
 
-impl GlyphInfo {
+impl hb_glyph_info_t {
     fn hangul_shaping_feature(&self) -> u8 {
         self.complex_var_u8_auxiliary()
     }
@@ -84,7 +85,7 @@ fn override_features(planner: &mut ShapePlanner) {
         .disable_feature(feature::CONTEXTUAL_ALTERNATES);
 }
 
-fn preprocess_text(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+fn preprocess_text(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     // Hangul syllables come in two shapes: LV, and LVT.  Of those:
     //
     //   - LV can be precomposed, or decomposed.  Lets call those
@@ -334,7 +335,7 @@ fn is_hangul_tone(u: u32) -> bool {
     (0x302E..=0x302F).contains(&u)
 }
 
-fn is_zero_width_char(face: &Face, c: char) -> bool {
+fn is_zero_width_char(face: &hb_font_t, c: char) -> bool {
     if let Some(glyph) = face.glyph_index(c as u32) {
         face.glyph_h_advance(glyph) == 0
     } else {
@@ -370,7 +371,7 @@ fn is_combined_s(u: u32) -> bool {
     (S_BASE..=S_BASE + S_COUNT - 1).contains(&u)
 }
 
-fn setup_masks(plan: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn setup_masks(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     let hangul_plan = plan.data::<HangulShapePlan>();
     for info in buffer.info_slice_mut() {
         info.mask |= hangul_plan.mask_array[info.hangul_shaping_feature() as usize];

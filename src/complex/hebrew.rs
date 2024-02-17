@@ -1,4 +1,5 @@
 use super::*;
+use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use crate::{unicode, Tag};
 
 pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
@@ -7,7 +8,7 @@ pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
     create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
-    normalization_mode: Some(ShapeNormalizationMode::Auto),
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
     decompose: None,
     compose: Some(compose),
     setup_masks: None,
@@ -47,7 +48,7 @@ const S_DAGESH_FORMS: &[char] = &[
     '\u{FB4A}', // TAV
 ];
 
-fn compose(ctx: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
+fn compose(ctx: &hb_ot_shape_normalize_context_t, a: char, b: char) -> Option<char> {
     // Hebrew presentation-form shaping.
     // https://bugzilla.mozilla.org/show_bug.cgi?id=728866
     // Hebrew presentation forms with dagesh, for characters U+05D0..05EA;

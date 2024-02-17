@@ -17,7 +17,7 @@
     clippy::never_loop
 )]
 
-use crate::buffer::Buffer;
+use crate::buffer::hb_buffer_t;
 
 static _myanmar_syllable_machine_trans_keys: [u8; 114] = [
     0, 22, 1, 22, 3, 19, 3, 5, 3, 19, 1, 15, 3, 15, 3, 15, 1, 22, 1, 19, 1, 19, 1, 19, 1, 22, 0, 8,
@@ -120,7 +120,7 @@ pub enum SyllableType {
     NonMyanmarCluster,
 }
 
-pub fn find_syllables_myanmar(buffer: &mut Buffer) {
+pub fn find_syllables_myanmar(buffer: &mut hb_buffer_t) {
     let mut cs = 0;
     let mut ts = 0;
     let mut te;
@@ -296,7 +296,7 @@ fn found_syllable(
     end: usize,
     syllable_serial: &mut u8,
     kind: SyllableType,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     for i in start..end {
         buffer.info[i].set_syllable((*syllable_serial << 4) | kind as u8);

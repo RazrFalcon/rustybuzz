@@ -6,14 +6,14 @@ use core::ops::Range;
 use ttf_parser::GlyphId;
 
 use super::*;
-use crate::buffer::Buffer;
-use crate::normalize::ShapeNormalizationMode;
+use crate::buffer::hb_buffer_t;
 use crate::ot::{
     feature, FeatureFlags, LayoutTable, Map, TableIndex, WouldApply, WouldApplyContext,
 };
-use crate::plan::{ShapePlan, ShapePlanner};
+use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
+use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{hb_gc, CharExt, GeneralCategoryExt};
-use crate::{script, Face, GlyphInfo, Mask, Script, Tag};
+use crate::{hb_font_t, hb_glyph_info_t, script, Mask, Script, Tag};
 
 pub const INDIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -21,7 +21,7 @@ pub const INDIC_SHAPER: ComplexShaper = ComplexShaper {
     create_data: Some(|plan| Box::new(IndicShapePlan::new(plan))),
     preprocess_text: Some(preprocess_text),
     postprocess_glyphs: None,
-    normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
     decompose: Some(decompose),
     compose: Some(compose),
     setup_masks: Some(setup_masks),
@@ -433,7 +433,7 @@ impl IndicWouldSubstituteFeature {
         }
     }
 
-    pub fn would_substitute(&self, map: &Map, face: &Face, glyphs: &[GlyphId]) -> bool {
+    pub fn would_substitute(&self, map: &Map, face: &hb_font_t, glyphs: &[GlyphId]) -> bool {
         for index in self.lookups.clone() {
             let lookup = map.lookup(TableIndex::GSUB, index);
             let ctx = WouldApplyContext {
@@ -467,7 +467,7 @@ struct IndicShapePlan {
 }
 
 impl IndicShapePlan {
-    fn new(plan: &ShapePlan) -> Self {
+    fn new(plan: &hb_ot_shape_plan_t) -> Self {
         let script = plan.script;
         let config = if let Some(c) = INDIC_CONFIGS.iter().skip(1).find(|c| c.script == script) {
             *c
@@ -538,7 +538,7 @@ impl IndicShapePlan {
     }
 }
 
-impl GlyphInfo {
+impl hb_glyph_info_t {
     pub(crate) fn indic_category(&self) -> Category {
         self.complex_var_u8_category()
     }
@@ -684,11 +684,11 @@ fn override_features(planner: &mut ShapePlanner) {
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 
-fn preprocess_text(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn preprocess_text(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     super::vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
 
-fn decompose(ctx: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
+fn decompose(ctx: &hb_ot_shape_normalize_context_t, ab: char) -> Option<(char, char)> {
     // Don't decompose these.
     match ab {
         '\u{0931}' |               // DEVANAGARI LETTER RRA
@@ -741,7 +741,7 @@ fn decompose(ctx: &ShapeNormalizeContext, ab: char) -> Option<(char, char)> {
     crate::unicode::decompose(ab)
 }
 
-fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
+fn compose(_: &hb_ot_shape_normalize_context_t, a: char, b: char) -> Option<char> {
     // Avoid recomposing split matras.
     if a.general_category().is_mark() {
         return None;
@@ -755,7 +755,7 @@ fn compose(_: &ShapeNormalizeContext, a: char, b: char) -> Option<char> {
     crate::unicode::compose(a, b)
 }
 
-fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn setup_masks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     // We cannot setup masks here.  We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {
@@ -763,7 +763,7 @@ fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     super::indic_machine::find_syllables_indic(buffer);
 
     let mut start = 0;
@@ -775,7 +775,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+fn initial_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     use super::indic_machine::SyllableType;
 
     let indic_plan = plan.data::<IndicShapePlan>();
@@ -800,10 +800,10 @@ fn initial_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 }
 
 fn update_consonant_positions(
-    plan: &ShapePlan,
+    plan: &hb_ot_shape_plan_t,
     indic_plan: &IndicShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
 ) {
     if indic_plan.config.base_pos != BasePosition::Last {
         return;
@@ -827,9 +827,9 @@ fn update_consonant_positions(
 }
 
 fn consonant_position_from_face(
-    plan: &ShapePlan,
+    plan: &hb_ot_shape_plan_t,
     indic_plan: &IndicShapePlan,
-    face: &Face,
+    face: &hb_font_t,
     consonant: GlyphId,
     virama: GlyphId,
 ) -> u8 {
@@ -887,12 +887,12 @@ fn consonant_position_from_face(
 }
 
 fn initial_reordering_syllable(
-    plan: &ShapePlan,
+    plan: &hb_ot_shape_plan_t,
     indic_plan: &IndicShapePlan,
-    face: &Face,
+    face: &hb_font_t,
     start: usize,
     end: usize,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     use super::indic_machine::SyllableType;
 
@@ -922,12 +922,12 @@ fn initial_reordering_syllable(
 // Rules from:
 // https://docs.microsqoft.com/en-us/typography/script-development/devanagari */
 fn initial_reordering_consonant_syllable(
-    plan: &ShapePlan,
+    plan: &hb_ot_shape_plan_t,
     indic_plan: &IndicShapePlan,
-    face: &Face,
+    face: &hb_font_t,
     start: usize,
     end: usize,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     // https://github.com/harfbuzz/harfbuzz/issues/435#issuecomment-335560167
     // For compatibility with legacy usage in Kannada,
@@ -1451,19 +1451,19 @@ fn initial_reordering_consonant_syllable(
 }
 
 fn initial_reordering_standalone_cluster(
-    plan: &ShapePlan,
+    plan: &hb_ot_shape_plan_t,
     indic_plan: &IndicShapePlan,
-    face: &Face,
+    face: &hb_font_t,
     start: usize,
     end: usize,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     // We treat placeholder/dotted-circle as if they are consonants, so we
     // should just chain.  Only if not in compatibility mode that is...
     initial_reordering_consonant_syllable(plan, indic_plan, face, start, end, buffer);
 }
 
-fn final_reordering(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+fn final_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     if buffer.is_empty() {
         return;
     }
@@ -1491,7 +1491,7 @@ fn final_reordering_impl(
     virama_glyph: Option<u32>,
     start: usize,
     end: usize,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     // This function relies heavily on halant glyphs.  Lots of ligation
     // and possibly multiple substitutions happened prior to this

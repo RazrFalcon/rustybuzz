@@ -6,10 +6,11 @@ use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, Scri
 use ttf_parser::GlyphId;
 
 use super::apply::{Apply, ApplyContext};
-use crate::buffer::Buffer;
+use crate::buffer::hb_buffer_t;
 use crate::common::TagExt;
-use crate::plan::ShapePlan;
-use crate::{Face, Tag};
+use crate::plan::hb_ot_shape_plan_t;
+use crate::unicode::GeneralCategoryExt;
+use crate::{hb_font_t, hb_glyph_info_t, Tag};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -182,9 +183,9 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
 
 /// Applies the lookups in the given GSUB or GPOS table.
 pub fn apply_layout_table<T: LayoutTable>(
-    plan: &ShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
     table: Option<&T>,
 ) {
     let mut ctx = ApplyContext::new(T::INDEX, face, buffer);
@@ -271,16 +272,28 @@ fn apply_backward(ctx: &mut ApplyContext, lookup: &impl Apply) -> bool {
     ret
 }
 
-pub fn clear_substitution_flags(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+pub fn clear_substitution_flags(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         info.clear_substituted();
     }
 }
 
-pub fn clear_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+pub fn clear_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         info.set_syllable(0);
+    }
+}
+
+pub fn _hb_glyph_info_is_unicode_mark(info: &hb_glyph_info_t) -> bool {
+    info.general_category().is_mark()
+}
+
+pub fn _hb_glyph_info_get_modified_combining_class(info: &hb_glyph_info_t) -> u8 {
+    if _hb_glyph_info_is_unicode_mark(info) {
+        (info.unicode_props() >> 8) as u8
+    } else {
+        0
     }
 }

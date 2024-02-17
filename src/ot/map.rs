@@ -6,9 +6,9 @@ use ttf_parser::opentype_layout::{
 };
 
 use super::{LayoutTableExt, TableIndex};
-use crate::buffer::{glyph_flag, Buffer};
-use crate::plan::ShapePlan;
-use crate::{tag, Face, Language, Mask, Script, Tag};
+use crate::buffer::{glyph_flag, hb_buffer_t};
+use crate::plan::hb_ot_shape_plan_t;
+use crate::{hb_font_t, tag, Language, Mask, Script, Tag};
 
 pub struct Map {
     found_script: [bool; 2],
@@ -51,7 +51,7 @@ pub struct StageMap {
     pub pause_func: Option<PauseFunc>,
 }
 
-pub type PauseFunc = fn(&ShapePlan, &Face, &mut Buffer);
+pub type PauseFunc = fn(&hb_ot_shape_plan_t, &hb_font_t, &mut hb_buffer_t);
 
 impl Map {
     pub const MAX_BITS: u32 = 8;
@@ -157,7 +157,7 @@ bitflags::bitflags! {
 }
 
 pub struct MapBuilder<'a> {
-    face: &'a Face<'a>,
+    face: &'a hb_font_t<'a>,
     found_script: [bool; 2],
     script_index: [Option<ScriptIndex>; 2],
     chosen_script: [Option<Tag>; 2],
@@ -187,7 +187,11 @@ struct StageInfo {
 }
 
 impl<'a> MapBuilder<'a> {
-    pub fn new(face: &'a Face<'a>, script: Option<Script>, language: Option<&Language>) -> Self {
+    pub fn new(
+        face: &'a hb_font_t<'a>,
+        script: Option<Script>,
+        language: Option<&Language>,
+    ) -> Self {
         // Fetch script/language indices for GSUB/GPOS.  We need these later to skip
         // features not available in either table and not waste precious bits for them.
         let (script_tags, lang_tags) = tag::tags_from_script_and_language(script, language);

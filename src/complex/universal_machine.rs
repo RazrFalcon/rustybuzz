@@ -17,10 +17,10 @@
     clippy::never_loop
 )]
 
-use crate::buffer::Buffer;
+use crate::buffer::hb_buffer_t;
 use crate::complex::machine_cursor::MachineCursor;
 use crate::complex::universal::category;
-use crate::GlyphInfo;
+use crate::hb_glyph_info_t;
 use core::cell::Cell;
 
 static _use_syllable_machine_trans_keys: [u8; 226] = [
@@ -209,7 +209,7 @@ pub enum SyllableType {
     NonCluster,
 }
 
-pub fn find_syllables(buffer: &mut Buffer) {
+pub fn find_syllables(buffer: &mut hb_buffer_t) {
     let mut cs = 0;
     let infos = Cell::as_slice_of_cells(Cell::from_mut(&mut buffer.info));
     let p0 = MachineCursor::new(infos, included);
@@ -461,7 +461,7 @@ fn found_syllable(
     end: usize,
     syllable_serial: &mut u8,
     kind: SyllableType,
-    buffer: &[Cell<GlyphInfo>],
+    buffer: &[Cell<hb_glyph_info_t>],
 ) {
     for i in start..end {
         let mut glyph = buffer[i].get();
@@ -476,11 +476,11 @@ fn found_syllable(
     }
 }
 
-fn not_ccs_default_ignorable(i: &GlyphInfo) -> bool {
+fn not_ccs_default_ignorable(i: &hb_glyph_info_t) -> bool {
     i.use_category() != category::CGJ
 }
 
-fn included(infos: &[Cell<GlyphInfo>], i: usize) -> bool {
+fn included(infos: &[Cell<hb_glyph_info_t>], i: usize) -> bool {
     let glyph = infos[i].get();
     if !not_ccs_default_ignorable(&glyph) {
         return false;

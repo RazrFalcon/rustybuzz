@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 
 use super::feature_mappings::FEATURE_MAPPINGS;
-use crate::{Face, Mask, Tag};
+use crate::{hb_font_t, Mask, Tag};
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq)]
@@ -50,7 +50,7 @@ pub struct MapBuilder {
 }
 
 impl MapBuilder {
-    pub fn add_feature(&mut self, face: &Face, tag: Tag, value: u32) -> Option<()> {
+    pub fn add_feature(&mut self, face: &hb_font_t, tag: Tag, value: u32) -> Option<()> {
         const FEATURE_TYPE_CHARACTER_ALTERNATIVES: u16 = 17;
 
         let feat = face.tables().feat?;
@@ -126,7 +126,7 @@ impl MapBuilder {
             .is_ok()
     }
 
-    pub fn compile(&mut self, face: &Face) -> Map {
+    pub fn compile(&mut self, face: &hb_font_t) -> Map {
         // Sort features and merge duplicates.
         self.features.sort_by(|a, b| {
             if a.kind != b.kind {

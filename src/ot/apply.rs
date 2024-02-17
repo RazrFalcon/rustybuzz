@@ -3,8 +3,8 @@ use ttf_parser::GlyphId;
 
 use super::layout::{LayoutLookup, LayoutTable};
 use super::{lookup_flags, TableIndex, MAX_NESTING_LEVEL};
-use crate::buffer::{Buffer, GlyphInfo, GlyphPropsFlags};
-use crate::{Face, Mask};
+use crate::buffer::{hb_buffer_t, hb_glyph_info_t, GlyphPropsFlags};
+use crate::{hb_font_t, Mask};
 
 /// Find out whether a lookup would be applied.
 pub trait WouldApply {
@@ -25,8 +25,8 @@ pub struct WouldApplyContext<'a> {
 
 pub struct ApplyContext<'a, 'b> {
     pub table_index: TableIndex,
-    pub face: &'a Face<'b>,
-    pub buffer: &'a mut Buffer,
+    pub face: &'a hb_font_t<'b>,
+    pub buffer: &'a mut hb_buffer_t,
     pub lookup_mask: Mask,
     pub lookup_index: LookupIndex,
     pub lookup_props: u32,
@@ -38,7 +38,11 @@ pub struct ApplyContext<'a, 'b> {
 }
 
 impl<'a, 'b> ApplyContext<'a, 'b> {
-    pub fn new(table_index: TableIndex, face: &'a Face<'b>, buffer: &'a mut Buffer) -> Self {
+    pub fn new(
+        table_index: TableIndex,
+        face: &'a hb_font_t<'b>,
+        buffer: &'a mut hb_buffer_t,
+    ) -> Self {
         Self {
             table_index,
             face,
@@ -99,11 +103,10 @@ impl<'a, 'b> ApplyContext<'a, 'b> {
         self.lookup_props = saved_props;
         self.lookup_index = saved_index;
         self.nesting_level_left += 1;
-
         applied
     }
 
-    pub fn check_glyph_property(&self, info: &GlyphInfo, match_props: u32) -> bool {
+    pub fn check_glyph_property(&self, info: &hb_glyph_info_t, match_props: u32) -> bool {
         let glyph_props = info.glyph_props();
 
         // Lookup flags are lower 16-bit of match props.

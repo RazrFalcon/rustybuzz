@@ -20,11 +20,14 @@ mod vowel_constraints;
 use alloc::boxed::Box;
 use core::any::Any;
 
-use crate::buffer::Buffer;
+use crate::buffer::hb_buffer_t;
 use crate::common::TagExt;
-use crate::normalize::{ShapeNormalizationMode, ShapeNormalizeContext};
-use crate::plan::{ShapePlan, ShapePlanner};
-use crate::{script, Direction, Face, Script, Tag};
+use crate::ot_shape_normalize::{
+    hb_ot_shape_normalization_mode_t, hb_ot_shape_normalize_context_t,
+    HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
+};
+use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::{hb_font_t, script, Direction, Script, Tag};
 
 pub const MAX_COMBINING_MARKS: usize = 32;
 
@@ -34,7 +37,7 @@ pub const DEFAULT_SHAPER: ComplexShaper = ComplexShaper {
     create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
-    normalization_mode: Some(ShapeNormalizationMode::Auto),
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
     decompose: None,
     compose: None,
     setup_masks: None,
@@ -52,7 +55,7 @@ pub const DUMBER_SHAPER: ComplexShaper = ComplexShaper {
     create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
-    normalization_mode: Some(ShapeNormalizationMode::Auto),
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
     decompose: None,
     compose: None,
     setup_masks: None,
@@ -74,29 +77,29 @@ pub struct ComplexShaper {
 
     /// Called at the end of `shape_plan()`.
     /// Whatever shapers return will be accessible through `plan.data()` later.
-    pub create_data: Option<fn(&ShapePlan) -> Box<dyn Any + Send + Sync>>,
+    pub create_data: Option<fn(&hb_ot_shape_plan_t) -> Box<dyn Any + Send + Sync>>,
 
     /// Called during `shape()`.
     /// Shapers can use to modify text before shaping starts.
-    pub preprocess_text: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
+    pub preprocess_text: Option<fn(&hb_ot_shape_plan_t, &hb_font_t, &mut hb_buffer_t)>,
 
     /// Called during `shape()`.
     /// Shapers can use to modify text before shaping starts.
-    pub postprocess_glyphs: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
+    pub postprocess_glyphs: Option<fn(&hb_ot_shape_plan_t, &hb_font_t, &mut hb_buffer_t)>,
 
     /// How to normalize.
-    pub normalization_mode: Option<ShapeNormalizationMode>,
+    pub normalization_preference: hb_ot_shape_normalization_mode_t,
 
     /// Called during `shape()`'s normalization.
-    pub decompose: Option<fn(&ShapeNormalizeContext, char) -> Option<(char, char)>>,
+    pub decompose: Option<fn(&hb_ot_shape_normalize_context_t, char) -> Option<(char, char)>>,
 
     /// Called during `shape()`'s normalization.
-    pub compose: Option<fn(&ShapeNormalizeContext, char, char) -> Option<char>>,
+    pub compose: Option<fn(&hb_ot_shape_normalize_context_t, char, char) -> Option<char>>,
 
     /// Called during `shape()`.
     /// Shapers should use map to get feature masks and set on buffer.
     /// Shapers may NOT modify characters.
-    pub setup_masks: Option<fn(&ShapePlan, &Face, &mut Buffer)>,
+    pub setup_masks: Option<fn(&hb_ot_shape_plan_t, &hb_font_t, &mut hb_buffer_t)>,
 
     /// If not `None`, then must match found GPOS script tag for
     /// GPOS to be applied.  Otherwise, fallback positioning will be used.
@@ -104,7 +107,7 @@ pub struct ComplexShaper {
 
     /// Called during `shape()`.
     /// Shapers can use to modify ordering of combining marks.
-    pub reorder_marks: Option<fn(&ShapePlan, &mut Buffer, usize, usize)>,
+    pub reorder_marks: Option<fn(&hb_ot_shape_plan_t, &mut hb_buffer_t, usize, usize)>,
 
     /// If and when to zero-width marks.
     pub zero_width_marks: Option<ZeroWidthMarksMode>,

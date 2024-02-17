@@ -3,10 +3,10 @@ use core::convert::TryFrom;
 use ttf_parser::gsub::*;
 use ttf_parser::GlyphId;
 
-use crate::buffer::{Buffer, GlyphPropsFlags};
-use crate::plan::ShapePlan;
+use crate::buffer::{hb_buffer_t, GlyphPropsFlags};
+use crate::hb_font_t;
+use crate::plan::hb_ot_shape_plan_t;
 use crate::unicode::GeneralCategory;
-use crate::Face;
 
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
 use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead};
@@ -18,15 +18,15 @@ use ttf_parser::opentype_layout::LookupIndex;
 
 /// Called before substitution lookups are performed, to ensure that glyph
 /// class and other properties are set on the glyphs in the buffer.
-pub fn substitute_start(face: &Face, buffer: &mut Buffer) {
+pub fn substitute_start(face: &hb_font_t, buffer: &mut hb_buffer_t) {
     set_glyph_props(face, buffer)
 }
 
-pub fn substitute(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+pub fn substitute(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     super::apply_layout_table(plan, face, buffer, face.gsub.as_ref());
 }
 
-fn set_glyph_props(face: &Face, buffer: &mut Buffer) {
+fn set_glyph_props(face: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         info.set_glyph_props(face.glyph_props(info.as_glyph()));

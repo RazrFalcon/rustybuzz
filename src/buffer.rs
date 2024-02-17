@@ -6,8 +6,9 @@ use ttf_parser::GlyphId;
 
 use crate::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::face::GlyphExtents;
+use crate::ot::_hb_glyph_info_get_modified_combining_class;
 use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
-use crate::{script, Direction, Face, Language, Mask, Script};
+use crate::{hb_font_t, script, Direction, Language, Mask, Script};
 
 const CONTEXT_LENGTH: usize = 5;
 
@@ -151,7 +152,7 @@ impl GlyphPosition {
 /// A glyph info.
 #[repr(C)]
 #[derive(Clone, Copy, Default, Debug)]
-pub struct GlyphInfo {
+pub struct hb_glyph_info_t {
     // NOTE: Stores a Unicode codepoint before shaping and a glyph ID after.
     //       Just like harfbuzz, we are using the same variable for two purposes.
     //       Occupies u32 as a codepoint and u16 as a glyph id.
@@ -168,12 +169,12 @@ pub struct GlyphInfo {
     pub(crate) var2: u32,
 }
 
-unsafe impl bytemuck::Zeroable for GlyphInfo {}
-unsafe impl bytemuck::Pod for GlyphInfo {}
+unsafe impl bytemuck::Zeroable for hb_glyph_info_t {}
+unsafe impl bytemuck::Pod for hb_glyph_info_t {}
 
 const IS_LIG_BASE: u8 = 0x10;
 
-impl GlyphInfo {
+impl hb_glyph_info_t {
     /// Indicates that if input text is broken at the beginning of the cluster this glyph
     /// is part of, then both sides need to be re-shaped, as the result might be different.
     ///
@@ -223,7 +224,7 @@ impl GlyphInfo {
     }
 
     #[inline]
-    fn unicode_props(&self) -> u16 {
+    pub(crate) fn unicode_props(&self) -> u16 {
         let v: &[u16; 2] = bytemuck::cast_ref(&self.var2);
         v[0]
     }
@@ -334,11 +335,7 @@ impl GlyphInfo {
 
     #[inline]
     pub(crate) fn modified_combining_class(&self) -> u8 {
-        if self.is_unicode_mark() {
-            (self.unicode_props() >> 8) as u8
-        } else {
-            0
-        }
+        _hb_glyph_info_get_modified_combining_class(self)
     }
 
     #[inline]
@@ -573,7 +570,7 @@ impl Default for BufferClusterLevel {
     }
 }
 
-pub struct Buffer {
+pub struct hb_buffer_t {
     // Information about how the text in the buffer should be treated.
     pub flags: BufferFlags,
     pub cluster_level: BufferClusterLevel,
@@ -596,7 +593,7 @@ pub struct Buffer {
     pub len: usize,
     pub out_len: usize,
 
-    pub info: Vec<GlyphInfo>,
+    pub info: Vec<hb_glyph_info_t>,
     pub pos: Vec<GlyphPosition>,
 
     // Text before / after the main buffer contents.
@@ -614,7 +611,7 @@ pub struct Buffer {
     pub max_ops: i32,
 }
 
-impl Buffer {
+impl hb_buffer_t {
     pub const MAX_LEN_FACTOR: usize = 64;
     pub const MAX_LEN_MIN: usize = 16384;
     // Shaping more than a billion chars? Let us know!
@@ -627,7 +624,7 @@ impl Buffer {
 
     /// Creates a new `Buffer`.
     pub fn new() -> Self {
-        Buffer {
+        hb_buffer_t {
             flags: BufferFlags::empty(),
             cluster_level: BufferClusterLevel::default(),
             invisible: None,
@@ -656,17 +653,17 @@ impl Buffer {
     }
 
     #[inline]
-    pub fn info_slice(&self) -> &[GlyphInfo] {
+    pub fn info_slice(&self) -> &[hb_glyph_info_t] {
         &self.info[..self.len]
     }
 
     #[inline]
-    pub fn info_slice_mut(&mut self) -> &mut [GlyphInfo] {
+    pub fn info_slice_mut(&mut self) -> &mut [hb_glyph_info_t] {
         &mut self.info[..self.len]
     }
 
     #[inline]
-    pub fn out_info(&self) -> &[GlyphInfo] {
+    pub fn out_info(&self) -> &[hb_glyph_info_t] {
         if self.have_separate_output {
             bytemuck::cast_slice(self.pos.as_slice())
         } else {
@@ -675,7 +672,7 @@ impl Buffer {
     }
 
     #[inline]
-    pub fn out_info_mut(&mut self) -> &mut [GlyphInfo] {
+    pub fn out_info_mut(&mut self) -> &mut [hb_glyph_info_t] {
         if self.have_separate_output {
             bytemuck::cast_slice_mut(self.pos.as_mut_slice())
         } else {
@@ -684,17 +681,17 @@ impl Buffer {
     }
 
     #[inline]
-    fn set_out_info(&mut self, i: usize, info: GlyphInfo) {
+    fn set_out_info(&mut self, i: usize, info: hb_glyph_info_t) {
         self.out_info_mut()[i] = info;
     }
 
     #[inline]
-    pub fn cur(&self, i: usize) -> &GlyphInfo {
+    pub fn cur(&self, i: usize) -> &hb_glyph_info_t {
         &self.info[self.idx + i]
     }
 
     #[inline]
-    pub fn cur_mut(&mut self, i: usize) -> &mut GlyphInfo {
+    pub fn cur_mut(&mut self, i: usize) -> &mut hb_glyph_info_t {
         let idx = self.idx + i;
         &mut self.info[idx]
     }
@@ -706,13 +703,13 @@ impl Buffer {
     }
 
     #[inline]
-    pub fn prev(&self) -> &GlyphInfo {
+    pub fn prev(&self) -> &hb_glyph_info_t {
         let idx = self.out_len.saturating_sub(1);
         &self.out_info()[idx]
     }
 
     #[inline]
-    pub fn prev_mut(&mut self) -> &mut GlyphInfo {
+    pub fn prev_mut(&mut self) -> &mut hb_glyph_info_t {
         let idx = self.out_len.saturating_sub(1);
         &mut self.out_info_mut()[idx]
     }
@@ -773,7 +770,7 @@ impl Buffer {
         self.ensure(self.len + 1);
 
         let i = self.len;
-        self.info[i] = GlyphInfo {
+        self.info[i] = hb_glyph_info_t {
             glyph_id: codepoint,
             mask: 0,
             cluster,
@@ -806,7 +803,7 @@ impl Buffer {
 
     pub fn reverse_groups<F>(&mut self, group: F, merge_clusters: bool)
     where
-        F: Fn(&GlyphInfo, &GlyphInfo) -> bool,
+        F: Fn(&hb_glyph_info_t, &hb_glyph_info_t) -> bool,
     {
         if self.is_empty() {
             return;
@@ -843,7 +840,7 @@ impl Buffer {
 
     pub fn group_end<F>(&self, mut start: usize, group: F) -> usize
     where
-        F: Fn(&GlyphInfo, &GlyphInfo) -> bool,
+        F: Fn(&hb_glyph_info_t, &hb_glyph_info_t) -> bool,
     {
         start += 1;
 
@@ -903,7 +900,7 @@ impl Buffer {
         if self.have_separate_output {
             // Swap info and pos buffers.
             let info: Vec<GlyphPosition> = bytemuck::cast_vec(core::mem::take(&mut self.info));
-            let pos: Vec<GlyphInfo> = bytemuck::cast_vec(core::mem::take(&mut self.pos));
+            let pos: Vec<hb_glyph_info_t> = bytemuck::cast_vec(core::mem::take(&mut self.pos));
             self.pos = info;
             self.info = pos;
         }
@@ -994,22 +991,13 @@ impl Buffer {
         self.out_len += 1;
     }
 
-    pub fn output_info(&mut self, glyph_info: GlyphInfo) {
+    pub fn output_info(&mut self, glyph_info: hb_glyph_info_t) {
         if !self.make_room_for(0, 1) {
             return;
         }
 
         self.set_out_info(self.out_len, glyph_info);
         self.out_len += 1;
-    }
-
-    pub fn output_char(&mut self, unichar: u32, glyph: u32) {
-        self.cur_mut(0).set_glyph_index(glyph);
-        // This is very confusing indeed.
-        self.output_glyph(unichar);
-        let mut flags = self.scratch_flags;
-        self.prev_mut().init_unicode_props(&mut flags);
-        self.scratch_flags = flags;
     }
 
     /// Copies glyph at idx to output but doesn't advance idx.
@@ -1060,11 +1048,6 @@ impl Buffer {
         }
 
         self.idx += n;
-    }
-
-    pub fn next_char(&mut self, glyph: u32) {
-        self.cur_mut(0).set_glyph_index(glyph);
-        self.next_glyph();
     }
 
     /// Advance idx without copying to output.
@@ -1220,7 +1203,7 @@ impl Buffer {
         self.skip_glyph();
     }
 
-    pub fn delete_glyphs_inplace(&mut self, filter: impl Fn(&GlyphInfo) -> bool) {
+    pub fn delete_glyphs_inplace(&mut self, filter: impl Fn(&hb_glyph_info_t) -> bool) {
         // Merge clusters and delete filtered glyphs.
         // NOTE! We can't use out-buffer as we have positioning data.
         let mut j = 0;
@@ -1441,7 +1424,7 @@ impl Buffer {
             return false;
         }
 
-        self.info.resize(size, GlyphInfo::default());
+        self.info.resize(size, hb_glyph_info_t::default());
         self.pos.resize(size, GlyphPosition::default());
         true
     }
@@ -1478,7 +1461,7 @@ impl Buffer {
 
         if self.idx + count > self.len {
             for info in &mut self.info[self.len..self.idx + count] {
-                *info = GlyphInfo::default();
+                *info = hb_glyph_info_t::default();
             }
         }
 
@@ -1490,7 +1473,12 @@ impl Buffer {
         self.context_len[side] = 0;
     }
 
-    pub fn sort(&mut self, start: usize, end: usize, cmp: impl Fn(&GlyphInfo, &GlyphInfo) -> bool) {
+    pub fn sort(
+        &mut self,
+        start: usize,
+        end: usize,
+        cmp: impl Fn(&hb_glyph_info_t, &hb_glyph_info_t) -> bool,
+    ) {
         assert!(!self.have_positions);
 
         for i in start + 1..end {
@@ -1517,7 +1505,7 @@ impl Buffer {
         }
     }
 
-    pub fn set_cluster(info: &mut GlyphInfo, cluster: u32, mask: Mask) {
+    pub fn set_cluster(info: &mut hb_glyph_info_t, cluster: u32, mask: Mask) {
         if info.cluster != cluster {
             info.mask = (info.mask & !glyph_flag::DEFINED) | (mask & glyph_flag::DEFINED);
         }
@@ -1530,26 +1518,26 @@ impl Buffer {
         self.serial = 0;
         self.scratch_flags = BufferScratchFlags::empty();
 
-        if let Some(len) = self.len.checked_mul(Buffer::MAX_LEN_FACTOR) {
-            self.max_len = len.max(Buffer::MAX_LEN_MIN);
+        if let Some(len) = self.len.checked_mul(hb_buffer_t::MAX_LEN_FACTOR) {
+            self.max_len = len.max(hb_buffer_t::MAX_LEN_MIN);
         }
 
         if let Ok(len) = i32::try_from(self.len) {
-            if let Some(ops) = len.checked_mul(Buffer::MAX_OPS_FACTOR) {
-                self.max_ops = ops.max(Buffer::MAX_OPS_MIN);
+            if let Some(ops) = len.checked_mul(hb_buffer_t::MAX_OPS_FACTOR) {
+                self.max_ops = ops.max(hb_buffer_t::MAX_OPS_MIN);
             }
         }
     }
 
     // Called around shape()
     pub(crate) fn leave(&mut self) {
-        self.max_len = Buffer::MAX_LEN_DEFAULT;
-        self.max_ops = Buffer::MAX_OPS_DEFAULT;
+        self.max_len = hb_buffer_t::MAX_LEN_DEFAULT;
+        self.max_ops = hb_buffer_t::MAX_OPS_DEFAULT;
         self.serial = 0;
     }
 
     fn _infos_find_min_cluster(
-        info: &[GlyphInfo],
+        info: &[hb_glyph_info_t],
         start: usize,
         end: usize,
         cluster: Option<u32>,
@@ -1565,7 +1553,7 @@ impl Buffer {
 
     #[must_use]
     fn _infos_set_glyph_flags(
-        info: &mut [GlyphInfo],
+        info: &mut [hb_glyph_info_t],
         start: usize,
         end: usize,
         cluster: u32,
@@ -1641,11 +1629,11 @@ impl Buffer {
     }
 }
 
-pub(crate) fn _cluster_group_func(a: &GlyphInfo, b: &GlyphInfo) -> bool {
+pub(crate) fn _cluster_group_func(a: &hb_glyph_info_t, b: &hb_glyph_info_t) -> bool {
     a.cluster == b.cluster
 }
 
-pub(crate) fn _grapheme_group_func(_: &GlyphInfo, b: &GlyphInfo) -> bool {
+pub(crate) fn _grapheme_group_func(_: &hb_glyph_info_t, b: &hb_glyph_info_t) -> bool {
     b.is_continuation()
 }
 
@@ -1782,13 +1770,13 @@ bitflags::bitflags! {
 }
 
 /// A buffer that contains an input string ready for shaping.
-pub struct UnicodeBuffer(pub(crate) Buffer);
+pub struct UnicodeBuffer(pub(crate) hb_buffer_t);
 
 impl UnicodeBuffer {
     /// Create a new `UnicodeBuffer`.
     #[inline]
     pub fn new() -> UnicodeBuffer {
-        UnicodeBuffer(Buffer::new())
+        UnicodeBuffer(hb_buffer_t::new())
     }
 
     /// Returns the length of the data of the buffer.
@@ -1928,7 +1916,7 @@ impl Default for UnicodeBuffer {
 }
 
 /// A buffer that contains the results of the shaping process.
-pub struct GlyphBuffer(pub(crate) Buffer);
+pub struct GlyphBuffer(pub(crate) hb_buffer_t);
 
 impl GlyphBuffer {
     /// Returns the length of the data of the buffer.
@@ -1949,7 +1937,7 @@ impl GlyphBuffer {
 
     /// Get the glyph infos.
     #[inline]
-    pub fn glyph_infos(&self) -> &[GlyphInfo] {
+    pub fn glyph_infos(&self) -> &[hb_glyph_info_t] {
         &self.0.info[0..self.0.len]
     }
 
@@ -1968,13 +1956,13 @@ impl GlyphBuffer {
     }
 
     /// Converts the glyph buffer content into a string.
-    pub fn serialize(&self, face: &Face, flags: SerializeFlags) -> String {
+    pub fn serialize(&self, face: &hb_font_t, flags: SerializeFlags) -> String {
         self.serialize_impl(face, flags).unwrap_or_default()
     }
 
     fn serialize_impl(
         &self,
-        face: &Face,
+        face: &hb_font_t,
         flags: SerializeFlags,
     ) -> Result<String, core::fmt::Error> {
         use core::fmt::Write;

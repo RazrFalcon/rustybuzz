@@ -4,10 +4,10 @@ use core::any::Any;
 
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
 use crate::ot::{self, feature, FeatureFlags, TableIndex};
-use crate::{aat, Direction, Face, Feature, Language, Mask, Script, Tag};
+use crate::{aat, hb_font_t, Direction, Feature, Language, Mask, Script, Tag};
 
 /// A reusable plan for shaping a text buffer.
-pub struct ShapePlan {
+pub struct hb_ot_shape_plan_t {
     pub(crate) direction: Direction,
     pub(crate) script: Option<Script>,
     pub(crate) shaper: &'static ComplexShaper,
@@ -41,11 +41,11 @@ pub struct ShapePlan {
     pub(crate) user_features: Vec<Feature>,
 }
 
-impl ShapePlan {
+impl hb_ot_shape_plan_t {
     /// Returns a plan that can be used for shaping any buffer with the
     /// provided properties.
     pub fn new(
-        face: &Face,
+        face: &hb_font_t,
         direction: Direction,
         script: Option<Script>,
         language: Option<&Language>,
@@ -63,7 +63,7 @@ impl ShapePlan {
 }
 
 pub struct ShapePlanner<'a> {
-    pub face: &'a Face<'a>,
+    pub face: &'a hb_font_t<'a>,
     pub direction: Direction,
     pub script: Option<Script>,
     pub ot_map: ot::MapBuilder<'a>,
@@ -76,7 +76,7 @@ pub struct ShapePlanner<'a> {
 
 impl<'a> ShapePlanner<'a> {
     fn new(
-        face: &'a Face<'a>,
+        face: &'a hb_font_t<'a>,
         direction: Direction,
         script: Option<Script>,
         language: Option<&Language>,
@@ -242,7 +242,7 @@ impl<'a> ShapePlanner<'a> {
         }
     }
 
-    fn compile(mut self, user_features: &[Feature]) -> ShapePlan {
+    fn compile(mut self, user_features: &[Feature]) -> hb_ot_shape_plan_t {
         let ot_map = self.ot_map.compile();
 
         let aat_map = if self.apply_morx {
@@ -332,7 +332,7 @@ impl<'a> ShapePlanner<'a> {
         // Currently we always apply trak.
         let apply_trak = requested_tracking && self.face.tables().trak.is_some();
 
-        let mut plan = ShapePlan {
+        let mut plan = hb_ot_shape_plan_t {
             direction: self.direction,
             script: self.script,
             shaper: self.shaper,
@@ -372,11 +372,11 @@ impl<'a> ShapePlanner<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::ShapePlan;
+    use super::hb_ot_shape_plan_t;
 
     #[test]
     fn test_shape_plan_is_send_and_sync() {
         fn ensure_send_and_sync<T: Send + Sync>() {}
-        ensure_send_and_sync::<ShapePlan>();
+        ensure_send_and_sync::<hb_ot_shape_plan_t>();
     }
 }

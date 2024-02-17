@@ -2,9 +2,9 @@ use ttf_parser::gpos::*;
 use ttf_parser::opentype_layout::LookupIndex;
 use ttf_parser::GlyphId;
 
-use crate::buffer::{Buffer, BufferScratchFlags, GlyphPosition};
-use crate::plan::ShapePlan;
-use crate::{Direction, Face};
+use crate::buffer::{hb_buffer_t, BufferScratchFlags, GlyphPosition};
+use crate::plan::hb_ot_shape_plan_t;
+use crate::{hb_font_t, Direction};
 
 use super::apply::{Apply, ApplyContext};
 use super::matching::SkippyIter;
@@ -12,7 +12,7 @@ use super::{
     lookup_flags, LayoutLookup, LayoutTable, PositioningLookup, PositioningTable, TableIndex,
 };
 
-pub fn position_start(_: &Face, buffer: &mut Buffer) {
+pub fn position_start(_: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;
     for pos in &mut buffer.pos[..len] {
         pos.set_attach_chain(0);
@@ -20,13 +20,13 @@ pub fn position_start(_: &Face, buffer: &mut Buffer) {
     }
 }
 
-pub fn position(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+pub fn position(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     super::apply_layout_table(plan, face, buffer, face.gpos.as_ref());
 }
 
-pub fn position_finish_advances(_: &Face, _: &mut Buffer) {}
+pub fn position_finish_advances(_: &hb_font_t, _: &mut hb_buffer_t) {}
 
-pub fn position_finish_offsets(_: &Face, buffer: &mut Buffer) {
+pub fn position_finish_offsets(_: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;
     let direction = buffer.direction;
 
@@ -712,12 +712,12 @@ impl TryNumFrom<f32> for i32 {
 }
 
 trait DeviceExt {
-    fn get_x_delta(&self, face: &Face) -> Option<i32>;
-    fn get_y_delta(&self, face: &Face) -> Option<i32>;
+    fn get_x_delta(&self, face: &hb_font_t) -> Option<i32>;
+    fn get_y_delta(&self, face: &hb_font_t) -> Option<i32>;
 }
 
 impl DeviceExt for Device<'_> {
-    fn get_x_delta(&self, face: &Face) -> Option<i32> {
+    fn get_x_delta(&self, face: &hb_font_t) -> Option<i32> {
         match self {
             Device::Hinting(hinting) => hinting.x_delta(face.units_per_em, face.pixels_per_em()),
             Device::Variation(variation) => face
@@ -732,7 +732,7 @@ impl DeviceExt for Device<'_> {
         }
     }
 
-    fn get_y_delta(&self, face: &Face) -> Option<i32> {
+    fn get_y_delta(&self, face: &hb_font_t) -> Option<i32> {
         match self {
             Device::Hinting(hinting) => hinting.y_delta(face.units_per_em, face.pixels_per_em()),
             Device::Variation(variation) => face
@@ -749,11 +749,11 @@ impl DeviceExt for Device<'_> {
 }
 
 trait AnchorExt {
-    fn get(&self, face: &Face) -> (i32, i32);
+    fn get(&self, face: &hb_font_t) -> (i32, i32);
 }
 
 impl AnchorExt for Anchor<'_> {
-    fn get(&self, face: &Face) -> (i32, i32) {
+    fn get(&self, face: &hb_font_t) -> (i32, i32) {
         let mut x = i32::from(self.x);
         let mut y = i32::from(self.y);
 

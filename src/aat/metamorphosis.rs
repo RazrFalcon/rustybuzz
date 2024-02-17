@@ -2,11 +2,11 @@ use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
 use crate::aat::feature_selector;
 use crate::aat::{FeatureType, Map, MapBuilder};
-use crate::buffer::Buffer;
-use crate::plan::ShapePlan;
-use crate::{Face, GlyphInfo};
+use crate::buffer::hb_buffer_t;
+use crate::plan::hb_ot_shape_plan_t;
+use crate::{hb_font_t, GlyphInfo};
 
-pub fn compile_flags(face: &Face, builder: &MapBuilder) -> Option<Map> {
+pub fn compile_flags(face: &hb_font_t, builder: &MapBuilder) -> Option<Map> {
     let mut map = Map::default();
 
     for chain in face.tables().morx.as_ref()?.chains {
@@ -39,7 +39,7 @@ pub fn compile_flags(face: &Face, builder: &MapBuilder) -> Option<Map> {
     Some(map)
 }
 
-pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
+pub fn apply(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) -> Option<()> {
     for (chain_idx, chain) in face.tables().morx.as_ref()?.chains.into_iter().enumerate() {
         let flags = plan.aat_map.chain_flags[chain_idx];
         for subtable in chain.subtables {
@@ -104,11 +104,15 @@ pub fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
 trait Driver<T: FromData> {
     fn in_place(&self) -> bool;
     fn can_advance(&self, entry: &apple_layout::GenericStateEntry<T>) -> bool;
-    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<T>, buffer: &Buffer) -> bool;
+    fn is_actionable(
+        &self,
+        entry: &apple_layout::GenericStateEntry<T>,
+        buffer: &hb_buffer_t,
+    ) -> bool;
     fn transition(
         &mut self,
         entry: &apple_layout::GenericStateEntry<T>,
-        buffer: &mut Buffer,
+        buffer: &mut hb_buffer_t,
     ) -> Option<()>;
 }
 
@@ -117,7 +121,7 @@ const START_OF_TEXT: u16 = 0;
 fn drive<T: FromData>(
     machine: &apple_layout::ExtendedStateTable<T>,
     c: &mut dyn Driver<T>,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     if !c.in_place() {
         buffer.clear_output();
@@ -239,7 +243,7 @@ fn drive<T: FromData>(
     }
 }
 
-fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut Buffer, face: &Face) {
+fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut hb_buffer_t, face: &hb_font_t) {
     match kind {
         morx::SubtableKind::Rearrangement(ref table) => {
             let mut c = RearrangementCtx { start: 0, end: 0 };
@@ -312,14 +316,14 @@ impl Driver<()> for RearrangementCtx {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<()>, _: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<()>, _: &hb_buffer_t) -> bool {
         entry.flags & Self::VERB != 0 && self.start < self.end
     }
 
     fn transition(
         &mut self,
         entry: &apple_layout::GenericStateEntry<()>,
-        buffer: &mut Buffer,
+        buffer: &mut hb_buffer_t,
     ) -> Option<()> {
         let flags = entry.flags;
 
@@ -409,7 +413,7 @@ impl Driver<()> for RearrangementCtx {
 
 struct ContextualCtx<'a> {
     mark_set: bool,
-    face_if_has_glyph_classes: Option<&'a Face<'a>>,
+    face_if_has_glyph_classes: Option<&'a hb_font_t<'a>>,
     mark: usize,
     table: &'a morx::ContextualSubtable<'a>,
 }
@@ -434,7 +438,7 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
     fn is_actionable(
         &self,
         entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>,
-        buffer: &Buffer,
+        buffer: &hb_buffer_t,
     ) -> bool {
         if buffer.idx == buffer.len && !self.mark_set {
             return false;
@@ -446,7 +450,7 @@ impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
     fn transition(
         &mut self,
         entry: &apple_layout::GenericStateEntry<morx::ContextualEntryData>,
-        buffer: &mut Buffer,
+        buffer: &mut hb_buffer_t,
     ) -> Option<()> {
         // Looks like CoreText applies neither mark nor current substitution for
         // end-of-text if mark was not explicitly set.
@@ -523,7 +527,7 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
     fn is_actionable(
         &self,
         entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>,
-        _: &Buffer,
+        _: &hb_buffer_t,
     ) -> bool {
         (entry.flags & (Self::CURRENT_INSERT_COUNT | Self::MARKED_INSERT_COUNT) != 0)
             && (entry.extra.current_insert_index != 0xFFFF
@@ -533,7 +537,7 @@ impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
     fn transition(
         &mut self,
         entry: &apple_layout::GenericStateEntry<morx::InsertionEntryData>,
-        buffer: &mut Buffer,
+        buffer: &mut hb_buffer_t,
     ) -> Option<()> {
         let flags = entry.flags;
         let mark_loc = buffer.out_len;
@@ -654,14 +658,14 @@ impl Driver<u16> for LigatureCtx<'_> {
         entry.flags & Self::DONT_ADVANCE == 0
     }
 
-    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<u16>, _: &Buffer) -> bool {
+    fn is_actionable(&self, entry: &apple_layout::GenericStateEntry<u16>, _: &hb_buffer_t) -> bool {
         entry.flags & Self::PERFORM_ACTION != 0
     }
 
     fn transition(
         &mut self,
         entry: &apple_layout::GenericStateEntry<u16>,
-        buffer: &mut Buffer,
+        buffer: &mut hb_buffer_t,
     ) -> Option<()> {
         if entry.flags & Self::SET_COMPONENT != 0 {
             // Never mark same index twice, in case DONT_ADVANCE was used...

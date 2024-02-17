@@ -2,11 +2,11 @@ use core::convert::TryFrom;
 
 use ttf_parser::{ankr, apple_layout, kerx, FromData, GlyphId};
 
-use crate::buffer::{Buffer, BufferScratchFlags};
+use crate::buffer::{hb_buffer_t, BufferScratchFlags};
+use crate::hb_font_t;
 use crate::ot::matching::SkippyIter;
 use crate::ot::{attach_type, lookup_flags, ApplyContext, TableIndex};
-use crate::plan::ShapePlan;
-use crate::Face;
+use crate::plan::hb_ot_shape_plan_t;
 
 trait ExtendedStateTableExt<T: FromData + Copy> {
     fn class(&self, glyph_id: GlyphId) -> Option<u16>;
@@ -41,7 +41,11 @@ impl ExtendedStateTableExt<kerx::EntryData> for kerx::Subtable4<'_> {
     }
 }
 
-pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Option<()> {
+pub(crate) fn apply(
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
+) -> Option<()> {
     let mut seen_cross_stream = false;
     for subtable in face.tables().kerx?.subtables {
         if subtable.variable {
@@ -124,9 +128,9 @@ pub(crate) fn apply(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) -> Optio
 
 fn apply_simple_kerning(
     subtable: &kerx::Subtable,
-    plan: &ShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
 ) {
     let mut ctx = ApplyContext::new(TableIndex::GPOS, face, buffer);
     ctx.lookup_mask = plan.kern_mask;
@@ -211,8 +215,8 @@ fn apply_state_machine_kerning<T, E>(
     subtable: &kerx::Subtable,
     state_table: &T,
     driver: &mut dyn StateTableDriver<T, E>,
-    plan: &ShapePlan,
-    buffer: &mut Buffer,
+    plan: &hb_ot_shape_plan_t,
+    buffer: &mut hb_buffer_t,
 ) where
     T: ExtendedStateTableExt<E>,
     E: FromData + Copy,
@@ -291,8 +295,8 @@ trait StateTableDriver<Table, E: FromData> {
         entry: apple_layout::GenericStateEntry<E>,
         has_cross_stream: bool,
         tuple_count: u32,
-        plan: &ShapePlan,
-        buffer: &mut Buffer,
+        plan: &hb_ot_shape_plan_t,
+        buffer: &mut hb_buffer_t,
     ) -> Option<()>;
 }
 
@@ -312,8 +316,8 @@ impl StateTableDriver<kerx::Subtable1<'_>, kerx::EntryData> for Driver1 {
         entry: apple_layout::GenericStateEntry<kerx::EntryData>,
         has_cross_stream: bool,
         tuple_count: u32,
-        plan: &ShapePlan,
-        buffer: &mut Buffer,
+        plan: &hb_ot_shape_plan_t,
+        buffer: &mut hb_buffer_t,
     ) -> Option<()> {
         if entry.has_reset() {
             self.depth = 0;
@@ -421,8 +425,8 @@ impl StateTableDriver<kerx::Subtable4<'_>, kerx::EntryData> for Driver4<'_> {
         entry: apple_layout::GenericStateEntry<kerx::EntryData>,
         _has_cross_stream: bool,
         _tuple_count: u32,
-        _opt: &ShapePlan,
-        buffer: &mut Buffer,
+        _opt: &hb_ot_shape_plan_t,
+        buffer: &mut hb_buffer_t,
     ) -> Option<()> {
         if self.mark_set && entry.is_actionable() && buffer.idx < buffer.len {
             if let Some(ref ankr_table) = self.ankr_table {

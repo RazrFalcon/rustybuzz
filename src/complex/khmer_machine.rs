@@ -17,7 +17,7 @@
     clippy::never_loop
 )]
 
-use crate::buffer::Buffer;
+use crate::buffer::hb_buffer_t;
 
 static _khmer_syllable_machine_trans_keys: [u8; 82] = [
     2, 8, 2, 6, 2, 8, 2, 6, 0, 0, 2, 6, 2, 8, 2, 6, 2, 8, 2, 6, 2, 6, 2, 8, 2, 6, 0, 0, 2, 6, 2, 8,
@@ -79,7 +79,7 @@ pub enum SyllableType {
     NonKhmerCluster,
 }
 
-pub fn find_syllables_khmer(buffer: &mut Buffer) {
+pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
     let mut cs = 0;
     let mut ts = 0;
     let mut te = 0;
@@ -286,7 +286,7 @@ fn found_syllable(
     end: usize,
     syllable_serial: &mut u8,
     kind: SyllableType,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     for i in start..end {
         buffer.info[i].set_syllable((*syllable_serial << 4) | kind as u8);

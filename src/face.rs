@@ -22,7 +22,7 @@ const UNICODE_FULL_ENCODING: u16 = 6;
 
 /// A font face handle.
 #[derive(Clone)]
-pub struct Face<'a> {
+pub struct hb_font_t<'a> {
     pub(crate) ttfp_face: ttf_parser::Face<'a>,
     pub(crate) units_per_em: u16,
     pixels_per_em: Option<(u16, u16)>,
@@ -32,21 +32,21 @@ pub struct Face<'a> {
     pub(crate) gpos: Option<PositioningTable<'a>>,
 }
 
-impl<'a> AsRef<ttf_parser::Face<'a>> for Face<'a> {
+impl<'a> AsRef<ttf_parser::Face<'a>> for hb_font_t<'a> {
     #[inline]
     fn as_ref(&self) -> &ttf_parser::Face<'a> {
         &self.ttfp_face
     }
 }
 
-impl<'a> AsMut<ttf_parser::Face<'a>> for Face<'a> {
+impl<'a> AsMut<ttf_parser::Face<'a>> for hb_font_t<'a> {
     #[inline]
     fn as_mut(&mut self) -> &mut ttf_parser::Face<'a> {
         &mut self.ttfp_face
     }
 }
 
-impl<'a> core::ops::Deref for Face<'a> {
+impl<'a> core::ops::Deref for hb_font_t<'a> {
     type Target = ttf_parser::Face<'a>;
 
     #[inline]
@@ -55,14 +55,14 @@ impl<'a> core::ops::Deref for Face<'a> {
     }
 }
 
-impl<'a> core::ops::DerefMut for Face<'a> {
+impl<'a> core::ops::DerefMut for hb_font_t<'a> {
     #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.ttfp_face
     }
 }
 
-impl<'a> Face<'a> {
+impl<'a> hb_font_t<'a> {
     /// Creates a new `Face` from data.
     ///
     /// Data will be referenced, not owned.
@@ -75,7 +75,7 @@ impl<'a> Face<'a> {
     ///
     /// Data will be referenced, not owned.
     pub fn from_face(face: ttf_parser::Face<'a>) -> Self {
-        Face {
+        hb_font_t {
             units_per_em: face.units_per_em(),
             pixels_per_em: None,
             points_per_em: None,

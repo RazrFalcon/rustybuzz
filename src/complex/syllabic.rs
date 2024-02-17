@@ -1,9 +1,9 @@
-use crate::buffer::{Buffer, BufferFlags};
-use crate::{Face, GlyphInfo};
+use crate::buffer::{hb_buffer_t, BufferFlags};
+use crate::{hb_font_t, hb_glyph_info_t};
 
 pub fn insert_dotted_circles(
-    face: &Face,
-    buffer: &mut Buffer,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
     broken_syllable_type: u8,
     dottedcircle_category: u8,
     repha_category: Option<u8>,
@@ -32,9 +32,9 @@ pub fn insert_dotted_circles(
         None => return,
     };
 
-    let mut dottedcircle = GlyphInfo {
+    let mut dottedcircle = hb_glyph_info_t {
         glyph_id: 0x25CC,
-        ..GlyphInfo::default()
+        ..hb_glyph_info_t::default()
     };
     dottedcircle.set_complex_var_u8_category(dottedcircle_category);
     if let Some(dottedcircle_position) = dottedcircle_position {

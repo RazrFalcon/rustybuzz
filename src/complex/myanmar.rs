@@ -1,9 +1,13 @@
 use super::indic::{category, position};
 use super::*;
-use crate::buffer::Buffer;
+use crate::buffer::hb_buffer_t;
 use crate::ot::{feature, FeatureFlags};
-use crate::plan::{ShapePlan, ShapePlanner};
-use crate::{Face, GlyphInfo, Tag};
+use crate::ot_shape_normalize::{
+    HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
+    HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
+};
+use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::{hb_font_t, hb_glyph_info_t, Tag};
 
 pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -11,7 +15,7 @@ pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
     create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
-    normalization_mode: Some(ShapeNormalizationMode::ComposedDiacriticsNoShortCircuit),
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
     decompose: None,
     compose: None,
     setup_masks: Some(setup_masks),
@@ -30,7 +34,7 @@ pub const MYANMAR_ZAWGYI_SHAPER: ComplexShaper = ComplexShaper {
     create_data: None,
     preprocess_text: None,
     postprocess_glyphs: None,
-    normalization_mode: None,
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
     decompose: None,
     compose: None,
     setup_masks: None,
@@ -56,7 +60,7 @@ const MYANMAR_FEATURES: &[Tag] = &[
     feature::POST_BASE_SUBSTITUTIONS,
 ];
 
-impl GlyphInfo {
+impl hb_glyph_info_t {
     fn set_myanmar_properties(&mut self) {
         let u = self.glyph_id;
         let (mut cat, mut pos) = super::indic::get_category_and_position(u);
@@ -170,7 +174,7 @@ fn collect_features(planner: &mut ShapePlanner) {
     }
 }
 
-fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     super::myanmar_machine::find_syllables_myanmar(buffer);
 
     let mut start = 0;
@@ -182,7 +186,7 @@ fn setup_syllables(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
     }
 }
 
-fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     use super::myanmar_machine::SyllableType;
 
     syllabic::insert_dotted_circles(
@@ -203,7 +207,7 @@ fn reorder(_: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     }
 }
 
-fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
+fn reorder_syllable(start: usize, end: usize, buffer: &mut hb_buffer_t) {
     use super::myanmar_machine::SyllableType;
 
     let syllable_type = match buffer.info[start].syllable() & 0x0F {
@@ -225,7 +229,7 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut Buffer) {
 
 // Rules from:
 // https://docs.microsoft.com/en-us/typography/script-development/myanmar
-fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut Buffer) {
+fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut hb_buffer_t) {
     let mut base = end;
     let mut has_reph = false;
 
@@ -325,7 +329,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     });
 }
 
-fn setup_masks(_: &ShapePlan, _: &Face, buffer: &mut Buffer) {
+fn setup_masks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     // We cannot setup masks here.  We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {

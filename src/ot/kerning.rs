@@ -3,30 +3,30 @@ use ttf_parser::{apple_layout, kern, GlyphId};
 use super::apply::ApplyContext;
 use super::matching::SkippyIter;
 use super::{lookup_flags, TableIndex};
-use crate::buffer::{Buffer, BufferScratchFlags};
+use crate::buffer::{hb_buffer_t, BufferScratchFlags};
 use crate::ot::attach_type;
-use crate::plan::ShapePlan;
-use crate::{Face, Mask};
+use crate::plan::hb_ot_shape_plan_t;
+use crate::{hb_font_t, Mask};
 
-pub fn has_kerning(face: &Face) -> bool {
+pub fn has_kerning(face: &hb_font_t) -> bool {
     face.tables().kern.is_some()
 }
 
-pub fn has_machine_kerning(face: &Face) -> bool {
+pub fn has_machine_kerning(face: &hb_font_t) -> bool {
     match face.tables().kern {
         Some(ref kern) => kern.subtables.into_iter().any(|s| s.has_state_machine),
         None => false,
     }
 }
 
-pub fn has_cross_kerning(face: &Face) -> bool {
+pub fn has_cross_kerning(face: &hb_font_t) -> bool {
     match face.tables().kern {
         Some(ref kern) => kern.subtables.into_iter().any(|s| s.has_cross_stream),
         None => false,
     }
 }
 
-pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
+pub fn kern(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     let subtables = match face.tables().kern {
         Some(table) => table.subtables,
         None => return,
@@ -79,8 +79,8 @@ pub fn kern(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
 
 // TODO: remove
 fn machine_kern(
-    face: &Face,
-    buffer: &mut Buffer,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
     kern_mask: Mask,
     cross_stream: bool,
     get_kerning: impl Fn(u32, u32) -> i32,
@@ -147,9 +147,9 @@ fn machine_kern(
 
 fn apply_simple_kerning(
     subtable: &kern::Subtable,
-    face: &Face,
+    face: &hb_font_t,
     kern_mask: Mask,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     machine_kern(
         face,
@@ -170,7 +170,11 @@ struct StateMachineDriver {
     depth: usize,
 }
 
-fn apply_state_machine_kerning(subtable: &kern::Subtable, kern_mask: Mask, buffer: &mut Buffer) {
+fn apply_state_machine_kerning(
+    subtable: &kern::Subtable,
+    kern_mask: Mask,
+    buffer: &mut hb_buffer_t,
+) {
     let state_table = match subtable.format {
         kern::Format::Format1(ref state_table) => state_table,
         _ => return,
@@ -254,7 +258,7 @@ fn state_machine_transition(
     kern_mask: Mask,
     state_table: &apple_layout::StateTable,
     driver: &mut StateMachineDriver,
-    buffer: &mut Buffer,
+    buffer: &mut hb_buffer_t,
 ) {
     if entry.has_push() {
         if driver.depth < driver.stack.len() {
