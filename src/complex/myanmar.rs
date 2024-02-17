@@ -6,7 +6,7 @@ use crate::ot_shape_normalize::{
     HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
     HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
 };
-use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::{hb_font_t, hb_glyph_info_t, Tag};
 
 pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
@@ -165,7 +165,7 @@ fn collect_features(planner: &mut ShapePlanner) {
 
     planner
         .ot_map
-        .add_gsub_pause(Some(crate::ot::clear_syllables));
+        .add_gsub_pause(Some(crate::ot_layout::_hb_clear_syllables));
 
     for feature in MYANMAR_FEATURES.iter().skip(4) {
         planner

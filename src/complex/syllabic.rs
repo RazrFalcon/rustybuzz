@@ -27,7 +27,7 @@ pub fn insert_dotted_circles(
         return;
     }
 
-    let dottedcircle_glyph = match face.glyph_index(0x25CC) {
+    let dottedcircle_glyph = match face.get_nominal_glyph(0x25CC) {
         Some(g) => g.0 as u32,
         None => return,
     };

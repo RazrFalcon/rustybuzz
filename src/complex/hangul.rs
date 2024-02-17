@@ -4,7 +4,7 @@ use super::*;
 use crate::buffer::{hb_buffer_t, BufferClusterLevel, BufferFlags};
 use crate::ot::{feature, FeatureFlags, Map};
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
-use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::{hb_font_t, hb_glyph_info_t, Mask};
 
 pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
@@ -336,7 +336,7 @@ fn is_hangul_tone(u: u32) -> bool {
 }
 
 fn is_zero_width_char(face: &hb_font_t, c: char) -> bool {
-    if let Some(glyph) = face.glyph_index(c as u32) {
+    if let Some(glyph) = face.get_nominal_glyph(c as u32) {
         face.glyph_h_advance(glyph) == 0
     } else {
         false

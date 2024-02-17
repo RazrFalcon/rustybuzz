@@ -21,12 +21,13 @@ mod aat;
 mod common;
 mod complex;
 mod face;
-mod fallback;
 mod glyph_set;
 mod ot;
+mod ot_layout;
+mod ot_shape_fallback;
 mod ot_shape_normalize;
-mod plan;
 mod shape;
+mod shape_plan;
 mod tag;
 mod tag_table;
 mod text_parser;
@@ -43,8 +44,8 @@ pub use crate::buffer::{
 };
 pub use crate::common::{script, Direction, Feature, Language, Script, Variation};
 pub use crate::face::hb_font_t as Face;
-pub use crate::plan::hb_ot_shape_plan_t as ShapePlan;
 pub use crate::shape::{shape, shape_with_plan};
+pub use crate::shape_plan::hb_ot_shape_plan_t as ShapePlan;
 
 use crate::buffer::hb_glyph_info_t;
 use crate::face::hb_font_t;

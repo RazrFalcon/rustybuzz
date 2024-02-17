@@ -5,8 +5,9 @@ use ttf_parser::{ankr, apple_layout, kerx, FromData, GlyphId};
 use crate::buffer::{hb_buffer_t, BufferScratchFlags};
 use crate::hb_font_t;
 use crate::ot::matching::SkippyIter;
-use crate::ot::{attach_type, lookup_flags, ApplyContext, TableIndex};
-use crate::plan::hb_ot_shape_plan_t;
+use crate::ot::{attach_type, lookup_flags, ApplyContext};
+use crate::ot_layout::TableIndex;
+use crate::shape_plan::hb_ot_shape_plan_t;
 
 trait ExtendedStateTableExt<T: FromData + Copy> {
     fn class(&self, glyph_id: GlyphId) -> Option<u16>;

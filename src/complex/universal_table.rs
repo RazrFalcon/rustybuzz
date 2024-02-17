@@ -1318,7 +1318,7 @@ pub fn get_category(info: &hb_glyph_info_t) -> Category {
         _ => {}
     }
 
-    if info.general_category() == GeneralCategory::Unassigned {
+    if crate::ot_layout::_hb_glyph_info_get_general_category(info) == GeneralCategory::Unassigned {
         return WJ;
     }
 

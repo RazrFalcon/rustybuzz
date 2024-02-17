@@ -3,7 +3,8 @@ use ttf_parser::opentype_layout::LayoutTable;
 use ttf_parser::GlyphId;
 
 use crate::buffer::GlyphPropsFlags;
-use crate::ot::{PositioningTable, SubstitutionTable, TableIndex};
+use crate::ot::{PositioningTable, SubstitutionTable};
+use crate::ot_layout::TableIndex;
 use crate::Variation;
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
@@ -126,10 +127,10 @@ impl<'a> hb_font_t<'a> {
     }
 
     pub(crate) fn has_glyph(&self, c: u32) -> bool {
-        self.glyph_index(c).is_some()
+        self.get_nominal_glyph(c).is_some()
     }
 
-    pub(crate) fn glyph_index(&self, c: u32) -> Option<GlyphId> {
+    pub(crate) fn get_nominal_glyph(&self, c: u32) -> Option<GlyphId> {
         let subtable_idx = self.prefered_cmap_encoding_subtable?;
         let subtable = self.tables().cmap?.subtables.get(subtable_idx)?;
         match subtable.glyph_index(c) {
@@ -146,7 +147,7 @@ impl<'a> hb_font_t<'a> {
                         // Windows seems to do, and that's hinted about at:
                         // https://docs.microsoft.com/en-us/typography/opentype/spec/recom
                         // under "Non-Standard (Symbol) Fonts".
-                        return self.glyph_index(0xF000 + c);
+                        return self.get_nominal_glyph(0xF000 + c);
                     }
                 }
 

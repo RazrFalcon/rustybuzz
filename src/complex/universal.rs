@@ -3,7 +3,7 @@ use super::*;
 use crate::buffer::hb_buffer_t;
 use crate::ot::{feature, FeatureFlags};
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
-use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use crate::{hb_font_t, hb_glyph_info_t, script, Mask, Script, Tag};
 
@@ -189,14 +189,14 @@ fn collect_features(planner: &mut ShapePlanner) {
     // Reordering group
     planner
         .ot_map
-        .add_gsub_pause(Some(crate::ot::clear_substitution_flags));
+        .add_gsub_pause(Some(crate::ot_layout::clear_substitution_flags));
     planner
         .ot_map
         .add_feature(feature::REPH_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_rphf));
     planner
         .ot_map
-        .add_gsub_pause(Some(crate::ot::clear_substitution_flags));
+        .add_gsub_pause(Some(crate::ot_layout::clear_substitution_flags));
     planner
         .ot_map
         .enable_feature(feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
@@ -212,7 +212,7 @@ fn collect_features(planner: &mut ShapePlanner) {
     planner.ot_map.add_gsub_pause(Some(reorder));
     planner
         .ot_map
-        .add_gsub_pause(Some(crate::ot::clear_syllables));
+        .add_gsub_pause(Some(crate::ot_layout::_hb_clear_syllables));
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {

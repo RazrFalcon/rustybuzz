@@ -3,14 +3,13 @@ use ttf_parser::opentype_layout::LookupIndex;
 use ttf_parser::GlyphId;
 
 use crate::buffer::{hb_buffer_t, BufferScratchFlags, GlyphPosition};
-use crate::plan::hb_ot_shape_plan_t;
+use crate::ot_layout::*;
+use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::{hb_font_t, Direction};
 
 use super::apply::{Apply, ApplyContext};
 use super::matching::SkippyIter;
-use super::{
-    lookup_flags, LayoutLookup, LayoutTable, PositioningLookup, PositioningTable, TableIndex,
-};
+use super::{lookup_flags, PositioningLookup, PositioningTable};
 
 pub fn position_start(_: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;
@@ -21,7 +20,7 @@ pub fn position_start(_: &hb_font_t, buffer: &mut hb_buffer_t) {
 }
 
 pub fn position(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::apply_layout_table(plan, face, buffer, face.gpos.as_ref());
+    apply_layout_table(plan, face, buffer, face.gpos.as_ref());
 }
 
 pub fn position_finish_advances(_: &hb_font_t, _: &mut hb_buffer_t) {}

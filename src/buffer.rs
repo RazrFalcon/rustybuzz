@@ -6,8 +6,8 @@ use ttf_parser::GlyphId;
 
 use crate::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::face::GlyphExtents;
-use crate::ot::_hb_glyph_info_get_modified_combining_class;
-use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt, Space};
+use crate::ot_layout::_hb_glyph_info_get_general_category;
+use crate::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
 use crate::{hb_font_t, script, Direction, Language, Mask, Script};
 
 const CONTEXT_LENGTH: usize = 5;
@@ -230,7 +230,7 @@ impl hb_glyph_info_t {
     }
 
     #[inline]
-    fn set_unicode_props(&mut self, n: u16) {
+    pub(crate) fn set_unicode_props(&mut self, n: u16) {
         let v: &mut [u16; 2] = bytemuck::cast_mut(&mut self.var2);
         v[0] = n;
     }
@@ -285,65 +285,20 @@ impl hb_glyph_info_t {
     }
 
     #[inline]
-    pub(crate) fn general_category(&self) -> GeneralCategory {
-        let n = self.unicode_props() & UnicodeProps::GENERAL_CATEGORY.bits();
-        GeneralCategory::from_rb(n as u32)
-    }
-
-    #[inline]
-    pub(crate) fn set_general_category(&mut self, gc: GeneralCategory) {
-        let gc = gc.to_rb();
-        let n =
-            (gc as u16) | (self.unicode_props() & (0xFF & !UnicodeProps::GENERAL_CATEGORY.bits()));
-        self.set_unicode_props(n);
-    }
-
-    #[inline]
-    pub(crate) fn space_fallback(&self) -> Option<Space> {
-        if self.general_category() == GeneralCategory::SpaceSeparator {
-            let n = (self.unicode_props() >> 8) as u8;
-            Some(n)
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    pub(crate) fn set_space_fallback(&mut self, space: Space) {
-        if self.general_category() == GeneralCategory::SpaceSeparator {
-            let n = ((space as u16) << 8) | (self.unicode_props() & 0xFF);
-            self.set_unicode_props(n);
-        }
-    }
-
-    #[inline]
     pub(crate) fn is_unicode_mark(&self) -> bool {
-        self.general_category().is_mark()
+        _hb_glyph_info_get_general_category(self).is_mark()
     }
 
     #[inline]
     pub(crate) fn is_zwnj(&self) -> bool {
-        self.general_category() == GeneralCategory::Format
+        _hb_glyph_info_get_general_category(self) == hb_unicode_general_category_t::Format
             && (self.unicode_props() & UnicodeProps::CF_ZWNJ.bits() != 0)
     }
 
     #[inline]
     pub(crate) fn is_zwj(&self) -> bool {
-        self.general_category() == GeneralCategory::Format
+        _hb_glyph_info_get_general_category(self) == hb_unicode_general_category_t::Format
             && (self.unicode_props() & UnicodeProps::CF_ZWJ.bits() != 0)
-    }
-
-    #[inline]
-    pub(crate) fn modified_combining_class(&self) -> u8 {
-        _hb_glyph_info_get_modified_combining_class(self)
-    }
-
-    #[inline]
-    pub(crate) fn set_modified_combining_class(&mut self, mcc: u8) {
-        if self.is_unicode_mark() {
-            let n = ((mcc as u16) << 8) | (self.unicode_props() & 0xFF);
-            self.set_unicode_props(n);
-        }
     }
 
     #[inline]

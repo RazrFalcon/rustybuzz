@@ -5,15 +5,13 @@ use ttf_parser::GlyphId;
 
 use crate::buffer::{hb_buffer_t, GlyphPropsFlags};
 use crate::hb_font_t;
-use crate::plan::hb_ot_shape_plan_t;
-use crate::unicode::GeneralCategory;
+use crate::ot_layout::*;
+use crate::shape_plan::hb_ot_shape_plan_t;
+use crate::unicode::hb_unicode_general_category_t;
 
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
 use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead};
-use super::{
-    LayoutLookup, LayoutTable, Map, SubstLookup, SubstitutionTable, TableIndex, MAX_CONTEXT_LENGTH,
-    MAX_NESTING_LEVEL,
-};
+use super::{Map, SubstLookup, SubstitutionTable};
 use ttf_parser::opentype_layout::LookupIndex;
 
 /// Called before substitution lookups are performed, to ensure that glyph
@@ -23,7 +21,7 @@ pub fn substitute_start(face: &hb_font_t, buffer: &mut hb_buffer_t) {
 }
 
 pub fn substitute(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::apply_layout_table(plan, face, buffer, face.gsub.as_ref());
+    apply_layout_table(plan, face, buffer, face.gsub.as_ref());
 }
 
 fn set_glyph_props(face: &hb_font_t, buffer: &mut hb_buffer_t) {
@@ -400,8 +398,10 @@ fn ligate(
 
     if is_ligature {
         first.set_lig_props_for_ligature(lig_id, total_component_count);
-        if first.general_category() == GeneralCategory::NonspacingMark {
-            first.set_general_category(GeneralCategory::OtherLetter);
+        if _hb_glyph_info_get_general_category(first)
+            == hb_unicode_general_category_t::NonspacingMark
+        {
+            _hb_glyph_info_set_general_category(first, hb_unicode_general_category_t::OtherLetter);
         }
     }
 

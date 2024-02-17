@@ -3,11 +3,12 @@ use crate::buffer::{
     GlyphPropsFlags,
 };
 use crate::complex::ZeroWidthMarksMode;
-use crate::plan::hb_ot_shape_plan_t;
-use crate::unicode::{CharExt, GeneralCategory, GeneralCategoryExt};
+use crate::ot_layout::_hb_glyph_info_get_general_category;
+use crate::shape_plan::hb_ot_shape_plan_t;
+use crate::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
 use crate::{
-    aat, fallback, hb_font_t, ot, ot_shape_normalize, script, Direction, Feature, GlyphBuffer,
-    UnicodeBuffer,
+    aat, hb_font_t, ot, ot_shape_fallback, ot_shape_normalize, script, Direction, Feature,
+    GlyphBuffer, UnicodeBuffer,
 };
 
 /// Shapes the buffer content using provided font and features.
@@ -130,7 +131,9 @@ fn substitute_default(ctx: &mut ShapeContext) {
 
     // This is unfortunate to go here, but necessary...
     if ctx.plan.fallback_mark_positioning {
-        fallback::recategorize_marks(ctx.plan, ctx.face, ctx.buffer);
+        ot_shape_fallback::_hb_ot_shape_fallback_mark_position_recategorize_marks(
+            ctx.plan, ctx.face, ctx.buffer,
+        );
     }
 
     map_glyphs_fast(ctx.buffer);
@@ -193,7 +196,7 @@ fn position_default(ctx: &mut ShapeContext) {
         .scratch_flags
         .contains(BufferScratchFlags::HAS_SPACE_FALLBACK)
     {
-        fallback::adjust_spaces(ctx.plan, ctx.face, ctx.buffer);
+        ot_shape_fallback::_hb_ot_shape_fallback_spaces(ctx.plan, ctx.face, ctx.buffer);
     }
 }
 
@@ -238,7 +241,12 @@ fn position_complex(ctx: &mut ShapeContext) {
     ot::position_finish_offsets(ctx.face, ctx.buffer);
 
     if ctx.plan.fallback_mark_positioning {
-        fallback::position_marks(ctx.plan, ctx.face, ctx.buffer, adjust_offsets_when_zeroing);
+        ot_shape_fallback::position_marks(
+            ctx.plan,
+            ctx.face,
+            ctx.buffer,
+            adjust_offsets_when_zeroing,
+        );
     }
 }
 
@@ -251,7 +259,7 @@ fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
     if plan.apply_kern {
         ot::kern(plan, face, buffer);
     } else if plan.apply_fallback_kern {
-        fallback::kern(plan, face, buffer);
+        ot_shape_fallback::_hb_ot_shape_fallback_kern(plan, face, buffer);
     }
 
     if plan.apply_trak {
@@ -309,13 +317,16 @@ fn setup_masks_fraction(ctx: &mut ShapeContext) {
         if buffer.info[i].glyph_id == 0x2044 {
             let mut start = i;
             while start > 0
-                && buffer.info[start - 1].general_category() == GeneralCategory::DecimalNumber
+                && _hb_glyph_info_get_general_category(&buffer.info[start - 1])
+                    == hb_unicode_general_category_t::DecimalNumber
             {
                 start -= 1;
             }
 
             let mut end = i + 1;
-            while end < len && buffer.info[end].general_category() == GeneralCategory::DecimalNumber
+            while end < len
+                && _hb_glyph_info_get_general_category(&buffer.info[end])
+                    == hb_unicode_general_category_t::DecimalNumber
             {
                 end += 1;
             }
@@ -361,7 +372,8 @@ fn set_unicode_props(buffer: &mut hb_buffer_t) {
 
         // Marks are already set as continuation by the above line.
         // Handle Emoji_Modifier and ZWJ-continuation.
-        if info.general_category() == GeneralCategory::ModifierSymbol
+        if _hb_glyph_info_get_general_category(info)
+            == hb_unicode_general_category_t::ModifierSymbol
             && matches!(info.glyph_id, 0x1F3FB..=0x1F3FF)
         {
             info.set_continuation();
@@ -459,8 +471,8 @@ fn ensure_native_direction(buffer: &mut hb_buffer_t) {
         let mut found_number = false;
         let mut found_letter = false;
         for info in &buffer.info {
-            let gc = info.general_category();
-            if gc == GeneralCategory::DecimalNumber {
+            let gc = _hb_glyph_info_get_general_category(info);
+            if gc == hb_unicode_general_category_t::DecimalNumber {
                 found_number = true;
             } else if gc.is_letter() {
                 found_letter = true;
@@ -531,7 +543,8 @@ fn synthesize_glyph_classes(buffer: &mut hb_buffer_t) {
         // marks them as non-mark.  Some Mongolian fonts without
         // GDEF rely on this.  Another notable character that
         // this applies to is COMBINING GRAPHEME JOINER.
-        let class = if info.general_category() != GeneralCategory::NonspacingMark
+        let class = if _hb_glyph_info_get_general_category(info)
+            != hb_unicode_general_category_t::NonspacingMark
             || info.is_default_ignorable()
         {
             GlyphPropsFlags::BASE_GLYPH
@@ -595,7 +608,7 @@ fn hide_default_ignorables(buffer: &mut hb_buffer_t, face: &hb_font_t) {
         {
             if let Some(invisible) = buffer
                 .invisible
-                .or_else(|| face.glyph_index(u32::from(' ')))
+                .or_else(|| face.get_nominal_glyph(u32::from(' ')))
             {
                 let len = buffer.len;
                 for info in &mut buffer.info[..len] {

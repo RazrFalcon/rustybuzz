@@ -3,7 +3,8 @@ use alloc::vec::Vec;
 use core::any::Any;
 
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
-use crate::ot::{self, feature, FeatureFlags, TableIndex};
+use crate::ot::{self, feature, FeatureFlags};
+use crate::ot_layout::TableIndex;
 use crate::{aat, hb_font_t, Direction, Feature, Language, Mask, Script, Tag};
 
 /// A reusable plan for shaping a text buffer.

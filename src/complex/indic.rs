@@ -7,11 +7,10 @@ use ttf_parser::GlyphId;
 
 use super::*;
 use crate::buffer::hb_buffer_t;
-use crate::ot::{
-    feature, FeatureFlags, LayoutTable, Map, TableIndex, WouldApply, WouldApplyContext,
-};
+use crate::ot::{feature, FeatureFlags, Map, WouldApply, WouldApplyContext};
+use crate::ot_layout::*;
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
-use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{hb_gc, CharExt, GeneralCategoryExt};
 use crate::{hb_font_t, hb_glyph_info_t, script, Mask, Script, Tag};
 
@@ -673,7 +672,7 @@ fn collect_features(planner: &mut ShapePlanner) {
     planner.ot_map.add_gsub_pause(Some(final_reordering));
     planner
         .ot_map
-        .add_gsub_pause(Some(crate::ot::clear_syllables));
+        .add_gsub_pause(Some(crate::ot_layout::_hb_clear_syllables));
 
     for feature in INDIC_FEATURES.iter().skip(10) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
@@ -725,7 +724,7 @@ fn decompose(ctx: &hb_ot_shape_normalize_context_t, ab: char) -> Option<(char, c
         //   https://docs.microsoft.com/en-us/typography/script-development/sinhala#shaping
 
         let mut ok = false;
-        if let Some(g) = ctx.face.glyph_index(u32::from(ab)) {
+        if let Some(g) = ctx.face.get_nominal_glyph(u32::from(ab)) {
             let indic_plan = ctx.plan.data::<IndicShapePlan>();
             ok = indic_plan
                 .pstf
@@ -811,7 +810,7 @@ fn update_consonant_positions(
 
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {
-        virama_glyph = face.glyph_index(indic_plan.config.virama);
+        virama_glyph = face.get_nominal_glyph(indic_plan.config.virama);
     }
 
     if let Some(virama) = virama_glyph {
@@ -1472,7 +1471,7 @@ fn final_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
 
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {
-        if let Some(g) = face.glyph_index(indic_plan.config.virama) {
+        if let Some(g) = face.get_nominal_glyph(indic_plan.config.virama) {
             virama_glyph = Some(g.0 as u32);
         }
     }
@@ -1941,12 +1940,12 @@ fn final_reordering_impl(
     // Apply 'init' to the Left Matra if it's a word start.
     if buffer.info[start].indic_position() == position::PRE_M {
         if start == 0
-            || (rb_flag_unsafe(buffer.info[start - 1].general_category().to_rb())
-                & rb_flag_range(
-                    hb_gc::RB_UNICODE_GENERAL_CATEGORY_FORMAT,
-                    hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK,
-                ))
-                == 0
+            || (rb_flag_unsafe(
+                _hb_glyph_info_get_general_category(&buffer.info[start - 1]).to_rb(),
+            ) & rb_flag_range(
+                hb_gc::RB_UNICODE_GENERAL_CATEGORY_FORMAT,
+                hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK,
+            )) == 0
         {
             buffer.info[start].mask |= plan.mask_array[indic_feature::INIT];
         } else {

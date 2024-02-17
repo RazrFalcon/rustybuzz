@@ -1,8 +1,8 @@
 use super::*;
 use crate::buffer::{hb_buffer_t, BufferClusterLevel};
-use crate::ot::TableIndex;
-use crate::plan::hb_ot_shape_plan_t;
-use crate::unicode::GeneralCategory;
+use crate::ot_layout::{TableIndex, _hb_glyph_info_set_general_category};
+use crate::shape_plan::hb_ot_shape_plan_t;
+use crate::unicode::hb_unicode_general_category_t;
 use crate::{hb_font_t, script};
 
 pub const THAI_SHAPER: ComplexShaper = ComplexShaper {
@@ -141,11 +141,11 @@ fn pua_shape(u: u32, action: Action, face: &hb_font_t) -> u32 {
 
     for m in mappings {
         if m.u == u {
-            if face.glyph_index(m.win_pua).is_some() {
+            if face.get_nominal_glyph(m.win_pua).is_some() {
                 return m.win_pua;
             }
 
-            if face.glyph_index(m.mac_pua).is_some() {
+            if face.get_nominal_glyph(m.mac_pua).is_some() {
                 return m.mac_pua;
             }
 
@@ -390,7 +390,10 @@ fn preprocess_text(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_
 
         // Make Nikhahit be recognized as a ccc=0 mark when zeroing widths.
         let end = buffer.out_len;
-        buffer.out_info_mut()[end - 2].set_general_category(GeneralCategory::NonspacingMark);
+        _hb_glyph_info_set_general_category(
+            &mut buffer.out_info_mut()[end - 2],
+            hb_unicode_general_category_t::NonspacingMark,
+        );
 
         // Ok, let's see...
         let mut start = end - 2;

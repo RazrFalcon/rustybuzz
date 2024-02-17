@@ -2,12 +2,11 @@ use alloc::boxed::Box;
 
 use super::*;
 use crate::buffer::{hb_buffer_t, BufferScratchFlags};
-use crate::ot::{feature, FeatureFlags};
+use crate::ot::*;
+use crate::ot_layout::*;
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
-use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
-use crate::unicode::{
-    hb_gc, modified_combining_class, CharExt, GeneralCategory, GeneralCategoryExt,
-};
+use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::unicode::*;
 use crate::{hb_font_t, hb_glyph_info_t, script, Mask, Script, Tag};
 
 pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
@@ -377,7 +376,9 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
             while context != 0
                 && !action::is_stch(buffer.info[context - 1].arabic_shaping_action())
                 && (buffer.info[context - 1].is_default_ignorable()
-                    || is_word_category(buffer.info[context - 1].general_category()))
+                    || is_word_category(_hb_glyph_info_get_general_category(
+                        &buffer.info[context - 1],
+                    )))
             {
                 context -= 1;
                 w_total += buffer.pos[context].x_advance;
@@ -447,7 +448,7 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
 
 // See:
 // https://github.com/harfbuzz/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516
-fn is_word_category(gc: GeneralCategory) -> bool {
+fn is_word_category(gc: hb_unicode_general_category_t) -> bool {
     (rb_flag_unsafe(gc.to_rb())
         & (rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED)
             | rb_flag(hb_gc::RB_UNICODE_GENERAL_CATEGORY_PRIVATE_USE)
@@ -503,8 +504,10 @@ fn arabic_joining(buffer: &mut hb_buffer_t) {
     }
 
     for i in 0..buffer.len {
-        let this_type =
-            get_joining_type(buffer.info[i].as_char(), buffer.info[i].general_category());
+        let this_type = get_joining_type(
+            buffer.info[i].as_char(),
+            _hb_glyph_info_get_general_category(&buffer.info[i]),
+        );
         if this_type == JoiningType::T {
             buffer.info[i].set_arabic_shaping_action(action::NONE);
             continue;
@@ -573,7 +576,7 @@ fn mongolian_variation_selectors(buffer: &mut hb_buffer_t) {
     }
 }
 
-fn get_joining_type(u: char, gc: GeneralCategory) -> JoiningType {
+fn get_joining_type(u: char, gc: hb_unicode_general_category_t) -> JoiningType {
     let j_type = super::arabic_table::joining_type(u);
     if j_type != JoiningType::X {
         return j_type;
@@ -612,7 +615,7 @@ const MODIFIER_COMBINING_MARKS: &[u32] = &[
 fn reorder_marks(_: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t, mut start: usize, end: usize) {
     let mut i = start;
     for cc in [220u8, 230].iter().cloned() {
-        while i < end && buffer.info[i].modified_combining_class() < cc {
+        while i < end && _hb_glyph_info_get_modified_combining_class(&buffer.info[i]) < cc {
             i += 1;
         }
 
@@ -620,13 +623,13 @@ fn reorder_marks(_: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t, mut start: us
             break;
         }
 
-        if buffer.info[i].modified_combining_class() > cc {
+        if _hb_glyph_info_get_modified_combining_class(&buffer.info[i]) > cc {
             continue;
         }
 
         let mut j = i;
         while j < end
-            && buffer.info[j].modified_combining_class() == cc
+            && _hb_glyph_info_get_modified_combining_class(&buffer.info[j]) == cc
             && MODIFIER_COMBINING_MARKS.contains(&buffer.info[j].glyph_id)
         {
             j += 1;
@@ -668,7 +671,7 @@ fn reorder_marks(_: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t, mut start: us
         };
 
         while start < new_start {
-            buffer.info[start].set_modified_combining_class(new_cc);
+            _hb_glyph_info_set_modified_combining_class(&mut buffer.info[start], new_cc);
             start += 1;
         }
 

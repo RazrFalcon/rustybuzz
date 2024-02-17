@@ -5,7 +5,7 @@ use super::*;
 use crate::buffer::hb_buffer_t;
 use crate::ot::{feature, FeatureFlags};
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
-use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
 use crate::{hb_font_t, hb_glyph_info_t, Mask, Tag};
 
@@ -148,7 +148,7 @@ fn collect_features(planner: &mut ShapePlanner) {
 
     planner
         .ot_map
-        .add_gsub_pause(Some(crate::ot::clear_syllables));
+        .add_gsub_pause(Some(crate::ot_layout::_hb_clear_syllables));
 
     for feature in KHMER_FEATURES.iter().skip(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);

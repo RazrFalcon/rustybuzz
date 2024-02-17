@@ -2,20 +2,10 @@ use ttf_parser::GlyphId;
 
 use crate::buffer::{hb_buffer_t, GlyphPosition};
 use crate::face::GlyphExtents;
-use crate::plan::hb_ot_shape_plan_t;
-use crate::unicode::{modified_combining_class, space, CanonicalCombiningClass, GeneralCategory};
+use crate::ot_layout::*;
+use crate::shape_plan::hb_ot_shape_plan_t;
+use crate::unicode::*;
 use crate::{hb_font_t, Direction};
-
-pub fn recategorize_marks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    let len = buffer.len;
-    for info in &mut buffer.info[..len] {
-        if info.general_category() == GeneralCategory::NonspacingMark {
-            let mut class = info.modified_combining_class();
-            class = recategorize_combining_class(info.glyph_id, class);
-            info.set_modified_combining_class(class);
-        }
-    }
-}
 
 fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
     use modified_combining_class as mcc;
@@ -98,166 +88,19 @@ fn recategorize_combining_class(u: u32, mut class: u8) -> u8 {
     }
 }
 
-pub fn position_marks(
-    plan: &hb_ot_shape_plan_t,
-    face: &hb_font_t,
+pub fn _hb_ot_shape_fallback_mark_position_recategorize_marks(
+    _: &hb_ot_shape_plan_t,
+    _: &hb_font_t,
     buffer: &mut hb_buffer_t,
-    adjust_offsets_when_zeroing: bool,
 ) {
-    let mut start = 0;
     let len = buffer.len;
-    for i in 1..len {
-        if !buffer.info[i].is_unicode_mark() {
-            position_cluster(plan, face, buffer, start, i, adjust_offsets_when_zeroing);
-            start = i;
-        }
-    }
-
-    position_cluster(plan, face, buffer, start, len, adjust_offsets_when_zeroing);
-}
-
-fn position_cluster(
-    plan: &hb_ot_shape_plan_t,
-    face: &hb_font_t,
-    buffer: &mut hb_buffer_t,
-    start: usize,
-    end: usize,
-    adjust_offsets_when_zeroing: bool,
-) {
-    if end - start < 2 {
-        return;
-    }
-
-    // Find the base glyph
-    let mut i = start;
-    while i < end {
-        if !buffer.info[i].is_unicode_mark() {
-            // Find mark glyphs
-            let mut j = i + 1;
-            while j < end && buffer.info[j].is_unicode_mark() {
-                j += 1;
-            }
-
-            position_around_base(plan, face, buffer, i, j, adjust_offsets_when_zeroing);
-            i = j - 1;
-        }
-        i += 1;
-    }
-}
-
-fn position_around_base(
-    plan: &hb_ot_shape_plan_t,
-    face: &hb_font_t,
-    buffer: &mut hb_buffer_t,
-    base: usize,
-    end: usize,
-    adjust_offsets_when_zeroing: bool,
-) {
-    let mut horizontal_dir = Direction::Invalid;
-    buffer.unsafe_to_break(Some(base), Some(end));
-
-    let base_info = &buffer.info[base];
-    let base_pos = &buffer.pos[base];
-    let base_glyph = base_info.as_glyph();
-
-    let mut base_extents = GlyphExtents::default();
-    if !face.glyph_extents(base_glyph, &mut base_extents) {
-        zero_mark_advances(buffer, base + 1, end, adjust_offsets_when_zeroing);
-        return;
-    };
-
-    base_extents.y_bearing += base_pos.y_offset;
-    base_extents.x_bearing = 0;
-
-    // Use horizontal advance for horizontal positioning.
-    // Generally a better idea. Also works for zero-ink glyphs. See:
-    // https://github.com/harfbuzz/harfbuzz/issues/1532
-    base_extents.width = face.glyph_h_advance(base_glyph) as i32;
-
-    let lig_id = base_info.lig_id() as u32;
-    let num_lig_components = base_info.lig_num_comps() as i32;
-
-    let mut x_offset = 0;
-    let mut y_offset = 0;
-    if buffer.direction.is_forward() {
-        x_offset -= base_pos.x_advance;
-        y_offset -= base_pos.y_advance;
-    }
-
-    let mut last_lig_component: i32 = -1;
-    let mut last_combining_class: u8 = 255;
-    let mut component_extents = base_extents;
-    let mut cluster_extents = base_extents;
-
-    for (info, pos) in buffer.info[base + 1..end]
-        .iter()
-        .zip(&mut buffer.pos[base + 1..end])
-    {
-        if info.modified_combining_class() != 0 {
-            if num_lig_components > 1 {
-                let this_lig_id = info.lig_id() as u32;
-                let mut this_lig_component = info.lig_comp() as i32 - 1;
-
-                // Conditions for attaching to the last component.
-                if lig_id == 0 || lig_id != this_lig_id || this_lig_component >= num_lig_components
-                {
-                    this_lig_component = num_lig_components - 1;
-                }
-
-                if last_lig_component != this_lig_component {
-                    last_lig_component = this_lig_component;
-                    last_combining_class = 255;
-                    component_extents = base_extents;
-
-                    if horizontal_dir == Direction::Invalid {
-                        horizontal_dir = if plan.direction.is_horizontal() {
-                            plan.direction
-                        } else {
-                            plan.script
-                                .and_then(Direction::from_script)
-                                .unwrap_or(Direction::LeftToRight)
-                        };
-                    }
-
-                    component_extents.x_bearing += (if horizontal_dir == Direction::LeftToRight {
-                        this_lig_component
-                    } else {
-                        num_lig_components - 1 - this_lig_component
-                    } * component_extents.width)
-                        / num_lig_components;
-
-                    component_extents.width /= num_lig_components;
-                }
-            }
-
-            let this_combining_class = info.modified_combining_class();
-            if last_combining_class != this_combining_class {
-                last_combining_class = this_combining_class;
-                cluster_extents = component_extents;
-            }
-
-            position_mark(
-                plan,
-                face,
-                buffer.direction,
-                info.as_glyph(),
-                pos,
-                &mut cluster_extents,
-                conv_combining_class(this_combining_class),
-            );
-
-            pos.x_advance = 0;
-            pos.y_advance = 0;
-            pos.x_offset += x_offset;
-            pos.y_offset += y_offset;
-        } else {
-            if buffer.direction.is_forward() {
-                x_offset -= pos.x_advance;
-                y_offset -= pos.y_advance;
-            } else {
-                x_offset += pos.x_advance;
-                y_offset += pos.y_advance;
-            }
+    for info in &mut buffer.info[..len] {
+        if _hb_glyph_info_get_general_category(info)
+            == hb_unicode_general_category_t::NonspacingMark
+        {
+            let mut class = _hb_glyph_info_get_modified_combining_class(info);
+            class = recategorize_combining_class(info.glyph_id, class);
+            _hb_glyph_info_set_modified_combining_class(info, class);
         }
     }
 }
@@ -272,7 +115,9 @@ fn zero_mark_advances(
         .iter()
         .zip(&mut buffer.pos[start..end])
     {
-        if info.general_category() == GeneralCategory::NonspacingMark {
+        if _hb_glyph_info_get_general_category(info)
+            == hb_unicode_general_category_t::NonspacingMark
+        {
             if adjust_offsets_when_zeroing {
                 pos.x_offset -= pos.x_advance;
                 pos.y_offset -= pos.y_advance;
@@ -399,86 +244,254 @@ fn position_mark(
     }
 }
 
-pub fn kern(_: &hb_ot_shape_plan_t, _: &hb_font_t, _: &mut hb_buffer_t) {
+fn position_around_base(
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
+    base: usize,
+    end: usize,
+    adjust_offsets_when_zeroing: bool,
+) {
+    let mut horizontal_dir = Direction::Invalid;
+    buffer.unsafe_to_break(Some(base), Some(end));
+
+    let base_info = &buffer.info[base];
+    let base_pos = &buffer.pos[base];
+    let base_glyph = base_info.as_glyph();
+
+    let mut base_extents = GlyphExtents::default();
+    if !face.glyph_extents(base_glyph, &mut base_extents) {
+        zero_mark_advances(buffer, base + 1, end, adjust_offsets_when_zeroing);
+        return;
+    };
+
+    base_extents.y_bearing += base_pos.y_offset;
+    base_extents.x_bearing = 0;
+
+    // Use horizontal advance for horizontal positioning.
+    // Generally a better idea. Also works for zero-ink glyphs. See:
+    // https://github.com/harfbuzz/harfbuzz/issues/1532
+    base_extents.width = face.glyph_h_advance(base_glyph) as i32;
+
+    let lig_id = base_info.lig_id() as u32;
+    let num_lig_components = base_info.lig_num_comps() as i32;
+
+    let mut x_offset = 0;
+    let mut y_offset = 0;
+    if buffer.direction.is_forward() {
+        x_offset -= base_pos.x_advance;
+        y_offset -= base_pos.y_advance;
+    }
+
+    let mut last_lig_component: i32 = -1;
+    let mut last_combining_class: u8 = 255;
+    let mut component_extents = base_extents;
+    let mut cluster_extents = base_extents;
+
+    for (info, pos) in buffer.info[base + 1..end]
+        .iter()
+        .zip(&mut buffer.pos[base + 1..end])
+    {
+        if _hb_glyph_info_get_modified_combining_class(info) != 0 {
+            if num_lig_components > 1 {
+                let this_lig_id = info.lig_id() as u32;
+                let mut this_lig_component = info.lig_comp() as i32 - 1;
+
+                // Conditions for attaching to the last component.
+                if lig_id == 0 || lig_id != this_lig_id || this_lig_component >= num_lig_components
+                {
+                    this_lig_component = num_lig_components - 1;
+                }
+
+                if last_lig_component != this_lig_component {
+                    last_lig_component = this_lig_component;
+                    last_combining_class = 255;
+                    component_extents = base_extents;
+
+                    if horizontal_dir == Direction::Invalid {
+                        horizontal_dir = if plan.direction.is_horizontal() {
+                            plan.direction
+                        } else {
+                            plan.script
+                                .and_then(Direction::from_script)
+                                .unwrap_or(Direction::LeftToRight)
+                        };
+                    }
+
+                    component_extents.x_bearing += (if horizontal_dir == Direction::LeftToRight {
+                        this_lig_component
+                    } else {
+                        num_lig_components - 1 - this_lig_component
+                    } * component_extents.width)
+                        / num_lig_components;
+
+                    component_extents.width /= num_lig_components;
+                }
+            }
+
+            let this_combining_class = _hb_glyph_info_get_modified_combining_class(info);
+            if last_combining_class != this_combining_class {
+                last_combining_class = this_combining_class;
+                cluster_extents = component_extents;
+            }
+
+            position_mark(
+                plan,
+                face,
+                buffer.direction,
+                info.as_glyph(),
+                pos,
+                &mut cluster_extents,
+                conv_combining_class(this_combining_class),
+            );
+
+            pos.x_advance = 0;
+            pos.y_advance = 0;
+            pos.x_offset += x_offset;
+            pos.y_offset += y_offset;
+        } else {
+            if buffer.direction.is_forward() {
+                x_offset -= pos.x_advance;
+                y_offset -= pos.y_advance;
+            } else {
+                x_offset += pos.x_advance;
+                y_offset += pos.y_advance;
+            }
+        }
+    }
+}
+
+fn position_cluster(
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
+    start: usize,
+    end: usize,
+    adjust_offsets_when_zeroing: bool,
+) {
+    if end - start < 2 {
+        return;
+    }
+
+    // Find the base glyph
+    let mut i = start;
+    while i < end {
+        if !buffer.info[i].is_unicode_mark() {
+            // Find mark glyphs
+            let mut j = i + 1;
+            while j < end && buffer.info[j].is_unicode_mark() {
+                j += 1;
+            }
+
+            position_around_base(plan, face, buffer, i, j, adjust_offsets_when_zeroing);
+            i = j - 1;
+        }
+        i += 1;
+    }
+}
+
+pub fn position_marks(
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
+    adjust_offsets_when_zeroing: bool,
+) {
+    let mut start = 0;
+    let len = buffer.len;
+    for i in 1..len {
+        if !buffer.info[i].is_unicode_mark() {
+            position_cluster(plan, face, buffer, start, i, adjust_offsets_when_zeroing);
+            start = i;
+        }
+    }
+
+    position_cluster(plan, face, buffer, start, len, adjust_offsets_when_zeroing);
+}
+
+pub fn _hb_ot_shape_fallback_kern(_: &hb_ot_shape_plan_t, _: &hb_font_t, _: &mut hb_buffer_t) {
     // STUB: this is deprecated in HarfBuzz
 }
 
-pub fn adjust_spaces(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+pub fn _hb_ot_shape_fallback_spaces(
+    _: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
+) {
+    use crate::unicode::hb_unicode_funcs_t as t;
+
     let len = buffer.len;
     let horizontal = buffer.direction.is_horizontal();
     for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
-        let space_type = match info.space_fallback() {
-            Some(fallback) if !info.is_ligated() => fallback,
-            _ => continue,
-        };
-
-        match space_type {
-            space::SPACE_EM
-            | space::SPACE_EM_2
-            | space::SPACE_EM_3
-            | space::SPACE_EM_4
-            | space::SPACE_EM_5
-            | space::SPACE_EM_6
-            | space::SPACE_EM_16 => {
-                let length =
-                    (face.units_per_em as i32 + (space_type as i32) / 2) / space_type as i32;
-                if horizontal {
-                    pos.x_advance = length;
-                } else {
-                    pos.y_advance = -length;
+        if _hb_glyph_info_is_unicode_space(&info) && !info.is_ligated() {
+            let space_type = _hb_glyph_info_get_unicode_space_fallback_type(info);
+            match space_type {
+                t::SPACE_EM
+                | t::SPACE_EM_2
+                | t::SPACE_EM_3
+                | t::SPACE_EM_4
+                | t::SPACE_EM_5
+                | t::SPACE_EM_6
+                | t::SPACE_EM_16 => {
+                    let length =
+                        (face.units_per_em as i32 + (space_type as i32) / 2) / space_type as i32;
+                    if horizontal {
+                        pos.x_advance = length;
+                    } else {
+                        pos.y_advance = -length;
+                    }
                 }
-            }
 
-            space::SPACE_4_EM_18 => {
-                let length = ((face.units_per_em as i64) * 4 / 18) as i32;
-                if horizontal {
-                    pos.x_advance = length
-                } else {
-                    pos.y_advance = -length;
+                t::SPACE_4_EM_18 => {
+                    let length = ((face.units_per_em as i64) * 4 / 18) as i32;
+                    if horizontal {
+                        pos.x_advance = length
+                    } else {
+                        pos.y_advance = -length;
+                    }
                 }
-            }
 
-            space::SPACE_FIGURE => {
-                for u in '0'..='9' {
-                    if let Some(glyph) = face.glyph_index(u as u32) {
+                t::SPACE_FIGURE => {
+                    for u in '0'..='9' {
+                        if let Some(glyph) = face.get_nominal_glyph(u as u32) {
+                            if horizontal {
+                                pos.x_advance = face.glyph_h_advance(glyph) as i32;
+                            } else {
+                                pos.y_advance = face.glyph_v_advance(glyph);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                t::SPACE_PUNCTUATION => {
+                    let punct = face
+                        .get_nominal_glyph('.' as u32)
+                        .or_else(|| face.get_nominal_glyph(',' as u32));
+
+                    if let Some(glyph) = punct {
                         if horizontal {
                             pos.x_advance = face.glyph_h_advance(glyph) as i32;
                         } else {
                             pos.y_advance = face.glyph_v_advance(glyph);
                         }
-                        break;
                     }
                 }
-            }
 
-            space::SPACE_PUNCTUATION => {
-                let punct = face
-                    .glyph_index('.' as u32)
-                    .or_else(|| face.glyph_index(',' as u32));
-
-                if let Some(glyph) = punct {
+                t::SPACE_NARROW => {
+                    // Half-space?
+                    // Unicode doc https://unicode.org/charts/PDF/U2000.pdf says ~1/4 or 1/5 of EM.
+                    // However, in my testing, many fonts have their regular space being about that
+                    // size. To me, a percentage of the space width makes more sense. Half is as
+                    // good as any.
                     if horizontal {
-                        pos.x_advance = face.glyph_h_advance(glyph) as i32;
+                        pos.x_advance /= 2;
                     } else {
-                        pos.y_advance = face.glyph_v_advance(glyph);
+                        pos.y_advance /= 2;
                     }
                 }
-            }
 
-            space::SPACE_NARROW => {
-                // Half-space?
-                // Unicode doc https://unicode.org/charts/PDF/U2000.pdf says ~1/4 or 1/5 of EM.
-                // However, in my testing, many fonts have their regular space being about that
-                // size. To me, a percentage of the space width makes more sense. Half is as
-                // good as any.
-                if horizontal {
-                    pos.x_advance /= 2;
-                } else {
-                    pos.y_advance /= 2;
-                }
+                _ => {}
             }
-
-            _ => {}
         }
     }
 }

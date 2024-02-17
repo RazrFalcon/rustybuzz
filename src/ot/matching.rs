@@ -4,8 +4,8 @@ use std::cmp::max;
 use ttf_parser::GlyphId;
 
 use super::apply::ApplyContext;
-use super::{TableIndex, MAX_CONTEXT_LENGTH};
 use crate::buffer::hb_glyph_info_t;
+use crate::ot_layout::{TableIndex, MAX_CONTEXT_LENGTH};
 use crate::Mask;
 
 pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;

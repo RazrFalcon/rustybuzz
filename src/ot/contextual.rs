@@ -3,7 +3,7 @@ use ttf_parser::{GlyphId, LazyArray16};
 
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
 use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead, MatchFunc};
-use super::MAX_CONTEXT_LENGTH;
+use crate::ot_layout::MAX_CONTEXT_LENGTH;
 
 impl WouldApply for ContextLookup<'_> {
     fn would_apply(&self, ctx: &WouldApplyContext) -> bool {

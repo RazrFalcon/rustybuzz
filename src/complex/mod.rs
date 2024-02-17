@@ -26,7 +26,7 @@ use crate::ot_shape_normalize::{
     hb_ot_shape_normalization_mode_t, hb_ot_shape_normalize_context_t,
     HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
 };
-use crate::plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::{hb_font_t, script, Direction, Script, Tag};
 
 pub const MAX_COMBINING_MARKS: usize = 32;

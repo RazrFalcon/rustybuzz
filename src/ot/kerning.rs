@@ -1,11 +1,12 @@
 use ttf_parser::{apple_layout, kern, GlyphId};
 
 use super::apply::ApplyContext;
+use super::lookup_flags;
 use super::matching::SkippyIter;
-use super::{lookup_flags, TableIndex};
 use crate::buffer::{hb_buffer_t, BufferScratchFlags};
 use crate::ot::attach_type;
-use crate::plan::hb_ot_shape_plan_t;
+use crate::ot_layout::TableIndex;
+use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::{hb_font_t, Mask};
 
 pub fn has_kerning(face: &hb_font_t) -> bool {

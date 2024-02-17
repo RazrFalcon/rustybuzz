@@ -5,9 +5,9 @@ use ttf_parser::opentype_layout::{
     FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex, VariationIndex,
 };
 
-use super::{LayoutTableExt, TableIndex};
 use crate::buffer::{glyph_flag, hb_buffer_t};
-use crate::plan::hb_ot_shape_plan_t;
+use crate::ot_layout::{LayoutTableExt, TableIndex};
+use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::{hb_font_t, tag, Language, Mask, Script, Tag};
 
 pub struct Map {

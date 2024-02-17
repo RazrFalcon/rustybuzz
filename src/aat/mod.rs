@@ -9,7 +9,7 @@ pub use map::*;
 
 use crate::buffer::hb_buffer_t;
 use crate::hb_font_t;
-use crate::plan::hb_ot_shape_plan_t;
+use crate::shape_plan::hb_ot_shape_plan_t;
 
 pub fn substitute(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     metamorphosis::apply(plan, face, buffer);

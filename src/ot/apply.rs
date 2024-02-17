@@ -1,9 +1,9 @@
 use ttf_parser::opentype_layout::LookupIndex;
 use ttf_parser::GlyphId;
 
-use super::layout::{LayoutLookup, LayoutTable};
-use super::{lookup_flags, TableIndex, MAX_NESTING_LEVEL};
+use super::lookup_flags;
 use crate::buffer::{hb_buffer_t, hb_glyph_info_t, GlyphPropsFlags};
+use crate::ot_layout::*;
 use crate::{hb_font_t, Mask};
 
 /// Find out whether a lookup would be applied.
