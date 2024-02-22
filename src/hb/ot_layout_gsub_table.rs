@@ -69,7 +69,7 @@ impl WouldApply for SubstLookup<'_> {
 }
 
 impl Apply for SubstLookup<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         if self.covers(ctx.buffer.cur(0).as_glyph()) {
             for subtable in &self.subtables {
                 if subtable.apply(ctx).is_some() {
@@ -97,7 +97,7 @@ impl WouldApply for SubstitutionSubtable<'_> {
 }
 
 impl Apply for SubstitutionSubtable<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         match self {
             Self::Single(t) => t.apply(ctx),
             Self::Multiple(t) => t.apply(ctx),
@@ -117,7 +117,7 @@ impl WouldApply for SingleSubstitution<'_> {
 }
 
 impl Apply for SingleSubstitution<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         let subst = match *self {
             Self::Format1 { coverage, delta } => {
@@ -147,7 +147,7 @@ impl WouldApply for MultipleSubstitution<'_> {
 }
 
 impl Apply for MultipleSubstitution<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         let index = self.coverage.get(glyph)?;
         let seq = self.sequences.get(index)?;
@@ -156,7 +156,7 @@ impl Apply for MultipleSubstitution<'_> {
 }
 
 impl Apply for Sequence<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         match self.substitutes.len() {
             // Spec disallows this, but Uniscribe allows it.
             // https://github.com/harfbuzz/harfbuzz/issues/253
@@ -198,7 +198,7 @@ impl WouldApply for AlternateSubstitution<'_> {
 }
 
 impl Apply for AlternateSubstitution<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         let index = self.coverage.get(glyph)?;
         let set = self.alternate_sets.get(index)?;
@@ -207,7 +207,7 @@ impl Apply for AlternateSubstitution<'_> {
 }
 
 impl Apply for AlternateSet<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let len = self.alternates.len();
         if len == 0 {
             return None;
@@ -244,7 +244,7 @@ impl WouldApply for LigatureSubstitution<'_> {
 }
 
 impl Apply for LigatureSubstitution<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         self.coverage
             .get(glyph)
@@ -260,7 +260,7 @@ impl WouldApply for LigatureSet<'_> {
 }
 
 impl Apply for LigatureSet<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         for lig in self.into_iter() {
             if lig.apply(ctx).is_some() {
                 return Some(());
@@ -282,7 +282,7 @@ impl WouldApply for Ligature<'_> {
 }
 
 impl Apply for Ligature<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         // Special-case to make it in-place and not consider this
         // as a "ligated" substitution.
         if self.components.is_empty() {
@@ -327,7 +327,7 @@ impl Apply for Ligature<'_> {
 }
 
 fn ligate(
-    ctx: &mut ApplyContext,
+    ctx: &mut hb_ot_apply_context_t,
     // Including the first glyph
     count: usize,
     // Including the first glyph
@@ -457,7 +457,7 @@ impl WouldApply for ReverseChainSingleSubstitution<'_> {
 }
 
 impl Apply for ReverseChainSingleSubstitution<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         // No chaining to this type.
         if ctx.nesting_level_left != MAX_NESTING_LEVEL {
             return None;

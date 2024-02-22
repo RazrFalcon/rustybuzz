@@ -22,9 +22,9 @@ pub fn match_glyph(glyph: GlyphId, value: u16) -> bool {
 }
 
 pub fn match_input(
-    ctx: &mut ApplyContext,
+    ctx: &mut hb_ot_apply_context_t,
     input_len: u16,
-    match_func: &MatchingFunc,
+    match_func: &match_func_t,
     end_position: &mut usize,
     match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
     p_total_component_count: Option<&mut u8>,
@@ -63,7 +63,7 @@ pub fn match_input(
         return false;
     }
 
-    let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, input_len, false);
+    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, input_len, false);
     iter.enable_matching(match_func);
 
     let first = ctx.buffer.cur(0);
@@ -140,12 +140,12 @@ pub fn match_input(
 }
 
 pub fn match_backtrack(
-    ctx: &mut ApplyContext,
+    ctx: &mut hb_ot_apply_context_t,
     backtrack_len: u16,
-    match_func: &MatchingFunc,
+    match_func: &match_func_t,
     match_start: &mut usize,
 ) -> bool {
-    let mut iter = SkippyIter::new(ctx, ctx.buffer.backtrack_len(), backtrack_len, true);
+    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.backtrack_len(), backtrack_len, true);
     iter.enable_matching(match_func);
 
     for _ in 0..backtrack_len {
@@ -161,13 +161,13 @@ pub fn match_backtrack(
 }
 
 pub fn match_lookahead(
-    ctx: &mut ApplyContext,
+    ctx: &mut hb_ot_apply_context_t,
     lookahead_len: u16,
-    match_func: &MatchingFunc,
+    match_func: &match_func_t,
     start_index: usize,
     end_index: &mut usize,
 ) -> bool {
-    let mut iter = SkippyIter::new(ctx, start_index - 1, lookahead_len, true);
+    let mut iter = skipping_iterator_t::new(ctx, start_index - 1, lookahead_len, true);
     iter.enable_matching(match_func);
 
     for _ in 0..lookahead_len {
@@ -182,29 +182,29 @@ pub fn match_lookahead(
     true
 }
 
-pub type MatchingFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
+pub type match_func_t<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 
-pub struct SkippyIter<'a, 'b> {
-    ctx: &'a ApplyContext<'a, 'b>,
+pub struct skipping_iterator_t<'a, 'b> {
+    ctx: &'a hb_ot_apply_context_t<'a, 'b>,
     lookup_props: u32,
     ignore_zwnj: bool,
     ignore_zwj: bool,
     mask: hb_mask_t,
     syllable: u8,
-    matching: Option<&'a MatchingFunc<'a>>,
+    matching: Option<&'a match_func_t<'a>>,
     buf_len: usize,
     buf_idx: usize,
     num_items: u16,
 }
 
-impl<'a, 'b> SkippyIter<'a, 'b> {
+impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     pub fn new(
-        ctx: &'a ApplyContext<'a, 'b>,
+        ctx: &'a hb_ot_apply_context_t<'a, 'b>,
         start_buf_index: usize,
         num_items: u16,
         context_match: bool,
     ) -> Self {
-        SkippyIter {
+        skipping_iterator_t {
             ctx,
             lookup_props: ctx.lookup_props,
             // Ignore ZWNJ if we are matching GPOS, or matching GSUB context and asked to.
@@ -232,7 +232,7 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
         self.lookup_props = lookup_props;
     }
 
-    pub fn enable_matching(&mut self, func: &'a MatchingFunc<'a>) {
+    pub fn enable_matching(&mut self, func: &'a match_func_t<'a>) {
         self.matching = Some(func);
     }
 
@@ -361,7 +361,7 @@ impl WouldApply for ContextLookup<'_> {
 }
 
 impl Apply for ContextLookup<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         match *self {
             Self::Format1 { coverage, sets } => {
@@ -426,7 +426,7 @@ impl Apply for ContextLookup<'_> {
 
 trait SequenceRuleSetExt {
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
-    fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()>;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &MatchFunc) -> Option<()>;
 }
 
 impl SequenceRuleSetExt for SequenceRuleSet<'_> {
@@ -435,7 +435,7 @@ impl SequenceRuleSetExt for SequenceRuleSet<'_> {
             .any(|rule| rule.would_apply(ctx, match_func))
     }
 
-    fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &MatchFunc) -> Option<()> {
         if self
             .into_iter()
             .any(|rule| rule.apply(ctx, match_func).is_some())
@@ -449,7 +449,7 @@ impl SequenceRuleSetExt for SequenceRuleSet<'_> {
 
 trait SequenceRuleExt {
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
-    fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()>;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &MatchFunc) -> Option<()>;
 }
 
 impl SequenceRuleExt for SequenceRule<'_> {
@@ -462,7 +462,7 @@ impl SequenceRuleExt for SequenceRule<'_> {
                 .all(|(i, value)| match_func(ctx.glyphs[i + 1], value))
     }
 
-    fn apply(&self, ctx: &mut ApplyContext, match_func: &MatchFunc) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &MatchFunc) -> Option<()> {
         apply_context(ctx, self.input, match_func, self.lookups)
     }
 }
@@ -504,7 +504,7 @@ impl WouldApply for ChainedContextLookup<'_> {
 }
 
 impl Apply for ChainedContextLookup<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         match *self {
             Self::Format1 { coverage, sets } => {
@@ -615,7 +615,7 @@ impl Apply for ChainedContextLookup<'_> {
 
 trait ChainRuleSetExt {
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
-    fn apply(&self, ctx: &mut ApplyContext, match_funcs: [&MatchFunc; 3]) -> Option<()>;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&MatchFunc; 3]) -> Option<()>;
 }
 
 impl ChainRuleSetExt for ChainedSequenceRuleSet<'_> {
@@ -624,7 +624,7 @@ impl ChainRuleSetExt for ChainedSequenceRuleSet<'_> {
             .any(|rule| rule.would_apply(ctx, match_func))
     }
 
-    fn apply(&self, ctx: &mut ApplyContext, match_funcs: [&MatchFunc; 3]) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&MatchFunc; 3]) -> Option<()> {
         if self
             .into_iter()
             .any(|rule| rule.apply(ctx, match_funcs).is_some())
@@ -638,7 +638,7 @@ impl ChainRuleSetExt for ChainedSequenceRuleSet<'_> {
 
 trait ChainRuleExt {
     fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
-    fn apply(&self, ctx: &mut ApplyContext, match_funcs: [&MatchFunc; 3]) -> Option<()>;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&MatchFunc; 3]) -> Option<()>;
 }
 
 impl ChainRuleExt for ChainedSequenceRule<'_> {
@@ -652,7 +652,7 @@ impl ChainRuleExt for ChainedSequenceRule<'_> {
                     .all(|(i, value)| match_func(ctx.glyphs[i + 1], value)))
     }
 
-    fn apply(&self, ctx: &mut ApplyContext, match_funcs: [&MatchFunc; 3]) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&MatchFunc; 3]) -> Option<()> {
         apply_chain_context(
             ctx,
             self.backtrack,
@@ -665,7 +665,7 @@ impl ChainRuleExt for ChainedSequenceRule<'_> {
 }
 
 fn apply_context(
-    ctx: &mut ApplyContext,
+    ctx: &mut hb_ot_apply_context_t,
     input: LazyArray16<u16>,
     match_func: &MatchFunc,
     lookups: LazyArray16<SequenceLookupRecord>,
@@ -703,7 +703,7 @@ fn apply_context(
 }
 
 fn apply_chain_context(
-    ctx: &mut ApplyContext,
+    ctx: &mut hb_ot_apply_context_t,
     backtrack: LazyArray16<u16>,
     input: LazyArray16<u16>,
     lookahead: LazyArray16<u16>,
@@ -775,7 +775,7 @@ fn apply_chain_context(
 }
 
 fn apply_lookup(
-    ctx: &mut ApplyContext,
+    ctx: &mut hb_ot_apply_context_t,
     input_len: usize,
     match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
     match_end: usize,
@@ -914,7 +914,7 @@ pub trait WouldApply {
 /// Apply a lookup.
 pub trait Apply {
     /// Apply the lookup.
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()>;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()>;
 }
 
 pub struct WouldApplyContext<'a> {
@@ -922,7 +922,7 @@ pub struct WouldApplyContext<'a> {
     pub zero_context: bool,
 }
 
-pub struct ApplyContext<'a, 'b> {
+pub struct hb_ot_apply_context_t<'a, 'b> {
     pub table_index: TableIndex,
     pub face: &'a hb_font_t<'b>,
     pub buffer: &'a mut hb_buffer_t,
@@ -936,7 +936,7 @@ pub struct ApplyContext<'a, 'b> {
     pub random_state: u32,
 }
 
-impl<'a, 'b> ApplyContext<'a, 'b> {
+impl<'a, 'b> hb_ot_apply_context_t<'a, 'b> {
     pub fn new(
         table_index: TableIndex,
         face: &'a hb_font_t<'b>,

@@ -1,14 +1,15 @@
 use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
-use super::aat_layout::*;
-use crate::hb::aat_map::{FeatureType, Map, MapBuilder};
+use crate::hb::aat_layout::*;
+use crate::hb::aat_map::{hb_aat_map_builder_t, hb_aat_map_t};
 use crate::hb::buffer::hb_buffer_t;
 use crate::hb::ot_layout::*;
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::{hb_font_t, hb_glyph_info_t};
 
-pub fn compile_flags(face: &hb_font_t, builder: &MapBuilder) -> Option<Map> {
-    let mut map = Map::default();
+// Chain::compile_flags in harfbuzz
+pub fn compile_flags(face: &hb_font_t, builder: &hb_aat_map_builder_t) -> Option<hb_aat_map_t> {
+    let mut map = hb_aat_map_t::default();
 
     for chain in face.tables().morx.as_ref()?.chains {
         let mut flags = chain.default_flags;
@@ -19,13 +20,13 @@ pub fn compile_flags(face: &hb_font_t, builder: &MapBuilder) -> Option<Map> {
             if builder.has_feature(feature.kind, feature.setting) {
                 flags &= feature.disable_flags;
                 flags |= feature.enable_flags;
-            } else if feature.kind == FeatureType::LetterCase as u16
-                && feature.setting == u16::from(SMALL_CAPS)
+            } else if feature.kind == HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE as u16
+                && feature.setting == u16::from(HB_AAT_LAYOUT_FEATURE_SELECTOR_SMALL_CAPS)
             {
                 // Deprecated. https://github.com/harfbuzz/harfbuzz/issues/1342
                 let ok = builder.has_feature(
-                    FeatureType::LowerCase as u16,
-                    u16::from(LOWER_CASE_SMALL_CAPS),
+                    HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE as u16,
+                    u16::from(HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS),
                 );
                 if ok {
                     flags &= feature.disable_flags;
@@ -40,6 +41,7 @@ pub fn compile_flags(face: &hb_font_t, builder: &MapBuilder) -> Option<Map> {
     Some(map)
 }
 
+// Chain::apply in harfbuzz
 pub fn apply(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) -> Option<()> {
     for (chain_idx, chain) in face.tables().morx.as_ref()?.chains.into_iter().enumerate() {
         let flags = plan.aat_map.chain_flags[chain_idx];
@@ -102,7 +104,7 @@ pub fn apply(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer
     Some(())
 }
 
-trait Driver<T: FromData> {
+trait driver_context_t<T: FromData> {
     fn in_place(&self) -> bool;
     fn can_advance(&self, entry: &apple_layout::GenericStateEntry<T>) -> bool;
     fn is_actionable(
@@ -121,7 +123,7 @@ const START_OF_TEXT: u16 = 0;
 
 fn drive<T: FromData>(
     machine: &apple_layout::ExtendedStateTable<T>,
-    c: &mut dyn Driver<T>,
+    c: &mut dyn driver_context_t<T>,
     buffer: &mut hb_buffer_t,
 ) {
     if !c.in_place() {
@@ -308,7 +310,7 @@ impl RearrangementCtx {
     const VERB: u16 = 0x000F;
 }
 
-impl Driver<()> for RearrangementCtx {
+impl driver_context_t<()> for RearrangementCtx {
     fn in_place(&self) -> bool {
         true
     }
@@ -424,7 +426,7 @@ impl ContextualCtx<'_> {
     const DONT_ADVANCE: u16 = 0x4000;
 }
 
-impl Driver<morx::ContextualEntryData> for ContextualCtx<'_> {
+impl driver_context_t<morx::ContextualEntryData> for ContextualCtx<'_> {
     fn in_place(&self) -> bool {
         true
     }
@@ -513,7 +515,7 @@ impl InsertionCtx<'_> {
     const MARKED_INSERT_COUNT: u16 = 0x001F;
 }
 
-impl Driver<morx::InsertionEntryData> for InsertionCtx<'_> {
+impl driver_context_t<morx::InsertionEntryData> for InsertionCtx<'_> {
     fn in_place(&self) -> bool {
         false
     }
@@ -650,7 +652,7 @@ impl LigatureCtx<'_> {
     const LIG_ACTION_OFFSET: u32 = 0x3FFFFFFF;
 }
 
-impl Driver<u16> for LigatureCtx<'_> {
+impl driver_context_t<u16> for LigatureCtx<'_> {
     fn in_place(&self) -> bool {
         false
     }

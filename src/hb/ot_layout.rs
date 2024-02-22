@@ -7,7 +7,7 @@ use ttf_parser::GlyphId;
 
 use super::buffer::{hb_buffer_t, GlyphPropsFlags, UnicodeProps};
 use super::common::TagExt;
-use super::ot_layout_gsubgpos::{Apply, ApplyContext};
+use super::ot_layout_gsubgpos::{hb_ot_apply_context_t, Apply};
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_funcs_t, hb_unicode_general_category_t, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
@@ -188,7 +188,7 @@ pub fn apply_layout_table<T: LayoutTable>(
     buffer: &mut hb_buffer_t,
     table: Option<&T>,
 ) {
-    let mut ctx = ApplyContext::new(T::INDEX, face, buffer);
+    let mut ctx = hb_ot_apply_context_t::new(T::INDEX, face, buffer);
 
     for (stage_index, stage) in plan.ot_map.stages(T::INDEX).iter().enumerate() {
         for lookup in plan.ot_map.stage_lookups(T::INDEX, stage_index) {
@@ -212,7 +212,7 @@ pub fn apply_layout_table<T: LayoutTable>(
     }
 }
 
-fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
+fn apply_string<T: LayoutTable>(ctx: &mut hb_ot_apply_context_t, lookup: &T::Lookup) {
     if ctx.buffer.is_empty() || ctx.lookup_mask == 0 {
         return;
     }
@@ -239,7 +239,7 @@ fn apply_string<T: LayoutTable>(ctx: &mut ApplyContext, lookup: &T::Lookup) {
     }
 }
 
-fn apply_forward(ctx: &mut ApplyContext, lookup: &impl Apply) -> bool {
+fn apply_forward(ctx: &mut hb_ot_apply_context_t, lookup: &impl Apply) -> bool {
     let mut ret = false;
     while ctx.buffer.idx < ctx.buffer.len && ctx.buffer.successful {
         let cur = ctx.buffer.cur(0);
@@ -255,7 +255,7 @@ fn apply_forward(ctx: &mut ApplyContext, lookup: &impl Apply) -> bool {
     ret
 }
 
-fn apply_backward(ctx: &mut ApplyContext, lookup: &impl Apply) -> bool {
+fn apply_backward(ctx: &mut hb_ot_apply_context_t, lookup: &impl Apply) -> bool {
     let mut ret = false;
     loop {
         let cur = ctx.buffer.cur(0);

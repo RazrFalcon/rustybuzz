@@ -114,7 +114,7 @@ fn substitute_post(ctx: &mut ShapeContext) {
     hide_default_ignorables(ctx.buffer, ctx.face);
 
     if ctx.plan.apply_morx {
-        aat_layout::remove_deleted_glyphs(ctx.buffer);
+        aat_layout::hb_aat_layout_remove_deleted_glyphs(ctx.buffer);
     }
 
     if let Some(func) = ctx.plan.shaper.postprocess_glyphs {
@@ -151,7 +151,7 @@ fn substitute_complex(ctx: &mut ShapeContext) {
 
 fn substitute_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     if plan.apply_morx {
-        aat_layout::substitute(plan, face, buffer);
+        aat_layout::hb_aat_layout_substitute(plan, face, buffer);
     } else {
         super::ot_layout_gsub_table::substitute(plan, face, buffer);
     }
@@ -235,7 +235,7 @@ fn position_complex(ctx: &mut ShapeContext) {
     zero_width_default_ignorables(ctx.buffer);
 
     if ctx.plan.apply_morx {
-        aat_layout::zero_width_deleted_glyphs(ctx.buffer);
+        aat_layout::hb_aat_layout_zero_width_deleted_glyphs(ctx.buffer);
     }
 
     super::ot_layout_gpos_table::position_finish_offsets(ctx.face, ctx.buffer);
@@ -254,7 +254,7 @@ fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
     if plan.apply_gpos {
         super::ot_layout_gpos_table::position(plan, face, buffer);
     } else if plan.apply_kerx {
-        aat_layout::position(plan, face, buffer);
+        aat_layout::hb_aat_layout_position(plan, face, buffer);
     }
     if plan.apply_kern {
         super::kerning::kern(plan, face, buffer);
@@ -263,7 +263,7 @@ fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
     }
 
     if plan.apply_trak {
-        aat_layout::track(plan, face, buffer);
+        aat_layout::hb_aat_layout_track(plan, face, buffer);
     }
 }
 

@@ -7,7 +7,7 @@ use crate::hb::hb_font_t;
 use crate::hb::ot_layout::TableIndex;
 use crate::hb::ot_layout_common::lookup_flags;
 use crate::hb::ot_layout_gpos_table::attach_type;
-use crate::hb::ot_layout_gsubgpos::{ApplyContext, SkippyIter};
+use crate::hb::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t};
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 
 trait ExtendedStateTableExt<T: FromData + Copy> {
@@ -134,7 +134,7 @@ fn apply_simple_kerning(
     face: &hb_font_t,
     buffer: &mut hb_buffer_t,
 ) {
-    let mut ctx = ApplyContext::new(TableIndex::GPOS, face, buffer);
+    let mut ctx = hb_ot_apply_context_t::new(TableIndex::GPOS, face, buffer);
     ctx.lookup_mask = plan.kern_mask;
     ctx.lookup_props = u32::from(lookup_flags::IGNORE_FLAGS);
 
@@ -147,7 +147,7 @@ fn apply_simple_kerning(
             continue;
         }
 
-        let mut iter = SkippyIter::new(&ctx, i, 1, false);
+        let mut iter = skipping_iterator_t::new(&ctx, i, 1, false);
 
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {

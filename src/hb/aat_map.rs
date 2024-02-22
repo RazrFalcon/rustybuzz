@@ -1,55 +1,26 @@
 use alloc::vec::Vec;
 
-use crate::hb::aat_layout::FEATURE_MAPPINGS;
+use crate::hb::aat_layout::*;
 use crate::hb::{hb_font_t, hb_mask_t, hb_tag_t};
 
-#[repr(u8)]
-#[derive(Clone, Copy, PartialEq)]
-pub enum FeatureType {
-    Ligatures = 1,
-    LetterCase = 3,
-    VerticalSubstitution = 4,
-    NumberSpacing = 6,
-    VerticalPosition = 10,
-    Fractions = 11,
-    TypographicExtras = 14,
-    MathematicalExtras = 15,
-    StyleOptions = 19,
-    CharacterShape = 20,
-    NumberCase = 21,
-    TextSpacing = 22,
-    Transliteration = 23,
-    RubyKana = 28,
-    ItalicCjkRoman = 32,
-    CaseSensitiveLayout = 33,
-    AlternateKana = 34,
-    StylisticAlternatives = 35,
-    ContextualAlternatives = 36,
-    LowerCase = 37,
-    UpperCase = 38,
-
-    // In harfbuzz, they just use the number 40 for "hist" but don't give it a name
-    Dummy = 40,
-}
-
 #[derive(Default)]
-pub struct Map {
+pub struct hb_aat_map_t {
     pub chain_flags: Vec<hb_mask_t>,
 }
 
 #[derive(Copy, Clone)]
-pub struct FeatureInfo {
+pub struct feature_info_t {
     pub kind: u16,
     pub setting: u16,
     pub is_exclusive: bool,
 }
 
 #[derive(Default)]
-pub struct MapBuilder {
-    pub features: Vec<FeatureInfo>,
+pub struct hb_aat_map_builder_t {
+    pub features: Vec<feature_info_t>,
 }
 
-impl MapBuilder {
+impl hb_aat_map_builder_t {
     pub fn add_feature(&mut self, face: &hb_font_t, tag: hb_tag_t, value: u32) -> Option<()> {
         const FEATURE_TYPE_CHARACTER_ALTERNATIVES: u16 = 17;
 
@@ -66,17 +37,17 @@ impl MapBuilder {
                 return Some(());
             }
 
-            self.features.push(FeatureInfo {
+            self.features.push(feature_info_t {
                 kind: FEATURE_TYPE_CHARACTER_ALTERNATIVES,
                 setting: value as u16,
                 is_exclusive: true,
             });
         }
 
-        let idx = FEATURE_MAPPINGS
+        let idx = feature_mappings
             .binary_search_by(|map| map.ot_feature_tag.cmp(&tag))
             .ok()?;
-        let mapping = &FEATURE_MAPPINGS[idx];
+        let mapping = &feature_mappings[idx];
 
         let mut feature = feat.names.find(mapping.aat_feature_type as u16);
 
@@ -86,10 +57,12 @@ impl MapBuilder {
                 // Special case: Chain::compile_flags will fall back to the deprecated version of
                 // small-caps if necessary, so we need to check for that possibility.
                 // https://github.com/harfbuzz/harfbuzz/issues/2307
-                if mapping.aat_feature_type == FeatureType::LowerCase
-                    && mapping.selector_to_enable == crate::hb::aat_layout::LOWER_CASE_SMALL_CAPS
+                if mapping.aat_feature_type == HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE
+                    && mapping.selector_to_enable == HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS
                 {
-                    feature = feat.names.find(FeatureType::LetterCase as u16);
+                    feature = feat
+                        .names
+                        .find(HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE as u16);
                 }
             }
         }
@@ -102,7 +75,7 @@ impl MapBuilder {
                     mapping.selector_to_disable
                 } as u16;
 
-                self.features.push(FeatureInfo {
+                self.features.push(feature_info_t {
                     kind: mapping.aat_feature_type as u16,
                     setting,
                     is_exclusive: feature.exclusive,
@@ -126,7 +99,7 @@ impl MapBuilder {
             .is_ok()
     }
 
-    pub fn compile(&mut self, face: &hb_font_t) -> Map {
+    pub fn compile(&mut self, face: &hb_font_t) -> hb_aat_map_t {
         // Sort features and merge duplicates.
         self.features.sort_by(|a, b| {
             if a.kind != b.kind {

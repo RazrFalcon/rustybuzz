@@ -14,7 +14,7 @@ pub struct hb_ot_shape_plan_t {
     pub(crate) script: Option<Script>,
     pub(crate) shaper: &'static ComplexShaper,
     pub(crate) ot_map: hb_ot_map_t,
-    pub(crate) aat_map: aat_map::Map,
+    pub(crate) aat_map: aat_map::hb_aat_map_t,
     data: Option<Box<dyn Any + Send + Sync>>,
 
     pub(crate) frac_mask: hb_mask_t,
@@ -69,7 +69,7 @@ pub struct ShapePlanner<'a> {
     pub direction: Direction,
     pub script: Option<Script>,
     pub ot_map: hb_ot_map_builder_t<'a>,
-    pub aat_map: aat_map::MapBuilder,
+    pub aat_map: aat_map::hb_aat_map_builder_t,
     pub apply_morx: bool,
     pub script_zero_marks: bool,
     pub script_fallback_mark_positioning: bool,
@@ -84,7 +84,7 @@ impl<'a> ShapePlanner<'a> {
         language: Option<&Language>,
     ) -> Self {
         let ot_map = hb_ot_map_builder_t::new(face, script, language);
-        let aat_map = aat_map::MapBuilder::default();
+        let aat_map = aat_map::hb_aat_map_builder_t::default();
 
         let mut shaper = match script {
             Some(script) => {
@@ -253,7 +253,7 @@ impl<'a> ShapePlanner<'a> {
         let aat_map = if self.apply_morx {
             self.aat_map.compile(self.face)
         } else {
-            aat_map::Map::default()
+            aat_map::hb_aat_map_t::default()
         };
 
         let frac_mask = ot_map.get_1_mask(feature::FRACTIONS);

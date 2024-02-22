@@ -4,8 +4,6 @@ A complete [harfbuzz](https://github.com/harfbuzz/harfbuzz) shaping algorithm po
 
 #![no_std]
 #![warn(missing_docs)]
-// Match harfbuzz code style.
-#![allow(non_camel_case_types)]
 
 #[cfg(not(any(feature = "std", feature = "libm")))]
 compile_error!("You have to activate either the `std` or the `libm` feature.");

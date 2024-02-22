@@ -8,7 +8,7 @@ use super::ot_layout::*;
 use super::shape_plan::hb_ot_shape_plan_t;
 
 use crate::hb::ot_layout_common::{lookup_flags, PositioningLookup, PositioningTable};
-use crate::hb::ot_layout_gsubgpos::{Apply, ApplyContext, SkippyIter};
+use crate::hb::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t, Apply};
 
 use crate::Direction;
 
@@ -119,7 +119,7 @@ impl LayoutLookup for PositioningLookup<'_> {
 }
 
 impl Apply for PositioningLookup<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         if self.covers(ctx.buffer.cur(0).as_glyph()) {
             for subtable in &self.subtables {
                 if subtable.apply(ctx).is_some() {
@@ -133,7 +133,7 @@ impl Apply for PositioningLookup<'_> {
 }
 
 impl Apply for PositioningSubtable<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         match self {
             Self::Single(t) => t.apply(ctx),
             Self::Pair(t) => t.apply(ctx),
@@ -148,7 +148,7 @@ impl Apply for PositioningSubtable<'_> {
 }
 
 impl Apply for SingleAdjustment<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let glyph = ctx.buffer.cur(0).as_glyph();
         let record = match self {
             Self::Format1 { coverage, value } => {
@@ -167,11 +167,11 @@ impl Apply for SingleAdjustment<'_> {
 }
 
 impl Apply for PairAdjustment<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let first_glyph = ctx.buffer.cur(0).as_glyph();
         let first_glyph_coverage_index = self.coverage().get(first_glyph)?;
 
-        let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
+        let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, 1, false);
 
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {
@@ -183,7 +183,7 @@ impl Apply for PairAdjustment<'_> {
         let second_glyph_index = iter.index();
         let second_glyph = ctx.buffer.info[second_glyph_index].as_glyph();
 
-        let finish = |ctx: &mut ApplyContext, has_record2| {
+        let finish = |ctx: &mut hb_ot_apply_context_t, has_record2| {
             ctx.buffer.idx = second_glyph_index;
 
             if has_record2 {
@@ -193,13 +193,13 @@ impl Apply for PairAdjustment<'_> {
             Some(())
         };
 
-        let boring = |ctx: &mut ApplyContext, has_record2| {
+        let boring = |ctx: &mut hb_ot_apply_context_t, has_record2| {
             ctx.buffer
                 .unsafe_to_concat(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
             finish(ctx, has_record2)
         };
 
-        let success = |ctx: &mut ApplyContext, flag1, flag2, has_record2| {
+        let success = |ctx: &mut hb_ot_apply_context_t, flag1, flag2, has_record2| {
             if flag1 || flag2 {
                 ctx.buffer
                     .unsafe_to_break(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
@@ -209,7 +209,7 @@ impl Apply for PairAdjustment<'_> {
             }
         };
 
-        let bail = |ctx: &mut ApplyContext, records: (ValueRecord, ValueRecord)| {
+        let bail = |ctx: &mut hb_ot_apply_context_t, records: (ValueRecord, ValueRecord)| {
             let flag1 = records.0.apply(ctx, ctx.buffer.idx);
             let flag2 = records.1.apply(ctx, second_glyph_index);
 
@@ -244,13 +244,13 @@ impl Apply for PairAdjustment<'_> {
 }
 
 impl Apply for CursiveAdjustment<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let this = ctx.buffer.cur(0).as_glyph();
 
         let index_this = self.coverage.get(this)?;
         let entry_this = self.sets.entry(index_this)?;
 
-        let mut iter = SkippyIter::new(ctx, ctx.buffer.idx, 1, false);
+        let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, 1, false);
 
         let mut unsafe_from = 0;
         if !iter.prev(Some(&mut unsafe_from)) {
@@ -384,13 +384,13 @@ fn reverse_cursive_minor_offset(
 }
 
 impl Apply for MarkToBaseAdjustment<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let buffer = &ctx.buffer;
         let mark_glyph = ctx.buffer.cur(0).as_glyph();
         let mark_index = self.mark_coverage.get(mark_glyph)?;
 
         // Now we search backwards for a non-mark glyph
-        let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
+        let mut iter = skipping_iterator_t::new(ctx, buffer.idx, 1, false);
         iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
 
         let info = &buffer.info;
@@ -438,13 +438,13 @@ impl Apply for MarkToBaseAdjustment<'_> {
 }
 
 impl Apply for MarkToLigatureAdjustment<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let buffer = &ctx.buffer;
         let mark_glyph = ctx.buffer.cur(0).as_glyph();
         let mark_index = self.mark_coverage.get(mark_glyph)?;
 
         // Now we search backwards for a non-mark glyph
-        let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
+        let mut iter = skipping_iterator_t::new(ctx, buffer.idx, 1, false);
         iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
 
         let mut unsafe_from = 0;
@@ -493,13 +493,13 @@ impl Apply for MarkToLigatureAdjustment<'_> {
 }
 
 impl Apply for MarkToMarkAdjustment<'_> {
-    fn apply(&self, ctx: &mut ApplyContext) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let buffer = &ctx.buffer;
         let mark1_glyph = ctx.buffer.cur(0).as_glyph();
         let mark1_index = self.mark1_coverage.get(mark1_glyph)?;
 
         // Now we search backwards for a suitable mark glyph until a non-mark glyph
-        let mut iter = SkippyIter::new(ctx, buffer.idx, 1, false);
+        let mut iter = skipping_iterator_t::new(ctx, buffer.idx, 1, false);
         iter.set_lookup_props(ctx.lookup_props & !u32::from(lookup_flags::IGNORE_FLAGS));
 
         let mut unsafe_from = 0;
@@ -547,8 +547,8 @@ impl Apply for MarkToMarkAdjustment<'_> {
 
 trait ValueRecordExt {
     fn is_empty(&self) -> bool;
-    fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool;
-    fn apply_to_pos(&self, ctx: &mut ApplyContext, pos: &mut GlyphPosition) -> bool;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, idx: usize) -> bool;
+    fn apply_to_pos(&self, ctx: &mut hb_ot_apply_context_t, pos: &mut GlyphPosition) -> bool;
 }
 
 impl ValueRecordExt for ValueRecord<'_> {
@@ -563,14 +563,14 @@ impl ValueRecordExt for ValueRecord<'_> {
             && self.y_advance_device.is_none()
     }
 
-    fn apply(&self, ctx: &mut ApplyContext, idx: usize) -> bool {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, idx: usize) -> bool {
         let mut pos = ctx.buffer.pos[idx];
         let worked = self.apply_to_pos(ctx, &mut pos);
         ctx.buffer.pos[idx] = pos;
         worked
     }
 
-    fn apply_to_pos(&self, ctx: &mut ApplyContext, pos: &mut GlyphPosition) -> bool {
+    fn apply_to_pos(&self, ctx: &mut hb_ot_apply_context_t, pos: &mut GlyphPosition) -> bool {
         let horizontal = ctx.buffer.direction.is_horizontal();
         let mut worked = false;
 
@@ -638,7 +638,7 @@ impl ValueRecordExt for ValueRecord<'_> {
 trait MarkArrayExt {
     fn apply(
         &self,
-        ctx: &mut ApplyContext,
+        ctx: &mut hb_ot_apply_context_t,
         anchors: AnchorMatrix,
         mark_index: u16,
         glyph_index: u16,
@@ -649,7 +649,7 @@ trait MarkArrayExt {
 impl MarkArrayExt for MarkArray<'_> {
     fn apply(
         &self,
-        ctx: &mut ApplyContext,
+        ctx: &mut hb_ot_apply_context_t,
         anchors: AnchorMatrix,
         mark_index: u16,
         glyph_index: u16,

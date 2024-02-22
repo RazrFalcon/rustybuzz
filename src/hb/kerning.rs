@@ -4,7 +4,7 @@ use crate::hb::buffer::{hb_buffer_t, BufferScratchFlags};
 use crate::hb::ot_layout::TableIndex;
 use crate::hb::ot_layout_common::lookup_flags;
 use crate::hb::ot_layout_gpos_table::attach_type;
-use crate::hb::ot_layout_gsubgpos::{ApplyContext, SkippyIter};
+use crate::hb::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t};
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::{hb_font_t, hb_mask_t};
 
@@ -86,7 +86,7 @@ fn machine_kern(
     get_kerning: impl Fn(u32, u32) -> i32,
 ) {
     buffer.unsafe_to_concat(None, None);
-    let mut ctx = ApplyContext::new(TableIndex::GPOS, face, buffer);
+    let mut ctx = hb_ot_apply_context_t::new(TableIndex::GPOS, face, buffer);
     ctx.lookup_mask = kern_mask;
     ctx.lookup_props = u32::from(lookup_flags::IGNORE_MARKS);
 
@@ -99,7 +99,7 @@ fn machine_kern(
             continue;
         }
 
-        let mut iter = SkippyIter::new(&ctx, i, 1, false);
+        let mut iter = skipping_iterator_t::new(&ctx, i, 1, false);
 
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {
