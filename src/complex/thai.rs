@@ -1,6 +1,6 @@
 use super::*;
 use crate::buffer::{hb_buffer_t, BufferClusterLevel};
-use crate::ot_layout::{TableIndex, _hb_glyph_info_set_general_category};
+use crate::ot_layout::*;
 use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::unicode::hb_unicode_general_category_t;
 use crate::{hb_font_t, script};
@@ -384,7 +384,7 @@ fn preprocess_text(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_
         buffer.output_glyph(nikhahit_from_sara_am(u));
         {
             let out_idx = buffer.out_len - 1;
-            buffer.out_info_mut()[out_idx].set_continuation();
+            _hb_glyph_info_set_continuation(&mut buffer.out_info_mut()[out_idx]);
         }
         buffer.replace_glyph(sara_aa_from_sara_am(u));
 

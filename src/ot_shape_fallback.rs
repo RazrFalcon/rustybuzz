@@ -273,8 +273,8 @@ fn position_around_base(
     // https://github.com/harfbuzz/harfbuzz/issues/1532
     base_extents.width = face.glyph_h_advance(base_glyph) as i32;
 
-    let lig_id = base_info.lig_id() as u32;
-    let num_lig_components = base_info.lig_num_comps() as i32;
+    let lig_id = _hb_glyph_info_get_lig_id(base_info) as u32;
+    let num_lig_components = _hb_glyph_info_get_lig_num_comps(base_info) as i32;
 
     let mut x_offset = 0;
     let mut y_offset = 0;
@@ -294,8 +294,8 @@ fn position_around_base(
     {
         if _hb_glyph_info_get_modified_combining_class(info) != 0 {
             if num_lig_components > 1 {
-                let this_lig_id = info.lig_id() as u32;
-                let mut this_lig_component = info.lig_comp() as i32 - 1;
+                let this_lig_id = _hb_glyph_info_get_lig_id(info) as u32;
+                let mut this_lig_component = _hb_glyph_info_get_lig_comp(info) as i32 - 1;
 
                 // Conditions for attaching to the last component.
                 if lig_id == 0 || lig_id != this_lig_id || this_lig_component >= num_lig_components
@@ -376,10 +376,10 @@ fn position_cluster(
     // Find the base glyph
     let mut i = start;
     while i < end {
-        if !buffer.info[i].is_unicode_mark() {
+        if !_hb_glyph_info_is_unicode_mark(&buffer.info[i]) {
             // Find mark glyphs
             let mut j = i + 1;
-            while j < end && buffer.info[j].is_unicode_mark() {
+            while j < end && _hb_glyph_info_is_unicode_mark(&buffer.info[j]) {
                 j += 1;
             }
 
@@ -399,7 +399,7 @@ pub fn position_marks(
     let mut start = 0;
     let len = buffer.len;
     for i in 1..len {
-        if !buffer.info[i].is_unicode_mark() {
+        if !_hb_glyph_info_is_unicode_mark(&buffer.info[i]) {
             position_cluster(plan, face, buffer, start, i, adjust_offsets_when_zeroing);
             start = i;
         }
@@ -422,7 +422,7 @@ pub fn _hb_ot_shape_fallback_spaces(
     let len = buffer.len;
     let horizontal = buffer.direction.is_horizontal();
     for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
-        if _hb_glyph_info_is_unicode_space(&info) && !info.is_ligated() {
+        if _hb_glyph_info_is_unicode_space(&info) && !_hb_glyph_info_ligated(info) {
             let space_type = _hb_glyph_info_get_unicode_space_fallback_type(info);
             match space_type {
                 t::SPACE_EM

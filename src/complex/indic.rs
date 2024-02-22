@@ -556,7 +556,7 @@ impl hb_glyph_info_t {
 
     fn is_one_of(&self, flags: u32) -> bool {
         // If it ligated, all bets are off.
-        if self.is_ligated() {
+        if _hb_glyph_info_ligated(self) {
             return false;
         }
 
@@ -1501,10 +1501,13 @@ fn final_reordering_impl(
     // We don't call load_virama_glyph(), since we know it's already loaded.
     if let Some(virama_glyph) = virama_glyph {
         for info in &mut buffer.info[start..end] {
-            if info.glyph_id == virama_glyph && info.is_ligated() && info.is_multiplied() {
+            if info.glyph_id == virama_glyph
+                && _hb_glyph_info_ligated(info)
+                && _hb_glyph_info_multiplied(info)
+            {
                 // This will make sure that this glyph passes is_halant() test.
                 info.set_indic_category(category::H);
-                info.clear_ligated_and_multiplied();
+                _hb_glyph_info_clear_ligated_and_multiplied(info);
             }
         }
     }
@@ -1524,8 +1527,8 @@ fn final_reordering_impl(
             if try_pref && base + 1 < end {
                 for i in base + 1..end {
                     if (buffer.info[i].mask & plan.mask_array[indic_feature::PREF]) != 0 {
-                        if !(buffer.info[i].is_substituted()
-                            && buffer.info[i].is_ligated_and_didnt_multiply())
+                        if !(_hb_glyph_info_substituted(&buffer.info[i])
+                            && _hb_glyph_info_ligated_and_didnt_multiply(&buffer.info[i]))
                         {
                             // Ok, this was a 'pref' candidate but didn't form any.
                             // Base is around here...
@@ -1726,7 +1729,7 @@ fn final_reordering_impl(
     if start + 1 < end
         && buffer.info[start].indic_position() == position::RA_TO_BECOME_REPH
         && (buffer.info[start].indic_category() == category::REPHA)
-            ^ buffer.info[start].is_ligated_and_didnt_multiply()
+            ^ _hb_glyph_info_ligated_and_didnt_multiply(&buffer.info[start])
     {
         let mut new_reph_pos;
         loop {
@@ -1883,7 +1886,7 @@ fn final_reordering_impl(
                 // the <pref> feature actually did it...
                 //
                 // Reorder pref only if it ligated.
-                if buffer.info[i].is_ligated_and_didnt_multiply() {
+                if _hb_glyph_info_ligated_and_didnt_multiply(&buffer.info[i]) {
                     // 2. Try to find a target position the same way as for pre-base matra.
                     //    If it is found, reorder pre-base consonant glyph.
                     //

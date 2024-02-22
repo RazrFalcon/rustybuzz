@@ -407,12 +407,14 @@ impl Apply for MarkToBaseAdjustment<'_> {
             // ...but stop if we find a mark in the MultipleSubst sequence:
             // https://github.com/harfbuzz/harfbuzz/issues/1020
             let idx = iter.index();
-            if !info[idx].is_multiplied()
-                || info[idx].lig_comp() == 0
+            if !_hb_glyph_info_multiplied(&info[idx])
+                || _hb_glyph_info_get_lig_comp(&info[idx]) == 0
                 || idx == 0
-                || info[idx - 1].is_mark()
-                || info[idx].lig_id() != info[idx - 1].lig_id()
-                || info[idx].lig_comp() != info[idx - 1].lig_comp() + 1
+                || _hb_glyph_info_is_mark(&info[idx - 1])
+                || _hb_glyph_info_get_lig_id(&info[idx])
+                    != _hb_glyph_info_get_lig_id(&info[idx - 1])
+                || _hb_glyph_info_get_lig_comp(&info[idx])
+                    != _hb_glyph_info_get_lig_comp(&info[idx - 1]) + 1
             {
                 break;
             }
@@ -474,9 +476,9 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         // is identical to the ligature ID of the found ligature.  If yes, we
         // can directly use the component index.  If not, we attach the mark
         // glyph to the last component of the ligature.
-        let lig_id = buffer.info[iter_idx].lig_id();
-        let mark_id = buffer.cur(0).lig_id();
-        let mark_comp = u16::from(buffer.cur(0).lig_comp());
+        let lig_id = _hb_glyph_info_get_lig_id(&buffer.info[iter_idx]);
+        let mark_id = _hb_glyph_info_get_lig_id(&buffer.cur(0));
+        let mark_comp = u16::from(_hb_glyph_info_get_lig_comp(buffer.cur(0)));
         let matches = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
         let comp_index = if matches {
             mark_comp.min(comp_count)
@@ -507,16 +509,16 @@ impl Apply for MarkToMarkAdjustment<'_> {
         }
 
         let iter_idx = iter.index();
-        if !buffer.info[iter_idx].is_mark() {
+        if !_hb_glyph_info_is_mark(&buffer.info[iter_idx]) {
             ctx.buffer
                 .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
             return None;
         }
 
-        let id1 = buffer.cur(0).lig_id();
-        let id2 = buffer.info[iter_idx].lig_id();
-        let comp1 = buffer.cur(0).lig_comp();
-        let comp2 = buffer.info[iter_idx].lig_comp();
+        let id1 = _hb_glyph_info_get_lig_id(buffer.cur(0));
+        let id2 = _hb_glyph_info_get_lig_id(&buffer.info[iter_idx]);
+        let comp1 = _hb_glyph_info_get_lig_comp(buffer.cur(0));
+        let comp2 = _hb_glyph_info_get_lig_comp(&buffer.info[iter_idx]);
 
         let matches = if id1 == id2 {
             // Marks belonging to the same base

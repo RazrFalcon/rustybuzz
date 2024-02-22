@@ -2,6 +2,7 @@ use super::arabic::ArabicShapePlan;
 use super::*;
 use crate::buffer::hb_buffer_t;
 use crate::ot::{feature, FeatureFlags};
+use crate::ot_layout::*;
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
 use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
@@ -142,7 +143,7 @@ impl hb_glyph_info_t {
     }
 
     fn is_halant_use(&self) -> bool {
-        matches!(self.use_category(), category::H | category::IS) && !self.is_ligated()
+        matches!(self.use_category(), category::H | category::IS) && !_hb_glyph_info_ligated(self)
     }
 }
 
@@ -189,14 +190,14 @@ fn collect_features(planner: &mut ShapePlanner) {
     // Reordering group
     planner
         .ot_map
-        .add_gsub_pause(Some(crate::ot_layout::clear_substitution_flags));
+        .add_gsub_pause(Some(crate::ot_layout::_hb_clear_substitution_flags));
     planner
         .ot_map
         .add_feature(feature::REPH_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_rphf));
     planner
         .ot_map
-        .add_gsub_pause(Some(crate::ot_layout::clear_substitution_flags));
+        .add_gsub_pause(Some(crate::ot_layout::_hb_clear_substitution_flags));
     planner
         .ot_map
         .enable_feature(feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
@@ -354,7 +355,7 @@ fn record_rphf(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
                 break;
             }
 
-            if buffer.info[i].is_substituted() {
+            if _hb_glyph_info_substituted(&buffer.info[i]) {
                 buffer.info[i].set_use_category(category::R);
                 break;
             }
@@ -464,7 +465,7 @@ fn reorder_syllable(start: usize, end: usize, buffer: &mut hb_buffer_t) {
             // shift things in between forward.
             j = i + 1;
         } else if (flag & (category_flag(category::VPRE) | category_flag(category::VMPRE))) != 0
-            && buffer.info[i].lig_comp() == 0
+            && _hb_glyph_info_get_lig_comp(&buffer.info[i]) == 0
             && j < i
         {
             // Only move the first component of a MultipleSubst.
@@ -484,7 +485,7 @@ fn record_pref(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) 
     while start < buffer.len {
         // Mark a substituted pref as VPre, as they behave the same way.
         for i in start..end {
-            if buffer.info[i].is_substituted() {
+            if _hb_glyph_info_substituted(&buffer.info[i]) {
                 buffer.info[i].set_use_category(category::VPRE);
                 break;
             }

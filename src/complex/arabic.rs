@@ -297,8 +297,8 @@ fn record_stch(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
     let info = &mut buffer.info;
     let mut has_stch = false;
     for glyph_info in &mut info[..len] {
-        if glyph_info.is_multiplied() {
-            let comp = if glyph_info.lig_comp() % 2 != 0 {
+        if _hb_glyph_info_multiplied(glyph_info) {
+            let comp = if _hb_glyph_info_get_lig_comp(glyph_info) % 2 != 0 {
                 action::STRETCHING_REPEATING
             } else {
                 action::STRETCHING_FIXED
@@ -375,7 +375,7 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
             let mut context = i;
             while context != 0
                 && !action::is_stch(buffer.info[context - 1].arabic_shaping_action())
-                && (buffer.info[context - 1].is_default_ignorable()
+                && (_hb_glyph_info_is_default_ignorable(&buffer.info[context - 1])
                     || is_word_category(_hb_glyph_info_get_general_category(
                         &buffer.info[context - 1],
                     )))

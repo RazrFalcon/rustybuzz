@@ -6,8 +6,7 @@ use ttf_parser::GlyphId;
 
 use crate::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::face::GlyphExtents;
-use crate::ot_layout::_hb_glyph_info_get_general_category;
-use crate::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
+use crate::unicode::{CharExt, GeneralCategoryExt};
 use crate::{hb_font_t, script, Direction, Language, Mask, Script};
 
 const CONTEXT_LENGTH: usize = 5;
@@ -172,8 +171,6 @@ pub struct hb_glyph_info_t {
 unsafe impl bytemuck::Zeroable for hb_glyph_info_t {}
 unsafe impl bytemuck::Pod for hb_glyph_info_t {}
 
-const IS_LIG_BASE: u8 = 0x10;
-
 impl hb_glyph_info_t {
     /// Indicates that if input text is broken at the beginning of the cluster this glyph
     /// is part of, then both sides need to be re-shaped, as the result might be different.
@@ -285,23 +282,6 @@ impl hb_glyph_info_t {
     }
 
     #[inline]
-    pub(crate) fn is_unicode_mark(&self) -> bool {
-        _hb_glyph_info_get_general_category(self).is_mark()
-    }
-
-    #[inline]
-    pub(crate) fn is_zwnj(&self) -> bool {
-        _hb_glyph_info_get_general_category(self) == hb_unicode_general_category_t::Format
-            && (self.unicode_props() & UnicodeProps::CF_ZWNJ.bits() != 0)
-    }
-
-    #[inline]
-    pub(crate) fn is_zwj(&self) -> bool {
-        _hb_glyph_info_get_general_category(self) == hb_unicode_general_category_t::Format
-            && (self.unicode_props() & UnicodeProps::CF_ZWJ.bits() != 0)
-    }
-
-    #[inline]
     pub(crate) fn is_hidden(&self) -> bool {
         self.unicode_props() & UnicodeProps::HIDDEN.bits() != 0
     }
@@ -312,56 +292,6 @@ impl hb_glyph_info_t {
         n &= !UnicodeProps::HIDDEN.bits();
         self.set_unicode_props(n);
     }
-
-    #[inline]
-    pub(crate) fn set_continuation(&mut self) {
-        let mut n = self.unicode_props();
-        n |= UnicodeProps::CONTINUATION.bits();
-        self.set_unicode_props(n);
-    }
-
-    #[inline]
-    pub(crate) fn reset_continuation(&mut self) {
-        let mut n = self.unicode_props();
-        n &= !UnicodeProps::CONTINUATION.bits();
-        self.set_unicode_props(n);
-    }
-
-    #[inline]
-    pub(crate) fn is_continuation(&self) -> bool {
-        self.unicode_props() & UnicodeProps::CONTINUATION.bits() != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_default_ignorable(&self) -> bool {
-        let n = self.unicode_props() & UnicodeProps::IGNORABLE.bits();
-        n != 0 && !self.is_substituted()
-    }
-
-    // Var allocation: lig_props (aka lig_id / lig_comp)
-    // Used during the GSUB/GPOS processing to track ligatures
-    //
-    // When a ligature is formed:
-    //
-    //   - The ligature glyph and any marks in between all the same newly allocated
-    //     lig_id,
-    //   - The ligature glyph will get lig_num_comps set to the number of components
-    //   - The marks get lig_comp > 0, reflecting which component of the ligature
-    //     they were applied to.
-    //   - This is used in GPOS to attach marks to the right component of a ligature
-    //     in MarkLigPos,
-    //   - Note that when marks are ligated together, much of the above is skipped
-    //     and the current lig_id reused.
-    //
-    // When a multiple-substitution is done:
-    //
-    //   - All resulting glyphs will have lig_id = 0,
-    //   - The resulting glyphs will have lig_comp = 0, 1, 2, ... respectively.
-    //   - This is used in GPOS to attach marks to the first component of a
-    //     multiple substitution in MarkBasePos.
-    //
-    // The numbers are also used in GPOS to do mark-to-mark positioning only
-    // to marks that belong to the same component of the same ligature.
 
     #[inline]
     pub(crate) fn lig_props(&self) -> u8 {
@@ -375,50 +305,6 @@ impl hb_glyph_info_t {
         v[2] = n;
     }
 
-    pub(crate) fn set_lig_props_for_ligature(&mut self, lig_id: u8, lig_num_comps: u8) {
-        self.set_lig_props((lig_id << 5) | IS_LIG_BASE | (lig_num_comps & 0x0F));
-    }
-
-    pub(crate) fn set_lig_props_for_mark(&mut self, lig_id: u8, lig_comp: u8) {
-        self.set_lig_props((lig_id << 5) | (lig_comp & 0x0F));
-    }
-
-    pub(crate) fn set_lig_props_for_component(&mut self, lig_comp: u8) {
-        self.set_lig_props_for_mark(0, lig_comp)
-    }
-
-    #[inline]
-    pub(crate) fn lig_id(&self) -> u8 {
-        self.lig_props() >> 5
-    }
-
-    #[inline]
-    pub(crate) fn is_ligated_internal(&self) -> bool {
-        self.lig_props() & IS_LIG_BASE != 0
-    }
-
-    #[inline]
-    pub(crate) fn lig_comp(&self) -> u8 {
-        if self.is_ligated_internal() {
-            0
-        } else {
-            self.lig_props() & 0x0F
-        }
-    }
-
-    #[inline]
-    pub(crate) fn lig_num_comps(&self) -> u8 {
-        if self.glyph_props() & GlyphPropsFlags::LIGATURE.bits() != 0 && self.is_ligated_internal()
-        {
-            self.lig_props() & 0x0F
-        } else {
-            1
-        }
-    }
-
-    // Var allocation: glyph_props
-    // Used during the GSUB/GPOS processing to store GDEF glyph properties
-
     #[inline]
     pub(crate) fn glyph_props(&self) -> u16 {
         let v: &[u16; 2] = bytemuck::cast_ref(&self.var1);
@@ -430,58 +316,6 @@ impl hb_glyph_info_t {
         let v: &mut [u16; 2] = bytemuck::cast_mut(&mut self.var1);
         v[0] = n;
     }
-
-    #[inline]
-    pub(crate) fn is_base_glyph(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::BASE_GLYPH.bits() != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_ligature(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::LIGATURE.bits() != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_mark(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::MARK.bits() != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_substituted(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits() != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_ligated(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::LIGATED.bits() != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_multiplied(&self) -> bool {
-        self.glyph_props() & GlyphPropsFlags::MULTIPLIED.bits() != 0
-    }
-
-    #[inline]
-    pub(crate) fn is_ligated_and_didnt_multiply(&self) -> bool {
-        self.is_ligated() && !self.is_multiplied()
-    }
-
-    #[inline]
-    pub(crate) fn clear_ligated_and_multiplied(&mut self) {
-        let mut n = self.glyph_props();
-        n &= !(GlyphPropsFlags::LIGATED | GlyphPropsFlags::MULTIPLIED).bits();
-        self.set_glyph_props(n);
-    }
-
-    #[inline]
-    pub(crate) fn clear_substituted(&mut self) {
-        let mut n = self.glyph_props();
-        n &= !GlyphPropsFlags::SUBSTITUTED.bits();
-        self.set_glyph_props(n);
-    }
-
-    // Var allocation: syllable
-    // Used during the GSUB/GPOS processing to store shaping boundaries
 
     #[inline]
     pub(crate) fn syllable(&self) -> u8 {
@@ -784,13 +618,6 @@ impl hb_buffer_t {
 
             self.reverse();
         }
-    }
-
-    pub fn reverse_graphemes(&mut self) {
-        self.reverse_groups(
-            _grapheme_group_func,
-            self.cluster_level == BufferClusterLevel::MonotoneCharacters,
-        )
     }
 
     pub fn group_end<F>(&self, mut start: usize, group: F) -> usize
@@ -1588,10 +1415,6 @@ pub(crate) fn _cluster_group_func(a: &hb_glyph_info_t, b: &hb_glyph_info_t) -> b
     a.cluster == b.cluster
 }
 
-pub(crate) fn _grapheme_group_func(_: &hb_glyph_info_t, b: &hb_glyph_info_t) -> bool {
-    b.is_continuation()
-}
-
 // TODO: to iter if possible
 
 macro_rules! foreach_cluster {
@@ -1628,7 +1451,7 @@ macro_rules! foreach_syllable {
 
 macro_rules! foreach_grapheme {
     ($buffer:expr, $start:ident, $end:ident, $($body:tt)*) => {
-        foreach_group!($buffer, $start, $end, crate::buffer::_grapheme_group_func, $($body)*)
+        foreach_group!($buffer, $start, $end, crate::ot_layout::_hb_grapheme_group_func, $($body)*)
     };
 }
 

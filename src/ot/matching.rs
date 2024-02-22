@@ -5,7 +5,7 @@ use ttf_parser::GlyphId;
 
 use super::apply::ApplyContext;
 use crate::buffer::hb_glyph_info_t;
-use crate::ot_layout::{TableIndex, MAX_CONTEXT_LENGTH};
+use crate::ot_layout::*;
 use crate::Mask;
 
 pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
@@ -61,9 +61,9 @@ pub fn match_input(
     iter.enable_matching(match_func);
 
     let first = ctx.buffer.cur(0);
-    let first_lig_id = first.lig_id();
-    let first_lig_comp = first.lig_comp();
-    let mut total_component_count = first.lig_num_comps();
+    let first_lig_id = _hb_glyph_info_get_lig_id(first);
+    let first_lig_comp = _hb_glyph_info_get_lig_comp(first);
+    let mut total_component_count = _hb_glyph_info_get_lig_num_comps(first);
     let mut ligbase = Ligbase::NotChecked;
 
     match_positions[0] = ctx.buffer.idx;
@@ -78,8 +78,8 @@ pub fn match_input(
         *position = iter.index();
 
         let this = ctx.buffer.info[iter.index()];
-        let this_lig_id = this.lig_id();
-        let this_lig_comp = this.lig_comp();
+        let this_lig_id = _hb_glyph_info_get_lig_id(&this);
+        let this_lig_comp = _hb_glyph_info_get_lig_comp(&this);
 
         if first_lig_id != 0 && first_lig_comp != 0 {
             // If first component was attached to a previous ligature component,
@@ -92,8 +92,8 @@ pub fn match_input(
                     let out = ctx.buffer.out_info();
                     let mut j = ctx.buffer.out_len;
                     let mut found = false;
-                    while j > 0 && out[j - 1].lig_id() == first_lig_id {
-                        if out[j - 1].lig_comp() == 0 {
+                    while j > 0 && _hb_glyph_info_get_lig_id(&out[j - 1]) == first_lig_id {
+                        if _hb_glyph_info_get_lig_comp(&out[j - 1]) == 0 {
                             j -= 1;
                             found = true;
                             break;
@@ -121,7 +121,7 @@ pub fn match_input(
             }
         }
 
-        total_component_count += this.lig_num_comps();
+        total_component_count += _hb_glyph_info_get_lig_num_comps(&this);
     }
 
     *end_position = iter.index() + 1;
@@ -318,10 +318,10 @@ impl<'a, 'b> SkippyIter<'a, 'b> {
             return Some(true);
         }
 
-        if !info.is_default_ignorable()
+        if !_hb_glyph_info_is_default_ignorable(info)
             || info.is_hidden()
-            || (!self.ignore_zwnj && info.is_zwnj())
-            || (!self.ignore_zwj && info.is_zwj())
+            || (!self.ignore_zwnj && _hb_glyph_info_is_zwnj(info))
+            || (!self.ignore_zwj && _hb_glyph_info_is_zwj(info))
         {
             return Some(false);
         }

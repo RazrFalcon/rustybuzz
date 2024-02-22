@@ -3,7 +3,7 @@ use crate::buffer::{
     GlyphPropsFlags,
 };
 use crate::complex::ZeroWidthMarksMode;
-use crate::ot_layout::_hb_glyph_info_get_general_category;
+use crate::ot_layout::*;
 use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
 use crate::{
@@ -376,20 +376,20 @@ fn set_unicode_props(buffer: &mut hb_buffer_t) {
             == hb_unicode_general_category_t::ModifierSymbol
             && matches!(info.glyph_id, 0x1F3FB..=0x1F3FF)
         {
-            info.set_continuation();
+            _hb_glyph_info_set_continuation(info);
         } else if i != 0 && matches!(info.glyph_id, 0x1F1E6..=0x1F1FF) {
             // Should never fail because we checked for i > 0.
             // TODO: use let chains when they become stable
             let prev = prior.last().unwrap();
-            if matches!(prev.glyph_id, 0x1F1E6..=0x1F1FF) && !prev.is_continuation() {
-                info.set_continuation();
+            if matches!(prev.glyph_id, 0x1F1E6..=0x1F1FF) && !_hb_glyph_info_is_continuation(prev) {
+                _hb_glyph_info_set_continuation(info);
             }
-        } else if info.is_zwj() {
-            info.set_continuation();
+        } else if _hb_glyph_info_is_zwj(info) {
+            _hb_glyph_info_set_continuation(info);
             if let Some(next) = buffer.info[..len].get_mut(i + 1) {
                 if next.as_char().is_emoji_extended_pictographic() {
                     next.init_unicode_props(&mut buffer.scratch_flags);
-                    next.set_continuation();
+                    _hb_glyph_info_set_continuation(next);
                     i += 1;
                 }
             }
@@ -405,7 +405,7 @@ fn set_unicode_props(buffer: &mut hb_buffer_t) {
             // it separate results in more granular clusters.  Ignore Katakana for now.
             // Tags are used for Emoji sub-region flag sequences:
             // https://github.com/harfbuzz/harfbuzz/issues/1556
-            info.set_continuation();
+            _hb_glyph_info_set_continuation(info);
         }
 
         i += 1;
@@ -418,7 +418,7 @@ fn insert_dotted_circle(buffer: &mut hb_buffer_t, face: &hb_font_t) {
         .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
         && buffer.flags.contains(BufferFlags::BEGINNING_OF_TEXT)
         && buffer.context_len[0] == 0
-        && buffer.info[0].is_unicode_mark()
+        && _hb_glyph_info_is_unicode_mark(&buffer.info[0])
         && face.has_glyph(0x25CC)
     {
         let mut info = hb_glyph_info_t {
@@ -491,7 +491,7 @@ fn ensure_native_direction(buffer: &mut hb_buffer_t) {
     if (dir.is_horizontal() && dir != hor && hor != Direction::Invalid)
         || (dir.is_vertical() && dir != Direction::TopToBottom)
     {
-        buffer.reverse_graphemes();
+        _hb_ot_layout_reverse_graphemes(buffer);
         buffer.direction = buffer.direction.reverse();
     }
 }
@@ -545,7 +545,7 @@ fn synthesize_glyph_classes(buffer: &mut hb_buffer_t) {
         // this applies to is COMBINING GRAPHEME JOINER.
         let class = if _hb_glyph_info_get_general_category(info)
             != hb_unicode_general_category_t::NonspacingMark
-            || info.is_default_ignorable()
+            || _hb_glyph_info_is_default_ignorable(info)
         {
             GlyphPropsFlags::BASE_GLYPH
         } else {
@@ -569,7 +569,7 @@ fn zero_width_default_ignorables(buffer: &mut hb_buffer_t) {
     {
         let len = buffer.len;
         for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
-            if info.is_default_ignorable() {
+            if _hb_glyph_info_is_default_ignorable(info) {
                 pos.x_advance = 0;
                 pos.y_advance = 0;
                 pos.x_offset = 0;
@@ -582,7 +582,7 @@ fn zero_width_default_ignorables(buffer: &mut hb_buffer_t) {
 fn zero_mark_widths_by_gdef(buffer: &mut hb_buffer_t, adjust_offsets: bool) {
     let len = buffer.len;
     for (info, pos) in buffer.info[..len].iter().zip(&mut buffer.pos[..len]) {
-        if info.is_mark() {
+        if _hb_glyph_info_is_mark(info) {
             if adjust_offsets {
                 pos.x_offset -= pos.x_advance;
                 pos.y_offset -= pos.y_advance;
@@ -612,7 +612,7 @@ fn hide_default_ignorables(buffer: &mut hb_buffer_t, face: &hb_font_t) {
             {
                 let len = buffer.len;
                 for info in &mut buffer.info[..len] {
-                    if info.is_default_ignorable() {
+                    if _hb_glyph_info_is_default_ignorable(info) {
                         info.glyph_id = u32::from(invisible.0);
                     }
                 }
@@ -620,7 +620,7 @@ fn hide_default_ignorables(buffer: &mut hb_buffer_t, face: &hb_font_t) {
             }
         }
 
-        buffer.delete_glyphs_inplace(hb_glyph_info_t::is_default_ignorable);
+        buffer.delete_glyphs_inplace(_hb_glyph_info_is_default_ignorable);
     }
 }
 

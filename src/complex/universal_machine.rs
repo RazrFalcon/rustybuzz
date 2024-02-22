@@ -21,6 +21,7 @@ use crate::buffer::hb_buffer_t;
 use crate::complex::machine_cursor::MachineCursor;
 use crate::complex::universal::category;
 use crate::hb_glyph_info_t;
+use crate::ot_layout::*;
 use core::cell::Cell;
 
 static _use_syllable_machine_trans_keys: [u8; 226] = [
@@ -488,7 +489,7 @@ fn included(infos: &[Cell<hb_glyph_info_t>], i: usize) -> bool {
     if glyph.use_category() == category::ZWNJ {
         for glyph2 in &infos[i + 1..] {
             if not_ccs_default_ignorable(&glyph2.get()) {
-                return !glyph2.get().is_unicode_mark();
+                return !_hb_glyph_info_is_unicode_mark(&glyph2.get());
             }
         }
     }

@@ -167,19 +167,19 @@ impl Apply for Sequence<'_> {
             1 => ctx.replace_glyph(self.substitutes.get(0)?),
 
             _ => {
-                let class = if ctx.buffer.cur(0).is_ligature() {
+                let class = if _hb_glyph_info_is_ligature(ctx.buffer.cur(0)) {
                     GlyphPropsFlags::BASE_GLYPH
                 } else {
                     GlyphPropsFlags::empty()
                 };
-                let lig_id = ctx.buffer.cur(0).lig_id();
+                let lig_id = _hb_glyph_info_get_lig_id(ctx.buffer.cur(0));
 
                 for (i, subst) in self.substitutes.into_iter().enumerate() {
                     // If is attached to a ligature, don't disturb that.
                     // https://github.com/harfbuzz/harfbuzz/issues/3069
                     if lig_id == 0 {
                         // Index is truncated to 4 bits anway, so we can safely cast to u8.
-                        ctx.buffer.cur_mut(0).set_lig_props_for_component(i as u8);
+                        _hb_glyph_info_set_lig_props_for_component(ctx.buffer.cur_mut(0), i as u8);
                     }
                     ctx.output_glyph_for_component(subst, class);
                 }
@@ -371,10 +371,10 @@ fn ligate(
     let mut buffer = &mut ctx.buffer;
     buffer.merge_clusters(buffer.idx, match_end);
 
-    let mut is_base_ligature = buffer.info[match_positions[0]].is_base_glyph();
-    let mut is_mark_ligature = buffer.info[match_positions[0]].is_mark();
+    let mut is_base_ligature = _hb_glyph_info_is_base_glyph(&buffer.info[match_positions[0]]);
+    let mut is_mark_ligature = _hb_glyph_info_is_mark(&buffer.info[match_positions[0]]);
     for i in 1..count {
-        if !buffer.info[match_positions[i]].is_mark() {
+        if !_hb_glyph_info_is_mark(&buffer.info[match_positions[i]]) {
             is_base_ligature = false;
             is_mark_ligature = false;
         }
@@ -392,12 +392,12 @@ fn ligate(
         0
     };
     let first = buffer.cur_mut(0);
-    let mut last_lig_id = first.lig_id();
-    let mut last_num_comps = first.lig_num_comps();
+    let mut last_lig_id = _hb_glyph_info_get_lig_id(first);
+    let mut last_num_comps = _hb_glyph_info_get_lig_num_comps(first);
     let mut comps_so_far = last_num_comps;
 
     if is_ligature {
-        first.set_lig_props_for_ligature(lig_id, total_component_count);
+        _hb_glyph_info_set_lig_props_for_ligature(first, lig_id, total_component_count);
         if _hb_glyph_info_get_general_category(first)
             == hb_unicode_general_category_t::NonspacingMark
         {
@@ -412,19 +412,19 @@ fn ligate(
         while buffer.idx < match_positions[i] && buffer.successful {
             if is_ligature {
                 let cur = buffer.cur_mut(0);
-                let mut this_comp = cur.lig_comp();
+                let mut this_comp = _hb_glyph_info_get_lig_comp(cur);
                 if this_comp == 0 {
                     this_comp = last_num_comps;
                 }
                 let new_lig_comp = comps_so_far - last_num_comps + this_comp.min(last_num_comps);
-                cur.set_lig_props_for_mark(lig_id, new_lig_comp);
+                _hb_glyph_info_set_lig_props_for_mark(cur, lig_id, new_lig_comp);
             }
             buffer.next_glyph();
         }
 
         let cur = buffer.cur(0);
-        last_lig_id = cur.lig_id();
-        last_num_comps = cur.lig_num_comps();
+        last_lig_id = _hb_glyph_info_get_lig_id(cur);
+        last_num_comps = _hb_glyph_info_get_lig_num_comps(cur);
         comps_so_far += last_num_comps;
 
         // Skip the base glyph.
@@ -435,17 +435,17 @@ fn ligate(
         // Re-adjust components for any marks following.
         for i in buffer.idx..buffer.len {
             let info = &mut buffer.info[i];
-            if last_lig_id != info.lig_id() {
+            if last_lig_id != _hb_glyph_info_get_lig_id(info) {
                 break;
             }
 
-            let this_comp = info.lig_comp();
+            let this_comp = _hb_glyph_info_get_lig_comp(info);
             if this_comp == 0 {
                 break;
             }
 
             let new_lig_comp = comps_so_far - last_num_comps + this_comp.min(last_num_comps);
-            info.set_lig_props_for_mark(lig_id, new_lig_comp)
+            _hb_glyph_info_set_lig_props_for_mark(info, lig_id, new_lig_comp)
         }
     }
 }

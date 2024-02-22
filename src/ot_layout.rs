@@ -5,7 +5,7 @@ use core::ops::{Index, IndexMut};
 use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex};
 use ttf_parser::GlyphId;
 
-use crate::buffer::{hb_buffer_t, UnicodeProps};
+use crate::buffer::{hb_buffer_t, GlyphPropsFlags, UnicodeProps};
 use crate::common::TagExt;
 use crate::ot::apply::{Apply, ApplyContext};
 use crate::shape_plan::hb_ot_shape_plan_t;
@@ -272,13 +272,6 @@ fn apply_backward(ctx: &mut ApplyContext, lookup: &impl Apply) -> bool {
     ret
 }
 
-pub fn clear_substitution_flags(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    let len = buffer.len;
-    for info in &mut buffer.info[..len] {
-        info.clear_substituted();
-    }
-}
-
 pub fn _hb_clear_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
@@ -395,7 +388,7 @@ pub(crate) fn _hb_glyph_info_set_modified_combining_class(
     info: &mut hb_glyph_info_t,
     modified_class: u8,
 ) {
-    if !info.is_unicode_mark() {
+    if !_hb_glyph_info_is_unicode_mark(info) {
         return;
     }
 
@@ -447,14 +440,12 @@ pub(crate) fn _hb_glyph_info_get_unicode_space_fallback_type(
     }
 }
 
-//   static inline bool _hb_glyph_info_substituted (const hb_glyph_info_t *info);
+#[inline]
+pub(crate) fn _hb_glyph_info_is_default_ignorable(info: &hb_glyph_info_t) -> bool {
+    let n = info.unicode_props() & UnicodeProps::IGNORABLE.bits();
+    n != 0 && !_hb_glyph_info_substituted(info)
+}
 
-//   static inline bool
-//   _hb_glyph_info_is_default_ignorable (const hb_glyph_info_t *info)
-//   {
-//     return (info->unicode_props() & UPROPS_MASK_IGNORABLE) &&
-//        !_hb_glyph_info_substituted (info);
-//   }
 //   static inline bool
 //   _hb_glyph_info_is_default_ignorable_and_not_hidden (const hb_glyph_info_t *info)
 //   {
@@ -462,64 +453,66 @@ pub(crate) fn _hb_glyph_info_get_unicode_space_fallback_type(
 //         == UPROPS_MASK_IGNORABLE) &&
 //        !_hb_glyph_info_substituted (info);
 //   }
+
 //   static inline void
 //   _hb_glyph_info_unhide (hb_glyph_info_t *info)
 //   {
 //     info->unicode_props() &= ~ UPROPS_MASK_HIDDEN;
 //   }
 
-//   static inline void
-//   _hb_glyph_info_set_continuation (hb_glyph_info_t *info)
-//   {
-//     info->unicode_props() |= UPROPS_MASK_CONTINUATION;
-//   }
-//   static inline void
-//   _hb_glyph_info_reset_continuation (hb_glyph_info_t *info)
-//   {
-//     info->unicode_props() &= ~ UPROPS_MASK_CONTINUATION;
-//   }
-//   static inline bool
-//   _hb_glyph_info_is_continuation (const hb_glyph_info_t *info)
-//   {
-//     return info->unicode_props() & UPROPS_MASK_CONTINUATION;
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_set_continuation(info: &mut hb_glyph_info_t) {
+    let mut n = info.unicode_props();
+    n |= UnicodeProps::CONTINUATION.bits();
+    info.set_unicode_props(n);
+}
 
-//   static inline bool
-//   _hb_grapheme_group_func (const hb_glyph_info_t& a HB_UNUSED,
-//                const hb_glyph_info_t& b)
-//   { return _hb_glyph_info_is_continuation (&b); }
+#[inline]
+pub(crate) fn _hb_glyph_info_reset_continuation(info: &mut hb_glyph_info_t) {
+    let mut n = info.unicode_props();
+    n &= !UnicodeProps::CONTINUATION.bits();
+    info.set_unicode_props(n);
+}
 
-//   #define foreach_grapheme(buffer, start, end) \
-//       foreach_group (buffer, start, end, _hb_grapheme_group_func)
+#[inline]
+pub(crate) fn _hb_glyph_info_is_continuation(info: &hb_glyph_info_t) -> bool {
+    info.unicode_props() & UnicodeProps::CONTINUATION.bits() != 0
+}
 
-//   static inline void
-//   _hb_ot_layout_reverse_graphemes (hb_buffer_t *buffer)
-//   {
-//     buffer->reverse_groups (_hb_grapheme_group_func,
-//                 buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS);
-//   }
+pub(crate) fn _hb_grapheme_group_func(_: &hb_glyph_info_t, b: &hb_glyph_info_t) -> bool {
+    _hb_glyph_info_is_continuation(b)
+}
 
-//   static inline bool
-//   _hb_glyph_info_is_unicode_format (const hb_glyph_info_t *info)
-//   {
-//     return _hb_glyph_info_get_general_category (info) ==
-//        HB_UNICODE_GENERAL_CATEGORY_FORMAT;
-//   }
-//   static inline bool
-//   _hb_glyph_info_is_zwnj (const hb_glyph_info_t *info)
-//   {
-//     return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWNJ);
-//   }
-//   static inline bool
-//   _hb_glyph_info_is_zwj (const hb_glyph_info_t *info)
-//   {
-//     return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
-//   }
+pub fn _hb_ot_layout_reverse_graphemes(buffer: &mut hb_buffer_t) {
+    buffer.reverse_groups(
+        _hb_grapheme_group_func,
+        buffer.cluster_level == crate::buffer::BufferClusterLevel::MonotoneCharacters,
+    )
+}
+
+#[inline]
+pub(crate) fn _hb_glyph_info_is_unicode_format(info: &hb_glyph_info_t) -> bool {
+    _hb_glyph_info_get_general_category(info) == hb_unicode_general_category_t::Format
+}
+
+#[inline]
+pub(crate) fn _hb_glyph_info_is_zwnj(info: &hb_glyph_info_t) -> bool {
+    _hb_glyph_info_is_unicode_format(info)
+        && (info.unicode_props() & UnicodeProps::CF_ZWNJ.bits() != 0)
+}
+
+#[inline]
+pub(crate) fn _hb_glyph_info_is_zwj(info: &hb_glyph_info_t) -> bool {
+    _hb_glyph_info_is_unicode_format(info)
+        && (info.unicode_props() & UnicodeProps::CF_ZWJ.bits() != 0)
+}
+
 //   static inline bool
 //   _hb_glyph_info_is_joiner (const hb_glyph_info_t *info)
 //   {
 //     return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & (UPROPS_MASK_Cf_ZWNJ|UPROPS_MASK_Cf_ZWJ));
 //   }
+
 //   static inline void
 //   _hb_glyph_info_flip_joiners (hb_glyph_info_t *info)
 //   {
@@ -558,69 +551,60 @@ pub(crate) fn _hb_glyph_info_get_unicode_space_fallback_type(
 //     info->lig_props() = 0;
 //   }
 
-//   #define IS_LIG_BASE 0x10
+const IS_LIG_BASE: u8 = 0x10;
 
-//   static inline void
-//   _hb_glyph_info_set_lig_props_for_ligature (hb_glyph_info_t *info,
-//                          unsigned int lig_id,
-//                          unsigned int lig_num_comps)
-//   {
-//     info->lig_props() = (lig_id << 5) | IS_LIG_BASE | (lig_num_comps & 0x0F);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_set_lig_props_for_ligature(
+    info: &mut hb_glyph_info_t,
+    lig_id: u8,
+    lig_num_comps: u8,
+) {
+    info.set_lig_props((lig_id << 5) | IS_LIG_BASE | (lig_num_comps & 0x0F));
+}
 
-//   static inline void
-//   _hb_glyph_info_set_lig_props_for_mark (hb_glyph_info_t *info,
-//                          unsigned int lig_id,
-//                          unsigned int lig_comp)
-//   {
-//     info->lig_props() = (lig_id << 5) | (lig_comp & 0x0F);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_set_lig_props_for_mark(
+    info: &mut hb_glyph_info_t,
+    lig_id: u8,
+    lig_comp: u8,
+) {
+    info.set_lig_props((lig_id << 5) | (lig_comp & 0x0F));
+}
 
-//   static inline void
-//   _hb_glyph_info_set_lig_props_for_component (hb_glyph_info_t *info, unsigned int comp)
-//   {
-//     _hb_glyph_info_set_lig_props_for_mark (info, 0, comp);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_set_lig_props_for_component(info: &mut hb_glyph_info_t, comp: u8) {
+    _hb_glyph_info_set_lig_props_for_mark(info, 0, comp);
+}
 
-//   static inline unsigned int
-//   _hb_glyph_info_get_lig_id (const hb_glyph_info_t *info)
-//   {
-//     return info->lig_props() >> 5;
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_get_lig_id(info: &hb_glyph_info_t) -> u8 {
+    info.lig_props() >> 5
+}
 
-//   static inline bool
-//   _hb_glyph_info_ligated_internal (const hb_glyph_info_t *info)
-//   {
-//     return !!(info->lig_props() & IS_LIG_BASE);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_ligated_internal(info: &hb_glyph_info_t) -> bool {
+    info.lig_props() & IS_LIG_BASE != 0
+}
 
-//   static inline unsigned int
-//   _hb_glyph_info_get_lig_comp (const hb_glyph_info_t *info)
-//   {
-//     if (_hb_glyph_info_ligated_internal (info))
-//       return 0;
-//     else
-//       return info->lig_props() & 0x0F;
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_get_lig_comp(info: &hb_glyph_info_t) -> u8 {
+    if _hb_glyph_info_ligated_internal(info) {
+        0
+    } else {
+        info.lig_props() & 0x0F
+    }
+}
 
-//   static inline unsigned int
-//   _hb_glyph_info_get_lig_num_comps (const hb_glyph_info_t *info)
-//   {
-//     if ((info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE) &&
-//         _hb_glyph_info_ligated_internal (info))
-//       return info->lig_props() & 0x0F;
-//     else
-//       return 1;
-//   }
-
-//   static inline uint8_t
-//   _hb_allocate_lig_id (hb_buffer_t *buffer)
-//   {
-//     uint8_t lig_id = buffer->next_serial () & 0x07;
-//     if (unlikely (!lig_id))
-//       lig_id = _hb_allocate_lig_id (buffer); /* in case of overflow */
-//     return lig_id;
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_get_lig_num_comps(info: &hb_glyph_info_t) -> u8 {
+    if info.glyph_props() & GlyphPropsFlags::LIGATURE.bits() != 0
+        && _hb_glyph_info_ligated_internal(info)
+    {
+        info.lig_props() & 0x0F
+    } else {
+        1
+    }
+}
 
 //   /* glyph_props: */
 //   static inline void
@@ -635,111 +619,62 @@ pub(crate) fn _hb_glyph_info_get_unicode_space_fallback_type(
 //     return info->glyph_props();
 //   }
 
-//   static inline bool
-//   _hb_glyph_info_is_base_glyph (const hb_glyph_info_t *info)
-//   {
-//     return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_is_base_glyph(info: &hb_glyph_info_t) -> bool {
+    info.glyph_props() & GlyphPropsFlags::BASE_GLYPH.bits() != 0
+}
 
-//   static inline bool
-//   _hb_glyph_info_is_ligature (const hb_glyph_info_t *info)
-//   {
-//     return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_is_ligature(info: &hb_glyph_info_t) -> bool {
+    info.glyph_props() & GlyphPropsFlags::LIGATURE.bits() != 0
+}
 
-//   static inline bool
-//   _hb_glyph_info_is_mark (const hb_glyph_info_t *info)
-//   {
-//     return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MARK);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_is_mark(info: &hb_glyph_info_t) -> bool {
+    info.glyph_props() & GlyphPropsFlags::MARK.bits() != 0
+}
 
-//   static inline bool
-//   _hb_glyph_info_substituted (const hb_glyph_info_t *info)
-//   {
-//     return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_substituted(info: &hb_glyph_info_t) -> bool {
+    info.glyph_props() & GlyphPropsFlags::SUBSTITUTED.bits() != 0
+}
 
-//   static inline bool
-//   _hb_glyph_info_ligated (const hb_glyph_info_t *info)
-//   {
-//     return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_LIGATED);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_ligated(info: &hb_glyph_info_t) -> bool {
+    info.glyph_props() & GlyphPropsFlags::LIGATED.bits() != 0
+}
 
-//   static inline bool
-//   _hb_glyph_info_multiplied (const hb_glyph_info_t *info)
-//   {
-//     return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_multiplied(info: &hb_glyph_info_t) -> bool {
+    info.glyph_props() & GlyphPropsFlags::MULTIPLIED.bits() != 0
+}
 
-//   static inline bool
-//   _hb_glyph_info_ligated_and_didnt_multiply (const hb_glyph_info_t *info)
-//   {
-//     return _hb_glyph_info_ligated (info) && !_hb_glyph_info_multiplied (info);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_ligated_and_didnt_multiply(info: &hb_glyph_info_t) -> bool {
+    _hb_glyph_info_ligated(info) && !_hb_glyph_info_multiplied(info)
+}
 
-//   static inline void
-//   _hb_glyph_info_clear_ligated_and_multiplied (hb_glyph_info_t *info)
-//   {
-//     info->glyph_props() &= ~(HB_OT_LAYOUT_GLYPH_PROPS_LIGATED |
-//                  HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_clear_ligated_and_multiplied(info: &mut hb_glyph_info_t) {
+    let mut n = info.glyph_props();
+    n &= !(GlyphPropsFlags::LIGATED | GlyphPropsFlags::MULTIPLIED).bits();
+    info.set_glyph_props(n);
+}
 
-//   static inline void
-//   _hb_glyph_info_clear_substituted (hb_glyph_info_t *info)
-//   {
-//     info->glyph_props() &= ~(HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_clear_substituted(info: &mut hb_glyph_info_t) {
+    let mut n = info.glyph_props();
+    n &= !GlyphPropsFlags::SUBSTITUTED.bits();
+    info.set_glyph_props(n);
+}
 
-//   static inline void
-//   _hb_clear_substitution_flags (const hb_ot_shape_plan_t *plan HB_UNUSED,
-//                     hb_font_t *font HB_UNUSED,
-//                     hb_buffer_t *buffer)
-//   {
-//     hb_glyph_info_t *info = buffer->info;
-//     unsigned int count = buffer->len;
-//     for (unsigned int i = 0; i < count; i++)
-//       _hb_glyph_info_clear_substituted (&info[i]);
-//   }
-
-//   /* Allocation / deallocation. */
-//   static inline void
-//   _hb_buffer_allocate_unicode_vars (hb_buffer_t *buffer)
-//   {
-//     HB_BUFFER_ALLOCATE_VAR (buffer, unicode_props);
-//   }
-
-//   static inline void
-//   _hb_buffer_deallocate_unicode_vars (hb_buffer_t *buffer)
-//   {
-//     HB_BUFFER_DEALLOCATE_VAR (buffer, unicode_props);
-//   }
-
-//   static inline void
-//   _hb_buffer_assert_unicode_vars (hb_buffer_t *buffer)
-//   {
-//     HB_BUFFER_ASSERT_VAR (buffer, unicode_props);
-//   }
-
-//   static inline void
-//   _hb_buffer_allocate_gsubgpos_vars (hb_buffer_t *buffer)
-//   {
-//     HB_BUFFER_ALLOCATE_VAR (buffer, glyph_props);
-//     HB_BUFFER_ALLOCATE_VAR (buffer, lig_props);
-//     HB_BUFFER_ALLOCATE_VAR (buffer, syllable);
-//   }
-
-//   static inline void
-//   _hb_buffer_deallocate_gsubgpos_vars (hb_buffer_t *buffer)
-//   {
-//     HB_BUFFER_DEALLOCATE_VAR (buffer, syllable);
-//     HB_BUFFER_DEALLOCATE_VAR (buffer, lig_props);
-//     HB_BUFFER_DEALLOCATE_VAR (buffer, glyph_props);
-//   }
-
-//   static inline void
-//   _hb_buffer_assert_gsubgpos_vars (hb_buffer_t *buffer)
-//   {
-//     HB_BUFFER_ASSERT_VAR (buffer, glyph_props);
-//     HB_BUFFER_ASSERT_VAR (buffer, lig_props);
-//     HB_BUFFER_ASSERT_VAR (buffer, syllable);
-//   }
+pub fn _hb_clear_substitution_flags(
+    _: &hb_ot_shape_plan_t,
+    _: &hb_font_t,
+    buffer: &mut hb_buffer_t,
+) {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
+        _hb_glyph_info_clear_substituted(info);
+    }
+}

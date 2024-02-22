@@ -3,6 +3,7 @@ use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 use crate::aat::feature_selector;
 use crate::aat::{FeatureType, Map, MapBuilder};
 use crate::buffer::hb_buffer_t;
+use crate::ot_layout::*;
 use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::{hb_font_t, GlyphInfo};
 
@@ -87,13 +88,13 @@ pub fn apply(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer
             };
 
             if reverse {
-                buffer.reverse_graphemes();
+                _hb_ot_layout_reverse_graphemes(buffer);
             }
 
             apply_subtable(&subtable.kind, buffer, face);
 
             if reverse {
-                buffer.reverse_graphemes();
+                _hb_ot_layout_reverse_graphemes(buffer);
             }
         }
     }
