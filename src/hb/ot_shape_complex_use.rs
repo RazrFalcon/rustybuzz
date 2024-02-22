@@ -1,8 +1,11 @@
-use super::*;
+use alloc::boxed::Box;
+
+use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
 use crate::hb::ot::feature;
 use crate::hb::ot_layout::*;
 use crate::hb::ot_map::FeatureFlags;
+use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_complex_arabic::ArabicShapePlan;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
 use crate::hb::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
@@ -235,7 +238,7 @@ fn collect_features(planner: &mut ShapePlanner) {
 }
 
 fn setup_syllables(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::universal_machine::find_syllables(buffer);
+    super::ot_shape_complex_use_machine::find_syllables(buffer);
 
     foreach_syllable!(buffer, start, end, {
         buffer.unsafe_to_break(Some(start), Some(end));
@@ -272,7 +275,7 @@ fn setup_rphf_mask(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t) {
 }
 
 fn setup_topographical_masks(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t) {
-    use super::universal_machine::SyllableType;
+    use super::ot_shape_complex_use_machine::SyllableType;
 
     if plan.data::<UniversalShapePlan>().arabic_plan.is_some() {
         return;
@@ -370,9 +373,9 @@ fn record_rphf(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
 }
 
 fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    use super::universal_machine::SyllableType;
+    use super::ot_shape_complex_use_machine::SyllableType;
 
-    syllabic::insert_dotted_circles(
+    crate::hb::ot_shape_complex_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
@@ -415,7 +418,7 @@ const BASE_FLAGS: u64 = category_flag64(category::FABV)
     | category_flag64(category::VMPRE);
 
 fn reorder_syllable(start: usize, end: usize, buffer: &mut hb_buffer_t) {
-    use super::universal_machine::SyllableType;
+    use super::ot_shape_complex_use_machine::SyllableType;
 
     let syllable_type = (buffer.info[start].syllable() & 0x0F) as u32;
     // Only a few syllable types need reordering.
@@ -520,7 +523,7 @@ fn has_arabic_joining(script: Script) -> bool {
 }
 
 fn preprocess_text(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::vowel_constraints::preprocess_text_vowel_constraints(buffer);
+    super::ot_shape_complex_vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
 
 fn compose(_: &hb_ot_shape_normalize_context_t, a: char, b: char) -> Option<char> {
@@ -543,6 +546,6 @@ fn setup_masks(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
     // We cannot setup masks here. We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {
-        info.set_use_category(super::universal_table::get_category(info));
+        info.set_use_category(super::ot_shape_complex_use_table::get_category(info));
     }
 }

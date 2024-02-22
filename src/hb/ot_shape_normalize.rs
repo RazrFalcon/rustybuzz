@@ -1,8 +1,8 @@
 use super::buffer::{hb_buffer_t, hb_glyph_info_t, BufferScratchFlags};
 use super::common::hb_codepoint_t;
-use super::complex::MAX_COMBINING_MARKS;
 use super::hb_font_t;
 use super::ot_layout::*;
+use super::ot_shape_complex::MAX_COMBINING_MARKS;
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_funcs_t, CharExt};
 

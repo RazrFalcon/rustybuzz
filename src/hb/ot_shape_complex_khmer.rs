@@ -1,10 +1,11 @@
 use alloc::boxed::Box;
 
-use super::indic::{category, position};
-use super::*;
+use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
 use crate::hb::ot::feature;
 use crate::hb::ot_map::FeatureFlags;
+use crate::hb::ot_shape_complex::*;
+use crate::hb::ot_shape_complex_indic::{category, position};
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
 use crate::hb::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::hb::unicode::{CharExt, GeneralCategoryExt};
@@ -70,7 +71,7 @@ mod khmer_feature {
 impl hb_glyph_info_t {
     fn set_khmer_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, pos) = super::indic::get_category_and_position(u);
+        let (mut cat, pos) = crate::hb::ot_shape_complex_indic::get_category_and_position(u);
 
         // Re-assign category
 
@@ -157,7 +158,7 @@ fn collect_features(planner: &mut ShapePlanner) {
 }
 
 fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::khmer_machine::find_syllables_khmer(buffer);
+    super::ot_shape_complex_khmer_machine::find_syllables_khmer(buffer);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -169,9 +170,9 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
 }
 
 fn reorder(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    use super::khmer_machine::SyllableType;
+    use super::ot_shape_complex_khmer_machine::SyllableType;
 
-    syllabic::insert_dotted_circles(
+    super::ot_shape_complex_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
@@ -197,7 +198,7 @@ fn reorder_syllable(
     end: usize,
     buffer: &mut hb_buffer_t,
 ) {
-    use super::khmer_machine::SyllableType;
+    use super::ot_shape_complex_khmer_machine::SyllableType;
 
     let syllable_type = match buffer.info[start].syllable() & 0x0F {
         0 => SyllableType::ConsonantSyllable,

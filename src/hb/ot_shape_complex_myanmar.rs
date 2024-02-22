@@ -1,8 +1,8 @@
-use super::indic::{category, position};
-use super::*;
 use crate::hb::buffer::hb_buffer_t;
 use crate::hb::ot::feature;
 use crate::hb::ot_map::FeatureFlags;
+use crate::hb::ot_shape_complex::*;
+use crate::hb::ot_shape_complex_indic::{category, position};
 use crate::hb::ot_shape_normalize::{
     HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
     HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
@@ -64,7 +64,7 @@ const MYANMAR_FEATURES: &[hb_tag_t] = &[
 impl hb_glyph_info_t {
     fn set_myanmar_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, mut pos) = super::indic::get_category_and_position(u);
+        let (mut cat, mut pos) = crate::hb::ot_shape_complex_indic::get_category_and_position(u);
 
         // Myanmar
         // https://docs.microsoft.com/en-us/typography/script-development/myanmar#analyze
@@ -176,7 +176,7 @@ fn collect_features(planner: &mut ShapePlanner) {
 }
 
 fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::myanmar_machine::find_syllables_myanmar(buffer);
+    super::ot_shape_complex_myanmar_machine::find_syllables_myanmar(buffer);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -188,9 +188,9 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
 }
 
 fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    use super::myanmar_machine::SyllableType;
+    use super::ot_shape_complex_myanmar_machine::SyllableType;
 
-    syllabic::insert_dotted_circles(
+    super::ot_shape_complex_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
@@ -209,7 +209,7 @@ fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
 }
 
 fn reorder_syllable(start: usize, end: usize, buffer: &mut hb_buffer_t) {
-    use super::myanmar_machine::SyllableType;
+    use super::ot_shape_complex_myanmar_machine::SyllableType;
 
     let syllable_type = match buffer.info[start].syllable() & 0x0F {
         0 => SyllableType::ConsonantSyllable,

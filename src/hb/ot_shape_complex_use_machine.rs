@@ -18,10 +18,10 @@
 )]
 
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::complex::machine_cursor::MachineCursor;
-use crate::hb::complex::universal::category;
 use crate::hb::hb_glyph_info_t;
+use crate::hb::machine_cursor::MachineCursor;
 use crate::hb::ot_layout::*;
+use crate::hb::ot_shape_complex_use::category;
 use core::cell::Cell;
 
 static _use_syllable_machine_trans_keys: [u8; 226] = [

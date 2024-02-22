@@ -1,9 +1,9 @@
 use alloc::boxed::Box;
 
-use super::*;
 use crate::hb::buffer::{hb_buffer_t, BufferClusterLevel, BufferFlags};
 use crate::hb::ot::feature;
 use crate::hb::ot_map::*;
+use crate::hb::ot_shape_complex::ComplexShaper;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
 use crate::hb::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t};

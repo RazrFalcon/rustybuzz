@@ -2,10 +2,10 @@ use alloc::boxed::Box;
 use alloc::vec::Vec;
 use core::any::Any;
 
-use super::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
 use super::ot::{self, feature};
 use super::ot_layout::TableIndex;
 use super::ot_map::*;
+use super::ot_shape_complex::*;
 use super::{aat, hb_font_t, hb_mask_t, hb_tag_t, Direction, Feature, Language, Script};
 
 /// A reusable plan for shaping a text buffer.

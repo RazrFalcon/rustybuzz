@@ -1,6 +1,7 @@
-use super::*;
+use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use crate::hb::buffer::{hb_buffer_t, BufferClusterLevel};
 use crate::hb::ot_layout::*;
+use crate::hb::ot_shape_complex::*;
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::unicode::hb_unicode_general_category_t;
 use crate::hb::{hb_font_t, script};

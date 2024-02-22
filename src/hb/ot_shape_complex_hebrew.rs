@@ -1,4 +1,5 @@
-use super::*;
+use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
+use crate::hb::ot_shape_complex::{ComplexShaper, ZeroWidthMarksMode};
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use crate::hb::{hb_tag_t, unicode};
 
