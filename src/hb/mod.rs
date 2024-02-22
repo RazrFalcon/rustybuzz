@@ -22,6 +22,7 @@ mod ot_layout_gpos_table;
 mod ot_layout_gsub_table;
 mod ot_layout_gsubgpos;
 mod ot_map;
+mod ot_shape;
 mod ot_shape_complex;
 mod ot_shape_complex_arabic;
 mod ot_shape_complex_arabic_table;

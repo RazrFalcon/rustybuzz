@@ -5,6 +5,7 @@ use core::ops::Range;
 
 use ttf_parser::GlyphId;
 
+use super::ot_shape::*;
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
 use crate::hb::feature;
@@ -13,7 +14,7 @@ use crate::hb::ot_layout_gsubgpos::{WouldApply, WouldApplyContext};
 use crate::hb::ot_map::*;
 use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
-use crate::hb::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::unicode::{hb_gc, CharExt, GeneralCategoryExt};
 use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
@@ -655,7 +656,7 @@ impl hb_glyph_info_t {
     }
 }
 
-fn collect_features(planner: &mut ShapePlanner) {
+fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // Do this before any lookups have been applied.
     planner.ot_map.add_gsub_pause(Some(setup_syllables));
 
@@ -687,7 +688,7 @@ fn collect_features(planner: &mut ShapePlanner) {
     }
 }
 
-fn override_features(planner: &mut ShapePlanner) {
+fn override_features(planner: &mut hb_ot_shape_planner_t) {
     planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
 }
 

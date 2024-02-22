@@ -1,13 +1,14 @@
 use alloc::boxed::Box;
 use core::any::Any;
 
+use super::ot_shape::*;
 use crate::hb::buffer::hb_buffer_t;
 use crate::hb::common::TagExt;
 use crate::hb::ot_shape_normalize::{
     hb_ot_shape_normalization_mode_t, hb_ot_shape_normalize_context_t,
     HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
 };
-use crate::hb::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
+use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::{hb_font_t, hb_tag_t, script, Direction, Script};
 
 pub const MAX_COMBINING_MARKS: usize = 32;
@@ -49,12 +50,12 @@ pub const DUMBER_SHAPER: ComplexShaper = ComplexShaper {
 pub struct ComplexShaper {
     /// Called during `shape_plan()`.
     /// Shapers should use plan.map to add their features and callbacks.
-    pub collect_features: Option<fn(&mut ShapePlanner)>,
+    pub collect_features: Option<fn(&mut hb_ot_shape_planner_t)>,
 
     /// Called during `shape_plan()`.
     /// Shapers should use plan.map to override features and add callbacks after
     /// common features are added.
-    pub override_features: Option<fn(&mut ShapePlanner)>,
+    pub override_features: Option<fn(&mut hb_ot_shape_planner_t)>,
 
     /// Called at the end of `shape_plan()`.
     /// Whatever shapers return will be accessible through `plan.data()` later.

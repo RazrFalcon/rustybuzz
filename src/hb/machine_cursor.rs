@@ -1,5 +1,6 @@
 use core::ops::{Add, AddAssign, Sub, SubAssign};
 
+// Similar to machine_index_t in harfbuzz, but Rust specific.
 #[derive(Debug)]
 pub struct MachineCursor<'a, T, F> {
     data: &'a [T],

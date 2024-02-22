@@ -58,7 +58,8 @@ impl hb_aat_map_builder_t {
                 // small-caps if necessary, so we need to check for that possibility.
                 // https://github.com/harfbuzz/harfbuzz/issues/2307
                 if mapping.aat_feature_type == HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE
-                    && mapping.selector_to_enable == HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS
+                    && mapping.selector_to_enable
+                        == HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS
                 {
                     feature = feat
                         .names
