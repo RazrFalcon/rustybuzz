@@ -1,6 +1,10 @@
 #[macro_use]
 pub mod buffer;
-mod aat;
+mod aat_layout;
+mod aat_layout_kerx_table;
+mod aat_layout_morx_table;
+mod aat_layout_trak_table;
+mod aat_map;
 pub mod common;
 pub mod face;
 mod glyph_set;

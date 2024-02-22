@@ -6,7 +6,7 @@ use super::ot::{self, feature};
 use super::ot_layout::TableIndex;
 use super::ot_map::*;
 use super::ot_shape_complex::*;
-use super::{aat, hb_font_t, hb_mask_t, hb_tag_t, Direction, Feature, Language, Script};
+use super::{aat_map, hb_font_t, hb_mask_t, hb_tag_t, Direction, Feature, Language, Script};
 
 /// A reusable plan for shaping a text buffer.
 pub struct hb_ot_shape_plan_t {
@@ -14,7 +14,7 @@ pub struct hb_ot_shape_plan_t {
     pub(crate) script: Option<Script>,
     pub(crate) shaper: &'static ComplexShaper,
     pub(crate) ot_map: hb_ot_map_t,
-    pub(crate) aat_map: aat::Map,
+    pub(crate) aat_map: aat_map::Map,
     data: Option<Box<dyn Any + Send + Sync>>,
 
     pub(crate) frac_mask: hb_mask_t,
@@ -69,7 +69,7 @@ pub struct ShapePlanner<'a> {
     pub direction: Direction,
     pub script: Option<Script>,
     pub ot_map: hb_ot_map_builder_t<'a>,
-    pub aat_map: aat::MapBuilder,
+    pub aat_map: aat_map::MapBuilder,
     pub apply_morx: bool,
     pub script_zero_marks: bool,
     pub script_fallback_mark_positioning: bool,
@@ -84,7 +84,7 @@ impl<'a> ShapePlanner<'a> {
         language: Option<&Language>,
     ) -> Self {
         let ot_map = hb_ot_map_builder_t::new(face, script, language);
-        let aat_map = aat::MapBuilder::default();
+        let aat_map = aat_map::MapBuilder::default();
 
         let mut shaper = match script {
             Some(script) => {
@@ -253,7 +253,7 @@ impl<'a> ShapePlanner<'a> {
         let aat_map = if self.apply_morx {
             self.aat_map.compile(self.face)
         } else {
-            aat::Map::default()
+            aat_map::Map::default()
         };
 
         let frac_mask = ot_map.get_1_mask(feature::FRACTIONS);

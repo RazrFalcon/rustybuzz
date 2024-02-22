@@ -7,7 +7,7 @@ use super::ot_shape_complex::ZeroWidthMarksMode;
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
 use super::{
-    aat, hb_font_t, ot, ot_shape_fallback, ot_shape_normalize, script, Direction, Feature,
+    aat_layout, hb_font_t, ot, ot_shape_fallback, ot_shape_normalize, script, Direction, Feature,
     GlyphBuffer, UnicodeBuffer,
 };
 
@@ -114,7 +114,7 @@ fn substitute_post(ctx: &mut ShapeContext) {
     hide_default_ignorables(ctx.buffer, ctx.face);
 
     if ctx.plan.apply_morx {
-        aat::remove_deleted_glyphs(ctx.buffer);
+        aat_layout::remove_deleted_glyphs(ctx.buffer);
     }
 
     if let Some(func) = ctx.plan.shaper.postprocess_glyphs {
@@ -151,7 +151,7 @@ fn substitute_complex(ctx: &mut ShapeContext) {
 
 fn substitute_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     if plan.apply_morx {
-        aat::substitute(plan, face, buffer);
+        aat_layout::substitute(plan, face, buffer);
     } else {
         super::ot_layout_gsub_table::substitute(plan, face, buffer);
     }
@@ -235,7 +235,7 @@ fn position_complex(ctx: &mut ShapeContext) {
     zero_width_default_ignorables(ctx.buffer);
 
     if ctx.plan.apply_morx {
-        aat::zero_width_deleted_glyphs(ctx.buffer);
+        aat_layout::zero_width_deleted_glyphs(ctx.buffer);
     }
 
     super::ot_layout_gpos_table::position_finish_offsets(ctx.face, ctx.buffer);
@@ -254,7 +254,7 @@ fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
     if plan.apply_gpos {
         super::ot_layout_gpos_table::position(plan, face, buffer);
     } else if plan.apply_kerx {
-        aat::position(plan, face, buffer);
+        aat_layout::position(plan, face, buffer);
     }
     if plan.apply_kern {
         ot::kern(plan, face, buffer);
@@ -263,7 +263,7 @@ fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
     }
 
     if plan.apply_trak {
-        aat::track(plan, face, buffer);
+        aat_layout::track(plan, face, buffer);
     }
 }
 

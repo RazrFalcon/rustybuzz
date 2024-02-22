@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use super::feature_mappings::FEATURE_MAPPINGS;
+use crate::hb::aat_layout::FEATURE_MAPPINGS;
 use crate::hb::{hb_font_t, hb_mask_t, hb_tag_t};
 
 #[repr(u8)]
@@ -87,7 +87,7 @@ impl MapBuilder {
                 // small-caps if necessary, so we need to check for that possibility.
                 // https://github.com/harfbuzz/harfbuzz/issues/2307
                 if mapping.aat_feature_type == FeatureType::LowerCase
-                    && mapping.selector_to_enable == super::feature_selector::LOWER_CASE_SMALL_CAPS
+                    && mapping.selector_to_enable == crate::hb::aat_layout::LOWER_CASE_SMALL_CAPS
                 {
                     feature = feat.names.find(FeatureType::LetterCase as u16);
                 }
@@ -153,6 +153,6 @@ impl MapBuilder {
         }
         self.features.truncate(j + 1);
 
-        super::metamorphosis::compile_flags(face, self).unwrap_or_default()
+        super::aat_layout_morx_table::compile_flags(face, self).unwrap_or_default()
     }
 }

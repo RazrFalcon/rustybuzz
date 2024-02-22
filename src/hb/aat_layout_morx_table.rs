@@ -1,7 +1,7 @@
 use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
-use super::feature_selector;
-use super::{FeatureType, Map, MapBuilder};
+use super::aat_layout::*;
+use crate::hb::aat_map::{FeatureType, Map, MapBuilder};
 use crate::hb::buffer::hb_buffer_t;
 use crate::hb::ot_layout::*;
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
@@ -20,12 +20,12 @@ pub fn compile_flags(face: &hb_font_t, builder: &MapBuilder) -> Option<Map> {
                 flags &= feature.disable_flags;
                 flags |= feature.enable_flags;
             } else if feature.kind == FeatureType::LetterCase as u16
-                && feature.setting == u16::from(feature_selector::SMALL_CAPS)
+                && feature.setting == u16::from(SMALL_CAPS)
             {
                 // Deprecated. https://github.com/harfbuzz/harfbuzz/issues/1342
                 let ok = builder.has_feature(
                     FeatureType::LowerCase as u16,
-                    u16::from(feature_selector::LOWER_CASE_SMALL_CAPS),
+                    u16::from(LOWER_CASE_SMALL_CAPS),
                 );
                 if ok {
                     flags &= feature.disable_flags;
