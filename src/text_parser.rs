@@ -1,4 +1,4 @@
-use crate::Tag;
+use crate::hb_tag_t;
 
 pub struct TextParser<'a> {
     pos: usize,
@@ -83,13 +83,13 @@ impl<'a> TextParser<'a> {
         }
     }
 
-    pub fn consume_tag(&mut self) -> Option<Tag> {
+    pub fn consume_tag(&mut self) -> Option<hb_tag_t> {
         let tag = self.consume_bytes(|c| c.is_ascii_alphanumeric() || c == b'_');
         if tag.len() > 4 {
             return None;
         }
 
-        Some(Tag::from_bytes_lossy(tag.as_bytes()))
+        Some(hb_tag_t::from_bytes_lossy(tag.as_bytes()))
     }
 
     pub fn consume_i32(&mut self) -> Option<i32> {

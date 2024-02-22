@@ -4,7 +4,7 @@ use ttf_parser::GlyphId;
 use super::lookup_flags;
 use crate::buffer::{hb_buffer_t, hb_glyph_info_t, GlyphPropsFlags};
 use crate::ot_layout::*;
-use crate::{hb_font_t, Mask};
+use crate::{hb_font_t, hb_mask_t};
 
 /// Find out whether a lookup would be applied.
 pub trait WouldApply {
@@ -27,7 +27,7 @@ pub struct ApplyContext<'a, 'b> {
     pub table_index: TableIndex,
     pub face: &'a hb_font_t<'b>,
     pub buffer: &'a mut hb_buffer_t,
-    pub lookup_mask: Mask,
+    pub lookup_mask: hb_mask_t,
     pub lookup_index: LookupIndex,
     pub lookup_props: u32,
     pub nesting_level_left: usize,

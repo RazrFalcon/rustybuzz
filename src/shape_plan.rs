@@ -3,25 +3,26 @@ use alloc::vec::Vec;
 use core::any::Any;
 
 use crate::complex::{complex_categorize, ComplexShaper, DEFAULT_SHAPER, DUMBER_SHAPER};
-use crate::ot::{self, feature, FeatureFlags};
+use crate::ot::{self, feature};
 use crate::ot_layout::TableIndex;
-use crate::{aat, hb_font_t, Direction, Feature, Language, Mask, Script, Tag};
+use crate::ot_map::*;
+use crate::{aat, hb_font_t, hb_mask_t, hb_tag_t, Direction, Feature, Language, Script};
 
 /// A reusable plan for shaping a text buffer.
 pub struct hb_ot_shape_plan_t {
     pub(crate) direction: Direction,
     pub(crate) script: Option<Script>,
     pub(crate) shaper: &'static ComplexShaper,
-    pub(crate) ot_map: ot::Map,
+    pub(crate) ot_map: hb_ot_map_t,
     pub(crate) aat_map: aat::Map,
     data: Option<Box<dyn Any + Send + Sync>>,
 
-    pub(crate) frac_mask: Mask,
-    pub(crate) numr_mask: Mask,
-    pub(crate) dnom_mask: Mask,
-    pub(crate) rtlm_mask: Mask,
-    pub(crate) kern_mask: Mask,
-    pub(crate) trak_mask: Mask,
+    pub(crate) frac_mask: hb_mask_t,
+    pub(crate) numr_mask: hb_mask_t,
+    pub(crate) dnom_mask: hb_mask_t,
+    pub(crate) rtlm_mask: hb_mask_t,
+    pub(crate) kern_mask: hb_mask_t,
+    pub(crate) trak_mask: hb_mask_t,
 
     pub(crate) requested_kerning: bool,
     pub(crate) has_frac: bool,
@@ -67,7 +68,7 @@ pub struct ShapePlanner<'a> {
     pub face: &'a hb_font_t<'a>,
     pub direction: Direction,
     pub script: Option<Script>,
-    pub ot_map: ot::MapBuilder<'a>,
+    pub ot_map: hb_ot_map_builder_t<'a>,
     pub aat_map: aat::MapBuilder,
     pub apply_morx: bool,
     pub script_zero_marks: bool,
@@ -82,7 +83,7 @@ impl<'a> ShapePlanner<'a> {
         script: Option<Script>,
         language: Option<&Language>,
     ) -> Self {
-        let ot_map = ot::MapBuilder::new(face, script, language);
+        let ot_map = hb_ot_map_builder_t::new(face, script, language);
         let aat_map = aat::MapBuilder::default();
 
         let mut shaper = match script {
@@ -118,7 +119,7 @@ impl<'a> ShapePlanner<'a> {
     }
 
     fn collect_features(&mut self, user_features: &[Feature]) {
-        const COMMON_FEATURES: &[(Tag, FeatureFlags)] = &[
+        const COMMON_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
             (feature::ABOVE_BASE_MARK_POSITIONING, FeatureFlags::GLOBAL),
             (feature::BELOW_BASE_MARK_POSITIONING, FeatureFlags::GLOBAL),
             (
@@ -137,7 +138,7 @@ impl<'a> ShapePlanner<'a> {
             (feature::REQUIRED_LIGATURES, FeatureFlags::GLOBAL),
         ];
 
-        const HORIZONTAL_FEATURES: &[(Tag, FeatureFlags)] = &[
+        const HORIZONTAL_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
             (feature::CONTEXTUAL_ALTERNATES, FeatureFlags::GLOBAL),
             (feature::CONTEXTUAL_LIGATURES, FeatureFlags::GLOBAL),
             (feature::CURSIVE_POSITIONING, FeatureFlags::GLOBAL),
@@ -178,28 +179,31 @@ impl<'a> ShapePlanner<'a> {
         self.ot_map.add_feature(feature::DENOMINATORS, empty, 1);
 
         // Random!
-        self.ot_map
-            .enable_feature(feature::RANDOMIZE, FeatureFlags::RANDOM, ot::Map::MAX_VALUE);
+        self.ot_map.enable_feature(
+            feature::RANDOMIZE,
+            FeatureFlags::RANDOM,
+            hb_ot_map_t::MAX_VALUE,
+        );
 
         // Tracking.  We enable dummy feature here just to allow disabling
         // AAT 'trak' table using features.
         // https://github.com/harfbuzz/harfbuzz/issues/1303
         self.ot_map
-            .enable_feature(Tag::from_bytes(b"trak"), FeatureFlags::HAS_FALLBACK, 1);
+            .enable_feature(hb_tag_t::from_bytes(b"trak"), FeatureFlags::HAS_FALLBACK, 1);
 
         self.ot_map
-            .enable_feature(Tag::from_bytes(b"Harf"), empty, 1); // Considered required.
+            .enable_feature(hb_tag_t::from_bytes(b"Harf"), empty, 1); // Considered required.
         self.ot_map
-            .enable_feature(Tag::from_bytes(b"HARF"), empty, 1); // Considered discretionary.
+            .enable_feature(hb_tag_t::from_bytes(b"HARF"), empty, 1); // Considered discretionary.
 
         if let Some(func) = self.shaper.collect_features {
             func(self);
         }
 
         self.ot_map
-            .enable_feature(Tag::from_bytes(b"Buzz"), empty, 1); // Considered required.
+            .enable_feature(hb_tag_t::from_bytes(b"Buzz"), empty, 1); // Considered required.
         self.ot_map
-            .enable_feature(Tag::from_bytes(b"BUZZ"), empty, 1); // Considered discretionary.
+            .enable_feature(hb_tag_t::from_bytes(b"BUZZ"), empty, 1); // Considered discretionary.
 
         for &(tag, flags) in COMMON_FEATURES {
             self.ot_map.add_feature(tag, flags, 1);
@@ -252,13 +256,13 @@ impl<'a> ShapePlanner<'a> {
             aat::Map::default()
         };
 
-        let frac_mask = ot_map.one_mask(feature::FRACTIONS);
-        let numr_mask = ot_map.one_mask(feature::NUMERATORS);
-        let dnom_mask = ot_map.one_mask(feature::DENOMINATORS);
+        let frac_mask = ot_map.get_1_mask(feature::FRACTIONS);
+        let numr_mask = ot_map.get_1_mask(feature::NUMERATORS);
+        let dnom_mask = ot_map.get_1_mask(feature::DENOMINATORS);
         let has_frac = frac_mask != 0 || (numr_mask != 0 && dnom_mask != 0);
 
-        let rtlm_mask = ot_map.one_mask(feature::RIGHT_TO_LEFT_MIRRORED_FORMS);
-        let has_vert = ot_map.one_mask(feature::VERTICAL_WRITING) != 0;
+        let rtlm_mask = ot_map.get_1_mask(feature::RIGHT_TO_LEFT_MIRRORED_FORMS);
+        let has_vert = ot_map.get_1_mask(feature::VERTICAL_WRITING) != 0;
 
         let horizontal = self.direction.is_horizontal();
         let kern_tag = if horizontal {
@@ -266,12 +270,14 @@ impl<'a> ShapePlanner<'a> {
         } else {
             feature::VERTICAL_KERNING
         };
-        let kern_mask = ot_map.mask(kern_tag).0;
+        let kern_mask = ot_map.get_mask(kern_tag).0;
         let requested_kerning = kern_mask != 0;
-        let trak_mask = ot_map.mask(Tag::from_bytes(b"trak")).0;
+        let trak_mask = ot_map.get_mask(hb_tag_t::from_bytes(b"trak")).0;
         let requested_tracking = trak_mask != 0;
 
-        let has_gpos_kern = ot_map.feature_index(TableIndex::GPOS, kern_tag).is_some();
+        let has_gpos_kern = ot_map
+            .get_feature_index(TableIndex::GPOS, kern_tag)
+            .is_some();
         let disable_gpos = self.shaper.gpos_tag.is_some()
             && self.shaper.gpos_tag != ot_map.chosen_script(TableIndex::GPOS);
 
@@ -315,7 +321,7 @@ impl<'a> ShapePlanner<'a> {
             && !apply_kerx
             && (!apply_kern || !ot::has_machine_kerning(self.face));
 
-        let has_gpos_mark = ot_map.one_mask(feature::MARK_POSITIONING) != 0;
+        let has_gpos_mark = ot_map.get_1_mask(feature::MARK_POSITIONING) != 0;
 
         let mut adjust_mark_positioning_when_zeroing =
             !apply_gpos && !apply_kerx && (!apply_kern || !ot::has_cross_kerning(self.face));

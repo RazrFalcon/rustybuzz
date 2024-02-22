@@ -4,10 +4,11 @@ use super::*;
 use crate::buffer::{hb_buffer_t, BufferScratchFlags};
 use crate::ot::*;
 use crate::ot_layout::*;
+use crate::ot_map::FeatureFlags;
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::*;
-use crate::{hb_font_t, hb_glyph_info_t, script, Mask, Script, Tag};
+use crate::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
 pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -27,7 +28,7 @@ pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
 
 const ARABIC_HAS_STCH: BufferScratchFlags = BufferScratchFlags::COMPLEX0;
 
-const ARABIC_FEATURES: &[Tag] = &[
+const ARABIC_FEATURES: &[hb_tag_t] = &[
     feature::ISOLATED_FORMS,
     feature::TERMINAL_FORMS_1,
     feature::TERMINAL_FORMS_2,
@@ -37,7 +38,7 @@ const ARABIC_FEATURES: &[Tag] = &[
     feature::INITIAL_FORMS,
 ];
 
-fn feature_is_syriac(tag: Tag) -> bool {
+fn feature_is_syriac(tag: hb_tag_t) -> bool {
     matches!(tag.to_bytes()[3], b'2' | b'3')
 }
 
@@ -158,7 +159,7 @@ pub struct ArabicShapePlan {
     // which is not an OpenType feature, but this simplifies the code by not
     // having to do a "if (... < NONE) ..." and just rely on the fact that
     // mask_array[NONE] == 0.
-    mask_array: [Mask; ARABIC_FEATURES.len() + 1],
+    mask_array: [hb_mask_t; ARABIC_FEATURES.len() + 1],
     has_stch: bool,
 }
 
@@ -166,12 +167,12 @@ impl ArabicShapePlan {
     pub fn new(plan: &hb_ot_shape_plan_t) -> ArabicShapePlan {
         let has_stch = plan
             .ot_map
-            .one_mask(feature::STRETCHING_GLYPH_DECOMPOSITION)
+            .get_1_mask(feature::STRETCHING_GLYPH_DECOMPOSITION)
             != 0;
 
         let mut mask_array = [0; ARABIC_FEATURES.len() + 1];
         for i in 0..ARABIC_FEATURES.len() {
-            mask_array[i] = plan.ot_map.one_mask(ARABIC_FEATURES[i]);
+            mask_array[i] = plan.ot_map.get_1_mask(ARABIC_FEATURES[i]);
         }
 
         ArabicShapePlan {

@@ -1,13 +1,14 @@
 use super::indic::{category, position};
 use super::*;
 use crate::buffer::hb_buffer_t;
-use crate::ot::{feature, FeatureFlags};
+use crate::ot::feature;
+use crate::ot_map::FeatureFlags;
 use crate::ot_shape_normalize::{
     HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
     HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
 };
 use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
-use crate::{hb_font_t, hb_glyph_info_t, Tag};
+use crate::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 
 pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -44,7 +45,7 @@ pub const MYANMAR_ZAWGYI_SHAPER: ComplexShaper = ComplexShaper {
     fallback_position: false,
 };
 
-const MYANMAR_FEATURES: &[Tag] = &[
+const MYANMAR_FEATURES: &[hb_tag_t] = &[
     // Basic features.
     // These features are applied in order, one at a time, after reordering,
     // constrained to the syllable.

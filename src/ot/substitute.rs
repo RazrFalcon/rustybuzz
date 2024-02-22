@@ -6,12 +6,13 @@ use ttf_parser::GlyphId;
 use crate::buffer::{hb_buffer_t, GlyphPropsFlags};
 use crate::hb_font_t;
 use crate::ot_layout::*;
+use crate::ot_map::*;
 use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::unicode::hb_unicode_general_category_t;
 
 use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
 use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead};
-use super::{Map, SubstLookup, SubstitutionTable};
+use super::{SubstLookup, SubstitutionTable};
 use ttf_parser::opentype_layout::LookupIndex;
 
 /// Called before substitution lookups are performed, to ensure that glyph
@@ -220,7 +221,7 @@ impl Apply for AlternateSet<'_> {
         let mut alt_index = (ctx.lookup_mask & glyph_mask) >> shift;
 
         // If alt_index is MAX_VALUE, randomize feature if it is the rand feature.
-        if alt_index == Map::MAX_VALUE && ctx.random {
+        if alt_index == hb_ot_map_t::MAX_VALUE && ctx.random {
             // Maybe we can do better than unsafe-to-break all; but since we are
             // changing random state, it would be hard to track that.  Good 'nough.
             ctx.buffer.unsafe_to_break(Some(0), Some(ctx.buffer.len));

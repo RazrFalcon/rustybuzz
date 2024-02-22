@@ -3,9 +3,9 @@ use core::str::FromStr;
 use smallvec::SmallVec;
 
 use crate::common::TagExt;
-use crate::{script, tag_table, Language, Script, Tag};
+use crate::{hb_tag_t, script, tag_table, Language, Script};
 
-type ThreeTags = SmallVec<[Tag; 3]>;
+type ThreeTags = SmallVec<[hb_tag_t; 3]>;
 
 trait SmallVecExt {
     fn left(&self) -> usize;
@@ -119,11 +119,11 @@ fn parse_private_use_subtag(
         return false;
     }
 
-    let mut tag = Tag::from_bytes_lossy(tag.as_slice());
+    let mut tag = hb_tag_t::from_bytes_lossy(tag.as_slice());
 
     // Some bits magic from HarfBuzz...
-    if tag.as_u32() & 0xDFDFDFDF == Tag::default_script().as_u32() {
-        tag = Tag(tag.as_u32() ^ !0xDFDFDFDF);
+    if tag.as_u32() & 0xDFDFDFDF == hb_tag_t::default_script().as_u32() {
+        tag = hb_tag_t(tag.as_u32() ^ !0xDFDFDFDF);
     }
 
     tags.push(tag);
@@ -193,7 +193,7 @@ fn tags_from_language(language: &Language, tags: &mut ThreeTags) {
     }
 
     if language.len() == 3 {
-        tags.push(Tag::from_bytes_lossy(language.as_bytes()).to_uppercase());
+        tags.push(hb_tag_t::from_bytes_lossy(language.as_bytes()).to_uppercase());
     }
 }
 
@@ -201,10 +201,10 @@ fn all_tags_from_script(script: Option<Script>, tags: &mut ThreeTags) {
     if let Some(script) = script {
         if let Some(tag) = new_tag_from_script(script) {
             // Script::Myanmar maps to 'mym2', but there is no 'mym3'.
-            if tag != Tag::from_bytes(b"mym2") {
+            if tag != hb_tag_t::from_bytes(b"mym2") {
                 let mut tag3 = tag.to_bytes();
                 tag3[3] = b'3';
-                tags.push(Tag::from_bytes(&tag3));
+                tags.push(hb_tag_t::from_bytes(&tag3));
             }
 
             if !tags.is_full() {
@@ -218,38 +218,38 @@ fn all_tags_from_script(script: Option<Script>, tags: &mut ThreeTags) {
     }
 }
 
-fn new_tag_from_script(script: Script) -> Option<Tag> {
+fn new_tag_from_script(script: Script) -> Option<hb_tag_t> {
     match script {
-        script::BENGALI => Some(Tag::from_bytes(b"bng2")),
-        script::DEVANAGARI => Some(Tag::from_bytes(b"dev2")),
-        script::GUJARATI => Some(Tag::from_bytes(b"gjr2")),
-        script::GURMUKHI => Some(Tag::from_bytes(b"gur2")),
-        script::KANNADA => Some(Tag::from_bytes(b"knd2")),
-        script::MALAYALAM => Some(Tag::from_bytes(b"mlm2")),
-        script::ORIYA => Some(Tag::from_bytes(b"ory2")),
-        script::TAMIL => Some(Tag::from_bytes(b"tml2")),
-        script::TELUGU => Some(Tag::from_bytes(b"tel2")),
-        script::MYANMAR => Some(Tag::from_bytes(b"mym2")),
+        script::BENGALI => Some(hb_tag_t::from_bytes(b"bng2")),
+        script::DEVANAGARI => Some(hb_tag_t::from_bytes(b"dev2")),
+        script::GUJARATI => Some(hb_tag_t::from_bytes(b"gjr2")),
+        script::GURMUKHI => Some(hb_tag_t::from_bytes(b"gur2")),
+        script::KANNADA => Some(hb_tag_t::from_bytes(b"knd2")),
+        script::MALAYALAM => Some(hb_tag_t::from_bytes(b"mlm2")),
+        script::ORIYA => Some(hb_tag_t::from_bytes(b"ory2")),
+        script::TAMIL => Some(hb_tag_t::from_bytes(b"tml2")),
+        script::TELUGU => Some(hb_tag_t::from_bytes(b"tel2")),
+        script::MYANMAR => Some(hb_tag_t::from_bytes(b"mym2")),
         _ => None,
     }
 }
 
-fn old_tag_from_script(script: Script) -> Tag {
+fn old_tag_from_script(script: Script) -> hb_tag_t {
     // This seems to be accurate as of end of 2012.
     match script {
         // Katakana and Hiragana both map to 'kana'.
-        script::HIRAGANA => Tag::from_bytes(b"kana"),
+        script::HIRAGANA => hb_tag_t::from_bytes(b"kana"),
 
         // Spaces at the end are preserved, unlike ISO 15924.
-        script::LAO => Tag::from_bytes(b"lao "),
-        script::YI => Tag::from_bytes(b"yi  "),
+        script::LAO => hb_tag_t::from_bytes(b"lao "),
+        script::YI => hb_tag_t::from_bytes(b"yi  "),
         // Unicode-5.0 additions.
-        script::NKO => Tag::from_bytes(b"nko "),
+        script::NKO => hb_tag_t::from_bytes(b"nko "),
         // Unicode-5.1 additions.
-        script::VAI => Tag::from_bytes(b"vai "),
+        script::VAI => hb_tag_t::from_bytes(b"vai "),
 
         // Else, just change first char to lowercase and return.
-        _ => Tag(script.tag().as_u32() | 0x20000000),
+        _ => hb_tag_t(script.tag().as_u32() | 0x20000000),
     }
 }
 
@@ -262,7 +262,7 @@ mod tests {
     use core::str::FromStr;
     use alloc::vec::Vec;
 
-    fn new_tag_to_script(tag: Tag) -> Option<Script> {
+    fn new_tag_to_script(tag: hb_tag_t) -> Option<Script> {
         match &tag.to_bytes() {
             b"bng2" => Some(script::BENGALI),
             b"dev2" => Some(script::DEVANAGARI),
@@ -278,8 +278,8 @@ mod tests {
         }
     }
 
-    fn old_tag_to_script(tag: Tag) -> Option<Script> {
-        if tag == Tag::default_script() {
+    fn old_tag_to_script(tag: hb_tag_t) -> Option<Script> {
+        if tag == hb_tag_t::default_script() {
             return None;
         }
 
@@ -299,28 +299,28 @@ mod tests {
         // Change first char to uppercase.
         bytes[0] = bytes[0].to_ascii_uppercase();
 
-        Some(Script(Tag::from_bytes(&bytes)))
+        Some(Script(hb_tag_t::from_bytes(&bytes)))
     }
 
-    fn tag_to_script(tag: Tag) -> Option<Script> {
+    fn tag_to_script(tag: hb_tag_t) -> Option<Script> {
         let bytes = tag.to_bytes();
         if bytes[3] == b'2' || bytes[3] == b'3' {
             let mut tag2 = bytes;
             tag2[3] = b'2';
-            return new_tag_to_script(Tag::from_bytes(&tag2));
+            return new_tag_to_script(hb_tag_t::from_bytes(&tag2));
         }
 
         old_tag_to_script(tag)
     }
 
     fn test_simple_tags(tag: &str, script: Script) {
-        let tag = Tag::from_bytes_lossy(tag.as_bytes());
+        let tag = hb_tag_t::from_bytes_lossy(tag.as_bytes());
 
         let (scripts, _) = tags_from_script_and_language(Some(script), None);
         if !scripts.is_empty() {
             assert_eq!(tag, scripts[0]);
         } else {
-            assert_eq!(tag, Tag::default_script());
+            assert_eq!(tag, hb_tag_t::default_script());
         }
 
         assert_eq!(tag_to_script(tag), Some(script));
@@ -328,36 +328,36 @@ mod tests {
 
     #[test]
     fn tag_to_uppercase() {
-        assert_eq!(Tag::from_bytes(b"abcd").to_uppercase(), Tag::from_bytes(b"ABCD"));
-        assert_eq!(Tag::from_bytes(b"abc ").to_uppercase(), Tag::from_bytes(b"ABC "));
-        assert_eq!(Tag::from_bytes(b"ABCD").to_uppercase(), Tag::from_bytes(b"ABCD"));
+        assert_eq!(hb_tag_t::from_bytes(b"abcd").to_uppercase(), hb_tag_t::from_bytes(b"ABCD"));
+        assert_eq!(hb_tag_t::from_bytes(b"abc ").to_uppercase(), hb_tag_t::from_bytes(b"ABC "));
+        assert_eq!(hb_tag_t::from_bytes(b"ABCD").to_uppercase(), hb_tag_t::from_bytes(b"ABCD"));
     }
 
     #[test]
     fn tag_to_lowercase() {
-        assert_eq!(Tag::from_bytes(b"abcd").to_lowercase(), Tag::from_bytes(b"abcd"));
-        assert_eq!(Tag::from_bytes(b"abc ").to_lowercase(), Tag::from_bytes(b"abc "));
-        assert_eq!(Tag::from_bytes(b"ABCD").to_lowercase(), Tag::from_bytes(b"abcd"));
+        assert_eq!(hb_tag_t::from_bytes(b"abcd").to_lowercase(), hb_tag_t::from_bytes(b"abcd"));
+        assert_eq!(hb_tag_t::from_bytes(b"abc ").to_lowercase(), hb_tag_t::from_bytes(b"abc "));
+        assert_eq!(hb_tag_t::from_bytes(b"ABCD").to_lowercase(), hb_tag_t::from_bytes(b"abcd"));
     }
 
     #[test]
     fn script_degenerate() {
-        assert_eq!(Tag::from_bytes(b"DFLT"), Tag::default_script());
+        assert_eq!(hb_tag_t::from_bytes(b"DFLT"), hb_tag_t::default_script());
 
         // Hiragana and Katakana both map to 'kana'.
         test_simple_tags("kana", script::KATAKANA);
 
         let (scripts, _) = tags_from_script_and_language(Some(script::HIRAGANA), None);
-        assert_eq!(scripts.as_slice(), &[Tag::from_bytes(b"kana")]);
+        assert_eq!(scripts.as_slice(), &[hb_tag_t::from_bytes(b"kana")]);
 
         // Spaces are replaced
-        assert_eq!(tag_to_script(Tag::from_bytes(b"be  ")), Script::from_iso15924_tag(Tag::from_bytes(b"Beee")));
+        assert_eq!(tag_to_script(hb_tag_t::from_bytes(b"be  ")), Script::from_iso15924_tag(hb_tag_t::from_bytes(b"Beee")));
     }
 
     #[test]
     fn script_simple() {
         // Arbitrary non-existent script.
-        test_simple_tags("wwyz", Script::from_iso15924_tag(Tag::from_bytes(b"wWyZ")).unwrap());
+        test_simple_tags("wwyz", Script::from_iso15924_tag(hb_tag_t::from_bytes(b"wWyZ")).unwrap());
 
         // These we don't really care about.
         test_simple_tags("zyyy", script::COMMON);
@@ -389,7 +389,7 @@ mod tests {
         ($name:ident, $tag:expr, $lang:expr, $script:expr) => {
             #[test]
             fn $name() {
-                let tag = Tag::from_bytes_lossy($tag.as_bytes());
+                let tag = hb_tag_t::from_bytes_lossy($tag.as_bytes());
                 let (scripts, _) = tags_from_script_and_language(
                     $script, Language::from_str($lang).ok().as_ref(),
                 );
@@ -421,9 +421,9 @@ mod tests {
     #[test]
     fn script_indic() {
         fn check(tag1: &str, tag2: &str, tag3: &str, script: Script) {
-            let tag1 = Tag::from_bytes_lossy(tag1.as_bytes());
-            let tag2 = Tag::from_bytes_lossy(tag2.as_bytes());
-            let tag3 = Tag::from_bytes_lossy(tag3.as_bytes());
+            let tag1 = hb_tag_t::from_bytes_lossy(tag1.as_bytes());
+            let tag2 = hb_tag_t::from_bytes_lossy(tag2.as_bytes());
+            let tag3 = hb_tag_t::from_bytes_lossy(tag3.as_bytes());
 
             let (scripts, _) = tags_from_script_and_language(Some(script), None);
             assert_eq!(scripts.as_slice(), &[tag1, tag2, tag3]);
@@ -448,7 +448,7 @@ mod tests {
         ($name:ident, $tag:expr, $lang:expr) => {
             #[test]
             fn $name() {
-                let tag = Tag::from_bytes_lossy($tag.as_bytes());
+                let tag = hb_tag_t::from_bytes_lossy($tag.as_bytes());
                 let (_, languages) = tags_from_script_and_language(
                     None, Language::from_str(&$lang.to_lowercase()).ok().as_ref(),
                 );
@@ -632,8 +632,8 @@ mod tests {
                     $script, Language::from_str($lang).ok().as_ref(),
                 );
 
-                let exp_scripts: Vec<Tag> = $scripts.iter().map(|v| Tag::from_bytes_lossy(*v)).collect();
-                let exp_langs: Vec<Tag> = $langs.iter().map(|v| Tag::from_bytes_lossy(*v)).collect();
+                let exp_scripts: Vec<hb_tag_t> = $scripts.iter().map(|v| hb_tag_t::from_bytes_lossy(*v)).collect();
+                let exp_langs: Vec<hb_tag_t> = $langs.iter().map(|v| hb_tag_t::from_bytes_lossy(*v)).collect();
 
                 assert_eq!(exp_scripts, scripts.as_slice());
                 assert_eq!(exp_langs, languages.as_slice());

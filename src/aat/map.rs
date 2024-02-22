@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 
 use super::feature_mappings::FEATURE_MAPPINGS;
-use crate::{hb_font_t, Mask, Tag};
+use crate::{hb_font_t, hb_mask_t, hb_tag_t};
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq)]
@@ -34,7 +34,7 @@ pub enum FeatureType {
 
 #[derive(Default)]
 pub struct Map {
-    pub chain_flags: Vec<Mask>,
+    pub chain_flags: Vec<hb_mask_t>,
 }
 
 #[derive(Copy, Clone)]
@@ -50,12 +50,12 @@ pub struct MapBuilder {
 }
 
 impl MapBuilder {
-    pub fn add_feature(&mut self, face: &hb_font_t, tag: Tag, value: u32) -> Option<()> {
+    pub fn add_feature(&mut self, face: &hb_font_t, tag: hb_tag_t, value: u32) -> Option<()> {
         const FEATURE_TYPE_CHARACTER_ALTERNATIVES: u16 = 17;
 
         let feat = face.tables().feat?;
 
-        if tag == Tag::from_bytes(b"aalt") {
+        if tag == hb_tag_t::from_bytes(b"aalt") {
             let exposes_feature = feat
                 .names
                 .find(FEATURE_TYPE_CHARACTER_ALTERNATIVES)

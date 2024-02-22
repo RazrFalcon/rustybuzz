@@ -268,7 +268,7 @@ fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
 }
 
 fn initialize_masks(ctx: &mut ShapeContext) {
-    let global_mask = ctx.plan.ot_map.global_mask();
+    let global_mask = ctx.plan.ot_map.get_global_mask();
     ctx.buffer.reset_masks(global_mask);
 }
 
@@ -281,7 +281,7 @@ fn setup_masks(ctx: &mut ShapeContext) {
 
     for feature in &ctx.plan.user_features {
         if !feature.is_global() {
-            let (mask, shift) = ctx.plan.ot_map.mask(feature.tag);
+            let (mask, shift) = ctx.plan.ot_map.get_mask(feature.tag);
             ctx.buffer
                 .set_masks(feature.value << shift, mask, feature.start, feature.end);
         }

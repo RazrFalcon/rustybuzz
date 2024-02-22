@@ -24,6 +24,7 @@ mod face;
 mod glyph_set;
 mod ot;
 mod ot_layout;
+mod ot_map;
 mod ot_shape_fallback;
 mod ot_shape_normalize;
 mod shape;
@@ -36,7 +37,7 @@ mod unicode_norm;
 
 pub use ttf_parser;
 
-pub use ttf_parser::Tag;
+use ttf_parser::Tag as hb_tag_t;
 
 pub use crate::buffer::hb_glyph_info_t as GlyphInfo;
 pub use crate::buffer::{
@@ -50,7 +51,7 @@ pub use crate::shape_plan::hb_ot_shape_plan_t as ShapePlan;
 use crate::buffer::hb_glyph_info_t;
 use crate::face::hb_font_t;
 
-type Mask = u32;
+type hb_mask_t = u32;
 
 fn round(x: f32) -> f32 {
     #[cfg(feature = "std")]

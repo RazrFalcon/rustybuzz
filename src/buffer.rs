@@ -7,7 +7,7 @@ use ttf_parser::GlyphId;
 use crate::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::face::GlyphExtents;
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use crate::{hb_font_t, script, Direction, Language, Mask, Script};
+use crate::{hb_font_t, hb_mask_t, script, Direction, Language, Script};
 
 const CONTEXT_LENGTH: usize = 5;
 
@@ -159,7 +159,7 @@ pub struct hb_glyph_info_t {
     ///
     /// Guarantee to be <= `u16::MAX`.
     pub glyph_id: u32,
-    pub(crate) mask: Mask,
+    pub(crate) mask: hb_mask_t,
     /// An index to the start of the grapheme cluster in the original string.
     ///
     /// [Read more on clusters](https://harfbuzz.github.io/clusters.html).
@@ -837,13 +837,19 @@ impl hb_buffer_t {
         self.idx += 1;
     }
 
-    pub fn reset_masks(&mut self, mask: Mask) {
+    pub fn reset_masks(&mut self, mask: hb_mask_t) {
         for info in &mut self.info[..self.len] {
             info.mask = mask;
         }
     }
 
-    pub fn set_masks(&mut self, mut value: Mask, mask: Mask, cluster_start: u32, cluster_end: u32) {
+    pub fn set_masks(
+        &mut self,
+        mut value: hb_mask_t,
+        mask: hb_mask_t,
+        cluster_start: u32,
+        cluster_end: u32,
+    ) {
         let not_mask = !mask;
         value &= mask;
 
@@ -1050,7 +1056,7 @@ impl hb_buffer_t {
     /// If interior is true, then the cluster having the minimum value is skipped. */
     fn _set_glyph_flags(
         &mut self,
-        mask: Mask,
+        mask: hb_mask_t,
         start: Option<usize>,
         end: Option<usize>,
         interior: Option<bool>,
@@ -1287,7 +1293,7 @@ impl hb_buffer_t {
         }
     }
 
-    pub fn set_cluster(info: &mut hb_glyph_info_t, cluster: u32, mask: Mask) {
+    pub fn set_cluster(info: &mut hb_glyph_info_t, cluster: u32, mask: hb_mask_t) {
         if info.cluster != cluster {
             info.mask = (info.mask & !glyph_flag::DEFINED) | (mask & glyph_flag::DEFINED);
         }
@@ -1339,7 +1345,7 @@ impl hb_buffer_t {
         start: usize,
         end: usize,
         cluster: u32,
-        mask: Mask,
+        mask: hb_mask_t,
     ) -> bool {
         // NOTE: Because of problems with ownership, we don't pass the scratch flags to this
         // function, unlike in harfbuzz. Because of this, each time you call this function you

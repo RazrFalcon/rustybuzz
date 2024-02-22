@@ -1,12 +1,13 @@
 use super::arabic::ArabicShapePlan;
 use super::*;
 use crate::buffer::hb_buffer_t;
-use crate::ot::{feature, FeatureFlags};
+use crate::ot::feature;
 use crate::ot_layout::*;
+use crate::ot_map::FeatureFlags;
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
 use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use crate::{hb_font_t, hb_glyph_info_t, script, Mask, Script, Tag};
+use crate::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
 pub const UNIVERSAL_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -98,7 +99,7 @@ pub mod category {
 
 // These features are applied all at once, before reordering,
 // constrained to the syllable.
-const BASIC_FEATURES: &[Tag] = &[
+const BASIC_FEATURES: &[hb_tag_t] = &[
     feature::RAKAR_FORMS,
     feature::ABOVE_BASE_FORMS,
     feature::BELOW_BASE_FORMS,
@@ -108,7 +109,7 @@ const BASIC_FEATURES: &[Tag] = &[
     feature::CONJUNCT_FORMS,
 ];
 
-const TOPOGRAPHICAL_FEATURES: &[Tag] = &[
+const TOPOGRAPHICAL_FEATURES: &[hb_tag_t] = &[
     feature::ISOLATED_FORMS,
     feature::INITIAL_FORMS,
     feature::MEDIAL_FORMS_1,
@@ -125,7 +126,7 @@ enum JoiningForm {
 }
 
 // These features are applied all at once, after reordering and clearing syllables.
-const OTHER_FEATURES: &[Tag] = &[
+const OTHER_FEATURES: &[hb_tag_t] = &[
     feature::ABOVE_BASE_SUBSTITUTIONS,
     feature::BELOW_BASE_SUBSTITUTIONS,
     feature::HALANT_FORMS,
@@ -148,7 +149,7 @@ impl hb_glyph_info_t {
 }
 
 struct UniversalShapePlan {
-    rphf_mask: Mask,
+    rphf_mask: hb_mask_t,
     arabic_plan: Option<ArabicShapePlan>,
 }
 
@@ -161,7 +162,7 @@ impl UniversalShapePlan {
         }
 
         UniversalShapePlan {
-            rphf_mask: plan.ot_map.one_mask(feature::REPH_FORMS),
+            rphf_mask: plan.ot_map.get_1_mask(feature::REPH_FORMS),
             arabic_plan,
         }
     }
@@ -278,8 +279,8 @@ fn setup_topographical_masks(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t
     let mut masks = [0; 4];
     let mut all_masks = 0;
     for i in 0..4 {
-        masks[i] = plan.ot_map.one_mask(TOPOGRAPHICAL_FEATURES[i]);
-        if masks[i] == plan.ot_map.global_mask() {
+        masks[i] = plan.ot_map.get_1_mask(TOPOGRAPHICAL_FEATURES[i]);
+        if masks[i] == plan.ot_map.get_global_mask() {
             masks[i] = 0;
         }
 

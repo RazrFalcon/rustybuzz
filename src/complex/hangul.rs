@@ -2,10 +2,11 @@ use alloc::boxed::Box;
 
 use super::*;
 use crate::buffer::{hb_buffer_t, BufferClusterLevel, BufferFlags};
-use crate::ot::{feature, FeatureFlags, Map};
+use crate::ot::feature;
+use crate::ot_map::*;
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
 use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
-use crate::{hb_font_t, hb_glyph_info_t, Mask};
+use crate::{hb_font_t, hb_glyph_info_t, hb_mask_t};
 
 pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -48,17 +49,17 @@ impl hb_glyph_info_t {
 }
 
 struct HangulShapePlan {
-    mask_array: [Mask; 4],
+    mask_array: [hb_mask_t; 4],
 }
 
 impl HangulShapePlan {
-    fn new(map: &Map) -> Self {
+    fn new(map: &hb_ot_map_t) -> Self {
         HangulShapePlan {
             mask_array: [
                 0,
-                map.one_mask(feature::LEADING_JAMO_FORMS),
-                map.one_mask(feature::VOWEL_JAMO_FORMS),
-                map.one_mask(feature::TRAILING_JAMO_FORMS),
+                map.get_1_mask(feature::LEADING_JAMO_FORMS),
+                map.get_1_mask(feature::VOWEL_JAMO_FORMS),
+                map.get_1_mask(feature::TRAILING_JAMO_FORMS),
             ],
         }
     }

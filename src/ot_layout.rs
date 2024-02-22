@@ -10,7 +10,7 @@ use crate::common::TagExt;
 use crate::ot::apply::{Apply, ApplyContext};
 use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::unicode::{hb_unicode_funcs_t, hb_unicode_general_category_t, GeneralCategoryExt};
-use crate::{hb_font_t, hb_glyph_info_t, Tag};
+use crate::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -69,29 +69,29 @@ pub trait LayoutLookup: Apply {
 }
 
 pub trait LayoutTableExt {
-    fn select_script(&self, script_tags: &[Tag]) -> Option<(bool, ScriptIndex, Tag)>;
+    fn select_script(&self, script_tags: &[hb_tag_t]) -> Option<(bool, ScriptIndex, hb_tag_t)>;
     fn select_script_language(
         &self,
         script_index: ScriptIndex,
-        lang_tags: &[Tag],
+        lang_tags: &[hb_tag_t],
     ) -> Option<LanguageIndex>;
     fn get_required_language_feature(
         &self,
         script_index: ScriptIndex,
         lang_index: Option<LanguageIndex>,
-    ) -> Option<(FeatureIndex, Tag)>;
+    ) -> Option<(FeatureIndex, hb_tag_t)>;
     fn find_language_feature(
         &self,
         script_index: ScriptIndex,
         lang_index: Option<LanguageIndex>,
-        feature_tag: Tag,
+        feature_tag: hb_tag_t,
     ) -> Option<FeatureIndex>;
 }
 
 impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
     /// Returns true + index and tag of the first found script tag in the given GSUB or GPOS table
     /// or false + index and tag if falling back to a default script.
-    fn select_script(&self, script_tags: &[Tag]) -> Option<(bool, ScriptIndex, Tag)> {
+    fn select_script(&self, script_tags: &[hb_tag_t]) -> Option<(bool, ScriptIndex, hb_tag_t)> {
         for &tag in script_tags {
             if let Some(index) = self.scripts.index(tag) {
                 return Some((true, index, tag));
@@ -100,12 +100,12 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
 
         for &tag in &[
             // try finding 'DFLT'
-            Tag::default_script(),
+            hb_tag_t::default_script(),
             // try with 'dflt'; MS site has had typos and many fonts use it now :(
-            Tag::default_language(),
+            hb_tag_t::default_language(),
             // try with 'latn'; some old fonts put their features there even though
             // they're really trying to support Thai, for example :(
-            Tag::from_bytes(b"latn"),
+            hb_tag_t::from_bytes(b"latn"),
         ] {
             if let Some(index) = self.scripts.index(tag) {
                 return Some((false, index, tag));
@@ -120,7 +120,7 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
     fn select_script_language(
         &self,
         script_index: ScriptIndex,
-        lang_tags: &[Tag],
+        lang_tags: &[hb_tag_t],
     ) -> Option<LanguageIndex> {
         let script = self.scripts.get(script_index)?;
 
@@ -131,7 +131,7 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
         }
 
         // try finding 'dflt'
-        if let Some(index) = script.languages.index(Tag::default_language()) {
+        if let Some(index) = script.languages.index(hb_tag_t::default_language()) {
             return Some(index);
         }
 
@@ -144,7 +144,7 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
         &self,
         script_index: ScriptIndex,
         lang_index: Option<LanguageIndex>,
-    ) -> Option<(FeatureIndex, Tag)> {
+    ) -> Option<(FeatureIndex, hb_tag_t)> {
         let script = self.scripts.get(script_index)?;
         let sys = match lang_index {
             Some(index) => script.languages.get(index)?,
@@ -161,7 +161,7 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
         &self,
         script_index: ScriptIndex,
         lang_index: Option<LanguageIndex>,
-        feature_tag: Tag,
+        feature_tag: hb_tag_t,
     ) -> Option<FeatureIndex> {
         let script = self.scripts.get(script_index)?;
         let sys = match lang_index {

@@ -1,6 +1,6 @@
 use super::*;
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
-use crate::{unicode, Tag};
+use crate::{hb_tag_t, unicode};
 
 pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: None,
@@ -12,7 +12,7 @@ pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
     decompose: None,
     compose: Some(compose),
     setup_masks: None,
-    gpos_tag: Some(Tag::from_bytes(b"hebr")),
+    gpos_tag: Some(hb_tag_t::from_bytes(b"hebr")),
     reorder_marks: None,
     zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
     fallback_position: true,

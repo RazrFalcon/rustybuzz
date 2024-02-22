@@ -7,7 +7,7 @@ use crate::buffer::{hb_buffer_t, BufferScratchFlags};
 use crate::ot::attach_type;
 use crate::ot_layout::TableIndex;
 use crate::shape_plan::hb_ot_shape_plan_t;
-use crate::{hb_font_t, Mask};
+use crate::{hb_font_t, hb_mask_t};
 
 pub fn has_kerning(face: &hb_font_t) -> bool {
     face.tables().kern.is_some()
@@ -82,7 +82,7 @@ pub fn kern(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_
 fn machine_kern(
     face: &hb_font_t,
     buffer: &mut hb_buffer_t,
-    kern_mask: Mask,
+    kern_mask: hb_mask_t,
     cross_stream: bool,
     get_kerning: impl Fn(u32, u32) -> i32,
 ) {
@@ -149,7 +149,7 @@ fn machine_kern(
 fn apply_simple_kerning(
     subtable: &kern::Subtable,
     face: &hb_font_t,
-    kern_mask: Mask,
+    kern_mask: hb_mask_t,
     buffer: &mut hb_buffer_t,
 ) {
     machine_kern(
@@ -173,7 +173,7 @@ struct StateMachineDriver {
 
 fn apply_state_machine_kerning(
     subtable: &kern::Subtable,
-    kern_mask: Mask,
+    kern_mask: hb_mask_t,
     buffer: &mut hb_buffer_t,
 ) {
     let state_table = match subtable.format {
@@ -256,7 +256,7 @@ fn apply_state_machine_kerning(
 fn state_machine_transition(
     entry: apple_layout::StateEntry,
     has_cross_stream: bool,
-    kern_mask: Mask,
+    kern_mask: hb_mask_t,
     state_table: &apple_layout::StateTable,
     driver: &mut StateMachineDriver,
     buffer: &mut hb_buffer_t,

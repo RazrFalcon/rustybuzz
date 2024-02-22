@@ -5,8 +5,8 @@ use ttf_parser::GlyphId;
 
 use super::apply::ApplyContext;
 use crate::buffer::hb_glyph_info_t;
+use crate::hb_mask_t;
 use crate::ot_layout::*;
-use crate::Mask;
 
 pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 
@@ -183,7 +183,7 @@ pub struct SkippyIter<'a, 'b> {
     lookup_props: u32,
     ignore_zwnj: bool,
     ignore_zwj: bool,
-    mask: Mask,
+    mask: hb_mask_t,
     syllable: u8,
     matching: Option<&'a MatchingFunc<'a>>,
     buf_len: usize,

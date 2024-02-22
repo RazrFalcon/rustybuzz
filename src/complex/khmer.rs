@@ -3,11 +3,12 @@ use alloc::boxed::Box;
 use super::indic::{category, position};
 use super::*;
 use crate::buffer::hb_buffer_t;
-use crate::ot::{feature, FeatureFlags};
+use crate::ot::feature;
+use crate::ot_map::FeatureFlags;
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
 use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{CharExt, GeneralCategoryExt};
-use crate::{hb_font_t, hb_glyph_info_t, Mask, Tag};
+use crate::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
 
 pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -25,7 +26,7 @@ pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
     fallback_position: false,
 };
 
-const KHMER_FEATURES: &[(Tag, FeatureFlags)] = &[
+const KHMER_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
     // Basic features.
     // These features are applied all at once, before reordering, constrained
     // to the syllable.
@@ -101,7 +102,7 @@ impl hb_glyph_info_t {
 }
 
 struct KhmerShapePlan {
-    mask_array: [Mask; KHMER_FEATURES.len()],
+    mask_array: [hb_mask_t; KHMER_FEATURES.len()],
 }
 
 impl KhmerShapePlan {
@@ -111,7 +112,7 @@ impl KhmerShapePlan {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
                 0
             } else {
-                plan.ot_map.one_mask(feature.0)
+                plan.ot_map.get_1_mask(feature.0)
             }
         }
 

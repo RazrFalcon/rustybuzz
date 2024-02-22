@@ -2,14 +2,12 @@ pub mod apply;
 mod contextual;
 pub mod feature;
 mod kerning;
-mod map;
 pub mod matching;
 mod position;
 mod substitute;
 
 pub use apply::*;
 pub use kerning::*;
-pub use map::*;
 pub use position::*;
 pub use substitute::*;
 

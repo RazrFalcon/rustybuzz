@@ -7,12 +7,13 @@ use ttf_parser::GlyphId;
 
 use super::*;
 use crate::buffer::hb_buffer_t;
-use crate::ot::{feature, FeatureFlags, Map, WouldApply, WouldApplyContext};
+use crate::ot::{feature, WouldApply, WouldApplyContext};
 use crate::ot_layout::*;
+use crate::ot_map::*;
 use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
 use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::{hb_gc, CharExt, GeneralCategoryExt};
-use crate::{hb_font_t, hb_glyph_info_t, script, Mask, Script, Tag};
+use crate::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
 pub const INDIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -151,7 +152,7 @@ pub enum MatraCategory {
     VisualOrderLeft,
 }
 
-const INDIC_FEATURES: &[(Tag, FeatureFlags)] = &[
+const INDIC_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
     // Basic features.
     // These features are applied in order, one at a time, after initial_reordering,
     // constrained to the syllable.
@@ -422,9 +423,9 @@ struct IndicWouldSubstituteFeature {
 }
 
 impl IndicWouldSubstituteFeature {
-    pub fn new(map: &Map, feature_tag: Tag, zero_context: bool) -> Self {
+    pub fn new(map: &hb_ot_map_t, feature_tag: hb_tag_t, zero_context: bool) -> Self {
         IndicWouldSubstituteFeature {
-            lookups: match map.feature_stage(TableIndex::GSUB, feature_tag) {
+            lookups: match map.get_feature_stage(TableIndex::GSUB, feature_tag) {
                 Some(stage) => map.stage_lookup_range(TableIndex::GSUB, stage),
                 None => 0..0,
             },
@@ -432,7 +433,12 @@ impl IndicWouldSubstituteFeature {
         }
     }
 
-    pub fn would_substitute(&self, map: &Map, face: &hb_font_t, glyphs: &[GlyphId]) -> bool {
+    pub fn would_substitute(
+        &self,
+        map: &hb_ot_map_t,
+        face: &hb_font_t,
+        glyphs: &[GlyphId],
+    ) -> bool {
         for index in self.lookups.clone() {
             let lookup = map.lookup(TableIndex::GSUB, index);
             let ctx = WouldApplyContext {
@@ -462,7 +468,7 @@ struct IndicShapePlan {
     blwf: IndicWouldSubstituteFeature,
     pstf: IndicWouldSubstituteFeature,
     vatu: IndicWouldSubstituteFeature,
-    mask_array: [Mask; INDIC_FEATURES.len()],
+    mask_array: [hb_mask_t; INDIC_FEATURES.len()],
 }
 
 impl IndicShapePlan {
@@ -495,7 +501,7 @@ impl IndicShapePlan {
             mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
                 0
             } else {
-                plan.ot_map.one_mask(feature.0)
+                plan.ot_map.get_1_mask(feature.0)
             }
         }
 
