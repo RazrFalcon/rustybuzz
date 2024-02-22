@@ -1,4 +1,4 @@
-use super::arabic::ArabicShapePlan;
+use crate::ot_shape_complex_arabic::ArabicShapePlan;
 use super::*;
 use crate::buffer::hb_buffer_t;
 use crate::ot::feature;
@@ -158,7 +158,7 @@ impl UniversalShapePlan {
         let mut arabic_plan = None;
 
         if plan.script.map_or(false, has_arabic_joining) {
-            arabic_plan = Some(super::arabic::ArabicShapePlan::new(plan));
+            arabic_plan = Some(crate::ot_shape_complex_arabic::ArabicShapePlan::new(plan));
         }
 
         UniversalShapePlan {
@@ -535,7 +535,7 @@ fn setup_masks(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
 
     // Do this before allocating use_category().
     if let Some(ref arabic_plan) = universal_plan.arabic_plan {
-        super::arabic::setup_masks_inner(arabic_plan, plan.script, buffer);
+        crate::ot_shape_complex_arabic::setup_masks_inner(arabic_plan, plan.script, buffer);
     }
 
     // We cannot setup masks here. We save information about characters

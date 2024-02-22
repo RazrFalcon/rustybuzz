@@ -1,5 +1,3 @@
-pub mod arabic;
-mod arabic_table;
 pub mod hangul;
 pub mod hebrew;
 pub mod indic;
@@ -142,7 +140,7 @@ pub fn complex_categorize(
             if (chosen_gsub_script != Some(hb_tag_t::default_script()) || script == script::ARABIC)
                 && direction.is_horizontal()
             {
-                &arabic::ARABIC_SHAPER
+                &crate::ot_shape_complex_arabic::ARABIC_SHAPER
             } else {
                 &DEFAULT_SHAPER
             }

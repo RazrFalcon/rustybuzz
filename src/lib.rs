@@ -24,6 +24,7 @@ mod face;
 mod glyph_set;
 mod ot;
 mod ot_layout;
+mod ot_layout_gpos_table;
 mod ot_map;
 mod ot_shape_fallback;
 mod ot_shape_normalize;
@@ -34,6 +35,9 @@ mod tag_table;
 mod text_parser;
 mod unicode;
 mod unicode_norm;
+mod ot_layout_gsub_table;
+mod ot_shape_complex_arabic;
+mod ot_shape_complex_arabic_table;
 
 pub use ttf_parser;
 

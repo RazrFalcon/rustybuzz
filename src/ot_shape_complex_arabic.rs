@@ -1,6 +1,5 @@
 use alloc::boxed::Box;
 
-use super::*;
 use crate::buffer::{hb_buffer_t, BufferScratchFlags};
 use crate::ot::*;
 use crate::ot_layout::*;
@@ -9,6 +8,7 @@ use crate::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use crate::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use crate::unicode::*;
 use crate::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
+use crate::complex::*;
 
 pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -578,7 +578,7 @@ fn mongolian_variation_selectors(buffer: &mut hb_buffer_t) {
 }
 
 fn get_joining_type(u: char, gc: hb_unicode_general_category_t) -> JoiningType {
-    let j_type = super::arabic_table::joining_type(u);
+    let j_type = super::ot_shape_complex_arabic_table::joining_type(u);
     if j_type != JoiningType::X {
         return j_type;
     }

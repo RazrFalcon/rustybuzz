@@ -140,7 +140,7 @@ fn substitute_default(ctx: &mut ShapeContext) {
 }
 
 fn substitute_complex(ctx: &mut ShapeContext) {
-    ot::substitute_start(ctx.face, ctx.buffer);
+    crate::ot_layout_gsub_table::substitute_start(ctx.face, ctx.buffer);
 
     if ctx.plan.fallback_glyph_classes {
         synthesize_glyph_classes(ctx.buffer);
@@ -153,7 +153,7 @@ fn substitute_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut 
     if plan.apply_morx {
         aat::substitute(plan, face, buffer);
     } else {
-        ot::substitute(plan, face, buffer);
+        crate::ot_layout_gsub_table::substitute(plan, face, buffer);
     }
 }
 
@@ -214,7 +214,7 @@ fn position_complex(ctx: &mut ShapeContext) {
 
     // We change glyph origin to what GPOS expects (horizontal), apply GPOS, change it back.
 
-    ot::position_start(ctx.face, ctx.buffer);
+    crate::ot_layout_gpos_table::position_start(ctx.face, ctx.buffer);
 
     if ctx.plan.zero_marks
         && ctx.plan.shaper.zero_width_marks == Some(ZeroWidthMarksMode::ByGdefEarly)
@@ -231,14 +231,14 @@ fn position_complex(ctx: &mut ShapeContext) {
     }
 
     // Finish off.  Has to follow a certain order.
-    ot::position_finish_advances(ctx.face, ctx.buffer);
+    crate::ot_layout_gpos_table::position_finish_advances(ctx.face, ctx.buffer);
     zero_width_default_ignorables(ctx.buffer);
 
     if ctx.plan.apply_morx {
         aat::zero_width_deleted_glyphs(ctx.buffer);
     }
 
-    ot::position_finish_offsets(ctx.face, ctx.buffer);
+    crate::ot_layout_gpos_table::position_finish_offsets(ctx.face, ctx.buffer);
 
     if ctx.plan.fallback_mark_positioning {
         ot_shape_fallback::position_marks(
@@ -252,7 +252,7 @@ fn position_complex(ctx: &mut ShapeContext) {
 
 fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     if plan.apply_gpos {
-        ot::position(plan, face, buffer);
+        crate::ot_layout_gpos_table::position(plan, face, buffer);
     } else if plan.apply_kerx {
         aat::position(plan, face, buffer);
     }

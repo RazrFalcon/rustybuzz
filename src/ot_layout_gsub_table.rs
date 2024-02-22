@@ -10,9 +10,9 @@ use crate::ot_map::*;
 use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::unicode::hb_unicode_general_category_t;
 
-use super::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::matching::{match_backtrack, match_glyph, match_input, match_lookahead};
-use super::{SubstLookup, SubstitutionTable};
+use crate::ot::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
+use crate::ot::matching::{match_backtrack, match_glyph, match_input, match_lookahead};
+use crate::ot::{SubstLookup, SubstitutionTable};
 use ttf_parser::opentype_layout::LookupIndex;
 
 /// Called before substitution lookups are performed, to ensure that glyph

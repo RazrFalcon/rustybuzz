@@ -3,13 +3,9 @@ mod contextual;
 pub mod feature;
 mod kerning;
 pub mod matching;
-mod position;
-mod substitute;
 
 pub use apply::*;
 pub use kerning::*;
-pub use position::*;
-pub use substitute::*;
 
 use alloc::vec::Vec;
 

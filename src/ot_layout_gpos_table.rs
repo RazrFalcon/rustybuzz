@@ -7,9 +7,9 @@ use crate::ot_layout::*;
 use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::{hb_font_t, Direction};
 
-use super::apply::{Apply, ApplyContext};
-use super::matching::SkippyIter;
-use super::{lookup_flags, PositioningLookup, PositioningTable};
+use crate::ot::apply::{Apply, ApplyContext};
+use crate::ot::matching::SkippyIter;
+use crate::ot::{lookup_flags, PositioningLookup, PositioningTable};
 
 pub fn position_start(_: &hb_font_t, buffer: &mut hb_buffer_t) {
     let len = buffer.len;

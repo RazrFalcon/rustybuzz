@@ -4,8 +4,8 @@ use super::apply::ApplyContext;
 use super::lookup_flags;
 use super::matching::SkippyIter;
 use crate::buffer::{hb_buffer_t, BufferScratchFlags};
-use crate::ot::attach_type;
 use crate::ot_layout::TableIndex;
+use crate::ot_layout_gpos_table::attach_type;
 use crate::shape_plan::hb_ot_shape_plan_t;
 use crate::{hb_font_t, hb_mask_t};
 
