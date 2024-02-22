@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::ot::feature;
+use crate::hb::feature;
 use crate::hb::ot_layout::*;
 use crate::hb::ot_map::FeatureFlags;
 use crate::hb::ot_shape_complex::*;

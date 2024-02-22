@@ -10,9 +10,8 @@ use super::ot_map::*;
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::hb_unicode_general_category_t;
 
-use super::ot::apply::{Apply, ApplyContext, WouldApply, WouldApplyContext};
-use super::ot::matching::{match_backtrack, match_glyph, match_input, match_lookahead};
-use super::ot::{SubstLookup, SubstitutionTable};
+use crate::hb::ot_layout_common::{SubstLookup, SubstitutionTable};
+use crate::hb::ot_layout_gsubgpos::*;
 use ttf_parser::opentype_layout::LookupIndex;
 
 /// Called before substitution lookups are performed, to ensure that glyph

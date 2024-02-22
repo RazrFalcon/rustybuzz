@@ -7,7 +7,7 @@ use super::ot_shape_complex::ZeroWidthMarksMode;
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
 use super::{
-    aat_layout, hb_font_t, ot, ot_shape_fallback, ot_shape_normalize, script, Direction, Feature,
+    aat_layout, hb_font_t, ot_shape_fallback, ot_shape_normalize, script, Direction, Feature,
     GlyphBuffer, UnicodeBuffer,
 };
 
@@ -257,7 +257,7 @@ fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
         aat_layout::position(plan, face, buffer);
     }
     if plan.apply_kern {
-        ot::kern(plan, face, buffer);
+        super::kerning::kern(plan, face, buffer);
     } else if plan.apply_fallback_kern {
         ot_shape_fallback::_hb_ot_shape_fallback_kern(plan, face, buffer);
     }

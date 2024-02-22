@@ -1,11 +1,10 @@
 use ttf_parser::{apple_layout, kern, GlyphId};
 
-use super::apply::ApplyContext;
-use super::lookup_flags;
-use super::matching::SkippyIter;
 use crate::hb::buffer::{hb_buffer_t, BufferScratchFlags};
 use crate::hb::ot_layout::TableIndex;
+use crate::hb::ot_layout_common::lookup_flags;
 use crate::hb::ot_layout_gpos_table::attach_type;
+use crate::hb::ot_layout_gsubgpos::{ApplyContext, SkippyIter};
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::{hb_font_t, hb_mask_t};
 

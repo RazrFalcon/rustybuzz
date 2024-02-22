@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 use alloc::vec::Vec;
 use core::any::Any;
 
-use super::ot::{self, feature};
+use super::feature;
 use super::ot_layout::TableIndex;
 use super::ot_map::*;
 use super::ot_shape_complex::*;
@@ -311,7 +311,7 @@ impl<'a> ShapePlanner<'a> {
         if !apply_kerx && (!has_gpos_kern || !apply_gpos) {
             if has_kerx {
                 apply_kerx = true;
-            } else if ot::has_kerning(self.face) {
+            } else if super::kerning::has_kerning(self.face) {
                 apply_kern = true;
             }
         }
@@ -319,12 +319,13 @@ impl<'a> ShapePlanner<'a> {
         let apply_fallback_kern = !(apply_gpos || apply_kerx || apply_kern);
         let zero_marks = self.script_zero_marks
             && !apply_kerx
-            && (!apply_kern || !ot::has_machine_kerning(self.face));
+            && (!apply_kern || !super::kerning::has_machine_kerning(self.face));
 
         let has_gpos_mark = ot_map.get_1_mask(feature::MARK_POSITIONING) != 0;
 
-        let mut adjust_mark_positioning_when_zeroing =
-            !apply_gpos && !apply_kerx && (!apply_kern || !ot::has_cross_kerning(self.face));
+        let mut adjust_mark_positioning_when_zeroing = !apply_gpos
+            && !apply_kerx
+            && (!apply_kern || !super::kerning::has_cross_kerning(self.face));
 
         let fallback_mark_positioning =
             adjust_mark_positioning_when_zeroing && self.script_fallback_mark_positioning;

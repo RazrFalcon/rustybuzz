@@ -3,8 +3,8 @@ use ttf_parser::opentype_layout::LayoutTable;
 use ttf_parser::GlyphId;
 
 use super::buffer::GlyphPropsFlags;
-use super::ot::{PositioningTable, SubstitutionTable};
 use super::ot_layout::TableIndex;
+use super::ot_layout_common::{PositioningTable, SubstitutionTable};
 use crate::Variation;
 
 // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3

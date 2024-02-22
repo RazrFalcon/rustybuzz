@@ -1,12 +1,3 @@
-pub mod apply;
-mod contextual;
-pub mod feature;
-mod kerning;
-pub mod matching;
-
-pub use apply::*;
-pub use kerning::*;
-
 use alloc::vec::Vec;
 
 use ttf_parser::gpos::PositioningSubtable;

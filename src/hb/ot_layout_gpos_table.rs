@@ -7,9 +7,8 @@ use super::hb_font_t;
 use super::ot_layout::*;
 use super::shape_plan::hb_ot_shape_plan_t;
 
-use super::ot::apply::{Apply, ApplyContext};
-use super::ot::matching::SkippyIter;
-use super::ot::{lookup_flags, PositioningLookup, PositioningTable};
+use crate::hb::ot_layout_common::{lookup_flags, PositioningLookup, PositioningTable};
+use crate::hb::ot_layout_gsubgpos::{Apply, ApplyContext, SkippyIter};
 
 use crate::Direction;
 

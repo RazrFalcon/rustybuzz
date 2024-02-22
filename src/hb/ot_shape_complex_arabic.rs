@@ -1,7 +1,6 @@
 use alloc::boxed::Box;
 
 use super::buffer::{hb_buffer_t, BufferScratchFlags};
-use super::ot::*;
 use super::ot_layout::*;
 use super::ot_map::FeatureFlags;
 use super::ot_shape_complex::*;
@@ -9,6 +8,7 @@ use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use super::shape_plan::{hb_ot_shape_plan_t, ShapePlanner};
 use super::unicode::*;
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
+use crate::hb::feature;
 
 pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),

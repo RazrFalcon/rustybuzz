@@ -7,8 +7,9 @@ use ttf_parser::GlyphId;
 
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::ot::{feature, WouldApply, WouldApplyContext};
+use crate::hb::feature;
 use crate::hb::ot_layout::*;
+use crate::hb::ot_layout_gsubgpos::{WouldApply, WouldApplyContext};
 use crate::hb::ot_map::*;
 use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;

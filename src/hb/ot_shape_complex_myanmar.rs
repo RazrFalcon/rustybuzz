@@ -1,5 +1,5 @@
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::ot::feature;
+use crate::hb::feature;
 use crate::hb::ot_map::FeatureFlags;
 use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_complex_indic::{category, position};

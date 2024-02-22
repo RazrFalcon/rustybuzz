@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 
 use crate::hb::buffer::{hb_buffer_t, BufferClusterLevel, BufferFlags};
-use crate::hb::ot::feature;
+use crate::hb::feature;
 use crate::hb::ot_map::*;
 use crate::hb::ot_shape_complex::ComplexShaper;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
