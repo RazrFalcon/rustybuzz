@@ -10,7 +10,7 @@ use crate::hb::ot_shape_normalize::{
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 
-pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
+pub const MYANMAR_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: Some(collect_features),
     override_features: None,
     create_data: None,
@@ -29,7 +29,7 @@ pub const MYANMAR_SHAPER: ComplexShaper = ComplexShaper {
 // Ugly Zawgyi encoding.
 // Disable all auto processing.
 // https://github.com/harfbuzz/harfbuzz/issues/1162
-pub const MYANMAR_ZAWGYI_SHAPER: ComplexShaper = ComplexShaper {
+pub const MYANMAR_ZAWGYI_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,

@@ -1,9 +1,9 @@
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
-use crate::hb::ot_shape_complex::{ComplexShaper, ZeroWidthMarksMode};
+use crate::hb::ot_shape_complex::{hb_ot_complex_shaper_t, ZeroWidthMarksMode};
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use crate::hb::{hb_tag_t, unicode};
 
-pub const HEBREW_SHAPER: ComplexShaper = ComplexShaper {
+pub const HEBREW_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,

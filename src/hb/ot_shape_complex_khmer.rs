@@ -11,7 +11,7 @@ use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::unicode::{CharExt, GeneralCategoryExt};
 use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
 
-pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
+pub const KHMER_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: Some(collect_features),
     override_features: Some(override_features),
     create_data: Some(|plan| Box::new(KhmerShapePlan::new(plan))),

@@ -16,7 +16,7 @@ pub struct hb_ot_shape_planner_t<'a> {
     pub apply_morx: bool,
     pub script_zero_marks: bool,
     pub script_fallback_mark_positioning: bool,
-    pub shaper: &'static ComplexShaper,
+    pub shaper: &'static hb_ot_complex_shaper_t,
 }
 
 impl<'a> hb_ot_shape_planner_t<'a> {

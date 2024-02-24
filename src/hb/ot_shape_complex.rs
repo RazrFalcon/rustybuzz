@@ -13,7 +13,7 @@ use crate::hb::{hb_font_t, hb_tag_t, script, Direction, Script};
 
 pub const MAX_COMBINING_MARKS: usize = 32;
 
-pub const DEFAULT_SHAPER: ComplexShaper = ComplexShaper {
+pub const DEFAULT_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,
@@ -31,7 +31,7 @@ pub const DEFAULT_SHAPER: ComplexShaper = ComplexShaper {
 
 // Same as default but no mark advance zeroing / fallback positioning.
 // Dumbest shaper ever, basically.
-pub const DUMBER_SHAPER: ComplexShaper = ComplexShaper {
+pub const DUMBER_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,
@@ -47,7 +47,7 @@ pub const DUMBER_SHAPER: ComplexShaper = ComplexShaper {
     fallback_position: false,
 };
 
-pub struct ComplexShaper {
+pub struct hb_ot_complex_shaper_t {
     /// Called during `shape_plan()`.
     /// Shapers should use plan.map to add their features and callbacks.
     pub collect_features: Option<fn(&mut hb_ot_shape_planner_t)>,
@@ -108,7 +108,7 @@ pub fn complex_categorize(
     script: Script,
     direction: Direction,
     chosen_gsub_script: Option<hb_tag_t>,
-) -> &'static ComplexShaper {
+) -> &'static hb_ot_complex_shaper_t {
     match script {
         // Unicode-1.1 additions
         script::ARABIC

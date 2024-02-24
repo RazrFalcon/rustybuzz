@@ -3,37 +3,11 @@ use alloc::boxed::Box;
 use super::ot_shape::*;
 use crate::hb::buffer::*;
 use crate::hb::ot_map::*;
-use crate::hb::ot_shape_complex::ComplexShaper;
+use crate::hb::ot_shape_complex::hb_ot_complex_shaper_t;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
 use crate::BufferFlags;
-
-pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
-    collect_features: Some(collect_features),
-    override_features: Some(override_features),
-    create_data: Some(|plan| Box::new(HangulShapePlan::new(&plan.ot_map))),
-    preprocess_text: Some(preprocess_text),
-    postprocess_glyphs: None,
-    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
-    decompose: None,
-    compose: None,
-    setup_masks: Some(setup_masks),
-    gpos_tag: None,
-    reorder_marks: None,
-    zero_width_marks: None,
-    fallback_position: false,
-};
-
-const L_BASE: u32 = 0x1100;
-const V_BASE: u32 = 0x1161;
-const T_BASE: u32 = 0x11A7;
-const L_COUNT: u32 = 19;
-const V_COUNT: u32 = 21;
-const T_COUNT: u32 = 28;
-const N_COUNT: u32 = V_COUNT * T_COUNT;
-const S_COUNT: u32 = L_COUNT * N_COUNT;
-const S_BASE: u32 = 0xAC00;
 
 const LJMO: u8 = 1;
 const VJMO: u8 = 2;
@@ -49,24 +23,7 @@ impl hb_glyph_info_t {
     }
 }
 
-struct HangulShapePlan {
-    mask_array: [hb_mask_t; 4],
-}
-
-impl HangulShapePlan {
-    fn new(map: &hb_ot_map_t) -> Self {
-        HangulShapePlan {
-            mask_array: [
-                0,
-                map.get_1_mask(hb_tag_t::from_bytes(b"ljmo")),
-                map.get_1_mask(hb_tag_t::from_bytes(b"vjmo")),
-                map.get_1_mask(hb_tag_t::from_bytes(b"tjmo")),
-            ],
-        }
-    }
-}
-
-fn collect_features(planner: &mut hb_ot_shape_planner_t) {
+fn collect_features_hangul(planner: &mut hb_ot_shape_planner_t) {
     planner
         .ot_map
         .add_feature(hb_tag_t::from_bytes(b"ljmo"), F_NONE, 1);
@@ -78,7 +35,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
         .add_feature(hb_tag_t::from_bytes(b"tjmo"), F_NONE, 1);
 }
 
-fn override_features(planner: &mut hb_ot_shape_planner_t) {
+fn override_features_hangul(planner: &mut hb_ot_shape_planner_t) {
     // Uniscribe does not apply 'calt' for Hangul, and certain fonts
     // (Noto Sans CJK, Source Sans Han, etc) apply all of jamo lookups
     // in calt, which is not desirable.
@@ -87,7 +44,72 @@ fn override_features(planner: &mut hb_ot_shape_planner_t) {
         .disable_feature(hb_tag_t::from_bytes(b"calt"));
 }
 
-fn preprocess_text(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+struct hangul_shape_plan_t {
+    mask_array: [hb_mask_t; 4],
+}
+
+fn data_create_hangul(map: &hb_ot_map_t) -> hangul_shape_plan_t {
+    hangul_shape_plan_t {
+        mask_array: [
+            0,
+            map.get_1_mask(hb_tag_t::from_bytes(b"ljmo")),
+            map.get_1_mask(hb_tag_t::from_bytes(b"vjmo")),
+            map.get_1_mask(hb_tag_t::from_bytes(b"tjmo")),
+        ],
+    }
+}
+
+const L_BASE: u32 = 0x1100;
+const V_BASE: u32 = 0x1161;
+const T_BASE: u32 = 0x11A7;
+const L_COUNT: u32 = 19;
+const V_COUNT: u32 = 21;
+const T_COUNT: u32 = 28;
+const N_COUNT: u32 = V_COUNT * T_COUNT;
+const S_COUNT: u32 = L_COUNT * N_COUNT;
+const S_BASE: u32 = 0xAC00;
+
+fn is_combining_l(u: u32) -> bool {
+    (L_BASE..=L_BASE + L_COUNT - 1).contains(&u)
+}
+
+fn is_combining_v(u: u32) -> bool {
+    (V_BASE..=V_BASE + V_COUNT - 1).contains(&u)
+}
+
+fn is_combining_t(u: u32) -> bool {
+    (T_BASE + 1..=T_BASE + T_COUNT - 1).contains(&u)
+}
+
+fn is_combined_s(u: u32) -> bool {
+    (S_BASE..=S_BASE + S_COUNT - 1).contains(&u)
+}
+
+fn is_l(u: u32) -> bool {
+    (0x1100..=0x115F).contains(&u) || (0xA960..=0xA97C).contains(&u)
+}
+
+fn is_v(u: u32) -> bool {
+    (0x1160..=0x11A7).contains(&u) || (0xD7B0..=0xD7C6).contains(&u)
+}
+
+fn is_t(u: u32) -> bool {
+    (0x11A8..=0x11FF).contains(&u) || (0xD7CB..=0xD7FB).contains(&u)
+}
+
+fn is_hangul_tone(u: u32) -> bool {
+    (0x302E..=0x302F).contains(&u)
+}
+
+fn is_zero_width_char(face: &hb_font_t, c: char) -> bool {
+    if let Some(glyph) = face.get_nominal_glyph(c as u32) {
+        face.glyph_h_advance(glyph) == 0
+    } else {
+        false
+    }
+}
+
+fn preprocess_text_hangul(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     // Hangul syllables come in two shapes: LV, and LVT.  Of those:
     //
     //   - LV can be precomposed, or decomposed.  Lets call those
@@ -333,49 +355,25 @@ fn preprocess_text(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buf
     buffer.sync();
 }
 
-fn is_hangul_tone(u: u32) -> bool {
-    (0x302E..=0x302F).contains(&u)
-}
-
-fn is_zero_width_char(face: &hb_font_t, c: char) -> bool {
-    if let Some(glyph) = face.get_nominal_glyph(c as u32) {
-        face.glyph_h_advance(glyph) == 0
-    } else {
-        false
-    }
-}
-
-fn is_l(u: u32) -> bool {
-    (0x1100..=0x115F).contains(&u) || (0xA960..=0xA97C).contains(&u)
-}
-
-fn is_v(u: u32) -> bool {
-    (0x1160..=0x11A7).contains(&u) || (0xD7B0..=0xD7C6).contains(&u)
-}
-
-fn is_t(u: u32) -> bool {
-    (0x11A8..=0x11FF).contains(&u) || (0xD7CB..=0xD7FB).contains(&u)
-}
-
-fn is_combining_l(u: u32) -> bool {
-    (L_BASE..=L_BASE + L_COUNT - 1).contains(&u)
-}
-
-fn is_combining_v(u: u32) -> bool {
-    (V_BASE..=V_BASE + V_COUNT - 1).contains(&u)
-}
-
-fn is_combining_t(u: u32) -> bool {
-    (T_BASE + 1..=T_BASE + T_COUNT - 1).contains(&u)
-}
-
-fn is_combined_s(u: u32) -> bool {
-    (S_BASE..=S_BASE + S_COUNT - 1).contains(&u)
-}
-
-fn setup_masks(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    let hangul_plan = plan.data::<HangulShapePlan>();
+fn setup_masks_hangul(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
+    let hangul_plan = plan.data::<hangul_shape_plan_t>();
     for info in buffer.info_slice_mut() {
         info.mask |= hangul_plan.mask_array[info.hangul_shaping_feature() as usize];
     }
 }
+
+pub const HANGUL_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+    collect_features: Some(collect_features_hangul),
+    override_features: Some(override_features_hangul),
+    create_data: Some(|plan| Box::new(data_create_hangul(&plan.ot_map))),
+    preprocess_text: Some(preprocess_text_hangul),
+    postprocess_glyphs: None,
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
+    decompose: None,
+    compose: None,
+    setup_masks: Some(setup_masks_hangul),
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: None,
+    fallback_position: false,
+};

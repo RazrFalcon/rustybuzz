@@ -11,7 +11,7 @@ use super::{aat_map, hb_font_t, hb_mask_t, Direction, Feature, Language, Script}
 pub struct hb_ot_shape_plan_t {
     pub(crate) direction: Direction,
     pub(crate) script: Option<Script>,
-    pub(crate) shaper: &'static ComplexShaper,
+    pub(crate) shaper: &'static hb_ot_complex_shaper_t,
     pub(crate) ot_map: hb_ot_map_t,
     pub(crate) aat_map: aat_map::hb_aat_map_t,
     pub(crate) data: Option<Box<dyn Any + Send + Sync>>,

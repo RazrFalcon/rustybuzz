@@ -6,13 +6,13 @@ use crate::hb::buffer::hb_buffer_t;
 use crate::hb::ot_layout::*;
 use crate::hb::ot_map::*;
 use crate::hb::ot_shape_complex::*;
-use crate::hb::ot_shape_complex_arabic::ArabicShapePlan;
+use crate::hb::ot_shape_complex_arabic::arabic_shape_plan_t;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::unicode::{CharExt, GeneralCategoryExt};
 use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
-pub const UNIVERSAL_SHAPER: ComplexShaper = ComplexShaper {
+pub const UNIVERSAL_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: Some(collect_features),
     override_features: None,
     create_data: Some(|plan| Box::new(UniversalShapePlan::new(plan))),
@@ -153,7 +153,7 @@ impl hb_glyph_info_t {
 
 struct UniversalShapePlan {
     rphf_mask: hb_mask_t,
-    arabic_plan: Option<ArabicShapePlan>,
+    arabic_plan: Option<arabic_shape_plan_t>,
 }
 
 impl UniversalShapePlan {
@@ -161,9 +161,7 @@ impl UniversalShapePlan {
         let mut arabic_plan = None;
 
         if plan.script.map_or(false, has_arabic_joining) {
-            arabic_plan = Some(crate::hb::ot_shape_complex_arabic::ArabicShapePlan::new(
-                plan,
-            ));
+            arabic_plan = Some(crate::hb::ot_shape_complex_arabic::data_create_arabic(plan));
         }
 
         UniversalShapePlan {
