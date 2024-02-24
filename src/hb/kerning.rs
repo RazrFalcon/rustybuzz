@@ -4,27 +4,9 @@ use super::buffer::*;
 use super::ot_layout::TableIndex;
 use super::ot_layout_common::lookup_flags;
 use super::ot_layout_gpos_table::attach_type;
-use super::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t};
+use super::ot_layout_gsubgpos::{skipping_iterator_t, OT::hb_ot_apply_context_t};
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::{hb_font_t, hb_mask_t};
-
-pub fn has_kerning(face: &hb_font_t) -> bool {
-    face.tables().kern.is_some()
-}
-
-pub fn has_machine_kerning(face: &hb_font_t) -> bool {
-    match face.tables().kern {
-        Some(ref kern) => kern.subtables.into_iter().any(|s| s.has_state_machine),
-        None => false,
-    }
-}
-
-pub fn has_cross_kerning(face: &hb_font_t) -> bool {
-    match face.tables().kern {
-        Some(ref kern) => kern.subtables.into_iter().any(|s| s.has_cross_stream),
-        None => false,
-    }
-}
 
 pub fn kern(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     let subtables = match face.tables().kern {

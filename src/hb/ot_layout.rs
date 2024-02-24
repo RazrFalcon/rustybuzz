@@ -7,13 +7,52 @@ use ttf_parser::GlyphId;
 
 use super::buffer::*;
 use super::common::TagExt;
-use super::ot_layout_gsubgpos::{hb_ot_apply_context_t, Apply};
+use super::ot_layout_gsubgpos::{Apply, OT};
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_funcs_t, hb_unicode_general_category_t, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 
 pub const MAX_NESTING_LEVEL: usize = 6;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
+
+pub fn hb_ot_layout_has_kerning(face: &hb_font_t) -> bool {
+    face.tables().kern.is_some()
+}
+
+pub fn hb_ot_layout_has_machine_kerning(face: &hb_font_t) -> bool {
+    match face.tables().kern {
+        Some(ref kern) => kern.subtables.into_iter().any(|s| s.has_state_machine),
+        None => false,
+    }
+}
+
+pub fn hb_ot_layout_has_cross_kerning(face: &hb_font_t) -> bool {
+    match face.tables().kern {
+        Some(ref kern) => kern.subtables.into_iter().any(|s| s.has_cross_stream),
+        None => false,
+    }
+}
+
+// hb_ot_layout_kern
+
+// OT::GDEF::is_blocklisted unsupported
+
+pub fn _hb_ot_layout_set_glyph_props(face: &hb_font_t, buffer: &mut hb_buffer_t) {
+    let len = buffer.len;
+    for info in &mut buffer.info[..len] {
+        info.set_glyph_props(face.glyph_props(info.as_glyph()));
+        info.set_lig_props(0);
+        info.set_syllable(0);
+    }
+}
+
+pub fn hb_ot_layout_has_glyph_classes(face: &hb_font_t) -> bool {
+    face.tables()
+        .gdef
+        .map_or(false, |table| table.has_glyph_classes())
+}
+
+// get_gsubgpos_table
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TableIndex {
@@ -89,6 +128,7 @@ pub trait LayoutTableExt {
 }
 
 impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
+    // hb_ot_layout_table_select_script
     /// Returns true + index and tag of the first found script tag in the given GSUB or GPOS table
     /// or false + index and tag if falling back to a default script.
     fn select_script(&self, script_tags: &[hb_tag_t]) -> Option<(bool, ScriptIndex, hb_tag_t)> {
@@ -115,6 +155,7 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
         None
     }
 
+    // hb_ot_layout_script_select_language
     /// Returns the index of the first found language tag in the given GSUB or GPOS table,
     /// underneath the specified script index.
     fn select_script_language(
@@ -138,6 +179,7 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
         None
     }
 
+    // hb_ot_layout_language_get_required_feature
     /// Returns the index and tag of a required feature in the given GSUB or GPOS table,
     /// underneath the specified script and language.
     fn get_required_language_feature(
@@ -155,6 +197,7 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
         Some((idx, tag))
     }
 
+    // hb_ot_layout_language_find_feature
     /// Returns the index of a given feature tag in the given GSUB or GPOS table,
     /// underneath the specified script and language.
     fn find_language_feature(
@@ -181,6 +224,12 @@ impl LayoutTableExt for ttf_parser::opentype_layout::LayoutTable<'_> {
     }
 }
 
+/// Called before substitution lookups are performed, to ensure that glyph
+/// class and other properties are set on the glyphs in the buffer.
+pub fn hb_ot_layout_substitute_start(face: &hb_font_t, buffer: &mut hb_buffer_t) {
+    _hb_ot_layout_set_glyph_props(face, buffer)
+}
+
 /// Applies the lookups in the given GSUB or GPOS table.
 pub fn apply_layout_table<T: LayoutTable>(
     plan: &hb_ot_shape_plan_t,
@@ -188,7 +237,7 @@ pub fn apply_layout_table<T: LayoutTable>(
     buffer: &mut hb_buffer_t,
     table: Option<&T>,
 ) {
-    let mut ctx = hb_ot_apply_context_t::new(T::INDEX, face, buffer);
+    let mut ctx = OT::hb_ot_apply_context_t::new(T::INDEX, face, buffer);
 
     for (stage_index, stage) in plan.ot_map.stages(T::INDEX).iter().enumerate() {
         for lookup in plan.ot_map.stage_lookups(T::INDEX, stage_index) {
@@ -212,7 +261,7 @@ pub fn apply_layout_table<T: LayoutTable>(
     }
 }
 
-fn apply_string<T: LayoutTable>(ctx: &mut hb_ot_apply_context_t, lookup: &T::Lookup) {
+fn apply_string<T: LayoutTable>(ctx: &mut OT::hb_ot_apply_context_t, lookup: &T::Lookup) {
     if ctx.buffer.is_empty() || ctx.lookup_mask == 0 {
         return;
     }
@@ -239,7 +288,7 @@ fn apply_string<T: LayoutTable>(ctx: &mut hb_ot_apply_context_t, lookup: &T::Loo
     }
 }
 
-fn apply_forward(ctx: &mut hb_ot_apply_context_t, lookup: &impl Apply) -> bool {
+fn apply_forward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> bool {
     let mut ret = false;
     while ctx.buffer.idx < ctx.buffer.len && ctx.buffer.successful {
         let cur = ctx.buffer.cur(0);
@@ -255,7 +304,7 @@ fn apply_forward(ctx: &mut hb_ot_apply_context_t, lookup: &impl Apply) -> bool {
     ret
 }
 
-fn apply_backward(ctx: &mut hb_ot_apply_context_t, lookup: &impl Apply) -> bool {
+fn apply_backward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> bool {
     let mut ret = false;
     loop {
         let cur = ctx.buffer.cur(0);

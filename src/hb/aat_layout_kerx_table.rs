@@ -7,7 +7,7 @@ use super::hb_font_t;
 use super::ot_layout::TableIndex;
 use super::ot_layout_common::lookup_flags;
 use super::ot_layout_gpos_table::attach_type;
-use super::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t};
+use super::ot_layout_gsubgpos::{skipping_iterator_t, OT::hb_ot_apply_context_t};
 use super::shape_plan::hb_ot_shape_plan_t;
 
 trait ExtendedStateTableExt<T: FromData + Copy> {

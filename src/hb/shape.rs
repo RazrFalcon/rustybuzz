@@ -136,7 +136,7 @@ fn substitute_default(ctx: &mut ShapeContext) {
 }
 
 fn substitute_complex(ctx: &mut ShapeContext) {
-    super::ot_layout_gsub_table::substitute_start(ctx.face, ctx.buffer);
+    hb_ot_layout_substitute_start(ctx.face, ctx.buffer);
 
     if ctx.plan.fallback_glyph_classes {
         synthesize_glyph_classes(ctx.buffer);

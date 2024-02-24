@@ -6,7 +6,7 @@ use super::buffer::*;
 use super::hb_font_t;
 use super::ot_layout::*;
 use super::ot_layout_common::{lookup_flags, PositioningLookup, PositioningTable};
-use super::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t, Apply};
+use super::ot_layout_gsubgpos::{skipping_iterator_t, Apply, OT::hb_ot_apply_context_t};
 use super::shape_plan::hb_ot_shape_plan_t;
 use crate::Direction;
 

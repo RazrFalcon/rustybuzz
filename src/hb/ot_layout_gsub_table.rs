@@ -11,6 +11,7 @@ use super::ot_layout_common::{SubstLookup, SubstitutionTable};
 use super::ot_layout_gsubgpos::*;
 use super::ot_map::*;
 use super::shape_plan::hb_ot_shape_plan_t;
+use OT::hb_ot_apply_context_t;
 
 // SingleSubstFormat1::would_apply
 // SingleSubstFormat2::would_apply
@@ -301,23 +302,8 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
     }
 }
 
-/// Called before substitution lookups are performed, to ensure that glyph
-/// class and other properties are set on the glyphs in the buffer.
-pub fn substitute_start(face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    set_glyph_props(face, buffer)
-}
-
 pub fn substitute(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     apply_layout_table(plan, face, buffer, face.gsub.as_ref());
-}
-
-fn set_glyph_props(face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    let len = buffer.len;
-    for info in &mut buffer.info[..len] {
-        info.set_glyph_props(face.glyph_props(info.as_glyph()));
-        info.set_lig_props(0);
-        info.set_syllable(0);
-    }
 }
 
 impl<'a> LayoutTable for SubstitutionTable<'a> {

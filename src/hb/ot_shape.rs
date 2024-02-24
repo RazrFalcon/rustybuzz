@@ -1,5 +1,5 @@
 use super::aat_map;
-use super::ot_layout::TableIndex;
+use super::ot_layout::*;
 use super::ot_map::hb_ot_map_builder_t;
 use super::ot_map::*;
 use super::ot_shape_complex::*;
@@ -214,11 +214,7 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             && self.shaper.gpos_tag != ot_map.chosen_script(TableIndex::GPOS);
 
         // Decide who provides glyph classes. GDEF or Unicode.
-        let fallback_glyph_classes = !self
-            .face
-            .tables()
-            .gdef
-            .map_or(false, |table| table.has_glyph_classes());
+        let fallback_glyph_classes = !hb_ot_layout_has_glyph_classes(self.face);
 
         // Decide who does substitutions. GSUB, morx, or fallback.
         let apply_morx = self.apply_morx;
@@ -243,7 +239,7 @@ impl<'a> hb_ot_shape_planner_t<'a> {
         if !apply_kerx && (!has_gpos_kern || !apply_gpos) {
             if has_kerx {
                 apply_kerx = true;
-            } else if super::kerning::has_kerning(self.face) {
+            } else if hb_ot_layout_has_kerning(self.face) {
                 apply_kern = true;
             }
         }
@@ -251,13 +247,13 @@ impl<'a> hb_ot_shape_planner_t<'a> {
         let apply_fallback_kern = !(apply_gpos || apply_kerx || apply_kern);
         let zero_marks = self.script_zero_marks
             && !apply_kerx
-            && (!apply_kern || !super::kerning::has_machine_kerning(self.face));
+            && (!apply_kern || !hb_ot_layout_has_machine_kerning(self.face));
 
         let has_gpos_mark = ot_map.get_1_mask(hb_tag_t::from_bytes(b"mark")) != 0;
 
         let mut adjust_mark_positioning_when_zeroing = !apply_gpos
             && !apply_kerx
-            && (!apply_kern || !super::kerning::has_cross_kerning(self.face));
+            && (!apply_kern || !hb_ot_layout_has_cross_kerning(self.face));
 
         let fallback_mark_positioning =
             adjust_mark_positioning_when_zeroing && self.script_fallback_mark_positioning;

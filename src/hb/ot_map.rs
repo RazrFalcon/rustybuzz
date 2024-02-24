@@ -356,6 +356,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
             }
 
             if !found && info.flags & F_GLOBAL_SEARCH != 0 {
+                // hb_ot_layout_table_find_feature
                 for (table_index, table) in self.face.layout_tables() {
                     if let Some(idx) = table.features.index(info.tag) {
                         feature_index[table_index] = Some(idx);
