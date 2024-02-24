@@ -1,7 +1,4 @@
-use super::buffer::{
-    glyph_flag, hb_buffer_t, hb_glyph_info_t, BufferClusterLevel, BufferFlags, BufferScratchFlags,
-    GlyphPropsFlags,
-};
+use super::buffer::*;
 use super::ot_layout::*;
 use super::ot_shape_complex::ZeroWidthMarksMode;
 use super::shape_plan::hb_ot_shape_plan_t;
@@ -440,7 +437,7 @@ fn form_clusters(buffer: &mut hb_buffer_t) {
         .scratch_flags
         .contains(BufferScratchFlags::HAS_NON_ASCII)
     {
-        if buffer.cluster_level == BufferClusterLevel::MonotoneGraphemes {
+        if buffer.cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES {
             foreach_grapheme!(buffer, start, end, { buffer.merge_clusters(start, end) });
         } else {
             foreach_grapheme!(buffer, start, end, {

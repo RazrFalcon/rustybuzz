@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 
 use super::ot_shape::*;
-use crate::hb::buffer::{hb_buffer_t, BufferClusterLevel, BufferFlags};
+use crate::hb::buffer::*;
 use crate::hb::ot_map::*;
 use crate::hb::ot_shape_complex::ComplexShaper;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
@@ -241,7 +241,7 @@ fn preprocess_text(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buf
                     end = start + 2;
                 }
 
-                if buffer.cluster_level == BufferClusterLevel::MonotoneGraphemes {
+                if buffer.cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES {
                     buffer.merge_out_clusters(start, end);
                 }
 
@@ -304,7 +304,7 @@ fn preprocess_text(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buf
                         buffer.out_info_mut()[start + 2].set_hangul_shaping_feature(TJMO);
                     }
 
-                    if buffer.cluster_level == BufferClusterLevel::MonotoneGraphemes {
+                    if buffer.cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES {
                         buffer.merge_out_clusters(start, end);
                     }
 

@@ -5,7 +5,7 @@ use core::ops::{Index, IndexMut};
 use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex};
 use ttf_parser::GlyphId;
 
-use super::buffer::{hb_buffer_t, GlyphPropsFlags, UnicodeProps};
+use super::buffer::*;
 use super::common::TagExt;
 use super::ot_layout_gsubgpos::{hb_ot_apply_context_t, Apply};
 use super::shape_plan::hb_ot_shape_plan_t;
@@ -486,7 +486,7 @@ pub(crate) fn _hb_grapheme_group_func(_: &hb_glyph_info_t, b: &hb_glyph_info_t) 
 pub fn _hb_ot_layout_reverse_graphemes(buffer: &mut hb_buffer_t) {
     buffer.reverse_groups(
         _hb_grapheme_group_func,
-        buffer.cluster_level == super::buffer::BufferClusterLevel::MonotoneCharacters,
+        buffer.cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS,
     )
 }
 

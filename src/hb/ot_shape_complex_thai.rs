@@ -1,5 +1,5 @@
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
-use crate::hb::buffer::{hb_buffer_t, BufferClusterLevel};
+use crate::hb::buffer::*;
 use crate::hb::ot_layout::*;
 use crate::hb::ot_shape_complex::*;
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
@@ -413,7 +413,7 @@ fn preprocess_text(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_
         } else {
             // Since we decomposed, and NIKHAHIT is combining, merge clusters with the
             // previous cluster.
-            if start != 0 && buffer.cluster_level == BufferClusterLevel::MonotoneGraphemes {
+            if start != 0 && buffer.cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES {
                 buffer.merge_out_clusters(start - 1, end);
             }
         }

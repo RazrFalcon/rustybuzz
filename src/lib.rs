@@ -18,10 +18,24 @@ mod hb;
 pub use ttf_parser;
 
 pub use hb::buffer::hb_glyph_info_t as GlyphInfo;
-pub use hb::buffer::{
-    BufferClusterLevel, BufferFlags, GlyphBuffer, GlyphPosition, SerializeFlags, UnicodeBuffer,
-};
+pub use hb::buffer::{BufferFlags, GlyphBuffer, GlyphPosition, SerializeFlags, UnicodeBuffer};
 pub use hb::common::{script, Direction, Feature, Language, Script, Variation};
 pub use hb::face::hb_font_t as Face;
 pub use hb::shape::{shape, shape_with_plan};
 pub use hb::shape_plan::hb_ot_shape_plan_t as ShapePlan;
+
+/// A cluster level.
+#[allow(missing_docs)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub enum BufferClusterLevel {
+    MonotoneGraphemes,
+    MonotoneCharacters,
+    Characters,
+}
+
+impl Default for BufferClusterLevel {
+    #[inline]
+    fn default() -> Self {
+        BufferClusterLevel::MonotoneGraphemes
+    }
+}

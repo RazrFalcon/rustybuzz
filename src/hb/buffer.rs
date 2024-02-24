@@ -8,7 +8,7 @@ use super::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use super::face::GlyphExtents;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_mask_t};
-use crate::{script, Direction, Language, Script};
+use crate::{script, BufferClusterLevel, Direction, Language, Script};
 
 const CONTEXT_LENGTH: usize = 5;
 
@@ -344,26 +344,16 @@ impl hb_glyph_info_t {
     }
 }
 
-/// A cluster level.
-#[allow(missing_docs)]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub enum BufferClusterLevel {
-    MonotoneGraphemes,
-    MonotoneCharacters,
-    Characters,
-}
-
-impl Default for BufferClusterLevel {
-    #[inline]
-    fn default() -> Self {
-        BufferClusterLevel::MonotoneGraphemes
-    }
-}
+pub type hb_buffer_cluster_level_t = u32;
+pub const HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES: u32 = 0;
+pub const HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS: u32 = 1;
+pub const HB_BUFFER_CLUSTER_LEVEL_CHARACTERS: u32 = 2;
+pub const HB_BUFFER_CLUSTER_LEVEL_DEFAULT: u32 = HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES;
 
 pub struct hb_buffer_t {
     // Information about how the text in the buffer should be treated.
     pub flags: BufferFlags,
-    pub cluster_level: BufferClusterLevel,
+    pub cluster_level: hb_buffer_cluster_level_t,
     pub invisible: Option<GlyphId>,
 
     // Buffer contents.
@@ -416,7 +406,7 @@ impl hb_buffer_t {
     pub fn new() -> Self {
         hb_buffer_t {
             flags: BufferFlags::empty(),
-            cluster_level: BufferClusterLevel::default(),
+            cluster_level: HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
             invisible: None,
             scratch_flags: BufferScratchFlags::default(),
             max_len: Self::MAX_LEN_DEFAULT,
@@ -528,7 +518,7 @@ impl hb_buffer_t {
 
         self.serial = 0;
         self.scratch_flags = BufferScratchFlags::default();
-        self.cluster_level = BufferClusterLevel::default();
+        self.cluster_level = HB_BUFFER_CLUSTER_LEVEL_DEFAULT;
     }
 
     #[inline]
@@ -882,7 +872,7 @@ impl hb_buffer_t {
     }
 
     fn merge_clusters_impl(&mut self, mut start: usize, mut end: usize) {
-        if self.cluster_level == BufferClusterLevel::Characters {
+        if self.cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS {
             self.unsafe_to_break(Some(start), Some(end));
             return;
         }
@@ -918,7 +908,7 @@ impl hb_buffer_t {
     }
 
     pub fn merge_out_clusters(&mut self, mut start: usize, mut end: usize) {
-        if self.cluster_level == BufferClusterLevel::Characters {
+        if self.cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS {
             return;
         }
 
@@ -1661,13 +1651,22 @@ impl UnicodeBuffer {
     /// Set the cluster level of the buffer.
     #[inline]
     pub fn set_cluster_level(&mut self, cluster_level: BufferClusterLevel) {
-        self.0.cluster_level = cluster_level
+        self.0.cluster_level = match cluster_level {
+            BufferClusterLevel::MonotoneGraphemes => HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES,
+            BufferClusterLevel::MonotoneCharacters => HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS,
+            BufferClusterLevel::Characters => HB_BUFFER_CLUSTER_LEVEL_CHARACTERS,
+        }
     }
 
     /// Retrieve the cluster level of the buffer.
     #[inline]
     pub fn cluster_level(&self) -> BufferClusterLevel {
-        self.0.cluster_level
+        match self.0.cluster_level {
+            HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES => BufferClusterLevel::MonotoneGraphemes,
+            HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS => BufferClusterLevel::MonotoneCharacters,
+            HB_BUFFER_CLUSTER_LEVEL_CHARACTERS => BufferClusterLevel::Characters,
+            _ => BufferClusterLevel::MonotoneGraphemes,
+        }
     }
 
     /// Resets clusters.
