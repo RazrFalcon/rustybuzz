@@ -18,7 +18,7 @@ pub const THAI_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     setup_masks: None,
     gpos_tag: None,
     reorder_marks: None,
-    zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
+    zero_width_marks: HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
     fallback_position: false,
 };
 

@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use super::ot_shape::*;
 use crate::hb::buffer::*;
 use crate::hb::ot_map::*;
-use crate::hb::ot_shape_complex::hb_ot_complex_shaper_t;
+use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
@@ -374,6 +374,6 @@ pub const HANGUL_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     setup_masks: Some(setup_masks_hangul),
     gpos_tag: None,
     reorder_marks: None,
-    zero_width_marks: None,
+    zero_width_marks: HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
     fallback_position: false,
 };

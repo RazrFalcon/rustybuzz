@@ -22,7 +22,7 @@ pub const MYANMAR_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     setup_masks: Some(setup_masks),
     gpos_tag: None,
     reorder_marks: None,
-    zero_width_marks: Some(ZeroWidthMarksMode::ByGdefEarly),
+    zero_width_marks: HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
     fallback_position: false,
 };
 
@@ -41,7 +41,7 @@ pub const MYANMAR_ZAWGYI_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t
     setup_masks: None,
     gpos_tag: None,
     reorder_marks: None,
-    zero_width_marks: None,
+    zero_width_marks: HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
     fallback_position: false,
 };
 

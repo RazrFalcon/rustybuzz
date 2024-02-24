@@ -3,6 +3,7 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_snake_case)]
 
+mod algs;
 #[macro_use]
 pub mod buffer;
 mod aat_layout;

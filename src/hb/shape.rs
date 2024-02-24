@@ -1,6 +1,6 @@
 use super::buffer::*;
 use super::ot_layout::*;
-use super::ot_shape_complex::ZeroWidthMarksMode;
+use super::ot_shape_complex::*;
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
 use super::{
@@ -211,7 +211,7 @@ fn position_complex(ctx: &mut ShapeContext) {
     super::ot_layout_gpos_table::position_start(ctx.face, ctx.buffer);
 
     if ctx.plan.zero_marks
-        && ctx.plan.shaper.zero_width_marks == Some(ZeroWidthMarksMode::ByGdefEarly)
+        && ctx.plan.shaper.zero_width_marks == HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY
     {
         zero_mark_widths_by_gdef(ctx.buffer, adjust_offsets_when_zeroing);
     }
@@ -219,7 +219,7 @@ fn position_complex(ctx: &mut ShapeContext) {
     position_by_plan(ctx.plan, ctx.face, ctx.buffer);
 
     if ctx.plan.zero_marks
-        && ctx.plan.shaper.zero_width_marks == Some(ZeroWidthMarksMode::ByGdefLate)
+        && ctx.plan.shaper.zero_width_marks == HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE
     {
         zero_mark_widths_by_gdef(ctx.buffer, adjust_offsets_when_zeroing);
     }

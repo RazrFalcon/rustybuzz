@@ -30,13 +30,15 @@ impl<'a> hb_ot_shape_planner_t<'a> {
         let aat_map = aat_map::hb_aat_map_builder_t::default();
 
         let mut shaper = match script {
-            Some(script) => {
-                complex_categorize(script, direction, ot_map.chosen_script(TableIndex::GSUB))
-            }
+            Some(script) => hb_ot_shape_complex_categorize(
+                script,
+                direction,
+                ot_map.chosen_script(TableIndex::GSUB),
+            ),
             None => &DEFAULT_SHAPER,
         };
 
-        let script_zero_marks = shaper.zero_width_marks.is_some();
+        let script_zero_marks = shaper.zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
         let script_fallback_mark_positioning = shaper.fallback_position;
 
         // https://github.com/harfbuzz/harfbuzz/issues/2124

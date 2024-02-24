@@ -1,5 +1,5 @@
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
-use crate::hb::ot_shape_complex::{hb_ot_complex_shaper_t, ZeroWidthMarksMode};
+use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use crate::hb::{hb_tag_t, unicode};
 
@@ -15,7 +15,7 @@ pub const HEBREW_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     setup_masks: None,
     gpos_tag: Some(hb_tag_t::from_bytes(b"hebr")),
     reorder_marks: None,
-    zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
+    zero_width_marks: HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
     fallback_position: true,
 };
 

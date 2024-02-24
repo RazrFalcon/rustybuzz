@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 use core::any::Any;
 
 use super::ot_shape::*;
-use crate::hb::buffer::hb_buffer_t;
+use crate::hb::buffer::*;
 use crate::hb::common::TagExt;
 use crate::hb::ot_shape_normalize::{
     hb_ot_shape_normalization_mode_t, hb_ot_shape_normalize_context_t,
@@ -11,7 +11,34 @@ use crate::hb::ot_shape_normalize::{
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
 use crate::hb::{hb_font_t, hb_tag_t, script, Direction, Script};
 
+impl hb_glyph_info_t {
+    pub(crate) fn complex_var_u8_category(&self) -> u8 {
+        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
+        v[2]
+    }
+
+    pub(crate) fn set_complex_var_u8_category(&mut self, c: u8) {
+        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
+        v[2] = c;
+    }
+
+    pub(crate) fn complex_var_u8_auxiliary(&self) -> u8 {
+        let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
+        v[3]
+    }
+
+    pub(crate) fn set_complex_var_u8_auxiliary(&mut self, c: u8) {
+        let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
+        v[3] = c;
+    }
+}
+
 pub const MAX_COMBINING_MARKS: usize = 32;
+
+pub type hb_ot_shape_zero_width_marks_type_t = u32;
+pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE: u32 = 0;
+pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY: u32 = 1;
+pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE: u32 = 2;
 
 pub const DEFAULT_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: None,
@@ -25,26 +52,8 @@ pub const DEFAULT_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     setup_masks: None,
     gpos_tag: None,
     reorder_marks: None,
-    zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
+    zero_width_marks: HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
     fallback_position: true,
-};
-
-// Same as default but no mark advance zeroing / fallback positioning.
-// Dumbest shaper ever, basically.
-pub const DUMBER_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
-    collect_features: None,
-    override_features: None,
-    create_data: None,
-    preprocess_text: None,
-    postprocess_glyphs: None,
-    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
-    decompose: None,
-    compose: None,
-    setup_masks: None,
-    gpos_tag: None,
-    reorder_marks: None,
-    zero_width_marks: None,
-    fallback_position: false,
 };
 
 pub struct hb_ot_complex_shaper_t {
@@ -92,19 +101,31 @@ pub struct hb_ot_complex_shaper_t {
     pub reorder_marks: Option<fn(&hb_ot_shape_plan_t, &mut hb_buffer_t, usize, usize)>,
 
     /// If and when to zero-width marks.
-    pub zero_width_marks: Option<ZeroWidthMarksMode>,
+    pub zero_width_marks: hb_ot_shape_zero_width_marks_type_t,
 
     /// Whether to use fallback mark positioning.
     pub fallback_position: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ZeroWidthMarksMode {
-    ByGdefEarly,
-    ByGdefLate,
-}
+// Same as default but no mark advance zeroing / fallback positioning.
+// Dumbest shaper ever, basically.
+pub const DUMBER_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+    collect_features: None,
+    override_features: None,
+    create_data: None,
+    preprocess_text: None,
+    postprocess_glyphs: None,
+    normalization_preference: HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
+    decompose: None,
+    compose: None,
+    setup_masks: None,
+    gpos_tag: None,
+    reorder_marks: None,
+    zero_width_marks: HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
+    fallback_position: false,
+};
 
-pub fn complex_categorize(
+pub fn hb_ot_shape_complex_categorize(
     script: Script,
     direction: Direction,
     chosen_gsub_script: Option<hb_tag_t>,
@@ -315,39 +336,5 @@ pub fn complex_categorize(
         }
 
         _ => &DEFAULT_SHAPER
-    }
-}
-
-// TODO: find a better name
-#[inline]
-pub const fn rb_flag(x: u32) -> u32 {
-    1 << x
-}
-
-#[inline]
-pub fn rb_flag_unsafe(x: u32) -> u32 {
-    if x < 32 {
-        1 << x
-    } else {
-        0
-    }
-}
-
-#[inline]
-pub fn rb_flag_range(x: u32, y: u32) -> u32 {
-    (x < y) as u32 + rb_flag(y + 1) - rb_flag(x)
-}
-
-#[inline]
-pub const fn rb_flag64(x: u32) -> u64 {
-    1 << x as u64
-}
-
-#[inline]
-pub fn rb_flag64_unsafe(x: u32) -> u64 {
-    if x < 64 {
-        1 << (x as u64)
-    } else {
-        0
     }
 }
