@@ -10,81 +10,127 @@ use super::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t, Appl
 use super::shape_plan::hb_ot_shape_plan_t;
 use crate::Direction;
 
-pub fn position_start(_: &hb_font_t, buffer: &mut hb_buffer_t) {
-    let len = buffer.len;
-    for pos in &mut buffer.pos[..len] {
-        pos.set_attach_chain(0);
-        pos.set_attach_type(0);
-    }
-}
-
 pub fn position(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     apply_layout_table(plan, face, buffer, face.gpos.as_ref());
 }
 
-pub fn position_finish_advances(_: &hb_font_t, _: &mut hb_buffer_t) {}
+trait ValueRecordExt {
+    fn is_empty(&self) -> bool;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, idx: usize) -> bool;
+    fn apply_to_pos(&self, ctx: &mut hb_ot_apply_context_t, pos: &mut GlyphPosition) -> bool;
+}
 
-pub fn position_finish_offsets(_: &hb_font_t, buffer: &mut hb_buffer_t) {
-    let len = buffer.len;
-    let direction = buffer.direction;
+impl ValueRecordExt for ValueRecord<'_> {
+    fn is_empty(&self) -> bool {
+        self.x_placement == 0
+            && self.y_placement == 0
+            && self.x_advance == 0
+            && self.y_advance == 0
+            && self.x_placement_device.is_none()
+            && self.y_placement_device.is_none()
+            && self.x_advance_device.is_none()
+            && self.y_advance_device.is_none()
+    }
 
-    // Handle attachments
-    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT != 0 {
-        for i in 0..len {
-            propagate_attachment_offsets(&mut buffer.pos, len, i, direction);
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, idx: usize) -> bool {
+        let mut pos = ctx.buffer.pos[idx];
+        let worked = self.apply_to_pos(ctx, &mut pos);
+        ctx.buffer.pos[idx] = pos;
+        worked
+    }
+
+    fn apply_to_pos(&self, ctx: &mut hb_ot_apply_context_t, pos: &mut GlyphPosition) -> bool {
+        let horizontal = ctx.buffer.direction.is_horizontal();
+        let mut worked = false;
+
+        if self.x_placement != 0 {
+            pos.x_offset += i32::from(self.x_placement);
+            worked = true;
         }
+
+        if self.y_placement != 0 {
+            pos.y_offset += i32::from(self.y_placement);
+            worked = true;
+        }
+
+        if self.x_advance != 0 && horizontal {
+            pos.x_advance += i32::from(self.x_advance);
+            worked = true;
+        }
+
+        if self.y_advance != 0 && !horizontal {
+            // y_advance values grow downward but font-space grows upward, hence negation
+            pos.y_advance -= i32::from(self.y_advance);
+            worked = true;
+        }
+
+        {
+            let (ppem_x, ppem_y) = ctx.face.pixels_per_em().unwrap_or((0, 0));
+            let coords = ctx.face.ttfp_face.variation_coordinates().len();
+            let use_x_device = ppem_x != 0 || coords != 0;
+            let use_y_device = ppem_y != 0 || coords != 0;
+
+            if use_x_device {
+                if let Some(device) = self.x_placement_device {
+                    pos.x_offset += device.get_x_delta(ctx.face).unwrap_or(0);
+                    worked = true; // TODO: even when 0?
+                }
+            }
+
+            if use_y_device {
+                if let Some(device) = self.y_placement_device {
+                    pos.y_offset += device.get_y_delta(ctx.face).unwrap_or(0);
+                    worked = true;
+                }
+            }
+
+            if horizontal && use_x_device {
+                if let Some(device) = self.x_advance_device {
+                    pos.x_advance += device.get_x_delta(ctx.face).unwrap_or(0);
+                    worked = true;
+                }
+            }
+
+            if !horizontal && use_y_device {
+                if let Some(device) = self.y_advance_device {
+                    // y_advance values grow downward but face-space grows upward, hence negation
+                    pos.y_advance -= device.get_y_delta(ctx.face).unwrap_or(0);
+                    worked = true;
+                }
+            }
+        }
+
+        worked
     }
 }
 
-fn propagate_attachment_offsets(
-    pos: &mut [GlyphPosition],
-    len: usize,
-    i: usize,
-    direction: Direction,
-) {
-    // Adjusts offsets of attached glyphs (both cursive and mark) to accumulate
-    // offset of glyph they are attached to.
-    let chain = pos[i].attach_chain();
-    let kind = pos[i].attach_type();
-    if chain == 0 {
-        return;
-    }
+trait AnchorExt {
+    fn get(&self, face: &hb_font_t) -> (i32, i32);
+}
 
-    pos[i].set_attach_chain(0);
+impl AnchorExt for Anchor<'_> {
+    fn get(&self, face: &hb_font_t) -> (i32, i32) {
+        let mut x = i32::from(self.x);
+        let mut y = i32::from(self.y);
 
-    let j = (i as isize + isize::from(chain)) as _;
-    if j >= len {
-        return;
-    }
+        if self.x_device.is_some() || self.y_device.is_some() {
+            let (ppem_x, ppem_y) = face.pixels_per_em().unwrap_or((0, 0));
+            let coords = face.ttfp_face.variation_coordinates().len();
 
-    propagate_attachment_offsets(pos, len, j, direction);
-
-    match kind {
-        attach_type::MARK => {
-            pos[i].x_offset += pos[j].x_offset;
-            pos[i].y_offset += pos[j].y_offset;
-
-            assert!(j < i);
-            if direction.is_forward() {
-                for k in j..i {
-                    pos[i].x_offset -= pos[k].x_advance;
-                    pos[i].y_offset -= pos[k].y_advance;
+            if let Some(device) = self.x_device {
+                if ppem_x != 0 || coords != 0 {
+                    x += device.get_x_delta(face).unwrap_or(0);
                 }
-            } else {
-                for k in j + 1..i + 1 {
-                    pos[i].x_offset += pos[k].x_advance;
-                    pos[i].y_offset += pos[k].y_advance;
+            }
+
+            if let Some(device) = self.y_device {
+                if ppem_y != 0 || coords != 0 {
+                    y += device.get_y_delta(face).unwrap_or(0);
                 }
             }
         }
-        attach_type::CURSIVE => {
-            if direction.is_horizontal() {
-                pos[i].y_offset += pos[j].y_offset;
-            } else {
-                pos[i].x_offset += pos[j].x_offset;
-            }
-        }
-        _ => {}
+
+        (x, y)
     }
 }
 
@@ -124,21 +170,6 @@ impl Apply for PositioningLookup<'_> {
         }
 
         None
-    }
-}
-
-impl Apply for PositioningSubtable<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        match self {
-            Self::Single(t) => t.apply(ctx),
-            Self::Pair(t) => t.apply(ctx),
-            Self::Cursive(t) => t.apply(ctx),
-            Self::MarkToBase(t) => t.apply(ctx),
-            Self::MarkToLigature(t) => t.apply(ctx),
-            Self::MarkToMark(t) => t.apply(ctx),
-            Self::Context(t) => t.apply(ctx),
-            Self::ChainContext(t) => t.apply(ctx),
-        }
     }
 }
 
@@ -346,38 +377,6 @@ impl Apply for CursiveAdjustment<'_> {
     }
 }
 
-fn reverse_cursive_minor_offset(
-    pos: &mut [GlyphPosition],
-    i: usize,
-    direction: Direction,
-    new_parent: usize,
-) {
-    let chain = pos[i].attach_chain();
-    let attach_type = pos[i].attach_type();
-    if chain == 0 || attach_type & attach_type::CURSIVE == 0 {
-        return;
-    }
-
-    pos[i].set_attach_chain(0);
-
-    // Stop if we see new parent in the chain.
-    let j = (i as isize + isize::from(chain)) as _;
-    if j == new_parent {
-        return;
-    }
-
-    reverse_cursive_minor_offset(pos, j, direction, new_parent);
-
-    if direction.is_horizontal() {
-        pos[j].y_offset = -pos[i].y_offset;
-    } else {
-        pos[j].x_offset = -pos[i].x_offset;
-    }
-
-    pos[j].set_attach_chain(-chain);
-    pos[j].set_attach_type(attach_type);
-}
-
 impl Apply for MarkToBaseAdjustment<'_> {
     fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
         let buffer = &ctx.buffer;
@@ -540,96 +539,6 @@ impl Apply for MarkToMarkAdjustment<'_> {
     }
 }
 
-trait ValueRecordExt {
-    fn is_empty(&self) -> bool;
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, idx: usize) -> bool;
-    fn apply_to_pos(&self, ctx: &mut hb_ot_apply_context_t, pos: &mut GlyphPosition) -> bool;
-}
-
-impl ValueRecordExt for ValueRecord<'_> {
-    fn is_empty(&self) -> bool {
-        self.x_placement == 0
-            && self.y_placement == 0
-            && self.x_advance == 0
-            && self.y_advance == 0
-            && self.x_placement_device.is_none()
-            && self.y_placement_device.is_none()
-            && self.x_advance_device.is_none()
-            && self.y_advance_device.is_none()
-    }
-
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, idx: usize) -> bool {
-        let mut pos = ctx.buffer.pos[idx];
-        let worked = self.apply_to_pos(ctx, &mut pos);
-        ctx.buffer.pos[idx] = pos;
-        worked
-    }
-
-    fn apply_to_pos(&self, ctx: &mut hb_ot_apply_context_t, pos: &mut GlyphPosition) -> bool {
-        let horizontal = ctx.buffer.direction.is_horizontal();
-        let mut worked = false;
-
-        if self.x_placement != 0 {
-            pos.x_offset += i32::from(self.x_placement);
-            worked = true;
-        }
-
-        if self.y_placement != 0 {
-            pos.y_offset += i32::from(self.y_placement);
-            worked = true;
-        }
-
-        if self.x_advance != 0 && horizontal {
-            pos.x_advance += i32::from(self.x_advance);
-            worked = true;
-        }
-
-        if self.y_advance != 0 && !horizontal {
-            // y_advance values grow downward but font-space grows upward, hence negation
-            pos.y_advance -= i32::from(self.y_advance);
-            worked = true;
-        }
-
-        {
-            let (ppem_x, ppem_y) = ctx.face.pixels_per_em().unwrap_or((0, 0));
-            let coords = ctx.face.ttfp_face.variation_coordinates().len();
-            let use_x_device = ppem_x != 0 || coords != 0;
-            let use_y_device = ppem_y != 0 || coords != 0;
-
-            if use_x_device {
-                if let Some(device) = self.x_placement_device {
-                    pos.x_offset += device.get_x_delta(ctx.face).unwrap_or(0);
-                    worked = true; // TODO: even when 0?
-                }
-            }
-
-            if use_y_device {
-                if let Some(device) = self.y_placement_device {
-                    pos.y_offset += device.get_y_delta(ctx.face).unwrap_or(0);
-                    worked = true;
-                }
-            }
-
-            if horizontal && use_x_device {
-                if let Some(device) = self.x_advance_device {
-                    pos.x_advance += device.get_x_delta(ctx.face).unwrap_or(0);
-                    worked = true;
-                }
-            }
-
-            if !horizontal && use_y_device {
-                if let Some(device) = self.y_advance_device {
-                    // y_advance values grow downward but face-space grows upward, hence negation
-                    pos.y_advance -= device.get_y_delta(ctx.face).unwrap_or(0);
-                    worked = true;
-                }
-            }
-        }
-
-        worked
-    }
-}
-
 trait MarkArrayExt {
     fn apply(
         &self,
@@ -745,32 +654,127 @@ impl DeviceExt for Device<'_> {
     }
 }
 
-trait AnchorExt {
-    fn get(&self, face: &hb_font_t) -> (i32, i32);
+impl Apply for PositioningSubtable<'_> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
+        match self {
+            Self::Single(t) => t.apply(ctx),
+            Self::Pair(t) => t.apply(ctx),
+            Self::Cursive(t) => t.apply(ctx),
+            Self::MarkToBase(t) => t.apply(ctx),
+            Self::MarkToLigature(t) => t.apply(ctx),
+            Self::MarkToMark(t) => t.apply(ctx),
+            Self::Context(t) => t.apply(ctx),
+            Self::ChainContext(t) => t.apply(ctx),
+        }
+    }
 }
 
-impl AnchorExt for Anchor<'_> {
-    fn get(&self, face: &hb_font_t) -> (i32, i32) {
-        let mut x = i32::from(self.x);
-        let mut y = i32::from(self.y);
+fn reverse_cursive_minor_offset(
+    pos: &mut [GlyphPosition],
+    i: usize,
+    direction: Direction,
+    new_parent: usize,
+) {
+    let chain = pos[i].attach_chain();
+    let attach_type = pos[i].attach_type();
+    if chain == 0 || attach_type & attach_type::CURSIVE == 0 {
+        return;
+    }
 
-        if self.x_device.is_some() || self.y_device.is_some() {
-            let (ppem_x, ppem_y) = face.pixels_per_em().unwrap_or((0, 0));
-            let coords = face.ttfp_face.variation_coordinates().len();
+    pos[i].set_attach_chain(0);
 
-            if let Some(device) = self.x_device {
-                if ppem_x != 0 || coords != 0 {
-                    x += device.get_x_delta(face).unwrap_or(0);
+    // Stop if we see new parent in the chain.
+    let j = (i as isize + isize::from(chain)) as _;
+    if j == new_parent {
+        return;
+    }
+
+    reverse_cursive_minor_offset(pos, j, direction, new_parent);
+
+    if direction.is_horizontal() {
+        pos[j].y_offset = -pos[i].y_offset;
+    } else {
+        pos[j].x_offset = -pos[i].x_offset;
+    }
+
+    pos[j].set_attach_chain(-chain);
+    pos[j].set_attach_type(attach_type);
+}
+
+fn propagate_attachment_offsets(
+    pos: &mut [GlyphPosition],
+    len: usize,
+    i: usize,
+    direction: Direction,
+) {
+    // Adjusts offsets of attached glyphs (both cursive and mark) to accumulate
+    // offset of glyph they are attached to.
+    let chain = pos[i].attach_chain();
+    let kind = pos[i].attach_type();
+    if chain == 0 {
+        return;
+    }
+
+    pos[i].set_attach_chain(0);
+
+    let j = (i as isize + isize::from(chain)) as _;
+    if j >= len {
+        return;
+    }
+
+    propagate_attachment_offsets(pos, len, j, direction);
+
+    match kind {
+        attach_type::MARK => {
+            pos[i].x_offset += pos[j].x_offset;
+            pos[i].y_offset += pos[j].y_offset;
+
+            assert!(j < i);
+            if direction.is_forward() {
+                for k in j..i {
+                    pos[i].x_offset -= pos[k].x_advance;
+                    pos[i].y_offset -= pos[k].y_advance;
                 }
-            }
-
-            if let Some(device) = self.y_device {
-                if ppem_y != 0 || coords != 0 {
-                    y += device.get_y_delta(face).unwrap_or(0);
+            } else {
+                for k in j + 1..i + 1 {
+                    pos[i].x_offset += pos[k].x_advance;
+                    pos[i].y_offset += pos[k].y_advance;
                 }
             }
         }
+        attach_type::CURSIVE => {
+            if direction.is_horizontal() {
+                pos[i].y_offset += pos[j].y_offset;
+            } else {
+                pos[i].x_offset += pos[j].x_offset;
+            }
+        }
+        _ => {}
+    }
+}
 
-        (x, y)
+pub mod GPOS {
+    use super::*;
+
+    pub fn position_start(_: &hb_font_t, buffer: &mut hb_buffer_t) {
+        let len = buffer.len;
+        for pos in &mut buffer.pos[..len] {
+            pos.set_attach_chain(0);
+            pos.set_attach_type(0);
+        }
+    }
+
+    pub fn position_finish_advances(_: &hb_font_t, _: &mut hb_buffer_t) {}
+
+    pub fn position_finish_offsets(_: &hb_font_t, buffer: &mut hb_buffer_t) {
+        let len = buffer.len;
+        let direction = buffer.direction;
+
+        // Handle attachments
+        if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT != 0 {
+            for i in 0..len {
+                propagate_attachment_offsets(&mut buffer.pos, len, i, direction);
+            }
+        }
     }
 }

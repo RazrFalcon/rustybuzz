@@ -58,7 +58,6 @@ use self::face::hb_font_t;
 
 type hb_mask_t = u32;
 
-use self::buffer::{GlyphBuffer, UnicodeBuffer};
 use self::common::{script, Direction, Feature, Language, Script};
 
 fn round(x: f32) -> f32 {

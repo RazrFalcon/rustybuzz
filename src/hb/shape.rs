@@ -1,12 +1,10 @@
 use super::buffer::*;
 use super::ot_layout::*;
+use super::ot_layout_gpos_table::GPOS;
 use super::ot_shape_complex::*;
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
-use super::{
-    aat_layout, hb_font_t, ot_shape_fallback, ot_shape_normalize, script, Direction, Feature,
-    GlyphBuffer, UnicodeBuffer,
-};
+use super::*;
 use crate::BufferFlags;
 
 /// Shapes the buffer content using provided font and features.
@@ -208,7 +206,7 @@ fn position_complex(ctx: &mut ShapeContext) {
 
     // We change glyph origin to what GPOS expects (horizontal), apply GPOS, change it back.
 
-    super::ot_layout_gpos_table::position_start(ctx.face, ctx.buffer);
+    GPOS::position_start(ctx.face, ctx.buffer);
 
     if ctx.plan.zero_marks
         && ctx.plan.shaper.zero_width_marks == HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY
@@ -225,14 +223,14 @@ fn position_complex(ctx: &mut ShapeContext) {
     }
 
     // Finish off.  Has to follow a certain order.
-    super::ot_layout_gpos_table::position_finish_advances(ctx.face, ctx.buffer);
+    GPOS::position_finish_advances(ctx.face, ctx.buffer);
     zero_width_default_ignorables(ctx.buffer);
 
     if ctx.plan.apply_morx {
         aat_layout::hb_aat_layout_zero_width_deleted_glyphs(ctx.buffer);
     }
 
-    super::ot_layout_gpos_table::position_finish_offsets(ctx.face, ctx.buffer);
+    GPOS::position_finish_offsets(ctx.face, ctx.buffer);
 
     if ctx.plan.fallback_mark_positioning {
         ot_shape_fallback::position_marks(

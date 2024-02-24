@@ -12,6 +12,7 @@ use super::hb_mask_t;
 use super::ot_layout::LayoutTable;
 use super::ot_layout::*;
 use super::ot_layout_common::*;
+use super::unicode::hb_unicode_general_category_t;
 
 /// Value represents glyph id.
 pub fn match_glyph(glyph: GlyphId, value: u16) -> bool {
@@ -1111,5 +1112,129 @@ impl<'a, 'b> hb_ot_apply_context_t<'a, 'b> {
     pub fn output_glyph_for_component(&mut self, glyph_id: GlyphId, class_guess: GlyphPropsFlags) {
         self.set_glyph_class(glyph_id, class_guess, false, true);
         self.buffer.output_glyph(u32::from(glyph_id.0));
+    }
+}
+
+pub fn ligate_input(
+    ctx: &mut hb_ot_apply_context_t,
+    // Including the first glyph
+    count: usize,
+    // Including the first glyph
+    match_positions: &[usize; MAX_CONTEXT_LENGTH],
+    match_end: usize,
+    total_component_count: u8,
+    lig_glyph: GlyphId,
+) {
+    // - If a base and one or more marks ligate, consider that as a base, NOT
+    //   ligature, such that all following marks can still attach to it.
+    //   https://github.com/harfbuzz/harfbuzz/issues/1109
+    //
+    // - If all components of the ligature were marks, we call this a mark ligature.
+    //   If it *is* a mark ligature, we don't allocate a new ligature id, and leave
+    //   the ligature to keep its old ligature id.  This will allow it to attach to
+    //   a base ligature in GPOS.  Eg. if the sequence is: LAM,LAM,SHADDA,FATHA,HEH,
+    //   and LAM,LAM,HEH for a ligature, they will leave SHADDA and FATHA with a
+    //   ligature id and component value of 2.  Then if SHADDA,FATHA form a ligature
+    //   later, we don't want them to lose their ligature id/component, otherwise
+    //   GPOS will fail to correctly position the mark ligature on top of the
+    //   LAM,LAM,HEH ligature.  See:
+    //     https://bugzilla.gnome.org/show_bug.cgi?id=676343
+    //
+    // - If a ligature is formed of components that some of which are also ligatures
+    //   themselves, and those ligature components had marks attached to *their*
+    //   components, we have to attach the marks to the new ligature component
+    //   positions!  Now *that*'s tricky!  And these marks may be following the
+    //   last component of the whole sequence, so we should loop forward looking
+    //   for them and update them.
+    //
+    //   Eg. the sequence is LAM,LAM,SHADDA,FATHA,HEH, and the font first forms a
+    //   'calt' ligature of LAM,HEH, leaving the SHADDA and FATHA with a ligature
+    //   id and component == 1.  Now, during 'liga', the LAM and the LAM-HEH ligature
+    //   form a LAM-LAM-HEH ligature.  We need to reassign the SHADDA and FATHA to
+    //   the new ligature with a component value of 2.
+    //
+    //   This in fact happened to a font...  See:
+    //   https://bugzilla.gnome.org/show_bug.cgi?id=437633
+    //
+
+    let mut buffer = &mut ctx.buffer;
+    buffer.merge_clusters(buffer.idx, match_end);
+
+    let mut is_base_ligature = _hb_glyph_info_is_base_glyph(&buffer.info[match_positions[0]]);
+    let mut is_mark_ligature = _hb_glyph_info_is_mark(&buffer.info[match_positions[0]]);
+    for i in 1..count {
+        if !_hb_glyph_info_is_mark(&buffer.info[match_positions[i]]) {
+            is_base_ligature = false;
+            is_mark_ligature = false;
+        }
+    }
+
+    let is_ligature = !is_base_ligature && !is_mark_ligature;
+    let class = if is_ligature {
+        GlyphPropsFlags::LIGATURE
+    } else {
+        GlyphPropsFlags::empty()
+    };
+    let lig_id = if is_ligature {
+        buffer.allocate_lig_id()
+    } else {
+        0
+    };
+    let first = buffer.cur_mut(0);
+    let mut last_lig_id = _hb_glyph_info_get_lig_id(first);
+    let mut last_num_comps = _hb_glyph_info_get_lig_num_comps(first);
+    let mut comps_so_far = last_num_comps;
+
+    if is_ligature {
+        _hb_glyph_info_set_lig_props_for_ligature(first, lig_id, total_component_count);
+        if _hb_glyph_info_get_general_category(first)
+            == hb_unicode_general_category_t::NonspacingMark
+        {
+            _hb_glyph_info_set_general_category(first, hb_unicode_general_category_t::OtherLetter);
+        }
+    }
+
+    ctx.replace_glyph_with_ligature(lig_glyph, class);
+    buffer = &mut ctx.buffer;
+
+    for i in 1..count {
+        while buffer.idx < match_positions[i] && buffer.successful {
+            if is_ligature {
+                let cur = buffer.cur_mut(0);
+                let mut this_comp = _hb_glyph_info_get_lig_comp(cur);
+                if this_comp == 0 {
+                    this_comp = last_num_comps;
+                }
+                let new_lig_comp = comps_so_far - last_num_comps + this_comp.min(last_num_comps);
+                _hb_glyph_info_set_lig_props_for_mark(cur, lig_id, new_lig_comp);
+            }
+            buffer.next_glyph();
+        }
+
+        let cur = buffer.cur(0);
+        last_lig_id = _hb_glyph_info_get_lig_id(cur);
+        last_num_comps = _hb_glyph_info_get_lig_num_comps(cur);
+        comps_so_far += last_num_comps;
+
+        // Skip the base glyph.
+        buffer.idx += 1;
+    }
+
+    if !is_mark_ligature && last_lig_id != 0 {
+        // Re-adjust components for any marks following.
+        for i in buffer.idx..buffer.len {
+            let info = &mut buffer.info[i];
+            if last_lig_id != _hb_glyph_info_get_lig_id(info) {
+                break;
+            }
+
+            let this_comp = _hb_glyph_info_get_lig_comp(info);
+            if this_comp == 0 {
+                break;
+            }
+
+            let new_lig_comp = comps_so_far - last_num_comps + this_comp.min(last_num_comps);
+            _hb_glyph_info_set_lig_props_for_mark(info, lig_id, new_lig_comp)
+        }
     }
 }
