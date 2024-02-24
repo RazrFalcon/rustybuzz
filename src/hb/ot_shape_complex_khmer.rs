@@ -3,7 +3,6 @@ use alloc::boxed::Box;
 use super::ot_shape::*;
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::feature;
 use crate::hb::ot_map::FeatureFlags;
 use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_complex_indic::{category, position};
@@ -32,30 +31,27 @@ const KHMER_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
     // Basic features.
     // These features are applied all at once, before reordering, constrained
     // to the syllable.
-    (feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::BELOW_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::ABOVE_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::POST_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (
-        feature::CONJUNCT_FORM_AFTER_RO,
-        FeatureFlags::MANUAL_JOINERS,
-    ),
+    (hb_tag_t::from_bytes(b"pref"), FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"blwf"), FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"abvf"), FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"pstf"), FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"cfar"), FeatureFlags::MANUAL_JOINERS),
     // Other features.
     // These features are applied all at once after clearing syllables.
     (
-        feature::PRE_BASE_SUBSTITUTIONS,
+        hb_tag_t::from_bytes(b"pres"),
         FeatureFlags::GLOBAL_MANUAL_JOINERS,
     ),
     (
-        feature::ABOVE_BASE_SUBSTITUTIONS,
+        hb_tag_t::from_bytes(b"abvs"),
         FeatureFlags::GLOBAL_MANUAL_JOINERS,
     ),
     (
-        feature::BELOW_BASE_SUBSTITUTIONS,
+        hb_tag_t::from_bytes(b"blws"),
         FeatureFlags::GLOBAL_MANUAL_JOINERS,
     ),
     (
-        feature::POST_BASE_SUBSTITUTIONS,
+        hb_tag_t::from_bytes(b"psts"),
         FeatureFlags::GLOBAL_MANUAL_JOINERS,
     ),
 ];
@@ -138,12 +134,10 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // https://github.com/harfbuzz/harfbuzz/issues/974
     planner
         .ot_map
-        .enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
-    planner.ot_map.enable_feature(
-        feature::GLYPH_COMPOSITION_DECOMPOSITION,
-        FeatureFlags::empty(),
-        1,
-    );
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
 
     for feature in KHMER_FEATURES.iter().take(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
@@ -298,9 +292,11 @@ fn override_features(planner: &mut hb_ot_shape_planner_t) {
     // typographical correctness.", hence in overrides...
     planner
         .ot_map
-        .enable_feature(feature::CONTEXTUAL_LIGATURES, FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"clig"), FeatureFlags::empty(), 1);
 
-    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
+    planner
+        .ot_map
+        .disable_feature(hb_tag_t::from_bytes(b"liga"));
 }
 
 fn decompose(_: &hb_ot_shape_normalize_context_t, ab: char) -> Option<(char, char)> {

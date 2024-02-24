@@ -9,7 +9,6 @@ use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::*;
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
-use crate::hb::feature;
 
 pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -30,13 +29,13 @@ pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
 const ARABIC_HAS_STCH: BufferScratchFlags = BufferScratchFlags::COMPLEX0;
 
 const ARABIC_FEATURES: &[hb_tag_t] = &[
-    feature::ISOLATED_FORMS,
-    feature::TERMINAL_FORMS_1,
-    feature::TERMINAL_FORMS_2,
-    feature::TERMINAL_FORMS_3,
-    feature::MEDIAL_FORMS_1,
-    feature::MEDIAL_FORMS_2,
-    feature::INITIAL_FORMS,
+    hb_tag_t::from_bytes(b"isol"),
+    hb_tag_t::from_bytes(b"fina"),
+    hb_tag_t::from_bytes(b"fin2"),
+    hb_tag_t::from_bytes(b"fin3"),
+    hb_tag_t::from_bytes(b"medi"),
+    hb_tag_t::from_bytes(b"med2"),
+    hb_tag_t::from_bytes(b"init"),
 ];
 
 fn feature_is_syriac(tag: hb_tag_t) -> bool {
@@ -166,10 +165,7 @@ pub struct ArabicShapePlan {
 
 impl ArabicShapePlan {
     pub fn new(plan: &hb_ot_shape_plan_t) -> ArabicShapePlan {
-        let has_stch = plan
-            .ot_map
-            .get_1_mask(feature::STRETCHING_GLYPH_DECOMPOSITION)
-            != 0;
+        let has_stch = plan.ot_map.get_1_mask(hb_tag_t::from_bytes(b"stch")) != 0;
 
         let mut mask_array = [0; ARABIC_FEATURES.len() + 1];
         for i in 0..ARABIC_FEATURES.len() {
@@ -205,21 +201,17 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // A pause after calt is required to make KFGQPC Uthmanic Script HAFS
     // work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
 
-    planner.ot_map.enable_feature(
-        feature::STRETCHING_GLYPH_DECOMPOSITION,
-        FeatureFlags::empty(),
-        1,
-    );
-    planner.ot_map.add_gsub_pause(Some(record_stch));
-
-    planner.ot_map.enable_feature(
-        feature::GLYPH_COMPOSITION_DECOMPOSITION,
-        FeatureFlags::empty(),
-        1,
-    );
     planner
         .ot_map
-        .enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"stch"), FeatureFlags::empty(), 1);
+    planner.ot_map.add_gsub_pause(Some(record_stch));
+
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
 
     planner.ot_map.add_gsub_pause(None);
 
@@ -239,7 +231,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // the main ligating features as MANUAL_ZWJ.
 
     planner.ot_map.enable_feature(
-        feature::REQUIRED_LIGATURES,
+        hb_tag_t::from_bytes(b"rlig"),
         FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK,
         1,
     );
@@ -250,14 +242,12 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     // No pause after rclt.
     // See 98460779bae19e4d64d29461ff154b3527bf8420
-    planner.ot_map.enable_feature(
-        feature::REQUIRED_CONTEXTUAL_ALTERNATES,
-        FeatureFlags::MANUAL_ZWJ,
-        1,
-    );
     planner
         .ot_map
-        .enable_feature(feature::CONTEXTUAL_ALTERNATES, FeatureFlags::MANUAL_ZWJ, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"rclt"), FeatureFlags::MANUAL_ZWJ, 1);
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"calt"), FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(None);
 
     // The spec includes 'cswh'.  Earlier versions of Windows
@@ -270,11 +260,9 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // Test case: U+0643,U+0640,U+0631.
 
     // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, FeatureFlags::empty(), 1);
-    planner.ot_map.enable_feature(
-        feature::MARK_POSITIONING_VIA_SUBSTITUTION,
-        FeatureFlags::empty(),
-        1,
-    );
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"mset"), FeatureFlags::empty(), 1);
 }
 
 fn fallback_shape(_: &hb_ot_shape_plan_t, _: &hb_font_t, _: &mut hb_buffer_t) {}

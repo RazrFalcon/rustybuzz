@@ -1,5 +1,4 @@
 use super::aat_map;
-use super::feature;
 use super::ot_layout::TableIndex;
 use super::ot_map::hb_ot_map_builder_t;
 use super::ot_map::{hb_ot_map_t, FeatureFlags};
@@ -64,67 +63,67 @@ impl<'a> hb_ot_shape_planner_t<'a> {
 
     pub fn collect_features(&mut self, user_features: &[Feature]) {
         const COMMON_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
-            (feature::ABOVE_BASE_MARK_POSITIONING, FeatureFlags::GLOBAL),
-            (feature::BELOW_BASE_MARK_POSITIONING, FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"abvm"), FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"blwm"), FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"locl"), FeatureFlags::GLOBAL),
             (
-                feature::GLYPH_COMPOSITION_DECOMPOSITION,
-                FeatureFlags::GLOBAL,
-            ),
-            (feature::LOCALIZED_FORMS, FeatureFlags::GLOBAL),
-            (
-                feature::MARK_POSITIONING,
+                hb_tag_t::from_bytes(b"mark"),
                 FeatureFlags::GLOBAL_MANUAL_JOINERS,
             ),
             (
-                feature::MARK_TO_MARK_POSITIONING,
+                hb_tag_t::from_bytes(b"mkmk"),
                 FeatureFlags::GLOBAL_MANUAL_JOINERS,
             ),
-            (feature::REQUIRED_LIGATURES, FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"rlig"), FeatureFlags::GLOBAL),
         ];
 
         const HORIZONTAL_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
-            (feature::CONTEXTUAL_ALTERNATES, FeatureFlags::GLOBAL),
-            (feature::CONTEXTUAL_LIGATURES, FeatureFlags::GLOBAL),
-            (feature::CURSIVE_POSITIONING, FeatureFlags::GLOBAL),
-            (feature::DISTANCES, FeatureFlags::GLOBAL),
-            (feature::KERNING, FeatureFlags::GLOBAL_HAS_FALLBACK),
-            (feature::STANDARD_LIGATURES, FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"calt"), FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"clig"), FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"curs"), FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"dist"), FeatureFlags::GLOBAL),
             (
-                feature::REQUIRED_CONTEXTUAL_ALTERNATES,
-                FeatureFlags::GLOBAL,
+                hb_tag_t::from_bytes(b"kern"),
+                FeatureFlags::GLOBAL_HAS_FALLBACK,
             ),
+            (hb_tag_t::from_bytes(b"liga"), FeatureFlags::GLOBAL),
+            (hb_tag_t::from_bytes(b"rclt"), FeatureFlags::GLOBAL),
         ];
 
         let empty = FeatureFlags::empty();
 
         self.ot_map
-            .enable_feature(feature::REQUIRED_VARIATION_ALTERNATES, empty, 1);
+            .enable_feature(hb_tag_t::from_bytes(b"rvrn"), empty, 1);
         self.ot_map.add_gsub_pause(None);
 
         match self.direction {
             Direction::LeftToRight => {
                 self.ot_map
-                    .enable_feature(feature::LEFT_TO_RIGHT_ALTERNATES, empty, 1);
+                    .enable_feature(hb_tag_t::from_bytes(b"ltra"), empty, 1);
                 self.ot_map
-                    .enable_feature(feature::LEFT_TO_RIGHT_MIRRORED_FORMS, empty, 1);
+                    .enable_feature(hb_tag_t::from_bytes(b"ltrm"), empty, 1);
             }
             Direction::RightToLeft => {
                 self.ot_map
-                    .enable_feature(feature::RIGHT_TO_LEFT_ALTERNATES, empty, 1);
+                    .enable_feature(hb_tag_t::from_bytes(b"rtla"), empty, 1);
                 self.ot_map
-                    .add_feature(feature::RIGHT_TO_LEFT_MIRRORED_FORMS, empty, 1);
+                    .add_feature(hb_tag_t::from_bytes(b"rtlm"), empty, 1);
             }
             _ => {}
         }
 
         // Automatic fractions.
-        self.ot_map.add_feature(feature::FRACTIONS, empty, 1);
-        self.ot_map.add_feature(feature::NUMERATORS, empty, 1);
-        self.ot_map.add_feature(feature::DENOMINATORS, empty, 1);
+        self.ot_map
+            .add_feature(hb_tag_t::from_bytes(b"frac"), empty, 1);
+        self.ot_map
+            .add_feature(hb_tag_t::from_bytes(b"numr"), empty, 1);
+        self.ot_map
+            .add_feature(hb_tag_t::from_bytes(b"dnom"), empty, 1);
 
         // Random!
         self.ot_map.enable_feature(
-            feature::RANDOMIZE,
+            hb_tag_t::from_bytes(b"rand"),
             FeatureFlags::RANDOM,
             hb_ot_map_t::MAX_VALUE,
         );
@@ -166,8 +165,11 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             // matter which script/langsys it is listed (or not) under.
             // See various bugs referenced from:
             // https://github.com/harfbuzz/harfbuzz/issues/63
-            self.ot_map
-                .enable_feature(feature::VERTICAL_WRITING, FeatureFlags::GLOBAL_SEARCH, 1);
+            self.ot_map.enable_feature(
+                hb_tag_t::from_bytes(b"vert"),
+                FeatureFlags::GLOBAL_SEARCH,
+                1,
+            );
         }
 
         for feature in user_features {
@@ -200,19 +202,19 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             aat_map::hb_aat_map_t::default()
         };
 
-        let frac_mask = ot_map.get_1_mask(feature::FRACTIONS);
-        let numr_mask = ot_map.get_1_mask(feature::NUMERATORS);
-        let dnom_mask = ot_map.get_1_mask(feature::DENOMINATORS);
+        let frac_mask = ot_map.get_1_mask(hb_tag_t::from_bytes(b"frac"));
+        let numr_mask = ot_map.get_1_mask(hb_tag_t::from_bytes(b"numr"));
+        let dnom_mask = ot_map.get_1_mask(hb_tag_t::from_bytes(b"dnom"));
         let has_frac = frac_mask != 0 || (numr_mask != 0 && dnom_mask != 0);
 
-        let rtlm_mask = ot_map.get_1_mask(feature::RIGHT_TO_LEFT_MIRRORED_FORMS);
-        let has_vert = ot_map.get_1_mask(feature::VERTICAL_WRITING) != 0;
+        let rtlm_mask = ot_map.get_1_mask(hb_tag_t::from_bytes(b"rtlm"));
+        let has_vert = ot_map.get_1_mask(hb_tag_t::from_bytes(b"vert")) != 0;
 
         let horizontal = self.direction.is_horizontal();
         let kern_tag = if horizontal {
-            feature::KERNING
+            hb_tag_t::from_bytes(b"kern")
         } else {
-            feature::VERTICAL_KERNING
+            hb_tag_t::from_bytes(b"vkrn")
         };
         let kern_mask = ot_map.get_mask(kern_tag).0;
         let requested_kerning = kern_mask != 0;
@@ -265,7 +267,7 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             && !apply_kerx
             && (!apply_kern || !super::kerning::has_machine_kerning(self.face));
 
-        let has_gpos_mark = ot_map.get_1_mask(feature::MARK_POSITIONING) != 0;
+        let has_gpos_mark = ot_map.get_1_mask(hb_tag_t::from_bytes(b"mark")) != 0;
 
         let mut adjust_mark_positioning_when_zeroing = !apply_gpos
             && !apply_kerx

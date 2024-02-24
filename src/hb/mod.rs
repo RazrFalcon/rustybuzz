@@ -12,7 +12,6 @@ mod aat_layout_trak_table;
 mod aat_map;
 pub mod common;
 pub mod face;
-mod feature;
 mod glyph_set;
 mod kerning;
 mod machine_cursor;

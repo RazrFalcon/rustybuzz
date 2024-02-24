@@ -3,7 +3,6 @@ use alloc::boxed::Box;
 use super::ot_shape::*;
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::feature;
 use crate::hb::ot_layout::*;
 use crate::hb::ot_map::FeatureFlags;
 use crate::hb::ot_shape_complex::*;
@@ -104,20 +103,20 @@ pub mod category {
 // These features are applied all at once, before reordering,
 // constrained to the syllable.
 const BASIC_FEATURES: &[hb_tag_t] = &[
-    feature::RAKAR_FORMS,
-    feature::ABOVE_BASE_FORMS,
-    feature::BELOW_BASE_FORMS,
-    feature::HALF_FORMS,
-    feature::POST_BASE_FORMS,
-    feature::VATTU_VARIANTS,
-    feature::CONJUNCT_FORMS,
+    hb_tag_t::from_bytes(b"rkrf"),
+    hb_tag_t::from_bytes(b"abvf"),
+    hb_tag_t::from_bytes(b"blwf"),
+    hb_tag_t::from_bytes(b"half"),
+    hb_tag_t::from_bytes(b"pstf"),
+    hb_tag_t::from_bytes(b"vatu"),
+    hb_tag_t::from_bytes(b"cjct"),
 ];
 
 const TOPOGRAPHICAL_FEATURES: &[hb_tag_t] = &[
-    feature::ISOLATED_FORMS,
-    feature::INITIAL_FORMS,
-    feature::MEDIAL_FORMS_1,
-    feature::TERMINAL_FORMS_1,
+    hb_tag_t::from_bytes(b"isol"),
+    hb_tag_t::from_bytes(b"init"),
+    hb_tag_t::from_bytes(b"medi"),
+    hb_tag_t::from_bytes(b"fina"),
 ];
 
 // Same order as use_topographical_features.
@@ -131,11 +130,11 @@ enum JoiningForm {
 
 // These features are applied all at once, after reordering and clearing syllables.
 const OTHER_FEATURES: &[hb_tag_t] = &[
-    feature::ABOVE_BASE_SUBSTITUTIONS,
-    feature::BELOW_BASE_SUBSTITUTIONS,
-    feature::HALANT_FORMS,
-    feature::PRE_BASE_SUBSTITUTIONS,
-    feature::POST_BASE_SUBSTITUTIONS,
+    hb_tag_t::from_bytes(b"abvs"),
+    hb_tag_t::from_bytes(b"blws"),
+    hb_tag_t::from_bytes(b"haln"),
+    hb_tag_t::from_bytes(b"pres"),
+    hb_tag_t::from_bytes(b"psts"),
 ];
 
 impl hb_glyph_info_t {
@@ -168,7 +167,7 @@ impl UniversalShapePlan {
         }
 
         UniversalShapePlan {
-            rphf_mask: plan.ot_map.get_1_mask(feature::REPH_FORMS),
+            rphf_mask: plan.ot_map.get_1_mask(hb_tag_t::from_bytes(b"rphf")),
             arabic_plan,
         }
     }
@@ -181,18 +180,16 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // Default glyph pre-processing group
     planner
         .ot_map
-        .enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
-    planner.ot_map.enable_feature(
-        feature::GLYPH_COMPOSITION_DECOMPOSITION,
-        FeatureFlags::empty(),
-        1,
-    );
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
     planner
         .ot_map
-        .enable_feature(feature::NUKTA_FORMS, FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
     planner
         .ot_map
-        .enable_feature(feature::AKHANDS, FeatureFlags::MANUAL_ZWJ, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"nukt"), FeatureFlags::empty(), 1);
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"akhn"), FeatureFlags::MANUAL_ZWJ, 1);
 
     // Reordering group
     planner
@@ -200,14 +197,14 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
         .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_substitution_flags));
     planner
         .ot_map
-        .add_feature(feature::REPH_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
+        .add_feature(hb_tag_t::from_bytes(b"rphf"), FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_rphf));
     planner
         .ot_map
         .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_substitution_flags));
     planner
         .ot_map
-        .enable_feature(feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_ZWJ, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"pref"), FeatureFlags::MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_pref));
 
     // Orthographic unit shaping group

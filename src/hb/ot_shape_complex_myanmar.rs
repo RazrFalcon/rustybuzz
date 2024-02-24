@@ -1,6 +1,5 @@
 use super::ot_shape::*;
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::feature;
 use crate::hb::ot_map::FeatureFlags;
 use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_complex_indic::{category, position};
@@ -50,16 +49,16 @@ const MYANMAR_FEATURES: &[hb_tag_t] = &[
     // Basic features.
     // These features are applied in order, one at a time, after reordering,
     // constrained to the syllable.
-    feature::REPH_FORMS,
-    feature::PRE_BASE_FORMS,
-    feature::BELOW_BASE_FORMS,
-    feature::POST_BASE_FORMS,
+    hb_tag_t::from_bytes(b"rphf"),
+    hb_tag_t::from_bytes(b"pref"),
+    hb_tag_t::from_bytes(b"blwf"),
+    hb_tag_t::from_bytes(b"pstf"),
     // Other features.
     // These features are applied all at once after clearing syllables.
-    feature::PRE_BASE_SUBSTITUTIONS,
-    feature::ABOVE_BASE_SUBSTITUTIONS,
-    feature::BELOW_BASE_SUBSTITUTIONS,
-    feature::POST_BASE_SUBSTITUTIONS,
+    hb_tag_t::from_bytes(b"pres"),
+    hb_tag_t::from_bytes(b"abvs"),
+    hb_tag_t::from_bytes(b"blws"),
+    hb_tag_t::from_bytes(b"psts"),
 ];
 
 impl hb_glyph_info_t {
@@ -147,14 +146,12 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner
         .ot_map
-        .enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.ot_map.enable_feature(
-        feature::GLYPH_COMPOSITION_DECOMPOSITION,
-        FeatureFlags::empty(),
-        1,
-    );
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
 
     planner.ot_map.add_gsub_pause(Some(reorder));
 

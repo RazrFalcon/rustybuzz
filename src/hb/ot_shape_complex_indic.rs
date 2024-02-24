@@ -8,7 +8,6 @@ use ttf_parser::GlyphId;
 use super::ot_shape::*;
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::feature;
 use crate::hb::ot_layout::*;
 use crate::hb::ot_layout_gsubgpos::{WouldApply, WouldApplyContext};
 use crate::hb::ot_map::*;
@@ -159,40 +158,58 @@ const INDIC_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
     // Basic features.
     // These features are applied in order, one at a time, after initial_reordering,
     // constrained to the syllable.
-    (feature::NUKTA_FORMS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (feature::AKHANDS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (feature::REPH_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::RAKAR_FORMS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (feature::PRE_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::BELOW_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::ABOVE_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::HALF_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::POST_BASE_FORMS, FeatureFlags::MANUAL_JOINERS),
-    (feature::VATTU_VARIANTS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
-    (feature::CONJUNCT_FORMS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
+    (
+        hb_tag_t::from_bytes(b"nukt"),
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
+    (
+        hb_tag_t::from_bytes(b"akhn"),
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
+    (hb_tag_t::from_bytes(b"rphf"), FeatureFlags::MANUAL_JOINERS),
+    (
+        hb_tag_t::from_bytes(b"rkrf"),
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
+    (hb_tag_t::from_bytes(b"pref"), FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"blwf"), FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"abvf"), FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"half"), FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"pstf"), FeatureFlags::MANUAL_JOINERS),
+    (
+        hb_tag_t::from_bytes(b"vatu"),
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
+    (
+        hb_tag_t::from_bytes(b"cjct"),
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
     // Other features.
     // These features are applied all at once, after final_reordering, constrained
     // to the syllable.
     // Default Bengali font in Windows for example has intermixed
     // lookups for init,pres,abvs,blws features.
-    (feature::INITIAL_FORMS, FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"init"), FeatureFlags::MANUAL_JOINERS),
     (
-        feature::PRE_BASE_SUBSTITUTIONS,
+        hb_tag_t::from_bytes(b"pres"),
         FeatureFlags::GLOBAL_MANUAL_JOINERS,
     ),
     (
-        feature::ABOVE_BASE_SUBSTITUTIONS,
+        hb_tag_t::from_bytes(b"abvs"),
         FeatureFlags::GLOBAL_MANUAL_JOINERS,
     ),
     (
-        feature::BELOW_BASE_SUBSTITUTIONS,
+        hb_tag_t::from_bytes(b"blws"),
         FeatureFlags::GLOBAL_MANUAL_JOINERS,
     ),
     (
-        feature::POST_BASE_SUBSTITUTIONS,
+        hb_tag_t::from_bytes(b"psts"),
         FeatureFlags::GLOBAL_MANUAL_JOINERS,
     ),
-    (feature::HALANT_FORMS, FeatureFlags::GLOBAL_MANUAL_JOINERS),
+    (
+        hb_tag_t::from_bytes(b"haln"),
+        FeatureFlags::GLOBAL_MANUAL_JOINERS,
+    ),
 ];
 
 // Must be in the same order as the INDIC_FEATURES array.
@@ -520,25 +537,29 @@ impl IndicShapePlan {
             config,
             is_old_spec,
             // virama_glyph,
-            rphf: IndicWouldSubstituteFeature::new(&plan.ot_map, feature::REPH_FORMS, zero_context),
+            rphf: IndicWouldSubstituteFeature::new(
+                &plan.ot_map,
+                hb_tag_t::from_bytes(b"rphf"),
+                zero_context,
+            ),
             pref: IndicWouldSubstituteFeature::new(
                 &plan.ot_map,
-                feature::PRE_BASE_FORMS,
+                hb_tag_t::from_bytes(b"pref"),
                 zero_context,
             ),
             blwf: IndicWouldSubstituteFeature::new(
                 &plan.ot_map,
-                feature::BELOW_BASE_FORMS,
+                hb_tag_t::from_bytes(b"blwf"),
                 zero_context,
             ),
             pstf: IndicWouldSubstituteFeature::new(
                 &plan.ot_map,
-                feature::POST_BASE_FORMS,
+                hb_tag_t::from_bytes(b"pstf"),
                 zero_context,
             ),
             vatu: IndicWouldSubstituteFeature::new(
                 &plan.ot_map,
-                feature::VATTU_VARIANTS,
+                hb_tag_t::from_bytes(b"vatu"),
                 zero_context,
             ),
             mask_array,
@@ -662,14 +683,12 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner
         .ot_map
-        .enable_feature(feature::LOCALIZED_FORMS, FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
-    planner.ot_map.enable_feature(
-        feature::GLYPH_COMPOSITION_DECOMPOSITION,
-        FeatureFlags::empty(),
-        1,
-    );
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
 
     planner.ot_map.add_gsub_pause(Some(initial_reordering));
 
@@ -689,7 +708,9 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 }
 
 fn override_features(planner: &mut hb_ot_shape_planner_t) {
-    planner.ot_map.disable_feature(feature::STANDARD_LIGATURES);
+    planner
+        .ot_map
+        .disable_feature(hb_tag_t::from_bytes(b"liga"));
 }
 
 fn preprocess_text(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {

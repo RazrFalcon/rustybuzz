@@ -2,12 +2,11 @@ use alloc::boxed::Box;
 
 use super::ot_shape::*;
 use crate::hb::buffer::{hb_buffer_t, BufferClusterLevel, BufferFlags};
-use crate::hb::feature;
 use crate::hb::ot_map::*;
 use crate::hb::ot_shape_complex::ComplexShaper;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
 use crate::hb::shape_plan::hb_ot_shape_plan_t;
-use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t};
+use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
 
 pub const HANGUL_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: Some(collect_features),
@@ -58,9 +57,9 @@ impl HangulShapePlan {
         HangulShapePlan {
             mask_array: [
                 0,
-                map.get_1_mask(feature::LEADING_JAMO_FORMS),
-                map.get_1_mask(feature::VOWEL_JAMO_FORMS),
-                map.get_1_mask(feature::TRAILING_JAMO_FORMS),
+                map.get_1_mask(hb_tag_t::from_bytes(b"ljmo")),
+                map.get_1_mask(hb_tag_t::from_bytes(b"vjmo")),
+                map.get_1_mask(hb_tag_t::from_bytes(b"tjmo")),
             ],
         }
     }
@@ -69,13 +68,13 @@ impl HangulShapePlan {
 fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     planner
         .ot_map
-        .add_feature(feature::LEADING_JAMO_FORMS, FeatureFlags::empty(), 1);
+        .add_feature(hb_tag_t::from_bytes(b"ljmo"), FeatureFlags::empty(), 1);
     planner
         .ot_map
-        .add_feature(feature::VOWEL_JAMO_FORMS, FeatureFlags::empty(), 1);
+        .add_feature(hb_tag_t::from_bytes(b"vjmo"), FeatureFlags::empty(), 1);
     planner
         .ot_map
-        .add_feature(feature::TRAILING_JAMO_FORMS, FeatureFlags::empty(), 1);
+        .add_feature(hb_tag_t::from_bytes(b"tjmo"), FeatureFlags::empty(), 1);
 }
 
 fn override_features(planner: &mut hb_ot_shape_planner_t) {
@@ -84,7 +83,7 @@ fn override_features(planner: &mut hb_ot_shape_planner_t) {
     // in calt, which is not desirable.
     planner
         .ot_map
-        .disable_feature(feature::CONTEXTUAL_ALTERNATES);
+        .disable_feature(hb_tag_t::from_bytes(b"calt"));
 }
 
 fn preprocess_text(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
