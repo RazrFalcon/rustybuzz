@@ -13,46 +13,70 @@ extern crate std;
 
 extern crate alloc;
 
-#[macro_use]
-mod buffer;
-mod aat;
-mod common;
-mod complex;
-mod face;
-mod fallback;
-mod glyph_set;
-mod normalize;
-mod ot;
-mod plan;
-mod shape;
-mod tag;
-mod tag_table;
-mod text_parser;
-mod unicode;
-mod unicode_norm;
+mod hb;
 
 pub use ttf_parser;
 
-pub use ttf_parser::Tag;
+pub use hb::buffer::hb_glyph_info_t as GlyphInfo;
+pub use hb::buffer::{GlyphBuffer, GlyphPosition, UnicodeBuffer};
+pub use hb::common::{script, Direction, Feature, Language, Script, Variation};
+pub use hb::face::hb_font_t as Face;
+pub use hb::ot_shape_plan::hb_ot_shape_plan_t as ShapePlan;
+pub use hb::shape::{shape, shape_with_plan};
 
-pub use crate::buffer::{
-    BufferClusterLevel, BufferFlags, GlyphBuffer, GlyphInfo, GlyphPosition, SerializeFlags,
-    UnicodeBuffer,
-};
-pub use crate::common::{script, Direction, Feature, Language, Script, Variation};
-pub use crate::face::Face;
-pub use crate::plan::ShapePlan;
-pub use crate::shape::{shape, shape_with_plan};
-
-type Mask = u32;
-
-fn round(x: f32) -> f32 {
-    #[cfg(feature = "std")]
-    {
-        x.round()
+bitflags::bitflags! {
+    /// Flags for buffers.
+    #[derive(Default, Debug, Clone, Copy)]
+    pub struct BufferFlags: u32 {
+        /// Indicates that special handling of the beginning of text paragraph can be applied to this buffer. Should usually be set, unless you are passing to the buffer only part of the text without the full context.
+        const BEGINNING_OF_TEXT             = 1 << 1;
+        /// Indicates that special handling of the end of text paragraph can be applied to this buffer, similar to [`BufferFlags::BEGINNING_OF_TEXT`].
+        const END_OF_TEXT                   = 1 << 2;
+        /// Indicates that characters with `Default_Ignorable` Unicode property should use the corresponding glyph from the font, instead of hiding them (done by replacing them with the space glyph and zeroing the advance width.) This flag takes precedence over [`BufferFlags::REMOVE_DEFAULT_IGNORABLES`].
+        const PRESERVE_DEFAULT_IGNORABLES   = 1 << 3;
+        /// Indicates that characters with `Default_Ignorable` Unicode property should be removed from glyph string instead of hiding them (done by replacing them with the space glyph and zeroing the advance width.) [`BufferFlags::PRESERVE_DEFAULT_IGNORABLES`] takes precedence over this flag.
+        const REMOVE_DEFAULT_IGNORABLES     = 1 << 4;
+        /// Indicates that a dotted circle should not be inserted in the rendering of incorrect character sequences (such as `<0905 093E>`).
+        const DO_NOT_INSERT_DOTTED_CIRCLE   = 1 << 5;
+        /// Indicates that the shape() call and its variants should perform various verification processes on the results of the shaping operation on the buffer. If the verification fails, then either a buffer message is sent, if a message handler is installed on the buffer, or a message is written to standard error. In either case, the shaping result might be modified to show the failed output.
+        const VERIFY                        = 1 << 6;
+        /// Indicates that the `UNSAFE_TO_CONCAT` glyph-flag should be produced by the shaper. By default it will not be produced since it incurs a cost.
+        const PRODUCE_UNSAFE_TO_CONCAT      = 1 << 7;
     }
-    #[cfg(not(feature = "std"))]
-    {
-        libm::roundf(x)
+}
+
+/// A cluster level.
+#[allow(missing_docs)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub enum BufferClusterLevel {
+    MonotoneGraphemes,
+    MonotoneCharacters,
+    Characters,
+}
+
+impl Default for BufferClusterLevel {
+    #[inline]
+    fn default() -> Self {
+        BufferClusterLevel::MonotoneGraphemes
+    }
+}
+
+bitflags::bitflags! {
+    /// Flags used for serialization with a `BufferSerializer`.
+    #[derive(Default)]
+    pub struct SerializeFlags: u8 {
+        /// Do not serialize glyph cluster.
+        const NO_CLUSTERS       = 0b00000001;
+        /// Do not serialize glyph position information.
+        const NO_POSITIONS      = 0b00000010;
+        /// Do no serialize glyph name.
+        const NO_GLYPH_NAMES    = 0b00000100;
+        /// Serialize glyph extents.
+        const GLYPH_EXTENTS     = 0b00001000;
+        /// Serialize glyph flags.
+        const GLYPH_FLAGS       = 0b00010000;
+        /// Do not serialize glyph advances, glyph offsets will reflect absolute
+        /// glyph positions.
+        const NO_ADVANCES       = 0b00100000;
     }
 }

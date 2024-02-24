@@ -50,7 +50,7 @@ make install
 Now we can convert our ragel scripts using:
 
 ```sh
-/path/to/ragel/install/bin/ragel-rust -e -F1 src/complex/indic_machine.rl # or any other .rl file
+/path/to/ragel/install/bin/ragel-rust -e -F1 src/hb/ot_shape_complex_indic_machine.rl # or any other .rl file
 ```
 
 That's it!

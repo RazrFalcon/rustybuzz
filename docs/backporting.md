@@ -100,23 +100,6 @@ all tests are passing.
 
 If not, then either your change was incorrect or there is a bug in `rustybuzz`.
 
-## Matching Source Files
-
-`harfbuzz` and `rustybuzz` use a slightly different sources structure and naming.
-
-A typical `harfbuzz` source file looks like `hb-ot-shaper-arabic.cc`.
-You can ignore the `hb-` prefix completely. `hb-ot-*` usually relates to either `src/*`
-or `src/complex/*` in `rustybuzz`. `hb-aat-*` is `src/aat/*`.
-
-Here are some examples:
-
-<!-- TODO: list all -->
-
-- `hb-buffer.cc`/`hb-buffer.hh` -> `buffer.rs`
-- `hb-ot-shaper-arabic.cc` -> `complex/arabic.rs`
-- `hb-ot-shaper-use.cc` -> `complex/universal.rs`
-- `hb-aat-map.cc`/`hb-aat-map.hh` -> `aat/map.rs`
-
 ## Commit Messages
 
 Make sure each `rustybuzz` commit contains a link to the related `harfbuzz` commit.
