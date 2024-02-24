@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use super::ot_shape::*;
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::ot_map::FeatureFlags;
+use crate::hb::ot_map::*;
 use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_complex_indic::{category, position};
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
@@ -27,33 +27,21 @@ pub const KHMER_SHAPER: ComplexShaper = ComplexShaper {
     fallback_position: false,
 };
 
-const KHMER_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
+const KHMER_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[
     // Basic features.
     // These features are applied all at once, before reordering, constrained
     // to the syllable.
-    (hb_tag_t::from_bytes(b"pref"), FeatureFlags::MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"blwf"), FeatureFlags::MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"abvf"), FeatureFlags::MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"pstf"), FeatureFlags::MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"cfar"), FeatureFlags::MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"pref"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"blwf"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"abvf"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"pstf"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"cfar"), F_MANUAL_JOINERS),
     // Other features.
     // These features are applied all at once after clearing syllables.
-    (
-        hb_tag_t::from_bytes(b"pres"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (
-        hb_tag_t::from_bytes(b"abvs"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (
-        hb_tag_t::from_bytes(b"blws"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (
-        hb_tag_t::from_bytes(b"psts"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
+    (hb_tag_t::from_bytes(b"pres"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"abvs"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"blws"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"psts"), F_GLOBAL_MANUAL_JOINERS),
 ];
 
 // Must be in the same order as the KHMER_FEATURES array.
@@ -107,7 +95,7 @@ impl KhmerShapePlan {
     fn new(plan: &hb_ot_shape_plan_t) -> Self {
         let mut mask_array = [0; KHMER_FEATURES.len()];
         for (i, feature) in KHMER_FEATURES.iter().enumerate() {
-            mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
+            mask_array[i] = if feature.1 & F_GLOBAL != 0 {
                 0
             } else {
                 plan.ot_map.get_1_mask(feature.0)
@@ -134,10 +122,10 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // https://github.com/harfbuzz/harfbuzz/issues/974
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
 
     for feature in KHMER_FEATURES.iter().take(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
@@ -292,7 +280,7 @@ fn override_features(planner: &mut hb_ot_shape_planner_t) {
     // typographical correctness.", hence in overrides...
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"clig"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"clig"), F_NONE, 1);
 
     planner
         .ot_map

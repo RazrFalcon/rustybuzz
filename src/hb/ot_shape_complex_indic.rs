@@ -154,62 +154,32 @@ pub enum MatraCategory {
     VisualOrderLeft,
 }
 
-const INDIC_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
+const INDIC_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[
     // Basic features.
     // These features are applied in order, one at a time, after initial_reordering,
     // constrained to the syllable.
-    (
-        hb_tag_t::from_bytes(b"nukt"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (
-        hb_tag_t::from_bytes(b"akhn"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (hb_tag_t::from_bytes(b"rphf"), FeatureFlags::MANUAL_JOINERS),
-    (
-        hb_tag_t::from_bytes(b"rkrf"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (hb_tag_t::from_bytes(b"pref"), FeatureFlags::MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"blwf"), FeatureFlags::MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"abvf"), FeatureFlags::MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"half"), FeatureFlags::MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"pstf"), FeatureFlags::MANUAL_JOINERS),
-    (
-        hb_tag_t::from_bytes(b"vatu"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (
-        hb_tag_t::from_bytes(b"cjct"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
+    (hb_tag_t::from_bytes(b"nukt"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"akhn"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"rphf"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"rkrf"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"pref"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"blwf"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"abvf"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"half"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"pstf"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"vatu"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"cjct"), F_GLOBAL_MANUAL_JOINERS),
     // Other features.
     // These features are applied all at once, after final_reordering, constrained
     // to the syllable.
     // Default Bengali font in Windows for example has intermixed
     // lookups for init,pres,abvs,blws features.
-    (hb_tag_t::from_bytes(b"init"), FeatureFlags::MANUAL_JOINERS),
-    (
-        hb_tag_t::from_bytes(b"pres"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (
-        hb_tag_t::from_bytes(b"abvs"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (
-        hb_tag_t::from_bytes(b"blws"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (
-        hb_tag_t::from_bytes(b"psts"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
-    (
-        hb_tag_t::from_bytes(b"haln"),
-        FeatureFlags::GLOBAL_MANUAL_JOINERS,
-    ),
+    (hb_tag_t::from_bytes(b"init"), F_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"pres"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"abvs"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"blws"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"psts"), F_GLOBAL_MANUAL_JOINERS),
+    (hb_tag_t::from_bytes(b"haln"), F_GLOBAL_MANUAL_JOINERS),
 ];
 
 // Must be in the same order as the INDIC_FEATURES array.
@@ -518,7 +488,7 @@ impl IndicShapePlan {
 
         let mut mask_array = [0; INDIC_FEATURES.len()];
         for (i, feature) in INDIC_FEATURES.iter().enumerate() {
-            mask_array[i] = if feature.1.contains(FeatureFlags::GLOBAL) {
+            mask_array[i] = if feature.1 & F_GLOBAL != 0 {
                 0
             } else {
                 plan.ot_map.get_1_mask(feature.0)
@@ -683,12 +653,12 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
 
     planner.ot_map.add_gsub_pause(Some(initial_reordering));
 

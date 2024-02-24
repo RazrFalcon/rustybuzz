@@ -1,6 +1,6 @@
 use super::ot_shape::*;
 use crate::hb::buffer::hb_buffer_t;
-use crate::hb::ot_map::FeatureFlags;
+use crate::hb::ot_map::*;
 use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_complex_indic::{category, position};
 use crate::hb::ot_shape_normalize::{
@@ -146,19 +146,17 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
 
     planner.ot_map.add_gsub_pause(Some(reorder));
 
     for feature in MYANMAR_FEATURES.iter().take(4) {
-        planner
-            .ot_map
-            .enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner.ot_map.enable_feature(*feature, F_MANUAL_ZWJ, 1);
         planner.ot_map.add_gsub_pause(None);
     }
 
@@ -167,9 +165,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
         .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_syllables));
 
     for feature in MYANMAR_FEATURES.iter().skip(4) {
-        planner
-            .ot_map
-            .enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner.ot_map.enable_feature(*feature, F_MANUAL_ZWJ, 1);
     }
 }
 

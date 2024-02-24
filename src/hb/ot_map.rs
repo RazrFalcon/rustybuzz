@@ -141,28 +141,17 @@ impl hb_ot_map_t {
     }
 }
 
-bitflags::bitflags! {
-    /// Flags used for serialization with a `BufferSerializer`.
-    #[derive(Default, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-    pub struct FeatureFlags: u32 {
-        /// Feature applies to all characters; results in no mask allocated for it.
-        const GLOBAL = 0x01;
-        /// Has fallback implementation, so include mask bit even if feature not found.
-        const HAS_FALLBACK = 0x02;
-        /// Don't skip over ZWNJ when matching **context**.
-        const MANUAL_ZWNJ = 0x04;
-        /// Don't skip over ZWJ when matching **input**.
-        const MANUAL_ZWJ = 0x08;
-        /// If feature not found in LangSys, look for it in global feature list and pick one.
-        const GLOBAL_SEARCH = 0x10;
-        /// Randomly select a glyph from an AlternateSubstFormat1 subtable.
-        const RANDOM = 0x20;
-
-        const MANUAL_JOINERS        = Self::MANUAL_ZWNJ.bits() | Self::MANUAL_ZWJ.bits();
-        const GLOBAL_MANUAL_JOINERS = Self::GLOBAL.bits() | Self::MANUAL_JOINERS.bits();
-        const GLOBAL_HAS_FALLBACK   = Self::GLOBAL.bits() | Self::HAS_FALLBACK.bits();
-    }
-}
+pub type hb_ot_map_feature_flags_t = u32;
+pub const F_NONE: u32 = 0x0000;
+pub const F_GLOBAL: u32 = 0x0001; /* Feature applies to all characters; results in no mask allocated for it. */
+pub const F_HAS_FALLBACK: u32 = 0x0002; /* Has fallback implementation, so include mask bit even if feature not found. */
+pub const F_MANUAL_ZWNJ: u32 = 0x0004; /* Don't skip over ZWNJ when matching **context**. */
+pub const F_MANUAL_ZWJ: u32 = 0x0008; /* Don't skip over ZWJ when matching **input**. */
+pub const F_MANUAL_JOINERS: u32 = F_MANUAL_ZWNJ | F_MANUAL_ZWJ;
+pub const F_GLOBAL_MANUAL_JOINERS: u32 = F_GLOBAL | F_MANUAL_JOINERS;
+pub const F_GLOBAL_HAS_FALLBACK: u32 = F_GLOBAL | F_HAS_FALLBACK;
+pub const F_GLOBAL_SEARCH: u32 = 0x0010; /* If feature not found in LangSys, look for it in global feature list and pick one. */
+pub const F_RANDOM: u32 = 0x0020; /* Randomly select a glyph from an AlternateSubstFormat1 subtable. */
 
 pub struct hb_ot_map_builder_t<'a> {
     face: &'a hb_font_t<'a>,
@@ -181,7 +170,7 @@ struct feature_info_t {
     // sequence number, used for stable sorting only
     seq: usize,
     max_value: u32,
-    flags: FeatureFlags,
+    flags: hb_ot_map_feature_flags_t,
     // for non-global features, what should the unset glyphs take
     default_value: u32,
     // GSUB/GPOS
@@ -239,7 +228,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
     }
 
     #[inline]
-    pub fn add_feature(&mut self, tag: hb_tag_t, flags: FeatureFlags, value: u32) {
+    pub fn add_feature(&mut self, tag: hb_tag_t, flags: hb_ot_map_feature_flags_t, value: u32) {
         if !tag.is_null() {
             let seq = self.feature_infos.len();
             self.feature_infos.push(feature_info_t {
@@ -247,24 +236,20 @@ impl<'a> hb_ot_map_builder_t<'a> {
                 seq,
                 max_value: value,
                 flags,
-                default_value: if flags.contains(FeatureFlags::GLOBAL) {
-                    value
-                } else {
-                    0
-                },
+                default_value: if flags & F_GLOBAL != 0 { value } else { 0 },
                 stage: self.current_stage,
             });
         }
     }
 
     #[inline]
-    pub fn enable_feature(&mut self, tag: hb_tag_t, flags: FeatureFlags, value: u32) {
-        self.add_feature(tag, flags | FeatureFlags::GLOBAL, value);
+    pub fn enable_feature(&mut self, tag: hb_tag_t, flags: hb_ot_map_feature_flags_t, value: u32) {
+        self.add_feature(tag, flags | F_GLOBAL, value);
     }
 
     #[inline]
     pub fn disable_feature(&mut self, tag: hb_tag_t) {
-        self.add_feature(tag, FeatureFlags::GLOBAL, 0);
+        self.add_feature(tag, F_GLOBAL, 0);
     }
 
     #[inline]
@@ -337,7 +322,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
         self.dedup_feature_infos();
 
         for info in &self.feature_infos {
-            let bits_needed = if info.flags.contains(FeatureFlags::GLOBAL) && info.max_value == 1 {
+            let bits_needed = if info.flags & F_GLOBAL != 0 && info.max_value == 1 {
                 // Uses the global bit.
                 0
             } else {
@@ -370,7 +355,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
                 }
             }
 
-            if !found && info.flags.contains(FeatureFlags::GLOBAL_SEARCH) {
+            if !found && info.flags & F_GLOBAL_SEARCH != 0 {
                 for (table_index, table) in self.face.layout_tables() {
                     if let Some(idx) = table.features.index(info.tag) {
                         feature_index[table_index] = Some(idx);
@@ -379,12 +364,11 @@ impl<'a> hb_ot_map_builder_t<'a> {
                 }
             }
 
-            if !found && !info.flags.contains(FeatureFlags::HAS_FALLBACK) {
+            if !found && !info.flags & F_HAS_FALLBACK != 0 {
                 continue;
             }
 
-            let (shift, mask) = if info.flags.contains(FeatureFlags::GLOBAL) && info.max_value == 1
-            {
+            let (shift, mask) = if info.flags & F_GLOBAL != 0 && info.max_value == 1 {
                 // Uses the global bit
                 (Self::GLOBAL_BIT_SHIFT, Self::GLOBAL_BIT_MASK)
             } else {
@@ -402,9 +386,9 @@ impl<'a> hb_ot_map_builder_t<'a> {
                 shift,
                 mask,
                 one_mask: (1 << shift) & mask,
-                auto_zwnj: !info.flags.contains(FeatureFlags::MANUAL_ZWNJ),
-                auto_zwj: !info.flags.contains(FeatureFlags::MANUAL_ZWJ),
-                random: info.flags.contains(FeatureFlags::RANDOM),
+                auto_zwnj: info.flags & F_MANUAL_ZWNJ == 0,
+                auto_zwj: info.flags & F_MANUAL_ZWJ == 0,
+                random: info.flags & F_RANDOM != 0,
             });
         }
 
@@ -425,19 +409,19 @@ impl<'a> hb_ot_map_builder_t<'a> {
                 j += 1;
                 feature_infos[j] = feature_infos[i];
             } else {
-                if feature_infos[i].flags.contains(FeatureFlags::GLOBAL) {
-                    feature_infos[j].flags |= FeatureFlags::GLOBAL;
+                if feature_infos[i].flags & F_GLOBAL != 0 {
+                    feature_infos[j].flags |= F_GLOBAL;
                     feature_infos[j].max_value = feature_infos[i].max_value;
                     feature_infos[j].default_value = feature_infos[i].default_value;
                 } else {
-                    if feature_infos[j].flags.contains(FeatureFlags::GLOBAL) {
-                        feature_infos[j].flags ^= FeatureFlags::GLOBAL;
+                    if feature_infos[j].flags & F_GLOBAL != 0 {
+                        feature_infos[j].flags ^= F_GLOBAL;
                     }
                     feature_infos[j].max_value =
                         feature_infos[j].max_value.max(feature_infos[i].max_value);
                     // Inherit default_value from j
                 }
-                let flags = feature_infos[i].flags & FeatureFlags::HAS_FALLBACK;
+                let flags = feature_infos[i].flags & F_HAS_FALLBACK;
                 feature_infos[j].flags |= flags;
                 feature_infos[j].stage[0] =
                     feature_infos[j].stage[0].min(feature_infos[i].stage[0]);

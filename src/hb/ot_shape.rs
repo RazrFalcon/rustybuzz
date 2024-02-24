@@ -1,7 +1,7 @@
 use super::aat_map;
 use super::ot_layout::TableIndex;
 use super::ot_map::hb_ot_map_builder_t;
-use super::ot_map::{hb_ot_map_t, FeatureFlags};
+use super::ot_map::*;
 use super::ot_shape_complex::*;
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::{hb_font_t, hb_tag_t};
@@ -62,36 +62,27 @@ impl<'a> hb_ot_shape_planner_t<'a> {
     }
 
     pub fn collect_features(&mut self, user_features: &[Feature]) {
-        const COMMON_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
-            (hb_tag_t::from_bytes(b"abvm"), FeatureFlags::GLOBAL),
-            (hb_tag_t::from_bytes(b"blwm"), FeatureFlags::GLOBAL),
-            (hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::GLOBAL),
-            (hb_tag_t::from_bytes(b"locl"), FeatureFlags::GLOBAL),
-            (
-                hb_tag_t::from_bytes(b"mark"),
-                FeatureFlags::GLOBAL_MANUAL_JOINERS,
-            ),
-            (
-                hb_tag_t::from_bytes(b"mkmk"),
-                FeatureFlags::GLOBAL_MANUAL_JOINERS,
-            ),
-            (hb_tag_t::from_bytes(b"rlig"), FeatureFlags::GLOBAL),
+        const COMMON_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[
+            (hb_tag_t::from_bytes(b"abvm"), F_GLOBAL),
+            (hb_tag_t::from_bytes(b"blwm"), F_GLOBAL),
+            (hb_tag_t::from_bytes(b"ccmp"), F_GLOBAL),
+            (hb_tag_t::from_bytes(b"locl"), F_GLOBAL),
+            (hb_tag_t::from_bytes(b"mark"), F_GLOBAL_MANUAL_JOINERS),
+            (hb_tag_t::from_bytes(b"mkmk"), F_GLOBAL_MANUAL_JOINERS),
+            (hb_tag_t::from_bytes(b"rlig"), F_GLOBAL),
         ];
 
-        const HORIZONTAL_FEATURES: &[(hb_tag_t, FeatureFlags)] = &[
-            (hb_tag_t::from_bytes(b"calt"), FeatureFlags::GLOBAL),
-            (hb_tag_t::from_bytes(b"clig"), FeatureFlags::GLOBAL),
-            (hb_tag_t::from_bytes(b"curs"), FeatureFlags::GLOBAL),
-            (hb_tag_t::from_bytes(b"dist"), FeatureFlags::GLOBAL),
-            (
-                hb_tag_t::from_bytes(b"kern"),
-                FeatureFlags::GLOBAL_HAS_FALLBACK,
-            ),
-            (hb_tag_t::from_bytes(b"liga"), FeatureFlags::GLOBAL),
-            (hb_tag_t::from_bytes(b"rclt"), FeatureFlags::GLOBAL),
+        const HORIZONTAL_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[
+            (hb_tag_t::from_bytes(b"calt"), F_GLOBAL),
+            (hb_tag_t::from_bytes(b"clig"), F_GLOBAL),
+            (hb_tag_t::from_bytes(b"curs"), F_GLOBAL),
+            (hb_tag_t::from_bytes(b"dist"), F_GLOBAL),
+            (hb_tag_t::from_bytes(b"kern"), F_GLOBAL_HAS_FALLBACK),
+            (hb_tag_t::from_bytes(b"liga"), F_GLOBAL),
+            (hb_tag_t::from_bytes(b"rclt"), F_GLOBAL),
         ];
 
-        let empty = FeatureFlags::empty();
+        let empty = F_NONE;
 
         self.ot_map
             .enable_feature(hb_tag_t::from_bytes(b"rvrn"), empty, 1);
@@ -124,7 +115,7 @@ impl<'a> hb_ot_shape_planner_t<'a> {
         // Random!
         self.ot_map.enable_feature(
             hb_tag_t::from_bytes(b"rand"),
-            FeatureFlags::RANDOM,
+            F_RANDOM,
             hb_ot_map_t::MAX_VALUE,
         );
 
@@ -132,7 +123,7 @@ impl<'a> hb_ot_shape_planner_t<'a> {
         // AAT 'trak' table using features.
         // https://github.com/harfbuzz/harfbuzz/issues/1303
         self.ot_map
-            .enable_feature(hb_tag_t::from_bytes(b"trak"), FeatureFlags::HAS_FALLBACK, 1);
+            .enable_feature(hb_tag_t::from_bytes(b"trak"), F_HAS_FALLBACK, 1);
 
         self.ot_map
             .enable_feature(hb_tag_t::from_bytes(b"Harf"), empty, 1); // Considered required.
@@ -165,19 +156,12 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             // matter which script/langsys it is listed (or not) under.
             // See various bugs referenced from:
             // https://github.com/harfbuzz/harfbuzz/issues/63
-            self.ot_map.enable_feature(
-                hb_tag_t::from_bytes(b"vert"),
-                FeatureFlags::GLOBAL_SEARCH,
-                1,
-            );
+            self.ot_map
+                .enable_feature(hb_tag_t::from_bytes(b"vert"), F_GLOBAL_SEARCH, 1);
         }
 
         for feature in user_features {
-            let flags = if feature.is_global() {
-                FeatureFlags::GLOBAL
-            } else {
-                empty
-            };
+            let flags = if feature.is_global() { F_GLOBAL } else { empty };
             self.ot_map.add_feature(feature.tag, flags, feature.value);
         }
 

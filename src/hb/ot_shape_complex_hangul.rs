@@ -68,13 +68,13 @@ impl HangulShapePlan {
 fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     planner
         .ot_map
-        .add_feature(hb_tag_t::from_bytes(b"ljmo"), FeatureFlags::empty(), 1);
+        .add_feature(hb_tag_t::from_bytes(b"ljmo"), F_NONE, 1);
     planner
         .ot_map
-        .add_feature(hb_tag_t::from_bytes(b"vjmo"), FeatureFlags::empty(), 1);
+        .add_feature(hb_tag_t::from_bytes(b"vjmo"), F_NONE, 1);
     planner
         .ot_map
-        .add_feature(hb_tag_t::from_bytes(b"tjmo"), FeatureFlags::empty(), 1);
+        .add_feature(hb_tag_t::from_bytes(b"tjmo"), F_NONE, 1);
 }
 
 fn override_features(planner: &mut hb_ot_shape_planner_t) {

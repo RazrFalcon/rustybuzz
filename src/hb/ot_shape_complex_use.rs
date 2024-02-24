@@ -4,7 +4,7 @@ use super::ot_shape::*;
 use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
 use crate::hb::buffer::hb_buffer_t;
 use crate::hb::ot_layout::*;
-use crate::hb::ot_map::FeatureFlags;
+use crate::hb::ot_map::*;
 use crate::hb::ot_shape_complex::*;
 use crate::hb::ot_shape_complex_arabic::ArabicShapePlan;
 use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
@@ -180,16 +180,16 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // Default glyph pre-processing group
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"nukt"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"nukt"), F_NONE, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"akhn"), FeatureFlags::MANUAL_ZWJ, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"akhn"), F_MANUAL_ZWJ, 1);
 
     // Reordering group
     planner
@@ -197,21 +197,19 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
         .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_substitution_flags));
     planner
         .ot_map
-        .add_feature(hb_tag_t::from_bytes(b"rphf"), FeatureFlags::MANUAL_ZWJ, 1);
+        .add_feature(hb_tag_t::from_bytes(b"rphf"), F_MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_rphf));
     planner
         .ot_map
         .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_substitution_flags));
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"pref"), FeatureFlags::MANUAL_ZWJ, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"pref"), F_MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(Some(record_pref));
 
     // Orthographic unit shaping group
     for feature in BASIC_FEATURES {
-        planner
-            .ot_map
-            .enable_feature(*feature, FeatureFlags::MANUAL_ZWJ, 1);
+        planner.ot_map.enable_feature(*feature, F_MANUAL_ZWJ, 1);
     }
 
     planner.ot_map.add_gsub_pause(Some(reorder));
@@ -221,17 +219,13 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {
-        planner
-            .ot_map
-            .add_feature(*feature, FeatureFlags::empty(), 1);
+        planner.ot_map.add_feature(*feature, F_NONE, 1);
     }
     planner.ot_map.add_gsub_pause(None);
 
     // Standard typographic presentation
     for feature in OTHER_FEATURES {
-        planner
-            .ot_map
-            .enable_feature(*feature, FeatureFlags::empty(), 1);
+        planner.ot_map.enable_feature(*feature, F_NONE, 1);
     }
 }
 

@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use super::buffer::{hb_buffer_t, BufferScratchFlags};
 use super::ot_layout::*;
-use super::ot_map::FeatureFlags;
+use super::ot_map::*;
 use super::ot_shape::*;
 use super::ot_shape_complex::*;
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
@@ -203,25 +203,21 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"stch"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"stch"), F_NONE, 1);
     planner.ot_map.add_gsub_pause(Some(record_stch));
 
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
 
     planner.ot_map.add_gsub_pause(None);
 
     for feature in ARABIC_FEATURES {
         let has_fallback = planner.script == Some(script::ARABIC) && !feature_is_syriac(*feature);
-        let flags = if has_fallback {
-            FeatureFlags::HAS_FALLBACK
-        } else {
-            FeatureFlags::empty()
-        };
+        let flags = if has_fallback { F_HAS_FALLBACK } else { F_NONE };
         planner.ot_map.add_feature(*feature, flags, 1);
         planner.ot_map.add_gsub_pause(None);
     }
@@ -232,7 +228,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner.ot_map.enable_feature(
         hb_tag_t::from_bytes(b"rlig"),
-        FeatureFlags::MANUAL_ZWJ | FeatureFlags::HAS_FALLBACK,
+        F_MANUAL_ZWJ | F_HAS_FALLBACK,
         1,
     );
 
@@ -244,10 +240,10 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // See 98460779bae19e4d64d29461ff154b3527bf8420
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"rclt"), FeatureFlags::MANUAL_ZWJ, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"rclt"), F_MANUAL_ZWJ, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"calt"), FeatureFlags::MANUAL_ZWJ, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"calt"), F_MANUAL_ZWJ, 1);
     planner.ot_map.add_gsub_pause(None);
 
     // The spec includes 'cswh'.  Earlier versions of Windows
@@ -259,10 +255,10 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // to fixup broken glyph sequences.  Oh well...
     // Test case: U+0643,U+0640,U+0631.
 
-    // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, FeatureFlags::empty(), 1);
+    // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, F_NONE, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"mset"), FeatureFlags::empty(), 1);
+        .enable_feature(hb_tag_t::from_bytes(b"mset"), F_NONE, 1);
 }
 
 fn fallback_shape(_: &hb_ot_shape_plan_t, _: &hb_font_t, _: &mut hb_buffer_t) {}
