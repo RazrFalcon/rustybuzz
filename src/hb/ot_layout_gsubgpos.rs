@@ -2,19 +2,16 @@
 
 use std::cmp::max;
 
-use ttf_parser::opentype_layout::LookupIndex;
-use ttf_parser::GlyphId;
-
-use crate::hb::buffer::hb_glyph_info_t;
-use crate::hb::buffer::{hb_buffer_t, GlyphPropsFlags};
-use crate::hb::hb_font_t;
-use crate::hb::hb_mask_t;
-use crate::hb::ot_layout::*;
-use crate::hb::ot_layout_common::*;
 use ttf_parser::opentype_layout::*;
-use ttf_parser::LazyArray16;
+use ttf_parser::{GlyphId, LazyArray16};
 
-pub type MatchFunc<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
+use super::buffer::hb_glyph_info_t;
+use super::buffer::{hb_buffer_t, GlyphPropsFlags};
+use super::hb_font_t;
+use super::hb_mask_t;
+use super::ot_layout::LayoutTable;
+use super::ot_layout::*;
+use super::ot_layout_common::*;
 
 /// Value represents glyph id.
 pub fn match_glyph(glyph: GlyphId, value: u16) -> bool {
@@ -425,17 +422,17 @@ impl Apply for ContextLookup<'_> {
 }
 
 trait SequenceRuleSetExt {
-    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &MatchFunc) -> Option<()>;
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &match_func_t) -> bool;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &match_func_t) -> Option<()>;
 }
 
 impl SequenceRuleSetExt for SequenceRuleSet<'_> {
-    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &match_func_t) -> bool {
         self.into_iter()
             .any(|rule| rule.would_apply(ctx, match_func))
     }
 
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &MatchFunc) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &match_func_t) -> Option<()> {
         if self
             .into_iter()
             .any(|rule| rule.apply(ctx, match_func).is_some())
@@ -448,12 +445,12 @@ impl SequenceRuleSetExt for SequenceRuleSet<'_> {
 }
 
 trait SequenceRuleExt {
-    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &MatchFunc) -> Option<()>;
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &match_func_t) -> bool;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &match_func_t) -> Option<()>;
 }
 
 impl SequenceRuleExt for SequenceRule<'_> {
-    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &match_func_t) -> bool {
         ctx.glyphs.len() == usize::from(self.input.len()) + 1
             && self
                 .input
@@ -462,7 +459,7 @@ impl SequenceRuleExt for SequenceRule<'_> {
                 .all(|(i, value)| match_func(ctx.glyphs[i + 1], value))
     }
 
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &MatchFunc) -> Option<()> {
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &match_func_t) -> Option<()> {
         apply_context(ctx, self.input, match_func, self.lookups)
     }
 }
@@ -614,17 +611,22 @@ impl Apply for ChainedContextLookup<'_> {
 }
 
 trait ChainRuleSetExt {
-    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&MatchFunc; 3]) -> Option<()>;
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &match_func_t) -> bool;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&match_func_t; 3])
+        -> Option<()>;
 }
 
 impl ChainRuleSetExt for ChainedSequenceRuleSet<'_> {
-    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &match_func_t) -> bool {
         self.into_iter()
             .any(|rule| rule.would_apply(ctx, match_func))
     }
 
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&MatchFunc; 3]) -> Option<()> {
+    fn apply(
+        &self,
+        ctx: &mut hb_ot_apply_context_t,
+        match_funcs: [&match_func_t; 3],
+    ) -> Option<()> {
         if self
             .into_iter()
             .any(|rule| rule.apply(ctx, match_funcs).is_some())
@@ -637,12 +639,13 @@ impl ChainRuleSetExt for ChainedSequenceRuleSet<'_> {
 }
 
 trait ChainRuleExt {
-    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool;
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&MatchFunc; 3]) -> Option<()>;
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &match_func_t) -> bool;
+    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&match_func_t; 3])
+        -> Option<()>;
 }
 
 impl ChainRuleExt for ChainedSequenceRule<'_> {
-    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &MatchFunc) -> bool {
+    fn would_apply(&self, ctx: &WouldApplyContext, match_func: &match_func_t) -> bool {
         (!ctx.zero_context || (self.backtrack.len() == 0 && self.lookahead.len() == 0))
             && (ctx.glyphs.len() == usize::from(self.input.len()) + 1
                 && self
@@ -652,7 +655,11 @@ impl ChainRuleExt for ChainedSequenceRule<'_> {
                     .all(|(i, value)| match_func(ctx.glyphs[i + 1], value)))
     }
 
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_funcs: [&MatchFunc; 3]) -> Option<()> {
+    fn apply(
+        &self,
+        ctx: &mut hb_ot_apply_context_t,
+        match_funcs: [&match_func_t; 3],
+    ) -> Option<()> {
         apply_chain_context(
             ctx,
             self.backtrack,
@@ -667,7 +674,7 @@ impl ChainRuleExt for ChainedSequenceRule<'_> {
 fn apply_context(
     ctx: &mut hb_ot_apply_context_t,
     input: LazyArray16<u16>,
-    match_func: &MatchFunc,
+    match_func: &match_func_t,
     lookups: LazyArray16<SequenceLookupRecord>,
 ) -> Option<()> {
     let match_func = |glyph, num_items| {
@@ -707,7 +714,7 @@ fn apply_chain_context(
     backtrack: LazyArray16<u16>,
     input: LazyArray16<u16>,
     lookahead: LazyArray16<u16>,
-    match_funcs: [&MatchFunc; 3],
+    match_funcs: [&match_func_t; 3],
     lookups: LazyArray16<SequenceLookupRecord>,
 ) -> Option<()> {
     // NOTE: Whenever something in this method changes, we also need to

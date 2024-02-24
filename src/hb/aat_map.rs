@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 
-use crate::hb::aat_layout::*;
-use crate::hb::{hb_font_t, hb_mask_t, hb_tag_t};
+use super::aat_layout::*;
+use super::{hb_font_t, hb_mask_t, hb_tag_t};
 
 #[derive(Default)]
 pub struct hb_aat_map_t {

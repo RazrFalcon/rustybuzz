@@ -16,7 +16,7 @@
     clippy::never_loop
 )]
 
-use crate::hb::buffer::hb_buffer_t;
+use super::buffer::hb_buffer_t;
 
 static _indic_syllable_machine_trans_keys: [u8; 284] = [
     7, 7, 3, 7, 4, 6, 4, 7, 3, 7, 5, 5, 14, 14, 3, 7, 3, 12, 3, 7, 7, 7, 4, 6, 4, 7, 3, 7, 5, 5,

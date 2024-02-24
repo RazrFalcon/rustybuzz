@@ -1,12 +1,12 @@
 use alloc::boxed::Box;
 
+use super::buffer::*;
+use super::ot_map::*;
 use super::ot_shape::*;
-use crate::hb::buffer::*;
-use crate::hb::ot_map::*;
-use crate::hb::ot_shape_complex::*;
-use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
-use crate::hb::shape_plan::hb_ot_shape_plan_t;
-use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
+use super::ot_shape_complex::*;
+use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
+use super::shape_plan::hb_ot_shape_plan_t;
+use super::*;
 use crate::BufferFlags;
 
 const LJMO: u8 = 1;

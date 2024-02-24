@@ -1,6 +1,6 @@
-use crate::hb::buffer::hb_buffer_t;
-use crate::hb::hb_font_t;
-use crate::hb::shape_plan::hb_ot_shape_plan_t;
+use super::buffer::hb_buffer_t;
+use super::hb_font_t;
+use super::shape_plan::hb_ot_shape_plan_t;
 
 pub fn apply(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) -> Option<()> {
     let trak_mask = plan.trak_mask;

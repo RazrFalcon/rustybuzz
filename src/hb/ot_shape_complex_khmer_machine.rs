@@ -17,7 +17,7 @@
     clippy::never_loop
 )]
 
-use crate::hb::buffer::hb_buffer_t;
+use super::buffer::hb_buffer_t;
 
 static _khmer_syllable_machine_trans_keys: [u8; 82] = [
     2, 8, 2, 6, 2, 8, 2, 6, 0, 0, 2, 6, 2, 8, 2, 6, 2, 8, 2, 6, 2, 6, 2, 8, 2, 6, 0, 0, 2, 6, 2, 8,

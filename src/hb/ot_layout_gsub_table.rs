@@ -1,18 +1,17 @@
 use core::convert::TryFrom;
 
 use ttf_parser::gsub::*;
+use ttf_parser::opentype_layout::LookupIndex;
 use ttf_parser::GlyphId;
 
 use super::buffer::{hb_buffer_t, GlyphPropsFlags};
 use super::hb_font_t;
 use super::ot_layout::*;
+use super::ot_layout_common::{SubstLookup, SubstitutionTable};
+use super::ot_layout_gsubgpos::*;
 use super::ot_map::*;
 use super::shape_plan::hb_ot_shape_plan_t;
 use super::unicode::hb_unicode_general_category_t;
-
-use crate::hb::ot_layout_common::{SubstLookup, SubstitutionTable};
-use crate::hb::ot_layout_gsubgpos::*;
-use ttf_parser::opentype_layout::LookupIndex;
 
 /// Called before substitution lookups are performed, to ensure that glyph
 /// class and other properties are set on the glyphs in the buffer.

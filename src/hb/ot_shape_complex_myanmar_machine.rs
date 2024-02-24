@@ -17,7 +17,7 @@
     clippy::never_loop
 )]
 
-use crate::hb::buffer::hb_buffer_t;
+use super::buffer::hb_buffer_t;
 
 static _myanmar_syllable_machine_trans_keys: [u8; 114] = [
     0, 22, 1, 22, 3, 19, 3, 5, 3, 19, 1, 15, 3, 15, 3, 15, 1, 22, 1, 19, 1, 19, 1, 19, 1, 22, 0, 8,

@@ -1,11 +1,11 @@
 use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
-use crate::hb::aat_layout::*;
-use crate::hb::aat_map::{hb_aat_map_builder_t, hb_aat_map_t};
-use crate::hb::buffer::hb_buffer_t;
-use crate::hb::ot_layout::*;
-use crate::hb::shape_plan::hb_ot_shape_plan_t;
-use crate::hb::{hb_font_t, hb_glyph_info_t};
+use super::aat_layout::*;
+use super::aat_map::{hb_aat_map_builder_t, hb_aat_map_t};
+use super::buffer::hb_buffer_t;
+use super::ot_layout::*;
+use super::shape_plan::hb_ot_shape_plan_t;
+use super::{hb_font_t, hb_glyph_info_t};
 
 // Chain::compile_flags in harfbuzz
 pub fn compile_flags(face: &hb_font_t, builder: &hb_aat_map_builder_t) -> Option<hb_aat_map_t> {

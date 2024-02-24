@@ -1,12 +1,12 @@
 use ttf_parser::{apple_layout, kern, GlyphId};
 
-use crate::hb::buffer::*;
-use crate::hb::ot_layout::TableIndex;
-use crate::hb::ot_layout_common::lookup_flags;
-use crate::hb::ot_layout_gpos_table::attach_type;
-use crate::hb::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t};
-use crate::hb::shape_plan::hb_ot_shape_plan_t;
-use crate::hb::{hb_font_t, hb_mask_t};
+use super::buffer::*;
+use super::ot_layout::TableIndex;
+use super::ot_layout_common::lookup_flags;
+use super::ot_layout_gpos_table::attach_type;
+use super::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t};
+use super::shape_plan::hb_ot_shape_plan_t;
+use super::{hb_font_t, hb_mask_t};
 
 pub fn has_kerning(face: &hb_font_t) -> bool {
     face.tables().kern.is_some()

@@ -2,13 +2,13 @@ use core::convert::TryFrom;
 
 use ttf_parser::{ankr, apple_layout, kerx, FromData, GlyphId};
 
-use crate::hb::buffer::*;
-use crate::hb::hb_font_t;
-use crate::hb::ot_layout::TableIndex;
-use crate::hb::ot_layout_common::lookup_flags;
-use crate::hb::ot_layout_gpos_table::attach_type;
-use crate::hb::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t};
-use crate::hb::shape_plan::hb_ot_shape_plan_t;
+use super::buffer::*;
+use super::hb_font_t;
+use super::ot_layout::TableIndex;
+use super::ot_layout_common::lookup_flags;
+use super::ot_layout_gpos_table::attach_type;
+use super::ot_layout_gsubgpos::{hb_ot_apply_context_t, skipping_iterator_t};
+use super::shape_plan::hb_ot_shape_plan_t;
 
 trait ExtendedStateTableExt<T: FromData + Copy> {
     fn class(&self, glyph_id: GlyphId) -> Option<u16>;

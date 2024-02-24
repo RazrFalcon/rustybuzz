@@ -1,15 +1,12 @@
 use alloc::boxed::Box;
 use core::any::Any;
 
+use super::buffer::*;
+use super::common::TagExt;
 use super::ot_shape::*;
-use crate::hb::buffer::*;
-use crate::hb::common::TagExt;
-use crate::hb::ot_shape_normalize::{
-    hb_ot_shape_normalization_mode_t, hb_ot_shape_normalize_context_t,
-    HB_OT_SHAPE_NORMALIZATION_MODE_AUTO,
-};
-use crate::hb::shape_plan::hb_ot_shape_plan_t;
-use crate::hb::{hb_font_t, hb_tag_t, script, Direction, Script};
+use super::ot_shape_normalize::*;
+use super::shape_plan::hb_ot_shape_plan_t;
+use super::{hb_font_t, hb_tag_t, script, Direction, Script};
 
 impl hb_glyph_info_t {
     pub(crate) fn complex_var_u8_category(&self) -> u8 {

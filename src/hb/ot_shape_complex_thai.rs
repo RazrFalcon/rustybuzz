@@ -1,10 +1,10 @@
+use super::buffer::*;
+use super::ot_layout::*;
+use super::ot_shape_complex::*;
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
-use crate::hb::buffer::*;
-use crate::hb::ot_layout::*;
-use crate::hb::ot_shape_complex::*;
-use crate::hb::shape_plan::hb_ot_shape_plan_t;
-use crate::hb::unicode::hb_unicode_general_category_t;
-use crate::hb::{hb_font_t, script};
+use super::shape_plan::hb_ot_shape_plan_t;
+use super::unicode::hb_unicode_general_category_t;
+use super::{hb_font_t, script};
 
 pub const THAI_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: None,

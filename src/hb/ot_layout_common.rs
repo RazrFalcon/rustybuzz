@@ -4,7 +4,7 @@ use ttf_parser::gpos::PositioningSubtable;
 use ttf_parser::gsub::SubstitutionSubtable;
 use ttf_parser::opentype_layout::{Coverage, Lookup};
 
-use crate::hb::glyph_set::{GlyphSet, GlyphSetBuilder};
+use super::glyph_set::{GlyphSet, GlyphSetBuilder};
 
 #[allow(dead_code)]
 pub mod lookup_flags {

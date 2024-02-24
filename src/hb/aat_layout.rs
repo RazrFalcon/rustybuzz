@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
-use crate::hb::buffer::{hb_buffer_t, hb_glyph_info_t};
-use crate::hb::hb_font_t;
-use crate::hb::hb_tag_t;
-use crate::hb::shape_plan::hb_ot_shape_plan_t;
-use crate::hb::{aat_layout_kerx_table, aat_layout_morx_table, aat_layout_trak_table};
+use super::buffer::{hb_buffer_t, hb_glyph_info_t};
+use super::hb_font_t;
+use super::hb_tag_t;
+use super::shape_plan::hb_ot_shape_plan_t;
+use super::{aat_layout_kerx_table, aat_layout_morx_table, aat_layout_trak_table};
 
 pub type hb_aat_layout_feature_type_t = u8;
 pub const HB_AAT_LAYOUT_FEATURE_TYPE_INVALID: u8 = 0xFF;

@@ -6,17 +6,16 @@ use core::ops::Range;
 use ttf_parser::GlyphId;
 
 use super::algs::*;
+use super::buffer::hb_buffer_t;
+use super::ot_layout::*;
+use super::ot_layout_gsubgpos::{WouldApply, WouldApplyContext};
+use super::ot_map::*;
 use super::ot_shape::*;
-use super::ot_shape_normalize::hb_ot_shape_normalize_context_t;
-use crate::hb::buffer::hb_buffer_t;
-use crate::hb::ot_layout::*;
-use crate::hb::ot_layout_gsubgpos::{WouldApply, WouldApplyContext};
-use crate::hb::ot_map::*;
-use crate::hb::ot_shape_complex::*;
-use crate::hb::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
-use crate::hb::shape_plan::hb_ot_shape_plan_t;
-use crate::hb::unicode::{hb_gc, CharExt, GeneralCategoryExt};
-use crate::hb::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
+use super::ot_shape_complex::*;
+use super::ot_shape_normalize::*;
+use super::shape_plan::hb_ot_shape_plan_t;
+use super::unicode::{hb_gc, CharExt, GeneralCategoryExt};
+use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
 pub const INDIC_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     collect_features: Some(collect_features),
