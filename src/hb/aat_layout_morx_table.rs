@@ -4,7 +4,7 @@ use super::aat_layout::*;
 use super::aat_map::{hb_aat_map_builder_t, hb_aat_map_t};
 use super::buffer::hb_buffer_t;
 use super::ot_layout::*;
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::{hb_font_t, hb_glyph_info_t};
 
 // Chain::compile_flags in harfbuzz

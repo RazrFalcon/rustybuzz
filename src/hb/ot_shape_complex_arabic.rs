@@ -7,7 +7,7 @@ use super::ot_map::*;
 use super::ot_shape::*;
 use super::ot_shape_complex::*;
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::*;
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 

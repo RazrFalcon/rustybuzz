@@ -3,7 +3,7 @@ use ttf_parser::GlyphId;
 use super::buffer::{hb_buffer_t, GlyphPosition};
 use super::face::GlyphExtents;
 use super::ot_layout::*;
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::*;
 use super::{hb_font_t, Direction};
 

@@ -7,7 +7,7 @@ use ttf_parser::opentype_layout::{
 
 use super::buffer::{glyph_flag, hb_buffer_t};
 use super::ot_layout::{LayoutTableExt, TableIndex};
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::{hb_font_t, hb_mask_t, hb_tag_t, tag, Language, Script};
 
 pub struct hb_ot_map_t {

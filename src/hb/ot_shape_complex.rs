@@ -5,7 +5,7 @@ use super::buffer::*;
 use super::common::TagExt;
 use super::ot_shape::*;
 use super::ot_shape_normalize::*;
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::{hb_font_t, hb_tag_t, script, Direction, Script};
 
 impl hb_glyph_info_t {

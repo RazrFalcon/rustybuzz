@@ -10,7 +10,7 @@ use super::ot_layout::*;
 use super::ot_layout_common::{SubstLookup, SubstitutionTable};
 use super::ot_layout_gsubgpos::*;
 use super::ot_map::*;
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use OT::hb_ot_apply_context_t;
 
 // SingleSubstFormat1::would_apply

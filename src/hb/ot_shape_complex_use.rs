@@ -8,7 +8,7 @@ use super::ot_shape::*;
 use super::ot_shape_complex::*;
 use super::ot_shape_complex_arabic::arabic_shape_plan_t;
 use super::ot_shape_normalize::*;
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 

@@ -21,8 +21,8 @@ pub use hb::buffer::hb_glyph_info_t as GlyphInfo;
 pub use hb::buffer::{GlyphBuffer, GlyphPosition, UnicodeBuffer};
 pub use hb::common::{script, Direction, Feature, Language, Script, Variation};
 pub use hb::face::hb_font_t as Face;
+pub use hb::ot_shape_plan::hb_ot_shape_plan_t as ShapePlan;
 pub use hb::shape::{shape, shape_with_plan};
-pub use hb::shape_plan::hb_ot_shape_plan_t as ShapePlan;
 
 bitflags::bitflags! {
     /// Flags for buffers.

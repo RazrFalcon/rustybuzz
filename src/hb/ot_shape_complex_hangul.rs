@@ -5,7 +5,7 @@ use super::ot_map::*;
 use super::ot_shape::*;
 use super::ot_shape_complex::*;
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::*;
 use crate::BufferFlags;
 

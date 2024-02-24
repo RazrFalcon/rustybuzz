@@ -2,7 +2,7 @@ use super::buffer::*;
 use super::ot_layout::*;
 use super::ot_shape_complex::*;
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::hb_unicode_general_category_t;
 use super::{hb_font_t, script};
 

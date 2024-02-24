@@ -8,7 +8,7 @@ use ttf_parser::GlyphId;
 use super::buffer::*;
 use super::common::TagExt;
 use super::ot_layout_gsubgpos::{Apply, OT};
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_funcs_t, hb_unicode_general_category_t, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 

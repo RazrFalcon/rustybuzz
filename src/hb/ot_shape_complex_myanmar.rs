@@ -4,7 +4,7 @@ use super::ot_shape::*;
 use super::ot_shape_complex::*;
 use super::ot_shape_complex_indic::{category, position};
 use super::ot_shape_normalize::*;
-use super::shape_plan::hb_ot_shape_plan_t;
+use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 
 pub const MYANMAR_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
