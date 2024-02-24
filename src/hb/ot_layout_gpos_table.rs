@@ -2,7 +2,7 @@ use ttf_parser::gpos::*;
 use ttf_parser::opentype_layout::LookupIndex;
 use ttf_parser::GlyphId;
 
-use super::buffer::{hb_buffer_t, BufferScratchFlags, GlyphPosition};
+use super::buffer::*;
 use super::hb_font_t;
 use super::ot_layout::*;
 use super::shape_plan::hb_ot_shape_plan_t;
@@ -31,10 +31,7 @@ pub fn position_finish_offsets(_: &hb_font_t, buffer: &mut hb_buffer_t) {
     let direction = buffer.direction;
 
     // Handle attachments
-    if buffer
-        .scratch_flags
-        .contains(BufferScratchFlags::HAS_GPOS_ATTACHMENT)
-    {
+    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT != 0 {
         for i in 0..len {
             propagate_attachment_offsets(&mut buffer.pos, len, i, direction);
         }
@@ -333,7 +330,7 @@ impl Apply for CursiveAdjustment<'_> {
         pos[child].set_attach_type(attach_type::CURSIVE);
         pos[child].set_attach_chain((parent as isize - child as isize) as i16);
 
-        ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+        ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
         if direction.is_horizontal() {
             pos[child].y_offset = y_offset;
         } else {
@@ -673,7 +670,7 @@ impl MarkArrayExt for MarkArray<'_> {
         pos.set_attach_type(attach_type::MARK);
         pos.set_attach_chain((glyph_pos as isize - idx as isize) as i16);
 
-        ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+        ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
         ctx.buffer.idx += 1;
 
         Some(())

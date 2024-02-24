@@ -8,7 +8,7 @@ use super::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use super::face::GlyphExtents;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_mask_t};
-use crate::{script, BufferClusterLevel, Direction, Language, Script};
+use crate::{script, BufferClusterLevel, BufferFlags, Direction, Language, Script, SerializeFlags};
 
 const CONTEXT_LENGTH: usize = 5;
 
@@ -233,17 +233,17 @@ impl hb_glyph_info_t {
         v[0] = n;
     }
 
-    pub(crate) fn init_unicode_props(&mut self, scratch_flags: &mut BufferScratchFlags) {
+    pub(crate) fn init_unicode_props(&mut self, scratch_flags: &mut hb_buffer_scratch_flags_t) {
         let u = self.as_char();
         let gc = u.general_category();
         let mut props = gc.to_rb() as u16;
 
         if u as u32 >= 0x80 {
-            *scratch_flags |= BufferScratchFlags::HAS_NON_ASCII;
+            *scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
 
             if u.is_default_ignorable() {
                 props |= UnicodeProps::IGNORABLE.bits();
-                *scratch_flags |= BufferScratchFlags::HAS_DEFAULT_IGNORABLES;
+                *scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
 
                 match u as u32 {
                     0x200C => props |= UnicodeProps::CF_ZWNJ.bits(),
@@ -266,7 +266,7 @@ impl hb_glyph_info_t {
                     // https://github.com/harfbuzz/harfbuzz/issues/554
                     0x034F => {
                         props |= UnicodeProps::HIDDEN.bits();
-                        *scratch_flags |= BufferScratchFlags::HAS_CGJ;
+                        *scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_CGJ;
                     }
 
                     _ => {}
@@ -384,7 +384,7 @@ pub struct hb_buffer_t {
 
     // Managed by enter / leave
     pub serial: u8,
-    pub scratch_flags: BufferScratchFlags,
+    pub scratch_flags: hb_buffer_scratch_flags_t,
     /// Maximum allowed len.
     pub max_len: usize,
     /// Maximum allowed operations.
@@ -408,7 +408,7 @@ impl hb_buffer_t {
             flags: BufferFlags::empty(),
             cluster_level: HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
             invisible: None,
-            scratch_flags: BufferScratchFlags::default(),
+            scratch_flags: HB_BUFFER_SCRATCH_FLAG_DEFAULT,
             max_len: Self::MAX_LEN_DEFAULT,
             max_ops: Self::MAX_OPS_DEFAULT,
             direction: Direction::Invalid,
@@ -517,7 +517,7 @@ impl hb_buffer_t {
         self.context_len = [0, 0];
 
         self.serial = 0;
-        self.scratch_flags = BufferScratchFlags::default();
+        self.scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
         self.cluster_level = HB_BUFFER_CLUSTER_LEVEL_DEFAULT;
     }
 
@@ -1062,7 +1062,7 @@ impl hb_buffer_t {
             return;
         }
 
-        self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
+        self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
 
         if !from_out_buffer || !self.have_output {
             if !interior {
@@ -1072,7 +1072,7 @@ impl hb_buffer_t {
             } else {
                 let cluster = Self::_infos_find_min_cluster(&self.info, start, end, None);
                 if Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask) {
-                    self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
+                    self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
                 }
             }
         } else {
@@ -1108,7 +1108,7 @@ impl hb_buffer_t {
                     Self::_infos_set_glyph_flags(&mut self.info, self.idx, end, cluster, mask);
 
                 if first || second {
-                    self.scratch_flags |= BufferScratchFlags::HAS_GLYPH_FLAGS;
+                    self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
                 }
             }
         }
@@ -1295,7 +1295,7 @@ impl hb_buffer_t {
     // Called around shape()
     pub(crate) fn enter(&mut self) {
         self.serial = 0;
-        self.scratch_flags = BufferScratchFlags::empty();
+        self.scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 
         if let Some(len) = self.len.checked_mul(hb_buffer_t::MAX_LEN_FACTOR) {
             self.max_len = len.max(hb_buffer_t::MAX_LEN_MIN);
@@ -1485,64 +1485,20 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
-    /// Flags for buffers.
-    #[derive(Default, Debug, Clone, Copy)]
-    pub struct BufferFlags: u32 {
-        /// Indicates that special handling of the beginning of text paragraph can be applied to this buffer. Should usually be set, unless you are passing to the buffer only part of the text without the full context.
-        const BEGINNING_OF_TEXT             = 1 << 1;
-        /// Indicates that special handling of the end of text paragraph can be applied to this buffer, similar to [`BufferFlags::BEGINNING_OF_TEXT`].
-        const END_OF_TEXT                   = 1 << 2;
-        /// Indicates that characters with `Default_Ignorable` Unicode property should use the corresponding glyph from the font, instead of hiding them (done by replacing them with the space glyph and zeroing the advance width.) This flag takes precedence over [`BufferFlags::REMOVE_DEFAULT_IGNORABLES`].
-        const PRESERVE_DEFAULT_IGNORABLES   = 1 << 3;
-        /// Indicates that characters with `Default_Ignorable` Unicode property should be removed from glyph string instead of hiding them (done by replacing them with the space glyph and zeroing the advance width.) [`BufferFlags::PRESERVE_DEFAULT_IGNORABLES`] takes precedence over this flag.
-        const REMOVE_DEFAULT_IGNORABLES     = 1 << 4;
-        /// Indicates that a dotted circle should not be inserted in the rendering of incorrect character sequences (such as `<0905 093E>`).
-        const DO_NOT_INSERT_DOTTED_CIRCLE   = 1 << 5;
-        /// Indicates that the shape() call and its variants should perform various verification processes on the results of the shaping operation on the buffer. If the verification fails, then either a buffer message is sent, if a message handler is installed on the buffer, or a message is written to standard error. In either case, the shaping result might be modified to show the failed output.
-        const VERIFY                        = 1 << 6;
-        /// Indicates that the `UNSAFE_TO_CONCAT` glyph-flag should be produced by the shaper. By default it will not be produced since it incurs a cost.
-        const PRODUCE_UNSAFE_TO_CONCAT      = 1 << 7;
-    }
-}
+pub type hb_buffer_scratch_flags_t = u32;
+pub const HB_BUFFER_SCRATCH_FLAG_DEFAULT: u32 = 0x00000000;
+pub const HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII: u32 = 0x00000001;
+pub const HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES: u32 = 0x00000002;
+pub const HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK: u32 = 0x00000004;
+pub const HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT: u32 = 0x00000008;
+pub const HB_BUFFER_SCRATCH_FLAG_HAS_CGJ: u32 = 0x00000010;
+pub const HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS: u32 = 0x00000020;
 
-bitflags::bitflags! {
-    #[derive(Default, Debug, Clone, Copy)]
-    pub struct BufferScratchFlags: u32 {
-        const HAS_NON_ASCII             = 0x00000001;
-        const HAS_DEFAULT_IGNORABLES    = 0x00000002;
-        const HAS_SPACE_FALLBACK        = 0x00000004;
-        const HAS_GPOS_ATTACHMENT       = 0x00000008;
-        const HAS_CGJ                   = 0x00000010;
-        const HAS_GLYPH_FLAGS       = 0x00000020;
-
-        // Reserved for complex shapers' internal use.
-        const COMPLEX0                  = 0x01000000;
-        const COMPLEX1                  = 0x02000000;
-        const COMPLEX2                  = 0x04000000;
-        const COMPLEX3                  = 0x08000000;
-    }
-}
-
-bitflags::bitflags! {
-    /// Flags used for serialization with a `BufferSerializer`.
-    #[derive(Default)]
-    pub struct SerializeFlags: u8 {
-        /// Do not serialize glyph cluster.
-        const NO_CLUSTERS       = 0b00000001;
-        /// Do not serialize glyph position information.
-        const NO_POSITIONS      = 0b00000010;
-        /// Do no serialize glyph name.
-        const NO_GLYPH_NAMES    = 0b00000100;
-        /// Serialize glyph extents.
-        const GLYPH_EXTENTS     = 0b00001000;
-        /// Serialize glyph flags.
-        const GLYPH_FLAGS       = 0b00010000;
-        /// Do not serialize glyph advances, glyph offsets will reflect absolute
-        /// glyph positions.
-        const NO_ADVANCES       = 0b00100000;
-    }
-}
+/* Reserved for complex shapers' internal use. */
+pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX0: u32 = 0x01000000;
+// pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX1: u32 = 0x02000000;
+// pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX2: u32 = 0x04000000;
+// pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX3: u32 = 0x08000000;
 
 /// A buffer that contains an input string ready for shaping.
 pub struct UnicodeBuffer(pub(crate) hb_buffer_t);

@@ -1,6 +1,6 @@
 use ttf_parser::{apple_layout, kern, GlyphId};
 
-use crate::hb::buffer::{hb_buffer_t, BufferScratchFlags};
+use crate::hb::buffer::*;
 use crate::hb::ot_layout::TableIndex;
 use crate::hb::ot_layout_common::lookup_flags;
 use crate::hb::ot_layout_gpos_table::attach_type;
@@ -117,7 +117,7 @@ fn machine_kern(
             if horizontal {
                 if cross_stream {
                     pos[j].y_offset = kern;
-                    ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+                    ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
                 } else {
                     let kern1 = kern >> 1;
                     let kern2 = kern - kern1;
@@ -128,7 +128,7 @@ fn machine_kern(
             } else {
                 if cross_stream {
                     pos[j].x_offset = kern;
-                    ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+                    ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
                 } else {
                     let kern1 = kern >> 1;
                     let kern2 = kern - kern1;
@@ -341,7 +341,7 @@ fn state_machine_transition(
             }
 
             if has_gpos_attachment {
-                buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+                buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
             }
         }
     }

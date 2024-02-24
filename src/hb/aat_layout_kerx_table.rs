@@ -2,7 +2,7 @@ use core::convert::TryFrom;
 
 use ttf_parser::{ankr, apple_layout, kerx, FromData, GlyphId};
 
-use crate::hb::buffer::{hb_buffer_t, BufferScratchFlags};
+use crate::hb::buffer::*;
 use crate::hb::hb_font_t;
 use crate::hb::ot_layout::TableIndex;
 use crate::hb::ot_layout_common::lookup_flags;
@@ -169,7 +169,7 @@ fn apply_simple_kerning(
             if horizontal {
                 if subtable.has_cross_stream {
                     pos[j].y_offset = kern;
-                    ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+                    ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
                 } else {
                     let kern1 = kern >> 1;
                     let kern2 = kern - kern1;
@@ -180,7 +180,7 @@ fn apply_simple_kerning(
             } else {
                 if subtable.has_cross_stream {
                     pos[j].x_offset = kern;
-                    ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+                    ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
                 } else {
                     let kern1 = kern >> 1;
                     let kern2 = kern - kern1;
@@ -400,7 +400,7 @@ impl StateTableDriver<kerx::Subtable1<'_>, kerx::EntryData> for Driver1 {
                 }
 
                 if has_gpos_attachment {
-                    buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+                    buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
                 }
             }
         }
@@ -456,7 +456,7 @@ impl StateTableDriver<kerx::Subtable4<'_>, kerx::EntryData> for Driver4<'_> {
             buffer
                 .cur_pos_mut()
                 .set_attach_chain(self.mark as i16 - idx as i16);
-            buffer.scratch_flags |= BufferScratchFlags::HAS_GPOS_ATTACHMENT;
+            buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
         }
 
         if entry.has_mark() {

@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use super::buffer::{hb_buffer_t, BufferScratchFlags};
+use super::buffer::*;
 use super::ot_layout::*;
 use super::ot_map::*;
 use super::ot_shape::*;
@@ -26,7 +26,7 @@ pub const ARABIC_SHAPER: ComplexShaper = ComplexShaper {
     fallback_position: true,
 };
 
-const ARABIC_HAS_STCH: BufferScratchFlags = BufferScratchFlags::COMPLEX0;
+const ARABIC_HAS_STCH: hb_buffer_scratch_flags_t = HB_BUFFER_SCRATCH_FLAG_COMPLEX0;
 
 const ARABIC_FEATURES: &[hb_tag_t] = &[
     hb_tag_t::from_bytes(b"isol"),
@@ -305,7 +305,7 @@ fn postprocess_glyphs(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_
 }
 
 fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    if !buffer.scratch_flags.contains(ARABIC_HAS_STCH) {
+    if buffer.scratch_flags & ARABIC_HAS_STCH == 0 {
         return;
     }
 

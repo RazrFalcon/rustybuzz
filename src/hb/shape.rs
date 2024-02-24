@@ -7,6 +7,7 @@ use super::{
     aat_layout, hb_font_t, ot_shape_fallback, ot_shape_normalize, script, Direction, Feature,
     GlyphBuffer, UnicodeBuffer,
 };
+use crate::BufferFlags;
 
 /// Shapes the buffer content using provided font and features.
 ///
@@ -188,11 +189,7 @@ fn position_default(ctx: &mut ShapeContext) {
         }
     }
 
-    if ctx
-        .buffer
-        .scratch_flags
-        .contains(BufferScratchFlags::HAS_SPACE_FALLBACK)
-    {
+    if ctx.buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK != 0 {
         ot_shape_fallback::_hb_ot_shape_fallback_spaces(ctx.plan, ctx.face, ctx.buffer);
     }
 }
@@ -287,11 +284,7 @@ fn setup_masks(ctx: &mut ShapeContext) {
 
 fn setup_masks_fraction(ctx: &mut ShapeContext) {
     let buffer = &mut ctx.buffer;
-    if !buffer
-        .scratch_flags
-        .contains(BufferScratchFlags::HAS_NON_ASCII)
-        || !ctx.plan.has_frac
-    {
+    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII == 0 || !ctx.plan.has_frac {
         return;
     }
 
@@ -433,10 +426,7 @@ fn insert_dotted_circle(buffer: &mut hb_buffer_t, face: &hb_font_t) {
 }
 
 fn form_clusters(buffer: &mut hb_buffer_t) {
-    if buffer
-        .scratch_flags
-        .contains(BufferScratchFlags::HAS_NON_ASCII)
-    {
+    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII != 0 {
         if buffer.cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES {
             foreach_grapheme!(buffer, start, end, { buffer.merge_clusters(start, end) });
         } else {
@@ -554,9 +544,7 @@ fn synthesize_glyph_classes(buffer: &mut hb_buffer_t) {
 }
 
 fn zero_width_default_ignorables(buffer: &mut hb_buffer_t) {
-    if buffer
-        .scratch_flags
-        .contains(BufferScratchFlags::HAS_DEFAULT_IGNORABLES)
+    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES != 0
         && !buffer
             .flags
             .contains(BufferFlags::PRESERVE_DEFAULT_IGNORABLES)
@@ -592,9 +580,7 @@ fn zero_mark_widths_by_gdef(buffer: &mut hb_buffer_t, adjust_offsets: bool) {
 }
 
 fn hide_default_ignorables(buffer: &mut hb_buffer_t, face: &hb_font_t) {
-    if buffer
-        .scratch_flags
-        .contains(BufferScratchFlags::HAS_DEFAULT_IGNORABLES)
+    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES != 0
         && !buffer
             .flags
             .contains(BufferFlags::PRESERVE_DEFAULT_IGNORABLES)
@@ -624,10 +610,7 @@ fn hide_default_ignorables(buffer: &mut hb_buffer_t, face: &hb_font_t) {
 fn propagate_flags(buffer: &mut hb_buffer_t) {
     // Propagate cluster-level glyph flags to be the same on all cluster glyphs.
     // Simplifies using them.
-    if buffer
-        .scratch_flags
-        .contains(BufferScratchFlags::HAS_GLYPH_FLAGS)
-    {
+    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS != 0 {
         foreach_cluster!(buffer, start, end, {
             let mut mask = 0;
             for info in &buffer.info[start..end] {

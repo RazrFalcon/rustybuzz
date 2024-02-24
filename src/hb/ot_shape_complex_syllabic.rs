@@ -1,5 +1,6 @@
-use crate::hb::buffer::{hb_buffer_t, BufferFlags};
+use crate::hb::buffer::hb_buffer_t;
 use crate::hb::{hb_font_t, hb_glyph_info_t};
+use crate::BufferFlags;
 
 pub fn insert_dotted_circles(
     face: &hb_font_t,

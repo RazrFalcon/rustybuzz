@@ -1,4 +1,4 @@
-use super::buffer::{hb_buffer_t, hb_glyph_info_t, BufferScratchFlags};
+use super::buffer::*;
 use super::common::hb_codepoint_t;
 use super::hb_font_t;
 use super::ot_layout::*;
@@ -169,7 +169,7 @@ fn decompose_current_character(ctx: &mut hb_ot_shape_normalize_context_t, shorte
             if let Some(space_glyph) = space_glyph {
                 _hb_glyph_info_set_unicode_space_fallback_type(ctx.buffer.cur_mut(0), space_type);
                 next_char(ctx.buffer, u32::from(space_glyph.0));
-                ctx.buffer.scratch_flags |= BufferScratchFlags::HAS_SPACE_FALLBACK;
+                ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK;
                 return;
             }
         }
@@ -384,7 +384,7 @@ pub fn _hb_ot_shape_normalize(
             i = end + 1;
         }
     }
-    if buffer.scratch_flags.contains(BufferScratchFlags::HAS_CGJ) {
+    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_CGJ != 0 {
         // For all CGJ, check if it prevented any reordering at all.
         // If it did NOT, then make it skippable.
         // https://github.com/harfbuzz/harfbuzz/issues/554
