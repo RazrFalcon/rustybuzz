@@ -14,10 +14,12 @@
 )]
 
 use core::cell::Cell;
-use crate::buffer::Buffer;
-use crate::complex::machine_cursor::MachineCursor;
-use crate::complex::universal::category;
-use crate::GlyphInfo;
+
+use super::buffer::hb_buffer_t;
+use super::hb_glyph_info_t;
+use super::machine_cursor::MachineCursor;
+use super::ot_layout::*;
+use super::ot_shape_complex_use::category;
 
 %%{
   machine use_syllable_machine;
@@ -161,7 +163,7 @@ pub enum SyllableType {
     NonCluster,
 }
 
-pub fn find_syllables(buffer: &mut Buffer) {
+pub fn find_syllables(buffer: &mut hb_buffer_t) {
     let mut cs = 0;
     let infos = Cell::as_slice_of_cells(Cell::from_mut(&mut buffer.info));
     let p0 = MachineCursor::new(infos, included);
@@ -195,7 +197,7 @@ fn found_syllable(
     end: usize,
     syllable_serial: &mut u8,
     kind: SyllableType,
-    buffer: &[Cell<GlyphInfo>],
+    buffer: &[Cell<hb_glyph_info_t>],
 ) {
     for i in start..end {
         let mut glyph = buffer[i].get();
@@ -210,11 +212,11 @@ fn found_syllable(
     }
 }
 
-fn not_ccs_default_ignorable(i: &GlyphInfo) -> bool {
+fn not_ccs_default_ignorable(i: &hb_glyph_info_t) -> bool {
     i.use_category() != category::CGJ
 }
 
-fn included(infos: &[Cell<GlyphInfo>], i: usize) -> bool {
+fn included(infos: &[Cell<hb_glyph_info_t>], i: usize) -> bool {
     let glyph = infos[i].get();
     if !not_ccs_default_ignorable(&glyph) {
         return false;
@@ -222,7 +224,7 @@ fn included(infos: &[Cell<GlyphInfo>], i: usize) -> bool {
     if glyph.use_category() == category::ZWNJ {
         for glyph2 in &infos[i + 1..] {
             if not_ccs_default_ignorable(&glyph2.get()) {
-                return !glyph2.get().is_unicode_mark();
+                return !_hb_glyph_info_is_unicode_mark(&glyph2.get());
             }
         }
     }
