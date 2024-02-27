@@ -1533,6 +1533,18 @@ fn context_matching_003() {
 }
 
 #[test]
+fn context_matching_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/5bbf3712e6f79775c66a4407837a90e591efbef2.ttf",
+            "\u{1F1FA}\u{1F1FC}",
+            "",
+        ),
+        "gid3=0+2550"
+    );
+}
+
+#[test]
 fn cursive_positioning_001() {
     assert_eq!(
         shape(

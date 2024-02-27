@@ -821,6 +821,13 @@ fn apply_lookup(
             continue;
         }
 
+        let orig_len = ctx.buffer.backtrack_len() + ctx.buffer.lookahead_len();
+
+        // This can happen if earlier recursed lookups deleted many entries.
+        if match_positions[idx] >= orig_len {
+            continue;
+        }
+
         if !ctx.buffer.move_to(match_positions[idx]) {
             break;
         }
@@ -829,7 +836,6 @@ fn apply_lookup(
             break;
         }
 
-        let orig_len = ctx.buffer.backtrack_len() + ctx.buffer.lookahead_len();
         if ctx.recurse(record.lookup_list_index).is_none() {
             continue;
         }
@@ -864,15 +870,17 @@ fn apply_lookup(
         // It should be possible to construct tests for both of these cases.
 
         end = (end as isize + delta) as _;
-        if end <= match_positions[idx] {
+        if end < match_positions[idx] {
             // End might end up being smaller than match_positions[idx] if the recursed
-            // lookup ended up removing many items, more than we have had matched.
-            // Just never rewind end back and get out of here.
+            // lookup ended up removing many items.
+            // Just never rewind end beyond start of current position, since that is
+            // not possible in the recursed lookup.  Also adjust delta as such.
+            //
             // https://bugs.chromium.org/p/chromium/issues/detail?id=659496
+            // https://github.com/harfbuzz/harfbuzz/issues/1611
+            //
+            delta += match_positions[idx] as isize - end as isize;
             end = match_positions[idx];
-
-            // There can't be any further changes.
-            break;
         }
 
         // next now is the position after the recursed lookup.
