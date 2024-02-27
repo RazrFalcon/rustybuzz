@@ -4,7 +4,7 @@ use ttf_parser::gsub::*;
 use ttf_parser::opentype_layout::LookupIndex;
 use ttf_parser::GlyphId;
 
-use super::buffer::{hb_buffer_t, GlyphPropsFlags};
+use super::buffer::hb_buffer_t;
 use super::hb_font_t;
 use super::ot_layout::*;
 use super::ot_layout_common::{SubstLookup, SubstitutionTable};
@@ -12,59 +12,6 @@ use super::ot_layout_gsubgpos::*;
 use super::ot_map::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use OT::hb_ot_apply_context_t;
-
-impl Apply for Sequence<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        match self.substitutes.len() {
-            // Spec disallows this, but Uniscribe allows it.
-            // https://github.com/harfbuzz/harfbuzz/issues/253
-            0 => ctx.buffer.delete_glyph(),
-
-            // Special-case to make it in-place and not consider this
-            // as a "multiplied" substitution.
-            1 => ctx.replace_glyph(self.substitutes.get(0)?),
-
-            _ => {
-                let class = if _hb_glyph_info_is_ligature(ctx.buffer.cur(0)) {
-                    GlyphPropsFlags::BASE_GLYPH
-                } else {
-                    GlyphPropsFlags::empty()
-                };
-                let lig_id = _hb_glyph_info_get_lig_id(ctx.buffer.cur(0));
-
-                for (i, subst) in self.substitutes.into_iter().enumerate() {
-                    // If is attached to a ligature, don't disturb that.
-                    // https://github.com/harfbuzz/harfbuzz/issues/3069
-                    if lig_id == 0 {
-                        // Index is truncated to 4 bits anway, so we can safely cast to u8.
-                        _hb_glyph_info_set_lig_props_for_component(ctx.buffer.cur_mut(0), i as u8);
-                    }
-                    ctx.output_glyph_for_component(subst, class);
-                }
-
-                ctx.buffer.skip_glyph();
-            }
-        }
-        Some(())
-    }
-}
-
-// MultipleSubstFormat1::would_apply
-impl WouldApply for MultipleSubstitution<'_> {
-    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        ctx.glyphs.len() == 1 && self.coverage.get(ctx.glyphs[0]).is_some()
-    }
-}
-
-// MultipleSubstFormat1::apply
-impl Apply for MultipleSubstitution<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let glyph = ctx.buffer.cur(0).as_glyph();
-        let index = self.coverage.get(glyph)?;
-        let seq = self.sequences.get(index)?;
-        seq.apply(ctx)
-    }
-}
 
 impl Apply for AlternateSet<'_> {
     fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
