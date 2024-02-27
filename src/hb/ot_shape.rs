@@ -8,6 +8,7 @@ use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
 use super::*;
 use super::{hb_font_t, hb_tag_t};
+use crate::hb::aat_layout::hb_aat_layout_remove_deleted_glyphs;
 use crate::BufferFlags;
 use crate::{Direction, Feature, Language, Script};
 
@@ -347,14 +348,18 @@ pub fn shape_internal(ctx: &mut ShapeContext) {
 fn substitute_pre(ctx: &mut ShapeContext) {
     hb_ot_substitute_default(ctx);
     hb_ot_substitute_complex(ctx);
+
+    if ctx.plan.apply_morx && !ctx.plan.apply_gpos {
+        hb_aat_layout_remove_deleted_glyphs(&mut ctx.buffer);
+    }
 }
 
 fn substitute_post(ctx: &mut ShapeContext) {
-    hide_default_ignorables(ctx.buffer, ctx.face);
-
-    if ctx.plan.apply_morx {
+    if ctx.plan.apply_morx && ctx.plan.apply_gpos {
         aat_layout::hb_aat_layout_remove_deleted_glyphs(ctx.buffer);
     }
+
+    hide_default_ignorables(ctx.buffer, ctx.face);
 
     if let Some(func) = ctx.plan.shaper.postprocess_glyphs {
         func(ctx.plan, ctx.face, ctx.buffer);
