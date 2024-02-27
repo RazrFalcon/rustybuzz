@@ -614,6 +614,7 @@ impl hb_glyph_info_t {
             0x09FC => cat = category::PLACEHOLDER,
             // https://github.com/harfbuzz/harfbuzz/issues/623
             0x0C80 => cat = category::PLACEHOLDER,
+            0x0D04 => cat = category::PLACEHOLDER,
             0x2010 | 0x2011 => cat = category::PLACEHOLDER,
             0x25CC => cat = category::DOTTED_CIRCLE,
             _ => {}
