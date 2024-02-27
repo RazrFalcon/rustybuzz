@@ -883,7 +883,7 @@ fn apply_lookup(
                 break;
             }
         } else {
-            // NOTE: delta is negative.
+            // NOTE: delta is non-positive.
             delta = delta.max(next as isize - count as isize);
             next = (next as isize - delta) as _;
         }
