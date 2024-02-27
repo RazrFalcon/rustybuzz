@@ -669,13 +669,14 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     }
 
     planner.ot_map.add_gsub_pause(Some(final_reordering));
-    planner
-        .ot_map
-        .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_syllables));
 
     for feature in INDIC_FEATURES.iter().skip(10) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
+
+    planner
+        .ot_map
+        .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_syllables));
 }
 
 fn override_features(planner: &mut hb_ot_shape_planner_t) {
