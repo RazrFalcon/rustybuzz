@@ -16,6 +16,7 @@ pub mod face;
 mod glyph_set;
 mod kerning;
 mod machine_cursor;
+mod ot;
 mod ot_layout;
 mod ot_layout_common;
 mod ot_layout_gpos_table;
