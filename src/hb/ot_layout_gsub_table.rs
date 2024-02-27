@@ -10,69 +10,6 @@ use super::ot_layout_gsubgpos::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use OT::hb_ot_apply_context_t;
 
-// ReverseChainSingleSubstFormat1::would_apply
-impl WouldApply for ReverseChainSingleSubstitution<'_> {
-    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        ctx.glyphs.len() == 1 && self.coverage.get(ctx.glyphs[0]).is_some()
-    }
-}
-
-// ReverseChainSingleSubstFormat1::apply
-impl Apply for ReverseChainSingleSubstitution<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        // No chaining to this type.
-        if ctx.nesting_level_left != MAX_NESTING_LEVEL {
-            return None;
-        }
-
-        let glyph = ctx.buffer.cur(0).as_glyph();
-        let index = self.coverage.get(glyph)?;
-        if index >= self.substitutes.len() {
-            return None;
-        }
-
-        let subst = self.substitutes.get(index)?;
-
-        let f1 = |glyph, num_items| {
-            let index = self.backtrack_coverages.len() - num_items;
-            let value = self.backtrack_coverages.get(index).unwrap();
-            value.contains(glyph)
-        };
-
-        let f2 = |glyph, num_items| {
-            let index = self.lookahead_coverages.len() - num_items;
-            let value = self.lookahead_coverages.get(index).unwrap();
-            value.contains(glyph)
-        };
-
-        let mut start_index = 0;
-        let mut end_index = 0;
-
-        if match_backtrack(ctx, self.backtrack_coverages.len(), &f1, &mut start_index) {
-            if match_lookahead(
-                ctx,
-                self.lookahead_coverages.len(),
-                &f2,
-                ctx.buffer.idx + 1,
-                &mut end_index,
-            ) {
-                ctx.buffer
-                    .unsafe_to_break_from_outbuffer(Some(start_index), Some(end_index));
-                ctx.replace_glyph_inplace(subst);
-
-                // Note: We DON'T decrease buffer.idx.  The main loop does it
-                // for us.  This is useful for preventing surprises if someone
-                // calls us through a Context lookup.
-                return Some(());
-            }
-        }
-
-        ctx.buffer
-            .unsafe_to_concat_from_outbuffer(Some(start_index), Some(end_index));
-        return None;
-    }
-}
-
 pub fn substitute(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     apply_layout_table(plan, face, buffer, face.gsub.as_ref());
 }
