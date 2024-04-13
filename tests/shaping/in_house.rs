@@ -1545,6 +1545,22 @@ fn context_matching_004() {
 }
 
 #[test]
+fn context_matching_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/a59fd13f1525a91cbe529c882e93d9d1fbb80463.ttf",
+            "\u{0041}\u{0042}",
+            "",
+        ),
+        "gid4=0+1366|\
+         gid4=0+1366|\
+         gid4=0+1366|\
+         gid4=0+1366|\
+         gid5=1+1366"
+    );
+}
+
+#[test]
 fn cursive_positioning_001() {
     assert_eq!(
         shape(
