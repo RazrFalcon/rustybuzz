@@ -320,8 +320,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
 }
 
 fn setup_masks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    // We cannot setup masks here.  We save information about characters
-    // and setup masks later on in a pause-callback.
+    // No masks, we just save information about characters.
     for info in buffer.info_slice_mut() {
         info.set_myanmar_properties();
     }
