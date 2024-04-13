@@ -699,10 +699,18 @@ fn ensure_native_direction(buffer: &mut hb_buffer_t) {
     // direction, so that features like ligatures will work as intended.
     //
     // https://github.com/harfbuzz/harfbuzz/issues/501
+    //
+    // Similar thing about Regional_Indicators; They are bidi=L, but Script=Common.
+    // If they are presentin a run of natively-RTL text, they get assigned a script
+    // with natively RTL direction, which would result in wrong shaping if we
+    // assign such native RTL direction to them then. Detect that as well.
+    //
+    // https://github.com/harfbuzz/harfbuzz/issues/3314
 
     if hor == Direction::RightToLeft && dir == Direction::LeftToRight {
         let mut found_number = false;
         let mut found_letter = false;
+        let mut found_ri = false;
         for info in &buffer.info {
             let gc = _hb_glyph_info_get_general_category(info);
             if gc == hb_unicode_general_category_t::DecimalNumber {
@@ -710,9 +718,11 @@ fn ensure_native_direction(buffer: &mut hb_buffer_t) {
             } else if gc.is_letter() {
                 found_letter = true;
                 break;
+            } else if matches!(info.glyph_id, 0x1F1E6..=0x1F1FF) {
+                found_ri = true;
             }
         }
-        if found_number && !found_letter {
+        if (found_number || found_ri) && !found_letter {
             hor = Direction::LeftToRight;
         }
     }
