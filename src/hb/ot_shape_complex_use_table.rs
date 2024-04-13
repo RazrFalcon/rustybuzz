@@ -448,7 +448,7 @@ const USE_TABLE: &[Category] = &[
   /* 10A00 */     B,  VBLW,  VBLW,  VBLW,    WJ,  VABV,  VBLW,    WJ,    WJ,    WJ,    WJ,    WJ,  VPST, VMBLW, VMBLW, VMABV,
   /* 10A10 */     B,     B,     B,     B,    WJ,     B,     B,     B,    WJ,     B,     B,     B,     B,     B,     B,     B,
   /* 10A20 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
-  /* 10A30 */     B,     B,     B,     B,     B,     B,    WJ,    WJ, CMABV, CMBLW, CMBLW,    WJ,    WJ,    WJ,    WJ,    IS,
+  /* 10A30 */     B,     B,     B,     B,     B,     B,    WJ,    WJ, CMBLW, CMBLW, CMBLW,    WJ,    WJ,    WJ,    WJ,    IS,
   /* 10A40 */     B,     B,     B,     B,     B,     B,     B,     B,     B,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
 
   /* Manichaean */
