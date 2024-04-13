@@ -30,11 +30,26 @@ const KHMER_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[
     // Basic features.
     // These features are applied all at once, before reordering, constrained
     // to the syllable.
-    (hb_tag_t::from_bytes(b"pref"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"blwf"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"abvf"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"pstf"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"cfar"), F_MANUAL_JOINERS),
+    (
+        hb_tag_t::from_bytes(b"pref"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"blwf"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"abvf"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"pstf"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"cfar"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
     // Other features.
     // These features are applied all at once after clearing syllables.
     (hb_tag_t::from_bytes(b"pres"), F_GLOBAL_MANUAL_JOINERS),
@@ -121,18 +136,14 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // https://github.com/harfbuzz/harfbuzz/issues/974
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_PER_SYLLABLE, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_PER_SYLLABLE, 1);
 
     for feature in KHMER_FEATURES.iter().take(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
-
-    planner
-        .ot_map
-        .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_syllables));
 
     for feature in KHMER_FEATURES.iter().skip(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);

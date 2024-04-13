@@ -32,6 +32,7 @@ pub struct feature_map_t {
     auto_zwnj: bool,
     auto_zwj: bool,
     random: bool,
+    per_syllable: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -42,6 +43,7 @@ pub struct lookup_map_t {
     pub auto_zwj: bool,
     pub random: bool,
     pub mask: hb_mask_t,
+    pub per_syllable: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -152,6 +154,7 @@ pub const F_GLOBAL_MANUAL_JOINERS: u32 = F_GLOBAL | F_MANUAL_JOINERS;
 pub const F_GLOBAL_HAS_FALLBACK: u32 = F_GLOBAL | F_HAS_FALLBACK;
 pub const F_GLOBAL_SEARCH: u32 = 0x0010; /* If feature not found in LangSys, look for it in global feature list and pick one. */
 pub const F_RANDOM: u32 = 0x0020; /* Randomly select a glyph from an AlternateSubstFormat1 subtable. */
+pub const F_PER_SYLLABLE: u32 = 0x0040; /* Contain lookup application to within syllable. */
 
 pub struct hb_ot_map_builder_t<'a> {
     face: &'a hb_font_t<'a>,
@@ -390,6 +393,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
                 auto_zwnj: info.flags & F_MANUAL_ZWNJ == 0,
                 auto_zwj: info.flags & F_MANUAL_ZWJ == 0,
                 random: info.flags & F_RANDOM != 0,
+                per_syllable: info.flags & F_PER_SYLLABLE != 0,
             });
         }
 
@@ -466,6 +470,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
                             true,
                             true,
                             false,
+                            false,
                         );
                     }
                 }
@@ -482,6 +487,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
                                 feature.auto_zwnj,
                                 feature.auto_zwj,
                                 feature.random,
+                                feature.per_syllable,
                             );
                         }
                     }
@@ -537,6 +543,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
         auto_zwnj: bool,
         auto_zwj: bool,
         random: bool,
+        per_syllable: bool,
     ) -> Option<()> {
         let table = self.face.layout_table(table_index)?;
 
@@ -557,6 +564,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
                     auto_zwnj,
                     auto_zwj,
                     random,
+                    per_syllable,
                 });
             }
         }

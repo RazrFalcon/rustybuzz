@@ -247,6 +247,7 @@ pub fn apply_layout_table<T: LayoutTable>(
             ctx.auto_zwnj = lookup.auto_zwnj;
 
             ctx.random = lookup.random;
+            ctx.per_syllable = lookup.per_syllable;
 
             if let Some(table) = &table {
                 if let Some(lookup) = table.get_lookup(lookup.index) {
@@ -319,13 +320,6 @@ fn apply_backward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> b
         ctx.buffer.idx -= 1;
     }
     ret
-}
-
-pub fn _hb_clear_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    let len = buffer.len;
-    for info in &mut buffer.info[..len] {
-        info.set_syllable(0);
-    }
 }
 
 /* unicode_props */

@@ -2440,6 +2440,23 @@ fn indic_syllable_013() {
 }
 
 #[test]
+fn indic_syllable_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/41071178fbce4956d151f50967af458dbf555f7b.ttf",
+            "\u{0926}\u{093F}\u{0938}\u{0902}\u{092C}\u{0930}",
+            "",
+        ),
+        "isigndeva=0+266|\
+         dadeva=0+541|\
+         sadeva=2+709|\
+         anusvaradeva=2@0,-1+0|\
+         badeva=4+537|\
+         radeva=5+436"
+    );
+}
+
+#[test]
 fn indic_vowel_letter_spoofing_001() {
     assert_eq!(
         shape(
@@ -13896,3 +13913,4 @@ fn zero_width_marks_011() {
          A=2+1368"
     );
 }
+

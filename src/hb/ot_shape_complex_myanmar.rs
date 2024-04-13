@@ -143,12 +143,12 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_PER_SYLLABLE, 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_PER_SYLLABLE, 1);
 
     planner.ot_map.add_gsub_pause(Some(reorder));
 
@@ -157,12 +157,10 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
         planner.ot_map.add_gsub_pause(None);
     }
 
-    planner
-        .ot_map
-        .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_syllables));
-
     for feature in MYANMAR_FEATURES.iter().skip(4) {
-        planner.ot_map.enable_feature(*feature, F_MANUAL_ZWJ, 1);
+        planner
+            .ot_map
+            .enable_feature(*feature, F_MANUAL_ZWJ | F_PER_SYLLABLE, 1);
     }
 }
 

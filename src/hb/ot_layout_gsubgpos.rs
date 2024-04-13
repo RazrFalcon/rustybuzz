@@ -188,6 +188,7 @@ pub struct skipping_iterator_t<'a, 'b> {
     ignore_zwnj: bool,
     ignore_zwj: bool,
     mask: hb_mask_t,
+    per_syllable: bool,
     syllable: u8,
     matching: Option<&'a match_func_t<'a>>,
     buf_len: usize,
@@ -214,7 +215,8 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             } else {
                 ctx.lookup_mask
             },
-            syllable: if ctx.buffer.idx == start_buf_index {
+            per_syllable: ctx.per_syllable,
+            syllable: if ctx.buffer.idx == start_buf_index && ctx.per_syllable {
                 ctx.buffer.cur(0).syllable()
             } else {
                 0
@@ -946,6 +948,7 @@ pub mod OT {
         pub face: &'a hb_font_t<'b>,
         pub buffer: &'a mut hb_buffer_t,
         pub lookup_mask: hb_mask_t,
+        pub per_syllable: bool,
         pub lookup_index: LookupIndex,
         pub lookup_props: u32,
         pub nesting_level_left: usize,
@@ -966,6 +969,7 @@ pub mod OT {
                 face,
                 buffer,
                 lookup_mask: 1,
+                per_syllable: false,
                 lookup_index: u16::MAX,
                 lookup_props: 0,
                 nesting_level_left: MAX_NESTING_LEVEL,

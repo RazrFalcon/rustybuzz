@@ -158,28 +158,79 @@ const INDIC_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[
     // Basic features.
     // These features are applied in order, one at a time, after initial_reordering,
     // constrained to the syllable.
-    (hb_tag_t::from_bytes(b"nukt"), F_GLOBAL_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"akhn"), F_GLOBAL_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"rphf"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"rkrf"), F_GLOBAL_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"pref"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"blwf"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"abvf"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"half"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"pstf"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"vatu"), F_GLOBAL_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"cjct"), F_GLOBAL_MANUAL_JOINERS),
+    (
+        hb_tag_t::from_bytes(b"nukt"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"akhn"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"rphf"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"rkrf"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"pref"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"blwf"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"abvf"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"half"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"pstf"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"vatu"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"cjct"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
     // Other features.
     // These features are applied all at once, after final_reordering, constrained
     // to the syllable.
     // Default Bengali font in Windows for example has intermixed
     // lookups for init,pres,abvs,blws features.
-    (hb_tag_t::from_bytes(b"init"), F_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"pres"), F_GLOBAL_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"abvs"), F_GLOBAL_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"blws"), F_GLOBAL_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"psts"), F_GLOBAL_MANUAL_JOINERS),
-    (hb_tag_t::from_bytes(b"haln"), F_GLOBAL_MANUAL_JOINERS),
+    (
+        hb_tag_t::from_bytes(b"init"),
+        F_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"pres"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"abvs"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"blws"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"psts"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
+    (
+        hb_tag_t::from_bytes(b"haln"),
+        F_GLOBAL_MANUAL_JOINERS | F_PER_SYLLABLE,
+    ),
 ];
 
 // Must be in the same order as the INDIC_FEATURES array.
@@ -654,12 +705,12 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_PER_SYLLABLE, 1);
     // The Indic specs do not require ccmp, but we apply it here since if
     // there is a use of it, it's typically at the beginning.
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_PER_SYLLABLE, 1);
 
     planner.ot_map.add_gsub_pause(Some(initial_reordering));
 
@@ -673,10 +724,6 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     for feature in INDIC_FEATURES.iter().skip(10) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
-
-    planner
-        .ot_map
-        .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_syllables));
 }
 
 fn override_features(planner: &mut hb_ot_shape_planner_t) {
