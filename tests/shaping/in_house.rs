@@ -6939,6 +6939,45 @@ fn ligature_id_037() {
 }
 
 #[test]
+fn ligature_id_038() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/8339c821814d9bad7c77169332327ad8b0f33c81.ttf",
+            "\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\
+             \u{0627}\u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}\
+             \u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}",
+            "",
+        ),
+        "dotabove-ar=24@188,546+0|\
+         fehDotless_alef-ar=24+752|\
+         space=23+0|\
+         dotabove-ar=21@588,546+0|\
+         fehDotless_alef-ar=21@400,0+1152|\
+         space=20+0|\
+         dotabove-ar=18@588,546+0|\
+         fehDotless_alef-ar=18@400,0+1152|\
+         space=17+0|\
+         dotabove-ar=15@588,546+0|\
+         fehDotless_alef-ar=15@400,0+1152|\
+         space=14+0|\
+         dotabove-ar=12@588,546+0|\
+         fehDotless_alef-ar=12@400,0+1152|\
+         space=11+0|\
+         dotabove-ar=9@588,546+0|\
+         fehDotless_alef-ar=9@400,0+1152|\
+         space=8+0|\
+         dotabove-ar=6@588,546+0|\
+         fehDotless_alef-ar=6@400,0+1152|\
+         space=5+0|\
+         dotabove-ar=3@588,546+0|\
+         fehDotless_alef-ar=3@400,0+1152|\
+         space=2+0|\
+         dotabove-ar=0@588,546+0|\
+         fehDotless_alef-ar=0@400,0+1152"
+    );
+}
+
+#[test]
 fn mark_attachment_001() {
     assert_eq!(
         shape(
