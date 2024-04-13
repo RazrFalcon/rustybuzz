@@ -178,42 +178,47 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // Default glyph pre-processing group
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_PER_SYLLABLE, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_PER_SYLLABLE, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"nukt"), F_NONE, 1);
-    planner
-        .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"akhn"), F_MANUAL_ZWJ, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"nukt"), F_PER_SYLLABLE, 1);
+    planner.ot_map.enable_feature(
+        hb_tag_t::from_bytes(b"akhn"),
+        F_MANUAL_ZWJ | F_PER_SYLLABLE,
+        1,
+    );
 
     // Reordering group
     planner
         .ot_map
         .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_substitution_flags));
-    planner
-        .ot_map
-        .add_feature(hb_tag_t::from_bytes(b"rphf"), F_MANUAL_ZWJ, 1);
+    planner.ot_map.add_feature(
+        hb_tag_t::from_bytes(b"rphf"),
+        F_MANUAL_ZWJ | F_PER_SYLLABLE,
+        1,
+    );
     planner.ot_map.add_gsub_pause(Some(record_rphf));
     planner
         .ot_map
         .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_substitution_flags));
-    planner
-        .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"pref"), F_MANUAL_ZWJ, 1);
+    planner.ot_map.enable_feature(
+        hb_tag_t::from_bytes(b"pref"),
+        F_MANUAL_ZWJ | F_PER_SYLLABLE,
+        1,
+    );
     planner.ot_map.add_gsub_pause(Some(record_pref));
 
     // Orthographic unit shaping group
     for feature in BASIC_FEATURES {
-        planner.ot_map.enable_feature(*feature, F_MANUAL_ZWJ, 1);
+        planner
+            .ot_map
+            .enable_feature(*feature, F_MANUAL_ZWJ | F_PER_SYLLABLE, 1);
     }
 
     planner.ot_map.add_gsub_pause(Some(reorder));
-    planner
-        .ot_map
-        .add_gsub_pause(Some(crate::hb::ot_layout::_hb_clear_syllables));
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {

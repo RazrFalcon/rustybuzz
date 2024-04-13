@@ -12,7 +12,7 @@ use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_funcs_t, hb_unicode_general_category_t, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 
-pub const MAX_NESTING_LEVEL: usize = 6;
+pub const MAX_NESTING_LEVEL: usize = 64;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
 
 pub fn hb_ot_layout_has_kerning(face: &hb_font_t) -> bool {
@@ -247,6 +247,7 @@ pub fn apply_layout_table<T: LayoutTable>(
             ctx.auto_zwnj = lookup.auto_zwnj;
 
             ctx.random = lookup.random;
+            ctx.per_syllable = lookup.per_syllable;
 
             if let Some(table) = &table {
                 if let Some(lookup) = table.get_lookup(lookup.index) {
@@ -319,13 +320,6 @@ fn apply_backward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> b
         ctx.buffer.idx -= 1;
     }
     ret
-}
-
-pub fn _hb_clear_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    let len = buffer.len;
-    for info in &mut buffer.info[..len] {
-        info.set_syllable(0);
-    }
 }
 
 /* unicode_props */

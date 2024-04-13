@@ -188,6 +188,7 @@ pub struct skipping_iterator_t<'a, 'b> {
     ignore_zwnj: bool,
     ignore_zwj: bool,
     mask: hb_mask_t,
+    per_syllable: bool,
     syllable: u8,
     matching: Option<&'a match_func_t<'a>>,
     buf_len: usize,
@@ -214,7 +215,8 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             } else {
                 ctx.lookup_mask
             },
-            syllable: if ctx.buffer.idx == start_buf_index {
+            per_syllable: ctx.per_syllable,
+            syllable: if ctx.buffer.idx == start_buf_index && ctx.per_syllable {
                 ctx.buffer.cur(0).syllable()
             } else {
                 0
@@ -815,9 +817,10 @@ fn apply_lookup(
             continue;
         }
 
-        // Don't recurse to ourself at same position.
-        // Note that this test is too naive, it doesn't catch longer loops.
-        if idx == 0 && record.lookup_list_index == ctx.lookup_index {
+        let orig_len = ctx.buffer.backtrack_len() + ctx.buffer.lookahead_len();
+
+        // This can happen if earlier recursed lookups deleted many entries.
+        if match_positions[idx] >= orig_len {
             continue;
         }
 
@@ -829,7 +832,6 @@ fn apply_lookup(
             break;
         }
 
-        let orig_len = ctx.buffer.backtrack_len() + ctx.buffer.lookahead_len();
         if ctx.recurse(record.lookup_list_index).is_none() {
             continue;
         }
@@ -856,23 +858,25 @@ fn apply_lookup(
         //     NOT the one after it.
         //
         //   - If buffer length was decreased by n, it does not necessarily
-        //     mean that n match positions where removed, as there might
-        //     have been marks and default-ignorables in the sequence.  We
-        //     should instead drop match positions between current-position
-        //     and current-position + n instead.
+        //     mean that n match positions where removed, as there recursed-to
+        //     lookup might had a different LookupFlag.  Here's a constructed
+        //     case of that:
+        //     https://github.com/harfbuzz/harfbuzz/discussions/3538
         //
         // It should be possible to construct tests for both of these cases.
 
         end = (end as isize + delta) as _;
-        if end <= match_positions[idx] {
+        if end < match_positions[idx] {
             // End might end up being smaller than match_positions[idx] if the recursed
-            // lookup ended up removing many items, more than we have had matched.
-            // Just never rewind end back and get out of here.
+            // lookup ended up removing many items.
+            // Just never rewind end beyond start of current position, since that is
+            // not possible in the recursed lookup.  Also adjust delta as such.
+            //
             // https://bugs.chromium.org/p/chromium/issues/detail?id=659496
+            // https://github.com/harfbuzz/harfbuzz/issues/1611
+            //
+            delta += match_positions[idx] as isize - end as isize;
             end = match_positions[idx];
-
-            // There can't be any further changes.
-            break;
         }
 
         // next now is the position after the recursed lookup.
@@ -883,7 +887,7 @@ fn apply_lookup(
                 break;
             }
         } else {
-            // NOTE: delta is negative.
+            // NOTE: delta is non-positive.
             delta = delta.max(next as isize - count as isize);
             next = (next as isize - delta) as _;
         }
@@ -938,6 +942,7 @@ pub mod OT {
         pub face: &'a hb_font_t<'b>,
         pub buffer: &'a mut hb_buffer_t,
         pub lookup_mask: hb_mask_t,
+        pub per_syllable: bool,
         pub lookup_index: LookupIndex,
         pub lookup_props: u32,
         pub nesting_level_left: usize,
@@ -958,6 +963,7 @@ pub mod OT {
                 face,
                 buffer,
                 lookup_mask: 1,
+                per_syllable: false,
                 lookup_index: u16::MAX,
                 lookup_props: 0,
                 nesting_level_left: MAX_NESTING_LEVEL,

@@ -1533,6 +1533,18 @@ fn context_matching_003() {
 }
 
 #[test]
+fn context_matching_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/5bbf3712e6f79775c66a4407837a90e591efbef2.ttf",
+            "\u{1F1FA}\u{1F1FC}",
+            "",
+        ),
+        "gid3=0+2550"
+    );
+}
+
+#[test]
 fn cursive_positioning_001() {
     assert_eq!(
         shape(
@@ -2424,6 +2436,23 @@ fn indic_syllable_013() {
         "pa-tamil=0+778|\
          pa-tamil.001=1+778|\
          pulli-tamil=1@-385,0+0"
+    );
+}
+
+#[test]
+fn indic_syllable_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/41071178fbce4956d151f50967af458dbf555f7b.ttf",
+            "\u{0926}\u{093F}\u{0938}\u{0902}\u{092C}\u{0930}",
+            "",
+        ),
+        "isigndeva=0+266|\
+         dadeva=0+541|\
+         sadeva=2+709|\
+         anusvaradeva=2@0,-1+0|\
+         badeva=4+537|\
+         radeva=5+436"
     );
 }
 
@@ -6906,6 +6935,45 @@ fn ligature_id_037() {
          uni064F=0@-216,196+0|\
          uni064E=0@233,46+0|\
          lam_lam_hehar=0+1200"
+    );
+}
+
+#[test]
+fn ligature_id_038() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/8339c821814d9bad7c77169332327ad8b0f33c81.ttf",
+            "\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\
+             \u{0627}\u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}\
+             \u{0020}\u{0641}\u{0627}\u{0020}\u{0641}\u{0627}",
+            "",
+        ),
+        "dotabove-ar=24@188,546+0|\
+         fehDotless_alef-ar=24+752|\
+         space=23+0|\
+         dotabove-ar=21@588,546+0|\
+         fehDotless_alef-ar=21@400,0+1152|\
+         space=20+0|\
+         dotabove-ar=18@588,546+0|\
+         fehDotless_alef-ar=18@400,0+1152|\
+         space=17+0|\
+         dotabove-ar=15@588,546+0|\
+         fehDotless_alef-ar=15@400,0+1152|\
+         space=14+0|\
+         dotabove-ar=12@588,546+0|\
+         fehDotless_alef-ar=12@400,0+1152|\
+         space=11+0|\
+         dotabove-ar=9@588,546+0|\
+         fehDotless_alef-ar=9@400,0+1152|\
+         space=8+0|\
+         dotabove-ar=6@588,546+0|\
+         fehDotless_alef-ar=6@400,0+1152|\
+         space=5+0|\
+         dotabove-ar=3@588,546+0|\
+         fehDotless_alef-ar=3@400,0+1152|\
+         space=2+0|\
+         dotabove-ar=0@588,546+0|\
+         fehDotless_alef-ar=0@400,0+1152"
     );
 }
 
@@ -13884,3 +13952,4 @@ fn zero_width_marks_011() {
          A=2+1368"
     );
 }
+

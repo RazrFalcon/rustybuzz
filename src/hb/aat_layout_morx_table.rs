@@ -90,13 +90,13 @@ pub fn apply(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer
             };
 
             if reverse {
-                _hb_ot_layout_reverse_graphemes(buffer);
+                buffer.reverse();
             }
 
             apply_subtable(&subtable.kind, buffer, face);
 
             if reverse {
-                _hb_ot_layout_reverse_graphemes(buffer);
+                buffer.reverse();
             }
         }
     }
