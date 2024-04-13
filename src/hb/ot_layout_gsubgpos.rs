@@ -817,12 +817,6 @@ fn apply_lookup(
             continue;
         }
 
-        // Don't recurse to ourself at same position.
-        // Note that this test is too naive, it doesn't catch longer loops.
-        if idx == 0 && record.lookup_list_index == ctx.lookup_index {
-            continue;
-        }
-
         let orig_len = ctx.buffer.backtrack_len() + ctx.buffer.lookahead_len();
 
         // This can happen if earlier recursed lookups deleted many entries.
