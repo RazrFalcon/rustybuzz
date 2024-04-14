@@ -171,11 +171,11 @@ const STATE_TABLE: &[[(u8, u8, u16); 6]] = &[
 
 impl hb_glyph_info_t {
     fn arabic_shaping_action(&self) -> u8 {
-        self.complex_var_u8_auxiliary()
+        self.ot_shaper_var_u8_auxiliary()
     }
 
     fn set_arabic_shaping_action(&mut self, action: u8) {
-        self.set_complex_var_u8_auxiliary(action)
+        self.set_ot_shaper_var_u8_auxiliary(action)
     }
 }
 
