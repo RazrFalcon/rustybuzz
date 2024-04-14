@@ -37,9 +37,9 @@ pub fn insert_dotted_circles(
         glyph_id: 0x25CC,
         ..hb_glyph_info_t::default()
     };
-    dottedcircle.set_complex_var_u8_category(dottedcircle_category);
+    dottedcircle.set_ot_shaper_var_u8_category(dottedcircle_category);
     if let Some(dottedcircle_position) = dottedcircle_position {
-        dottedcircle.set_complex_var_u8_auxiliary(dottedcircle_position);
+        dottedcircle.set_ot_shaper_var_u8_auxiliary(dottedcircle_position);
     }
     dottedcircle.glyph_id = dottedcircle_glyph;
 
@@ -61,7 +61,7 @@ pub fn insert_dotted_circles(
             if let Some(repha_category) = repha_category {
                 while buffer.idx < buffer.len
                     && last_syllable == buffer.cur(0).syllable()
-                    && buffer.cur(0).complex_var_u8_category() == repha_category
+                    && buffer.cur(0).ot_shaper_var_u8_category() == repha_category
                 {
                     buffer.next_glyph();
                 }

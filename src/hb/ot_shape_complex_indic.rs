@@ -590,19 +590,19 @@ impl IndicShapePlan {
 
 impl hb_glyph_info_t {
     pub(crate) fn indic_category(&self) -> Category {
-        self.complex_var_u8_category()
+        self.ot_shaper_var_u8_category()
     }
 
     pub(crate) fn set_indic_category(&mut self, c: Category) {
-        self.set_complex_var_u8_category(c)
+        self.set_ot_shaper_var_u8_category(c)
     }
 
     pub(crate) fn indic_position(&self) -> Position {
-        self.complex_var_u8_auxiliary()
+        self.ot_shaper_var_u8_auxiliary()
     }
 
     pub(crate) fn set_indic_position(&mut self, c: Position) {
-        self.set_complex_var_u8_auxiliary(c)
+        self.set_ot_shaper_var_u8_auxiliary(c)
     }
 
     fn is_one_of(&self, flags: u32) -> bool {
