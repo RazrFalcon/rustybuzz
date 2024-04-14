@@ -368,7 +368,7 @@ impl driver_context_t<()> for RearrangementCtx {
             let reverse_l = 3 == (m >> 4);
             let reverse_r = 3 == (m & 0x0F);
 
-            if self.end - self.start >= l + r {
+            if self.end - self.start >= l + r && self.end - self.start <= MAX_CONTEXT_LENGTH {
                 buffer.merge_clusters(self.start, (buffer.idx + 1).min(buffer.len));
                 buffer.merge_clusters(self.start, self.end);
 
