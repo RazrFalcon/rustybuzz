@@ -37,7 +37,7 @@ pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE: u32 = 0;
 pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY: u32 = 1;
 pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE: u32 = 2;
 
-pub const DEFAULT_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const DEFAULT_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,
@@ -53,7 +53,7 @@ pub const DEFAULT_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     fallback_position: true,
 };
 
-pub struct hb_ot_complex_shaper_t {
+pub struct hb_ot_shaper_t {
     /// Called during `shape_plan()`.
     /// Shapers should use plan.map to add their features and callbacks.
     pub collect_features: Option<fn(&mut hb_ot_shape_planner_t)>,
@@ -106,7 +106,7 @@ pub struct hb_ot_complex_shaper_t {
 
 // Same as default but no mark advance zeroing / fallback positioning.
 // Dumbest shaper ever, basically.
-pub const DUMBER_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const DUMBER_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,
@@ -126,7 +126,7 @@ pub fn hb_ot_shape_complex_categorize(
     script: Script,
     direction: Direction,
     chosen_gsub_script: Option<hb_tag_t>,
-) -> &'static hb_ot_complex_shaper_t {
+) -> &'static hb_ot_shaper_t {
     match script {
         // Unicode-1.1 additions
         script::ARABIC
