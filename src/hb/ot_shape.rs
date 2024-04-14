@@ -345,7 +345,7 @@ pub fn shape_internal(ctx: &mut ShapeContext) {
 
 fn substitute_pre(ctx: &mut ShapeContext) {
     hb_ot_substitute_default(ctx);
-    hb_ot_substitute_complex(ctx);
+    hb_ot_substitute_plan(ctx);
 
     if ctx.plan.apply_morx && !ctx.plan.apply_gpos {
         hb_aat_layout_remove_deleted_glyphs(&mut ctx.buffer);
@@ -381,7 +381,7 @@ fn hb_ot_substitute_default(ctx: &mut ShapeContext) {
     map_glyphs_fast(ctx.buffer);
 }
 
-fn hb_ot_substitute_complex(ctx: &mut ShapeContext) {
+fn hb_ot_substitute_plan(ctx: &mut ShapeContext) {
     hb_ot_layout_substitute_start(ctx.face, ctx.buffer);
 
     if ctx.plan.fallback_glyph_classes {
@@ -404,7 +404,7 @@ fn position(ctx: &mut ShapeContext) {
 
     position_default(ctx);
 
-    position_complex(ctx);
+    position_plan(ctx);
 
     if ctx.buffer.direction.is_backward() {
         ctx.buffer.reverse();
@@ -438,7 +438,7 @@ fn position_default(ctx: &mut ShapeContext) {
     }
 }
 
-fn position_complex(ctx: &mut ShapeContext) {
+fn position_plan(ctx: &mut ShapeContext) {
     // If the font has no GPOS and direction is forward, then when
     // zeroing mark widths, we shift the mark with it, such that the
     // mark is positioned hanging over the previous glyph.  When
