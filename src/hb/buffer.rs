@@ -1475,10 +1475,10 @@ pub const HB_BUFFER_SCRATCH_FLAG_HAS_CGJ: u32 = 0x00000010;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS: u32 = 0x00000020;
 
 /* Reserved for complex shapers' internal use. */
-pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX0: u32 = 0x01000000;
-// pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX1: u32 = 0x02000000;
-// pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX2: u32 = 0x04000000;
-// pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX3: u32 = 0x08000000;
+pub const HB_BUFFER_SCRATCH_FLAG_SHAPER0: u32 = 0x01000000;
+// pub const HB_BUFFER_SCRATCH_FLAG_SHAPER1: u32 = 0x02000000;
+// pub const HB_BUFFER_SCRATCH_FLAG_SHAPER2: u32 = 0x04000000;
+// pub const HB_BUFFER_SCRATCH_FLAG_SHAPER3: u32 = 0x08000000;
 
 /// A buffer that contains an input string ready for shaping.
 pub struct UnicodeBuffer(pub(crate) hb_buffer_t);
