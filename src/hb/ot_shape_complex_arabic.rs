@@ -656,7 +656,7 @@ fn reorder_marks_arabic(
     }
 }
 
-pub const ARABIC_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const ARABIC_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: Some(collect_features),
     override_features: None,
     create_data: Some(|plan| Box::new(data_create_arabic(plan))),

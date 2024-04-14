@@ -12,7 +12,7 @@ use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
-pub const UNIVERSAL_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const UNIVERSAL_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: Some(collect_features),
     override_features: None,
     create_data: Some(|plan| Box::new(UniversalShapePlan::new(plan))),

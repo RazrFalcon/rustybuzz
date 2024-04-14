@@ -6,7 +6,7 @@ use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::hb_unicode_general_category_t;
 use super::{hb_font_t, script};
 
-pub const THAI_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const THAI_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,

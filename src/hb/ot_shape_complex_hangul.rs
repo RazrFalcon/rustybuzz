@@ -362,7 +362,7 @@ fn setup_masks_hangul(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_
     }
 }
 
-pub const HANGUL_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const HANGUL_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: Some(collect_features_hangul),
     override_features: Some(override_features_hangul),
     create_data: Some(|plan| Box::new(data_create_hangul(&plan.ot_map))),
