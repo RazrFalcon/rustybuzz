@@ -142,7 +142,7 @@ pub fn hb_ot_shape_complex_categorize(
             if (chosen_gsub_script != Some(hb_tag_t::default_script()) || script == script::ARABIC)
                 && direction.is_horizontal()
             {
-                &crate::hb::ot_shape_complex_arabic::ARABIC_SHAPER
+                &crate::hb::ot_shaper_arabic::ARABIC_SHAPER
             } else {
                 &DEFAULT_SHAPER
             }
@@ -150,13 +150,13 @@ pub fn hb_ot_shape_complex_categorize(
 
         // Unicode-1.1 additions
         script::THAI
-        | script::LAO => &crate::hb::ot_shape_complex_thai::THAI_SHAPER,
+        | script::LAO => &crate::hb::ot_shaper_thai::THAI_SHAPER,
 
         // Unicode-1.1 additions
-        script::HANGUL => &crate::hb::ot_shape_complex_hangul::HANGUL_SHAPER,
+        script::HANGUL => &crate::hb::ot_shaper_hangul::HANGUL_SHAPER,
 
         // Unicode-1.1 additions
-        script::HEBREW => &crate::hb::ot_shape_complex_hebrew::HEBREW_SHAPER,
+        script::HEBREW => &crate::hb::ot_shaper_hebrew::HEBREW_SHAPER,
 
         // Unicode-1.1 additions
         script::BENGALI
@@ -180,13 +180,13 @@ pub fn hb_ot_shape_complex_categorize(
                chosen_gsub_script == Some(hb_tag_t::from_bytes(b"latn")) {
                 &DEFAULT_SHAPER
             } else if chosen_gsub_script.map_or(false, |tag| tag.to_bytes()[3] == b'3') {
-                &crate::hb::ot_shape_complex_use::UNIVERSAL_SHAPER
+                &crate::hb::ot_shaper_use::UNIVERSAL_SHAPER
             } else {
-                &crate::hb::ot_shape_complex_indic::INDIC_SHAPER
+                &crate::hb::ot_shaper_indic::INDIC_SHAPER
             }
         }
 
-        script::KHMER => &crate::hb::ot_shape_complex_khmer::KHMER_SHAPER,
+        script::KHMER => &crate::hb::ot_shaper_khmer::KHMER_SHAPER,
 
         script::MYANMAR => {
             // If the designer designed the font for the 'DFLT' script,
@@ -202,12 +202,12 @@ pub fn hb_ot_shape_complex_categorize(
             {
                 &DEFAULT_SHAPER
             } else {
-                &crate::hb::ot_shape_complex_myanmar::MYANMAR_SHAPER
+                &crate::hb::ot_shaper_myanmar::MYANMAR_SHAPER
             }
         }
 
         // https://github.com/harfbuzz/harfbuzz/issues/1162
-        script::MYANMAR_ZAWGYI => &crate::hb::ot_shape_complex_myanmar::MYANMAR_ZAWGYI_SHAPER,
+        script::MYANMAR_ZAWGYI => &crate::hb::ot_shaper_myanmar::MYANMAR_ZAWGYI_SHAPER,
 
         // Unicode-2.0 additions
         script::TIBETAN
@@ -328,7 +328,7 @@ pub fn hb_ot_shape_complex_categorize(
                chosen_gsub_script == Some(hb_tag_t::from_bytes(b"latn")) {
                 &DEFAULT_SHAPER
             } else {
-                &crate::hb::ot_shape_complex_use::UNIVERSAL_SHAPER
+                &crate::hb::ot_shaper_use::UNIVERSAL_SHAPER
             }
         }
 

@@ -5,9 +5,9 @@ use super::buffer::*;
 use super::ot_layout::*;
 use super::ot_map::*;
 use super::ot_shape::*;
-use super::ot_shape_complex::*;
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::*;
 use super::unicode::*;
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
@@ -49,7 +49,7 @@ pub enum hb_arabic_joining_type_t {
 }
 
 fn get_joining_type(u: char, gc: hb_unicode_general_category_t) -> hb_arabic_joining_type_t {
-    let j_type = super::ot_shape_complex_arabic_table::joining_type(u);
+    let j_type = super::ot_shaper_arabic_table::joining_type(u);
     if j_type != hb_arabic_joining_type_t::X {
         return j_type;
     }

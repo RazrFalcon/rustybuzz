@@ -3,7 +3,7 @@
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
 
-use super::ot_shape_complex_indic::{MatraCategory, SyllabicCategory};
+use super::ot_shaper_indic::{MatraCategory, SyllabicCategory};
 
 use SyllabicCategory::Avagraha as ISC_A;
 use SyllabicCategory::Bindu as ISC_Bi;

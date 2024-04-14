@@ -11,9 +11,9 @@ use super::ot_layout::*;
 use super::ot_layout_gsubgpos::{WouldApply, WouldApplyContext};
 use super::ot_map::*;
 use super::ot_shape::*;
-use super::ot_shape_complex::*;
 use super::ot_shape_normalize::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::*;
 use super::unicode::{hb_gc, CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
@@ -733,7 +733,7 @@ fn override_features(planner: &mut hb_ot_shape_planner_t) {
 }
 
 fn preprocess_text(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::ot_shape_complex_vowel_constraints::preprocess_text_vowel_constraints(buffer);
+    super::ot_shaper_vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
 
 fn decompose(ctx: &hb_ot_shape_normalize_context_t, ab: char) -> Option<(char, char)> {
@@ -812,7 +812,7 @@ fn setup_masks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) 
 }
 
 fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::ot_shape_complex_indic_machine::find_syllables_indic(buffer);
+    super::ot_shaper_indic_machine::find_syllables_indic(buffer);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -824,12 +824,12 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
 }
 
 fn initial_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    use super::ot_shape_complex_indic_machine::SyllableType;
+    use super::ot_shaper_indic_machine::SyllableType;
 
     let indic_plan = plan.data::<IndicShapePlan>();
 
     update_consonant_positions(plan, indic_plan, face, buffer);
-    super::ot_shape_complex_syllabic::insert_dotted_circles(
+    super::ot_shaper_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
@@ -942,7 +942,7 @@ fn initial_reordering_syllable(
     end: usize,
     buffer: &mut hb_buffer_t,
 ) {
-    use super::ot_shape_complex_indic_machine::SyllableType;
+    use super::ot_shaper_indic_machine::SyllableType;
 
     let syllable_type = match buffer.info[start].syllable() & 0x0F {
         0 => SyllableType::ConsonantSyllable,
@@ -2007,7 +2007,7 @@ fn final_reordering_impl(
 }
 
 pub fn get_category_and_position(u: u32) -> (Category, Position) {
-    let (c1, c2) = super::ot_shape_complex_indic_table::get_categories(u);
+    let (c1, c2) = super::ot_shaper_indic_table::get_categories(u);
     let c2 = if c1 == SyllabicCategory::ConsonantMedial
         || c1 == SyllabicCategory::GeminationMark
         || c1 == SyllabicCategory::RegisterShifter
