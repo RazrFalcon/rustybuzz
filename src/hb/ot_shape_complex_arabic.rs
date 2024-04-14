@@ -12,7 +12,7 @@ use super::unicode::*;
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
 const HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH: hb_buffer_scratch_flags_t =
-    HB_BUFFER_SCRATCH_FLAG_COMPLEX0;
+    HB_BUFFER_SCRATCH_FLAG_SHAPER0;
 
 // See:
 // https://github.com/harfbuzz/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516
