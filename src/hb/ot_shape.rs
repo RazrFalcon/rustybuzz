@@ -35,11 +35,9 @@ impl<'a> hb_ot_shape_planner_t<'a> {
         let aat_map = aat_map::hb_aat_map_builder_t::default();
 
         let mut shaper = match script {
-            Some(script) => hb_ot_shape_complex_categorize(
-                script,
-                direction,
-                ot_map.chosen_script(TableIndex::GSUB),
-            ),
+            Some(script) => {
+                hb_ot_shaper_categorize(script, direction, ot_map.chosen_script(TableIndex::GSUB))
+            }
             None => &DEFAULT_SHAPER,
         };
 

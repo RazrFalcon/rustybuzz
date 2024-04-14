@@ -122,7 +122,7 @@ pub const DUMBER_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     fallback_position: false,
 };
 
-pub fn hb_ot_shape_complex_categorize(
+pub fn hb_ot_shaper_categorize(
     script: Script,
     direction: Direction,
     chosen_gsub_script: Option<hb_tag_t>,
