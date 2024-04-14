@@ -98,7 +98,7 @@ print()
 print('#![allow(non_camel_case_types)]')
 print('#![allow(unused_imports)]')
 print()
-print('use super::ot_shape_complex_indic::{MatraCategory, SyllabicCategory};')
+print('use super::ot_shaper_indic::{MatraCategory, SyllabicCategory};')
 
 # Shorten values
 short = [{

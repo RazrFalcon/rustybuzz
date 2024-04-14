@@ -23,7 +23,7 @@ use super::buffer::hb_buffer_t;
 use super::hb_glyph_info_t;
 use super::machine_cursor::MachineCursor;
 use super::ot_layout::*;
-use super::ot_shape_complex_use::category;
+use super::ot_shaper_use::category;
 
 static _use_syllable_machine_trans_keys: [u8; 226] = [
     0, 36, 5, 33, 5, 33, 1, 33, 10, 33, 11, 32, 12, 32, 13, 32, 30, 31, 31, 31, 11, 33, 11, 33, 11,

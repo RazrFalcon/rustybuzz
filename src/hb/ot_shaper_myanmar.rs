@@ -1,10 +1,10 @@
 use super::buffer::hb_buffer_t;
 use super::ot_map::*;
 use super::ot_shape::*;
-use super::ot_shape_complex::*;
-use super::ot_shape_complex_indic::{category, position};
 use super::ot_shape_normalize::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::*;
+use super::ot_shaper_indic::{category, position};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 
 pub const MYANMAR_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
@@ -61,7 +61,7 @@ const MYANMAR_FEATURES: &[hb_tag_t] = &[
 impl hb_glyph_info_t {
     fn set_myanmar_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, mut pos) = crate::hb::ot_shape_complex_indic::get_category_and_position(u);
+        let (mut cat, mut pos) = crate::hb::ot_shaper_indic::get_category_and_position(u);
 
         // Myanmar
         // https://docs.microsoft.com/en-us/typography/script-development/myanmar#analyze
@@ -165,7 +165,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 }
 
 fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::ot_shape_complex_myanmar_machine::find_syllables_myanmar(buffer);
+    super::ot_shaper_myanmar_machine::find_syllables_myanmar(buffer);
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -177,9 +177,9 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
 }
 
 fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    use super::ot_shape_complex_myanmar_machine::SyllableType;
+    use super::ot_shaper_myanmar_machine::SyllableType;
 
-    super::ot_shape_complex_syllabic::insert_dotted_circles(
+    super::ot_shaper_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
@@ -198,7 +198,7 @@ fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
 }
 
 fn reorder_syllable(start: usize, end: usize, buffer: &mut hb_buffer_t) {
-    use super::ot_shape_complex_myanmar_machine::SyllableType;
+    use super::ot_shaper_myanmar_machine::SyllableType;
 
     let syllable_type = match buffer.info[start].syllable() & 0x0F {
         0 => SyllableType::ConsonantSyllable,

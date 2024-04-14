@@ -2,8 +2,8 @@ use super::buffer::*;
 use super::common::hb_codepoint_t;
 use super::hb_font_t;
 use super::ot_layout::*;
-use super::ot_shape_complex::MAX_COMBINING_MARKS;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::MAX_COMBINING_MARKS;
 use super::unicode::{hb_unicode_funcs_t, CharExt};
 
 pub struct hb_ot_shape_normalize_context_t<'a> {

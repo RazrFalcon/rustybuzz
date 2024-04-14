@@ -5,10 +5,10 @@ use super::buffer::hb_buffer_t;
 use super::ot_layout::*;
 use super::ot_map::*;
 use super::ot_shape::*;
-use super::ot_shape_complex::*;
-use super::ot_shape_complex_arabic::arabic_shape_plan_t;
 use super::ot_shape_normalize::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::*;
+use super::ot_shaper_arabic::arabic_shape_plan_t;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
@@ -161,7 +161,7 @@ impl UniversalShapePlan {
         let mut arabic_plan = None;
 
         if plan.script.map_or(false, has_arabic_joining) {
-            arabic_plan = Some(crate::hb::ot_shape_complex_arabic::data_create_arabic(plan));
+            arabic_plan = Some(crate::hb::ot_shaper_arabic::data_create_arabic(plan));
         }
 
         UniversalShapePlan {
@@ -233,7 +233,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 }
 
 fn setup_syllables(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::ot_shape_complex_use_machine::find_syllables(buffer);
+    super::ot_shaper_use_machine::find_syllables(buffer);
 
     foreach_syllable!(buffer, start, end, {
         buffer.unsafe_to_break(Some(start), Some(end));
@@ -270,7 +270,7 @@ fn setup_rphf_mask(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t) {
 }
 
 fn setup_topographical_masks(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t) {
-    use super::ot_shape_complex_use_machine::SyllableType;
+    use super::ot_shaper_use_machine::SyllableType;
 
     if plan.data::<UniversalShapePlan>().arabic_plan.is_some() {
         return;
@@ -368,9 +368,9 @@ fn record_rphf(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
 }
 
 fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    use super::ot_shape_complex_use_machine::SyllableType;
+    use super::ot_shaper_use_machine::SyllableType;
 
-    crate::hb::ot_shape_complex_syllabic::insert_dotted_circles(
+    crate::hb::ot_shaper_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
@@ -413,7 +413,7 @@ const BASE_FLAGS: u64 = category_flag64(category::FABV)
     | category_flag64(category::VMPRE);
 
 fn reorder_syllable(start: usize, end: usize, buffer: &mut hb_buffer_t) {
-    use super::ot_shape_complex_use_machine::SyllableType;
+    use super::ot_shaper_use_machine::SyllableType;
 
     let syllable_type = (buffer.info[start].syllable() & 0x0F) as u32;
     // Only a few syllable types need reordering.
@@ -518,7 +518,7 @@ fn has_arabic_joining(script: Script) -> bool {
 }
 
 fn preprocess_text(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
-    super::ot_shape_complex_vowel_constraints::preprocess_text_vowel_constraints(buffer);
+    super::ot_shaper_vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
 
 fn compose(_: &hb_ot_shape_normalize_context_t, a: char, b: char) -> Option<char> {
@@ -535,12 +535,12 @@ fn setup_masks(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
 
     // Do this before allocating use_category().
     if let Some(ref arabic_plan) = universal_plan.arabic_plan {
-        crate::hb::ot_shape_complex_arabic::setup_masks_inner(arabic_plan, plan.script, buffer);
+        crate::hb::ot_shaper_arabic::setup_masks_inner(arabic_plan, plan.script, buffer);
     }
 
     // We cannot setup masks here. We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {
-        info.set_use_category(super::ot_shape_complex_use_table::get_category(info));
+        info.set_use_category(super::ot_shaper_use_table::get_category(info));
     }
 }

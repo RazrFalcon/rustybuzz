@@ -4,7 +4,7 @@ use core::any::Any;
 
 use super::ot_map::*;
 use super::ot_shape::*;
-use super::ot_shape_complex::*;
+use super::ot_shaper::*;
 use super::{aat_map, hb_font_t, hb_mask_t, Direction, Feature, Language, Script};
 
 /// A reusable plan for shaping a text buffer.
