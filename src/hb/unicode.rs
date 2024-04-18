@@ -538,13 +538,11 @@ impl CharExt for char {
             u = '\u{103A}';
         }
 
-        // XXX This hack belongs to the USE shaper (for Tai Tham):
         // Reorder SAKOT to ensure it comes after any tone marks.
         if u == '\u{1A60}' {
             return 254;
         }
 
-        // XXX This hack belongs to the Tibetan shaper:
         // Reorder PADMA to ensure it comes after any vowel marks.
         if u == '\u{0FC6}' {
             return 254;
