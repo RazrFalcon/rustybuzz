@@ -63,7 +63,7 @@ pub mod category {
     pub const V_PST: u8 = 23;
 
     // Khmer.
-    pub const COENG: u8 = 24;
+    pub const COENG: u8 = H;
     pub const ROBATIC: u8 = 25;
     pub const X_GROUP: u8 = 26;
     pub const Y_GROUP: u8 = 27;
