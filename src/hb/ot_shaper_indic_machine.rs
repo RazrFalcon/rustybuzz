@@ -17,6 +17,7 @@
 )]
 
 use super::buffer::hb_buffer_t;
+use super::buffer::HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
 
 static _indic_syllable_machine_trans_keys: [u8; 284] = [
     7, 7, 3, 7, 4, 6, 4, 7, 3, 7, 5, 5, 14, 14, 3, 7, 3, 11, 3, 7, 7, 7, 4, 6, 4, 7, 3, 7, 5, 5,
@@ -284,15 +285,12 @@ pub fn find_syllables_indic(buffer: &mut hb_buffer_t) {
                                 }
                             }
                             15 => {
+                                te = p;
+                                p = p - 1;
                                 {
-                                    {
-                                        te = p;
-                                        p = p - 1;
-                                        {
-                                            found_syllable!(SyllableType::BrokenCluster);
-                                            /*buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;*/
-                                        }
-                                    }
+                                    found_syllable!(SyllableType::BrokenCluster);
+                                    buffer.scratch_flags |=
+                                        HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                 }
                             }
                             16 => {
@@ -327,47 +325,37 @@ pub fn find_syllables_indic(buffer: &mut hb_buffer_t) {
                                 }
                             }
                             4 => {
+                                p = (te) - 1;
                                 {
-                                    {
-                                        p = (te) - 1;
-                                        {
-                                            found_syllable!(SyllableType::BrokenCluster);
-                                            /*buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;*/
-                                        }
-                                    }
+                                    found_syllable!(SyllableType::BrokenCluster);
+                                    buffer.scratch_flags |=
+                                        HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                 }
                             }
-                            6 => {
-                                {
+                            6 => match (act) {
+                                1 => {
+                                    p = (te) - 1;
                                     {
-                                        match (act) {
-                                            1 => {
-                                                p = (te) - 1;
-                                                {
-                                                    found_syllable!(
-                                                        SyllableType::ConsonantSyllable
-                                                    );
-                                                }
-                                            }
-                                            5 => {
-                                                p = (te) - 1;
-                                                {
-                                                    found_syllable!(SyllableType::BrokenCluster);
-                                                    /*buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;*/
-                                                }
-                                            }
-                                            6 => {
-                                                p = (te) - 1;
-                                                {
-                                                    found_syllable!(SyllableType::NonIndicCluster);
-                                                }
-                                            }
+                                        found_syllable!(SyllableType::ConsonantSyllable);
+                                    }
+                                }
+                                5 => {
+                                    p = (te) - 1;
+                                    {
+                                        found_syllable!(SyllableType::BrokenCluster);
+                                        buffer.scratch_flags |=
+                                            HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
+                                    }
+                                }
+                                6 => {
+                                    p = (te) - 1;
+                                    {
+                                        found_syllable!(SyllableType::NonIndicCluster);
+                                    }
+                                }
 
-                                            _ => {}
-                                        }
-                                    }
-                                }
-                            }
+                                _ => {}
+                            },
                             18 => {
                                 {
                                     {

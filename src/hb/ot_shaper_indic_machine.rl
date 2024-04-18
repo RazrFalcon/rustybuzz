@@ -13,6 +13,7 @@
 )]
 
 use super::buffer::hb_buffer_t;
+use super::buffer::HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
 
 %%{
   machine indic_syllable_machine;
@@ -70,7 +71,7 @@ main := |*
 	vowel_syllable		=> { found_syllable!(SyllableType::VowelSyllable); };
 	standalone_cluster	=> { found_syllable!(SyllableType::StandaloneCluster); };
 	symbol_cluster		=> { found_syllable!(SyllableType::SymbolCluster); };
-	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); /*buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;*/ };
+	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
 	other			=> { found_syllable!(SyllableType::NonIndicCluster); };
 *|;
 

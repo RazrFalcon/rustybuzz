@@ -18,6 +18,7 @@
 )]
 
 use super::buffer::hb_buffer_t;
+use super::buffer::HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
 
 static _khmer_syllable_machine_trans_keys: [u8; 82] = [
     3, 10, 3, 10, 0, 0, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 0, 0, 3, 10,
@@ -190,6 +191,8 @@ pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
                                 p = p - 1;
                                 {
                                     found_syllable!(SyllableType::BrokenCluster);
+                                    buffer.scratch_flags |=
+                                        HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                 }
                             }
                             12 => {
@@ -209,6 +212,8 @@ pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
                                 p = (te) - 1;
                                 {
                                     found_syllable!(SyllableType::BrokenCluster);
+                                    buffer.scratch_flags |=
+                                        HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                 }
                             }
                             5 => match (act) {
@@ -216,6 +221,8 @@ pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
                                     p = (te) - 1;
                                     {
                                         found_syllable!(SyllableType::BrokenCluster);
+                                        buffer.scratch_flags |=
+                                            HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                     }
                                 }
                                 3 => {
