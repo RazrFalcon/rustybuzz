@@ -71,14 +71,14 @@ pub mod category {
     // Myanmar
     pub const AS: u8 = 32; // Asat
     pub const D0: u8 = 33; // Digit zero
-    pub const MH: u8 = 34; // Medial
-    pub const MR: u8 = 35; // Medial
-    pub const MW: u8 = 36; // Medial
-    pub const MY: u8 = 37; // Medial
+    pub const MH: u8 = 34; // Medial Ha
+    pub const MR: u8 = 35; // Medial Ra
+    pub const MW: u8 = 36; // Medial Wa, Shan Wa
+    pub const MY: u8 = 37; // Medial Ya, Mon Na, Mon Ma
     pub const PT: u8 = 38; // Pwo and other tones
     pub const VS: u8 = 39; // Variation selectors
     pub const P: u8 = 40; // Punctuation
-    pub const ML: u8 = 41; // Consonant medials
+    pub const ML: u8 = 41; // Medial Mon La
 }
 
 pub type Position = u8;
