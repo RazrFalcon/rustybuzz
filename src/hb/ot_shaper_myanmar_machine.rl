@@ -23,32 +23,35 @@ use super::buffer::hb_buffer_t;
 
 %%{
 
-A    = 9;
-As   = 18;
 C    = 1;
-D    = 10;
-D0   = 20;
-DB   = 3;
-GB   = 10;
-H    = 4;
 IV   = 2;
-MH   = 21;
-ML   = 32;
-MR   = 22;
-MW   = 23;
-MY   = 24;
-PT   = 25;
-V    = 8;
-VAbv = 26;
-VBlw = 27;
-VPre = 28;
-VPst = 29;
-VS   = 30;
-ZWJ  = 6;
+DB   = 3;	# Dot below	     = OT_N
+H    = 4;
 ZWNJ = 5;
+ZWJ  = 6;
+V    = 8;	# Visarga and Shan tones
+GB   = 10;	# 		     = OT_PLACEHOLDER
+D    = 10;	# Digits except zero = GB
+A    = 9;
 Ra   = 15;
-P    = 31;
-CS   = 19;
+CS   = 18;
+
+VAbv = 20;
+VBlw = 21;
+VPre = 22;
+VPst = 23;
+
+As   = 32;	# Asat
+D0   = 33;	# Digit zero
+MH   = 34;	# Medial
+MR   = 35;	# Medial
+MW   = 36;	# Medial
+MY   = 37;	# Medial
+PT   = 38;	# Pwo and other tones
+VS   = 39;	# Variation selectors
+P    = 40;	# Punctuation
+ML   = 41;	# Consonant medials
+
 
 j = ZWJ|ZWNJ;			# Joiners
 k = (Ra As H);			# Kinzi

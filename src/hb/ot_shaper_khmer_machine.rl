@@ -29,15 +29,18 @@ ZWNJ = 5;
 ZWJ  = 6;
 PLACEHOLDER = 10;
 DOTTEDCIRCLE = 11;
-Coeng= 13;
 Ra   = 15;
-Robatic = 20;
-Xgroup  = 21;
-Ygroup  = 22;
-VAbv = 26;
-VBlw = 27;
-VPre = 28;
-VPst = 29;
+
+VAbv = 20;
+VBlw = 21;
+VPre = 22;
+VPst = 23;
+
+Coeng = 24;
+Robatic = 25;
+Xgroup  = 26;
+Ygroup  = 27;
+
 
 c = (C | Ra | V);
 cn = c.((ZWJ|ZWNJ)?.Robatic)?;

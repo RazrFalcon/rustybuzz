@@ -47,29 +47,38 @@ pub mod category {
     pub const A: u8 = 9;
     pub const VD: u8 = A;
     pub const PLACEHOLDER: u8 = 10;
+    pub const D: u8 = 11; // Digits except zero
     pub const DOTTED_CIRCLE: u8 = 11;
     pub const RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
-    pub const COENG: u8 = 13; // Khmer-style Virama.
     pub const REPHA: u8 = 14; // Atomically-encoded logical or visual repha.
     pub const RA: u8 = 15;
     pub const CM: u8 = 16; // Consonant-Medial.
     pub const SYMBOL: u8 = 17; // Avagraha, etc that take marks (SM,A,VD).
     pub const CS: u8 = 19;
-    pub const ROBATIC: u8 = 20;
-    pub const X_GROUP: u8 = 21;
-    pub const Y_GROUP: u8 = 22;
-    pub const MW: u8 = 23;
-    pub const MY: u8 = 24;
-    pub const PT: u8 = 25;
-    // The following are used by Khmer & Myanmar shapers.  Defined here for them to share.
-    pub const V_AVB: u8 = 26;
-    pub const V_BLW: u8 = 27;
-    pub const V_PRE: u8 = 28;
-    pub const V_PST: u8 = 29;
-    pub const VS: u8 = 30; // Variation selectors
-    pub const P: u8 = 31; // Punctuation
-    pub const D: u8 = 11; // Digits except zero
-    pub const ML: u8 = 32; // Medial la
+
+    // Khmer & Myanmar shapers.
+    pub const V_AVB: u8 = 20;
+    pub const V_BLW: u8 = 21;
+    pub const V_PRE: u8 = 22;
+    pub const V_PST: u8 = 23;
+
+    // Khmer.
+    pub const COENG: u8 = 24;
+    pub const ROBATIC: u8 = 25;
+    pub const X_GROUP: u8 = 26;
+    pub const Y_GROUP: u8 = 27;
+
+    // Myanmar
+    pub const AS: u8 = 32; // Asat
+    pub const D0: u8 = 33; // Digit zero
+    pub const MH: u8 = 34; // Medial
+    pub const MR: u8 = 35; // Medial
+    pub const MW: u8 = 36; // Medial
+    pub const MY: u8 = 37; // Medial
+    pub const PT: u8 = 38; // Pwo and other tones
+    pub const VS: u8 = 39; // Variation selectors
+    pub const P: u8 = 40; // Punctuation
+    pub const ML: u8 = 41; // Consonant medials
 }
 
 pub type Position = u8;
