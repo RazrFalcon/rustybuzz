@@ -44,17 +44,16 @@ pub mod category {
     pub const ZWJ: u8 = 6;
     pub const M: u8 = 7;
     pub const SM: u8 = 8;
-    // 9 unused as of now
-    pub const A: u8 = 10;
+    pub const A: u8 = 9;
     pub const VD: u8 = A;
-    pub const PLACEHOLDER: u8 = 11;
-    pub const DOTTED_CIRCLE: u8 = 12;
-    pub const RS: u8 = 13; // Register Shifter, used in Khmer OT spec.
-    pub const COENG: u8 = 14; // Khmer-style Virama.
-    pub const REPHA: u8 = 15; // Atomically-encoded logical or visual repha.
-    pub const RA: u8 = 16;
-    pub const CM: u8 = 17; // Consonant-Medial.
-    pub const SYMBOL: u8 = 18; // Avagraha, etc that take marks (SM,A,VD).
+    pub const PLACEHOLDER: u8 = 10;
+    pub const DOTTED_CIRCLE: u8 = 11;
+    pub const RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
+    pub const COENG: u8 = 13; // Khmer-style Virama.
+    pub const REPHA: u8 = 14; // Atomically-encoded logical or visual repha.
+    pub const RA: u8 = 15;
+    pub const CM: u8 = 16; // Consonant-Medial.
+    pub const SYMBOL: u8 = 17; // Avagraha, etc that take marks (SM,A,VD).
     pub const CS: u8 = 19;
     pub const ROBATIC: u8 = 20;
     pub const X_GROUP: u8 = 21;
