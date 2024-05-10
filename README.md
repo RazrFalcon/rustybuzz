@@ -19,7 +19,7 @@ If you are interested in helping the project checkout
 `rustybuzz` is a complete [harfbuzz](https://github.com/harfbuzz/harfbuzz)'s
 shaping algorithm port to Rust.
 
-Matches `harfbuzz` v4.1.0
+Matches `harfbuzz` v4.3.0
 
 ## Why?
 
