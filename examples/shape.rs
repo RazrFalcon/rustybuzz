@@ -226,8 +226,6 @@ fn main() {
 }
 
 fn parse_unicodes(s: &str) -> Result<String, String> {
-    use std::convert::TryFrom;
-
     let mut text = String::new();
     for u in s.split(',') {
         let u = u32::from_str_radix(&u[2..], 16)

@@ -188,7 +188,6 @@ pub struct skipping_iterator_t<'a, 'b> {
     ignore_zwnj: bool,
     ignore_zwj: bool,
     mask: hb_mask_t,
-    per_syllable: bool,
     syllable: u8,
     matching: Option<&'a match_func_t<'a>>,
     buf_len: usize,
@@ -215,7 +214,6 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             } else {
                 ctx.lookup_mask
             },
-            per_syllable: ctx.per_syllable,
             syllable: if ctx.buffer.idx == start_buf_index && ctx.per_syllable {
                 ctx.buffer.cur(0).syllable()
             } else {
