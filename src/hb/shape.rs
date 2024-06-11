@@ -43,6 +43,8 @@ pub fn shape_with_plan(
     let mut buffer = buffer.0;
     buffer.guess_segment_properties();
 
+    buffer.enter();
+
     debug_assert_eq!(buffer.direction, plan.direction);
     debug_assert_eq!(
         buffer.script.unwrap_or(script::UNKNOWN),

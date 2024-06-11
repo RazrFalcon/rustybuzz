@@ -1279,6 +1279,7 @@ impl hb_buffer_t {
     // Called around shape()
     pub(crate) fn enter(&mut self) {
         self.serial = 0;
+        self.shaping_failed = false;
         self.scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 
         if let Some(len) = self.len.checked_mul(hb_buffer_t::MAX_LEN_FACTOR) {
@@ -1297,6 +1298,7 @@ impl hb_buffer_t {
         self.max_len = hb_buffer_t::MAX_LEN_DEFAULT;
         self.max_ops = hb_buffer_t::MAX_OPS_DEFAULT;
         self.serial = 0;
+        // Intentionally not resetting shaping_failed, such that it can be inspected.
     }
 
     fn _infos_find_min_cluster(
