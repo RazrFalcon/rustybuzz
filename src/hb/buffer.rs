@@ -397,6 +397,7 @@ impl hb_buffer_t {
             direction: Direction::Invalid,
             script: None,
             language: None,
+            shaping_failed: false,
             successful: true,
             have_output: false,
             have_positions: false,
@@ -934,7 +935,7 @@ impl hb_buffer_t {
     pub fn delete_glyph(&mut self) {
         let cluster = self.info[self.idx].cluster;
 
-        if self.idx + 1 < self.len && cluster == self.info[self.idx + 1].cluster {
+        if (self.idx + 1 < self.len && cluster == self.info[self.idx + 1].cluster) || (self.out_len != 0 && cluster == self.out_info()[self.out_len - 1].cluster) {
             // Cluster survives; do nothing.
             self.skip_glyph();
             return;
