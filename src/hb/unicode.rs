@@ -321,7 +321,6 @@ impl GeneralCategoryExt for hb_unicode_general_category_t {
 pub trait CharExt {
     fn script(self) -> Script;
     fn general_category(self) -> hb_unicode_general_category_t;
-    fn combining_class(self) -> CanonicalCombiningClass;
     fn space_fallback(self) -> hb_unicode_funcs_t::space_t;
     fn modified_combining_class(self) -> u8;
     fn mirrored(self) -> Option<char>;
@@ -499,10 +498,6 @@ impl CharExt for char {
 
     fn general_category(self) -> hb_unicode_general_category_t {
         unicode_properties::general_category::UnicodeGeneralCategory::general_category(self)
-    }
-
-    fn combining_class(self) -> CanonicalCombiningClass {
-        unicode_ccc::get_canonical_combining_class(self)
     }
 
     fn space_fallback(self) -> hb_unicode_funcs_t::space_t {
