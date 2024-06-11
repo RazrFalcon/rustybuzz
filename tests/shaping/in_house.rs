@@ -1891,6 +1891,604 @@ fn hangul_jamo_002() {
 }
 
 #[test]
+fn hebrew_diacritics_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E7}\u{05D5}\u{05DC}",
+            "",
+        ),
+        "lamed=2+901|\
+         vav=1+484|\
+         kof=0+997"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D3}\u{05D5}\u{05D3}\u{05D9}",
+            "",
+        ),
+        "yod=3+454|\
+         dalet=2+879|\
+         vav=1+484|\
+         dalet=0+879"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D4}\u{05E0}\u{05D4}\u{05BE}\u{05D6}\u{05D4}",
+            "",
+        ),
+        "he=5+1071|\
+         zain=4+549|\
+         makaf=3+631|\
+         he=2+1071|\
+         nun=1+614|\
+         he=0+1071"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D1}\u{05D0}",
+            "",
+        ),
+        "alef=1+1048|\
+         bet=0+967"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DE}\u{05D3}\u{05DC}\u{05D2}",
+            "",
+        ),
+        "gimel=3+665|\
+         lamed=2+901|\
+         dalet=1+879|\
+         mem=0+1094"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E2}\u{05DC}\u{05BE}\u{05D4}\u{05D4}\u{05E8}\u{05D9}\u{05DD}",
+            "",
+        ),
+        "finalmem=7+1004|\
+         yod=6+454|\
+         resh=5+883|\
+         he=4+1071|\
+         he=3+1071|\
+         makaf=2+631|\
+         lamed=1+901|\
+         ayin=0+920"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DE}\u{05E7}\u{05E4}\u{05E5}",
+            "",
+        ),
+        "finaltsadi=3+990|\
+         pe=2+912|\
+         kof=1+997|\
+         mem=0+1094"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E2}\u{05DC}\u{05BE}\u{05D4}\u{05D2}\u{05D1}\u{05E2}\u{05D5}\u{05EA}",
+            "",
+        ),
+        "tav=8+1026|\
+         vav=7+484|\
+         ayin=6+920|\
+         bet=5+967|\
+         gimel=4+665|\
+         he=3+1071|\
+         makaf=2+631|\
+         lamed=1+901|\
+         ayin=0+920"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D4}\u{05B2}\u{05D1}\u{05B5}\u{05DC}",
+            "",
+        ),
+        "lamed=4+901|\
+         tsere=2@512,0+0|\
+         bet=2+967|\
+         hatafpatah=0@600,0+0|\
+         he=0+1071"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D4}\u{05B2}\u{05D1}\u{05B8}\u{05DC}\u{05B4}\u{05D9}\u{05DD}",
+            "",
+        ),
+        "finalmem=7+1004|\
+         yod=6+454|\
+         hiriq=4@499,0+0|\
+         lamed=4+901|\
+         qamats=2@512,0+0|\
+         bet=2+967|\
+         hatafpatah=0@600,0+0|\
+         he=0+1071"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B8}\u{05DE}\u{05B7}\u{05E8}",
+            "",
+        ),
+        "resh=4+883|\
+         patah=2@573,0+0|\
+         mem=2+1094|\
+         qamats=0@591,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E7}\u{05B9}\u{05D4}\u{05B6}\u{05DC}\u{05B6}\u{05EA}",
+            "",
+        ),
+        "tav=6+1026|\
+         segol=4@499,0+0|\
+         lamed=4+901|\
+         segol=2@597,0+0|\
+         he=2+1071|\
+         holam=0@482,0+0|\
+         kof=0+997"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DC}\u{05B0}\u{05D4}\u{05B7}\u{05D2}\u{05BC}\u{05B4}\u{05D9}\u{05D3}",
+            "",
+        ),
+        "dalet=8+879|\
+         yod=7+454|\
+         hiriq=4@360,0+0|\
+         gimeldagesh=4+665|\
+         patah=2@597,0+0|\
+         he=2+1071|\
+         sheva=0@499,0+0|\
+         lamed=0+901"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D1}\u{05BC}\u{05B7}\u{05D1}\u{05BC}\u{05B9}\u{05E7}\u{05B6}\u{05E8}",
+            "",
+        ),
+        "resh=8+883|\
+         segol=6@618,0+0|\
+         kof=6+997|\
+         holam=3@422,0+0|\
+         betdagesh=3+967|\
+         patah=0@505,0+0|\
+         betdagesh=0+967"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D7}\u{05B7}\u{05E1}\u{05B0}\u{05D3}\u{05BC}\u{05B6}\u{05DA}\u{05B8}",
+            "",
+        ),
+        "finalkafqamats=7+846|\
+         segol=4@685,0+0|\
+         daleddagesh=4+879|\
+         sheva=2@581,0+0|\
+         samekh=2+1038|\
+         patah=0@594,0+0|\
+         het=0+1065"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_016() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D5}\u{05B6}\u{05D0}\u{05B1}\u{05DE}\u{05D5}\u{05BC}\u{05E0}\u{05B8}\u{05EA}\
+             \u{05B0}\u{05DA}\u{05B8}",
+            "",
+        ),
+        "finalkafqamats=11+846|\
+         sheva=9@587,0+0|\
+         tav=9+1026|\
+         qamats=7@316,0+0|\
+         nun=7+614|\
+         vavdagesh=5+510|\
+         mem=4+1094|\
+         hatafsegol=2@591,0+0|\
+         alef=2+1048|\
+         segol=0@349,0+0|\
+         vav=0+484"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_017() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D1}\u{05BC}\u{05B7}\u{05DC}\u{05BC}\u{05B5}\u{05D9}\u{05DC}\u{05D5}\u{05B9}\
+             \u{05EA}",
+            "",
+        ),
+        "tav=10+1026|\
+         vavholam=8+484|\
+         lamed=7+901|\
+         yod=6+454|\
+         tsere=3@430,0+0|\
+         lameddagesh=3+901|\
+         patah=0@505,0+0|\
+         betdagesh=0+967"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_018() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D9}\u{05B0}\u{05E8}\u{05D5}\u{05BC}\u{05E9}\u{05C1}\u{05B8}\u{05DC}\u{05B7}\
+             \u{05B4}\u{05DD}",
+            "",
+        ),
+        "finalmem=11+1004|\
+         hiriq=8@-97,0+0|\
+         patah=8@499,0+0|\
+         lamed=8+901|\
+         qamats=5@665,0+0|\
+         shinshindot=5+1292|\
+         vavdagesh=3+510|\
+         resh=2+883|\
+         sheva=0@239,0+0|\
+         yod=0+454"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_019() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D9}\u{05B0}\u{05E8}\u{05D5}\u{05BC}\u{05E9}\u{05C1}\u{05B8}\u{05DC}\u{05B8}\
+             \u{05B4}\u{05DD}",
+            "",
+        ),
+        "finalmem=11+1004|\
+         hiriq=8@-97,0+0|\
+         qamats=8@499,0+0|\
+         lamed=8+901|\
+         qamats=5@665,0+0|\
+         shinshindot=5+1292|\
+         vavdagesh=3+510|\
+         resh=2+883|\
+         sheva=0@239,0+0|\
+         yod=0+454"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_020() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D9}\u{05B0}\u{05E8}\u{05D5}\u{05BC}\u{05E9}\u{05C1}\u{05B8}\u{05DC}\u{05B7}\
+             \u{05B0}\u{05DE}\u{05B8}\u{05D4}",
+            "",
+        ),
+        "he=13+1071|\
+         qamats=11@573,0+0|\
+         mem=11+1094|\
+         sheva=8@177,0+0|\
+         patah=8@499,0+0|\
+         lamed=8+901|\
+         qamats=5@665,0+0|\
+         shinshindot=5+1292|\
+         vavdagesh=3+510|\
+         resh=2+883|\
+         sheva=0@239,0+0|\
+         yod=0+454"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_021() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D9}\u{05B0}\u{05E8}\u{05D5}\u{05BC}\u{05E9}\u{05C1}\u{05B8}\u{05DC}\u{05B8}\
+             \u{05B0}\u{05DE}\u{05B8}\u{05D4}",
+            "",
+        ),
+        "he=13+1071|\
+         qamats=11@573,0+0|\
+         mem=11+1094|\
+         sheva=8@176,0+0|\
+         qamats=8@499,0+0|\
+         lamed=8+901|\
+         qamats=5@665,0+0|\
+         shinshindot=5+1292|\
+         vavdagesh=3+510|\
+         resh=2+883|\
+         sheva=0@239,0+0|\
+         yod=0+454"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_022() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E0}\u{05B0}\u{05D1}\u{05BB}\u{05BD}\u{05DB}\u{05B7}\u{05D3}\u{05B0}\u{05E0}\
+             \u{05B6}\u{05D0}\u{05E6}\u{05BC}\u{05B7}\u{05A3}\u{05E8}",
+            "",
+        ),
+        "resh=16+883|\
+         munah=12@203,0+0|\
+         patah=12@588,0+0|\
+         tsadidagesh=12+968|\
+         alef=11+1048|\
+         segol=9@316,0+0|\
+         nun=9+614|\
+         sheva=7@621,0+0|\
+         dalet=7+879|\
+         patah=5@469,0+0|\
+         kaf=5+942|\
+         meteg=2@338,0+0|\
+         qubuts=2@673,0+0|\
+         bet=2+967|\
+         sheva=0@316,0+0|\
+         nun=0+614"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_023() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DE}\u{05B4}\u{05EA}\u{05BC}\u{05B8}\u{0591}\u{034F}\u{05B7}\u{059C}\u{05D7}\
+             \u{05B7}\u{05EA}",
+            "",
+        ),
+        "tav=11+1026|\
+         patah=9@594,0+0|\
+         het=9+1065|\
+         gereshaccent=2+0|\
+         patah=2+0|\
+         space=2+0|\
+         atnah=2@437,0+0|\
+         qamats=2@794,0+0|\
+         tavdagesh=2+1026|\
+         hiriq=0@573,0+0|\
+         mem=0+1094"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_024() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B2}\u{200D}\u{05BD}\u{05AD}\u{05D3}\u{05B7}\u{05D1}\u{05BC}\u{05B0}\
+             \u{05E8}\u{05B8}\u{05D4}",
+            "",
+        ),
+        "he=12+1071|\
+         qamats=10@719,0+0|\
+         resh=10+883|\
+         sheva=7@505,0+0|\
+         betdagesh=7+967|\
+         patah=5@621,0+0|\
+         dalet=5+879|\
+         dehi=0@1063,0+0|\
+         hatafpatah_meteg=0@593,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_025() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D5}\u{05BD}\u{034F}\u{05B7}\u{05D9}\u{05B0}\u{05D4}\u{05B4}\u{05D9}\u{05BE}\
+             \u{05AF}\u{05DB}\u{05B5}\u{05BD}\u{05DF}",
+            "",
+        ),
+        "finalnun=14+459|\
+         meteg=11@311,0+0|\
+         tsere=11@617,0+0|\
+         kaf=11+942|\
+         masoracircle=9@320,0+0|\
+         makaf=9+631|\
+         yod=8+454|\
+         hiriq=6@597,0+0|\
+         he=6+1071|\
+         sheva=4@239,0+0|\
+         yod=4+454|\
+         patah=0+0|\
+         space=0+0|\
+         meteg=0@349,0+0|\
+         vav=0+484"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_026() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DC}\u{05C5}\u{05C4}\u{05D5}\u{05BC}\u{05DC}\u{05B5}\u{05C5}\u{0597}\u{05C4}\
+             \u{05D0}\u{05C5}\u{05C4}",
+            "",
+        ),
+        "upperdot=10@594,0+0|\
+         lowerdot=10@594,0+0|\
+         alef=10+1048|\
+         upperdot=5@519,0+0|\
+         revia=5@601,0+0|\
+         lowerdot=5@519,0+0|\
+         tsere=5@499,0+0|\
+         lamed=5+901|\
+         vavdagesh=3+510|\
+         upperdot=0@519,0+0|\
+         lowerdot=0@519,0+0|\
+         lamed=0+901"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_027() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B8}\u{05E0}\u{05BC}\u{05B8}\u{05BD}\u{05D4}",
+            "",
+        ),
+        "he=6+1071|\
+         meteg=2@205,0+0|\
+         qamats=2@469,0+0|\
+         nundagesh=2+614|\
+         qamats=0@591,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_028() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B8}\u{05E0}\u{05B8}\u{05BC}\u{05BD}\u{05D4}",
+            "",
+        ),
+        "he=6+1071|\
+         meteg=2@205,0+0|\
+         qamats=2@469,0+0|\
+         nundagesh=2+614|\
+         qamats=0@591,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_029() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05EA}\u{05B7}\u{05E2}\u{05B2}\u{05E9}\u{05B6}\u{05C2}\u{05A6}\u{05D4}",
+            "",
+        ),
+        "he=8+1071|\
+         merkhakefula=4@353,0+0|\
+         segol=4@813,0+0|\
+         shinsindot=4+1292|\
+         hatafpatah=2@435,0+0|\
+         ayin.alt=2+920|\
+         patah=0@587,0+0|\
+         tav=0+1026"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_030() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E9}\u{05B9}\u{05BD}\u{05C1}\u{05D8}\u{05B0}\u{05E8}\u{05B5}\u{05D9}\u{0599}",
+            "",
+        ),
+        "pashta=8@161,0+0|\
+         yod=8+454|\
+         tsere=6@719,0+0|\
+         resh=6+883|\
+         sheva=4@548,0+0|\
+         tet=4+1015|\
+         meteg=0@665,0+0|\
+         holam=0@362,0+0|\
+         shinshindot=0+1292"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_031() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B2}\u{200D}\u{05BD}\u{05AD}",
+            "",
+        ),
+        "dehi=0@1063,0+0|\
+         hatafpatah_meteg=0@593,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
 fn hyphens_001() {
     assert_eq!(
         shape(
