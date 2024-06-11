@@ -1,5 +1,5 @@
-use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 use crate::hb::ot_layout::MAX_CONTEXT_LENGTH;
+use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
 use super::aat_layout::*;
 use super::aat_map::{hb_aat_map_builder_t, hb_aat_map_t};

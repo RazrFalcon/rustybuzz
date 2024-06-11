@@ -411,7 +411,6 @@ struct Driver4<'a> {
 }
 
 impl StateTableDriver<kerx::Subtable4<'_>, kerx::EntryData> for Driver4<'_> {
-
     fn transition(
         &mut self,
         aat: &kerx::Subtable4,
