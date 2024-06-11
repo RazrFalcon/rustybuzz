@@ -341,6 +341,9 @@ pub struct hb_buffer_t {
     pub script: Option<Script>,
     pub language: Option<Language>,
 
+    /// Shaping failure
+    pub shaping_failed: bool,
+
     /// Allocations successful.
     pub successful: bool,
     /// Whether we have an output buffer going on.
