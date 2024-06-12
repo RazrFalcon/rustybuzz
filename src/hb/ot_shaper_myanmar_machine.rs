@@ -23,7 +23,7 @@ static _myanmar_syllable_machine_trans_keys: [u8; 114] = [
     5, 5, 0, 0,
 ];
 static _myanmar_syllable_machine_char_class: [i8; 34] = [
-    0, 0, 1, 2, 3, 3, 4, 5, 4, 6, 7, 4, 4, 4, 4, 8, 4, 9, 10, 4, 11, 12, 13, 14, 15, 16, 17, 18,
+    0, 0, 1, 2, 3, 3, 4, 5, 6, 7, 4, 4, 4, 4, 8, 4, 4, 9, 10, 4, 11, 12, 13, 14, 15, 16, 17, 18,
     19, 20, 21, 22, 0, 0,
 ];
 static _myanmar_syllable_machine_index_offsets: [i16; 58] = [

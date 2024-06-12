@@ -45,17 +45,17 @@ pub mod indic_category_t {
     pub const ZWJ: u8 = 6;
     pub const M: u8 = 7;
     pub const SM: u8 = 8;
-    pub const A: u8 = 10;
+    pub const A: u8 = 9;
     pub const VD: u8 = A;
-    pub const PLACEHOLDER: u8 = 11;
-    pub const DOTTED_CIRCLE: u8 = 12;
-    pub const RS: u8 = 13; // Register Shifter, used in Khmer OT spec.
-    pub const COENG: u8 = 14; // Khmer-style Virama.
-    pub const REPHA: u8 = 15; // Atomically-encoded logical or visual repha.
-    pub const RA: u8 = 16;
-    pub const CM: u8 = 17; // Consonant-Medial.
-    pub const SYMBOL: u8 = 18; // Avagraha, etc that take marks (SM,A,VD).
-    pub const CS: u8 = 19;
+    pub const PLACEHOLDER: u8 = 10;
+    pub const DOTTED_CIRCLE: u8 = 11;
+    pub const RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
+    pub const COENG: u8 = 13; // Khmer-style Virama.
+    pub const REPHA: u8 = 14; // Atomically-encoded logical or visual repha.
+    pub const RA: u8 = 15;
+    pub const CM: u8 = 16; // Consonant-Medial.
+    pub const SYMBOL: u8 = 17; // Avagraha, etc that take marks (SM,A,VD).
+    pub const CS: u8 = 18;
 
     // The following are used by Khmer & Myanmar shapers.  Defined here for them to share.
     pub const V_AVB: u8 = 26;
@@ -675,8 +675,8 @@ impl hb_glyph_info_t {
             pos = matra_position_indic(u, pos);
         } else if (rb_flag_unsafe(cat as u32)
             & (category_flag(indic_category_t::SM)
-                | category_flag(indic_category_t::A)
                 | category_flag(indic_category_t::VD)
+                | category_flag(indic_category_t::A)
                 | category_flag(indic_category_t::SYMBOL)))
             != 0
         {

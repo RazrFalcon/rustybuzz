@@ -23,13 +23,13 @@ use super::buffer::hb_buffer_t;
 
 %%{
 
-A    = 10;
+A    = 9;
 As   = 18;
 C    = 1;
-D    = 11;
+D    = 10;
 D0   = 20;
 DB   = 3;
-GB   = 11;
+GB   = 10;
 H    = 4;
 IV   = 2;
 MH   = 21;
@@ -46,7 +46,7 @@ VPst = 29;
 VS   = 30;
 ZWJ  = 6;
 ZWNJ = 5;
-Ra   = 16;
+Ra   = 15;
 P    = 31;
 CS   = 19;
 

@@ -252,7 +252,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
         let mut limit = start;
         if start + 3 <= end
             && buffer.info[start + 0].indic_category() == indic_category_t::RA
-            && buffer.info[start + 1].indic_category() == indic_category_t::SYMBOL
+            && buffer.info[start + 1].indic_category() == myanmar_category_t::As
             && buffer.info[start + 2].indic_category() == indic_category_t::H
         {
             limit += 3;
