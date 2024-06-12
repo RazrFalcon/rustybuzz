@@ -44,8 +44,8 @@ pub mod category {
     pub const ZWJ: u8 = 6;
     pub const M: u8 = 7;
     pub const SM: u8 = 8;
-    // OT_VD = 9, UNUSED; we use OT_A instead.
     pub const A: u8 = 10;
+    pub const OT_VD: u8 = 10;
     pub const PLACEHOLDER: u8 = 11;
     pub const DOTTED_CIRCLE: u8 = 12;
     pub const RS: u8 = 13; // Register Shifter, used in Khmer OT spec.
@@ -683,6 +683,7 @@ impl hb_glyph_info_t {
         } else if (rb_flag_unsafe(cat as u32)
             & (category_flag(category::SM)
                 | category_flag(category::A)
+                | category_flag(category::OT_VD)
                 | category_flag(category::SYMBOL)))
             != 0
         {
