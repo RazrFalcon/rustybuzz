@@ -1,6 +1,6 @@
 //! Matching of glyph patterns.
 
-use std::cmp::max;
+use core::cmp::max;
 
 use ttf_parser::opentype_layout::*;
 use ttf_parser::{GlyphId, LazyArray16};
