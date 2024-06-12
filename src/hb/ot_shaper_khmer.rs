@@ -6,7 +6,7 @@ use super::ot_shape::*;
 use super::ot_shape_normalize::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::ot_shaper::*;
-use super::ot_shaper_indic::{category, position};
+use super::ot_shaper_indic::{indic_category_t, position};
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
 
@@ -58,6 +58,16 @@ const KHMER_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[
     (hb_tag_t::from_bytes(b"psts"), F_GLOBAL_MANUAL_JOINERS),
 ];
 
+pub mod khmer_category_t {
+    pub const ROBATIC: u8 = 20;
+    pub const X_GROUP: u8 = 21;
+    pub const Y_GROUP: u8 = 22;
+    // pub const V_AVB: u8 = 26;
+    // pub const V_BLW: u8 = 27;
+    // pub const V_PRE: u8 = 28;
+    // pub const V_PST: u8 = 29;
+}
+
 // Must be in the same order as the KHMER_FEATURES array.
 mod khmer_feature {
     pub const PREF: usize = 0;
@@ -77,22 +87,24 @@ impl hb_glyph_info_t {
         // These categories are experimentally extracted from what Uniscribe allows.
 
         match u {
-            0x179A => cat = category::RA,
-            0x17CC | 0x17C9 | 0x17CA => cat = category::ROBATIC,
-            0x17C6 | 0x17CB | 0x17CD | 0x17CE | 0x17CF | 0x17D0 | 0x17D1 => cat = category::X_GROUP,
+            0x179A => cat = indic_category_t::RA,
+            0x17CC | 0x17C9 | 0x17CA => cat = khmer_category_t::ROBATIC,
+            0x17C6 | 0x17CB | 0x17CD | 0x17CE | 0x17CF | 0x17D0 | 0x17D1 => {
+                cat = khmer_category_t::X_GROUP
+            }
             // Just guessing. Uniscribe doesn't categorize it.
-            0x17C7 | 0x17C8 | 0x17DD | 0x17D3 => cat = category::Y_GROUP,
+            0x17C7 | 0x17C8 | 0x17DD | 0x17D3 => cat = khmer_category_t::Y_GROUP,
             _ => {}
         }
 
         // Re-assign position.
 
-        if cat == category::M {
+        if cat == indic_category_t::M {
             match pos {
-                position::PRE_C => cat = category::V_PRE,
-                position::BELOW_C => cat = category::V_BLW,
-                position::ABOVE_C => cat = category::V_AVB,
-                position::POST_C => cat = category::V_PST,
+                position::PRE_C => cat = indic_category_t::V_PRE,
+                position::BELOW_C => cat = indic_category_t::V_BLW,
+                position::ABOVE_C => cat = indic_category_t::V_AVB,
+                position::POST_C => cat = indic_category_t::V_PST,
                 _ => {}
             }
         }
@@ -169,8 +181,8 @@ fn reorder(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
-        category::DOTTED_CIRCLE,
-        Some(category::REPHA),
+        indic_category_t::DOTTED_CIRCLE,
+        Some(indic_category_t::REPHA),
         None,
     );
 
@@ -238,10 +250,13 @@ fn reorder_consonant_syllable(
         // Subscript Type 2 - The COENG + RO characters are reordered to immediately
         // before the base glyph. Then the COENG + RO characters are assigned to have
         // the 'pref' OpenType feature applied to them.
-        if buffer.info[i].indic_category() == category::COENG && num_coengs <= 2 && i + 1 < end {
+        if buffer.info[i].indic_category() == indic_category_t::COENG
+            && num_coengs <= 2
+            && i + 1 < end
+        {
             num_coengs += 1;
 
-            if buffer.info[i + 1].indic_category() == category::RA {
+            if buffer.info[i + 1].indic_category() == indic_category_t::RA {
                 for j in 0..2 {
                     buffer.info[i + j].mask |= plan.mask_array[khmer_feature::PREF];
                 }
@@ -270,7 +285,7 @@ fn reorder_consonant_syllable(
 
                 num_coengs = 2; // Done.
             }
-        } else if buffer.info[i].indic_category() == category::V_PRE {
+        } else if buffer.info[i].indic_category() == indic_category_t::V_PRE {
             // Reorder left matra piece.
 
             // Move to the start.

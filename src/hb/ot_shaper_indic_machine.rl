@@ -31,6 +31,7 @@ ZWJ  = 6;
 M    = 7;
 SM   = 8;
 A    = 10;
+VD   = 10;
 PLACEHOLDER = 11;
 DOTTEDCIRCLE = 12;
 RS    = 13;
