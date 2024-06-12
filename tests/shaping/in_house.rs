@@ -2729,6 +2729,217 @@ fn indic_joiners_006() {
 }
 
 #[test]
+fn indic_malayalam_dot_reph_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D15}",
+            "",
+        ),
+        "kamlym=0+1038|\
+         rephmlym=0@-363,0+0"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D15}\u{0D4D}\u{0D15}\u{0D4D}\u{0D30}",
+            "",
+        ),
+        "rapostmlym=0+200|\
+         kakamlym=0+1506|\
+         rephmlym=0@-657,0+0"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D28}\u{0D4D}\u{0D28}",
+            "",
+        ),
+        "nanamlym=0+1257|\
+         rephmlym=0@-507,0+0"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D17}\u{0D4D}\u{0D17}\u{0D4D}\u{0D30}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         rapostmlym=0+239|\
+         gagamlym=0+897|\
+         rephmlym=0@-278,0+0|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D17}\u{0D4D}\u{0D30}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         rapostmlym=0+239|\
+         gamlym=0+897|\
+         rephmlym=0@-278,0+0|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D17}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         gamlym=0+897|\
+         rephmlym=0@-278,0+0|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D17}",
+            "",
+        ),
+        "gamlym=0+897|\
+         rephmlym=0@-278,0+0"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D17}\u{0D4D}\u{0D30}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         rapostmlym=0+239|\
+         gagamlym=0+897|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D17}\u{0D4D}\u{0D30}",
+            "",
+        ),
+        "rapostmlym=0+239|\
+         gagamlym=0+897"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D17}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         gagamlym=0+897|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D17}",
+            "",
+        ),
+        "gagamlym=0+897"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D30}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         rapostmlym=0+239|\
+         gamlym=0+897|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D15}\u{0D41}",
+            "",
+        ),
+        "kamlym=0+1038|\
+         rephmlym=0@-363,0+0|\
+         uvowelsignmlym=0+332"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D15}\u{0D4D}\u{0D15}\u{0D41}",
+            "",
+        ),
+        "kakamlym=0+1506|\
+         rephmlym=0@-657,0+0|\
+         uvowelsignmlym=0+332"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D1A}\u{0D4D}\u{0D1A}\u{0D4D}",
+            "",
+        ),
+        "cacamlym=0+933|\
+         viramamlym=0+0|\
+         rephmlym=0@-300,0+0"
+    );
+}
+
+#[test]
 fn indic_old_spec_001() {
     assert_eq!(
         shape(

@@ -1,5 +1,6 @@
 use alloc::vec::Vec;
 use core::ops::Range;
+use ttf_parser::FromData;
 
 use ttf_parser::opentype_layout::{
     FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex, VariationIndex,
@@ -186,6 +187,9 @@ struct stage_info_t {
     pause_func: Option<pause_func_t>,
 }
 
+const GLOBAL_BIT_SHIFT: u32 = 8 * u32::SIZE as u32 - 1;
+const GLOBAL_BIT_MASK: hb_mask_t = 1 << GLOBAL_BIT_SHIFT;
+
 impl<'a> hb_ot_map_builder_t<'a> {
     pub fn new(
         face: &'a hb_font_t<'a>,
@@ -274,9 +278,6 @@ impl<'a> hb_ot_map_builder_t<'a> {
         self.current_stage[table_index] += 1;
     }
 
-    const GLOBAL_BIT_MASK: hb_mask_t = glyph_flag::DEFINED + 1;
-    const GLOBAL_BIT_SHIFT: u32 = glyph_flag::DEFINED.count_ones();
-
     pub fn compile(&mut self) -> hb_ot_map_t {
         // We default to applying required feature in stage 0.  If the required
         // feature has a tag that is known to the shaper, we apply required feature
@@ -318,8 +319,8 @@ impl<'a> hb_ot_map_builder_t<'a> {
     ) -> (Vec<feature_map_t>, [usize; 2], hb_mask_t) {
         let mut map_features = Vec::new();
         let mut required_stage = [0; 2];
-        let mut global_mask = Self::GLOBAL_BIT_MASK;
-        let mut next_bit = Self::GLOBAL_BIT_SHIFT + 1;
+        let mut global_mask = GLOBAL_BIT_MASK;
+        let mut next_bit = glyph_flag::DEFINED.count_ones() + 1;
 
         // Sort features and merge duplicates.
         self.dedup_feature_infos();
@@ -335,8 +336,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
                 hb_ot_map_t::MAX_BITS.min(num_bits)
             };
 
-            let bits_available = 8 * core::mem::size_of::<hb_mask_t>() as u32;
-            if info.max_value == 0 || next_bit + bits_needed > bits_available {
+            if info.max_value == 0 || next_bit + bits_needed >= GLOBAL_BIT_SHIFT {
                 // Feature disabled, or not enough bits.
                 continue;
             }
@@ -374,7 +374,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
 
             let (shift, mask) = if info.flags & F_GLOBAL != 0 && info.max_value == 1 {
                 // Uses the global bit
-                (Self::GLOBAL_BIT_SHIFT, Self::GLOBAL_BIT_MASK)
+                (GLOBAL_BIT_SHIFT, GLOBAL_BIT_MASK)
             } else {
                 let shift = next_bit;
                 let mask = (1 << (next_bit + bits_needed)) - (1 << next_bit);
@@ -466,7 +466,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
                             table_index,
                             feature_index,
                             variation_index,
-                            Self::GLOBAL_BIT_MASK,
+                            GLOBAL_BIT_MASK,
                             true,
                             true,
                             false,

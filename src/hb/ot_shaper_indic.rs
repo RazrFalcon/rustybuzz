@@ -714,14 +714,14 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner.ot_map.add_gsub_pause(Some(initial_reordering));
 
-    for feature in INDIC_FEATURES.iter().take(10) {
+    for feature in INDIC_FEATURES.iter().take(11) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
         planner.ot_map.add_gsub_pause(None);
     }
 
     planner.ot_map.add_gsub_pause(Some(final_reordering));
 
-    for feature in INDIC_FEATURES.iter().skip(10) {
+    for feature in INDIC_FEATURES.iter().skip(11) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 }
@@ -1465,8 +1465,8 @@ fn initial_reordering_consonant_syllable(
         for i in base + 1..end - pref_len + 1 {
             let glyphs = &[buffer.info[i + 0].as_glyph(), buffer.info[i + 1].as_glyph()];
             if indic_plan.pref.would_substitute(&plan.ot_map, face, glyphs) {
-                buffer.info[i + 0].mask = indic_plan.mask_array[indic_feature::PREF];
-                buffer.info[i + 1].mask = indic_plan.mask_array[indic_feature::PREF];
+                buffer.info[i + 0].mask |= indic_plan.mask_array[indic_feature::PREF];
+                buffer.info[i + 1].mask |= indic_plan.mask_array[indic_feature::PREF];
                 break;
             }
         }
@@ -1516,31 +1516,20 @@ fn final_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
         return;
     }
 
-    let indic_plan = plan.data::<IndicShapePlan>();
-
-    let mut virama_glyph = None;
-    if indic_plan.config.virama != 0 {
-        if let Some(g) = face.get_nominal_glyph(indic_plan.config.virama) {
-            virama_glyph = Some(g.0 as u32);
-        }
-    }
-
-    let mut start = 0;
-    let mut end = buffer.next_syllable(0);
-    while start < buffer.len {
-        final_reordering_impl(indic_plan, virama_glyph, start, end, buffer);
-        start = end;
-        end = buffer.next_syllable(start);
-    }
+    foreach_syllable!(buffer, start, end, {
+        final_reordering_impl(plan, face, start, end, buffer);
+    });
 }
 
 fn final_reordering_impl(
-    plan: &IndicShapePlan,
-    virama_glyph: Option<u32>,
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
     start: usize,
     end: usize,
     buffer: &mut hb_buffer_t,
 ) {
+    let indic_plan = plan.data::<IndicShapePlan>();
+
     // This function relies heavily on halant glyphs.  Lots of ligation
     // and possibly multiple substitutions happened prior to this
     // phase, and that might have messed up our properties.  Recover
@@ -1548,6 +1537,13 @@ fn final_reordering_impl(
     // class of OT_H is desired but has been lost.
     //
     // We don't call load_virama_glyph(), since we know it's already loaded.
+    let mut virama_glyph = None;
+    if indic_plan.config.virama != 0 {
+        if let Some(g) = face.get_nominal_glyph(indic_plan.config.virama) {
+            virama_glyph = Some(g.0 as u32);
+        }
+    }
+
     if let Some(virama_glyph) = virama_glyph {
         for info in &mut buffer.info[start..end] {
             if info.glyph_id == virama_glyph
@@ -1568,14 +1564,14 @@ fn final_reordering_impl(
     // reordering before applying all the remaining font features to the entire
     // syllable.
 
-    let mut try_pref = plan.mask_array[indic_feature::PREF] != 0;
+    let mut try_pref = indic_plan.mask_array[indic_feature::PREF] != 0;
 
     let mut base = start;
     while base < end {
         if buffer.info[base].indic_position() as u32 >= position::BASE_C as u32 {
             if try_pref && base + 1 < end {
                 for i in base + 1..end {
-                    if (buffer.info[i].mask & plan.mask_array[indic_feature::PREF]) != 0 {
+                    if (buffer.info[i].mask & indic_plan.mask_array[indic_feature::PREF]) != 0 {
                         if !(_hb_glyph_info_substituted(&buffer.info[i])
                             && _hb_glyph_info_ligated_and_didnt_multiply(&buffer.info[i]))
                         {
@@ -1782,7 +1778,7 @@ fn final_reordering_impl(
     {
         let mut new_reph_pos;
         loop {
-            let reph_pos = plan.config.reph_pos;
+            let reph_pos = indic_plan.config.reph_pos;
 
             // 1. If reph should be positioned after post-base consonant forms,
             //    proceed to step 5.
@@ -1926,7 +1922,7 @@ fn final_reordering_impl(
     // Otherwise there can't be any pre-base-reordering Ra.
     if try_pref && base + 1 < end {
         for i in base + 1..end {
-            if (buffer.info[i].mask & plan.mask_array[indic_feature::PREF]) != 0 {
+            if (buffer.info[i].mask & indic_plan.mask_array[indic_feature::PREF]) != 0 {
                 // 1. Only reorder a glyph produced by substitution during application
                 //    of the <pref> feature. (Note that a font may shape a Ra consonant with
                 //    the feature generally but block it in certain contexts.)
@@ -1969,7 +1965,7 @@ fn final_reordering_impl(
 
                         buffer.merge_clusters(new_pos, old_pos + 1);
                         let tmp = buffer.info[old_pos];
-                        for i in (0..=old_pos - new_pos).rev() {
+                        for i in (0..old_pos - new_pos).rev() {
                             buffer.info[i + new_pos + 1] = buffer.info[i + new_pos];
                         }
                         buffer.info[new_pos] = tmp;
@@ -1999,7 +1995,7 @@ fn final_reordering_impl(
                 hb_gc::RB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK,
             )) == 0
         {
-            buffer.info[start].mask |= plan.mask_array[indic_feature::INIT];
+            buffer.info[start].mask |= indic_plan.mask_array[indic_feature::INIT];
         } else {
             buffer.unsafe_to_break(Some(start - 1), Some(start + 1));
         }
