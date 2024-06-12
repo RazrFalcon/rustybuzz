@@ -1,7 +1,7 @@
 use crate::hb::ot_layout_gsubgpos::Apply;
 use crate::hb::ot_layout_gsubgpos::OT::hb_ot_apply_context_t;
 use crate::hb::ot_map::hb_ot_map_t;
-use std::convert::TryFrom;
+use core::convert::TryFrom;
 use ttf_parser::gsub::AlternateSet;
 
 impl Apply for AlternateSet<'_> {

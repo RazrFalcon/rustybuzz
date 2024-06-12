@@ -1,6 +1,6 @@
 use alloc::{string::String, vec::Vec};
 use core::convert::TryFrom;
-use std::cmp::min;
+use core::cmp::min;
 
 use ttf_parser::GlyphId;
 
