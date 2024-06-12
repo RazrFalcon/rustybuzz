@@ -1284,6 +1284,207 @@ fn arabic_normalization_064() {
 }
 
 #[test]
+fn arabic_phags_pa_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A873}\u{A861}",
+            "",
+        ),
+        "uniA873=0+563|\
+         uniA861=1+463"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A861}\u{A873}\u{A861}",
+            "",
+        ),
+        "uniA861=0+463|\
+         uniA873=1+563|\
+         uniA861=2+463"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A85E}\u{A85E}\u{A85E}\u{0020}\u{A85E}",
+            "",
+        ),
+        "uniA85E.ini=0+761|\
+         uniA85E.med=1+536|\
+         uniA85E.fin=2+446|\
+         space=3+260|\
+         uniA85E=4+671"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A85F}\u{A85F}\u{A85F}\u{0020}\u{A85F}",
+            "",
+        ),
+        "uniA85F.ini=0+945|\
+         uniA85F.med=1+558|\
+         uniA85F.fin=2+502|\
+         space=3+260|\
+         uniA85F=4+842"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A860}\u{A860}\u{A860}\u{0020}\u{A860}",
+            "",
+        ),
+        "uniA860.ini=0+820|\
+         uniA860.med=1+510|\
+         uniA860.fin=2+420|\
+         space=3+260|\
+         uniA860=4+730"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A861}\u{A861}\u{A861}\u{0020}\u{A861}",
+            "",
+        ),
+        "uniA861.ini=0+553|\
+         uniA861.med=1+449|\
+         uniA861.fin=2+337|\
+         space=3+260|\
+         uniA861=4+463"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{200D}\u{A861}\u{200D}",
+            "",
+        ),
+        "space=0+0|\
+         uniA861.med=1+449|\
+         space=1+0"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{200D}\u{A861}",
+            "",
+        ),
+        "space=0+0|\
+         uniA861.fin=1+337"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A861}\u{200D}",
+            "",
+        ),
+        "uniA861.ini=0+553|\
+         space=0+0"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A85E}\u{200C}\u{A85F}\u{200C}\u{A860}\u{200C}\u{A861}",
+            "",
+        ),
+        "uniA85E=0+671|\
+         space=1+0|\
+         uniA85F=2+842|\
+         space=3+0|\
+         uniA860=4+730|\
+         space=5+0|\
+         uniA861=6+463"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A849}\u{A85E}",
+            "",
+        ),
+        "uniA849.ini=0+798|\
+         uniA85E.fin=1+446"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A849}\u{A85E}\u{FE00}",
+            "",
+        ),
+        "uniA849.ini=0+798|\
+         uniA85E.mir.fin=1+446"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A86A}\u{A85E}",
+            "",
+        ),
+        "uniA86A.ini=0+798|\
+         uniA85E.mir.fin=1+446"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A86A}\u{A85E}\u{FE00}",
+            "",
+        ),
+        "uniA86A.ini.unmir=0+766|\
+         uniA85E.fin=1+446"
+    );
+}
+
+#[test]
 fn arabic_stch_001() {
     assert_eq!(
         shape(
