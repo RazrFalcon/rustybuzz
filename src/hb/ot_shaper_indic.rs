@@ -586,6 +586,10 @@ impl hb_glyph_info_t {
         self.ot_shaper_var_u8_category()
     }
 
+    pub(crate) fn khmer_category(&self) -> Category {
+        self.indic_category()
+    }
+
     pub(crate) fn set_indic_category(&mut self, c: Category) {
         self.set_ot_shaper_var_u8_category(c)
     }

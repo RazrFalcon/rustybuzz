@@ -15,6 +15,18 @@
 
 use super::buffer::hb_buffer_t;
 
+// NOTE: We need to keep this in sync with the defined keys below. In harfbuzz, they are deduplicated
+// but for some reason rust ragel doesn't properly export writing exports in Rust.
+pub mod khmer_category_t {
+    pub const ROBATIC: u8 = 20;
+    pub const X_GROUP: u8 = 21;
+    pub const Y_GROUP: u8 = 22;
+    // pub const V_AVB: u8 = 26;
+    // pub const V_BLW: u8 = 27;
+    // pub const V_PRE: u8 = 28;
+    // pub const V_PST: u8 = 29;
+}
+
 static _khmer_syllable_machine_trans_keys: [u8; 82] = [
     2, 8, 2, 6, 2, 8, 2, 6, 0, 0, 2, 6, 2, 8, 2, 6, 2, 8, 2, 6, 2, 6, 2, 8, 2, 6, 0, 0, 2, 6, 2, 8,
     2, 6, 2, 8, 2, 6, 2, 8, 0, 11, 2, 11, 2, 11, 2, 11, 7, 7, 2, 7, 2, 11, 2, 11, 2, 11, 0, 0, 2,
@@ -125,12 +137,12 @@ pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
                     {
                         _keys = (cs << 1) as i32;
                         _inds = (_khmer_syllable_machine_index_offsets[(cs) as usize]) as i32;
-                        if ((buffer.info[p].indic_category() as u8) <= 29
-                            && (buffer.info[p].indic_category() as u8) >= 1)
+                        if ((buffer.info[p].khmer_category() as u8) <= 29
+                            && (buffer.info[p].khmer_category() as u8) >= 1)
                         {
                             {
                                 _ic = (_khmer_syllable_machine_char_class
-                                    [((buffer.info[p].indic_category() as u8) as i32 - 1) as usize])
+                                    [((buffer.info[p].khmer_category() as u8) as i32 - 1) as usize])
                                     as i32;
                                 if (_ic
                                     <= (_khmer_syllable_machine_trans_keys[(_keys + 1) as usize])

@@ -15,6 +15,18 @@
 
 use super::buffer::hb_buffer_t;
 
+// NOTE: We need to keep this in sync with the defined keys below. In harfbuzz, they are deduplicated
+// but for some reason rust ragel doesn't properly export writing exports in Rust.
+pub mod khmer_category_t {
+    pub const ROBATIC: u8 = 20;
+    pub const X_GROUP: u8 = 21;
+    pub const Y_GROUP: u8 = 22;
+    // pub const V_AVB: u8 = 26;
+    // pub const V_BLW: u8 = 27;
+    // pub const V_PRE: u8 = 28;
+    // pub const V_PST: u8 = 29;
+}
+
 %%{
   machine khmer_syllable_machine;
   alphtype u8;
@@ -89,7 +101,7 @@ pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
 
     %%{
         write init;
-        getkey (buffer.info[p].indic_category() as u8);
+        getkey (buffer.info[p].khmer_category() as u8);
         write exec;
     }%%
 }

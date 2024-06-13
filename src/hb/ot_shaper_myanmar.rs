@@ -6,7 +6,7 @@ use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::ot_shaper::*;
 use super::ot_shaper_indic::{indic_category_t, position};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
-use crate::hb::ot_shaper_khmer::khmer_category_t;
+use crate::hb::ot_shaper_khmer_machine::khmer_category_t;
 
 pub const MYANMAR_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: Some(collect_features),

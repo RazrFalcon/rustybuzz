@@ -1,3 +1,4 @@
+use crate::hb::ot_shaper_khmer_machine::khmer_category_t;
 use alloc::boxed::Box;
 
 use super::buffer::hb_buffer_t;
@@ -57,16 +58,6 @@ const KHMER_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[
     (hb_tag_t::from_bytes(b"blws"), F_GLOBAL_MANUAL_JOINERS),
     (hb_tag_t::from_bytes(b"psts"), F_GLOBAL_MANUAL_JOINERS),
 ];
-
-pub mod khmer_category_t {
-    pub const ROBATIC: u8 = 20;
-    pub const X_GROUP: u8 = 21;
-    pub const Y_GROUP: u8 = 22;
-    // pub const V_AVB: u8 = 26;
-    // pub const V_BLW: u8 = 27;
-    // pub const V_PRE: u8 = 28;
-    // pub const V_PST: u8 = 29;
-}
 
 // Must be in the same order as the KHMER_FEATURES array.
 mod khmer_feature {
