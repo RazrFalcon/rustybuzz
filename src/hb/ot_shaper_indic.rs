@@ -4,6 +4,7 @@ use core::convert::TryFrom;
 use core::ops::Range;
 
 use ttf_parser::GlyphId;
+use crate::hb::ot_shaper_indic::indic_position_t::POS_BELOW_C;
 
 use super::algs::*;
 use super::buffer::hb_buffer_t;
@@ -48,7 +49,7 @@ pub mod indic_category_t {
     pub const OT_A: u8 = 9;
     pub const OT_VD: u8 = OT_A;
     pub const OT_PLACEHOLDER: u8 = 10;
-    pub const OT_DOTTED_CIRCLE: u8 = 11;
+    pub const OT_DOTTEDCIRCLE: u8 = 11;
     pub const OT_RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
     pub const OT_Coeng: u8 = 13; // Khmer-style Virama.
     pub const OT_Repha: u8 = 14; // Atomically-encoded logical or visual repha.
@@ -236,7 +237,7 @@ const CONSONANT_FLAGS: u32 = category_flag(indic_category_t::OT_C)
     | MEDIAL_FLAGS
     | category_flag(indic_category_t::OT_V)
     | category_flag(indic_category_t::OT_PLACEHOLDER)
-    | category_flag(indic_category_t::OT_DOTTED_CIRCLE);
+    | category_flag(indic_category_t::OT_DOTTEDCIRCLE);
 const JOINER_FLAGS: u32 =
     category_flag(indic_category_t::OT_ZWJ) | category_flag(indic_category_t::OT_ZWNJ);
 
@@ -616,50 +617,11 @@ impl hb_glyph_info_t {
         let u = self.glyph_id;
         let (mut cat, mut pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
 
-        // Re-assign category
-
-        // The following act more like the Bindus.
-        match u {
-            0x0953..=0x0954 => cat = indic_category_t::OT_SM,
-            // The following act like consonants.
-            0x0A72..=0x0A73 | 0x1CF5..=0x1CF6 => cat = indic_category_t::OT_C,
-            // TODO: The following should only be allowed after a Visarga.
-            // For now, just treat them like regular tone marks.
-            0x1CE2..=0x1CE8 => cat = indic_category_t::OT_A,
-            // TODO: The following should only be allowed after some of
-            // the nasalization marks, maybe only for U+1CE9..U+1CF1.
-            // For now, just treat them like tone marks.
-            0x1CED => cat = indic_category_t::OT_A,
-            // The following take marks in standalone clusters, similar to Avagraha.
-            0xA8F2..=0xA8F7 | 0x1CE9..=0x1CEC | 0x1CEE..=0x1CF1 => {
-                cat = indic_category_t::OT_Symbol
-            }
-            // https://github.com/harfbuzz/harfbuzz/issues/524
-            0x0A51 => {
-                cat = indic_category_t::OT_M;
-                pos = indic_position_t::POS_BELOW_C;
-            }
-            // According to ScriptExtensions.txt, these Grantha marks may also be used in Tamil,
-            // so the Indic shaper needs to know their categories.
-            0x11301 | 0x11303 => cat = indic_category_t::OT_SM,
-            0x1133B | 0x1133C => cat = indic_category_t::OT_N,
-            // https://github.com/harfbuzz/harfbuzz/issues/552
-            0x0AFB => cat = indic_category_t::OT_N,
-            // https://github.com/harfbuzz/harfbuzz/issues/2849
-            0x0B55 => cat = indic_category_t::OT_N,
-            // https://github.com/harfbuzz/harfbuzz/issues/538
-            0x0980 => cat = indic_category_t::OT_PLACEHOLDER,
-            // https://github.com/harfbuzz/harfbuzz/issues/1613
-            0x09FC => cat = indic_category_t::OT_PLACEHOLDER,
-            // https://github.com/harfbuzz/harfbuzz/issues/623
-            0x0C80 => cat = indic_category_t::OT_PLACEHOLDER,
-            0x0D04 => cat = indic_category_t::OT_PLACEHOLDER,
-            0x2010 | 0x2011 => cat = indic_category_t::OT_PLACEHOLDER,
-            0x25CC => cat = indic_category_t::OT_DOTTED_CIRCLE,
-            _ => {}
-        }
-
         // Re-assign position.
+
+        if u == 0x0A51 {
+            pos = POS_BELOW_C;
+        }
 
         if (rb_flag_unsafe(cat as u32) & CONSONANT_FLAGS) != 0 {
             pos = indic_position_t::POS_BASE_C;
@@ -822,7 +784,7 @@ fn initial_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut 
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
-        indic_category_t::OT_DOTTED_CIRCLE,
+        indic_category_t::OT_DOTTEDCIRCLE,
         Some(indic_category_t::OT_Repha),
         Some(indic_position_t::POS_END),
     );

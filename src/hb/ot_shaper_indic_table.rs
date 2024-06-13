@@ -6,40 +6,37 @@
 use super::ot_shaper_indic::indic_matra_category_t::*;
 use super::ot_shaper_indic::indic_category_t::*;
 
-use OT_A                                          as ISC_A;
-use OT_C                                          as ISC_C;
-use OT_CM                                         as ISC_CM;
-use OT_CS                                         as ISC_CS;
-use OT_Coeng                                      as ISC_Co;
-use OT_H                                          as ISC_H;
-use OT_M                                          as ISC_M;
-use OT_N                                          as ISC_N;
-use OT_PLACEHOLDER                                as ISC_GB;
-use OT_RS                                         as ISC_RS;
-use OT_Repha                                      as ISC_R;
-use OT_SM                                         as ISC_SM;
-use OT_Symbol                                     as ISC_S;
-use OT_V                                          as ISC_V;
-use OT_X                                          as ISC_X;
-use OT_ZWJ                                        as ISC_ZWJ;
-use OT_ZWNJ                                       as ISC_ZWNJ;
+use OT_A                                         as ISC_A;
+use OT_C                                         as ISC_C;
+use OT_CM                                        as ISC_CM;
+use OT_CS                                        as ISC_CS;
+use OT_Coeng                                     as ISC_Co;
+use OT_DOTTEDCIRCLE                              as ISC_DC;
+use OT_H                                         as ISC_H;
+use OT_M                                         as ISC_M;
+use OT_N                                         as ISC_N;
+use OT_PLACEHOLDER                               as ISC_GB;
+use OT_RS                                        as ISC_RS;
+use OT_Repha                                     as ISC_R;
+use OT_SM                                        as ISC_SM;
+use OT_Symbol                                    as ISC_S;
+use OT_V                                         as ISC_V;
+use OT_X                                         as ISC_X;
+use OT_ZWJ                                       as ISC_ZWJ;
+use OT_ZWNJ                                      as ISC_ZWNJ;
 
-use INDIC_MATRA_CATEGORY_BOTTOM                   as IMC_B;
-use INDIC_MATRA_CATEGORY_BOTTOM_AND_LEFT          as IMC_BL;
-use INDIC_MATRA_CATEGORY_BOTTOM_AND_RIGHT         as IMC_BR;
-use INDIC_MATRA_CATEGORY_LEFT                     as IMC_L;
-use INDIC_MATRA_CATEGORY_LEFT_AND_RIGHT           as IMC_LR;
-use INDIC_MATRA_CATEGORY_NOT_APPLICABLE           as IMC_x;
-use INDIC_MATRA_CATEGORY_OVERSTRUCK               as IMC_O;
-use INDIC_MATRA_CATEGORY_RIGHT                    as IMC_R;
-use INDIC_MATRA_CATEGORY_TOP                      as IMC_T;
-use INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM           as IMC_TB;
-use INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM_AND_LEFT  as IMC_TBL;
-use INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM_AND_RIGHT as IMC_TBR;
-use INDIC_MATRA_CATEGORY_TOP_AND_LEFT             as IMC_TL;
-use INDIC_MATRA_CATEGORY_TOP_AND_LEFT_AND_RIGHT   as IMC_TLR;
-use INDIC_MATRA_CATEGORY_TOP_AND_RIGHT            as IMC_TR;
-use INDIC_MATRA_CATEGORY_VISUAL_ORDER_LEFT        as IMC_VOL;
+use INDIC_MATRA_CATEGORY_BOTTOM                  as IMC_B;
+use INDIC_MATRA_CATEGORY_LEFT                    as IMC_L;
+use INDIC_MATRA_CATEGORY_LEFT_AND_RIGHT          as IMC_LR;
+use INDIC_MATRA_CATEGORY_NOT_APPLICABLE          as IMC_x;
+use INDIC_MATRA_CATEGORY_OVERSTRUCK              as IMC_O;
+use INDIC_MATRA_CATEGORY_RIGHT                   as IMC_R;
+use INDIC_MATRA_CATEGORY_TOP                     as IMC_T;
+use INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM          as IMC_TB;
+use INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM_AND_LEFT as IMC_TBL;
+use INDIC_MATRA_CATEGORY_TOP_AND_LEFT            as IMC_TL;
+use INDIC_MATRA_CATEGORY_TOP_AND_LEFT_AND_RIGHT  as IMC_TLR;
+use INDIC_MATRA_CATEGORY_TOP_AND_RIGHT           as IMC_TR;
 
 
 pub type SyllabicCategory = u8;
@@ -75,16 +72,19 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 0938 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_N,IMC_B),  (ISC_S,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
   /* 0940 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),
   /* 0948 */  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_H,IMC_B),  (ISC_M,IMC_L),  (ISC_M,IMC_R),
-  /* 0950 */  (ISC_X,IMC_x),  (ISC_A,IMC_T),  (ISC_A,IMC_B),  (ISC_X,IMC_T),  (ISC_X,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_M,IMC_B),
+  /* 0950 */  (ISC_X,IMC_x),  (ISC_A,IMC_T),  (ISC_A,IMC_B), (ISC_SM,IMC_O), (ISC_SM,IMC_O),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_M,IMC_B),
   /* 0958 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
   /* 0960 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
   /* 0968 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
   /* 0970 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
   /* 0978 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
 
+  /* Vedic Extensions */
+
+  /* 0980 */ (ISC_GB,IMC_O), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
+
   /* Bengali */
 
-  /* 0980 */ (ISC_GB,IMC_x), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
   /* 0988 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),
   /* 0990 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
   /* 0998 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
@@ -99,7 +99,10 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 09E0 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
   /* 09E8 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
   /* 09F0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 09F8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_SM,IMC_x),  (ISC_X,IMC_x), (ISC_SM,IMC_T),  (ISC_X,IMC_x),
+
+  /* Vedic Extensions */
+
+  /* 09F8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_O),  (ISC_X,IMC_x), (ISC_SM,IMC_T),  (ISC_X,IMC_x),
 
   /* Gurmukhi */
 
@@ -113,11 +116,17 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 0A38 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_B),  (ISC_X,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
   /* 0A40 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_T),
   /* 0A48 */  (ISC_M,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_H,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0A50 */  (ISC_X,IMC_x),  (ISC_A,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+
+  /* Vedic Extensions */
+
+  /* 0A50 */  (ISC_X,IMC_x),  (ISC_M,IMC_O),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+
+  /* Gurmukhi */
+
   /* 0A58 */  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),
   /* 0A60 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
   /* 0A68 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0A70 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x), (ISC_CM,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0A70 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T),  (ISC_C,IMC_O),  (ISC_C,IMC_O),  (ISC_X,IMC_x), (ISC_CM,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
   /* 0A78 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
 
   /* Gujarati */
@@ -137,7 +146,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 0AE0 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
   /* 0AE8 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
   /* 0AF0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0AF8 */  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_N,IMC_T),  (ISC_N,IMC_T),  (ISC_N,IMC_T),
+  /* 0AF8 */  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_A,IMC_T),  (ISC_N,IMC_O),  (ISC_A,IMC_T),  (ISC_N,IMC_T),  (ISC_N,IMC_T),  (ISC_N,IMC_T),
 
   /* Oriya */
 
@@ -151,7 +160,13 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 0B38 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_B),  (ISC_S,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_T),
   /* 0B40 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_L),
   /* 0B48 */ (ISC_M,IMC_TL),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_M,IMC_LR),(ISC_M,IMC_TLR),  (ISC_H,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0B50 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_T), (ISC_M,IMC_TR),
+
+  /* Vedic Extensions */
+
+  /* 0B50 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_O),  (ISC_M,IMC_T), (ISC_M,IMC_TR),
+
+  /* Oriya */
+
   /* 0B58 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),
   /* 0B60 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
   /* 0B68 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
@@ -196,9 +211,12 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 0C70 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
   /* 0C78 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
 
+  /* Vedic Extensions */
+
+  /* 0C80 */ (ISC_GB,IMC_O), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
+
   /* Kannada */
 
-  /* 0C80 */ (ISC_SM,IMC_x), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
   /* 0C88 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
   /* 0C90 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
   /* 0C98 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
@@ -217,7 +235,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
 
   /* Malayalam */
 
-  /* 0D00 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R), (ISC_SM,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
+  /* 0D00 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R), (ISC_GB,IMC_O),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
   /* 0D08 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
   /* 0D10 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
   /* 0D18 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
@@ -296,15 +314,18 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
 
   /* 1CD0 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_X,IMC_x),  (ISC_A,IMC_O),  (ISC_A,IMC_B),  (ISC_A,IMC_B),  (ISC_A,IMC_B),
   /* 1CD8 */  (ISC_A,IMC_B),  (ISC_A,IMC_B),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_B),  (ISC_A,IMC_B),  (ISC_A,IMC_B),  (ISC_A,IMC_B),
-  /* 1CE0 */  (ISC_A,IMC_T),  (ISC_A,IMC_R),  (ISC_X,IMC_O),  (ISC_X,IMC_O),  (ISC_X,IMC_O),  (ISC_X,IMC_O),  (ISC_X,IMC_O),  (ISC_X,IMC_O),
-  /* 1CE8 */  (ISC_X,IMC_O),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 1CF0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_A,IMC_T), (ISC_CS,IMC_x), (ISC_CS,IMC_x),  (ISC_A,IMC_R),
+  /* 1CE0 */  (ISC_A,IMC_T),  (ISC_A,IMC_R),  (ISC_A,IMC_O),  (ISC_A,IMC_O),  (ISC_A,IMC_O),  (ISC_A,IMC_O),  (ISC_A,IMC_O),  (ISC_A,IMC_O),
+  /* 1CE8 */  (ISC_A,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_A,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),
+  /* 1CF0 */  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_A,IMC_T),  (ISC_C,IMC_O),  (ISC_C,IMC_O),  (ISC_A,IMC_R),
   /* 1CF8 */  (ISC_A,IMC_x),  (ISC_A,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
 
   /* General Punctuation */
 
   /* 2008 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),(ISC_ZWNJ,IMC_x),(ISC_ZWJ,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 2010 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+
+  /* Vedic Extensions */
+
+  /* 2010 */ (ISC_GB,IMC_O), (ISC_GB,IMC_O), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
 
   /* Superscripts and Subscripts */
 
@@ -316,7 +337,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
 
   /* A8E0 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),
   /* A8E8 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),
-  /* A8F0 */  (ISC_A,IMC_T),  (ISC_A,IMC_T), (ISC_SM,IMC_x), (ISC_SM,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* A8F0 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),
   /* A8F8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_T),
 
   /* Myanmar Extended-B */
@@ -333,6 +354,17 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* AA70 */  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),
   /* AA78 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_N,IMC_R),  (ISC_N,IMC_T),  (ISC_N,IMC_R),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
 
+  /* Vedic Extensions */
+
+  /* 11300 */  (ISC_X,IMC_x), (ISC_SM,IMC_O), (ISC_SM,IMC_O), (ISC_SM,IMC_O),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 11308 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 11310 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 11318 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 11320 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 11328 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 11330 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 11338 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_O),  (ISC_N,IMC_O),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+
 ];
 
 const OFFSET_0X0028: usize = 0;
@@ -346,6 +378,7 @@ const OFFSET_0X2070: usize = 1672;
 const OFFSET_0XA8E0: usize = 1696;
 const OFFSET_0XA9E0: usize = 1728;
 const OFFSET_0XAA60: usize = 1760;
+const OFFSET_0X11300: usize = 1792;
 
 #[rustfmt::skip]
 pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
@@ -362,7 +395,7 @@ pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
             if (0x1CD0..=0x1CFF).contains(&u) { return TABLE[u as usize - 0x1CD0 + OFFSET_0X1CD0]; }
         }
         0x2 => {
-            if u == 0x25CC { return (ISC_GB, IMC_x); }
+            if u == 0x25CC { return (ISC_DC, IMC_O); }
             if (0x2008..=0x2017).contains(&u) { return TABLE[u as usize - 0x2008 + OFFSET_0X2008]; }
             if (0x2070..=0x2087).contains(&u) { return TABLE[u as usize - 0x2070 + OFFSET_0X2070]; }
         }
@@ -370,6 +403,9 @@ pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
             if (0xA8E0..=0xA8FF).contains(&u) { return TABLE[u as usize - 0xA8E0 + OFFSET_0XA8E0]; }
             if (0xA9E0..=0xA9FF).contains(&u) { return TABLE[u as usize - 0xA9E0 + OFFSET_0XA9E0]; }
             if (0xAA60..=0xAA7F).contains(&u) { return TABLE[u as usize - 0xAA60 + OFFSET_0XAA60]; }
+        }
+        0x11 => {
+            if (0x11300..=0x1133F).contains(&u) { return TABLE[u as usize - 0x11300 + OFFSET_0X11300]; }
         }
         _ => {}
     }

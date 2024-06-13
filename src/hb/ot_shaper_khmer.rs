@@ -172,7 +172,7 @@ fn reorder(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
-        indic_category_t::OT_DOTTED_CIRCLE,
+        indic_category_t::OT_DOTTEDCIRCLE,
         Some(indic_category_t::OT_Repha),
         None,
     );
