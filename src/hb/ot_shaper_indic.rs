@@ -82,6 +82,12 @@ pub mod ot_category_t {
     pub const OT_VS: u8 = 40; // Variation selectors
     pub const OT_P: u8 = 41; // Punctuation
     pub const OT_ML: u8 = 42; // Consonant medials
+
+    // This one doesn't exist in ot_category_t in harfbuzz, only in
+    // the Myanmar machine. However, in Rust we unfortunately can't export
+    // inside the Ragel file, so we have to define it here as well. Needs to
+    // be kept in sync with the value in the machine.
+    pub const IV: u8 = 2;
 }
 
 pub type Position = u8;
@@ -212,7 +218,7 @@ mod indic_feature {
     pub const HALN: usize = 16;
 }
 
-const fn category_flag(c: Category) -> u32 {
+pub(crate) const fn category_flag(c: Category) -> u32 {
     rb_flag(c as u32)
 }
 
@@ -221,13 +227,22 @@ const fn category_flag(c: Category) -> u32 {
 // We treat Vowels and placeholders as if they were consonants.  This is safe because Vowels
 // cannot happen in a consonant syllable.  The plus side however is, we can call the
 // consonant syllable logic from the vowel syllable function and get it all right!
-const CONSONANT_FLAGS: u32 = category_flag(ot_category_t::OT_C)
+const CONSONANT_FLAGS_INDIC: u32 = category_flag(ot_category_t::OT_C)
     | category_flag(ot_category_t::OT_CS)
     | category_flag(ot_category_t::OT_Ra)
     | category_flag(ot_category_t::OT_CM)
     | category_flag(ot_category_t::OT_V)
     | category_flag(ot_category_t::OT_PLACEHOLDER)
     | category_flag(ot_category_t::OT_DOTTEDCIRCLE);
+
+const CONSONANT_FLAGS_MYANMAR: u32 = category_flag(ot_category_t::OT_C)
+    | category_flag(ot_category_t::OT_CS)
+    | category_flag(ot_category_t::OT_Ra)
+    // | category_flag(ot_category_t::OT_CM)
+    | category_flag(ot_category_t::IV)
+    | category_flag(ot_category_t::OT_GB)
+    | category_flag(ot_category_t::OT_DOTTEDCIRCLE);
+
 const JOINER_FLAGS: u32 =
     category_flag(ot_category_t::OT_ZWJ) | category_flag(ot_category_t::OT_ZWNJ);
 
@@ -580,7 +595,11 @@ impl hb_glyph_info_t {
     }
 
     pub(crate) fn is_consonant(&self) -> bool {
-        self.is_one_of(CONSONANT_FLAGS)
+        self.is_one_of(CONSONANT_FLAGS_INDIC)
+    }
+
+    pub(crate) fn is_consonant_myanmar(&self) -> bool {
+        self.is_one_of(CONSONANT_FLAGS_MYANMAR)
     }
 
     fn is_halant(&self) -> bool {
@@ -957,7 +976,7 @@ fn initial_reordering_consonant_syllable(
                 loop {
                     i -= 1;
                     // -> until a consonant is found
-                    if buffer.info[i].is_consonant() {
+                    if buffer.info[i].is_consonant_myanmar() {
                         // -> that does not have a below-base or post-base form
                         // (post-base forms have to follow below-base forms),
                         if buffer.info[i].indic_position() != ot_position_t::POS_BELOW_C

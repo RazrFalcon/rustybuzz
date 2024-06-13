@@ -22,6 +22,7 @@ use super::buffer::hb_buffer_t;
 }%%
 
 // These values are replicated from ot_shaper_indic; keep in sync.
+// NOTE: IV needs to be redefined in ot_category_t as well!
 %%{
 
 C    = 1;
