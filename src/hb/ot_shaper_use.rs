@@ -98,6 +98,7 @@ pub mod category {
     pub const J: u8 = 50; // HIEROGLYPH_JOINER
     pub const SB: u8 = 51; // HIEROGLYPH_SEGMENT_BEGIN
     pub const SE: u8 = 52; // HIEROGLYPH_SEGMENT_END
+    pub const HVM: u8 = 53; // HIEROGLYPH_SEGMENT_END
 }
 
 // These features are applied all at once, before reordering,
@@ -147,7 +148,10 @@ impl hb_glyph_info_t {
     }
 
     fn is_halant_use(&self) -> bool {
-        matches!(self.use_category(), category::H | category::IS) && !_hb_glyph_info_ligated(self)
+        matches!(
+            self.use_category(),
+            category::H | category::HVM | category::IS
+        ) && !_hb_glyph_info_ligated(self)
     }
 }
 
