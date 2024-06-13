@@ -8,7 +8,7 @@ use super::ot_shaper_indic::ot_position_t::*;
 
 use OT_A     as _OT_A;          /*  53 chars; A */
 use OT_As    as _OT_As;         /*   1 chars; As */
-use OT_C     as _OT_C;          /* 521 chars; C */
+use OT_C     as _OT_C;          /* 518 chars; C */
 use OT_CM    as _OT_CM;         /*   1 chars; CM */
 use OT_CS    as _OT_CS;         /*   2 chars; CS */
 use OT_Coeng as _OT_Co;         /*   1 chars; Coeng */
@@ -23,7 +23,7 @@ use OT_MW    as _OT_MW;         /*   2 chars; MW */
 use OT_MY    as _OT_MY;         /*   3 chars; MY */
 use OT_N     as _OT_N;          /*  17 chars; N */
 use OT_P     as _OT_P;          /*   2 chars; P */
-use OT_PLACEHOLDER as _OT_GB;         /* 149 chars; PLACEHOLDER */
+use OT_PLACEHOLDER as _OT_GB;         /* 152 chars; PLACEHOLDER */
 use OT_PT    as _OT_PT;         /*   8 chars; PT */
 use OT_Ra    as _OT_R;          /*  15 chars; Ra */
 use OT_Repha as _OT_Rf;         /*   1 chars; Repha */
@@ -359,7 +359,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
 
   /* AA60 */ (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C),
   /* AA68 */ (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C),
-  /* AA70 */ (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X),
+  /* AA70 */ (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C), (_OT_X,_POS_X),
   /* AA78 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_C,_POS_C),(_OT_PT,_POS_X), (_OT_N,_POS_X), (_OT_N,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C),
 
   /* No_Block */
