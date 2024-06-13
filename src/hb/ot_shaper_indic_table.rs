@@ -309,13 +309,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 1CD8 */(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),
   /* 1CE0 */(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_A,_POS_SM),
   /* 1CE8 */(_OT_A,_POS_SM),(_OT_S,_POS_SM),(_OT_S,_POS_SM),(_OT_S,_POS_SM),(_OT_S,_POS_SM),(_OT_A,_POS_SM),(_OT_S,_POS_SM),(_OT_S,_POS_SM),
-
-  /* No_Block */
-
   /* 1CF0 */(_OT_S,_POS_SM),(_OT_S,_POS_SM), (_OT_C,_POS_C), (_OT_C,_POS_C),(_OT_A,_POS_SM), (_OT_C,_POS_C), (_OT_C,_POS_C),(_OT_A,_POS_SM),
-
-  /* Vedic Extensions */
-
   /* 1CF8 */(_OT_A,_POS_SM),(_OT_A,_POS_SM),(_OT_GB,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
 
   /* General Punctuation */
@@ -323,9 +317,6 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 2008 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_ZWNJ,_POS_X),(_OT_ZWJ,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 2010 */(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 2018 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
-
-  /* No_Block */
-
   /* 2020 */ (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_GB,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
 
   /* Superscripts and Subscripts */
@@ -334,7 +325,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 2078 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 2080 */ (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_SM,_POS_SM),(_OT_SM,_POS_SM),(_OT_SM,_POS_SM), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
 
-  /* No_Block */
+  /* Geometric Shapes */
 
   /* 25F8 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C), (_OT_X,_POS_X),
 
@@ -359,10 +350,13 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* AA70 */ (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C), (_OT_X,_POS_X),
   /* AA78 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_C,_POS_C),(_OT_PT,_POS_X), (_OT_N,_POS_X), (_OT_N,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C),
 
-  /* No_Block */
+  /* Variation Selectors */
 
   /* FE00 */(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),
   /* FE08 */(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),(_OT_VS,_POS_X),
+
+  /* Grantha */
+
   /* 11300 */ (_OT_X,_POS_X),(_OT_SM,_POS_SM),(_OT_SM,_POS_SM),(_OT_SM,_POS_SM), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 11308 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 11310 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
