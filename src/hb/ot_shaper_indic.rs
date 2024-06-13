@@ -3,8 +3,8 @@ use core::cmp;
 use core::convert::TryFrom;
 use core::ops::Range;
 
-use ttf_parser::GlyphId;
 use crate::hb::ot_shaper_indic::indic_position_t::POS_BELOW_C;
+use ttf_parser::GlyphId;
 
 use super::algs::*;
 use super::buffer::hb_buffer_t;
@@ -90,34 +90,6 @@ pub mod indic_position_t {
     pub const POS_SMVD: u8 = 14;
 
     pub const POS_END: u8 = 15;
-}
-
-#[allow(dead_code)]
-pub mod indic_matra_category_t {
-    use super::indic_position_t::*;
-
-    pub const INDIC_MATRA_CATEGORY_NOT_APPLICABLE: u8 = POS_END;
-
-    pub const INDIC_MATRA_CATEGORY_LEFT: u8 = POS_PRE_C;
-    pub const INDIC_MATRA_CATEGORY_TOP: u8 = POS_ABOVE_C;
-    pub const INDIC_MATRA_CATEGORY_BOTTOM: u8 = POS_BELOW_C;
-    pub const INDIC_MATRA_CATEGORY_RIGHT: u8 = POS_POST_C;
-
-    /* These should resolve to the position of the last part of the split sequence. */
-    pub const INDIC_MATRA_CATEGORY_BOTTOM_AND_RIGHT: u8 = INDIC_MATRA_CATEGORY_RIGHT;
-    pub const INDIC_MATRA_CATEGORY_LEFT_AND_RIGHT: u8 = INDIC_MATRA_CATEGORY_RIGHT;
-    pub const INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM: u8 = INDIC_MATRA_CATEGORY_BOTTOM;
-    pub const INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM_AND_LEFT: u8 = INDIC_MATRA_CATEGORY_BOTTOM;
-    pub const INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM_AND_RIGHT: u8 = INDIC_MATRA_CATEGORY_RIGHT;
-    pub const INDIC_MATRA_CATEGORY_TOP_AND_LEFT: u8 = INDIC_MATRA_CATEGORY_TOP;
-    pub const INDIC_MATRA_CATEGORY_TOP_AND_LEFT_AND_RIGHT: u8 = INDIC_MATRA_CATEGORY_RIGHT;
-    pub const INDIC_MATRA_CATEGORY_TOP_AND_RIGHT: u8 = INDIC_MATRA_CATEGORY_RIGHT;
-
-    pub const INDIC_MATRA_CATEGORY_OVERSTRUCK: u8 = POS_AFTER_MAIN;
-    pub const INDIC_MATRA_CATEGORY_VISUAL_ORDER_LEFT: u8 = POS_PRE_M;
-
-    // Not defined in harfbuzz, but needed so that it compiles
-    pub const INDIC_MATRA_CATEGORY_BOTTOM_AND_LEFT: u8 = 255;
 }
 
 const INDIC_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[

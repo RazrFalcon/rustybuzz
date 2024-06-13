@@ -3,40 +3,34 @@
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
 
-use super::ot_shaper_indic::indic_matra_category_t::*;
 use super::ot_shaper_indic::indic_category_t::*;
+use super::ot_shaper_indic::indic_position_t::*;
 
-use OT_A                                         as ISC_A;
-use OT_C                                         as ISC_C;
-use OT_CM                                        as ISC_CM;
-use OT_CS                                        as ISC_CS;
-use OT_Coeng                                     as ISC_Co;
-use OT_DOTTEDCIRCLE                              as ISC_DC;
-use OT_H                                         as ISC_H;
-use OT_M                                         as ISC_M;
-use OT_N                                         as ISC_N;
-use OT_PLACEHOLDER                               as ISC_GB;
-use OT_RS                                        as ISC_RS;
-use OT_Repha                                     as ISC_R;
-use OT_SM                                        as ISC_SM;
-use OT_Symbol                                    as ISC_S;
-use OT_V                                         as ISC_V;
-use OT_X                                         as ISC_X;
-use OT_ZWJ                                       as ISC_ZWJ;
-use OT_ZWNJ                                      as ISC_ZWNJ;
+use OT_A            as ISC_A;
+use OT_C            as ISC_C;
+use OT_CM           as ISC_CM;
+use OT_CS           as ISC_CS;
+use OT_Coeng        as ISC_Co;
+use OT_DOTTEDCIRCLE as ISC_DC;
+use OT_H            as ISC_H;
+use OT_M            as ISC_M;
+use OT_N            as ISC_N;
+use OT_PLACEHOLDER  as ISC_GB;
+use OT_RS           as ISC_RS;
+use OT_Repha        as ISC_R;
+use OT_SM           as ISC_SM;
+use OT_Symbol       as ISC_S;
+use OT_V            as ISC_V;
+use OT_X            as ISC_X;
+use OT_ZWJ          as ISC_ZWJ;
+use OT_ZWNJ         as ISC_ZWNJ;
 
-use INDIC_MATRA_CATEGORY_BOTTOM                  as IMC_B;
-use INDIC_MATRA_CATEGORY_LEFT                    as IMC_L;
-use INDIC_MATRA_CATEGORY_LEFT_AND_RIGHT          as IMC_LR;
-use INDIC_MATRA_CATEGORY_NOT_APPLICABLE          as IMC_x;
-use INDIC_MATRA_CATEGORY_OVERSTRUCK              as IMC_O;
-use INDIC_MATRA_CATEGORY_RIGHT                   as IMC_R;
-use INDIC_MATRA_CATEGORY_TOP                     as IMC_T;
-use INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM          as IMC_TB;
-use INDIC_MATRA_CATEGORY_TOP_AND_BOTTOM_AND_LEFT as IMC_TBL;
-use INDIC_MATRA_CATEGORY_TOP_AND_LEFT            as IMC_TL;
-use INDIC_MATRA_CATEGORY_TOP_AND_LEFT_AND_RIGHT  as IMC_TLR;
-use INDIC_MATRA_CATEGORY_TOP_AND_RIGHT           as IMC_TR;
+use POS_ABOVE_C     as IMC_T;
+use POS_AFTER_MAIN  as IMC_A;
+use POS_BELOW_C     as IMC_B;
+use POS_END         as IMC_X;
+use POS_POST_C      as IMC_R;
+use POS_PRE_C       as IMC_L;
 
 
 pub type SyllabicCategory = u8;
@@ -48,322 +42,322 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
 
   /* Basic Latin */
 
-  /* 0028 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0030 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0038 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0028 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0030 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0038 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Latin-1 Supplement */
 
-  /* 00B0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_SM,IMC_x), (ISC_SM,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 00B8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 00C0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 00C8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 00D0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x),
+  /* 00B0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_SM,IMC_X), (ISC_SM,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 00B8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 00C0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 00C8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 00D0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X),
 
   /* Devanagari */
 
-  /* 0900 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0908 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0910 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0918 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0920 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0928 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0930 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0938 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_N,IMC_B),  (ISC_S,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
+  /* 0900 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0908 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0910 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0918 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0920 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0928 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0930 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0938 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_N,IMC_B),  (ISC_S,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
   /* 0940 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),
   /* 0948 */  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_H,IMC_B),  (ISC_M,IMC_L),  (ISC_M,IMC_R),
-  /* 0950 */  (ISC_X,IMC_x),  (ISC_A,IMC_T),  (ISC_A,IMC_B), (ISC_SM,IMC_O), (ISC_SM,IMC_O),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_M,IMC_B),
-  /* 0958 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0960 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0968 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0970 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0978 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
+  /* 0950 */  (ISC_X,IMC_X),  (ISC_A,IMC_T),  (ISC_A,IMC_B), (ISC_SM,IMC_A), (ISC_SM,IMC_A),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_M,IMC_B),
+  /* 0958 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0960 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0968 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0970 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0978 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
 
   /* Vedic Extensions */
 
-  /* 0980 */ (ISC_GB,IMC_O), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
+  /* 0980 */ (ISC_GB,IMC_A), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
 
   /* Bengali */
 
-  /* 0988 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),
-  /* 0990 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0998 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 09A0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 09A8 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 09B0 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 09B8 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_B),  (ISC_S,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
-  /* 09C0 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_L),
-  /* 09C8 */  (ISC_M,IMC_L),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_M,IMC_LR), (ISC_M,IMC_LR),  (ISC_H,IMC_B),  (ISC_C,IMC_x),  (ISC_X,IMC_x),
-  /* 09D0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_R),
-  /* 09D8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),
-  /* 09E0 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 09E8 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 09F0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0988 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),
+  /* 0990 */  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0998 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 09A0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 09A8 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 09B0 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 09B8 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_N,IMC_B),  (ISC_S,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
+  /* 09C0 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_L),
+  /* 09C8 */  (ISC_M,IMC_L),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_H,IMC_B),  (ISC_C,IMC_X),  (ISC_X,IMC_X),
+  /* 09D0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_R),
+  /* 09D8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),
+  /* 09E0 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 09E8 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 09F0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Vedic Extensions */
 
-  /* 09F8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_O),  (ISC_X,IMC_x), (ISC_SM,IMC_T),  (ISC_X,IMC_x),
+  /* 09F8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_A),  (ISC_X,IMC_X), (ISC_SM,IMC_T),  (ISC_X,IMC_X),
 
   /* Gurmukhi */
 
-  /* 0A00 */  (ISC_X,IMC_x), (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0A08 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),
-  /* 0A10 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0A18 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0A20 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0A28 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0A30 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),
-  /* 0A38 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_B),  (ISC_X,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
-  /* 0A40 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_T),
-  /* 0A48 */  (ISC_M,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_H,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0A00 */  (ISC_X,IMC_X), (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0A08 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),
+  /* 0A10 */  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0A18 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0A20 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0A28 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0A30 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),
+  /* 0A38 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_N,IMC_B),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
+  /* 0A40 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_T),
+  /* 0A48 */  (ISC_M,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_H,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Vedic Extensions */
 
-  /* 0A50 */  (ISC_X,IMC_x),  (ISC_M,IMC_O),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0A50 */  (ISC_X,IMC_X),  (ISC_M,IMC_A),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Gurmukhi */
 
-  /* 0A58 */  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),
-  /* 0A60 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0A68 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0A70 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T),  (ISC_C,IMC_O),  (ISC_C,IMC_O),  (ISC_X,IMC_x), (ISC_CM,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0A78 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0A58 */  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),
+  /* 0A60 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0A68 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0A70 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T),  (ISC_C,IMC_A),  (ISC_C,IMC_A),  (ISC_X,IMC_X), (ISC_CM,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0A78 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Gujarati */
 
-  /* 0A80 */  (ISC_X,IMC_x), (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0A88 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),
-  /* 0A90 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0A98 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0AA0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0AA8 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0AB0 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0AB8 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_B),  (ISC_S,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
-  /* 0AC0 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_T),  (ISC_X,IMC_x),  (ISC_M,IMC_T),
-  /* 0AC8 */  (ISC_M,IMC_T), (ISC_M,IMC_TR),  (ISC_X,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_H,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0AD0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0AD8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0AE0 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0AE8 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0AF0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0AF8 */  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_A,IMC_T),  (ISC_N,IMC_O),  (ISC_A,IMC_T),  (ISC_N,IMC_T),  (ISC_N,IMC_T),  (ISC_N,IMC_T),
+  /* 0A80 */  (ISC_X,IMC_X), (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0A88 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),
+  /* 0A90 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0A98 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0AA0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0AA8 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0AB0 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0AB8 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_N,IMC_B),  (ISC_S,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_L),
+  /* 0AC0 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_T),  (ISC_X,IMC_X),  (ISC_M,IMC_T),
+  /* 0AC8 */  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_H,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0AD0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0AD8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0AE0 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0AE8 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0AF0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0AF8 */  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_A,IMC_T),  (ISC_N,IMC_A),  (ISC_A,IMC_T),  (ISC_N,IMC_T),  (ISC_N,IMC_T),  (ISC_N,IMC_T),
 
   /* Oriya */
 
-  /* 0B00 */  (ISC_X,IMC_x), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0B08 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),
-  /* 0B10 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0B18 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0B20 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0B28 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0B30 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0B38 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_B),  (ISC_S,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_T),
-  /* 0B40 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_L),
-  /* 0B48 */ (ISC_M,IMC_TL),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_M,IMC_LR),(ISC_M,IMC_TLR),  (ISC_H,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0B00 */  (ISC_X,IMC_X), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0B08 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),
+  /* 0B10 */  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0B18 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0B20 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0B28 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0B30 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0B38 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_N,IMC_B),  (ISC_S,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_T),
+  /* 0B40 */  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_L),
+  /* 0B48 */  (ISC_M,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_H,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Vedic Extensions */
 
-  /* 0B50 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_O),  (ISC_M,IMC_T), (ISC_M,IMC_TR),
+  /* 0B50 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_N,IMC_A),  (ISC_M,IMC_T),  (ISC_M,IMC_R),
 
   /* Oriya */
 
-  /* 0B58 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),
-  /* 0B60 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0B68 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0B70 */  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0B78 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0B58 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),
+  /* 0B60 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0B68 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0B70 */  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0B78 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Tamil */
 
-  /* 0B80 */  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_SM,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0B88 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0B90 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0B98 */  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0BA0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0BA8 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0BB0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0BB8 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_R),
-  /* 0BC0 */  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_L),  (ISC_M,IMC_L),
-  /* 0BC8 */  (ISC_M,IMC_L),  (ISC_X,IMC_x), (ISC_M,IMC_LR), (ISC_M,IMC_LR), (ISC_M,IMC_LR),  (ISC_H,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0BD0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_R),
-  /* 0BD8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0BE0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0BE8 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0BF0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0BF8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0B80 */  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_SM,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0B88 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0B90 */  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0B98 */  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0BA0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0BA8 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0BB0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0BB8 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),
+  /* 0BC0 */  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_L),  (ISC_M,IMC_L),
+  /* 0BC8 */  (ISC_M,IMC_L),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_H,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0BD0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_R),
+  /* 0BD8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0BE0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0BE8 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0BF0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0BF8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Telugu */
 
-  /* 0C00 */ (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R), (ISC_SM,IMC_R), (ISC_SM,IMC_T),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0C08 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0C10 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0C18 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0C20 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0C28 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0C30 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0C38 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_B),  (ISC_S,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_T),
-  /* 0C40 */  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_T),
-  /* 0C48 */ (ISC_M,IMC_TB),  (ISC_X,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_H,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0C50 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_X,IMC_x),
-  /* 0C58 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0C60 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0C68 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0C70 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0C78 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0C00 */ (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R), (ISC_SM,IMC_R), (ISC_SM,IMC_T),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0C08 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0C10 */  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0C18 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0C20 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0C28 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0C30 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0C38 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_N,IMC_B),  (ISC_S,IMC_X),  (ISC_M,IMC_T),  (ISC_M,IMC_T),
+  /* 0C40 */  (ISC_M,IMC_T),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_X),  (ISC_M,IMC_T),  (ISC_M,IMC_T),
+  /* 0C48 */  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_H,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0C50 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_X,IMC_X),
+  /* 0C58 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0C60 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0C68 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0C70 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0C78 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Vedic Extensions */
 
-  /* 0C80 */ (ISC_GB,IMC_O), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
+  /* 0C80 */ (ISC_GB,IMC_A), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
 
   /* Kannada */
 
-  /* 0C88 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0C90 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0C98 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0CA0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0CA8 */  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0CB0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0CB8 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_B),  (ISC_S,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_T),
-  /* 0CC0 */ (ISC_M,IMC_TR),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_x),  (ISC_M,IMC_T), (ISC_M,IMC_TR),
-  /* 0CC8 */ (ISC_M,IMC_TR),  (ISC_X,IMC_x), (ISC_M,IMC_TR), (ISC_M,IMC_TR),  (ISC_M,IMC_T),  (ISC_H,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0CD0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_x),
-  /* 0CD8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),
-  /* 0CE0 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0CE8 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0CF0 */  (ISC_X,IMC_x), (ISC_CS,IMC_x), (ISC_CS,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0CF8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0C88 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0C90 */  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0C98 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0CA0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0CA8 */  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0CB0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0CB8 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_N,IMC_B),  (ISC_S,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_T),
+  /* 0CC0 */  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_X),  (ISC_M,IMC_T),  (ISC_M,IMC_R),
+  /* 0CC8 */  (ISC_M,IMC_R),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_T),  (ISC_H,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0CD0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_X),
+  /* 0CD8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),
+  /* 0CE0 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0CE8 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0CF0 */  (ISC_X,IMC_X), (ISC_CS,IMC_X), (ISC_CS,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0CF8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Malayalam */
 
-  /* 0D00 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R), (ISC_GB,IMC_O),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0D08 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0D10 */  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0D18 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0D20 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0D28 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0D30 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0D38 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_S,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_R),
-  /* 0D40 */  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_M,IMC_L),  (ISC_M,IMC_L),
-  /* 0D48 */  (ISC_M,IMC_L),  (ISC_X,IMC_x), (ISC_M,IMC_LR), (ISC_M,IMC_LR), (ISC_M,IMC_LR),  (ISC_H,IMC_T),  (ISC_R,IMC_T),  (ISC_X,IMC_x),
-  /* 0D50 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_M,IMC_R),
-  /* 0D58 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),
-  /* 0D60 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0D68 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0D70 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0D78 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
+  /* 0D00 */ (ISC_SM,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R), (ISC_GB,IMC_A),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0D08 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0D10 */  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0D18 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0D20 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0D28 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0D30 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0D38 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_S,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),
+  /* 0D40 */  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_M,IMC_L),  (ISC_M,IMC_L),
+  /* 0D48 */  (ISC_M,IMC_L),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_H,IMC_T),  (ISC_R,IMC_T),  (ISC_X,IMC_X),
+  /* 0D50 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_M,IMC_R),
+  /* 0D58 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),
+  /* 0D60 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0D68 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0D70 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0D78 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
 
   /* Sinhala */
 
-  /* 0D80 */  (ISC_X,IMC_x), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0D88 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 0D90 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),
-  /* 0D98 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0DA0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0DA8 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0DB0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 0DB8 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 0DC0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),
-  /* 0DC8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_H,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_R),
-  /* 0DD0 */  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_X,IMC_x),  (ISC_M,IMC_B),  (ISC_X,IMC_x),
-  /* 0DD8 */  (ISC_M,IMC_R),  (ISC_M,IMC_L), (ISC_M,IMC_TL),  (ISC_M,IMC_L), (ISC_M,IMC_LR),(ISC_M,IMC_TLR), (ISC_M,IMC_LR),  (ISC_M,IMC_R),
-  /* 0DE0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0DE8 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 0DF0 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 0D80 */  (ISC_X,IMC_X), (ISC_SM,IMC_T), (ISC_SM,IMC_R), (ISC_SM,IMC_R),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0D88 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 0D90 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),
+  /* 0D98 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0DA0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0DA8 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0DB0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 0DB8 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 0DC0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),
+  /* 0DC8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_H,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_R),
+  /* 0DD0 */  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_X,IMC_X),  (ISC_M,IMC_B),  (ISC_X,IMC_X),
+  /* 0DD8 */  (ISC_M,IMC_R),  (ISC_M,IMC_L),  (ISC_M,IMC_T),  (ISC_M,IMC_L),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_R),
+  /* 0DE0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0DE8 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 0DF0 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Myanmar */
 
-  /* 1000 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1008 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1010 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1018 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1020 */  (ISC_C,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 1028 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_B),
+  /* 1000 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1008 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1010 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1018 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1020 */  (ISC_C,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 1028 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_B),
   /* 1030 */  (ISC_M,IMC_B),  (ISC_M,IMC_L),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T), (ISC_SM,IMC_T),  (ISC_N,IMC_B),
-  /* 1038 */ (ISC_SM,IMC_R), (ISC_Co,IMC_x),  (ISC_M,IMC_T), (ISC_CM,IMC_R),(ISC_CM,IMC_TBL), (ISC_CM,IMC_B), (ISC_CM,IMC_B),  (ISC_C,IMC_x),
-  /* 1040 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 1048 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),
-  /* 1050 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_R),
-  /* 1058 */  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x), (ISC_CM,IMC_B), (ISC_CM,IMC_B),
-  /* 1060 */ (ISC_CM,IMC_B),  (ISC_C,IMC_x),  (ISC_M,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_M,IMC_R),
-  /* 1068 */  (ISC_M,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1070 */  (ISC_C,IMC_x),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1078 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1080 */  (ISC_C,IMC_x),  (ISC_C,IMC_x), (ISC_CM,IMC_B),  (ISC_M,IMC_R),  (ISC_M,IMC_L),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_N,IMC_R),
-  /* 1088 */  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_B),  (ISC_C,IMC_x),  (ISC_N,IMC_R),
-  /* 1090 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 1098 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 1038 */ (ISC_SM,IMC_R), (ISC_Co,IMC_X),  (ISC_M,IMC_T), (ISC_CM,IMC_R), (ISC_CM,IMC_B), (ISC_CM,IMC_B), (ISC_CM,IMC_B),  (ISC_C,IMC_X),
+  /* 1040 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 1048 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_GB,IMC_X),  (ISC_X,IMC_X),
+  /* 1050 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_R),
+  /* 1058 */  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X), (ISC_CM,IMC_B), (ISC_CM,IMC_B),
+  /* 1060 */ (ISC_CM,IMC_B),  (ISC_C,IMC_X),  (ISC_M,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_M,IMC_R),
+  /* 1068 */  (ISC_M,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1070 */  (ISC_C,IMC_X),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1078 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1080 */  (ISC_C,IMC_X),  (ISC_C,IMC_X), (ISC_CM,IMC_B),  (ISC_M,IMC_R),  (ISC_M,IMC_L),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_N,IMC_R),
+  /* 1088 */  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_N,IMC_B),  (ISC_C,IMC_X),  (ISC_N,IMC_R),
+  /* 1090 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 1098 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X),  (ISC_N,IMC_R),  (ISC_N,IMC_R),  (ISC_M,IMC_R),  (ISC_M,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Khmer */
 
-  /* 1780 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1788 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1790 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 1798 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* 17A0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 17A8 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),
-  /* 17B0 */  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_V,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_M,IMC_R),  (ISC_M,IMC_T),
-  /* 17B8 */  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B), (ISC_M,IMC_TL),(ISC_M,IMC_TLR),
-  /* 17C0 */ (ISC_M,IMC_LR),  (ISC_M,IMC_L),  (ISC_M,IMC_L),  (ISC_M,IMC_L), (ISC_M,IMC_LR), (ISC_M,IMC_LR), (ISC_SM,IMC_T), (ISC_SM,IMC_R),
+  /* 1780 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1788 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1790 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 1798 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* 17A0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 17A8 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),
+  /* 17B0 */  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_V,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_M,IMC_R),  (ISC_M,IMC_T),
+  /* 17B8 */  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_T),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_B),  (ISC_M,IMC_T),  (ISC_M,IMC_R),
+  /* 17C0 */  (ISC_M,IMC_R),  (ISC_M,IMC_L),  (ISC_M,IMC_L),  (ISC_M,IMC_L),  (ISC_M,IMC_R),  (ISC_M,IMC_R), (ISC_SM,IMC_T), (ISC_SM,IMC_R),
   /* 17C8 */  (ISC_M,IMC_R), (ISC_RS,IMC_T), (ISC_RS,IMC_T), (ISC_SM,IMC_T), (ISC_CM,IMC_T),  (ISC_M,IMC_T), (ISC_SM,IMC_T), (ISC_SM,IMC_T),
-  /* 17D0 */ (ISC_SM,IMC_T),  (ISC_M,IMC_T), (ISC_Co,IMC_x), (ISC_SM,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 17D8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_S,IMC_x), (ISC_SM,IMC_T),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 17E0 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* 17E8 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 17D0 */ (ISC_SM,IMC_T),  (ISC_M,IMC_T), (ISC_Co,IMC_X), (ISC_SM,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 17D8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_S,IMC_X), (ISC_SM,IMC_T),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 17E0 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* 17E8 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Vedic Extensions */
 
-  /* 1CD0 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_X,IMC_x),  (ISC_A,IMC_O),  (ISC_A,IMC_B),  (ISC_A,IMC_B),  (ISC_A,IMC_B),
+  /* 1CD0 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_X,IMC_X),  (ISC_A,IMC_A),  (ISC_A,IMC_B),  (ISC_A,IMC_B),  (ISC_A,IMC_B),
   /* 1CD8 */  (ISC_A,IMC_B),  (ISC_A,IMC_B),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_B),  (ISC_A,IMC_B),  (ISC_A,IMC_B),  (ISC_A,IMC_B),
-  /* 1CE0 */  (ISC_A,IMC_T),  (ISC_A,IMC_R),  (ISC_A,IMC_O),  (ISC_A,IMC_O),  (ISC_A,IMC_O),  (ISC_A,IMC_O),  (ISC_A,IMC_O),  (ISC_A,IMC_O),
-  /* 1CE8 */  (ISC_A,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_A,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),
-  /* 1CF0 */  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_A,IMC_T),  (ISC_C,IMC_O),  (ISC_C,IMC_O),  (ISC_A,IMC_R),
-  /* 1CF8 */  (ISC_A,IMC_x),  (ISC_A,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 1CE0 */  (ISC_A,IMC_T),  (ISC_A,IMC_R),  (ISC_A,IMC_A),  (ISC_A,IMC_A),  (ISC_A,IMC_A),  (ISC_A,IMC_A),  (ISC_A,IMC_A),  (ISC_A,IMC_A),
+  /* 1CE8 */  (ISC_A,IMC_A),  (ISC_S,IMC_A),  (ISC_S,IMC_A),  (ISC_S,IMC_A),  (ISC_S,IMC_A),  (ISC_A,IMC_A),  (ISC_S,IMC_A),  (ISC_S,IMC_A),
+  /* 1CF0 */  (ISC_S,IMC_A),  (ISC_S,IMC_A),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_A,IMC_T),  (ISC_C,IMC_A),  (ISC_C,IMC_A),  (ISC_A,IMC_R),
+  /* 1CF8 */  (ISC_A,IMC_X),  (ISC_A,IMC_X), (ISC_GB,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* General Punctuation */
 
-  /* 2008 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),(ISC_ZWNJ,IMC_x),(ISC_ZWJ,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 2008 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),(ISC_ZWNJ,IMC_X),(ISC_ZWJ,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Vedic Extensions */
 
-  /* 2010 */ (ISC_GB,IMC_O), (ISC_GB,IMC_O), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 2010 */ (ISC_GB,IMC_A), (ISC_GB,IMC_A), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Superscripts and Subscripts */
 
-  /* 2070 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_SM,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 2078 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 2080 */  (ISC_X,IMC_x),  (ISC_X,IMC_x), (ISC_SM,IMC_x), (ISC_SM,IMC_x), (ISC_SM,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 2070 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_SM,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 2078 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 2080 */  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_SM,IMC_X), (ISC_SM,IMC_X), (ISC_SM,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
   /* Devanagari Extended */
 
   /* A8E0 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),
   /* A8E8 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_A,IMC_T),
-  /* A8F0 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),  (ISC_S,IMC_O),
-  /* A8F8 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_V,IMC_x),  (ISC_M,IMC_T),
+  /* A8F0 */  (ISC_A,IMC_T),  (ISC_A,IMC_T),  (ISC_S,IMC_A),  (ISC_S,IMC_A),  (ISC_S,IMC_A),  (ISC_S,IMC_A),  (ISC_S,IMC_A),  (ISC_S,IMC_A),
+  /* A8F8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_V,IMC_X),  (ISC_M,IMC_T),
 
   /* Myanmar Extended-B */
 
-  /* A9E0 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_M,IMC_T),  (ISC_X,IMC_x),  (ISC_C,IMC_x),
-  /* A9E8 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* A9F0 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),
-  /* A9F8 */ (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_X,IMC_x),
+  /* A9E0 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_M,IMC_T),  (ISC_X,IMC_X),  (ISC_C,IMC_X),
+  /* A9E8 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* A9F0 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),
+  /* A9F8 */ (ISC_GB,IMC_X), (ISC_GB,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_X,IMC_X),
 
   /* Myanmar Extended-A */
 
-  /* AA60 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* AA68 */  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
-  /* AA70 */  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x),  (ISC_C,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x), (ISC_GB,IMC_x),  (ISC_X,IMC_x),
-  /* AA78 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_C,IMC_x),  (ISC_N,IMC_R),  (ISC_N,IMC_T),  (ISC_N,IMC_R),  (ISC_C,IMC_x),  (ISC_C,IMC_x),
+  /* AA60 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* AA68 */  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
+  /* AA70 */  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X),  (ISC_C,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X), (ISC_GB,IMC_X),  (ISC_X,IMC_X),
+  /* AA78 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_C,IMC_X),  (ISC_N,IMC_R),  (ISC_N,IMC_T),  (ISC_N,IMC_R),  (ISC_C,IMC_X),  (ISC_C,IMC_X),
 
   /* Vedic Extensions */
 
-  /* 11300 */  (ISC_X,IMC_x), (ISC_SM,IMC_O), (ISC_SM,IMC_O), (ISC_SM,IMC_O),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 11308 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 11310 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 11318 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 11320 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 11328 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 11330 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
-  /* 11338 */  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_N,IMC_O),  (ISC_N,IMC_O),  (ISC_X,IMC_x),  (ISC_X,IMC_x),  (ISC_X,IMC_x),
+  /* 11300 */  (ISC_X,IMC_X), (ISC_SM,IMC_A), (ISC_SM,IMC_A), (ISC_SM,IMC_A),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 11308 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 11310 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 11318 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 11320 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 11328 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 11330 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 11338 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_N,IMC_A),  (ISC_N,IMC_A),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
 ];
 
@@ -384,7 +378,7 @@ const OFFSET_0X11300: usize = 1792;
 pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
     match u >> 12 {
         0x0 => {
-            if u == 0x00A0 { return (ISC_GB, IMC_x); }
+            if u == 0x00A0 { return (ISC_GB, IMC_X); }
             if (0x0028..=0x003F).contains(&u) { return TABLE[u as usize - 0x0028 + OFFSET_0X0028]; }
             if (0x00B0..=0x00D7).contains(&u) { return TABLE[u as usize - 0x00B0 + OFFSET_0X00B0]; }
             if (0x0900..=0x0DF7).contains(&u) { return TABLE[u as usize - 0x0900 + OFFSET_0X0900]; }
@@ -395,7 +389,7 @@ pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
             if (0x1CD0..=0x1CFF).contains(&u) { return TABLE[u as usize - 0x1CD0 + OFFSET_0X1CD0]; }
         }
         0x2 => {
-            if u == 0x25CC { return (ISC_DC, IMC_O); }
+            if u == 0x25CC { return (ISC_DC, IMC_A); }
             if (0x2008..=0x2017).contains(&u) { return TABLE[u as usize - 0x2008 + OFFSET_0X2008]; }
             if (0x2070..=0x2087).contains(&u) { return TABLE[u as usize - 0x2070 + OFFSET_0X2070]; }
         }
@@ -410,5 +404,5 @@ pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
         _ => {}
     }
 
-    (ISC_X, IMC_x)
+    (ISC_X, IMC_X)
 }

@@ -123,6 +123,27 @@ category_map = {
   'Dotted_Circle'		: 'DOTTEDCIRCLE', # Ours, not Unicode's
 }
 
+position_map = {
+  'Not_Applicable'		: 'END',
+
+  'Left'			: 'PRE_C',
+  'Top'				: 'ABOVE_C',
+  'Bottom'			: 'BELOW_C',
+  'Right'			: 'POST_C',
+
+  # These should resolve to the position of the last part of the split sequence.
+  'Bottom_And_Right'		: 'POST_C',
+  'Left_And_Right'		: 'POST_C',
+  'Top_And_Bottom'		: 'BELOW_C',
+  'Top_And_Bottom_And_Left'	: 'BELOW_C',
+  'Top_And_Bottom_And_Right'	: 'POST_C',
+  'Top_And_Left'		: 'ABOVE_C',
+  'Top_And_Left_And_Right'	: 'POST_C',
+  'Top_And_Right'		: 'POST_C',
+
+  'Overstruck'			: 'AFTER_MAIN',
+  'Visual_order_left'		: 'PRE_M',
+}
 
 category_overrides = {
 
@@ -192,12 +213,12 @@ category_overrides = {
 }
 
 
-defaults = (category_map[defaults[0]], defaults[1], defaults[2])
+defaults = (category_map[defaults[0]], position_map[defaults[1]], defaults[2])
 
 new_data = {}
 for key, (cat, pos, block) in data.items():
-
   cat = category_map[cat]
+  pos = position_map[pos]
   new_data[key] = (cat, pos, block)
 data = new_data
 
@@ -221,8 +242,8 @@ print()
 print('#![allow(non_camel_case_types)]')
 print('#![allow(unused_imports)]')
 print()
-print('use super::ot_shaper_indic::indic_matra_category_t::*;')
 print('use super::ot_shaper_indic::indic_category_t::*;')
+print('use super::ot_shaper_indic::indic_position_t::*;')
 
 # Shorten values
 short = [{
@@ -230,7 +251,12 @@ short = [{
 	"PLACEHOLDER":		'GB',
 	"DOTTEDCIRCLE":		'DC',
 },{
-	"Not_Applicable":	'x',
+	"END":			'X',
+	"ABOVE_C":		'T',
+	"BELOW_C":		'B',
+	"POST_C":		'R',
+	"PRE_C":		'L',
+	"AFTER_MAIN":		'A',
 }]
 all_shorts = [{},{}]
 
@@ -240,7 +266,7 @@ for i in range(2):
     for v, s in short[i].items():
         all_shorts[i][s] = v
 
-what = ["OT", "INDIC_MATRA_CATEGORY"]
+what = ["OT", "POS"]
 what_short = ['ISC', 'IMC']
 cat_defs = []
 for i in range(2):
@@ -363,7 +389,7 @@ for p in sorted(pages):
 print('        _ => {}')
 print('    }')
 print()
-print('    (ISC_X, IMC_x)')
+print('    (ISC_X, IMC_X)')
 print('}')
 
 # Maintain at least 30% occupancy in the table */
