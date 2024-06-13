@@ -1,4 +1,3 @@
-use crate::hb::ot_shaper_khmer_machine::khmer_category_t;
 use alloc::boxed::Box;
 
 use super::buffer::hb_buffer_t;
@@ -79,12 +78,12 @@ impl hb_glyph_info_t {
 
         match u {
             0x179A => cat = indic_category_t::OT_Ra,
-            0x17CC | 0x17C9 | 0x17CA => cat = khmer_category_t::ROBATIC,
+            0x17CC | 0x17C9 | 0x17CA => cat = indic_category_t::OT_Robatic,
             0x17C6 | 0x17CB | 0x17CD | 0x17CE | 0x17CF | 0x17D0 | 0x17D1 => {
-                cat = khmer_category_t::X_GROUP
+                cat = indic_category_t::OT_Xgroup
             }
             // Just guessing. Uniscribe doesn't categorize it.
-            0x17C7 | 0x17C8 | 0x17DD | 0x17D3 => cat = khmer_category_t::Y_GROUP,
+            0x17C7 | 0x17C8 | 0x17DD | 0x17D3 => cat = indic_category_t::OT_Ygroup,
             _ => {}
         }
 

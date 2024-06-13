@@ -7,8 +7,6 @@ use super::ot_shaper::*;
 use super::ot_shaper_indic::{indic_category_t, indic_position_t};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 use crate::hb::ot_shaper_indic::indic_category_t::OT_VPre;
-use crate::hb::ot_shaper_khmer_machine::khmer_category_t;
-use crate::hb::ot_shaper_myanmar_machine::myanmar_category_t;
 
 pub const MYANMAR_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: Some(collect_features),
@@ -70,7 +68,7 @@ impl hb_glyph_info_t {
         // https://docs.microsoft.com/en-us/typography/script-development/myanmar#analyze
 
         if (0xFE00..=0xFE0F).contains(&u) {
-            cat = myanmar_category_t::VS;
+            cat = indic_category_t::OT_VS;
         }
 
         match u {
@@ -78,7 +76,7 @@ impl hb_glyph_info_t {
             0x104E => cat = indic_category_t::OT_C,
 
             0x002D | 0x00A0 | 0x00D7 | 0x2012 | 0x2013 | 0x2014 | 0x2015 | 0x2022 | 0x25CC
-            | 0x25FB | 0x25FC | 0x25FD | 0x25FE => cat = myanmar_category_t::GB,
+            | 0x25FB | 0x25FC | 0x25FD | 0x25FE => cat = indic_category_t::OT_GB,
 
             0x1004 | 0x101B | 0x105A => cat = indic_category_t::OT_Ra,
 
@@ -86,33 +84,33 @@ impl hb_glyph_info_t {
 
             0x1039 => cat = indic_category_t::OT_H,
 
-            0x103A => cat = myanmar_category_t::As,
+            0x103A => cat = indic_category_t::OT_As,
 
             0x1041 | 0x1042 | 0x1043 | 0x1044 | 0x1045 | 0x1046 | 0x1047 | 0x1048 | 0x1049
             | 0x1090 | 0x1091 | 0x1092 | 0x1093 | 0x1094 | 0x1095 | 0x1096 | 0x1097 | 0x1098
-            | 0x1099 => cat = myanmar_category_t::D,
+            | 0x1099 => cat = indic_category_t::OT_D,
 
             // XXX The spec says D0, but Uniscribe doesn't seem to do.
-            0x1040 => cat = myanmar_category_t::D,
+            0x1040 => cat = indic_category_t::OT_D,
 
-            0x103E => cat = myanmar_category_t::MH,
+            0x103E => cat = indic_category_t::OT_MH,
 
-            0x1060 => cat = myanmar_category_t::ML,
+            0x1060 => cat = indic_category_t::OT_ML,
 
-            0x103C => cat = myanmar_category_t::MR,
+            0x103C => cat = indic_category_t::OT_MR,
 
-            0x103D | 0x1082 => cat = myanmar_category_t::MW,
+            0x103D | 0x1082 => cat = indic_category_t::OT_MW,
 
-            0x103B | 0x105E | 0x105F => cat = myanmar_category_t::MY,
+            0x103B | 0x105E | 0x105F => cat = indic_category_t::OT_MY,
 
             0x1063 | 0x1064 | 0x1069 | 0x106A | 0x106B | 0x106C | 0x106D | 0xAA7B => {
-                cat = myanmar_category_t::PT
+                cat = indic_category_t::OT_PT
             }
 
             0x1038 | 0x1087 | 0x1088 | 0x1089 | 0x108A | 0x108B | 0x108C | 0x108D | 0x108F
             | 0x109A | 0x109B | 0x109C => cat = indic_category_t::OT_SM,
 
-            0x104A | 0x104B => cat = myanmar_category_t::P,
+            0x104A | 0x104B => cat = indic_category_t::OT_P,
 
             // https://github.com/harfbuzz/harfbuzz/issues/218
             0xAA74 | 0xAA75 | 0xAA76 => cat = indic_category_t::OT_C,
@@ -215,7 +213,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
         let mut limit = start;
         if start + 3 <= end
             && buffer.info[start + 0].myanmar_category() == indic_category_t::OT_Ra
-            && buffer.info[start + 1].myanmar_category() == myanmar_category_t::As
+            && buffer.info[start + 1].myanmar_category() == indic_category_t::OT_As
             && buffer.info[start + 2].myanmar_category() == indic_category_t::OT_H
         {
             limit += 3;
@@ -260,7 +258,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
         // Myanmar reordering!
         for i in i..end {
             // Pre-base reordering
-            if buffer.info[i].myanmar_category() == khmer_category_t::Y_GROUP {
+            if buffer.info[i].myanmar_category() == indic_category_t::OT_MR {
                 buffer.info[i].set_myanmar_position(indic_position_t::POS_PRE_C);
                 continue;
             }
@@ -271,7 +269,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
                 continue;
             }
 
-            if buffer.info[i].myanmar_category() == myanmar_category_t::VS {
+            if buffer.info[i].myanmar_category() == indic_category_t::OT_VS {
                 let t = buffer.info[i - 1].myanmar_position();
                 buffer.info[i].set_myanmar_position(t);
                 continue;

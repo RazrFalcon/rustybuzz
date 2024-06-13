@@ -49,20 +49,39 @@ pub mod indic_category_t {
     pub const OT_A: u8 = 9;
     pub const OT_VD: u8 = OT_A;
     pub const OT_PLACEHOLDER: u8 = 10;
+    pub const OT_GB: u8 = OT_PLACEHOLDER;
+    pub const OT_D: u8 = OT_GB;
     pub const OT_DOTTEDCIRCLE: u8 = 11;
     pub const OT_RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
-    pub const OT_Coeng: u8 = 13; // Khmer-style Virama.
     pub const OT_Repha: u8 = 14; // Atomically-encoded logical or visual repha.
     pub const OT_Ra: u8 = 15;
     pub const OT_CM: u8 = 16; // Consonant-Medial.
     pub const OT_Symbol: u8 = 17; // Avagraha, etc that take marks (SM,A,VD).
     pub const OT_CS: u8 = 18;
 
-    // The following are used by Khmer & Myanmar shapers.  Defined here for them to share.
-    pub const OT_VAbv: u8 = 26;
-    pub const OT_VBlw: u8 = 27;
-    pub const OT_VPre: u8 = 28;
-    pub const OT_VPst: u8 = 29;
+    /* Khmer & Myanmar shapers. */
+    pub const OT_VAbv: u8 = 20;
+    pub const OT_VBlw: u8 = 21;
+    pub const OT_VPre: u8 = 22;
+    pub const OT_VPst: u8 = 23;
+
+    /* Khmer. */
+    pub const OT_Coeng: u8 = 24;
+    pub const OT_Robatic: u8 = 25;
+    pub const OT_Xgroup: u8 = 26;
+    pub const OT_Ygroup: u8 = 27;
+
+    /* Myanmar */
+    pub const OT_As: u8 = 32; // Asat
+    pub const OT_D0: u8 = 33; // Digit zero
+    pub const OT_MH: u8 = 34; // Medial
+    pub const OT_MR: u8 = 35; // Medial
+    pub const OT_MW: u8 = 36; // Medial
+    pub const OT_MY: u8 = 37; // Medial
+    pub const OT_PT: u8 = 38; // Pwo and other tones
+    pub const OT_VS: u8 = 39; // Variation selectors
+    pub const OT_P: u8 = 40; // Punctuation
+    pub const OT_ML: u8 = 41; // Consonant medials
 }
 
 pub type Position = u8;
