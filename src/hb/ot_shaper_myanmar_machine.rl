@@ -46,14 +46,14 @@ VPst = 23;
 As   = 32;	# Asat
 D    = 33;	# Digits except zero
 D0   = 34;	# Digit zero
-MH   = 35;	# Medial Ha, Mon La
+MH   = 35;	# Medial Ha
 MR   = 36;	# Medial Ra
 MW   = 37;	# Medial Wa, Shan Wa
 MY   = 38;	# Medial Ya, Mon Na, Mon Ma
 PT   = 39;	# Pwo and other tones
 VS   = 40;	# Variation selectors
 P    = 41;	# Punctuation
-ML   = 42;	# Consonant medials
+ML   = 42;	# Medial Mon La
 
 j = ZWJ|ZWNJ;			# Joiners
 k = (Ra As H);			# Kinzi
