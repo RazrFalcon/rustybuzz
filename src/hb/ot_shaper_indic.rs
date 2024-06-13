@@ -216,7 +216,6 @@ const fn category_flag(c: Category) -> u32 {
     rb_flag(c as u32)
 }
 
-const MEDIAL_FLAGS: u32 = category_flag(ot_category_t::OT_CM);
 // Note:
 //
 // We treat Vowels and placeholders as if they were consonants.  This is safe because Vowels
@@ -225,7 +224,7 @@ const MEDIAL_FLAGS: u32 = category_flag(ot_category_t::OT_CM);
 const CONSONANT_FLAGS: u32 = category_flag(ot_category_t::OT_C)
     | category_flag(ot_category_t::OT_CS)
     | category_flag(ot_category_t::OT_Ra)
-    | MEDIAL_FLAGS
+    | category_flag(ot_category_t::OT_CM)
     | category_flag(ot_category_t::OT_V)
     | category_flag(ot_category_t::OT_PLACEHOLDER)
     | category_flag(ot_category_t::OT_DOTTEDCIRCLE);
