@@ -195,7 +195,7 @@ fn handle_variation_selector_cluster(
 ) {
     let face = ctx.face;
 
-    // TODO: Currently if there's a variation-selector we give-up, it's just too hard.
+    // Currently if there's a variation-selector we give-up on normalization, it's just too hard.
     let buffer = &mut ctx.buffer;
     while buffer.idx < end - 1 && buffer.successful {
         if buffer.cur(1).as_char().is_variation_selector() {
