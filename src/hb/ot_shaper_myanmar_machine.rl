@@ -24,6 +24,8 @@ use super::buffer::{HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE, hb_buffer_t};
 // IMPORTANT: Before updating any values here, make sure to read the comment in `ot_category_t`.
 %%{
 
+# Spec category D is folded into GB; D0 is not implemented by Uniscribe and as such folded into D
+
 C    = 1;
 IV   = 2;
 DB   = 3;	# Dot below	     = OT_N
@@ -44,8 +46,6 @@ VPst = 23;
 
 # 32+ are for Myanmar-specific values
 As   = 32;	# Asat
-D    = 33;	# Digits except zero
-D0   = 34;	# Digit zero
 MH   = 35;	# Medial Ha
 MR   = 36;	# Medial Ra
 MW   = 37;	# Medial Wa, Shan Wa
@@ -68,7 +68,7 @@ pwo_tone_group = PT A* DB? As?;
 complex_syllable_tail = As* medial_group main_vowel_group post_vowel_group* pwo_tone_group* SM* j?;
 syllable_tail = (H (c|IV).VS?)* (H | complex_syllable_tail);
 
-consonant_syllable =	(k|CS)? (c|IV|D|GB|DOTTEDCIRCLE).VS? syllable_tail;
+consonant_syllable =	(k|CS)? (c|IV|GB|DOTTEDCIRCLE).VS? syllable_tail;
 punctuation_cluster =	P SM;
 broken_cluster =	k? VS? syllable_tail;
 other =			any;

@@ -74,8 +74,6 @@ pub mod ot_category_t {
 
     /* Myanmar */
     pub const OT_As: u8 = 32; // Asat
-    pub const OT_D: u8 = 33; // Digits except zero
-    pub const OT_D0: u8 = 34; // Digit zero
     pub const OT_MH: u8 = 35; // Medial
     pub const OT_MR: u8 = 36; // Medial
     pub const OT_MW: u8 = 37; // Medial
