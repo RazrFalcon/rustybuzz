@@ -62,64 +62,9 @@ const MYANMAR_FEATURES: &[hb_tag_t] = &[
 impl hb_glyph_info_t {
     fn set_myanmar_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, _) = crate::hb::ot_shaper_indic_table::get_categories(u);
-
-        // Myanmar
-        // https://docs.microsoft.com/en-us/typography/script-development/myanmar#analyze
-
-        if (0xFE00..=0xFE0F).contains(&u) {
-            cat = indic_category_t::OT_VS;
-        }
-
-        match u {
-            // The spec says C, IndicSyllableCategory doesn't have.
-            0x104E => cat = indic_category_t::OT_C,
-
-            0x002D | 0x00A0 | 0x00D7 | 0x2012 | 0x2013 | 0x2014 | 0x2015 | 0x2022 | 0x25CC
-            | 0x25FB | 0x25FC | 0x25FD | 0x25FE => cat = indic_category_t::OT_GB,
-
-            0x1004 | 0x101B | 0x105A => cat = indic_category_t::OT_Ra,
-
-            0x1032 | 0x1036 => cat = indic_category_t::OT_A,
-
-            0x1039 => cat = indic_category_t::OT_H,
-
-            0x103A => cat = indic_category_t::OT_As,
-
-            0x1041 | 0x1042 | 0x1043 | 0x1044 | 0x1045 | 0x1046 | 0x1047 | 0x1048 | 0x1049
-            | 0x1090 | 0x1091 | 0x1092 | 0x1093 | 0x1094 | 0x1095 | 0x1096 | 0x1097 | 0x1098
-            | 0x1099 => cat = indic_category_t::OT_D,
-
-            // XXX The spec says D0, but Uniscribe doesn't seem to do.
-            0x1040 => cat = indic_category_t::OT_D,
-
-            0x103E => cat = indic_category_t::OT_MH,
-
-            0x1060 => cat = indic_category_t::OT_ML,
-
-            0x103C => cat = indic_category_t::OT_MR,
-
-            0x103D | 0x1082 => cat = indic_category_t::OT_MW,
-
-            0x103B | 0x105E | 0x105F => cat = indic_category_t::OT_MY,
-
-            0x1063 | 0x1064 | 0x1069 | 0x106A | 0x106B | 0x106C | 0x106D | 0xAA7B => {
-                cat = indic_category_t::OT_PT
-            }
-
-            0x1038 | 0x1087 | 0x1088 | 0x1089 | 0x108A | 0x108B | 0x108C | 0x108D | 0x108F
-            | 0x109A | 0x109B | 0x109C => cat = indic_category_t::OT_SM,
-
-            0x104A | 0x104B => cat = indic_category_t::OT_P,
-
-            // https://github.com/harfbuzz/harfbuzz/issues/218
-            0xAA74 | 0xAA75 | 0xAA76 => cat = indic_category_t::OT_C,
-
-            _ => {}
-        }
+        let (cat, _) = crate::hb::ot_shaper_indic_table::get_categories(u);
 
         self.set_myanmar_category(cat);
-        self.set_myanmar_position(0); /* Doesn't use the existing position info. */
     }
 }
 
@@ -169,7 +114,7 @@ fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
-        indic_category_t::OT_PLACEHOLDER,
+        indic_category_t::OT_DOTTEDCIRCLE,
         None,
         None,
     );

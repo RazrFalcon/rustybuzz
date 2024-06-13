@@ -50,7 +50,6 @@ pub mod indic_category_t {
     pub const OT_VD: u8 = OT_A;
     pub const OT_PLACEHOLDER: u8 = 10;
     pub const OT_GB: u8 = OT_PLACEHOLDER;
-    pub const OT_D: u8 = OT_GB;
     pub const OT_DOTTEDCIRCLE: u8 = 11;
     pub const OT_RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
     pub const OT_Repha: u8 = 14; // Atomically-encoded logical or visual repha.
@@ -73,15 +72,16 @@ pub mod indic_category_t {
 
     /* Myanmar */
     pub const OT_As: u8 = 32; // Asat
-    pub const OT_D0: u8 = 33; // Digit zero
-    pub const OT_MH: u8 = 34; // Medial
-    pub const OT_MR: u8 = 35; // Medial
-    pub const OT_MW: u8 = 36; // Medial
-    pub const OT_MY: u8 = 37; // Medial
-    pub const OT_PT: u8 = 38; // Pwo and other tones
-    pub const OT_VS: u8 = 39; // Variation selectors
-    pub const OT_P: u8 = 40; // Punctuation
-    pub const OT_ML: u8 = 41; // Consonant medials
+    pub const OT_D: u8 = 33; // Digits except zero
+    pub const OT_D0: u8 = 34; // Digit zero
+    pub const OT_MH: u8 = 35; // Medial
+    pub const OT_MR: u8 = 36; // Medial
+    pub const OT_MW: u8 = 37; // Medial
+    pub const OT_MY: u8 = 38; // Medial
+    pub const OT_PT: u8 = 39; // Pwo and other tones
+    pub const OT_VS: u8 = 40; // Variation selectors
+    pub const OT_P: u8 = 41; // Punctuation
+    pub const OT_ML: u8 = 42; // Consonant medials
 }
 
 pub type Position = u8;

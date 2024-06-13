@@ -22,9 +22,9 @@ static _myanmar_syllable_machine_trans_keys: [u8; 114] = [
     20, 1, 19, 1, 22, 1, 22, 1, 19, 1, 22, 1, 22, 1, 22, 1, 22, 1, 22, 1, 22, 1, 22, 0, 22, 0, 8,
     5, 5, 0, 0,
 ];
-static _myanmar_syllable_machine_char_class: [i8; 43] = [
-    0, 0, 1, 2, 3, 3, 4, 5, 6, 7, 4, 4, 4, 4, 8, 4, 4, 9, 4, 10, 11, 12, 13, 4, 4, 4, 4, 4, 4, 4,
-    4, 14, 4, 15, 16, 17, 18, 19, 20, 21, 22, 0, 0,
+static _myanmar_syllable_machine_char_class: [i8; 44] = [
+    0, 0, 1, 2, 3, 3, 4, 5, 6, 7, 7, 4, 4, 4, 8, 4, 4, 9, 4, 10, 11, 12, 13, 4, 4, 4, 4, 4, 4, 4,
+    4, 14, 7, 4, 15, 16, 17, 18, 19, 20, 21, 22, 0, 0,
 ];
 static _myanmar_syllable_machine_index_offsets: [i16; 58] = [
     0, 23, 45, 62, 65, 87, 106, 125, 142, 159, 178, 197, 219, 236, 245, 264, 283, 303, 322, 344,
@@ -165,7 +165,7 @@ pub fn find_syllables_myanmar(buffer: &mut hb_buffer_t) {
                     {
                         _keys = (cs << 1) as i32;
                         _inds = (_myanmar_syllable_machine_index_offsets[(cs) as usize]) as i32;
-                        if ((buffer.info[p].myanmar_category() as u8) <= 41
+                        if ((buffer.info[p].myanmar_category() as u8) <= 42
                             && (buffer.info[p].myanmar_category() as u8) >= 1)
                         {
                             {

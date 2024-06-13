@@ -29,9 +29,9 @@ DB   = 3;	# Dot below	     = OT_N
 H    = 4;
 ZWNJ = 5;
 ZWJ  = 6;
-V    = 8;	# Visarga and Shan tones
+SM    = 8;	# Visarga and Shan tones
 GB   = 10;	# 		     = OT_PLACEHOLDER
-D    = 10;	# Digits except zero = GB
+DOTTEDCIRCLE    = 11;
 A    = 9;
 Ra   = 15;
 CS   = 18;
@@ -42,15 +42,16 @@ VPre = 22;
 VPst = 23;
 
 As   = 32;	# Asat
-D0   = 33;	# Digit zero
-MH   = 34;	# Medial
-MR   = 35;	# Medial
-MW   = 36;	# Medial
-MY   = 37;	# Medial
-PT   = 38;	# Pwo and other tones
-VS   = 39;	# Variation selectors
-P    = 40;	# Punctuation
-ML   = 41;	# Consonant medials
+D    = 33;	# Digits except zero
+D0   = 34;	# Digit zero
+MH   = 35;	# Medial
+MR   = 36;	# Medial
+MW   = 37;	# Medial
+MY   = 38;	# Medial
+PT   = 39;	# Pwo and other tones
+VS   = 40;	# Variation selectors
+P    = 41;	# Punctuation
+ML   = 42;	# Consonant medials
 
 j = ZWJ|ZWNJ;			# Joiners
 k = (Ra As H);			# Kinzi
@@ -62,11 +63,11 @@ main_vowel_group = (VPre.VS?)* VAbv* VBlw* A* (DB As?)?;
 post_vowel_group = VPst MH? ML? As* VAbv* A* (DB As?)?;
 pwo_tone_group = PT A* DB? As?;
 
-complex_syllable_tail = As* medial_group main_vowel_group post_vowel_group* pwo_tone_group* V* j?;
+complex_syllable_tail = As* medial_group main_vowel_group post_vowel_group* pwo_tone_group* SM* j?;
 syllable_tail = (H (c|IV).VS?)* (H | complex_syllable_tail);
 
-consonant_syllable =	(k|CS)? (c|IV|D|GB).VS? syllable_tail;
-punctuation_cluster =	P V;
+consonant_syllable =	(k|CS)? (c|IV|D|GB|DOTTEDCIRCLE).VS? syllable_tail;
+punctuation_cluster =	P SM;
 broken_cluster =	k? VS? syllable_tail;
 other =			any;
 
