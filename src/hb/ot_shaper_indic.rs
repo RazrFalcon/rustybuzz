@@ -35,6 +35,7 @@ pub const INDIC_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
 
 pub type Category = u8;
 
+#[allow(dead_code)]
 pub mod indic_category_t {
     pub const OT_X: u8 = 0;
     pub const OT_C: u8 = 1;
@@ -570,13 +571,7 @@ impl hb_glyph_info_t {
 
     fn set_indic_properties(&mut self) {
         let u = self.glyph_id;
-        let (cat, mut pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
-
-        // Re-assign position.
-
-        if cat == indic_category_t::OT_M {
-            pos = matra_position_indic(u, pos);
-        }
+        let (cat, pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
 
         self.set_indic_category(cat);
         self.set_indic_position(pos);
@@ -1896,115 +1891,5 @@ fn final_reordering_impl(
         } else {
             buffer.unsafe_to_break(Some(start - 1), Some(start + 1));
         }
-    }
-}
-
-#[rustfmt::skip]
-fn matra_position_indic(u: u32, side: u8) -> u8 {
-    #[inline] fn in_half_block(u: u32, base: u32) -> bool { u & !0x7F == base }
-    #[inline] fn is_deva(u: u32) -> bool { in_half_block(u, 0x0900) }
-    #[inline] fn is_beng(u: u32) -> bool { in_half_block(u, 0x0980) }
-    #[inline] fn is_guru(u: u32) -> bool { in_half_block(u, 0x0A00) }
-    #[inline] fn is_gujr(u: u32) -> bool { in_half_block(u, 0x0A80) }
-    #[inline] fn is_orya(u: u32) -> bool { in_half_block(u, 0x0B00) }
-    #[inline] fn is_taml(u: u32) -> bool { in_half_block(u, 0x0B80) }
-    #[inline] fn is_telu(u: u32) -> bool { in_half_block(u, 0x0C00) }
-    #[inline] fn is_knda(u: u32) -> bool { in_half_block(u, 0x0C80) }
-    #[inline] fn is_mlym(u: u32) -> bool { in_half_block(u, 0x0D00) }
-    #[inline] fn is_sinh(u: u32) -> bool { in_half_block(u, 0x0D80) }
-
-    #[inline]
-    fn matra_pos_right(u: u32) -> Position {
-        if is_deva(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else if is_beng(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_guru(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_gujr(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_orya(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_taml(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_telu(u) {
-            if u <= 0x0C42 {
-                indic_position_t::POS_BEFORE_SUB
-            } else {
-                indic_position_t::POS_AFTER_SUB
-            }
-        } else if is_knda(u) {
-            if u < 0x0CC3 || u > 0xCD6 {
-                indic_position_t::POS_BEFORE_SUB
-            } else {
-                indic_position_t::POS_AFTER_SUB
-            }
-        } else if is_mlym(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_sinh(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else {
-            indic_position_t::POS_AFTER_SUB
-        }
-    }
-
-    // BENG and MLYM don't have top matras.
-    #[inline]
-    fn matra_pos_top(u: u32) -> Position {
-        if is_deva(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else if is_guru(u) {
-            // Deviate from spec
-            indic_position_t::POS_AFTER_POST
-        } else if is_gujr(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else if is_orya(u) {
-            indic_position_t::POS_AFTER_MAIN
-        } else if is_taml(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else if is_telu(u) {
-            indic_position_t::POS_BEFORE_SUB
-        } else if is_knda(u) {
-            indic_position_t::POS_BEFORE_SUB
-        } else if is_sinh(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else {
-            indic_position_t::POS_AFTER_SUB
-        }
-    }
-
-    #[inline]
-    fn matra_pos_bottom(u: u32) -> Position {
-        if is_deva(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else if is_beng(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else if is_guru(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_gujr(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_orya(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else if is_taml(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_telu(u) {
-            indic_position_t::POS_BEFORE_SUB
-        } else if is_knda(u) {
-            indic_position_t::POS_BEFORE_SUB
-        } else if is_mlym(u) {
-            indic_position_t::POS_AFTER_POST
-        } else if is_sinh(u) {
-            indic_position_t::POS_AFTER_SUB
-        } else {
-            indic_position_t::POS_AFTER_SUB
-        }
-    }
-
-    match side {
-        indic_position_t::POS_PRE_C => indic_position_t::POS_PRE_M,
-        indic_position_t::POS_POST_C => matra_pos_right(u),
-        indic_position_t::POS_ABOVE_C => matra_pos_top(u),
-        indic_position_t::POS_BELOW_C => matra_pos_bottom(u),
-        _ => side,
     }
 }
