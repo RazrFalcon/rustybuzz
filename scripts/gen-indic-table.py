@@ -320,8 +320,7 @@ category_overrides = {
   0x109B: 'SM',
   0x109C: 'SM',
 
-  0x104A: 'P',
-  0x104B: 'P',
+  0x104B: 'PLACEHOLDER',
 }
 
 position_overrides = {

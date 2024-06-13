@@ -25,6 +25,7 @@ use super::buffer::{HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE, hb_buffer_t};
 %%{
 
 # Spec category D is folded into GB; D0 is not implemented by Uniscribe and as such folded into D
+# Spec category P is folded into GB
 
 C    = 1;
 IV   = 2;
@@ -52,8 +53,7 @@ MW   = 37;	# Medial Wa, Shan Wa
 MY   = 38;	# Medial Ya, Mon Na, Mon Ma
 PT   = 39;	# Pwo and other tones
 VS   = 40;	# Variation selectors
-P    = 41;	# Punctuation
-ML   = 42;	# Medial Mon La
+ML   = 41;	# Medial Mon La
 
 j = ZWJ|ZWNJ;			# Joiners
 k = (Ra As H);			# Kinzi
@@ -69,14 +69,12 @@ complex_syllable_tail = As* medial_group main_vowel_group post_vowel_group* pwo_
 syllable_tail = (H (c|IV).VS?)* (H | complex_syllable_tail);
 
 consonant_syllable =	(k|CS)? (c|IV|GB|DOTTEDCIRCLE).VS? syllable_tail;
-punctuation_cluster =	P SM;
 broken_cluster =	k? VS? syllable_tail;
 other =			any;
 
 main := |*
 	consonant_syllable	=> { found_syllable!(SyllableType::ConsonantSyllable); };
 	j			=> { found_syllable!(SyllableType::NonMyanmarCluster); };
-	punctuation_cluster	=> { found_syllable!(SyllableType::PunctuationCluster); };
 	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
 	other			=> { found_syllable!(SyllableType::NonMyanmarCluster); };
 *|;

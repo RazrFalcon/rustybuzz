@@ -80,8 +80,7 @@ pub mod ot_category_t {
     pub const OT_MY: u8 = 38; // Medial
     pub const OT_PT: u8 = 39; // Pwo and other tones
     pub const OT_VS: u8 = 40; // Variation selectors
-    pub const OT_P: u8 = 41; // Punctuation
-    pub const OT_ML: u8 = 42; // Consonant medials
+    pub const OT_ML: u8 = 41; // Consonant medials
 
     // This one doesn't exist in ot_category_t in harfbuzz, only in
     // the Myanmar machine. However, in Rust we unfortunately can't export
