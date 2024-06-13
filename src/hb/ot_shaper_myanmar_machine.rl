@@ -21,8 +21,7 @@ use super::buffer::{HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE, hb_buffer_t};
   write data;
 }%%
 
-// These values are replicated from ot_shaper_indic; keep in sync.
-// NOTE: IV needs to be redefined in ot_category_t as well!
+// IMPORTANT: Before updating any values here, make sure to read the comment in `ot_category_t`.
 %%{
 
 C    = 1;
@@ -43,6 +42,7 @@ VBlw = 21;
 VPre = 22;
 VPst = 23;
 
+# 32+ are for Myanmar-specific values
 As   = 32;	# Asat
 D    = 33;	# Digits except zero
 D0   = 34;	# Digit zero

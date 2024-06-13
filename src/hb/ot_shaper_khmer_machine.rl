@@ -21,7 +21,7 @@ use super::buffer::{HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE, hb_buffer_t};
   write data;
 }%%
 
-// These values are replicated from ot_shaper_indic; keep in sync.
+// IMPORTANT: Before updating any values here, make sure to read the comment in `ot_category_t`.
 %%{
 
 C    = 1;
