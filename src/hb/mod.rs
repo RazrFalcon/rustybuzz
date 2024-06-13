@@ -34,6 +34,7 @@ mod ot_shaper_hangul;
 mod ot_shaper_hebrew;
 mod ot_shaper_indic;
 mod ot_shaper_indic_machine;
+#[rustfmt::skip]
 mod ot_shaper_indic_table;
 mod ot_shaper_khmer;
 mod ot_shaper_khmer_machine;

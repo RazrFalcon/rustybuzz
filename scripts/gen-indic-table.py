@@ -98,7 +98,9 @@ print()
 print('#![allow(non_camel_case_types)]')
 print('#![allow(unused_imports)]')
 print()
-print('use super::ot_shaper_indic::{MatraCategory, SyllabicCategory};')
+print('use super::ot_shaper_indic::indic_matra_category_t::*;')
+print('use super::ot_shaper_indic::indic_matra_category_t::*;')
+print('use super::ot_shaper_indic::indic_syllabic_category_t::*;')
 
 # Shorten values
 short = [{
@@ -123,7 +125,7 @@ for i in range(2):
     for v, s in short[i].items():
         all_shorts[i][s] = v
 
-what = ['SyllabicCategory', 'MatraCategory']
+what = ['INDIC_SYLLABIC_CATEGORY', 'INDIC_MATRA_CATEGORY']
 what_short = ['ISC', 'IMC']
 cat_defs = []
 for i in range(2):
@@ -138,7 +140,7 @@ for i in range(2):
                 raise Exception('Duplicate short value alias', v, all_shorts[i][s])
             all_shorts[i][s] = v
             short[i][v] = s
-        cat_defs.append((what_short[i] + '_' + s, what[i] + '::' + v.replace('_', ''), str(values[i][v]), v))
+        cat_defs.append ((what_short[i] + '_' + s, what[i] + '_' + v.upper (), str (values[i][v]), v))
 
 maxlen_s = max([len(c[0]) for c in cat_defs])
 maxlen_l = max([len(c[1]) for c in cat_defs])
@@ -186,6 +188,9 @@ num = 0
 offset = 0
 starts = []
 ends = []
+print('pub type SyllabicCategory = u8;')
+print('pub type MatraCategory = u8;')
+print('')
 print('#[rustfmt::skip]')
 print('const TABLE: &[(SyllabicCategory, MatraCategory)] = &[')
 offsets = []

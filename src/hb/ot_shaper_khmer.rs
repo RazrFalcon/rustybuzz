@@ -7,7 +7,7 @@ use super::ot_shape::*;
 use super::ot_shape_normalize::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::ot_shaper::*;
-use super::ot_shaper_indic::{indic_category_t, position};
+use super::ot_shaper_indic::{indic_category_t, indic_position_t};
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
 
@@ -71,7 +71,7 @@ mod khmer_feature {
 impl hb_glyph_info_t {
     fn set_khmer_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, pos) = crate::hb::ot_shaper_indic::get_category_and_position(u);
+        let (mut cat, pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
 
         // Re-assign category
 
@@ -92,10 +92,10 @@ impl hb_glyph_info_t {
 
         if cat == indic_category_t::OT_M {
             match pos {
-                position::PRE_C => cat = indic_category_t::OT_VPRE,
-                position::BELOW_C => cat = indic_category_t::OT_VBLW,
-                position::ABOVE_C => cat = indic_category_t::OT_AVB,
-                position::POST_C => cat = indic_category_t::OT_VPST,
+                indic_position_t::POS_PRE_C => cat = indic_category_t::OT_VPre,
+                indic_position_t::POS_BELOW_C => cat = indic_category_t::OT_VBlw,
+                indic_position_t::POS_ABOVE_C => cat = indic_category_t::OT_Vabv,
+                indic_position_t::POS_POST_C => cat = indic_category_t::OT_VPst,
                 _ => {}
             }
         }
@@ -173,7 +173,7 @@ fn reorder(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t
         buffer,
         SyllableType::BrokenCluster as u8,
         indic_category_t::OT_DOTTED_CIRCLE,
-        Some(indic_category_t::OT_REPHA),
+        Some(indic_category_t::OT_Repha),
         None,
     );
 
@@ -241,7 +241,7 @@ fn reorder_consonant_syllable(
         // Subscript Type 2 - The COENG + RO characters are reordered to immediately
         // before the base glyph. Then the COENG + RO characters are assigned to have
         // the 'pref' OpenType feature applied to them.
-        if buffer.info[i].indic_category() == indic_category_t::OT_COENG
+        if buffer.info[i].indic_category() == indic_category_t::OT_Coeng
             && num_coengs <= 2
             && i + 1 < end
         {
@@ -276,7 +276,7 @@ fn reorder_consonant_syllable(
 
                 num_coengs = 2; // Done.
             }
-        } else if buffer.info[i].indic_category() == indic_category_t::OT_VPRE {
+        } else if buffer.info[i].indic_category() == indic_category_t::OT_VPre {
             // Reorder left matra piece.
 
             // Move to the start.
