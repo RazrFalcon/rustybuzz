@@ -59,7 +59,7 @@ pub mod indic_category_t {
     pub const OT_CS: u8 = 18;
 
     // The following are used by Khmer & Myanmar shapers.  Defined here for them to share.
-    pub const OT_Vabv: u8 = 26;
+    pub const OT_VAbv: u8 = 26;
     pub const OT_VBlw: u8 = 27;
     pub const OT_VPre: u8 = 28;
     pub const OT_VPst: u8 = 29;

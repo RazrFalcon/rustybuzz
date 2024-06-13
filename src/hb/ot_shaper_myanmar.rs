@@ -64,7 +64,7 @@ const MYANMAR_FEATURES: &[hb_tag_t] = &[
 impl hb_glyph_info_t {
     fn set_myanmar_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
+        let (mut cat, _) = crate::hb::ot_shaper_indic_table::get_categories(u);
 
         // Myanmar
         // https://docs.microsoft.com/en-us/typography/script-development/myanmar#analyze
@@ -118,18 +118,6 @@ impl hb_glyph_info_t {
             0xAA74 | 0xAA75 | 0xAA76 => cat = indic_category_t::OT_C,
 
             _ => {}
-        }
-
-        // Re-assign position.
-
-        if cat == indic_category_t::OT_M {
-            match pos {
-                indic_position_t::POS_PRE_C => cat = indic_category_t::OT_VPre,
-                indic_position_t::POS_ABOVE_C => cat = indic_category_t::OT_Vabv,
-                indic_position_t::POS_BELOW_C => cat = indic_category_t::OT_VBlw,
-                indic_position_t::POS_POST_C => cat = indic_category_t::OT_VPst,
-                _ => {}
-            }
         }
 
         self.set_myanmar_category(cat);

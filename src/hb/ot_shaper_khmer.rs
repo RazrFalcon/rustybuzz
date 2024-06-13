@@ -7,7 +7,7 @@ use super::ot_shape::*;
 use super::ot_shape_normalize::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::ot_shaper::*;
-use super::ot_shaper_indic::{indic_category_t, indic_position_t};
+use super::ot_shaper_indic::indic_category_t;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
 
@@ -71,7 +71,7 @@ mod khmer_feature {
 impl hb_glyph_info_t {
     fn set_khmer_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
+        let (mut cat, _) = crate::hb::ot_shaper_indic_table::get_categories(u);
 
         // Re-assign category
 
@@ -86,18 +86,6 @@ impl hb_glyph_info_t {
             // Just guessing. Uniscribe doesn't categorize it.
             0x17C7 | 0x17C8 | 0x17DD | 0x17D3 => cat = khmer_category_t::Y_GROUP,
             _ => {}
-        }
-
-        // Re-assign position.
-
-        if cat == indic_category_t::OT_M {
-            match pos {
-                indic_position_t::POS_PRE_C => cat = indic_category_t::OT_VPre,
-                indic_position_t::POS_BELOW_C => cat = indic_category_t::OT_VBlw,
-                indic_position_t::POS_ABOVE_C => cat = indic_category_t::OT_Vabv,
-                indic_position_t::POS_POST_C => cat = indic_category_t::OT_VPst,
-                _ => {}
-            }
         }
 
         self.set_indic_category(cat);
