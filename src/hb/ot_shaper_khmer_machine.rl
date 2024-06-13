@@ -21,6 +21,7 @@ use super::buffer::hb_buffer_t;
   write data;
 }%%
 
+// These values are replicated from ot_shaper_indic; keep in sync.
 %%{
 
 C    = 1;
