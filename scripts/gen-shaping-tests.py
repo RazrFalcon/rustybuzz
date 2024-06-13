@@ -13,6 +13,7 @@ IGNORE_TESTS = [
     'coretext.tests',
     'directwrite.tests',
     'uniscribe.tests',
+    'arabic-fallback-shaping.tests',
 ]
 
 IGNORE_TEST_CASES = [
@@ -21,8 +22,6 @@ IGNORE_TEST_CASES = [
     # in-house tests
     # --shaper=fallback is not supported.
     'simple_002',
-    # Not possible to implement without shaping.
-    'arabic_fallback_shaping_001',
     # `dfont` is not supported.
     'collections_001',
     'collections_002',
