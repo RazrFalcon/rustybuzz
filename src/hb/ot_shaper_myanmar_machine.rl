@@ -13,7 +13,7 @@
     clippy::never_loop
 )]
 
-use super::buffer::hb_buffer_t;
+use super::buffer::{HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE, hb_buffer_t};
 
 %%{
   machine myanmar_syllable_machine;
@@ -77,7 +77,7 @@ main := |*
 	consonant_syllable	=> { found_syllable!(SyllableType::ConsonantSyllable); };
 	j			=> { found_syllable!(SyllableType::NonMyanmarCluster); };
 	punctuation_cluster	=> { found_syllable!(SyllableType::PunctuationCluster); };
-	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); };
+	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
 	other			=> { found_syllable!(SyllableType::NonMyanmarCluster); };
 *|;
 

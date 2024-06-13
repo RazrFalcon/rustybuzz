@@ -1,4 +1,4 @@
-use super::buffer::hb_buffer_t;
+use super::buffer::{hb_buffer_t, HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE};
 use super::{hb_font_t, hb_glyph_info_t};
 use crate::BufferFlags;
 
@@ -17,14 +17,7 @@ pub fn insert_dotted_circles(
         return;
     }
 
-    // Note: This loop is extra overhead, but should not be measurable.
-    // TODO Use a buffer scratch flag to remove the loop.
-    let has_broken_syllables = buffer
-        .info_slice()
-        .iter()
-        .any(|info| info.syllable() & 0x0F == broken_syllable_type);
-
-    if !has_broken_syllables {
+    if (buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE) == 0 {
         return;
     }
 

@@ -417,11 +417,6 @@ impl hb_buffer_t {
     }
 
     #[inline]
-    pub fn info_slice(&self) -> &[hb_glyph_info_t] {
-        &self.info[..self.len]
-    }
-
-    #[inline]
     pub fn info_slice_mut(&mut self) -> &mut [hb_glyph_info_t] {
         &mut self.info[..self.len]
     }
@@ -1481,6 +1476,7 @@ pub const HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK: u32 = 0x00000004;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT: u32 = 0x00000008;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_CGJ: u32 = 0x00000010;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS: u32 = 0x00000020;
+pub const HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE: u32 = 0x00000040;
 
 /* Reserved for shapers' internal use. */
 pub const HB_BUFFER_SCRATCH_FLAG_SHAPER0: u32 = 0x01000000;

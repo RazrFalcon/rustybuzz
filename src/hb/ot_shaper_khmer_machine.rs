@@ -13,7 +13,7 @@
     clippy::never_loop
 )]
 
-use super::buffer::hb_buffer_t;
+use super::buffer::{hb_buffer_t, HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE};
 
 static _khmer_syllable_machine_trans_keys: [u8; 82] = [
     2, 10, 2, 10, 2, 10, 2, 10, 2, 10, 0, 0, 2, 10, 2, 10, 2, 10, 2, 10, 2, 10, 2, 10, 2, 10, 2,
@@ -186,6 +186,8 @@ pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
                                 p = p - 1;
                                 {
                                     found_syllable!(SyllableType::BrokenCluster);
+                                    buffer.scratch_flags |=
+                                        HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                 }
                             }
                             11 => {
@@ -205,6 +207,8 @@ pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
                                 p = (te) - 1;
                                 {
                                     found_syllable!(SyllableType::BrokenCluster);
+                                    buffer.scratch_flags |=
+                                        HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                 }
                             }
                             3 => match (act) {
@@ -212,6 +216,8 @@ pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
                                     p = (te) - 1;
                                     {
                                         found_syllable!(SyllableType::BrokenCluster);
+                                        buffer.scratch_flags |=
+                                            HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                     }
                                 }
                                 3 => {

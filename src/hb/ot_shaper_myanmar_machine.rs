@@ -13,7 +13,7 @@
     clippy::never_loop
 )]
 
-use super::buffer::hb_buffer_t;
+use super::buffer::{hb_buffer_t, HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE};
 
 static _myanmar_syllable_machine_trans_keys: [u8; 114] = [
     0, 22, 1, 22, 3, 19, 3, 5, 1, 22, 1, 19, 1, 19, 3, 19, 3, 19, 1, 19, 1, 19, 1, 22, 3, 19, 0, 8,
@@ -230,6 +230,8 @@ pub fn find_syllables_myanmar(buffer: &mut hb_buffer_t) {
                                 te = p + 1;
                                 {
                                     found_syllable!(SyllableType::BrokenCluster);
+                                    buffer.scratch_flags |=
+                                        HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                 }
                             }
                             3 => {
@@ -250,6 +252,8 @@ pub fn find_syllables_myanmar(buffer: &mut hb_buffer_t) {
                                 p = p - 1;
                                 {
                                     found_syllable!(SyllableType::BrokenCluster);
+                                    buffer.scratch_flags |=
+                                        HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;
                                 }
                             }
                             9 => {

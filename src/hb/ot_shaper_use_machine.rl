@@ -15,11 +15,11 @@
 
 use core::cell::Cell;
 
-use super::buffer::hb_buffer_t;
+use super::buffer::{hb_buffer_t, HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE};
 use super::hb_glyph_info_t;
 use super::machine_cursor::MachineCursor;
 use super::ot_layout::*;
-use super::ot_shape_complex_use::category;
+use super::ot_shaper_use::category;
 
 %%{
   machine use_syllable_machine;
@@ -142,7 +142,7 @@ main := |*
 	numeral_cluster				=> { found_syllable!(SyllableType::NumeralCluster); };
 	symbol_cluster				=> { found_syllable!(SyllableType::SymbolCluster); };
 	hieroglyph_cluster			=> { found_syllable! (SyllableType::HieroglyphCluster); };
-	broken_cluster				=> { found_syllable!(SyllableType::BrokenCluster); };
+	broken_cluster				=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
 	other					=> { found_syllable!(SyllableType::NonCluster); };
 *|;
 
