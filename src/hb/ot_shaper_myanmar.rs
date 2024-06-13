@@ -7,6 +7,7 @@ use super::ot_shaper::*;
 use super::ot_shaper_indic::{indic_category_t, position};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
 use crate::hb::ot_shaper_khmer_machine::khmer_category_t;
+use crate::hb::ot_shaper_myanmar_machine::myanmar_category_t;
 
 pub const MYANMAR_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: Some(collect_features),
@@ -58,30 +59,6 @@ const MYANMAR_FEATURES: &[hb_tag_t] = &[
     hb_tag_t::from_bytes(b"blws"),
     hb_tag_t::from_bytes(b"psts"),
 ];
-
-pub mod myanmar_category_t {
-    use crate::hb::ot_shaper_indic::indic_category_t::{N, PLACEHOLDER};
-
-    pub const As: u8 = 18; /* Asat */
-    #[allow(dead_code)]
-    pub const D0: u8 = 20; /* Digit zero */
-    #[allow(dead_code)]
-    pub const DB: u8 = N; /* Dot below */
-    pub const GB: u8 = PLACEHOLDER;
-    pub const MH: u8 = 21; /* Various consonant medial types */
-    pub const MR: u8 = 22; /* Various consonant medial types */
-    pub const MW: u8 = 23; /* Various consonant medial types */
-    pub const MY: u8 = 24; /* Various consonant medial types */
-    pub const PT: u8 = 25; /* Pwo and other tones */
-    //pub const VAbv: u8 = 26;
-    //pub const VBlw: u8 = 27;
-    //pub const VPre: u8 = 28;
-    //pub const VPst: u8 = 29;
-    pub const VS: u8 = 30; /* Variation selectors */
-    pub const P: u8 = 31; /* Punctuation */
-    pub const D: u8 = GB; /* Digits except zero */
-    pub const ML: u8 = 32; /* Various consonant medial types */
-}
 
 impl hb_glyph_info_t {
     fn set_myanmar_properties(&mut self) {
@@ -157,8 +134,8 @@ impl hb_glyph_info_t {
             }
         }
 
-        self.set_indic_category(cat);
-        self.set_indic_position(pos);
+        self.set_myanmar_category(cat);
+        self.set_myanmar_position(pos);
     }
 }
 
@@ -251,9 +228,9 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut limit = start;
         if start + 3 <= end
-            && buffer.info[start + 0].indic_category() == indic_category_t::RA
-            && buffer.info[start + 1].indic_category() == myanmar_category_t::As
-            && buffer.info[start + 2].indic_category() == indic_category_t::H
+            && buffer.info[start + 0].myanmar_category() == indic_category_t::RA
+            && buffer.info[start + 1].myanmar_category() == myanmar_category_t::As
+            && buffer.info[start + 2].myanmar_category() == indic_category_t::H
         {
             limit += 3;
             base = start;
@@ -278,17 +255,17 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut i = start;
         while i < start + if has_reph { 3 } else { 0 } {
-            buffer.info[i].set_indic_position(position::AFTER_MAIN);
+            buffer.info[i].set_myanmar_position(position::AFTER_MAIN);
             i += 1;
         }
 
         while i < base {
-            buffer.info[i].set_indic_position(position::PRE_C);
+            buffer.info[i].set_myanmar_position(position::PRE_C);
             i += 1;
         }
 
         if i < end {
-            buffer.info[i].set_indic_position(position::BASE_C);
+            buffer.info[i].set_myanmar_position(position::BASE_C);
             i += 1;
         }
 
@@ -297,54 +274,56 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
         // Myanmar reordering!
         for i in i..end {
             // Pre-base reordering
-            if buffer.info[i].indic_category() == khmer_category_t::Y_GROUP {
-                buffer.info[i].set_indic_position(position::PRE_C);
+            if buffer.info[i].myanmar_category() == khmer_category_t::Y_GROUP {
+                buffer.info[i].set_myanmar_position(position::PRE_C);
                 continue;
             }
 
             // Left matra
-            if buffer.info[i].indic_position() < position::BASE_C {
+            if buffer.info[i].myanmar_position() < position::BASE_C {
                 continue;
             }
 
-            if buffer.info[i].indic_category() == myanmar_category_t::VS {
-                let t = buffer.info[i - 1].indic_position();
-                buffer.info[i].set_indic_position(t);
+            if buffer.info[i].myanmar_category() == myanmar_category_t::VS {
+                let t = buffer.info[i - 1].myanmar_position();
+                buffer.info[i].set_myanmar_position(t);
                 continue;
             }
 
             if pos == position::AFTER_MAIN
-                && buffer.info[i].indic_category() == indic_category_t::V_BLW
+                && buffer.info[i].myanmar_category() == indic_category_t::V_BLW
             {
                 pos = position::BELOW_C;
-                buffer.info[i].set_indic_position(pos);
+                buffer.info[i].set_myanmar_position(pos);
                 continue;
             }
 
-            if pos == position::BELOW_C && buffer.info[i].indic_category() == indic_category_t::A {
-                buffer.info[i].set_indic_position(position::BEFORE_SUB);
+            if pos == position::BELOW_C && buffer.info[i].myanmar_category() == indic_category_t::A
+            {
+                buffer.info[i].set_myanmar_position(position::BEFORE_SUB);
                 continue;
             }
 
             if pos == position::BELOW_C
-                && buffer.info[i].indic_category() == indic_category_t::V_BLW
+                && buffer.info[i].myanmar_category() == indic_category_t::V_BLW
             {
-                buffer.info[i].set_indic_position(pos);
+                buffer.info[i].set_myanmar_position(pos);
                 continue;
             }
 
-            if pos == position::BELOW_C && buffer.info[i].indic_category() != indic_category_t::A {
+            if pos == position::BELOW_C && buffer.info[i].myanmar_category() != indic_category_t::A
+            {
                 pos = position::AFTER_SUB;
-                buffer.info[i].set_indic_position(pos);
+                buffer.info[i].set_myanmar_position(pos);
                 continue;
             }
 
-            buffer.info[i].set_indic_position(pos);
+            buffer.info[i].set_myanmar_position(pos);
         }
     }
 
     buffer.sort(start, end, |a, b| {
-        a.indic_position().cmp(&b.indic_position()) == core::cmp::Ordering::Greater
+        a.myanmar_position().cmp(&b.myanmar_position()) == core::cmp::Ordering::Greater
     });
 }
 

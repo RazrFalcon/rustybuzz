@@ -586,6 +586,10 @@ impl hb_glyph_info_t {
         self.ot_shaper_var_u8_category()
     }
 
+    pub(crate) fn myanmar_category(&self) -> Category {
+        self.indic_category()
+    }
+
     pub(crate) fn khmer_category(&self) -> Category {
         self.indic_category()
     }
@@ -594,12 +598,24 @@ impl hb_glyph_info_t {
         self.set_ot_shaper_var_u8_category(c)
     }
 
+    pub(crate) fn set_myanmar_category(&mut self, c: Category) {
+        self.set_indic_category(c)
+    }
+
     pub(crate) fn indic_position(&self) -> Position {
         self.ot_shaper_var_u8_auxiliary()
     }
 
+    pub(crate) fn myanmar_position(&self) -> Position {
+        self.indic_position()
+    }
+
     pub(crate) fn set_indic_position(&mut self, c: Position) {
         self.set_ot_shaper_var_u8_auxiliary(c)
+    }
+
+    pub(crate) fn set_myanmar_position(&mut self, c: Position) {
+        self.set_indic_position(c)
     }
 
     fn is_one_of(&self, flags: u32) -> bool {

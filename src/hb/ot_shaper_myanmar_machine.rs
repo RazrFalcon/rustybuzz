@@ -15,6 +15,32 @@
 
 use super::buffer::hb_buffer_t;
 
+// NOTE: We need to keep this in sync with the defined keys below. In harfbuzz, they are deduplicated
+// but for some reason rust ragel doesn't properly export writing exports in Rust.
+pub mod myanmar_category_t {
+    use crate::hb::ot_shaper_indic::indic_category_t::{N, PLACEHOLDER};
+
+    pub const As: u8 = 18; /* Asat */
+    #[allow(dead_code)]
+    pub const D0: u8 = 20; /* Digit zero */
+    #[allow(dead_code)]
+    pub const DB: u8 = N; /* Dot below */
+    pub const GB: u8 = PLACEHOLDER;
+    pub const MH: u8 = 21; /* Various consonant medial types */
+    pub const MR: u8 = 22; /* Various consonant medial types */
+    pub const MW: u8 = 23; /* Various consonant medial types */
+    pub const MY: u8 = 24; /* Various consonant medial types */
+    pub const PT: u8 = 25; /* Pwo and other tones */
+    //pub const VAbv: u8 = 26;
+    //pub const VBlw: u8 = 27;
+    //pub const VPre: u8 = 28;
+    //pub const VPst: u8 = 29;
+    pub const VS: u8 = 30; /* Variation selectors */
+    pub const P: u8 = 31; /* Punctuation */
+    pub const D: u8 = GB; /* Digits except zero */
+    pub const ML: u8 = 32; /* Various consonant medial types */
+}
+
 static _myanmar_syllable_machine_trans_keys: [u8; 114] = [
     0, 22, 1, 22, 3, 19, 3, 5, 3, 19, 1, 15, 3, 15, 3, 15, 1, 22, 1, 19, 1, 19, 1, 19, 1, 22, 0, 8,
     1, 22, 1, 22, 1, 19, 1, 19, 1, 19, 1, 20, 1, 19, 1, 22, 1, 22, 1, 22, 1, 22, 1, 22, 3, 19, 3,
@@ -164,13 +190,16 @@ pub fn find_syllables_myanmar(buffer: &mut hb_buffer_t) {
                     {
                         _keys = (cs << 1) as i32;
                         _inds = (_myanmar_syllable_machine_index_offsets[(cs) as usize]) as i32;
-                        if ((buffer.info[p].indic_category() as u8) <= 32
-                            && (buffer.info[p].indic_category() as u8) >= 1)
+                        if ((buffer.info[p].myanmar_category() as u8) <= 32
+                            && (buffer.info[p].myanmar_category() as u8) >= 1)
                         {
                             {
-                                _ic = (_myanmar_syllable_machine_char_class
-                                    [((buffer.info[p].indic_category() as u8) as i32 - 1) as usize])
-                                    as i32;
+                                _ic = (_myanmar_syllable_machine_char_class[((buffer.info[p]
+                                    .myanmar_category()
+                                    as u8)
+                                    as i32
+                                    - 1)
+                                    as usize]) as i32;
                                 if (_ic
                                     <= (_myanmar_syllable_machine_trans_keys[(_keys + 1) as usize])
                                         as i32

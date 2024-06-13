@@ -15,6 +15,32 @@
 
 use super::buffer::hb_buffer_t;
 
+// NOTE: We need to keep this in sync with the defined keys below. In harfbuzz, they are deduplicated
+// but for some reason rust ragel doesn't properly export writing exports in Rust.
+pub mod myanmar_category_t {
+    use crate::hb::ot_shaper_indic::indic_category_t::{N, PLACEHOLDER};
+
+    pub const As: u8 = 18; /* Asat */
+    #[allow(dead_code)]
+    pub const D0: u8 = 20; /* Digit zero */
+    #[allow(dead_code)]
+    pub const DB: u8 = N; /* Dot below */
+    pub const GB: u8 = PLACEHOLDER;
+    pub const MH: u8 = 21; /* Various consonant medial types */
+    pub const MR: u8 = 22; /* Various consonant medial types */
+    pub const MW: u8 = 23; /* Various consonant medial types */
+    pub const MY: u8 = 24; /* Various consonant medial types */
+    pub const PT: u8 = 25; /* Pwo and other tones */
+    //pub const VAbv: u8 = 26;
+    //pub const VBlw: u8 = 27;
+    //pub const VPre: u8 = 28;
+    //pub const VPst: u8 = 29;
+    pub const VS: u8 = 30; /* Variation selectors */
+    pub const P: u8 = 31; /* Punctuation */
+    pub const D: u8 = GB; /* Digits except zero */
+    pub const ML: u8 = 32; /* Various consonant medial types */
+}
+
 %%{
   machine myanmar_syllable_machine;
   alphtype u8;
@@ -24,30 +50,30 @@ use super::buffer::hb_buffer_t;
 %%{
 
 A    = 9;
-As   = 18;
+As   = 18;	# Asat
 C    = 1;
-D    = 10;
-D0   = 20;
-DB   = 3;
-GB   = 10;
+D    = 10;	# Digits except zero = GB
+D0   = 20;	# Digit zero
+DB   = 3;	# Dot below	= OT_N
+GB   = 10;	# 		= OT_PLACEHOLDER
 H    = 4;
 IV   = 2;
-MH   = 21;
-ML   = 32;
-MR   = 22;
-MW   = 23;
-MY   = 24;
-PT   = 25;
-V    = 8;
+MH   = 21;	# Medial
+MR   = 22;	# Medial
+MW   = 23;	# Medial
+MY   = 24;	# Medial
+ML   = 32;	# Consonant medials
+PT   = 25;	# Pwo and other tones
+V    = 8;	# Visarga and Shan tones
 VAbv = 26;
 VBlw = 27;
 VPre = 28;
 VPst = 29;
-VS   = 30;
+VS   = 30;	# Variation selectors
 ZWJ  = 6;
 ZWNJ = 5;
 Ra   = 15;
-P    = 31;
+P    = 31;	# Punctuation
 CS   = 19;
 
 j = ZWJ|ZWNJ;			# Joiners
@@ -104,7 +130,7 @@ pub fn find_syllables_myanmar(buffer: &mut hb_buffer_t) {
 
     %%{
         write init;
-        getkey (buffer.info[p].indic_category() as u8);
+        getkey (buffer.info[p].myanmar_category() as u8);
         write exec;
     }%%
 }
