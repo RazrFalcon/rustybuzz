@@ -6467,6 +6467,32 @@ fn khmer_misc_090() {
 }
 
 #[test]
+fn khmer_misc_091() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/086d83239e8f958391ff6cdd8fda9376a4bd3673.ttf",
+            "\u{17C9}",
+            "",
+        ),
+        "uni25CC=0+655|\
+         uni17C9=0+0"
+    );
+}
+
+#[test]
+fn khmer_misc_092() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/086d83239e8f958391ff6cdd8fda9376a4bd3673.ttf",
+            "\u{17D9}\u{17C9}",
+            "",
+        ),
+        "uni17D9=0+655|\
+         uni17C9=0+0"
+    );
+}
+
+#[test]
 fn language_tags_001() {
     assert_eq!(
         shape(

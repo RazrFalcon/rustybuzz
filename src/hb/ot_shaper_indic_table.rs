@@ -20,7 +20,7 @@ use OT_MR    as _OT_MR;         /*   1 chars; MR */
 use OT_MW    as _OT_MW;         /*   2 chars; MW */
 use OT_MY    as _OT_MY;         /*   3 chars; MY */
 use OT_N     as _OT_N;          /*  17 chars; N */
-use OT_PLACEHOLDER as _OT_GB;         /* 173 chars; PLACEHOLDER */
+use OT_PLACEHOLDER as _OT_GB;         /* 174 chars; PLACEHOLDER */
 use OT_PT    as _OT_PT;         /*   8 chars; PT */
 use OT_Ra    as _OT_R;          /*  15 chars; Ra */
 use OT_Repha as _OT_Rf;         /*   1 chars; Repha */
@@ -43,7 +43,7 @@ use POS_ABOVE_C as _POS_T;         /*  23 chars; ABOVE_C */
 use POS_AFTER_MAIN as _POS_A;         /*   3 chars; AFTER_MAIN */
 use POS_AFTER_POST as _POS_AP;        /*  50 chars; AFTER_POST */
 use POS_AFTER_SUB as _POS_AS;        /*  60 chars; AFTER_SUB */
-use POS_BASE_C as _POS_C;         /* 900 chars; BASE_C */
+use POS_BASE_C as _POS_C;         /* 901 chars; BASE_C */
 use POS_BEFORE_SUB as _POS_BS;        /*  31 chars; BEFORE_SUB */
 use POS_BELOW_C as _POS_B;         /*  13 chars; BELOW_C */
 use POS_END  as _POS_X;         /*  71 chars; END */
@@ -299,7 +299,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 17C0 */(_OT_VR,_POS_R),(_OT_VL,_POS_L),(_OT_VL,_POS_L),(_OT_VL,_POS_L),(_OT_VR,_POS_R),(_OT_VR,_POS_R),(_OT_Xg,_POS_X),(_OT_Yg,_POS_X),
   /* 17C8 */(_OT_Yg,_POS_X),(_OT_Rt,_POS_X),(_OT_Rt,_POS_X),(_OT_Xg,_POS_X),(_OT_Rt,_POS_X),(_OT_Xg,_POS_X),(_OT_Xg,_POS_X),(_OT_Xg,_POS_X),
   /* 17D0 */(_OT_Xg,_POS_X),(_OT_Xg,_POS_X), (_OT_H,_POS_X),(_OT_Yg,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
-  /* 17D8 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_S,_POS_SM),(_OT_Yg,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
+  /* 17D8 */ (_OT_X,_POS_X),(_OT_GB,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_S,_POS_SM),(_OT_Yg,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 17E0 */(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),
   /* 17E8 */(_OT_GB,_POS_C),(_OT_GB,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
 
