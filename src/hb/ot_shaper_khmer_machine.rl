@@ -37,7 +37,7 @@ VBlw = 21;
 VPre = 22;
 VPst = 23;
 
-Coeng   = 24;
+Coeng   = 4;
 Robatic = 25;
 Xgroup  = 26;
 Ygroup  = 27;
