@@ -6,6 +6,7 @@ use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::ot_shaper::*;
 use super::ot_shaper_indic::{indic_category_t, indic_position_t};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
+use crate::hb::ot_shaper_indic::indic_category_t::OT_VPre;
 use crate::hb::ot_shaper_khmer_machine::khmer_category_t;
 use crate::hb::ot_shaper_myanmar_machine::myanmar_category_t;
 
@@ -63,7 +64,7 @@ const MYANMAR_FEATURES: &[hb_tag_t] = &[
 impl hb_glyph_info_t {
     fn set_myanmar_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, mut pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
+        let (mut cat, pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
 
         // Myanmar
         // https://docs.microsoft.com/en-us/typography/script-development/myanmar#analyze
@@ -123,19 +124,16 @@ impl hb_glyph_info_t {
 
         if cat == indic_category_t::OT_M {
             match pos {
-                indic_position_t::POS_PRE_C => {
-                    cat = indic_category_t::OT_VPre;
-                    pos = indic_position_t::POS_PRE_M;
-                }
-                indic_position_t::POS_BELOW_C => cat = indic_category_t::OT_VBlw,
+                indic_position_t::POS_PRE_C => cat = indic_category_t::OT_VPre,
                 indic_position_t::POS_ABOVE_C => cat = indic_category_t::OT_Vabv,
+                indic_position_t::POS_BELOW_C => cat = indic_category_t::OT_VBlw,
                 indic_position_t::POS_POST_C => cat = indic_category_t::OT_VPst,
                 _ => {}
             }
         }
 
         self.set_myanmar_category(cat);
-        self.set_myanmar_position(pos);
+        self.set_myanmar_position(0); /* Doesn't use the existing position info. */
     }
 }
 
@@ -280,7 +278,8 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
             }
 
             // Left matra
-            if buffer.info[i].myanmar_position() < indic_position_t::POS_BASE_C {
+            if buffer.info[i].myanmar_category() == OT_VPre {
+                buffer.info[i].set_myanmar_position(indic_position_t::POS_PRE_M);
                 continue;
             }
 
