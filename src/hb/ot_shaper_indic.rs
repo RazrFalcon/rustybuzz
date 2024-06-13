@@ -35,6 +35,11 @@ pub const INDIC_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
 
 pub type Category = u8;
 
+/* Note: This enum is duplicated the machine machine.rl files.
+ * We can avoid that by defining this enum in terms of those in the
+ * indic-table.cc file, but I like this enum duplicated here, because
+ * this gives us a unified view of all the numbers.
+ */
 #[allow(dead_code)]
 pub mod ot_category_t {
     pub const OT_X: u8 = 0;
