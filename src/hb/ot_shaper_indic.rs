@@ -3,7 +3,6 @@ use core::cmp;
 use core::convert::TryFrom;
 use core::ops::Range;
 
-use crate::hb::ot_shaper_indic::indic_position_t::POS_BELOW_C;
 use ttf_parser::GlyphId;
 
 use super::algs::*;
@@ -575,13 +574,7 @@ impl hb_glyph_info_t {
 
         // Re-assign position.
 
-        if u == 0x0A51 {
-            pos = POS_BELOW_C;
-        }
-
-        if (rb_flag_unsafe(cat as u32) & CONSONANT_FLAGS) != 0 {
-            pos = indic_position_t::POS_BASE_C;
-        } else if cat == indic_category_t::OT_M {
+        if cat == indic_category_t::OT_M {
             pos = matra_position_indic(u, pos);
         } else if (rb_flag_unsafe(cat as u32)
             & (category_flag(indic_category_t::OT_SM)
@@ -591,11 +584,6 @@ impl hb_glyph_info_t {
             != 0
         {
             pos = indic_position_t::POS_SMVD;
-        }
-
-        // Oriya Bindu is BeforeSub in the spec.
-        if u == 0x0B01 {
-            pos = indic_position_t::POS_BEFORE_SUB;
         }
 
         self.set_indic_category(cat);
