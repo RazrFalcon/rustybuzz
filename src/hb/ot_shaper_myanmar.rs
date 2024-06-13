@@ -4,9 +4,9 @@ use super::ot_shape::*;
 use super::ot_shape_normalize::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::ot_shaper::*;
-use super::ot_shaper_indic::{indic_category_t, indic_position_t};
+use super::ot_shaper_indic::{ot_category_t, ot_position_t};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
-use crate::hb::ot_shaper_indic::indic_category_t::OT_VPre;
+use crate::hb::ot_shaper_indic::ot_category_t::OT_VPre;
 
 pub const MYANMAR_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: Some(collect_features),
@@ -114,7 +114,7 @@ fn reorder_myanmar(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buf
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
-        indic_category_t::OT_DOTTEDCIRCLE,
+        ot_category_t::OT_DOTTEDCIRCLE,
         None,
         None,
     );
@@ -157,9 +157,9 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut limit = start;
         if start + 3 <= end
-            && buffer.info[start + 0].myanmar_category() == indic_category_t::OT_Ra
-            && buffer.info[start + 1].myanmar_category() == indic_category_t::OT_As
-            && buffer.info[start + 2].myanmar_category() == indic_category_t::OT_H
+            && buffer.info[start + 0].myanmar_category() == ot_category_t::OT_Ra
+            && buffer.info[start + 1].myanmar_category() == ot_category_t::OT_As
+            && buffer.info[start + 2].myanmar_category() == ot_category_t::OT_H
         {
             limit += 3;
             base = start;
@@ -184,68 +184,68 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut i = start;
         while i < start + if has_reph { 3 } else { 0 } {
-            buffer.info[i].set_myanmar_position(indic_position_t::POS_AFTER_MAIN);
+            buffer.info[i].set_myanmar_position(ot_position_t::POS_AFTER_MAIN);
             i += 1;
         }
 
         while i < base {
-            buffer.info[i].set_myanmar_position(indic_position_t::POS_PRE_C);
+            buffer.info[i].set_myanmar_position(ot_position_t::POS_PRE_C);
             i += 1;
         }
 
         if i < end {
-            buffer.info[i].set_myanmar_position(indic_position_t::POS_BASE_C);
+            buffer.info[i].set_myanmar_position(ot_position_t::POS_BASE_C);
             i += 1;
         }
 
-        let mut pos = indic_position_t::POS_AFTER_MAIN;
+        let mut pos = ot_position_t::POS_AFTER_MAIN;
         // The following loop may be ugly, but it implements all of
         // Myanmar reordering!
         for i in i..end {
             // Pre-base reordering
-            if buffer.info[i].myanmar_category() == indic_category_t::OT_MR {
-                buffer.info[i].set_myanmar_position(indic_position_t::POS_PRE_C);
+            if buffer.info[i].myanmar_category() == ot_category_t::OT_MR {
+                buffer.info[i].set_myanmar_position(ot_position_t::POS_PRE_C);
                 continue;
             }
 
             // Left matra
             if buffer.info[i].myanmar_category() == OT_VPre {
-                buffer.info[i].set_myanmar_position(indic_position_t::POS_PRE_M);
+                buffer.info[i].set_myanmar_position(ot_position_t::POS_PRE_M);
                 continue;
             }
 
-            if buffer.info[i].myanmar_category() == indic_category_t::OT_VS {
+            if buffer.info[i].myanmar_category() == ot_category_t::OT_VS {
                 let t = buffer.info[i - 1].myanmar_position();
                 buffer.info[i].set_myanmar_position(t);
                 continue;
             }
 
-            if pos == indic_position_t::POS_AFTER_MAIN
-                && buffer.info[i].myanmar_category() == indic_category_t::OT_VBlw
+            if pos == ot_position_t::POS_AFTER_MAIN
+                && buffer.info[i].myanmar_category() == ot_category_t::OT_VBlw
             {
-                pos = indic_position_t::POS_BELOW_C;
+                pos = ot_position_t::POS_BELOW_C;
                 buffer.info[i].set_myanmar_position(pos);
                 continue;
             }
 
-            if pos == indic_position_t::POS_BELOW_C
-                && buffer.info[i].myanmar_category() == indic_category_t::OT_A
+            if pos == ot_position_t::POS_BELOW_C
+                && buffer.info[i].myanmar_category() == ot_category_t::OT_A
             {
-                buffer.info[i].set_myanmar_position(indic_position_t::POS_BEFORE_SUB);
+                buffer.info[i].set_myanmar_position(ot_position_t::POS_BEFORE_SUB);
                 continue;
             }
 
-            if pos == indic_position_t::POS_BELOW_C
-                && buffer.info[i].myanmar_category() == indic_category_t::OT_VBlw
+            if pos == ot_position_t::POS_BELOW_C
+                && buffer.info[i].myanmar_category() == ot_category_t::OT_VBlw
             {
                 buffer.info[i].set_myanmar_position(pos);
                 continue;
             }
 
-            if pos == indic_position_t::POS_BELOW_C
-                && buffer.info[i].myanmar_category() != indic_category_t::OT_A
+            if pos == ot_position_t::POS_BELOW_C
+                && buffer.info[i].myanmar_category() != ot_category_t::OT_A
             {
-                pos = indic_position_t::POS_AFTER_SUB;
+                pos = ot_position_t::POS_AFTER_SUB;
                 buffer.info[i].set_myanmar_position(pos);
                 continue;
             }

@@ -6,7 +6,7 @@ use super::ot_shape::*;
 use super::ot_shape_normalize::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::ot_shaper::*;
-use super::ot_shaper_indic::indic_category_t;
+use super::ot_shaper_indic::ot_category_t;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t};
 
@@ -144,8 +144,8 @@ fn reorder_khmer(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_bu
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
-        indic_category_t::OT_DOTTEDCIRCLE,
-        Some(indic_category_t::OT_Repha),
+        ot_category_t::OT_DOTTEDCIRCLE,
+        Some(ot_category_t::OT_Repha),
         None,
     );
 
@@ -213,13 +213,13 @@ fn reorder_consonant_syllable(
         // Subscript Type 2 - The COENG + RO characters are reordered to immediately
         // before the base glyph. Then the COENG + RO characters are assigned to have
         // the 'pref' OpenType feature applied to them.
-        if buffer.info[i].indic_category() == indic_category_t::OT_Coeng
+        if buffer.info[i].indic_category() == ot_category_t::OT_Coeng
             && num_coengs <= 2
             && i + 1 < end
         {
             num_coengs += 1;
 
-            if buffer.info[i + 1].indic_category() == indic_category_t::OT_Ra {
+            if buffer.info[i + 1].indic_category() == ot_category_t::OT_Ra {
                 for j in 0..2 {
                     buffer.info[i + j].mask |= plan.mask_array[khmer_feature::PREF];
                 }
@@ -248,7 +248,7 @@ fn reorder_consonant_syllable(
 
                 num_coengs = 2; // Done.
             }
-        } else if buffer.info[i].indic_category() == indic_category_t::OT_VPre {
+        } else if buffer.info[i].indic_category() == ot_category_t::OT_VPre {
             // Reorder left matra piece.
 
             // Move to the start.

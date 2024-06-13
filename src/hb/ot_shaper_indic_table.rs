@@ -3,8 +3,8 @@
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
 
-use super::ot_shaper_indic::indic_category_t::*;
-use super::ot_shaper_indic::indic_position_t::*;
+use super::ot_shaper_indic::ot_category_t::*;
+use super::ot_shaper_indic::ot_position_t::*;
 
 use OT_A     as ISC_A;          /*  53 chars; A */
 use OT_As    as ISC_As;         /*   1 chars; As */
