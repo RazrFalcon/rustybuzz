@@ -49,32 +49,32 @@ pub mod myanmar_category_t {
 
 %%{
 
-A    = 9;
-As   = 18;	# Asat
 C    = 1;
-D    = 10;	# Digits except zero = GB
-D0   = 20;	# Digit zero
-DB   = 3;	# Dot below	= OT_N
-GB   = 10;	# 		= OT_PLACEHOLDER
-H    = 4;
 IV   = 2;
+DB   = 3;	# Dot below	= OT_N
+H    = 4;
+ZWNJ = 5;
+ZWJ  = 6;
+V    = 8;	# Visarga and Shan tones
+A    = 9;
+D    = 10;	# Digits except zero = GB
+GB   = 10;	# 		= OT_PLACEHOLDER
+Ra   = 15;
+As   = 18;	# Asat
+CS   = 19;
+D0   = 20;	# Digit zero
 MH   = 21;	# Medial
 MR   = 22;	# Medial
 MW   = 23;	# Medial
 MY   = 24;	# Medial
-ML   = 32;	# Consonant medials
 PT   = 25;	# Pwo and other tones
-V    = 8;	# Visarga and Shan tones
 VAbv = 26;
 VBlw = 27;
 VPre = 28;
 VPst = 29;
 VS   = 30;	# Variation selectors
-ZWJ  = 6;
-ZWNJ = 5;
-Ra   = 15;
 P    = 31;	# Punctuation
-CS   = 19;
+ML   = 32;	# Consonant medials
 
 j = ZWJ|ZWNJ;			# Joiners
 k = (Ra As H);			# Kinzi
