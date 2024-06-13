@@ -70,22 +70,7 @@ mod khmer_feature {
 impl hb_glyph_info_t {
     fn set_khmer_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, _) = crate::hb::ot_shaper_indic_table::get_categories(u);
-
-        // Re-assign category
-
-        // These categories are experimentally extracted from what Uniscribe allows.
-
-        match u {
-            0x179A => cat = indic_category_t::OT_Ra,
-            0x17CC | 0x17C9 | 0x17CA => cat = indic_category_t::OT_Robatic,
-            0x17C6 | 0x17CB | 0x17CD | 0x17CE | 0x17CF | 0x17D0 | 0x17D1 => {
-                cat = indic_category_t::OT_Xgroup
-            }
-            // Just guessing. Uniscribe doesn't categorize it.
-            0x17C7 | 0x17C8 | 0x17DD | 0x17D3 => cat = indic_category_t::OT_Ygroup,
-            _ => {}
-        }
+        let (cat, _) = crate::hb::ot_shaper_indic_table::get_categories(u);
 
         self.set_indic_category(cat);
     }

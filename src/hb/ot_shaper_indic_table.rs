@@ -7,8 +7,8 @@ use super::ot_shaper_indic::indic_category_t::*;
 use super::ot_shaper_indic::indic_position_t::*;
 
 use OT_A     as ISC_A;          /*  51 chars; A */
-use OT_C     as ISC_C;          /* 521 chars; C */
-use OT_CM    as ISC_CM;         /*  10 chars; CM */
+use OT_C     as ISC_C;          /* 520 chars; C */
+use OT_CM    as ISC_CM;         /*   9 chars; CM */
 use OT_CS    as ISC_CS;         /*   2 chars; CS */
 use OT_Coeng as ISC_Co;         /*   2 chars; Coeng */
 use OT_DOTTEDCIRCLE as ISC_DC;         /*   1 chars; DOTTEDCIRCLE */
@@ -16,32 +16,34 @@ use OT_H     as ISC_H;          /*  10 chars; H */
 use OT_M     as ISC_M;          /* 160 chars; M */
 use OT_N     as ISC_N;          /*  35 chars; N */
 use OT_PLACEHOLDER as ISC_GB;         /* 168 chars; PLACEHOLDER */
-use OT_RS    as ISC_RS;         /*   2 chars; RS */
-use OT_Ra    as ISC_R;          /*  11 chars; Ra */
+use OT_Ra    as ISC_R;          /*  12 chars; Ra */
 use OT_Repha as ISC_Rf;         /*   1 chars; Repha */
-use OT_SM    as ISC_SM;         /*  56 chars; SM */
+use OT_Robatic as ISC_Rt;         /*   3 chars; Robatic */
+use OT_SM    as ISC_SM;         /*  48 chars; SM */
 use OT_Symbol as ISC_S;          /*  22 chars; Symbol */
 use OT_V     as ISC_V;          /* 190 chars; V */
-use OT_VAbv  as ISC_VA;         /*  22 chars; VAbv */
+use OT_VAbv  as ISC_VA;         /*  20 chars; VAbv */
 use OT_VBlw  as ISC_VB;         /*   7 chars; VBlw */
 use OT_VPre  as ISC_VL;         /*   5 chars; VPre */
-use OT_VPst  as ISC_VR;         /*  15 chars; VPst */
+use OT_VPst  as ISC_VR;         /*  14 chars; VPst */
 use OT_X     as ISC_X;          /*   2 chars; X */
+use OT_Xgroup as ISC_Xg;         /*   7 chars; Xgroup */
+use OT_Ygroup as ISC_Yg;         /*   4 chars; Ygroup */
 use OT_ZWJ   as ISC_ZWJ;        /*   1 chars; ZWJ */
 use OT_ZWNJ  as ISC_ZWNJ;       /*   1 chars; ZWNJ */
 
-use POS_ABOVE_C as IMC_T;          /*  29 chars; ABOVE_C */
+use POS_ABOVE_C as IMC_T;          /*  25 chars; ABOVE_C */
 use POS_AFTER_MAIN as IMC_A;          /*   3 chars; AFTER_MAIN */
 use POS_AFTER_POST as IMC_AP;         /*  50 chars; AFTER_POST */
 use POS_AFTER_SUB as IMC_AS;         /*  60 chars; AFTER_SUB */
-use POS_BASE_C as IMC_C;          /* 903 chars; BASE_C */
+use POS_BASE_C as IMC_C;          /* 902 chars; BASE_C */
 use POS_BEFORE_SUB as IMC_BS;         /*  31 chars; BEFORE_SUB */
 use POS_BELOW_C as IMC_B;          /*  13 chars; BELOW_C */
-use POS_END  as IMC_X;          /*  42 chars; END */
-use POS_POST_C as IMC_R;          /*  15 chars; POST_C */
+use POS_END  as IMC_X;          /*  56 chars; END */
+use POS_POST_C as IMC_R;          /*  14 chars; POST_C */
 use POS_PRE_C as IMC_L;          /*   5 chars; PRE_C */
 use POS_PRE_M as IMC_LM;         /*  16 chars; PRE_M */
-use POS_SMVD as IMC_SM;         /* 128 chars; SMVD */
+use POS_SMVD as IMC_SM;         /* 120 chars; SMVD */
 
 
 pub type SyllabicCategory = u8;
@@ -282,15 +284,15 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 1780 */  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),
   /* 1788 */  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),
   /* 1790 */  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),
-  /* 1798 */  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),
+  /* 1798 */  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_R,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),
   /* 17A0 */  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_C,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),
   /* 17A8 */  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),
   /* 17B0 */  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_V,IMC_C),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_VR,IMC_R), (ISC_VA,IMC_T),
   /* 17B8 */ (ISC_VA,IMC_T), (ISC_VA,IMC_T), (ISC_VA,IMC_T), (ISC_VB,IMC_B), (ISC_VB,IMC_B), (ISC_VB,IMC_B), (ISC_VA,IMC_T), (ISC_VR,IMC_R),
-  /* 17C0 */ (ISC_VR,IMC_R), (ISC_VL,IMC_L), (ISC_VL,IMC_L), (ISC_VL,IMC_L), (ISC_VR,IMC_R), (ISC_VR,IMC_R),(ISC_SM,IMC_SM),(ISC_SM,IMC_SM),
-  /* 17C8 */ (ISC_VR,IMC_R), (ISC_RS,IMC_T), (ISC_RS,IMC_T),(ISC_SM,IMC_SM), (ISC_CM,IMC_C), (ISC_VA,IMC_T),(ISC_SM,IMC_SM),(ISC_SM,IMC_SM),
-  /* 17D0 */(ISC_SM,IMC_SM), (ISC_VA,IMC_T), (ISC_Co,IMC_X),(ISC_SM,IMC_SM),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
-  /* 17D8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_S,IMC_SM),(ISC_SM,IMC_SM),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 17C0 */ (ISC_VR,IMC_R), (ISC_VL,IMC_L), (ISC_VL,IMC_L), (ISC_VL,IMC_L), (ISC_VR,IMC_R), (ISC_VR,IMC_R), (ISC_Xg,IMC_X), (ISC_Yg,IMC_X),
+  /* 17C8 */ (ISC_Yg,IMC_X), (ISC_Rt,IMC_X), (ISC_Rt,IMC_X), (ISC_Xg,IMC_X), (ISC_Rt,IMC_X), (ISC_Xg,IMC_X), (ISC_Xg,IMC_X), (ISC_Xg,IMC_X),
+  /* 17D0 */ (ISC_Xg,IMC_X), (ISC_Xg,IMC_X), (ISC_Co,IMC_X), (ISC_Yg,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
+  /* 17D8 */  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X), (ISC_S,IMC_SM), (ISC_Yg,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
   /* 17E0 */ (ISC_GB,IMC_C), (ISC_GB,IMC_C), (ISC_GB,IMC_C), (ISC_GB,IMC_C), (ISC_GB,IMC_C), (ISC_GB,IMC_C), (ISC_GB,IMC_C), (ISC_GB,IMC_C),
   /* 17E8 */ (ISC_GB,IMC_C), (ISC_GB,IMC_C),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),  (ISC_X,IMC_X),
 
