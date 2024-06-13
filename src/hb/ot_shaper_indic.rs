@@ -36,32 +36,32 @@ pub const INDIC_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
 pub type Category = u8;
 
 pub mod indic_category_t {
-    pub const X: u8 = 0;
-    pub const C: u8 = 1;
-    pub const V: u8 = 2;
-    pub const N: u8 = 3;
-    pub const H: u8 = 4;
-    pub const ZWNJ: u8 = 5;
-    pub const ZWJ: u8 = 6;
-    pub const M: u8 = 7;
-    pub const SM: u8 = 8;
-    pub const A: u8 = 9;
-    pub const VD: u8 = A;
-    pub const PLACEHOLDER: u8 = 10;
-    pub const DOTTED_CIRCLE: u8 = 11;
-    pub const RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
-    pub const COENG: u8 = 13; // Khmer-style Virama.
-    pub const REPHA: u8 = 14; // Atomically-encoded logical or visual repha.
-    pub const RA: u8 = 15;
-    pub const CM: u8 = 16; // Consonant-Medial.
-    pub const SYMBOL: u8 = 17; // Avagraha, etc that take marks (SM,A,VD).
-    pub const CS: u8 = 18;
+    pub const OT_X: u8 = 0;
+    pub const OT_C: u8 = 1;
+    pub const OT_V: u8 = 2;
+    pub const OT_N: u8 = 3;
+    pub const OT_H: u8 = 4;
+    pub const OT_ZWNJ: u8 = 5;
+    pub const OT_ZWJ: u8 = 6;
+    pub const OT_M: u8 = 7;
+    pub const OT_SM: u8 = 8;
+    pub const OT_A: u8 = 9;
+    pub const OT_VD: u8 = OT_A;
+    pub const OT_PLACEHOLDER: u8 = 10;
+    pub const OT_DOTTED_CIRCLE: u8 = 11;
+    pub const OT_RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
+    pub const OT_COENG: u8 = 13; // Khmer-style Virama.
+    pub const OT_REPHA: u8 = 14; // Atomically-encoded logical or visual repha.
+    pub const OT_RA: u8 = 15;
+    pub const OT_CM: u8 = 16; // Consonant-Medial.
+    pub const OT_SYMBOL: u8 = 17; // Avagraha, etc that take marks (SM,A,VD).
+    pub const OT_CS: u8 = 18;
 
     // The following are used by Khmer & Myanmar shapers.  Defined here for them to share.
-    pub const V_AVB: u8 = 26;
-    pub const V_BLW: u8 = 27;
-    pub const V_PRE: u8 = 28;
-    pub const V_PST: u8 = 29;
+    pub const OT_AVB: u8 = 26;
+    pub const OT_VBLW: u8 = 27;
+    pub const OT_VPRE: u8 = 28;
+    pub const OT_VPST: u8 = 29;
 }
 
 pub type Position = u8;
@@ -251,21 +251,21 @@ const fn category_flag(c: Category) -> u32 {
     rb_flag(c as u32)
 }
 
-const MEDIAL_FLAGS: u32 = category_flag(indic_category_t::CM);
+const MEDIAL_FLAGS: u32 = category_flag(indic_category_t::OT_CM);
 // Note:
 //
 // We treat Vowels and placeholders as if they were consonants.  This is safe because Vowels
 // cannot happen in a consonant syllable.  The plus side however is, we can call the
 // consonant syllable logic from the vowel syllable function and get it all right!
-const CONSONANT_FLAGS: u32 = category_flag(indic_category_t::C)
-    | category_flag(indic_category_t::CS)
-    | category_flag(indic_category_t::RA)
+const CONSONANT_FLAGS: u32 = category_flag(indic_category_t::OT_C)
+    | category_flag(indic_category_t::OT_CS)
+    | category_flag(indic_category_t::OT_RA)
     | MEDIAL_FLAGS
-    | category_flag(indic_category_t::V)
-    | category_flag(indic_category_t::PLACEHOLDER)
-    | category_flag(indic_category_t::DOTTED_CIRCLE);
+    | category_flag(indic_category_t::OT_V)
+    | category_flag(indic_category_t::OT_PLACEHOLDER)
+    | category_flag(indic_category_t::OT_DOTTED_CIRCLE);
 const JOINER_FLAGS: u32 =
-    category_flag(indic_category_t::ZWJ) | category_flag(indic_category_t::ZWNJ);
+    category_flag(indic_category_t::OT_ZWJ) | category_flag(indic_category_t::OT_ZWNJ);
 
 // This is a hack for now.  We should move this data into the main Indic table.
 // Or completely remove it and just check in the tables.
@@ -636,7 +636,7 @@ impl hb_glyph_info_t {
     }
 
     fn is_halant(&self) -> bool {
-        self.is_one_of(rb_flag(indic_category_t::H as u32))
+        self.is_one_of(rb_flag(indic_category_t::OT_H as u32))
     }
 
     fn set_indic_properties(&mut self) {
@@ -647,40 +647,42 @@ impl hb_glyph_info_t {
 
         // The following act more like the Bindus.
         match u {
-            0x0953..=0x0954 => cat = indic_category_t::SM,
+            0x0953..=0x0954 => cat = indic_category_t::OT_SM,
             // The following act like consonants.
-            0x0A72..=0x0A73 | 0x1CF5..=0x1CF6 => cat = indic_category_t::C,
+            0x0A72..=0x0A73 | 0x1CF5..=0x1CF6 => cat = indic_category_t::OT_C,
             // TODO: The following should only be allowed after a Visarga.
             // For now, just treat them like regular tone marks.
-            0x1CE2..=0x1CE8 => cat = indic_category_t::A,
+            0x1CE2..=0x1CE8 => cat = indic_category_t::OT_A,
             // TODO: The following should only be allowed after some of
             // the nasalization marks, maybe only for U+1CE9..U+1CF1.
             // For now, just treat them like tone marks.
-            0x1CED => cat = indic_category_t::A,
+            0x1CED => cat = indic_category_t::OT_A,
             // The following take marks in standalone clusters, similar to Avagraha.
-            0xA8F2..=0xA8F7 | 0x1CE9..=0x1CEC | 0x1CEE..=0x1CF1 => cat = indic_category_t::SYMBOL,
+            0xA8F2..=0xA8F7 | 0x1CE9..=0x1CEC | 0x1CEE..=0x1CF1 => {
+                cat = indic_category_t::OT_SYMBOL
+            }
             // https://github.com/harfbuzz/harfbuzz/issues/524
             0x0A51 => {
-                cat = indic_category_t::M;
+                cat = indic_category_t::OT_M;
                 pos = position::BELOW_C;
             }
             // According to ScriptExtensions.txt, these Grantha marks may also be used in Tamil,
             // so the Indic shaper needs to know their categories.
-            0x11301 | 0x11303 => cat = indic_category_t::SM,
-            0x1133B | 0x1133C => cat = indic_category_t::N,
+            0x11301 | 0x11303 => cat = indic_category_t::OT_SM,
+            0x1133B | 0x1133C => cat = indic_category_t::OT_N,
             // https://github.com/harfbuzz/harfbuzz/issues/552
-            0x0AFB => cat = indic_category_t::N,
+            0x0AFB => cat = indic_category_t::OT_N,
             // https://github.com/harfbuzz/harfbuzz/issues/2849
-            0x0B55 => cat = indic_category_t::N,
+            0x0B55 => cat = indic_category_t::OT_N,
             // https://github.com/harfbuzz/harfbuzz/issues/538
-            0x0980 => cat = indic_category_t::PLACEHOLDER,
+            0x0980 => cat = indic_category_t::OT_PLACEHOLDER,
             // https://github.com/harfbuzz/harfbuzz/issues/1613
-            0x09FC => cat = indic_category_t::PLACEHOLDER,
+            0x09FC => cat = indic_category_t::OT_PLACEHOLDER,
             // https://github.com/harfbuzz/harfbuzz/issues/623
-            0x0C80 => cat = indic_category_t::PLACEHOLDER,
-            0x0D04 => cat = indic_category_t::PLACEHOLDER,
-            0x2010 | 0x2011 => cat = indic_category_t::PLACEHOLDER,
-            0x25CC => cat = indic_category_t::DOTTED_CIRCLE,
+            0x0C80 => cat = indic_category_t::OT_PLACEHOLDER,
+            0x0D04 => cat = indic_category_t::OT_PLACEHOLDER,
+            0x2010 | 0x2011 => cat = indic_category_t::OT_PLACEHOLDER,
+            0x25CC => cat = indic_category_t::OT_DOTTED_CIRCLE,
             _ => {}
         }
 
@@ -689,15 +691,15 @@ impl hb_glyph_info_t {
         if (rb_flag_unsafe(cat as u32) & CONSONANT_FLAGS) != 0 {
             pos = position::BASE_C;
             if RA_CHARS.contains(&u) {
-                cat = indic_category_t::RA;
+                cat = indic_category_t::OT_RA;
             }
-        } else if cat == indic_category_t::M {
+        } else if cat == indic_category_t::OT_M {
             pos = matra_position_indic(u, pos);
         } else if (rb_flag_unsafe(cat as u32)
-            & (category_flag(indic_category_t::SM)
-                | category_flag(indic_category_t::VD)
-                | category_flag(indic_category_t::A)
-                | category_flag(indic_category_t::SYMBOL)))
+            & (category_flag(indic_category_t::OT_SM)
+                | category_flag(indic_category_t::OT_VD)
+                | category_flag(indic_category_t::OT_A)
+                | category_flag(indic_category_t::OT_SYMBOL)))
             != 0
         {
             pos = position::SMVD;
@@ -847,8 +849,8 @@ fn initial_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut 
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
-        indic_category_t::DOTTED_CIRCLE,
-        Some(indic_category_t::REPHA),
+        indic_category_t::OT_DOTTED_CIRCLE,
+        Some(indic_category_t::OT_REPHA),
         Some(position::END),
     );
 
@@ -996,9 +998,9 @@ fn initial_reordering_consonant_syllable(
     // Ra+h+ZWJ must behave like Ra+ZWJ+h...
     if buffer.script == Some(script::KANNADA)
         && start + 3 <= end
-        && buffer.info[start].is_one_of(category_flag(indic_category_t::RA))
-        && buffer.info[start + 1].is_one_of(category_flag(indic_category_t::H))
-        && buffer.info[start + 2].is_one_of(category_flag(indic_category_t::ZWJ))
+        && buffer.info[start].is_one_of(category_flag(indic_category_t::OT_RA))
+        && buffer.info[start + 1].is_one_of(category_flag(indic_category_t::OT_H))
+        && buffer.info[start + 2].is_one_of(category_flag(indic_category_t::OT_ZWJ))
     {
         buffer.merge_clusters(start + 1, start + 3);
         buffer.info.swap(start + 1, start + 2);
@@ -1030,7 +1032,7 @@ fn initial_reordering_consonant_syllable(
             && ((indic_plan.config.reph_mode == RephMode::Implicit
                 && !buffer.info[start + 2].is_joiner())
                 || (indic_plan.config.reph_mode == RephMode::Explicit
-                    && buffer.info[start + 2].indic_category() == indic_category_t::ZWJ))
+                    && buffer.info[start + 2].indic_category() == indic_category_t::OT_ZWJ))
         {
             // See if it matches the 'rphf' feature.
             let glyphs = &[
@@ -1056,7 +1058,7 @@ fn initial_reordering_consonant_syllable(
                 has_reph = true;
             }
         } else if indic_plan.config.reph_mode == RephMode::LogRepha
-            && buffer.info[start].indic_category() == indic_category_t::REPHA
+            && buffer.info[start].indic_category() == indic_category_t::OT_REPHA
         {
             limit += 1;
             while limit < end && buffer.info[limit].is_joiner() {
@@ -1104,8 +1106,8 @@ fn initial_reordering_consonant_syllable(
                         // search continues.  This is particularly important for Bengali
                         // sequence Ra,H,Ya that should form Ya-Phalaa by subjoining Ya.
                         if start < i
-                            && buffer.info[i].indic_category() == indic_category_t::ZWJ
-                            && buffer.info[i - 1].indic_category() == indic_category_t::H
+                            && buffer.info[i].indic_category() == indic_category_t::OT_ZWJ
+                            && buffer.info[i - 1].indic_category() == indic_category_t::OT_H
                         {
                             break;
                         }
@@ -1129,7 +1131,8 @@ fn initial_reordering_consonant_syllable(
                 // a ZWJ right before a base consonant, that would request a subjoined form.
                 for i in limit..end {
                     if buffer.info[i].is_consonant() {
-                        if limit < i && buffer.info[i - 1].indic_category() == indic_category_t::ZWJ
+                        if limit < i
+                            && buffer.info[i - 1].indic_category() == indic_category_t::OT_ZWJ
                         {
                             break;
                         } else {
@@ -1200,7 +1203,7 @@ fn initial_reordering_consonant_syllable(
     // Mark final consonants.  A final consonant is one appearing after a matra.
     // Happens in Sinhala.
     for i in base + 1..end {
-        if buffer.info[i].indic_category() == indic_category_t::M {
+        if buffer.info[i].indic_category() == indic_category_t::OT_M {
             for j in i + 1..end {
                 if buffer.info[j].is_consonant() {
                     buffer.info[j].set_indic_position(position::FINAL_C);
@@ -1247,12 +1250,12 @@ fn initial_reordering_consonant_syllable(
     if indic_plan.is_old_spec {
         let disallow_double_halants = buffer.script == Some(script::KANNADA);
         for i in base + 1..end {
-            if buffer.info[i].indic_category() == indic_category_t::H {
+            if buffer.info[i].indic_category() == indic_category_t::OT_H {
                 let mut j = end - 1;
                 while j > i {
                     if buffer.info[j].is_consonant()
                         || (disallow_double_halants
-                            && buffer.info[j].indic_category() == indic_category_t::H)
+                            && buffer.info[j].indic_category() == indic_category_t::OT_H)
                     {
                         break;
                     }
@@ -1260,7 +1263,7 @@ fn initial_reordering_consonant_syllable(
                     j -= 1;
                 }
 
-                if buffer.info[j].indic_category() != indic_category_t::H && j > i {
+                if buffer.info[j].indic_category() != indic_category_t::OT_H && j > i {
                     // Move Halant to after last consonant.
                     let t = buffer.info[i];
                     for k in 0..j - i {
@@ -1279,17 +1282,17 @@ fn initial_reordering_consonant_syllable(
         let mut last_pos = position::START;
         for i in start..end {
             let ok = rb_flag_unsafe(buffer.info[i].indic_category() as u32)
-                & (category_flag(indic_category_t::ZWJ)
-                    | category_flag(indic_category_t::ZWNJ)
-                    | category_flag(indic_category_t::N)
-                    | category_flag(indic_category_t::RS)
-                    | category_flag(indic_category_t::CM)
-                    | category_flag(indic_category_t::H))
+                & (category_flag(indic_category_t::OT_ZWJ)
+                    | category_flag(indic_category_t::OT_ZWNJ)
+                    | category_flag(indic_category_t::OT_N)
+                    | category_flag(indic_category_t::OT_RS)
+                    | category_flag(indic_category_t::OT_CM)
+                    | category_flag(indic_category_t::OT_H))
                 != 0;
             if ok {
                 buffer.info[i].set_indic_position(last_pos);
 
-                if buffer.info[i].indic_category() == indic_category_t::H
+                if buffer.info[i].indic_category() == indic_category_t::OT_H
                     && buffer.info[i].indic_position() == position::PRE_M
                 {
                     // Uniscribe doesn't move the Halant with Left Matra.
@@ -1326,7 +1329,7 @@ fn initial_reordering_consonant_syllable(
                 }
 
                 last = i;
-            } else if buffer.info[i].indic_category() == indic_category_t::M {
+            } else if buffer.info[i].indic_category() == indic_category_t::OT_M {
                 last = i;
             }
         }
@@ -1464,9 +1467,10 @@ fn initial_reordering_consonant_syllable(
         //
         // Test case: U+0924,U+094D,U+0930,U+094d,U+200D,U+0915
         for i in start..base.saturating_sub(1) {
-            if buffer.info[i].indic_category() == indic_category_t::RA
-                && buffer.info[i + 1].indic_category() == indic_category_t::H
-                && (i + 2 == base || buffer.info[i + 2].indic_category() != indic_category_t::ZWJ)
+            if buffer.info[i].indic_category() == indic_category_t::OT_RA
+                && buffer.info[i + 1].indic_category() == indic_category_t::OT_H
+                && (i + 2 == base
+                    || buffer.info[i + 2].indic_category() != indic_category_t::OT_ZWJ)
             {
                 buffer.info[i].mask |= indic_plan.mask_array[indic_feature::BLWF];
                 buffer.info[i + 1].mask |= indic_plan.mask_array[indic_feature::BLWF];
@@ -1490,7 +1494,7 @@ fn initial_reordering_consonant_syllable(
     // Apply ZWJ/ZWNJ effects
     for i in start + 1..end {
         if buffer.info[i].is_joiner() {
-            let non_joiner = buffer.info[i].indic_category() == indic_category_t::ZWNJ;
+            let non_joiner = buffer.info[i].indic_category() == indic_category_t::OT_ZWNJ;
             let mut j = i;
 
             loop {
@@ -1566,7 +1570,7 @@ fn final_reordering_impl(
                 && _hb_glyph_info_multiplied(info)
             {
                 // This will make sure that this glyph passes is_halant() test.
-                info.set_indic_category(indic_category_t::H);
+                info.set_indic_category(indic_category_t::OT_H);
                 _hb_glyph_info_clear_ligated_and_multiplied(info);
             }
         }
@@ -1648,7 +1652,7 @@ fn final_reordering_impl(
 
     if base == end
         && start < base
-        && buffer.info[base - 1].is_one_of(rb_flag(indic_category_t::ZWJ as u32))
+        && buffer.info[base - 1].is_one_of(rb_flag(indic_category_t::OT_ZWJ as u32))
     {
         base -= 1;
     }
@@ -1656,7 +1660,7 @@ fn final_reordering_impl(
     if base < end {
         while start < base
             && buffer.info[base].is_one_of(
-                rb_flag(indic_category_t::N as u32) | rb_flag(indic_category_t::H as u32),
+                rb_flag(indic_category_t::OT_N as u32) | rb_flag(indic_category_t::OT_H as u32),
             )
         {
             base -= 1;
@@ -1702,7 +1706,8 @@ fn final_reordering_impl(
             loop {
                 while new_pos > start
                     && !buffer.info[new_pos].is_one_of(
-                        rb_flag(indic_category_t::M as u32) | rb_flag(indic_category_t::H as u32),
+                        rb_flag(indic_category_t::OT_M as u32)
+                            | rb_flag(indic_category_t::OT_H as u32),
                     )
                 {
                     new_pos -= 1;
@@ -1716,7 +1721,7 @@ fn final_reordering_impl(
                 {
                     if new_pos + 1 < end {
                         // -> If ZWJ follows this halant, matra is NOT repositioned after this halant.
-                        if buffer.info[new_pos + 1].indic_category() == indic_category_t::ZWJ {
+                        if buffer.info[new_pos + 1].indic_category() == indic_category_t::OT_ZWJ {
                             // Keep searching.
                             if new_pos > start {
                                 new_pos -= 1;
@@ -1792,7 +1797,7 @@ fn final_reordering_impl(
 
     if start + 1 < end
         && buffer.info[start].indic_position() == position::RA_TO_BECOME_REPH
-        && (buffer.info[start].indic_category() == indic_category_t::REPHA)
+        && (buffer.info[start].indic_category() == indic_category_t::OT_REPHA)
             ^ _hb_glyph_info_ligated_and_didnt_multiply(&buffer.info[start])
     {
         let mut new_reph_pos;
@@ -1908,7 +1913,7 @@ fn final_reordering_impl(
                 // TEST: U+0930,U+094D,U+0915,U+094B,U+094D
                 if buffer.info[new_reph_pos].is_halant() {
                     for info in &buffer.info[base + 1..new_reph_pos] {
-                        if info.indic_category() == indic_category_t::M {
+                        if info.indic_category() == indic_category_t::OT_M {
                             // Ok, got it.
                             new_reph_pos -= 1;
                         }
@@ -1965,8 +1970,8 @@ fn final_reordering_impl(
                     {
                         while new_pos > start
                             && !buffer.info[new_pos - 1].is_one_of(
-                                rb_flag(indic_category_t::M as u32)
-                                    | rb_flag(indic_category_t::H as u32),
+                                rb_flag(indic_category_t::OT_M as u32)
+                                    | rb_flag(indic_category_t::OT_H as u32),
                             )
                         {
                             new_pos -= 1;
@@ -2038,42 +2043,42 @@ pub fn get_category_and_position(u: u32) -> (Category, Position) {
     };
 
     let c1 = match c1 {
-        SyllabicCategory::Other => indic_category_t::X,
-        SyllabicCategory::Avagraha => indic_category_t::SYMBOL,
-        SyllabicCategory::Bindu => indic_category_t::SM,
-        SyllabicCategory::BrahmiJoiningNumber => indic_category_t::PLACEHOLDER, // Don't care.
-        SyllabicCategory::CantillationMark => indic_category_t::A,
-        SyllabicCategory::Consonant => indic_category_t::C,
-        SyllabicCategory::ConsonantDead => indic_category_t::C,
-        SyllabicCategory::ConsonantFinal => indic_category_t::CM,
-        SyllabicCategory::ConsonantHeadLetter => indic_category_t::C,
-        SyllabicCategory::ConsonantInitialPostfixed => indic_category_t::PLACEHOLDER,
-        SyllabicCategory::ConsonantKiller => indic_category_t::M, // U+17CD only.
-        SyllabicCategory::ConsonantMedial => indic_category_t::CM,
-        SyllabicCategory::ConsonantPlaceholder => indic_category_t::PLACEHOLDER,
-        SyllabicCategory::ConsonantPrecedingRepha => indic_category_t::REPHA,
-        SyllabicCategory::ConsonantPrefixed => indic_category_t::X,
-        SyllabicCategory::ConsonantSubjoined => indic_category_t::CM,
-        SyllabicCategory::ConsonantSucceedingRepha => indic_category_t::CM,
-        SyllabicCategory::ConsonantWithStacker => indic_category_t::CS,
-        SyllabicCategory::GeminationMark => indic_category_t::SM, // https://github.com/harfbuzz/harfbuzz/issues/552
-        SyllabicCategory::InvisibleStacker => indic_category_t::COENG,
-        SyllabicCategory::Joiner => indic_category_t::ZWJ,
-        SyllabicCategory::ModifyingLetter => indic_category_t::X,
-        SyllabicCategory::NonJoiner => indic_category_t::ZWNJ,
-        SyllabicCategory::Nukta => indic_category_t::N,
-        SyllabicCategory::Number => indic_category_t::PLACEHOLDER,
-        SyllabicCategory::NumberJoiner => indic_category_t::PLACEHOLDER, // Don't care.
-        SyllabicCategory::PureKiller => indic_category_t::M,
-        SyllabicCategory::RegisterShifter => indic_category_t::RS,
-        SyllabicCategory::SyllableModifier => indic_category_t::SM,
-        SyllabicCategory::ToneLetter => indic_category_t::X,
-        SyllabicCategory::ToneMark => indic_category_t::N,
-        SyllabicCategory::Virama => indic_category_t::H,
-        SyllabicCategory::Visarga => indic_category_t::SM,
-        SyllabicCategory::Vowel => indic_category_t::V,
-        SyllabicCategory::VowelDependent => indic_category_t::M,
-        SyllabicCategory::VowelIndependent => indic_category_t::V,
+        SyllabicCategory::Other => indic_category_t::OT_X,
+        SyllabicCategory::Avagraha => indic_category_t::OT_SYMBOL,
+        SyllabicCategory::Bindu => indic_category_t::OT_SM,
+        SyllabicCategory::BrahmiJoiningNumber => indic_category_t::OT_PLACEHOLDER, // Don't care.
+        SyllabicCategory::CantillationMark => indic_category_t::OT_A,
+        SyllabicCategory::Consonant => indic_category_t::OT_C,
+        SyllabicCategory::ConsonantDead => indic_category_t::OT_C,
+        SyllabicCategory::ConsonantFinal => indic_category_t::OT_CM,
+        SyllabicCategory::ConsonantHeadLetter => indic_category_t::OT_C,
+        SyllabicCategory::ConsonantInitialPostfixed => indic_category_t::OT_PLACEHOLDER,
+        SyllabicCategory::ConsonantKiller => indic_category_t::OT_M, // U+17CD only.
+        SyllabicCategory::ConsonantMedial => indic_category_t::OT_CM,
+        SyllabicCategory::ConsonantPlaceholder => indic_category_t::OT_PLACEHOLDER,
+        SyllabicCategory::ConsonantPrecedingRepha => indic_category_t::OT_REPHA,
+        SyllabicCategory::ConsonantPrefixed => indic_category_t::OT_X,
+        SyllabicCategory::ConsonantSubjoined => indic_category_t::OT_CM,
+        SyllabicCategory::ConsonantSucceedingRepha => indic_category_t::OT_CM,
+        SyllabicCategory::ConsonantWithStacker => indic_category_t::OT_CS,
+        SyllabicCategory::GeminationMark => indic_category_t::OT_SM, // https://github.com/harfbuzz/harfbuzz/issues/552
+        SyllabicCategory::InvisibleStacker => indic_category_t::OT_COENG,
+        SyllabicCategory::Joiner => indic_category_t::OT_ZWJ,
+        SyllabicCategory::ModifyingLetter => indic_category_t::OT_X,
+        SyllabicCategory::NonJoiner => indic_category_t::OT_ZWNJ,
+        SyllabicCategory::Nukta => indic_category_t::OT_N,
+        SyllabicCategory::Number => indic_category_t::OT_PLACEHOLDER,
+        SyllabicCategory::NumberJoiner => indic_category_t::OT_PLACEHOLDER, // Don't care.
+        SyllabicCategory::PureKiller => indic_category_t::OT_M,
+        SyllabicCategory::RegisterShifter => indic_category_t::OT_RS,
+        SyllabicCategory::SyllableModifier => indic_category_t::OT_SM,
+        SyllabicCategory::ToneLetter => indic_category_t::OT_X,
+        SyllabicCategory::ToneMark => indic_category_t::OT_N,
+        SyllabicCategory::Virama => indic_category_t::OT_H,
+        SyllabicCategory::Visarga => indic_category_t::OT_SM,
+        SyllabicCategory::Vowel => indic_category_t::OT_V,
+        SyllabicCategory::VowelDependent => indic_category_t::OT_M,
+        SyllabicCategory::VowelIndependent => indic_category_t::OT_V,
     };
 
     let c2 = match c2 {

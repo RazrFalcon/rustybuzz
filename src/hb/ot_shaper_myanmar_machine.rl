@@ -18,14 +18,14 @@ use super::buffer::hb_buffer_t;
 // NOTE: We need to keep this in sync with the defined keys below. In harfbuzz, they are deduplicated
 // but for some reason rust ragel doesn't properly export writing exports in Rust.
 pub mod myanmar_category_t {
-    use crate::hb::ot_shaper_indic::indic_category_t::{N, PLACEHOLDER};
+    use crate::hb::ot_shaper_indic::indic_category_t::{OT_N, OT_PLACEHOLDER};
 
     pub const As: u8 = 18; /* Asat */
     #[allow(dead_code)]
     pub const D0: u8 = 20; /* Digit zero */
     #[allow(dead_code)]
-    pub const DB: u8 = N; /* Dot below */
-    pub const GB: u8 = PLACEHOLDER;
+    pub const DB: u8 = OT_N; /* Dot below */
+    pub const GB: u8 = OT_PLACEHOLDER;
     pub const MH: u8 = 21; /* Various consonant medial types */
     pub const MR: u8 = 22; /* Various consonant medial types */
     pub const MW: u8 = 23; /* Various consonant medial types */

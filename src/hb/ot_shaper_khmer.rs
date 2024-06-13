@@ -78,7 +78,7 @@ impl hb_glyph_info_t {
         // These categories are experimentally extracted from what Uniscribe allows.
 
         match u {
-            0x179A => cat = indic_category_t::RA,
+            0x179A => cat = indic_category_t::OT_RA,
             0x17CC | 0x17C9 | 0x17CA => cat = khmer_category_t::ROBATIC,
             0x17C6 | 0x17CB | 0x17CD | 0x17CE | 0x17CF | 0x17D0 | 0x17D1 => {
                 cat = khmer_category_t::X_GROUP
@@ -90,12 +90,12 @@ impl hb_glyph_info_t {
 
         // Re-assign position.
 
-        if cat == indic_category_t::M {
+        if cat == indic_category_t::OT_M {
             match pos {
-                position::PRE_C => cat = indic_category_t::V_PRE,
-                position::BELOW_C => cat = indic_category_t::V_BLW,
-                position::ABOVE_C => cat = indic_category_t::V_AVB,
-                position::POST_C => cat = indic_category_t::V_PST,
+                position::PRE_C => cat = indic_category_t::OT_VPRE,
+                position::BELOW_C => cat = indic_category_t::OT_VBLW,
+                position::ABOVE_C => cat = indic_category_t::OT_AVB,
+                position::POST_C => cat = indic_category_t::OT_VPST,
                 _ => {}
             }
         }
@@ -172,8 +172,8 @@ fn reorder(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
-        indic_category_t::DOTTED_CIRCLE,
-        Some(indic_category_t::REPHA),
+        indic_category_t::OT_DOTTED_CIRCLE,
+        Some(indic_category_t::OT_REPHA),
         None,
     );
 
@@ -241,13 +241,13 @@ fn reorder_consonant_syllable(
         // Subscript Type 2 - The COENG + RO characters are reordered to immediately
         // before the base glyph. Then the COENG + RO characters are assigned to have
         // the 'pref' OpenType feature applied to them.
-        if buffer.info[i].indic_category() == indic_category_t::COENG
+        if buffer.info[i].indic_category() == indic_category_t::OT_COENG
             && num_coengs <= 2
             && i + 1 < end
         {
             num_coengs += 1;
 
-            if buffer.info[i + 1].indic_category() == indic_category_t::RA {
+            if buffer.info[i + 1].indic_category() == indic_category_t::OT_RA {
                 for j in 0..2 {
                     buffer.info[i + j].mask |= plan.mask_array[khmer_feature::PREF];
                 }
@@ -276,7 +276,7 @@ fn reorder_consonant_syllable(
 
                 num_coengs = 2; // Done.
             }
-        } else if buffer.info[i].indic_category() == indic_category_t::V_PRE {
+        } else if buffer.info[i].indic_category() == indic_category_t::OT_VPRE {
             // Reorder left matra piece.
 
             // Move to the start.

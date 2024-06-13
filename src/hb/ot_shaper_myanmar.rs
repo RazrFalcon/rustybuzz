@@ -74,16 +74,16 @@ impl hb_glyph_info_t {
 
         match u {
             // The spec says C, IndicSyllableCategory doesn't have.
-            0x104E => cat = indic_category_t::C,
+            0x104E => cat = indic_category_t::OT_C,
 
             0x002D | 0x00A0 | 0x00D7 | 0x2012 | 0x2013 | 0x2014 | 0x2015 | 0x2022 | 0x25CC
             | 0x25FB | 0x25FC | 0x25FD | 0x25FE => cat = myanmar_category_t::GB,
 
-            0x1004 | 0x101B | 0x105A => cat = indic_category_t::RA,
+            0x1004 | 0x101B | 0x105A => cat = indic_category_t::OT_RA,
 
-            0x1032 | 0x1036 => cat = indic_category_t::A,
+            0x1032 | 0x1036 => cat = indic_category_t::OT_A,
 
-            0x1039 => cat = indic_category_t::H,
+            0x1039 => cat = indic_category_t::OT_H,
 
             0x103A => cat = myanmar_category_t::As,
 
@@ -109,27 +109,27 @@ impl hb_glyph_info_t {
             }
 
             0x1038 | 0x1087 | 0x1088 | 0x1089 | 0x108A | 0x108B | 0x108C | 0x108D | 0x108F
-            | 0x109A | 0x109B | 0x109C => cat = indic_category_t::SM,
+            | 0x109A | 0x109B | 0x109C => cat = indic_category_t::OT_SM,
 
             0x104A | 0x104B => cat = myanmar_category_t::P,
 
             // https://github.com/harfbuzz/harfbuzz/issues/218
-            0xAA74 | 0xAA75 | 0xAA76 => cat = indic_category_t::C,
+            0xAA74 | 0xAA75 | 0xAA76 => cat = indic_category_t::OT_C,
 
             _ => {}
         }
 
         // Re-assign position.
 
-        if cat == indic_category_t::M {
+        if cat == indic_category_t::OT_M {
             match pos {
                 position::PRE_C => {
-                    cat = indic_category_t::V_PRE;
+                    cat = indic_category_t::OT_VPRE;
                     pos = position::PRE_M;
                 }
-                position::BELOW_C => cat = indic_category_t::V_BLW,
-                position::ABOVE_C => cat = indic_category_t::V_AVB,
-                position::POST_C => cat = indic_category_t::V_PST,
+                position::BELOW_C => cat = indic_category_t::OT_VBLW,
+                position::ABOVE_C => cat = indic_category_t::OT_AVB,
+                position::POST_C => cat = indic_category_t::OT_VPST,
                 _ => {}
             }
         }
@@ -185,7 +185,7 @@ fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
-        indic_category_t::PLACEHOLDER,
+        indic_category_t::OT_PLACEHOLDER,
         None,
         None,
     );
@@ -228,9 +228,9 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut limit = start;
         if start + 3 <= end
-            && buffer.info[start + 0].myanmar_category() == indic_category_t::RA
+            && buffer.info[start + 0].myanmar_category() == indic_category_t::OT_RA
             && buffer.info[start + 1].myanmar_category() == myanmar_category_t::As
-            && buffer.info[start + 2].myanmar_category() == indic_category_t::H
+            && buffer.info[start + 2].myanmar_category() == indic_category_t::OT_H
         {
             limit += 3;
             base = start;
@@ -291,27 +291,29 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
             }
 
             if pos == position::AFTER_MAIN
-                && buffer.info[i].myanmar_category() == indic_category_t::V_BLW
+                && buffer.info[i].myanmar_category() == indic_category_t::OT_VBLW
             {
                 pos = position::BELOW_C;
                 buffer.info[i].set_myanmar_position(pos);
                 continue;
             }
 
-            if pos == position::BELOW_C && buffer.info[i].myanmar_category() == indic_category_t::A
+            if pos == position::BELOW_C
+                && buffer.info[i].myanmar_category() == indic_category_t::OT_A
             {
                 buffer.info[i].set_myanmar_position(position::BEFORE_SUB);
                 continue;
             }
 
             if pos == position::BELOW_C
-                && buffer.info[i].myanmar_category() == indic_category_t::V_BLW
+                && buffer.info[i].myanmar_category() == indic_category_t::OT_VBLW
             {
                 buffer.info[i].set_myanmar_position(pos);
                 continue;
             }
 
-            if pos == position::BELOW_C && buffer.info[i].myanmar_category() != indic_category_t::A
+            if pos == position::BELOW_C
+                && buffer.info[i].myanmar_category() != indic_category_t::OT_A
             {
                 pos = position::AFTER_SUB;
                 buffer.info[i].set_myanmar_position(pos);
