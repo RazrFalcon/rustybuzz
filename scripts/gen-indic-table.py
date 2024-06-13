@@ -475,8 +475,8 @@ print()
 print('#![allow(non_camel_case_types)]')
 print('#![allow(unused_imports)]')
 print()
-print('use super::ot_shaper_indic::indic_category_t::*;')
-print('use super::ot_shaper_indic::indic_position_t::*;')
+print('use super::ot_shaper_indic::ot_category_t::*;')
+print('use super::ot_shaper_indic::ot_position_t::*;')
 
 # Shorten values
 short = [{
@@ -513,7 +513,7 @@ for i in range(2):
         all_shorts[i][s] = v
 
 what = ["OT", "POS"]
-what_short = ['ISC', 'IMC']
+what_short = ["_OT", "_POS"]
 cat_defs = []
 for i in range(2):
     vv = sorted(values[i].keys())
@@ -561,7 +561,7 @@ def print_block(block, start, end, data):
         if u in data:
             num += 1
         d = data.get(u, defaults)
-        print('%16s' % ('(ISC_%s,IMC_%s),' % (short[0][d[0]], short[1][d[1]])), end='')
+        print('%16s' % ('(_OT_%s,_POS_%s),' % (short[0][d[0]], short[1][d[1]])), end='')
 
     total += end - start + 1
     used += num
@@ -627,7 +627,7 @@ for p in sorted(pages):
     print('        0x%0X => {' % p)
     for u, d in singles.items():
         if p != u >> page_bits: continue
-        print('            if u == 0x%04X { return (ISC_%s, IMC_%s); }' % (u, short[0][d[0]], short[1][d[1]]))
+        print('            if u == 0x%04X { return (_OT_%s, _POS_%s); }' % (u, short[0][d[0]], short[1][d[1]]))
     for (start, end) in zip(starts, ends):
         if p not in [start >> page_bits, end >> page_bits]: continue
         offset = 'OFFSET_0X%04X' % start
@@ -636,7 +636,7 @@ for p in sorted(pages):
 print('        _ => {}')
 print('    }')
 print()
-print('    (ISC_X, IMC_X)')
+print('    (_OT_X, _POS_X)')
 print('}')
 
 # Maintain at least 30% occupancy in the table */
