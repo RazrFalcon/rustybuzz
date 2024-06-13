@@ -53,7 +53,7 @@ pub mod indic_category_t {
     pub const OT_RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
     pub const OT_Coeng: u8 = 13; // Khmer-style Virama.
     pub const OT_Repha: u8 = 14; // Atomically-encoded logical or visual repha.
-    pub const OT_RA: u8 = 15;
+    pub const OT_Ra: u8 = 15;
     pub const OT_CM: u8 = 16; // Consonant-Medial.
     pub const OT_Symbol: u8 = 17; // Avagraha, etc that take marks (SM,A,VD).
     pub const OT_CS: u8 = 18;
@@ -205,29 +205,13 @@ const MEDIAL_FLAGS: u32 = category_flag(indic_category_t::OT_CM);
 // consonant syllable logic from the vowel syllable function and get it all right!
 const CONSONANT_FLAGS: u32 = category_flag(indic_category_t::OT_C)
     | category_flag(indic_category_t::OT_CS)
-    | category_flag(indic_category_t::OT_RA)
+    | category_flag(indic_category_t::OT_Ra)
     | MEDIAL_FLAGS
     | category_flag(indic_category_t::OT_V)
     | category_flag(indic_category_t::OT_PLACEHOLDER)
     | category_flag(indic_category_t::OT_DOTTEDCIRCLE);
 const JOINER_FLAGS: u32 =
     category_flag(indic_category_t::OT_ZWJ) | category_flag(indic_category_t::OT_ZWNJ);
-
-// This is a hack for now.  We should move this data into the main Indic table.
-// Or completely remove it and just check in the tables.
-const RA_CHARS: &[u32] = &[
-    0x0930, // Devanagari
-    0x09B0, // Bengali
-    0x09F0, // Bengali
-    0x0A30, // Gurmukhi. No Reph
-    0x0AB0, // Gujarati
-    0x0B30, // Oriya
-    0x0BB0, // Tamil. No Reph
-    0x0C30, // Telugu. Reph formed only with ZWJ
-    0x0CB0, // Kannada
-    0x0D30, // Malayalam. No Reph, Logical Repha
-    0x0DBB, // Sinhala. Reph formed only with ZWJ
-];
 
 #[derive(Clone, Copy, PartialEq)]
 enum BasePosition {
@@ -587,7 +571,7 @@ impl hb_glyph_info_t {
 
     fn set_indic_properties(&mut self) {
         let u = self.glyph_id;
-        let (mut cat, mut pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
+        let (cat, mut pos) = crate::hb::ot_shaper_indic_table::get_categories(u);
 
         // Re-assign position.
 
@@ -597,9 +581,6 @@ impl hb_glyph_info_t {
 
         if (rb_flag_unsafe(cat as u32) & CONSONANT_FLAGS) != 0 {
             pos = indic_position_t::POS_BASE_C;
-            if RA_CHARS.contains(&u) {
-                cat = indic_category_t::OT_RA;
-            }
         } else if cat == indic_category_t::OT_M {
             pos = matra_position_indic(u, pos);
         } else if (rb_flag_unsafe(cat as u32)
@@ -905,7 +886,7 @@ fn initial_reordering_consonant_syllable(
     // Ra+h+ZWJ must behave like Ra+ZWJ+h...
     if buffer.script == Some(script::KANNADA)
         && start + 3 <= end
-        && buffer.info[start].is_one_of(category_flag(indic_category_t::OT_RA))
+        && buffer.info[start].is_one_of(category_flag(indic_category_t::OT_Ra))
         && buffer.info[start + 1].is_one_of(category_flag(indic_category_t::OT_H))
         && buffer.info[start + 2].is_one_of(category_flag(indic_category_t::OT_ZWJ))
     {
@@ -1376,7 +1357,7 @@ fn initial_reordering_consonant_syllable(
         //
         // Test case: U+0924,U+094D,U+0930,U+094d,U+200D,U+0915
         for i in start..base.saturating_sub(1) {
-            if buffer.info[i].indic_category() == indic_category_t::OT_RA
+            if buffer.info[i].indic_category() == indic_category_t::OT_Ra
                 && buffer.info[i + 1].indic_category() == indic_category_t::OT_H
                 && (i + 2 == base
                     || buffer.info[i + 2].indic_category() != indic_category_t::OT_ZWJ)

@@ -79,7 +79,7 @@ impl hb_glyph_info_t {
             0x002D | 0x00A0 | 0x00D7 | 0x2012 | 0x2013 | 0x2014 | 0x2015 | 0x2022 | 0x25CC
             | 0x25FB | 0x25FC | 0x25FD | 0x25FE => cat = myanmar_category_t::GB,
 
-            0x1004 | 0x101B | 0x105A => cat = indic_category_t::OT_RA,
+            0x1004 | 0x101B | 0x105A => cat = indic_category_t::OT_Ra,
 
             0x1032 | 0x1036 => cat = indic_category_t::OT_A,
 
@@ -228,7 +228,7 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     {
         let mut limit = start;
         if start + 3 <= end
-            && buffer.info[start + 0].myanmar_category() == indic_category_t::OT_RA
+            && buffer.info[start + 0].myanmar_category() == indic_category_t::OT_Ra
             && buffer.info[start + 1].myanmar_category() == myanmar_category_t::As
             && buffer.info[start + 2].myanmar_category() == indic_category_t::OT_H
         {

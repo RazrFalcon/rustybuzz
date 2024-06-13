@@ -78,7 +78,7 @@ impl hb_glyph_info_t {
         // These categories are experimentally extracted from what Uniscribe allows.
 
         match u {
-            0x179A => cat = indic_category_t::OT_RA,
+            0x179A => cat = indic_category_t::OT_Ra,
             0x17CC | 0x17C9 | 0x17CA => cat = khmer_category_t::ROBATIC,
             0x17C6 | 0x17CB | 0x17CD | 0x17CE | 0x17CF | 0x17D0 | 0x17D1 => {
                 cat = khmer_category_t::X_GROUP
@@ -247,7 +247,7 @@ fn reorder_consonant_syllable(
         {
             num_coengs += 1;
 
-            if buffer.info[i + 1].indic_category() == indic_category_t::OT_RA {
+            if buffer.info[i + 1].indic_category() == indic_category_t::OT_Ra {
                 for j in 0..2 {
                     buffer.info[i + j].mask |= plan.mask_array[khmer_feature::PREF];
                 }
