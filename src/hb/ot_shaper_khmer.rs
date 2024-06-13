@@ -98,7 +98,7 @@ impl KhmerShapePlan {
 fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // Do this before any lookups have been applied.
     planner.ot_map.add_gsub_pause(Some(setup_syllables));
-    planner.ot_map.add_gsub_pause(Some(reorder));
+    planner.ot_map.add_gsub_pause(Some(reorder_khmer));
 
     // Testing suggests that Uniscribe does NOT pause between basic
     // features.  Test with KhmerUI.ttf and the following three
@@ -137,7 +137,7 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
     }
 }
 
-fn reorder(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn reorder_khmer(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     use super::ot_shaper_khmer_machine::SyllableType;
 
     super::ot_shaper_syllabic::insert_dotted_circles(
@@ -154,13 +154,13 @@ fn reorder(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
-        reorder_syllable(khmer_plan, start, end, buffer);
+        reorder_syllable_khmer(khmer_plan, start, end, buffer);
         start = end;
         end = buffer.next_syllable(start);
     }
 }
 
-fn reorder_syllable(
+fn reorder_syllable_khmer(
     khmer_plan: &KhmerShapePlan,
     start: usize,
     end: usize,

@@ -218,7 +218,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
             .enable_feature(*feature, F_MANUAL_ZWJ | F_PER_SYLLABLE, 1);
     }
 
-    planner.ot_map.add_gsub_pause(Some(reorder));
+    planner.ot_map.add_gsub_pause(Some(reorder_use));
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {
@@ -367,7 +367,7 @@ fn record_rphf(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
     }
 }
 
-fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn reorder_use(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     use super::ot_shaper_use_machine::SyllableType;
 
     crate::hb::ot_shaper_syllabic::insert_dotted_circles(
@@ -382,7 +382,7 @@ fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
-        reorder_syllable(start, end, buffer);
+        reorder_syllable_use(start, end, buffer);
         start = end;
         end = buffer.next_syllable(start);
     }
@@ -412,7 +412,7 @@ const BASE_FLAGS: u64 = category_flag64(category::FABV)
     | category_flag64(category::VMPST)
     | category_flag64(category::VMPRE);
 
-fn reorder_syllable(start: usize, end: usize, buffer: &mut hb_buffer_t) {
+fn reorder_syllable_use(start: usize, end: usize, buffer: &mut hb_buffer_t) {
     use super::ot_shaper_use_machine::SyllableType;
 
     let syllable_type = (buffer.info[start].syllable() & 0x0F) as u32;

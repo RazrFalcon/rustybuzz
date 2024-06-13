@@ -81,7 +81,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
         .ot_map
         .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_PER_SYLLABLE, 1);
 
-    planner.ot_map.add_gsub_pause(Some(reorder));
+    planner.ot_map.add_gsub_pause(Some(reorder_myanmar));
 
     for feature in MYANMAR_FEATURES.iter().take(4) {
         planner.ot_map.enable_feature(*feature, F_MANUAL_ZWJ, 1);
@@ -107,7 +107,7 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
     }
 }
 
-fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn reorder_myanmar(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     use super::ot_shaper_myanmar_machine::SyllableType;
 
     super::ot_shaper_syllabic::insert_dotted_circles(
@@ -122,13 +122,13 @@ fn reorder(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
-        reorder_syllable(start, end, buffer);
+        reorder_syllable_myanmar(start, end, buffer);
         start = end;
         end = buffer.next_syllable(start);
     }
 }
 
-fn reorder_syllable(start: usize, end: usize, buffer: &mut hb_buffer_t) {
+fn reorder_syllable_myanmar(start: usize, end: usize, buffer: &mut hb_buffer_t) {
     use super::ot_shaper_myanmar_machine::SyllableType;
 
     let syllable_type = match buffer.info[start].syllable() & 0x0F {
