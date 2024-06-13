@@ -167,10 +167,7 @@ pub fn hb_ot_shape_complex_categorize(
         | script::MALAYALAM
         | script::ORIYA
         | script::TAMIL
-        | script::TELUGU
-
-        // Unicode-3.0 additions
-        | script::SINHALA => {
+        | script::TELUGU => {
             // If the designer designed the font for the 'DFLT' script,
             // (or we ended up arbitrarily pick 'latn'), use the default shaper.
             // Otherwise, use the specific shaper.
@@ -214,7 +211,7 @@ pub fn hb_ot_shape_complex_categorize(
 
         // Unicode-3.0 additions
         | script::MONGOLIAN
-        // | script::SINHALA
+        | script::SINHALA
 
         // Unicode-3.2 additions
         | script::BUHID

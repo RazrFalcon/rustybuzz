@@ -287,7 +287,7 @@ pub fn find_syllables(buffer: &mut hb_buffer_t) {
                     {
                         _keys = (cs << 1) as i32;
                         _inds = (_use_syllable_machine_index_offsets[(cs) as usize]) as i32;
-                        if ((infos[p.index()].get().use_category() as u8) <= 52) {
+                        if ((infos[p.index()].get().use_category() as u8) <= 53) {
                             {
                                 _ic = (_use_syllable_machine_char_class[((infos[p.index()]
                                     .get()
