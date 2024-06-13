@@ -213,9 +213,7 @@ fn reorder_consonant_syllable(
         // Subscript Type 2 - The COENG + RO characters are reordered to immediately
         // before the base glyph. Then the COENG + RO characters are assigned to have
         // the 'pref' OpenType feature applied to them.
-        if buffer.info[i].indic_category() == ot_category_t::OT_Coeng
-            && num_coengs <= 2
-            && i + 1 < end
+        if buffer.info[i].indic_category() == ot_category_t::OT_H && num_coengs <= 2 && i + 1 < end
         {
             num_coengs += 1;
 

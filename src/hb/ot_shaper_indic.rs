@@ -68,7 +68,6 @@ pub mod ot_category_t {
     pub const OT_VPst: u8 = 23;
 
     /* Khmer. */
-    pub const OT_Coeng: u8 = OT_H;
     pub const OT_Robatic: u8 = 25;
     pub const OT_Xgroup: u8 = 26;
     pub const OT_Ygroup: u8 = 27;

@@ -103,7 +103,7 @@ category_map = {
   'Consonant_Succeeding_Repha'	: 'CM',
   'Consonant_With_Stacker'	: 'CS',
   'Gemination_Mark'		: 'SM', # https://github.com/harfbuzz/harfbuzz/issues/552
-  'Invisible_Stacker'		: 'Coeng',
+  'Invisible_Stacker'		: 'H',
   'Joiner'			: 'ZWJ',
   'Modifying_Letter'		: 'X',
   'Non_Joiner'			: 'ZWNJ',
@@ -448,7 +448,6 @@ print('use super::ot_shaper_indic::ot_position_t::*;')
 # Shorten values
 short = [{
 	"Repha":		'Rf',
-	"Coeng":		'Co',
 	"PLACEHOLDER":		'GB',
 	"DOTTEDCIRCLE":		'DC',
     "VPst":			'VR',

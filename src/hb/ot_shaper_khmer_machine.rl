@@ -24,8 +24,12 @@ use super::buffer::{HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE, hb_buffer_t};
 // IMPORTANT: Before updating any values here, make sure to read the comment in `ot_category_t`.
 %%{
 
+# We use category H for spec category Coeng
+
+
 C    = 1;
 V    = 2;
+H    = 4;
 ZWNJ = 5;
 ZWJ  = 6;
 PLACEHOLDER = 10;
@@ -37,7 +41,6 @@ VBlw = 21;
 VPre = 22;
 VPst = 23;
 
-Coeng   = 4;
 Robatic = 25;
 Xgroup  = 26;
 Ygroup  = 27;
@@ -51,10 +54,10 @@ ygroup = Ygroup*;
 # This grammar was experimentally extracted from what Uniscribe allows.
 
 matra_group = VPre? xgroup VBlw? xgroup (joiner?.VAbv)? xgroup VPst?;
-syllable_tail = xgroup matra_group xgroup (Coeng.c)? ygroup;
+syllable_tail = xgroup matra_group xgroup (H.c)? ygroup;
 
 
-broken_cluster =	(Coeng.cn)* (Coeng | syllable_tail);
+broken_cluster =	(H.cn)* (H | syllable_tail);
 consonant_syllable =	(cn|PLACEHOLDER|DOTTEDCIRCLE) broken_cluster;
 other =			any;
 
