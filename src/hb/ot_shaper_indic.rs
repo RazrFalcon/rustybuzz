@@ -576,14 +576,6 @@ impl hb_glyph_info_t {
 
         if cat == indic_category_t::OT_M {
             pos = matra_position_indic(u, pos);
-        } else if (rb_flag_unsafe(cat as u32)
-            & (category_flag(indic_category_t::OT_SM)
-                | category_flag(indic_category_t::OT_VD)
-                | category_flag(indic_category_t::OT_A)
-                | category_flag(indic_category_t::OT_Symbol)))
-            != 0
-        {
-            pos = indic_position_t::POS_SMVD;
         }
 
         self.set_indic_category(cat);
