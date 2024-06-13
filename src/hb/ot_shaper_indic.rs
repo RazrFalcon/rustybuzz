@@ -92,50 +92,6 @@ pub mod indic_position_t {
 }
 
 #[allow(dead_code)]
-pub mod indic_syllabic_category_t {
-    use super::indic_category_t::*;
-
-    pub const INDIC_SYLLABIC_CATEGORY_OTHER: u8 = OT_X;
-    pub const INDIC_SYLLABIC_CATEGORY_AVAGRAHA: u8 = OT_Symbol;
-    pub const INDIC_SYLLABIC_CATEGORY_BINDU: u8 = OT_SM;
-    pub const INDIC_SYLLABIC_CATEGORY_BRAHMI_JOINING_NUMBER: u8 = OT_PLACEHOLDER; /* Don't care. */
-    pub const INDIC_SYLLABIC_CATEGORY_CANTILLATION_MARK: u8 = OT_A;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT: u8 = OT_C;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_DEAD: u8 = OT_C;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_FINAL: u8 = OT_CM;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_HEAD_LETTER: u8 = OT_C;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_KILLER: u8 = OT_M; /* U+17CD only. */
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_MEDIAL: u8 = OT_CM;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_PLACEHOLDER: u8 = OT_PLACEHOLDER;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_PRECEDING_REPHA: u8 = OT_Repha;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_PREFIXED: u8 = OT_X; /* Don't care. */
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_SUBJOINED: u8 = OT_CM;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_SUCCEEDING_REPHA: u8 = OT_CM;
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_WITH_STACKER: u8 = OT_CS;
-    pub const INDIC_SYLLABIC_CATEGORY_GEMINATION_MARK: u8 = OT_SM; /* https://github.com/harfbuzz/harfbuzz/issues/552 */
-    pub const INDIC_SYLLABIC_CATEGORY_INVISIBLE_STACKER: u8 = OT_Coeng;
-    pub const INDIC_SYLLABIC_CATEGORY_JOINER: u8 = OT_ZWJ;
-    pub const INDIC_SYLLABIC_CATEGORY_MODIFYING_LETTER: u8 = OT_X;
-    pub const INDIC_SYLLABIC_CATEGORY_NON_JOINER: u8 = OT_ZWNJ;
-    pub const INDIC_SYLLABIC_CATEGORY_NUKTA: u8 = OT_N;
-    pub const INDIC_SYLLABIC_CATEGORY_NUMBER: u8 = OT_PLACEHOLDER;
-    pub const INDIC_SYLLABIC_CATEGORY_NUMBER_JOINER: u8 = OT_PLACEHOLDER; /* Don't care. */
-    pub const INDIC_SYLLABIC_CATEGORY_PURE_KILLER: u8 = OT_M; /* Is like a vowel matra. */
-    pub const INDIC_SYLLABIC_CATEGORY_REGISTER_SHIFTER: u8 = OT_RS;
-    pub const INDIC_SYLLABIC_CATEGORY_SYLLABLE_MODIFIER: u8 = OT_SM;
-    pub const INDIC_SYLLABIC_CATEGORY_TONE_LETTER: u8 = OT_X;
-    pub const INDIC_SYLLABIC_CATEGORY_TONE_MARK: u8 = OT_N;
-    pub const INDIC_SYLLABIC_CATEGORY_VIRAMA: u8 = OT_H;
-    pub const INDIC_SYLLABIC_CATEGORY_VISARGA: u8 = OT_SM;
-    pub const INDIC_SYLLABIC_CATEGORY_VOWEL: u8 = OT_V;
-    pub const INDIC_SYLLABIC_CATEGORY_VOWEL_DEPENDENT: u8 = OT_M;
-    pub const INDIC_SYLLABIC_CATEGORY_VOWEL_INDEPENDENT: u8 = OT_V;
-
-    // Not defined in harfbuzz, but needed so that code compiles
-    pub const INDIC_SYLLABIC_CATEGORY_CONSONANT_INITIAL_POSTFIXED: u8 = 255;
-}
-
-#[allow(dead_code)]
 pub mod indic_matra_category_t {
     use super::indic_position_t::*;
 
