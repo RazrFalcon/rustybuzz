@@ -1,12 +1,10 @@
 use ttf_parser::gpos::*;
 use ttf_parser::opentype_layout::LookupIndex;
-use ttf_parser::GlyphId;
-
 use super::buffer::*;
 use super::hb_font_t;
 use super::ot_layout::*;
 use super::ot_layout_common::{lookup_flags, PositioningLookup, PositioningTable};
-use super::ot_layout_gsubgpos::{skipping_iterator_t, Apply, OT::hb_ot_apply_context_t};
+use super::ot_layout_gsubgpos::{Apply, OT::hb_ot_apply_context_t, skipping_iterator_t};
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use crate::Direction;
 
@@ -14,7 +12,7 @@ pub fn position(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buf
     apply_layout_table(plan, face, buffer, face.gpos.as_ref());
 }
 
-trait ValueRecordExt {
+pub(crate) trait ValueRecordExt {
     fn is_empty(&self) -> bool;
     fn apply(&self, ctx: &mut hb_ot_apply_context_t, idx: usize) -> bool;
     fn apply_to_pos(&self, ctx: &mut hb_ot_apply_context_t, pos: &mut GlyphPosition) -> bool;
@@ -104,7 +102,7 @@ impl ValueRecordExt for ValueRecord<'_> {
     }
 }
 
-trait AnchorExt {
+pub(crate) trait AnchorExt {
     fn get(&self, face: &hb_font_t) -> (i32, i32);
 }
 
@@ -142,238 +140,6 @@ impl<'a> LayoutTable for PositioningTable<'a> {
 
     fn get_lookup(&self, index: LookupIndex) -> Option<&Self::Lookup> {
         self.lookups.get(usize::from(index))
-    }
-}
-
-impl LayoutLookup for PositioningLookup<'_> {
-    fn props(&self) -> u32 {
-        self.props
-    }
-
-    fn is_reverse(&self) -> bool {
-        false
-    }
-
-    fn covers(&self, glyph: GlyphId) -> bool {
-        self.coverage.contains(glyph)
-    }
-}
-
-impl Apply for PositioningLookup<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        if self.covers(ctx.buffer.cur(0).as_glyph()) {
-            for subtable in &self.subtables {
-                if subtable.apply(ctx).is_some() {
-                    return Some(());
-                }
-            }
-        }
-
-        None
-    }
-}
-
-impl Apply for SingleAdjustment<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let glyph = ctx.buffer.cur(0).as_glyph();
-        let record = match self {
-            Self::Format1 { coverage, value } => {
-                coverage.get(glyph)?;
-                *value
-            }
-            Self::Format2 { coverage, values } => {
-                let index = coverage.get(glyph)?;
-                values.get(index)?
-            }
-        };
-        record.apply(ctx, ctx.buffer.idx);
-        ctx.buffer.idx += 1;
-        Some(())
-    }
-}
-
-impl Apply for PairAdjustment<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let first_glyph = ctx.buffer.cur(0).as_glyph();
-        let first_glyph_coverage_index = self.coverage().get(first_glyph)?;
-
-        let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, 1, false);
-
-        let mut unsafe_to = 0;
-        if !iter.next(Some(&mut unsafe_to)) {
-            ctx.buffer
-                .unsafe_to_concat(Some(ctx.buffer.idx), Some(unsafe_to));
-            return None;
-        }
-
-        let second_glyph_index = iter.index();
-        let second_glyph = ctx.buffer.info[second_glyph_index].as_glyph();
-
-        let finish = |ctx: &mut hb_ot_apply_context_t, has_record2| {
-            ctx.buffer.idx = second_glyph_index;
-
-            if has_record2 {
-                ctx.buffer.idx += 1;
-            }
-
-            Some(())
-        };
-
-        let boring = |ctx: &mut hb_ot_apply_context_t, has_record2| {
-            ctx.buffer
-                .unsafe_to_concat(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
-            finish(ctx, has_record2)
-        };
-
-        let success = |ctx: &mut hb_ot_apply_context_t, flag1, flag2, has_record2| {
-            if flag1 || flag2 {
-                ctx.buffer
-                    .unsafe_to_break(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
-                finish(ctx, has_record2)
-            } else {
-                boring(ctx, has_record2)
-            }
-        };
-
-        let bail = |ctx: &mut hb_ot_apply_context_t, records: (ValueRecord, ValueRecord)| {
-            let flag1 = records.0.apply(ctx, ctx.buffer.idx);
-            let flag2 = records.1.apply(ctx, second_glyph_index);
-
-            let has_record2 = !records.1.is_empty();
-            success(ctx, flag1, flag2, has_record2)
-        };
-
-        let records = match self {
-            Self::Format1 { sets, .. } => {
-                sets.get(first_glyph_coverage_index)?.get(second_glyph)?
-            }
-            Self::Format2 {
-                classes, matrix, ..
-            } => {
-                let classes = (classes.0.get(first_glyph), classes.1.get(second_glyph));
-
-                let records = match matrix.get(classes) {
-                    Some(v) => v,
-                    None => {
-                        ctx.buffer
-                            .unsafe_to_concat(Some(ctx.buffer.idx), Some(iter.index() + 1));
-                        return None;
-                    }
-                };
-
-                return bail(ctx, records);
-            }
-        };
-
-        bail(ctx, records)
-    }
-}
-
-impl Apply for CursiveAdjustment<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let this = ctx.buffer.cur(0).as_glyph();
-
-        let index_this = self.coverage.get(this)?;
-        let entry_this = self.sets.entry(index_this)?;
-
-        let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, 1, false);
-
-        let mut unsafe_from = 0;
-        if !iter.prev(Some(&mut unsafe_from)) {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
-            return None;
-        }
-
-        let i = iter.index();
-        let prev = ctx.buffer.info[i].as_glyph();
-        let index_prev = self.coverage.get(prev)?;
-        let Some(exit_prev) = self.sets.exit(index_prev) else {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(iter.index()), Some(ctx.buffer.idx + 1));
-            return None;
-        };
-
-        let (exit_x, exit_y) = exit_prev.get(ctx.face);
-        let (entry_x, entry_y) = entry_this.get(ctx.face);
-
-        let direction = ctx.buffer.direction;
-        let j = ctx.buffer.idx;
-        ctx.buffer.unsafe_to_break(Some(i), Some(j));
-
-        let pos = &mut ctx.buffer.pos;
-        match direction {
-            Direction::LeftToRight => {
-                pos[i].x_advance = exit_x + pos[i].x_offset;
-                let d = entry_x + pos[j].x_offset;
-                pos[j].x_advance -= d;
-                pos[j].x_offset -= d;
-            }
-            Direction::RightToLeft => {
-                let d = exit_x + pos[i].x_offset;
-                pos[i].x_advance -= d;
-                pos[i].x_offset -= d;
-                pos[j].x_advance = entry_x + pos[j].x_offset;
-            }
-            Direction::TopToBottom => {
-                pos[i].y_advance = exit_y + pos[i].y_offset;
-                let d = entry_y + pos[j].y_offset;
-                pos[j].y_advance -= d;
-                pos[j].y_offset -= d;
-            }
-            Direction::BottomToTop => {
-                let d = exit_y + pos[i].y_offset;
-                pos[i].y_advance -= d;
-                pos[i].y_offset -= d;
-                pos[j].y_advance = entry_y;
-            }
-            Direction::Invalid => {}
-        }
-
-        // Cross-direction adjustment
-
-        // We attach child to parent (think graph theory and rooted trees whereas
-        // the root stays on baseline and each node aligns itself against its
-        // parent.
-        //
-        // Optimize things for the case of RightToLeft, as that's most common in
-        // Arabic.
-        let mut child = i;
-        let mut parent = j;
-        let mut x_offset = entry_x - exit_x;
-        let mut y_offset = entry_y - exit_y;
-
-        // Low bits are lookup flags, so we want to truncate.
-        if ctx.lookup_props as u16 & lookup_flags::RIGHT_TO_LEFT == 0 {
-            core::mem::swap(&mut child, &mut parent);
-            x_offset = -x_offset;
-            y_offset = -y_offset;
-        }
-
-        // If child was already connected to someone else, walk through its old
-        // chain and reverse the link direction, such that the whole tree of its
-        // previous connection now attaches to new parent.  Watch out for case
-        // where new parent is on the path from old chain...
-        reverse_cursive_minor_offset(pos, child, direction, parent);
-
-        pos[child].set_attach_type(attach_type::CURSIVE);
-        pos[child].set_attach_chain((parent as isize - child as isize) as i16);
-
-        ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
-        if direction.is_horizontal() {
-            pos[child].y_offset = y_offset;
-        } else {
-            pos[child].x_offset = x_offset;
-        }
-
-        // If parent was attached to child, separate them.
-        // https://github.com/harfbuzz/harfbuzz/issues/2469
-        if pos[parent].attach_chain() == -pos[child].attach_chain() {
-            pos[parent].set_attach_chain(0);
-        }
-
-        ctx.buffer.idx += 1;
-        Some(())
     }
 }
 
@@ -667,38 +433,6 @@ impl Apply for PositioningSubtable<'_> {
             Self::ChainContext(t) => t.apply(ctx),
         }
     }
-}
-
-fn reverse_cursive_minor_offset(
-    pos: &mut [GlyphPosition],
-    i: usize,
-    direction: Direction,
-    new_parent: usize,
-) {
-    let chain = pos[i].attach_chain();
-    let attach_type = pos[i].attach_type();
-    if chain == 0 || attach_type & attach_type::CURSIVE == 0 {
-        return;
-    }
-
-    pos[i].set_attach_chain(0);
-
-    // Stop if we see new parent in the chain.
-    let j = (i as isize + isize::from(chain)) as _;
-    if j == new_parent {
-        return;
-    }
-
-    reverse_cursive_minor_offset(pos, j, direction, new_parent);
-
-    if direction.is_horizontal() {
-        pos[j].y_offset = -pos[i].y_offset;
-    } else {
-        pos[j].x_offset = -pos[i].x_offset;
-    }
-
-    pos[j].set_attach_chain(-chain);
-    pos[j].set_attach_type(attach_type);
 }
 
 fn propagate_attachment_offsets(
