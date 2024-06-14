@@ -70,30 +70,30 @@ pub mod category {
     // https://github.com/harfbuzz/harfbuzz/issues/1102
     pub const IS: u8 = 44; // HALANT_OR_VOWEL_MODIFIER
 
-    pub const SK: u8 = 48; // SAKOT
+    pub const Sk: u8 = 48; // SAKOT
 
-    pub const FABV: u8 = 24; // CONS_FINAL_ABOVE
-    pub const FBLW: u8 = 25; // CONS_FINAL_BELOW
-    pub const FPST: u8 = 26; // CONS_FINAL_POST
-    pub const MABV: u8 = 27; // CONS_MED_ABOVE
-    pub const MBLW: u8 = 28; // CONS_MED_BELOW
-    pub const MPST: u8 = 29; // CONS_MED_POST
-    pub const MPRE: u8 = 30; // CONS_MED_PRE
-    pub const CMABV: u8 = 31; // CONS_MOD_ABOVE
-    pub const CMBLW: u8 = 32; // CONS_MOD_BELOW
-    pub const VABV: u8 = 33; // VOWEL_ABOVE / VOWEL_ABOVE_BELOW / VOWEL_ABOVE_BELOW_POST / VOWEL_ABOVE_POST
-    pub const VBLW: u8 = 34; // VOWEL_BELOW / VOWEL_BELOW_POST
-    pub const VPST: u8 = 35; // VOWEL_POST UIPC = Right
-    pub const VPRE: u8 = 22; // VOWEL_PRE / VOWEL_PRE_ABOVE / VOWEL_PRE_ABOVE_POST / VOWEL_PRE_POST
-    pub const VMABV: u8 = 37; // VOWEL_MOD_ABOVE
-    pub const VMBLW: u8 = 38; // VOWEL_MOD_BELOW
-    pub const VMPST: u8 = 39; // VOWEL_MOD_POST
-    pub const VMPRE: u8 = 23; // VOWEL_MOD_PRE
-    pub const SMABV: u8 = 41; // SYM_MOD_ABOVE
-    pub const SMBLW: u8 = 42; // SYM_MOD_BELOW
-    pub const FMABV: u8 = 45; // CONS_FINAL_MOD UIPC = Top
-    pub const FMBLW: u8 = 46; // CONS_FINAL_MOD UIPC = Bottom
-    pub const FMPST: u8 = 47; // CONS_FINAL_MOD UIPC = Not_Applicable
+    pub const FAbv: u8 = 24; // CONS_FINAL_ABOVE
+    pub const FBlw: u8 = 25; // CONS_FINAL_BELOW
+    pub const FPst: u8 = 26; // CONS_FINAL_POST
+    pub const MAbv: u8 = 27; // CONS_MED_ABOVE
+    pub const MBlw: u8 = 28; // CONS_MED_BELOW
+    pub const MPst: u8 = 29; // CONS_MED_POST
+    pub const MPre: u8 = 30; // CONS_MED_PRE
+    pub const CMAbv: u8 = 31; // CONS_MOD_ABOVE
+    pub const CMBlw: u8 = 32; // CONS_MOD_BELOW
+    pub const VAbv: u8 = 33; // VOWEL_ABOVE / VOWEL_ABOVE_BELOW / VOWEL_ABOVE_BELOW_POST / VOWEL_ABOVE_POST
+    pub const VBlw: u8 = 34; // VOWEL_BELOW / VOWEL_BELOW_POST
+    pub const VPst: u8 = 35; // VOWEL_POST UIPC = Right
+    pub const VPre: u8 = 22; // VOWEL_PRE / VOWEL_PRE_ABOVE / VOWEL_PRE_ABOVE_POST / VOWEL_PRE_POST
+    pub const VMAbv: u8 = 37; // VOWEL_MOD_ABOVE
+    pub const VMBlw: u8 = 38; // VOWEL_MOD_BELOW
+    pub const VMPst: u8 = 39; // VOWEL_MOD_POST
+    pub const VMPre: u8 = 23; // VOWEL_MOD_PRE
+    pub const SMAbv: u8 = 41; // SYM_MOD_ABOVE
+    pub const SMBlw: u8 = 42; // SYM_MOD_BELOW
+    pub const FMAbv: u8 = 45; // CONS_FINAL_MOD UIPC = Top
+    pub const FMBlw: u8 = 46; // CONS_FINAL_MOD UIPC = Bottom
+    pub const FMPst: u8 = 47; // CONS_FINAL_MOD UIPC = Not_Applicable
     pub const G: u8 = 49; // HIEROGLYPH
     pub const J: u8 = 50; // HIEROGLYPH_JOINER
     pub const SB: u8 = 51; // HIEROGLYPH_SEGMENT_BEGIN
@@ -400,21 +400,21 @@ const fn category_flag64(c: Category) -> u64 {
     rb_flag64(c as u32)
 }
 
-const BASE_FLAGS: u64 = category_flag64(category::FABV)
-    | category_flag64(category::FBLW)
-    | category_flag64(category::FPST)
-    | category_flag64(category::MABV)
-    | category_flag64(category::MBLW)
-    | category_flag64(category::MPST)
-    | category_flag64(category::MPRE)
-    | category_flag64(category::VABV)
-    | category_flag64(category::VBLW)
-    | category_flag64(category::VPST)
-    | category_flag64(category::VPRE)
-    | category_flag64(category::VMABV)
-    | category_flag64(category::VMBLW)
-    | category_flag64(category::VMPST)
-    | category_flag64(category::VMPRE);
+const BASE_FLAGS: u64 = category_flag64(category::FAbv)
+    | category_flag64(category::FBlw)
+    | category_flag64(category::FPst)
+    | category_flag64(category::MAbv)
+    | category_flag64(category::MBlw)
+    | category_flag64(category::MPst)
+    | category_flag64(category::MPre)
+    | category_flag64(category::VAbv)
+    | category_flag64(category::VBlw)
+    | category_flag64(category::VPst)
+    | category_flag64(category::VPre)
+    | category_flag64(category::VMAbv)
+    | category_flag64(category::VMBlw)
+    | category_flag64(category::VMPst)
+    | category_flag64(category::VMPre);
 
 fn reorder_syllable_use(start: usize, end: usize, buffer: &mut hb_buffer_t) {
     use super::ot_shaper_use_machine::SyllableType;
@@ -469,7 +469,7 @@ fn reorder_syllable_use(start: usize, end: usize, buffer: &mut hb_buffer_t) {
             // If we hit a halant, move after it; otherwise move to the beginning, and
             // shift things in between forward.
             j = i + 1;
-        } else if (flag & (category_flag(category::VPRE) | category_flag(category::VMPRE))) != 0
+        } else if (flag & (category_flag(category::VPre) | category_flag(category::VMPre))) != 0
             && _hb_glyph_info_get_lig_comp(&buffer.info[i]) == 0
             && j < i
         {
@@ -491,7 +491,7 @@ fn record_pref(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) 
         // Mark a substituted pref as VPre, as they behave the same way.
         for i in start..end {
             if _hb_glyph_info_substituted(&buffer.info[i]) {
-                buffer.info[i].set_use_category(category::VPRE);
+                buffer.info[i].set_use_category(category::VPre);
                 break;
             }
         }
@@ -545,6 +545,8 @@ fn setup_masks(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
     // We cannot setup masks here. We save information about characters
     // and setup masks later on in a pause-callback.
     for info in buffer.info_slice_mut() {
-        info.set_use_category(super::ot_shaper_use_table::get_category(info));
+        info.set_use_category(super::ot_shaper_use_table::hb_use_get_category(
+            info.glyph_id,
+        ));
     }
 }
