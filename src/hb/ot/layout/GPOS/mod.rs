@@ -1,4 +1,3 @@
-pub(crate) mod anchor;
 pub(crate) mod cursive_pos;
 pub(crate) mod mark_array;
 pub(crate) mod mark_base_pos;
