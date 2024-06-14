@@ -16,8 +16,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Build
-      run: cargo build --no-default-features
+    - name: Build with only libm
+      run: cargo build --no-default-features --features libm
 
     - name: Build with all features
       run: cargo build --all-features
