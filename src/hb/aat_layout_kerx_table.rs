@@ -290,7 +290,6 @@ fn apply_state_machine_kerning<T, E>(
 }
 
 trait StateTableDriver<Table, E: FromData> {
-    fn is_actionable(&self, entry: apple_layout::GenericStateEntry<E>) -> bool;
     fn transition(
         &mut self,
         aat: &Table,
@@ -308,10 +307,6 @@ struct Driver1 {
 }
 
 impl StateTableDriver<kerx::Subtable1<'_>, kerx::EntryData> for Driver1 {
-    fn is_actionable(&self, entry: apple_layout::GenericStateEntry<kerx::EntryData>) -> bool {
-        entry.is_actionable()
-    }
-
     fn transition(
         &mut self,
         aat: &kerx::Subtable1,
@@ -416,11 +411,6 @@ struct Driver4<'a> {
 }
 
 impl StateTableDriver<kerx::Subtable4<'_>, kerx::EntryData> for Driver4<'_> {
-    // TODO: remove
-    fn is_actionable(&self, entry: apple_layout::GenericStateEntry<kerx::EntryData>) -> bool {
-        entry.is_actionable()
-    }
-
     fn transition(
         &mut self,
         aat: &kerx::Subtable4,

@@ -1,7 +1,7 @@
 # State machines generation using ragel
 
 HarfBuzz uses [ragel](https://github.com/adrian-thurston/ragel) to generate
-state machines for some complex shapers.
+state machines for some shapers.
 The produced C code is rather low-level and relies on `goto` a lot,
 therefore converting it to Rust by hand is rather problematic.
 And this is the code that updates relatively often.

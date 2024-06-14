@@ -3,9 +3,9 @@ use alloc::boxed::Box;
 use super::buffer::*;
 use super::ot_map::*;
 use super::ot_shape::*;
-use super::ot_shape_complex::*;
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::*;
 use super::*;
 use crate::BufferFlags;
 
@@ -15,11 +15,11 @@ const TJMO: u8 = 3;
 
 impl hb_glyph_info_t {
     fn hangul_shaping_feature(&self) -> u8 {
-        self.complex_var_u8_auxiliary()
+        self.ot_shaper_var_u8_auxiliary()
     }
 
     fn set_hangul_shaping_feature(&mut self, feature: u8) {
-        self.set_complex_var_u8_auxiliary(feature)
+        self.set_ot_shaper_var_u8_auxiliary(feature)
     }
 }
 
@@ -362,7 +362,7 @@ fn setup_masks_hangul(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_
     }
 }
 
-pub const HANGUL_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const HANGUL_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: Some(collect_features_hangul),
     override_features: Some(override_features_hangul),
     create_data: Some(|plan| Box::new(data_create_hangul(&plan.ot_map))),

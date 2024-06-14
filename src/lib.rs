@@ -42,6 +42,8 @@ bitflags::bitflags! {
         const VERIFY                        = 1 << 6;
         /// Indicates that the `UNSAFE_TO_CONCAT` glyph-flag should be produced by the shaper. By default it will not be produced since it incurs a cost.
         const PRODUCE_UNSAFE_TO_CONCAT      = 1 << 7;
+        /// All currently defined flags
+        const DEFINED = 0b00111111;
     }
 }
 
@@ -78,5 +80,7 @@ bitflags::bitflags! {
         /// Do not serialize glyph advances, glyph offsets will reflect absolute
         /// glyph positions.
         const NO_ADVANCES       = 0b00100000;
+        /// All currently defined flags.
+        const DEFINED = 0b00111111;
     }
 }

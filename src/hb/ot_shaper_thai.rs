@@ -1,12 +1,12 @@
 use super::buffer::*;
 use super::ot_layout::*;
-use super::ot_shape_complex::*;
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::*;
 use super::unicode::hb_unicode_general_category_t;
 use super::{hb_font_t, script};
 
-pub const THAI_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const THAI_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,
@@ -321,7 +321,7 @@ fn preprocess_text(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_
     // to be what Uniscribe and other engines implement.  According to Eric Muller:
     //
     // When you have a SARA AM, decompose it in NIKHAHIT + SARA AA, *and* move the
-    // NIKHAHIT backwards over any tone mark (0E48-0E4B).
+    // NIKHAHIT backwards over any above-base marks (0E31, 0E34-0E37, 0E47-0E4E).
     //
     // <0E14, 0E4B, 0E33> -> <0E14, 0E4D, 0E4B, 0E32>
     //
@@ -347,8 +347,8 @@ fn preprocess_text(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_
     // Nikhahit:    U+0E4D  U+0ECD
     //
     // Testing shows that Uniscribe reorder the following marks:
-    // Thai:    <0E31,0E34..0E37,0E47..0E4E>
-    // Lao:     <0EB1,0EB4..0EB7,0EC7..0ECE>
+    // Thai:	<0E31,0E34..0E37,0E47..0E4E>
+    // Lao:     <0EB1,0EB4..0EB7,0EBB,0EC8..0ECD>
     //
     // Note how the Lao versions are the same as Thai + 0x80.
 
@@ -367,9 +367,9 @@ fn preprocess_text(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_
         u - 1
     }
     #[inline]
-    fn is_tone_mark(u: u32) -> bool {
+    fn is_above_base_mark(u: u32) -> bool {
         let u = u & !0x0080;
-        matches!(u, 0x0E34..=0x0E37 | 0x0E47..=0x0E4E | 0x0E31..=0x0E31)
+        matches!(u, 0x0E34..=0x0E37 | 0x0E47..=0x0E4E | 0x0E31..=0x0E31 | 0x0E3B..=0x0E3B)
     }
 
     buffer.clear_output();
@@ -398,7 +398,7 @@ fn preprocess_text(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_
 
         // Ok, let's see...
         let mut start = end - 2;
-        while start > 0 && is_tone_mark(buffer.out_info()[start - 1].glyph_id) {
+        while start > 0 && is_above_base_mark(buffer.out_info()[start - 1].glyph_id) {
             start -= 1;
         }
 

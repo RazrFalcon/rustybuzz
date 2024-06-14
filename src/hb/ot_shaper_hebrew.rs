@@ -1,8 +1,8 @@
-use super::ot_shape_complex::*;
 use super::ot_shape_normalize::*;
+use super::ot_shaper::*;
 use super::{hb_tag_t, unicode};
 
-pub const HEBREW_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const HEBREW_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,

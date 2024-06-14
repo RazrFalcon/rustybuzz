@@ -12,7 +12,7 @@
     clippy::never_loop
 )]
 
-use super::buffer::hb_buffer_t;
+use super::buffer::{HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE, hb_buffer_t};
 
 %%{
   machine indic_syllable_machine;
@@ -20,8 +20,10 @@ use super::buffer::hb_buffer_t;
   write data;
 }%%
 
+// IMPORTANT: Before updating any values here, make sure to read the comment in `ot_category_t`.
 %%{
 
+X    = 0;
 C    = 1;
 V    = 2;
 N    = 3;
@@ -30,15 +32,16 @@ ZWNJ = 5;
 ZWJ  = 6;
 M    = 7;
 SM   = 8;
-A    = 10;
-PLACEHOLDER = 11;
-DOTTEDCIRCLE = 12;
-RS    = 13;
-Repha = 15;
-Ra    = 16;
-CM    = 17;
-Symbol= 18;
-CS    = 19;
+A    = 9;
+VD   = 9;
+PLACEHOLDER = 10;
+DOTTEDCIRCLE = 11;
+RS    = 12;
+Repha = 14;
+Ra    = 15;
+CM    = 16;
+Symbol= 17;
+CS    = 18;
 
 c = (C | Ra);			# is_consonant
 n = ((ZWNJ?.RS)? (N.N?)?);	# is_consonant_modifier
@@ -46,10 +49,9 @@ z = ZWJ|ZWNJ;			# is_joiner
 reph = (Ra H | Repha);		# possible reph
 
 cn = c.ZWJ?.n?;
-forced_rakar = ZWJ H ZWJ Ra;
 symbol = Symbol.N?;
-matra_group = z*.M.N?.(H | forced_rakar)?;
-syllable_tail = (z?.SM.SM?.ZWNJ?)? A*;
+matra_group = z*.M.N?.H?;
+syllable_tail = (z?.SM.SM?.ZWNJ?)? (A | VD)*;
 halant_group = (z?.H.(ZWJ.N?)?);
 final_halant_group = halant_group | H.ZWNJ;
 medial_group = CM?;
@@ -69,7 +71,7 @@ main := |*
 	vowel_syllable		=> { found_syllable!(SyllableType::VowelSyllable); };
 	standalone_cluster	=> { found_syllable!(SyllableType::StandaloneCluster); };
 	symbol_cluster		=> { found_syllable!(SyllableType::SymbolCluster); };
-	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); /*buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE;*/ };
+	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
 	other			=> { found_syllable!(SyllableType::NonIndicCluster); };
 *|;
 

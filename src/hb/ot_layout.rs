@@ -42,7 +42,6 @@ pub fn _hb_ot_layout_set_glyph_props(face: &hb_font_t, buffer: &mut hb_buffer_t)
     for info in &mut buffer.info[..len] {
         info.set_glyph_props(face.glyph_props(info.as_glyph()));
         info.set_lig_props(0);
-        info.set_syllable(0);
     }
 }
 

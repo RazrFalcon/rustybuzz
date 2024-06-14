@@ -9,22 +9,22 @@ use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::{hb_font_t, hb_tag_t, script, Direction, Script};
 
 impl hb_glyph_info_t {
-    pub(crate) fn complex_var_u8_category(&self) -> u8 {
+    pub(crate) fn ot_shaper_var_u8_category(&self) -> u8 {
         let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
         v[2]
     }
 
-    pub(crate) fn set_complex_var_u8_category(&mut self, c: u8) {
+    pub(crate) fn set_ot_shaper_var_u8_category(&mut self, c: u8) {
         let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
         v[2] = c;
     }
 
-    pub(crate) fn complex_var_u8_auxiliary(&self) -> u8 {
+    pub(crate) fn ot_shaper_var_u8_auxiliary(&self) -> u8 {
         let v: &[u8; 4] = bytemuck::cast_ref(&self.var2);
         v[3]
     }
 
-    pub(crate) fn set_complex_var_u8_auxiliary(&mut self, c: u8) {
+    pub(crate) fn set_ot_shaper_var_u8_auxiliary(&mut self, c: u8) {
         let v: &mut [u8; 4] = bytemuck::cast_mut(&mut self.var2);
         v[3] = c;
     }
@@ -37,7 +37,7 @@ pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE: u32 = 0;
 pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY: u32 = 1;
 pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE: u32 = 2;
 
-pub const DEFAULT_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const DEFAULT_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,
@@ -53,7 +53,7 @@ pub const DEFAULT_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
     fallback_position: true,
 };
 
-pub struct hb_ot_complex_shaper_t {
+pub struct hb_ot_shaper_t {
     /// Called during `shape_plan()`.
     /// Shapers should use plan.map to add their features and callbacks.
     pub collect_features: Option<fn(&mut hb_ot_shape_planner_t)>,
@@ -106,7 +106,7 @@ pub struct hb_ot_complex_shaper_t {
 
 // Same as default but no mark advance zeroing / fallback positioning.
 // Dumbest shaper ever, basically.
-pub const DUMBER_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const DUMBER_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
     override_features: None,
     create_data: None,
@@ -126,7 +126,7 @@ pub fn hb_ot_shape_complex_categorize(
     script: Script,
     direction: Direction,
     chosen_gsub_script: Option<hb_tag_t>,
-) -> &'static hb_ot_complex_shaper_t {
+) -> &'static hb_ot_shaper_t {
     match script {
         // Unicode-1.1 additions
         script::ARABIC
@@ -142,7 +142,7 @@ pub fn hb_ot_shape_complex_categorize(
             if (chosen_gsub_script != Some(hb_tag_t::default_script()) || script == script::ARABIC)
                 && direction.is_horizontal()
             {
-                &crate::hb::ot_shape_complex_arabic::ARABIC_SHAPER
+                &crate::hb::ot_shaper_arabic::ARABIC_SHAPER
             } else {
                 &DEFAULT_SHAPER
             }
@@ -150,13 +150,13 @@ pub fn hb_ot_shape_complex_categorize(
 
         // Unicode-1.1 additions
         script::THAI
-        | script::LAO => &crate::hb::ot_shape_complex_thai::THAI_SHAPER,
+        | script::LAO => &crate::hb::ot_shaper_thai::THAI_SHAPER,
 
         // Unicode-1.1 additions
-        script::HANGUL => &crate::hb::ot_shape_complex_hangul::HANGUL_SHAPER,
+        script::HANGUL => &crate::hb::ot_shaper_hangul::HANGUL_SHAPER,
 
         // Unicode-1.1 additions
-        script::HEBREW => &crate::hb::ot_shape_complex_hebrew::HEBREW_SHAPER,
+        script::HEBREW => &crate::hb::ot_shaper_hebrew::HEBREW_SHAPER,
 
         // Unicode-1.1 additions
         script::BENGALI
@@ -167,10 +167,7 @@ pub fn hb_ot_shape_complex_categorize(
         | script::MALAYALAM
         | script::ORIYA
         | script::TAMIL
-        | script::TELUGU
-
-        // Unicode-3.0 additions
-        | script::SINHALA => {
+        | script::TELUGU => {
             // If the designer designed the font for the 'DFLT' script,
             // (or we ended up arbitrarily pick 'latn'), use the default shaper.
             // Otherwise, use the specific shaper.
@@ -180,13 +177,13 @@ pub fn hb_ot_shape_complex_categorize(
                chosen_gsub_script == Some(hb_tag_t::from_bytes(b"latn")) {
                 &DEFAULT_SHAPER
             } else if chosen_gsub_script.map_or(false, |tag| tag.to_bytes()[3] == b'3') {
-                &crate::hb::ot_shape_complex_use::UNIVERSAL_SHAPER
+                &crate::hb::ot_shaper_use::UNIVERSAL_SHAPER
             } else {
-                &crate::hb::ot_shape_complex_indic::INDIC_SHAPER
+                &crate::hb::ot_shaper_indic::INDIC_SHAPER
             }
         }
 
-        script::KHMER => &crate::hb::ot_shape_complex_khmer::KHMER_SHAPER,
+        script::KHMER => &crate::hb::ot_shaper_khmer::KHMER_SHAPER,
 
         script::MYANMAR => {
             // If the designer designed the font for the 'DFLT' script,
@@ -202,19 +199,19 @@ pub fn hb_ot_shape_complex_categorize(
             {
                 &DEFAULT_SHAPER
             } else {
-                &crate::hb::ot_shape_complex_myanmar::MYANMAR_SHAPER
+                &crate::hb::ot_shaper_myanmar::MYANMAR_SHAPER
             }
         }
 
         // https://github.com/harfbuzz/harfbuzz/issues/1162
-        script::MYANMAR_ZAWGYI => &crate::hb::ot_shape_complex_myanmar::MYANMAR_ZAWGYI_SHAPER,
+        script::MYANMAR_ZAWGYI => &crate::hb::ot_shaper_myanmar::MYANMAR_ZAWGYI_SHAPER,
 
         // Unicode-2.0 additions
         script::TIBETAN
 
         // Unicode-3.0 additions
         | script::MONGOLIAN
-        // | script::SINHALA
+        | script::SINHALA
 
         // Unicode-3.2 additions
         | script::BUHID
@@ -328,7 +325,7 @@ pub fn hb_ot_shape_complex_categorize(
                chosen_gsub_script == Some(hb_tag_t::from_bytes(b"latn")) {
                 &DEFAULT_SHAPER
             } else {
-                &crate::hb::ot_shape_complex_use::UNIVERSAL_SHAPER
+                &crate::hb::ot_shaper_use::UNIVERSAL_SHAPER
             }
         }
 

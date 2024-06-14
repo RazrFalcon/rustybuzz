@@ -321,7 +321,6 @@ impl GeneralCategoryExt for hb_unicode_general_category_t {
 pub trait CharExt {
     fn script(self) -> Script;
     fn general_category(self) -> hb_unicode_general_category_t;
-    fn combining_class(self) -> CanonicalCombiningClass;
     fn space_fallback(self) -> hb_unicode_funcs_t::space_t;
     fn modified_combining_class(self) -> u8;
     fn mirrored(self) -> Option<char>;
@@ -501,10 +500,6 @@ impl CharExt for char {
         unicode_properties::general_category::UnicodeGeneralCategory::general_category(self)
     }
 
-    fn combining_class(self) -> CanonicalCombiningClass {
-        unicode_ccc::get_canonical_combining_class(self)
-    }
-
     fn space_fallback(self) -> hb_unicode_funcs_t::space_t {
         use hb_unicode_funcs_t::*;
 
@@ -531,20 +526,13 @@ impl CharExt for char {
     }
 
     fn modified_combining_class(self) -> u8 {
-        let mut u = self;
+        let u = self;
 
-        // XXX This hack belongs to the Myanmar shaper.
-        if u == '\u{1037}' {
-            u = '\u{103A}';
-        }
-
-        // XXX This hack belongs to the USE shaper (for Tai Tham):
         // Reorder SAKOT to ensure it comes after any tone marks.
         if u == '\u{1A60}' {
             return 254;
         }
 
-        // XXX This hack belongs to the Tibetan shaper:
         // Reorder PADMA to ensure it comes after any vowel marks.
         if u == '\u{0FC6}' {
             return 254;

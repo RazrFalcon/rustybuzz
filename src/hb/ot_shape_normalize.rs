@@ -2,8 +2,8 @@ use super::buffer::*;
 use super::common::hb_codepoint_t;
 use super::hb_font_t;
 use super::ot_layout::*;
-use super::ot_shape_complex::MAX_COMBINING_MARKS;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::MAX_COMBINING_MARKS;
 use super::unicode::{hb_unicode_funcs_t, CharExt};
 
 pub struct hb_ot_shape_normalize_context_t<'a> {
@@ -58,7 +58,7 @@ pub const HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT: i32 = HB_OT_SHAPE_NORMALIZATIO
 //   - When a font does not support a character but supports its canonical
 //     decomposition, well, use the decomposition.
 //
-//   - The complex shapers can customize the compose and decompose functions to
+//   - The shapers can customize the compose and decompose functions to
 //     offload some of their requirements to the normalizer.  For example, the
 //     Indic shaper may want to disallow recomposing of two matras.
 
@@ -195,7 +195,7 @@ fn handle_variation_selector_cluster(
 ) {
     let face = ctx.face;
 
-    // TODO: Currently if there's a variation-selector we give-up, it's just too hard.
+    // Currently if there's a variation-selector we give-up on normalization, it's just too hard.
     let buffer = &mut ctx.buffer;
     while buffer.idx < end - 1 && buffer.successful {
         if buffer.cur(1).as_char().is_variation_selector() {

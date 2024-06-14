@@ -1,20 +1,18 @@
-use ttf_parser::gpos::*;
-use ttf_parser::opentype_layout::LookupIndex;
-use ttf_parser::GlyphId;
-
 use super::buffer::*;
 use super::hb_font_t;
 use super::ot_layout::*;
-use super::ot_layout_common::{lookup_flags, PositioningLookup, PositioningTable};
-use super::ot_layout_gsubgpos::{skipping_iterator_t, Apply, OT::hb_ot_apply_context_t};
+use super::ot_layout_common::{PositioningLookup, PositioningTable};
+use super::ot_layout_gsubgpos::{Apply, OT::hb_ot_apply_context_t};
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use crate::Direction;
+use ttf_parser::gpos::*;
+use ttf_parser::opentype_layout::LookupIndex;
 
 pub fn position(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     apply_layout_table(plan, face, buffer, face.gpos.as_ref());
 }
 
-trait ValueRecordExt {
+pub(crate) trait ValueRecordExt {
     fn is_empty(&self) -> bool;
     fn apply(&self, ctx: &mut hb_ot_apply_context_t, idx: usize) -> bool;
     fn apply_to_pos(&self, ctx: &mut hb_ot_apply_context_t, pos: &mut GlyphPosition) -> bool;
@@ -104,7 +102,7 @@ impl ValueRecordExt for ValueRecord<'_> {
     }
 }
 
-trait AnchorExt {
+pub(crate) trait AnchorExt {
     fn get(&self, face: &hb_font_t) -> (i32, i32);
 }
 
@@ -145,452 +143,13 @@ impl<'a> LayoutTable for PositioningTable<'a> {
     }
 }
 
-impl LayoutLookup for PositioningLookup<'_> {
-    fn props(&self) -> u32 {
-        self.props
-    }
-
-    fn is_reverse(&self) -> bool {
-        false
-    }
-
-    fn covers(&self, glyph: GlyphId) -> bool {
-        self.coverage.contains(glyph)
-    }
-}
-
-impl Apply for PositioningLookup<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        if self.covers(ctx.buffer.cur(0).as_glyph()) {
-            for subtable in &self.subtables {
-                if subtable.apply(ctx).is_some() {
-                    return Some(());
-                }
-            }
-        }
-
-        None
-    }
-}
-
-impl Apply for SingleAdjustment<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let glyph = ctx.buffer.cur(0).as_glyph();
-        let record = match self {
-            Self::Format1 { coverage, value } => {
-                coverage.get(glyph)?;
-                *value
-            }
-            Self::Format2 { coverage, values } => {
-                let index = coverage.get(glyph)?;
-                values.get(index)?
-            }
-        };
-        record.apply(ctx, ctx.buffer.idx);
-        ctx.buffer.idx += 1;
-        Some(())
-    }
-}
-
-impl Apply for PairAdjustment<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let first_glyph = ctx.buffer.cur(0).as_glyph();
-        let first_glyph_coverage_index = self.coverage().get(first_glyph)?;
-
-        let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, 1, false);
-
-        let mut unsafe_to = 0;
-        if !iter.next(Some(&mut unsafe_to)) {
-            ctx.buffer
-                .unsafe_to_concat(Some(ctx.buffer.idx), Some(unsafe_to));
-            return None;
-        }
-
-        let second_glyph_index = iter.index();
-        let second_glyph = ctx.buffer.info[second_glyph_index].as_glyph();
-
-        let finish = |ctx: &mut hb_ot_apply_context_t, has_record2| {
-            ctx.buffer.idx = second_glyph_index;
-
-            if has_record2 {
-                ctx.buffer.idx += 1;
-            }
-
-            Some(())
-        };
-
-        let boring = |ctx: &mut hb_ot_apply_context_t, has_record2| {
-            ctx.buffer
-                .unsafe_to_concat(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
-            finish(ctx, has_record2)
-        };
-
-        let success = |ctx: &mut hb_ot_apply_context_t, flag1, flag2, has_record2| {
-            if flag1 || flag2 {
-                ctx.buffer
-                    .unsafe_to_break(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
-                finish(ctx, has_record2)
-            } else {
-                boring(ctx, has_record2)
-            }
-        };
-
-        let bail = |ctx: &mut hb_ot_apply_context_t, records: (ValueRecord, ValueRecord)| {
-            let flag1 = records.0.apply(ctx, ctx.buffer.idx);
-            let flag2 = records.1.apply(ctx, second_glyph_index);
-
-            let has_record2 = !records.1.is_empty();
-            success(ctx, flag1, flag2, has_record2)
-        };
-
-        let records = match self {
-            Self::Format1 { sets, .. } => {
-                sets.get(first_glyph_coverage_index)?.get(second_glyph)?
-            }
-            Self::Format2 {
-                classes, matrix, ..
-            } => {
-                let classes = (classes.0.get(first_glyph), classes.1.get(second_glyph));
-
-                let records = match matrix.get(classes) {
-                    Some(v) => v,
-                    None => {
-                        ctx.buffer
-                            .unsafe_to_concat(Some(ctx.buffer.idx), Some(iter.index() + 1));
-                        return None;
-                    }
-                };
-
-                return bail(ctx, records);
-            }
-        };
-
-        bail(ctx, records)
-    }
-}
-
-impl Apply for CursiveAdjustment<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let this = ctx.buffer.cur(0).as_glyph();
-
-        let index_this = self.coverage.get(this)?;
-        let entry_this = self.sets.entry(index_this)?;
-
-        let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, 1, false);
-
-        let mut unsafe_from = 0;
-        if !iter.prev(Some(&mut unsafe_from)) {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
-            return None;
-        }
-
-        let i = iter.index();
-        let prev = ctx.buffer.info[i].as_glyph();
-        let index_prev = self.coverage.get(prev)?;
-        let Some(exit_prev) = self.sets.exit(index_prev) else {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(iter.index()), Some(ctx.buffer.idx + 1));
-            return None;
-        };
-
-        let (exit_x, exit_y) = exit_prev.get(ctx.face);
-        let (entry_x, entry_y) = entry_this.get(ctx.face);
-
-        let direction = ctx.buffer.direction;
-        let j = ctx.buffer.idx;
-        ctx.buffer.unsafe_to_break(Some(i), Some(j));
-
-        let pos = &mut ctx.buffer.pos;
-        match direction {
-            Direction::LeftToRight => {
-                pos[i].x_advance = exit_x + pos[i].x_offset;
-                let d = entry_x + pos[j].x_offset;
-                pos[j].x_advance -= d;
-                pos[j].x_offset -= d;
-            }
-            Direction::RightToLeft => {
-                let d = exit_x + pos[i].x_offset;
-                pos[i].x_advance -= d;
-                pos[i].x_offset -= d;
-                pos[j].x_advance = entry_x + pos[j].x_offset;
-            }
-            Direction::TopToBottom => {
-                pos[i].y_advance = exit_y + pos[i].y_offset;
-                let d = entry_y + pos[j].y_offset;
-                pos[j].y_advance -= d;
-                pos[j].y_offset -= d;
-            }
-            Direction::BottomToTop => {
-                let d = exit_y + pos[i].y_offset;
-                pos[i].y_advance -= d;
-                pos[i].y_offset -= d;
-                pos[j].y_advance = entry_y;
-            }
-            Direction::Invalid => {}
-        }
-
-        // Cross-direction adjustment
-
-        // We attach child to parent (think graph theory and rooted trees whereas
-        // the root stays on baseline and each node aligns itself against its
-        // parent.
-        //
-        // Optimize things for the case of RightToLeft, as that's most common in
-        // Arabic.
-        let mut child = i;
-        let mut parent = j;
-        let mut x_offset = entry_x - exit_x;
-        let mut y_offset = entry_y - exit_y;
-
-        // Low bits are lookup flags, so we want to truncate.
-        if ctx.lookup_props as u16 & lookup_flags::RIGHT_TO_LEFT == 0 {
-            core::mem::swap(&mut child, &mut parent);
-            x_offset = -x_offset;
-            y_offset = -y_offset;
-        }
-
-        // If child was already connected to someone else, walk through its old
-        // chain and reverse the link direction, such that the whole tree of its
-        // previous connection now attaches to new parent.  Watch out for case
-        // where new parent is on the path from old chain...
-        reverse_cursive_minor_offset(pos, child, direction, parent);
-
-        pos[child].set_attach_type(attach_type::CURSIVE);
-        pos[child].set_attach_chain((parent as isize - child as isize) as i16);
-
-        ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
-        if direction.is_horizontal() {
-            pos[child].y_offset = y_offset;
-        } else {
-            pos[child].x_offset = x_offset;
-        }
-
-        // If parent was attached to child, separate them.
-        // https://github.com/harfbuzz/harfbuzz/issues/2469
-        if pos[parent].attach_chain() == -pos[child].attach_chain() {
-            pos[parent].set_attach_chain(0);
-        }
-
-        ctx.buffer.idx += 1;
-        Some(())
-    }
-}
-
-impl Apply for MarkToBaseAdjustment<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let buffer = &ctx.buffer;
-        let mark_glyph = ctx.buffer.cur(0).as_glyph();
-        let mark_index = self.mark_coverage.get(mark_glyph)?;
-
-        // Now we search backwards for a non-mark glyph
-        let mut iter = skipping_iterator_t::new(ctx, buffer.idx, 1, false);
-        iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
-
-        let info = &buffer.info;
-        loop {
-            let mut unsafe_from = 0;
-            if !iter.prev(Some(&mut unsafe_from)) {
-                ctx.buffer
-                    .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
-                return None;
-            }
-
-            // We only want to attach to the first of a MultipleSubst sequence.
-            // https://github.com/harfbuzz/harfbuzz/issues/740
-            // Reject others...
-            // ...but stop if we find a mark in the MultipleSubst sequence:
-            // https://github.com/harfbuzz/harfbuzz/issues/1020
-            let idx = iter.index();
-            if !_hb_glyph_info_multiplied(&info[idx])
-                || _hb_glyph_info_get_lig_comp(&info[idx]) == 0
-                || idx == 0
-                || _hb_glyph_info_is_mark(&info[idx - 1])
-                || _hb_glyph_info_get_lig_id(&info[idx])
-                    != _hb_glyph_info_get_lig_id(&info[idx - 1])
-                || _hb_glyph_info_get_lig_comp(&info[idx])
-                    != _hb_glyph_info_get_lig_comp(&info[idx - 1]) + 1
-            {
-                break;
-            }
-            iter.reject();
-        }
-
-        // Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled
-
-        let iter_idx = iter.index();
-        let base_glyph = info[iter_idx].as_glyph();
-        let Some(base_index) = self.base_coverage.get(base_glyph) else {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
-            return None;
-        };
-
-        self.marks
-            .apply(ctx, self.anchors, mark_index, base_index, iter_idx)
-    }
-}
-
-impl Apply for MarkToLigatureAdjustment<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let buffer = &ctx.buffer;
-        let mark_glyph = ctx.buffer.cur(0).as_glyph();
-        let mark_index = self.mark_coverage.get(mark_glyph)?;
-
-        // Now we search backwards for a non-mark glyph
-        let mut iter = skipping_iterator_t::new(ctx, buffer.idx, 1, false);
-        iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
-
-        let mut unsafe_from = 0;
-        if !iter.prev(Some(&mut unsafe_from)) {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
-            return None;
-        }
-
-        // Checking that matched glyph is actually a ligature by GDEF is too strong; disabled
-
-        let iter_idx = iter.index();
-        let lig_glyph = buffer.info[iter_idx].as_glyph();
-        let Some(lig_index) = self.ligature_coverage.get(lig_glyph) else {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
-            return None;
-        };
-        let lig_attach = self.ligature_array.get(lig_index)?;
-
-        // Find component to attach to
-        let comp_count = lig_attach.rows;
-        if comp_count == 0 {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
-            return None;
-        }
-
-        // We must now check whether the ligature ID of the current mark glyph
-        // is identical to the ligature ID of the found ligature.  If yes, we
-        // can directly use the component index.  If not, we attach the mark
-        // glyph to the last component of the ligature.
-        let lig_id = _hb_glyph_info_get_lig_id(&buffer.info[iter_idx]);
-        let mark_id = _hb_glyph_info_get_lig_id(&buffer.cur(0));
-        let mark_comp = u16::from(_hb_glyph_info_get_lig_comp(buffer.cur(0)));
-        let matches = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
-        let comp_index = if matches {
-            mark_comp.min(comp_count)
-        } else {
-            comp_count
-        } - 1;
-
-        self.marks
-            .apply(ctx, lig_attach, mark_index, comp_index, iter_idx)
-    }
-}
-
-impl Apply for MarkToMarkAdjustment<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        let buffer = &ctx.buffer;
-        let mark1_glyph = ctx.buffer.cur(0).as_glyph();
-        let mark1_index = self.mark1_coverage.get(mark1_glyph)?;
-
-        // Now we search backwards for a suitable mark glyph until a non-mark glyph
-        let mut iter = skipping_iterator_t::new(ctx, buffer.idx, 1, false);
-        iter.set_lookup_props(ctx.lookup_props & !u32::from(lookup_flags::IGNORE_FLAGS));
-
-        let mut unsafe_from = 0;
-        if !iter.prev(Some(&mut unsafe_from)) {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(unsafe_from), Some(ctx.buffer.idx + 1));
-            return None;
-        }
-
-        let iter_idx = iter.index();
-        if !_hb_glyph_info_is_mark(&buffer.info[iter_idx]) {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
-            return None;
-        }
-
-        let id1 = _hb_glyph_info_get_lig_id(buffer.cur(0));
-        let id2 = _hb_glyph_info_get_lig_id(&buffer.info[iter_idx]);
-        let comp1 = _hb_glyph_info_get_lig_comp(buffer.cur(0));
-        let comp2 = _hb_glyph_info_get_lig_comp(&buffer.info[iter_idx]);
-
-        let matches = if id1 == id2 {
-            // Marks belonging to the same base
-            // or marks belonging to the same ligature component.
-            id1 == 0 || comp1 == comp2
-        } else {
-            // If ligature ids don't match, it may be the case that one of the marks
-            // itself is a ligature.  In which case match.
-            (id1 > 0 && comp1 == 0) || (id2 > 0 && comp2 == 0)
-        };
-
-        if !matches {
-            ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
-            return None;
-        }
-
-        let mark2_glyph = buffer.info[iter_idx].as_glyph();
-        let mark2_index = self.mark2_coverage.get(mark2_glyph)?;
-
-        self.marks
-            .apply(ctx, self.mark2_matrix, mark1_index, mark2_index, iter_idx)
-    }
-}
-
-trait MarkArrayExt {
-    fn apply(
-        &self,
-        ctx: &mut hb_ot_apply_context_t,
-        anchors: AnchorMatrix,
-        mark_index: u16,
-        glyph_index: u16,
-        glyph_pos: usize,
-    ) -> Option<()>;
-}
-
-impl MarkArrayExt for MarkArray<'_> {
-    fn apply(
-        &self,
-        ctx: &mut hb_ot_apply_context_t,
-        anchors: AnchorMatrix,
-        mark_index: u16,
-        glyph_index: u16,
-        glyph_pos: usize,
-    ) -> Option<()> {
-        // If this subtable doesn't have an anchor for this base and this class
-        // return `None` such that the subsequent subtables have a chance at it.
-        let (mark_class, mark_anchor) = self.get(mark_index)?;
-        let base_anchor = anchors.get(glyph_index, mark_class)?;
-
-        let (mark_x, mark_y) = mark_anchor.get(ctx.face);
-        let (base_x, base_y) = base_anchor.get(ctx.face);
-
-        ctx.buffer
-            .unsafe_to_break(Some(glyph_pos), Some(ctx.buffer.idx + 1));
-
-        let idx = ctx.buffer.idx;
-        let pos = ctx.buffer.cur_pos_mut();
-        pos.x_offset = base_x - mark_x;
-        pos.y_offset = base_y - mark_y;
-        pos.set_attach_type(attach_type::MARK);
-        pos.set_attach_chain((glyph_pos as isize - idx as isize) as i16);
-
-        ctx.buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
-        ctx.buffer.idx += 1;
-
-        Some(())
-    }
-}
-
 pub mod attach_type {
     pub const MARK: u8 = 1;
     pub const CURSIVE: u8 = 2;
 }
 
 /// Just like TryFrom<N>, but for numeric types not supported by the Rust's std.
-pub trait TryNumFrom<T>: Sized {
+pub(crate) trait TryNumFrom<T>: Sized {
     /// Casts between numeric types.
     fn try_num_from(_: T) -> Option<Self>;
 }
@@ -617,7 +176,7 @@ impl TryNumFrom<f32> for i32 {
     }
 }
 
-trait DeviceExt {
+pub(crate) trait DeviceExt {
     fn get_x_delta(&self, face: &hb_font_t) -> Option<i32>;
     fn get_y_delta(&self, face: &hb_font_t) -> Option<i32>;
 }
@@ -667,38 +226,6 @@ impl Apply for PositioningSubtable<'_> {
             Self::ChainContext(t) => t.apply(ctx),
         }
     }
-}
-
-fn reverse_cursive_minor_offset(
-    pos: &mut [GlyphPosition],
-    i: usize,
-    direction: Direction,
-    new_parent: usize,
-) {
-    let chain = pos[i].attach_chain();
-    let attach_type = pos[i].attach_type();
-    if chain == 0 || attach_type & attach_type::CURSIVE == 0 {
-        return;
-    }
-
-    pos[i].set_attach_chain(0);
-
-    // Stop if we see new parent in the chain.
-    let j = (i as isize + isize::from(chain)) as _;
-    if j == new_parent {
-        return;
-    }
-
-    reverse_cursive_minor_offset(pos, j, direction, new_parent);
-
-    if direction.is_horizontal() {
-        pos[j].y_offset = -pos[i].y_offset;
-    } else {
-        pos[j].x_offset = -pos[i].x_offset;
-    }
-
-    pos[j].set_attach_chain(-chain);
-    pos[j].set_attach_type(attach_type);
 }
 
 fn propagate_attachment_offsets(

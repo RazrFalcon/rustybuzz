@@ -341,6 +341,9 @@ pub struct hb_buffer_t {
     pub script: Option<Script>,
     pub language: Option<Language>,
 
+    /// Shaping failure
+    pub shaping_failed: bool,
+
     /// Allocations successful.
     pub successful: bool,
     /// Whether we have an output buffer going on.
@@ -394,6 +397,7 @@ impl hb_buffer_t {
             direction: Direction::Invalid,
             script: None,
             language: None,
+            shaping_failed: false,
             successful: true,
             have_output: false,
             have_positions: false,
@@ -410,11 +414,6 @@ impl hb_buffer_t {
             ],
             context_len: [0, 0],
         }
-    }
-
-    #[inline]
-    pub fn info_slice(&self) -> &[hb_glyph_info_t] {
-        &self.info[..self.len]
     }
 
     #[inline]
@@ -931,7 +930,9 @@ impl hb_buffer_t {
     pub fn delete_glyph(&mut self) {
         let cluster = self.info[self.idx].cluster;
 
-        if self.idx + 1 < self.len && cluster == self.info[self.idx + 1].cluster {
+        if (self.idx + 1 < self.len && cluster == self.info[self.idx + 1].cluster)
+            || (self.out_len != 0 && cluster == self.out_info()[self.out_len - 1].cluster)
+        {
             // Cluster survives; do nothing.
             self.skip_glyph();
             return;
@@ -1275,6 +1276,7 @@ impl hb_buffer_t {
     // Called around shape()
     pub(crate) fn enter(&mut self) {
         self.serial = 0;
+        self.shaping_failed = false;
         self.scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 
         if let Some(len) = self.len.checked_mul(hb_buffer_t::MAX_LEN_FACTOR) {
@@ -1293,6 +1295,7 @@ impl hb_buffer_t {
         self.max_len = hb_buffer_t::MAX_LEN_DEFAULT;
         self.max_ops = hb_buffer_t::MAX_OPS_DEFAULT;
         self.serial = 0;
+        // Intentionally not resetting shaping_failed, such that it can be inspected.
     }
 
     fn _infos_find_min_cluster(
@@ -1473,12 +1476,13 @@ pub const HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK: u32 = 0x00000004;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT: u32 = 0x00000008;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_CGJ: u32 = 0x00000010;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS: u32 = 0x00000020;
+pub const HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE: u32 = 0x00000040;
 
-/* Reserved for complex shapers' internal use. */
-pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX0: u32 = 0x01000000;
-// pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX1: u32 = 0x02000000;
-// pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX2: u32 = 0x04000000;
-// pub const HB_BUFFER_SCRATCH_FLAG_COMPLEX3: u32 = 0x08000000;
+/* Reserved for shapers' internal use. */
+pub const HB_BUFFER_SCRATCH_FLAG_SHAPER0: u32 = 0x01000000;
+// pub const HB_BUFFER_SCRATCH_FLAG_SHAPER1: u32 = 0x02000000;
+// pub const HB_BUFFER_SCRATCH_FLAG_SHAPER2: u32 = 0x04000000;
+// pub const HB_BUFFER_SCRATCH_FLAG_SHAPER3: u32 = 0x08000000;
 
 /// A buffer that contains an input string ready for shaping.
 pub struct UnicodeBuffer(pub(crate) hb_buffer_t);

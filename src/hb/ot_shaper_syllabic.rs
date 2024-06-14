@@ -1,4 +1,4 @@
-use super::buffer::hb_buffer_t;
+use super::buffer::{hb_buffer_t, HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE};
 use super::{hb_font_t, hb_glyph_info_t};
 use crate::BufferFlags;
 
@@ -17,14 +17,7 @@ pub fn insert_dotted_circles(
         return;
     }
 
-    // Note: This loop is extra overhead, but should not be measurable.
-    // TODO Use a buffer scratch flag to remove the loop.
-    let has_broken_syllables = buffer
-        .info_slice()
-        .iter()
-        .any(|info| info.syllable() & 0x0F == broken_syllable_type);
-
-    if !has_broken_syllables {
+    if (buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE) == 0 {
         return;
     }
 
@@ -37,9 +30,9 @@ pub fn insert_dotted_circles(
         glyph_id: 0x25CC,
         ..hb_glyph_info_t::default()
     };
-    dottedcircle.set_complex_var_u8_category(dottedcircle_category);
+    dottedcircle.set_ot_shaper_var_u8_category(dottedcircle_category);
     if let Some(dottedcircle_position) = dottedcircle_position {
-        dottedcircle.set_complex_var_u8_auxiliary(dottedcircle_position);
+        dottedcircle.set_ot_shaper_var_u8_auxiliary(dottedcircle_position);
     }
     dottedcircle.glyph_id = dottedcircle_glyph;
 
@@ -61,7 +54,7 @@ pub fn insert_dotted_circles(
             if let Some(repha_category) = repha_category {
                 while buffer.idx < buffer.len
                     && last_syllable == buffer.cur(0).syllable()
-                    && buffer.cur(0).complex_var_u8_category() == repha_category
+                    && buffer.cur(0).ot_shaper_var_u8_category() == repha_category
                 {
                     buffer.next_glyph();
                 }

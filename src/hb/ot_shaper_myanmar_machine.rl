@@ -13,7 +13,7 @@
     clippy::never_loop
 )]
 
-use super::buffer::hb_buffer_t;
+use super::buffer::{HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE, hb_buffer_t};
 
 %%{
   machine myanmar_syllable_machine;
@@ -21,34 +21,39 @@ use super::buffer::hb_buffer_t;
   write data;
 }%%
 
+// IMPORTANT: Before updating any values here, make sure to read the comment in `ot_category_t`.
 %%{
 
-A    = 10;
-As   = 18;
+# Spec category D is folded into GB; D0 is not implemented by Uniscribe and as such folded into D
+# Spec category P is folded into GB
+
 C    = 1;
-D    = 32;
-D0   = 20;
-DB   = 3;
-GB   = 11;
-H    = 4;
 IV   = 2;
-MH   = 21;
-ML   = 33;
-MR   = 22;
-MW   = 23;
-MY   = 24;
-PT   = 25;
-V    = 8;
-VAbv = 26;
-VBlw = 27;
-VPre = 28;
-VPst = 29;
-VS   = 30;
-ZWJ  = 6;
+DB   = 3;	# Dot below	     = OT_N
+H    = 4;
 ZWNJ = 5;
-Ra   = 16;
-P    = 31;
-CS   = 19;
+ZWJ  = 6;
+SM    = 8;	# Visarga and Shan tones
+GB   = 10;	# 		     = OT_PLACEHOLDER
+DOTTEDCIRCLE    = 11;
+A    = 9;
+Ra   = 15;
+CS   = 18;
+
+VAbv = 20;
+VBlw = 21;
+VPre = 22;
+VPst = 23;
+
+# 32+ are for Myanmar-specific values
+As   = 32;	# Asat
+MH   = 35;	# Medial Ha
+MR   = 36;	# Medial Ra
+MW   = 37;	# Medial Wa, Shan Wa
+MY   = 38;	# Medial Ya, Mon Na, Mon Ma
+PT   = 39;	# Pwo and other tones
+VS   = 40;	# Variation selectors
+ML   = 41;	# Medial Mon La
 
 j = ZWJ|ZWNJ;			# Joiners
 k = (Ra As H);			# Kinzi
@@ -60,19 +65,17 @@ main_vowel_group = (VPre.VS?)* VAbv* VBlw* A* (DB As?)?;
 post_vowel_group = VPst MH? ML? As* VAbv* A* (DB As?)?;
 pwo_tone_group = PT A* DB? As?;
 
-complex_syllable_tail = As* medial_group main_vowel_group post_vowel_group* pwo_tone_group* V* j?;
+complex_syllable_tail = As* medial_group main_vowel_group post_vowel_group* pwo_tone_group* SM* j?;
 syllable_tail = (H (c|IV).VS?)* (H | complex_syllable_tail);
 
-consonant_syllable =	(k|CS)? (c|IV|D|GB).VS? syllable_tail;
-punctuation_cluster =	P V;
+consonant_syllable =	(k|CS)? (c|IV|GB|DOTTEDCIRCLE).VS? syllable_tail;
 broken_cluster =	k? VS? syllable_tail;
 other =			any;
 
 main := |*
 	consonant_syllable	=> { found_syllable!(SyllableType::ConsonantSyllable); };
 	j			=> { found_syllable!(SyllableType::NonMyanmarCluster); };
-	punctuation_cluster	=> { found_syllable!(SyllableType::PunctuationCluster); };
-	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); };
+	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
 	other			=> { found_syllable!(SyllableType::NonMyanmarCluster); };
 *|;
 
@@ -104,7 +107,7 @@ pub fn find_syllables_myanmar(buffer: &mut hb_buffer_t) {
 
     %%{
         write init;
-        getkey (buffer.info[p].indic_category() as u8);
+        getkey (buffer.info[p].myanmar_category() as u8);
         write exec;
     }%%
 }

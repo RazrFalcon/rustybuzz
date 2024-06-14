@@ -13,7 +13,7 @@
     clippy::never_loop
 )]
 
-use super::buffer::hb_buffer_t;
+use super::buffer::{HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE, hb_buffer_t};
 
 %%{
   machine khmer_syllable_machine;
@@ -21,23 +21,29 @@ use super::buffer::hb_buffer_t;
   write data;
 }%%
 
+// IMPORTANT: Before updating any values here, make sure to read the comment in `ot_category_t`.
 %%{
+
+# We use category H for spec category Coeng
+
 
 C    = 1;
 V    = 2;
+H    = 4;
 ZWNJ = 5;
 ZWJ  = 6;
-PLACEHOLDER = 11;
-DOTTEDCIRCLE = 12;
-Coeng= 14;
-Ra   = 16;
-Robatic = 20;
-Xgroup  = 21;
-Ygroup  = 22;
-VAbv = 26;
-VBlw = 27;
-VPre = 28;
-VPst = 29;
+PLACEHOLDER = 10;
+DOTTEDCIRCLE = 11;
+Ra   = 15;
+
+VAbv = 20;
+VBlw = 21;
+VPre = 22;
+VPst = 23;
+
+Robatic = 25;
+Xgroup  = 26;
+Ygroup  = 27;
 
 c = (C | Ra | V);
 cn = c.((ZWJ|ZWNJ)?.Robatic)?;
@@ -48,16 +54,16 @@ ygroup = Ygroup*;
 # This grammar was experimentally extracted from what Uniscribe allows.
 
 matra_group = VPre? xgroup VBlw? xgroup (joiner?.VAbv)? xgroup VPst?;
-syllable_tail = xgroup matra_group xgroup (Coeng.c)? ygroup;
+syllable_tail = xgroup matra_group xgroup (H.c)? ygroup;
 
 
-broken_cluster =	(Coeng.cn)* (Coeng | syllable_tail);
+broken_cluster =	Robatic? (H.cn)* (H | syllable_tail);
 consonant_syllable =	(cn|PLACEHOLDER|DOTTEDCIRCLE) broken_cluster;
 other =			any;
 
 main := |*
 	consonant_syllable	=> { found_syllable!(SyllableType::ConsonantSyllable); };
-	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); };
+	broken_cluster		=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
 	other			=> { found_syllable!(SyllableType::NonKhmerCluster); };
 *|;
 
@@ -89,7 +95,7 @@ pub fn find_syllables_khmer(buffer: &mut hb_buffer_t) {
 
     %%{
         write init;
-        getkey (buffer.info[p].indic_category() as u8);
+        getkey (buffer.info[p].khmer_category() as u8);
         write exec;
     }%%
 }

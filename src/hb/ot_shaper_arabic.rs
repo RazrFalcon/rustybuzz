@@ -5,14 +5,14 @@ use super::buffer::*;
 use super::ot_layout::*;
 use super::ot_map::*;
 use super::ot_shape::*;
-use super::ot_shape_complex::*;
 use super::ot_shape_normalize::HB_OT_SHAPE_NORMALIZATION_MODE_AUTO;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::*;
 use super::unicode::*;
 use super::{hb_font_t, hb_glyph_info_t, hb_mask_t, hb_tag_t, script, Script};
 
 const HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH: hb_buffer_scratch_flags_t =
-    HB_BUFFER_SCRATCH_FLAG_COMPLEX0;
+    HB_BUFFER_SCRATCH_FLAG_SHAPER0;
 
 // See:
 // https://github.com/harfbuzz/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516
@@ -49,7 +49,7 @@ pub enum hb_arabic_joining_type_t {
 }
 
 fn get_joining_type(u: char, gc: hb_unicode_general_category_t) -> hb_arabic_joining_type_t {
-    let j_type = super::ot_shape_complex_arabic_table::joining_type(u);
+    let j_type = super::ot_shaper_arabic_table::joining_type(u);
     if j_type != hb_arabic_joining_type_t::X {
         return j_type;
     }
@@ -171,11 +171,11 @@ const STATE_TABLE: &[[(u8, u8, u16); 6]] = &[
 
 impl hb_glyph_info_t {
     fn arabic_shaping_action(&self) -> u8 {
-        self.complex_var_u8_auxiliary()
+        self.ot_shaper_var_u8_auxiliary()
     }
 
     fn set_arabic_shaping_action(&mut self, action: u8) {
-        self.set_complex_var_u8_auxiliary(action)
+        self.set_ot_shaper_var_u8_auxiliary(action)
     }
 }
 
@@ -656,7 +656,7 @@ fn reorder_marks_arabic(
     }
 }
 
-pub const ARABIC_SHAPER: hb_ot_complex_shaper_t = hb_ot_complex_shaper_t {
+pub const ARABIC_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: Some(collect_features),
     override_features: None,
     create_data: Some(|plan| Box::new(data_create_arabic(plan))),

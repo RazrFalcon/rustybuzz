@@ -698,6 +698,7 @@ impl core::str::FromStr for Variation {
 pub trait TagExt {
     fn default_script() -> Self;
     fn default_language() -> Self;
+    #[cfg(test)]
     fn to_lowercase(&self) -> Self;
     fn to_uppercase(&self) -> Self;
 }
@@ -714,6 +715,7 @@ impl TagExt for Tag {
     }
 
     /// Converts tag to lowercase.
+    #[cfg(test)]
     #[inline]
     fn to_lowercase(&self) -> Self {
         let b = self.to_bytes();

@@ -3,8 +3,8 @@ use super::buffer::*;
 use super::ot_layout::*;
 use super::ot_layout_gpos_table::GPOS;
 use super::ot_map::*;
-use super::ot_shape_complex::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
+use super::ot_shaper::*;
 use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt};
 use super::*;
 use super::{hb_font_t, hb_tag_t};
@@ -21,7 +21,7 @@ pub struct hb_ot_shape_planner_t<'a> {
     pub apply_morx: bool,
     pub script_zero_marks: bool,
     pub script_fallback_mark_positioning: bool,
-    pub shaper: &'static hb_ot_complex_shaper_t,
+    pub shaper: &'static hb_ot_shaper_t,
 }
 
 impl<'a> hb_ot_shape_planner_t<'a> {
@@ -347,7 +347,7 @@ pub fn shape_internal(ctx: &mut ShapeContext) {
 
 fn substitute_pre(ctx: &mut ShapeContext) {
     hb_ot_substitute_default(ctx);
-    hb_ot_substitute_complex(ctx);
+    hb_ot_substitute_plan(ctx);
 
     if ctx.plan.apply_morx && !ctx.plan.apply_gpos {
         hb_aat_layout_remove_deleted_glyphs(&mut ctx.buffer);
@@ -383,7 +383,7 @@ fn hb_ot_substitute_default(ctx: &mut ShapeContext) {
     map_glyphs_fast(ctx.buffer);
 }
 
-fn hb_ot_substitute_complex(ctx: &mut ShapeContext) {
+fn hb_ot_substitute_plan(ctx: &mut ShapeContext) {
     hb_ot_layout_substitute_start(ctx.face, ctx.buffer);
 
     if ctx.plan.fallback_glyph_classes {
@@ -870,7 +870,7 @@ fn propagate_flags(buffer: &mut hb_buffer_t) {
         foreach_cluster!(buffer, start, end, {
             let mut mask = 0;
             for info in &buffer.info[start..end] {
-                mask |= info.mask * glyph_flag::DEFINED;
+                mask |= info.mask & glyph_flag::DEFINED;
             }
 
             if mask != 0 {

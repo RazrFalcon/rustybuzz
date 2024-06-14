@@ -15,11 +15,11 @@
 
 use core::cell::Cell;
 
-use super::buffer::hb_buffer_t;
+use super::buffer::{hb_buffer_t, HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE};
 use super::hb_glyph_info_t;
 use super::machine_cursor::MachineCursor;
 use super::ot_layout::*;
-use super::ot_shape_complex_use::category;
+use super::ot_shaper_use::category;
 
 %%{
   machine use_syllable_machine;
@@ -52,6 +52,7 @@ G	= 49; # HIEROGLYPH
 J	= 50; # HIEROGLYPH_JOINER
 SB	= 51; # HIEROGLYPH_SEGMENT_BEGIN
 SE	= 52; # HIEROGLYPH_SEGMENT_END
+HVM	= 53; # HALANT_OR_VOWEL_MODIFIER
 
 FAbv	= 24; # CONS_FINAL_ABOVE
 FBlw	= 25; # CONS_FINAL_BELOW
@@ -76,12 +77,12 @@ FMAbv	= 45; # CONS_FINAL_MOD	UIPC = Top
 FMBlw	= 46; # CONS_FINAL_MOD	UIPC = Bottom
 FMPst	= 47; # CONS_FINAL_MOD	UIPC = Not_Applicable
 
-h = H | IS | Sk;
+h = H | HVM | IS | Sk;
 
 consonant_modifiers = CMAbv* CMBlw* ((h B | SUB) CMAbv? CMBlw*)*;
 medial_consonants = MPre? MAbv? MBlw? MPst?;
 dependent_vowels = VPre* VAbv* VBlw* VPst* | H;
-vowel_modifiers = VMPre* VMAbv* VMBlw* VMPst*;
+vowel_modifiers = HVM? VMPre* VMAbv* VMBlw* VMPst*;
 final_consonants = FAbv* FBlw* FPst*;
 final_modifiers = FMAbv* FMBlw* | FMPst?;
 
@@ -142,7 +143,7 @@ main := |*
 	numeral_cluster				=> { found_syllable!(SyllableType::NumeralCluster); };
 	symbol_cluster				=> { found_syllable!(SyllableType::SymbolCluster); };
 	hieroglyph_cluster			=> { found_syllable! (SyllableType::HieroglyphCluster); };
-	broken_cluster				=> { found_syllable!(SyllableType::BrokenCluster); };
+	broken_cluster				=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
 	other					=> { found_syllable!(SyllableType::NonCluster); };
 *|;
 

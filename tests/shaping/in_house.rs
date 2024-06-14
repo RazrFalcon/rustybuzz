@@ -1284,6 +1284,207 @@ fn arabic_normalization_064() {
 }
 
 #[test]
+fn arabic_phags_pa_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A873}\u{A861}",
+            "",
+        ),
+        "uniA873=0+563|\
+         uniA861=1+463"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A861}\u{A873}\u{A861}",
+            "",
+        ),
+        "uniA861=0+463|\
+         uniA873=1+563|\
+         uniA861=2+463"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A85E}\u{A85E}\u{A85E}\u{0020}\u{A85E}",
+            "",
+        ),
+        "uniA85E.ini=0+761|\
+         uniA85E.med=1+536|\
+         uniA85E.fin=2+446|\
+         space=3+260|\
+         uniA85E=4+671"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A85F}\u{A85F}\u{A85F}\u{0020}\u{A85F}",
+            "",
+        ),
+        "uniA85F.ini=0+945|\
+         uniA85F.med=1+558|\
+         uniA85F.fin=2+502|\
+         space=3+260|\
+         uniA85F=4+842"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A860}\u{A860}\u{A860}\u{0020}\u{A860}",
+            "",
+        ),
+        "uniA860.ini=0+820|\
+         uniA860.med=1+510|\
+         uniA860.fin=2+420|\
+         space=3+260|\
+         uniA860=4+730"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A861}\u{A861}\u{A861}\u{0020}\u{A861}",
+            "",
+        ),
+        "uniA861.ini=0+553|\
+         uniA861.med=1+449|\
+         uniA861.fin=2+337|\
+         space=3+260|\
+         uniA861=4+463"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{200D}\u{A861}\u{200D}",
+            "",
+        ),
+        "space=0+0|\
+         uniA861.med=1+449|\
+         space=1+0"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{200D}\u{A861}",
+            "",
+        ),
+        "space=0+0|\
+         uniA861.fin=1+337"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A861}\u{200D}",
+            "",
+        ),
+        "uniA861.ini=0+553|\
+         space=0+0"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A85E}\u{200C}\u{A85F}\u{200C}\u{A860}\u{200C}\u{A861}",
+            "",
+        ),
+        "uniA85E=0+671|\
+         space=1+0|\
+         uniA85F=2+842|\
+         space=3+0|\
+         uniA860=4+730|\
+         space=5+0|\
+         uniA861=6+463"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A849}\u{A85E}",
+            "",
+        ),
+        "uniA849.ini=0+798|\
+         uniA85E.fin=1+446"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A849}\u{A85E}\u{FE00}",
+            "",
+        ),
+        "uniA849.ini=0+798|\
+         uniA85E.mir.fin=1+446"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A86A}\u{A85E}",
+            "",
+        ),
+        "uniA86A.ini=0+798|\
+         uniA85E.mir.fin=1+446"
+    );
+}
+
+#[test]
+fn arabic_phags_pa_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ec404b8524cd56efa5d25524cc8541a0b6604b4f.ttf",
+            "\u{A86A}\u{A85E}\u{FE00}",
+            "",
+        ),
+        "uniA86A.ini.unmir=0+766|\
+         uniA85E.fin=1+446"
+    );
+}
+
+#[test]
 fn arabic_stch_001() {
     assert_eq!(
         shape(
@@ -1891,6 +2092,604 @@ fn hangul_jamo_002() {
 }
 
 #[test]
+fn hebrew_diacritics_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E7}\u{05D5}\u{05DC}",
+            "",
+        ),
+        "lamed=2+901|\
+         vav=1+484|\
+         kof=0+997"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D3}\u{05D5}\u{05D3}\u{05D9}",
+            "",
+        ),
+        "yod=3+454|\
+         dalet=2+879|\
+         vav=1+484|\
+         dalet=0+879"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D4}\u{05E0}\u{05D4}\u{05BE}\u{05D6}\u{05D4}",
+            "",
+        ),
+        "he=5+1071|\
+         zain=4+549|\
+         makaf=3+631|\
+         he=2+1071|\
+         nun=1+614|\
+         he=0+1071"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D1}\u{05D0}",
+            "",
+        ),
+        "alef=1+1048|\
+         bet=0+967"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DE}\u{05D3}\u{05DC}\u{05D2}",
+            "",
+        ),
+        "gimel=3+665|\
+         lamed=2+901|\
+         dalet=1+879|\
+         mem=0+1094"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E2}\u{05DC}\u{05BE}\u{05D4}\u{05D4}\u{05E8}\u{05D9}\u{05DD}",
+            "",
+        ),
+        "finalmem=7+1004|\
+         yod=6+454|\
+         resh=5+883|\
+         he=4+1071|\
+         he=3+1071|\
+         makaf=2+631|\
+         lamed=1+901|\
+         ayin=0+920"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DE}\u{05E7}\u{05E4}\u{05E5}",
+            "",
+        ),
+        "finaltsadi=3+990|\
+         pe=2+912|\
+         kof=1+997|\
+         mem=0+1094"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E2}\u{05DC}\u{05BE}\u{05D4}\u{05D2}\u{05D1}\u{05E2}\u{05D5}\u{05EA}",
+            "",
+        ),
+        "tav=8+1026|\
+         vav=7+484|\
+         ayin=6+920|\
+         bet=5+967|\
+         gimel=4+665|\
+         he=3+1071|\
+         makaf=2+631|\
+         lamed=1+901|\
+         ayin=0+920"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D4}\u{05B2}\u{05D1}\u{05B5}\u{05DC}",
+            "",
+        ),
+        "lamed=4+901|\
+         tsere=2@512,0+0|\
+         bet=2+967|\
+         hatafpatah=0@600,0+0|\
+         he=0+1071"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D4}\u{05B2}\u{05D1}\u{05B8}\u{05DC}\u{05B4}\u{05D9}\u{05DD}",
+            "",
+        ),
+        "finalmem=7+1004|\
+         yod=6+454|\
+         hiriq=4@499,0+0|\
+         lamed=4+901|\
+         qamats=2@512,0+0|\
+         bet=2+967|\
+         hatafpatah=0@600,0+0|\
+         he=0+1071"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B8}\u{05DE}\u{05B7}\u{05E8}",
+            "",
+        ),
+        "resh=4+883|\
+         patah=2@573,0+0|\
+         mem=2+1094|\
+         qamats=0@591,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E7}\u{05B9}\u{05D4}\u{05B6}\u{05DC}\u{05B6}\u{05EA}",
+            "",
+        ),
+        "tav=6+1026|\
+         segol=4@499,0+0|\
+         lamed=4+901|\
+         segol=2@597,0+0|\
+         he=2+1071|\
+         holam=0@482,0+0|\
+         kof=0+997"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DC}\u{05B0}\u{05D4}\u{05B7}\u{05D2}\u{05BC}\u{05B4}\u{05D9}\u{05D3}",
+            "",
+        ),
+        "dalet=8+879|\
+         yod=7+454|\
+         hiriq=4@360,0+0|\
+         gimeldagesh=4+665|\
+         patah=2@597,0+0|\
+         he=2+1071|\
+         sheva=0@499,0+0|\
+         lamed=0+901"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D1}\u{05BC}\u{05B7}\u{05D1}\u{05BC}\u{05B9}\u{05E7}\u{05B6}\u{05E8}",
+            "",
+        ),
+        "resh=8+883|\
+         segol=6@618,0+0|\
+         kof=6+997|\
+         holam=3@422,0+0|\
+         betdagesh=3+967|\
+         patah=0@505,0+0|\
+         betdagesh=0+967"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D7}\u{05B7}\u{05E1}\u{05B0}\u{05D3}\u{05BC}\u{05B6}\u{05DA}\u{05B8}",
+            "",
+        ),
+        "finalkafqamats=7+846|\
+         segol=4@685,0+0|\
+         daleddagesh=4+879|\
+         sheva=2@581,0+0|\
+         samekh=2+1038|\
+         patah=0@594,0+0|\
+         het=0+1065"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_016() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D5}\u{05B6}\u{05D0}\u{05B1}\u{05DE}\u{05D5}\u{05BC}\u{05E0}\u{05B8}\u{05EA}\
+             \u{05B0}\u{05DA}\u{05B8}",
+            "",
+        ),
+        "finalkafqamats=11+846|\
+         sheva=9@587,0+0|\
+         tav=9+1026|\
+         qamats=7@316,0+0|\
+         nun=7+614|\
+         vavdagesh=5+510|\
+         mem=4+1094|\
+         hatafsegol=2@591,0+0|\
+         alef=2+1048|\
+         segol=0@349,0+0|\
+         vav=0+484"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_017() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D1}\u{05BC}\u{05B7}\u{05DC}\u{05BC}\u{05B5}\u{05D9}\u{05DC}\u{05D5}\u{05B9}\
+             \u{05EA}",
+            "",
+        ),
+        "tav=10+1026|\
+         vavholam=8+484|\
+         lamed=7+901|\
+         yod=6+454|\
+         tsere=3@430,0+0|\
+         lameddagesh=3+901|\
+         patah=0@505,0+0|\
+         betdagesh=0+967"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_018() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D9}\u{05B0}\u{05E8}\u{05D5}\u{05BC}\u{05E9}\u{05C1}\u{05B8}\u{05DC}\u{05B7}\
+             \u{05B4}\u{05DD}",
+            "",
+        ),
+        "finalmem=11+1004|\
+         hiriq=8@-97,0+0|\
+         patah=8@499,0+0|\
+         lamed=8+901|\
+         qamats=5@665,0+0|\
+         shinshindot=5+1292|\
+         vavdagesh=3+510|\
+         resh=2+883|\
+         sheva=0@239,0+0|\
+         yod=0+454"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_019() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D9}\u{05B0}\u{05E8}\u{05D5}\u{05BC}\u{05E9}\u{05C1}\u{05B8}\u{05DC}\u{05B8}\
+             \u{05B4}\u{05DD}",
+            "",
+        ),
+        "finalmem=11+1004|\
+         hiriq=8@-97,0+0|\
+         qamats=8@499,0+0|\
+         lamed=8+901|\
+         qamats=5@665,0+0|\
+         shinshindot=5+1292|\
+         vavdagesh=3+510|\
+         resh=2+883|\
+         sheva=0@239,0+0|\
+         yod=0+454"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_020() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D9}\u{05B0}\u{05E8}\u{05D5}\u{05BC}\u{05E9}\u{05C1}\u{05B8}\u{05DC}\u{05B7}\
+             \u{05B0}\u{05DE}\u{05B8}\u{05D4}",
+            "",
+        ),
+        "he=13+1071|\
+         qamats=11@573,0+0|\
+         mem=11+1094|\
+         sheva=8@177,0+0|\
+         patah=8@499,0+0|\
+         lamed=8+901|\
+         qamats=5@665,0+0|\
+         shinshindot=5+1292|\
+         vavdagesh=3+510|\
+         resh=2+883|\
+         sheva=0@239,0+0|\
+         yod=0+454"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_021() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D9}\u{05B0}\u{05E8}\u{05D5}\u{05BC}\u{05E9}\u{05C1}\u{05B8}\u{05DC}\u{05B8}\
+             \u{05B0}\u{05DE}\u{05B8}\u{05D4}",
+            "",
+        ),
+        "he=13+1071|\
+         qamats=11@573,0+0|\
+         mem=11+1094|\
+         sheva=8@176,0+0|\
+         qamats=8@499,0+0|\
+         lamed=8+901|\
+         qamats=5@665,0+0|\
+         shinshindot=5+1292|\
+         vavdagesh=3+510|\
+         resh=2+883|\
+         sheva=0@239,0+0|\
+         yod=0+454"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_022() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E0}\u{05B0}\u{05D1}\u{05BB}\u{05BD}\u{05DB}\u{05B7}\u{05D3}\u{05B0}\u{05E0}\
+             \u{05B6}\u{05D0}\u{05E6}\u{05BC}\u{05B7}\u{05A3}\u{05E8}",
+            "",
+        ),
+        "resh=16+883|\
+         munah=12@203,0+0|\
+         patah=12@588,0+0|\
+         tsadidagesh=12+968|\
+         alef=11+1048|\
+         segol=9@316,0+0|\
+         nun=9+614|\
+         sheva=7@621,0+0|\
+         dalet=7+879|\
+         patah=5@469,0+0|\
+         kaf=5+942|\
+         meteg=2@338,0+0|\
+         qubuts=2@673,0+0|\
+         bet=2+967|\
+         sheva=0@316,0+0|\
+         nun=0+614"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_023() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DE}\u{05B4}\u{05EA}\u{05BC}\u{05B8}\u{0591}\u{034F}\u{05B7}\u{059C}\u{05D7}\
+             \u{05B7}\u{05EA}",
+            "",
+        ),
+        "tav=11+1026|\
+         patah=9@594,0+0|\
+         het=9+1065|\
+         gereshaccent=2+0|\
+         patah=2+0|\
+         space=2+0|\
+         atnah=2@437,0+0|\
+         qamats=2@794,0+0|\
+         tavdagesh=2+1026|\
+         hiriq=0@573,0+0|\
+         mem=0+1094"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_024() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B2}\u{200D}\u{05BD}\u{05AD}\u{05D3}\u{05B7}\u{05D1}\u{05BC}\u{05B0}\
+             \u{05E8}\u{05B8}\u{05D4}",
+            "",
+        ),
+        "he=12+1071|\
+         qamats=10@719,0+0|\
+         resh=10+883|\
+         sheva=7@505,0+0|\
+         betdagesh=7+967|\
+         patah=5@621,0+0|\
+         dalet=5+879|\
+         dehi=0@1063,0+0|\
+         hatafpatah_meteg=0@593,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_025() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D5}\u{05BD}\u{034F}\u{05B7}\u{05D9}\u{05B0}\u{05D4}\u{05B4}\u{05D9}\u{05BE}\
+             \u{05AF}\u{05DB}\u{05B5}\u{05BD}\u{05DF}",
+            "",
+        ),
+        "finalnun=14+459|\
+         meteg=11@311,0+0|\
+         tsere=11@617,0+0|\
+         kaf=11+942|\
+         masoracircle=9@320,0+0|\
+         makaf=9+631|\
+         yod=8+454|\
+         hiriq=6@597,0+0|\
+         he=6+1071|\
+         sheva=4@239,0+0|\
+         yod=4+454|\
+         patah=0+0|\
+         space=0+0|\
+         meteg=0@349,0+0|\
+         vav=0+484"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_026() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05DC}\u{05C5}\u{05C4}\u{05D5}\u{05BC}\u{05DC}\u{05B5}\u{05C5}\u{0597}\u{05C4}\
+             \u{05D0}\u{05C5}\u{05C4}",
+            "",
+        ),
+        "upperdot=10@594,0+0|\
+         lowerdot=10@594,0+0|\
+         alef=10+1048|\
+         upperdot=5@519,0+0|\
+         revia=5@601,0+0|\
+         lowerdot=5@519,0+0|\
+         tsere=5@499,0+0|\
+         lamed=5+901|\
+         vavdagesh=3+510|\
+         upperdot=0@519,0+0|\
+         lowerdot=0@519,0+0|\
+         lamed=0+901"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_027() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B8}\u{05E0}\u{05BC}\u{05B8}\u{05BD}\u{05D4}",
+            "",
+        ),
+        "he=6+1071|\
+         meteg=2@205,0+0|\
+         qamats=2@469,0+0|\
+         nundagesh=2+614|\
+         qamats=0@591,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_028() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B8}\u{05E0}\u{05B8}\u{05BC}\u{05BD}\u{05D4}",
+            "",
+        ),
+        "he=6+1071|\
+         meteg=2@205,0+0|\
+         qamats=2@469,0+0|\
+         nundagesh=2+614|\
+         qamats=0@591,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_029() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05EA}\u{05B7}\u{05E2}\u{05B2}\u{05E9}\u{05B6}\u{05C2}\u{05A6}\u{05D4}",
+            "",
+        ),
+        "he=8+1071|\
+         merkhakefula=4@353,0+0|\
+         segol=4@813,0+0|\
+         shinsindot=4+1292|\
+         hatafpatah=2@435,0+0|\
+         ayin.alt=2+920|\
+         patah=0@587,0+0|\
+         tav=0+1026"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_030() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05E9}\u{05B9}\u{05BD}\u{05C1}\u{05D8}\u{05B0}\u{05E8}\u{05B5}\u{05D9}\u{0599}",
+            "",
+        ),
+        "pashta=8@161,0+0|\
+         yod=8+454|\
+         tsere=6@719,0+0|\
+         resh=6+883|\
+         sheva=4@548,0+0|\
+         tet=4+1015|\
+         meteg=0@665,0+0|\
+         holam=0@362,0+0|\
+         shinshindot=0+1292"
+    );
+}
+
+#[test]
+fn hebrew_diacritics_031() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/b895f8ff06493cc893ec44de380690ca0074edfa.ttf",
+            "\u{05D0}\u{05B2}\u{200D}\u{05BD}\u{05AD}",
+            "",
+        ),
+        "dehi=0@1063,0+0|\
+         hatafpatah_meteg=0@593,0+0|\
+         alef=0+1048"
+    );
+}
+
+#[test]
 fn hyphens_001() {
     assert_eq!(
         shape(
@@ -2131,6 +2930,217 @@ fn indic_joiners_006() {
 }
 
 #[test]
+fn indic_malayalam_dot_reph_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D15}",
+            "",
+        ),
+        "kamlym=0+1038|\
+         rephmlym=0@-363,0+0"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D15}\u{0D4D}\u{0D15}\u{0D4D}\u{0D30}",
+            "",
+        ),
+        "rapostmlym=0+200|\
+         kakamlym=0+1506|\
+         rephmlym=0@-657,0+0"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D28}\u{0D4D}\u{0D28}",
+            "",
+        ),
+        "nanamlym=0+1257|\
+         rephmlym=0@-507,0+0"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D17}\u{0D4D}\u{0D17}\u{0D4D}\u{0D30}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         rapostmlym=0+239|\
+         gagamlym=0+897|\
+         rephmlym=0@-278,0+0|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D17}\u{0D4D}\u{0D30}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         rapostmlym=0+239|\
+         gamlym=0+897|\
+         rephmlym=0@-278,0+0|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D17}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         gamlym=0+897|\
+         rephmlym=0@-278,0+0|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D17}",
+            "",
+        ),
+        "gamlym=0+897|\
+         rephmlym=0@-278,0+0"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D17}\u{0D4D}\u{0D30}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         rapostmlym=0+239|\
+         gagamlym=0+897|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D17}\u{0D4D}\u{0D30}",
+            "",
+        ),
+        "rapostmlym=0+239|\
+         gagamlym=0+897"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D17}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         gagamlym=0+897|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D17}",
+            "",
+        ),
+        "gagamlym=0+897"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D17}\u{0D4D}\u{0D30}\u{0D4B}",
+            "",
+        ),
+        "eevowelsignmlym=0+595|\
+         rapostmlym=0+239|\
+         gamlym=0+897|\
+         aavowelsignmlym=0+504"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D15}\u{0D41}",
+            "",
+        ),
+        "kamlym=0+1038|\
+         rephmlym=0@-363,0+0|\
+         uvowelsignmlym=0+332"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D15}\u{0D4D}\u{0D15}\u{0D41}",
+            "",
+        ),
+        "kakamlym=0+1506|\
+         rephmlym=0@-657,0+0|\
+         uvowelsignmlym=0+332"
+    );
+}
+
+#[test]
+fn indic_malayalam_dot_reph_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/55e2910dbc9ef5dd89f4e146e7e0152169545b6a.ttf",
+            "\u{0D4E}\u{0D1A}\u{0D4D}\u{0D1A}\u{0D4D}",
+            "",
+        ),
+        "cacamlym=0+933|\
+         viramamlym=0+0|\
+         rephmlym=0@-300,0+0"
+    );
+}
+
+#[test]
 fn indic_old_spec_001() {
     assert_eq!(
         shape(
@@ -2280,6 +3290,22 @@ fn indic_special_cases_003() {
         ),
         "gid2=0+1334|\
          gid6=0+358"
+    );
+}
+
+#[test]
+fn indic_special_cases_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/e716f6bd00a108d186b7e9f47b4515565f784f36.ttf",
+            "\u{0C1A}\u{0C3F}\u{0C32}\u{0C4D}\u{0C15}\u{0C42}\u{0C30}\u{0C4D}",
+            "",
+        ),
+        "civoweltelu=0+766|\
+         latelu=2+709|\
+         uuvowelsigntelu=2+661|\
+         kasubscripttelu=2+483|\
+         rahalanttelu=6+593"
     );
 }
 
@@ -5457,6 +6483,32 @@ fn khmer_misc_090() {
 }
 
 #[test]
+fn khmer_misc_091() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/086d83239e8f958391ff6cdd8fda9376a4bd3673.ttf",
+            "\u{17C9}",
+            "",
+        ),
+        "uni25CC=0+655|\
+         uni17C9=0+0"
+    );
+}
+
+#[test]
+fn khmer_misc_092() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/086d83239e8f958391ff6cdd8fda9376a4bd3673.ttf",
+            "\u{17D9}\u{17C9}",
+            "",
+        ),
+        "uni17D9=0+655|\
+         uni17C9=0+0"
+    );
+}
+
+#[test]
 fn language_tags_001() {
     assert_eq!(
         shape(
@@ -7775,6 +8827,756 @@ fn rotation_004() {
             "--no-clusters --no-positions --direction=b",
         ),
         "uniFE40"
+    );
+}
+
+#[test]
+fn sara_am_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E31}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E31=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E34}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E34=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E35}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E35=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E36}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E36=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E37}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E37=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E47}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E47=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E48}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E48=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E49}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E49=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4A}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E4A=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4B}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E4B=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4C}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E4C=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4D}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4E}\u{0E33}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E4E=0+0|\
+         uni0E32=0+500"
+    );
+}
+
+#[test]
+fn sara_am_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E31}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E31=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E34}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E34=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_016() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E35}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E35=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_017() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E36}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E36=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_018() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E37}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E37=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_019() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E47}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E47=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_020() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E48}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E48=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_021() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E49}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E49=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_022() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4A}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4A=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_023() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4B}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4B=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_024() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4C}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4C=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_025() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4D}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4D=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_026() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E01}\u{0E4E}\u{0E4D}\u{0E32}",
+            "",
+        ),
+        "uni0E01=0+500|\
+         uni0E4E=0+0|\
+         uni0E4D=0+0|\
+         uni0E32=3+500"
+    );
+}
+
+#[test]
+fn sara_am_027() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB1}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0EB1=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_028() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB4}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0EB4=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_029() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB5}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0EB5=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_030() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB5}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0EB5=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_031() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB7}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0EB7=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_032() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EBB}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0EBB=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_033() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EC8}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0EC8=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_034() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EC9}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0EC9=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_035() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECA}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0ECA=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_036() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECB}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0ECB=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_037() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECC}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0ECC=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_038() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECD}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
+fn sara_am_040() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB1}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0EB1=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_041() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB4}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0EB4=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_042() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB5}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0EB5=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_043() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB5}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0EB5=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_044() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EB7}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0EB7=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_045() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EBB}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0EBB=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_046() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EC8}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0EC8=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_047() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0EC9}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0EC9=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_048() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECA}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECA=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_049() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECB}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECB=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_050() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECC}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECC=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_051() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECD}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
     );
 }
 
@@ -10112,6 +11914,2436 @@ fn use_indic3_001() {
         ),
         "uni0C95=0+1176|\
          uni0CB0_uni0CCD.blwf=0+275"
+    );
+}
+
+#[test]
+fn use_javanese_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A5}\u{A9BA}",
+            "",
+        ),
+        "taling=0+677|\
+         pa=0+963"
+    );
+}
+
+#[test]
+fn use_javanese_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A99F}\u{A9C0}\u{A9A2}\u{A9BF}",
+            "",
+        ),
+        "da.pas_cakra=0+238|\
+         nna=0+1198"
+    );
+}
+
+#[test]
+fn use_javanese_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A5}\u{A9BA}\u{A9B4}\u{A982}\u{A9A0}\u{A9B8}\u{A992}\u{A9AD}\u{A9C0}",
+            "",
+        ),
+        "taling=0+677|\
+         pa=0+963|\
+         layar.ns=0@-267,10+0|\
+         tarung=0+413|\
+         ta=4+1183|\
+         u.ns=4@-1,0+0|\
+         ga=6+938|\
+         la=7+1194|\
+         pangkon=7+391"
+    );
+}
+
+#[test]
+fn use_javanese_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9CB}",
+            "",
+        ),
+        "uniA9CB=0+439"
+    );
+}
+
+#[test]
+fn use_javanese_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{200B}\u{A9C5}",
+            "",
+        ),
+        "space=0+0|\
+         uniA9C5=1+1981"
+    );
+}
+
+#[test]
+fn use_javanese_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9D1}\u{A9D0}\u{A9C7}",
+            "",
+        ),
+        "oneJV=0+938|\
+         zeroJV=1+605|\
+         uniA9C7=2+269"
+    );
+}
+
+#[test]
+fn use_javanese_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9D2}\u{A9D0}\u{A9D0}\u{A9D4}",
+            "",
+        ),
+        "twoJV=0+977|\
+         zeroJV=1+605|\
+         zeroJV=2+605|\
+         fourJV=3+590"
+    );
+}
+
+#[test]
+fn use_javanese_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9D1}\u{A9D8}\u{A9D8}\u{A9D5}\u{A9C7}",
+            "",
+        ),
+        "oneJV=0+938|\
+         eightJV=1+1027|\
+         eightJV=2+1027|\
+         fiveJV=3+741|\
+         uniA9C7=4+269"
+    );
+}
+
+#[test]
+fn use_javanese_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A5}\u{A9A4}\u{A9B6}\u{A9A0}\u{A9BF}\u{A9C7}",
+            "",
+        ),
+        "pa=0+963|\
+         na=1+989|\
+         i.ns=1@-71,10+0|\
+         ta_cakra=3+1416|\
+         uniA9C7=5+269"
+    );
+}
+
+#[test]
+fn use_javanese_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A98F}\u{A9A0}\u{A9BF}\u{A981}\u{A994}\u{A9A4}\u{A9C0}",
+            "",
+        ),
+        "ka=0+1221|\
+         ta_cakra=1+1416|\
+         cecak.ns=1@-306,10+0|\
+         nga=4+976|\
+         na=5+989|\
+         pangkon=5+391"
+    );
+}
+
+#[test]
+fn use_javanese_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9C5}\u{A9C9}\u{A99F}\u{A9C0}\u{A9A2}\u{A9BF}\u{A9C9}\u{A9C5}",
+            "",
+        ),
+        "uniA9C5=0+1981|\
+         uniA9C9=1+687|\
+         da.pas_cakra=2+238|\
+         nna=2+1198|\
+         uniA9C9=6+687|\
+         uniA9C5=7+1981"
+    );
+}
+
+#[test]
+fn use_javanese_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A5}\u{A9BA}\u{A994}\u{A9BC}\u{A9A0}\u{A9C0}\u{A9A0}\u{A9A4}\u{A9C0}",
+            "",
+        ),
+        "taling=0+677|\
+         pa=0+963|\
+         nga=2+976|\
+         ae.ns=2@-63,10+0|\
+         ta=4+1183|\
+         ta.pas=4@-1,0+0|\
+         na=7+989|\
+         pangkon=7+391"
+    );
+}
+
+#[test]
+fn use_javanese_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A984}\u{A992}\u{A9B8}\u{A9B1}\u{A9C0}\u{A9A0}\u{A9B8}\u{A9B1}\u{A9C0}\u{A9C7}",
+            "",
+        ),
+        "akara=0+1338|\
+         ga=1+1221|\
+         u.ns=1@-283,0+0|\
+         sa=3+1088|\
+         ta.pas.alt=3+0|\
+         u.ns.pas=3+0|\
+         sa=7+1088|\
+         pangkon=7+391|\
+         uniA9C7=9+269"
+    );
+}
+
+#[test]
+fn use_javanese_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9AE}\u{A9B8}\u{A9AD}\u{A9A4}\u{A9C0}\u{A997}\u{A9A4}\u{A9B8}\u{A9AE}\u{A9AB}\
+             \u{A9B6}",
+            "",
+        ),
+        "wa=0+967|\
+         u.ns=0@-1,0+0|\
+         la=2+1194|\
+         na=3+989|\
+         ja.pas=3@200,0+0|\
+         na=6+989|\
+         u.ns=6+0|\
+         wa=8+967|\
+         ra=9+915|\
+         i.ns=9@-62,10+0"
+    );
+}
+
+#[test]
+fn use_javanese_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A0}\u{A9B8}\u{A9AE}\u{A9A4}\u{A9C0}\u{200B}\u{A9AF}\u{A9B6}\u{A98F}\u{A9BA}\
+             \u{A995}\u{A9B6}",
+            "",
+        ),
+        "ta=0+1183|\
+         u.ns=0@-1,0+0|\
+         wa=2+967|\
+         na=3+989|\
+         pangkon=3+391|\
+         space=5+0|\
+         sha=6+938|\
+         i.ns=6@8,10+0|\
+         taling=8+677|\
+         ka=8+1221|\
+         ca=10+1043|\
+         i.ns=10@-1,10+0"
+    );
+}
+
+#[test]
+fn use_javanese_016() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B2}\u{A9B6}\u{A981}\u{200B}\u{A9B1}\u{A9B8}\u{A982}\u{A9AA}\u{200B}\u{A98F}\
+             \u{A9A5}\u{A9B6}\u{A981}\u{A9C7}",
+            "",
+        ),
+        "ha=0+1195|\
+         i.ns_cecak.ns=0@-182,10+0|\
+         space=3+0|\
+         sa=4+1088|\
+         u.ns=4+0|\
+         layar.ns=4@-208,10+0|\
+         ya=7+1383|\
+         space=8+0|\
+         ka=9+1221|\
+         pa=10+963|\
+         i.ns_cecak.ns=10@-170,10+0|\
+         uniA9C7=13+269"
+    );
+}
+
+#[test]
+fn use_javanese_017() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9AF}\u{A9BA}\u{A99F}\u{A9A6}\u{A9A1}\u{A9B6}\u{200B}\u{A9B2}\u{A9B6}\u{A981}\
+             \u{200B}\u{A994}\u{A9AD}\u{A993}\u{A9C8}",
+            "",
+        ),
+        "taling=0+677|\
+         sha=0+938|\
+         nna=2+1198|\
+         pha=3+1027|\
+         tha=4+967|\
+         i.ns=4@-61,10+0|\
+         space=6+0|\
+         ha=7+1195|\
+         i.ns_cecak.ns=7@-182,10+0|\
+         space=10+0|\
+         nga=11+976|\
+         la=12+1194|\
+         gha=13+1258|\
+         uniA9C8=14+470"
+    );
+}
+
+#[test]
+fn use_javanese_018() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B2}\u{A9B8}\u{A9A0}\u{A9AE}\u{A9B6}\u{200B}\u{A9AF}\u{A9B8}\u{A982}\u{A9AA}\
+             \u{200B}\u{A98F}\u{A9A5}\u{A9B6}\u{A981}\u{A9C7}",
+            "",
+        ),
+        "ha=0+1195|\
+         u.ns=0@-1,0+0|\
+         ta=2+1183|\
+         wa=3+967|\
+         i.ns=3@-61,10+0|\
+         space=5+0|\
+         sha=6+938|\
+         u.ns=6+0|\
+         layar.ns=6@-200,10+0|\
+         ya=9+1383|\
+         space=10+0|\
+         ka=11+1221|\
+         pa=12+963|\
+         i.ns_cecak.ns=12@-170,10+0|\
+         uniA9C7=15+269"
+    );
+}
+
+#[test]
+fn use_javanese_019() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A5}\u{A9A9}\u{A9BC}\u{A981}\u{A98F}\u{A9B8}\u{A9A4}\u{A9B6}\u{A9AB}\u{A9BA}\
+             \u{A981}\u{200B}\u{A9A8}\u{A9B8}\u{A9AE}\u{A9A4}\u{A9C8}",
+            "",
+        ),
+        "pa=0+963|\
+         ma=1+970|\
+         ae.ns_cecak.ns=1@-62,10+0|\
+         ka=4+1221|\
+         u.ns=4@-1,0+0|\
+         na=6+989|\
+         i.ns=6@-71,10+0|\
+         taling=8+677|\
+         ra=8+915|\
+         cecak.ns=8@-321,10+0|\
+         space=11+0|\
+         bha=12+879|\
+         u.ns=12@-37,0+0|\
+         wa=14+967|\
+         na=15+989|\
+         uniA9C8=16+470"
+    );
+}
+
+#[test]
+fn use_javanese_020() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A9}\u{A981}\u{A98F}\u{A9BE}\u{200B}\u{A9B2}\u{A9B6}\u{A981}\u{200B}\u{A994}\
+             \u{A9AA}\u{A9B8}\u{A993}\u{A9BE}\u{A98F}\u{A982}\u{A9A1}\u{A9C8}",
+            "",
+        ),
+        "ma=0+970|\
+         cecak.ns=0@-321,10+0|\
+         ka=2+1221|\
+         pengkal=2+376|\
+         space=4+0|\
+         ha=5+1195|\
+         i.ns_cecak.ns=5@-182,10+0|\
+         space=8+0|\
+         nga=9+976|\
+         ya=10+1383|\
+         u.ns=10@-1,0+0|\
+         gha=12+1258|\
+         pengkal=12+376|\
+         ka=14+1221|\
+         layar.ns=14@-250,10+0|\
+         tha=16+967|\
+         uniA9C8=17+470"
+    );
+}
+
+#[test]
+fn use_javanese_021() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A0}\u{A9A4}\u{A9C0}\u{A9A7}\u{A981}\u{A98F}\u{A9B6}\u{A9A0}\u{A9C0}\u{A9B2}\
+             \u{A994}\u{A9B8}\u{A995}\u{A9A5}\u{A9C0}\u{A9A5}\u{A9BC}\u{A9A4}\u{A9C8}",
+            "",
+        ),
+        "ta=0+1183|\
+         na=1+989|\
+         ba.pas=1+0|\
+         cecak.ns=1@-330,10+0|\
+         ka=5+1221|\
+         i.ns=5@-42,10+0|\
+         ta=7+1183|\
+         ha.pas=7+1090|\
+         nga=10+976|\
+         u.ns=10+0|\
+         ca=12+1043|\
+         pa=13+963|\
+         pa.pas=13+830|\
+         ae.ns=13@52,10+0|\
+         na=17+989|\
+         uniA9C8=18+470"
+    );
+}
+
+#[test]
+fn use_javanese_022() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A0}\u{A9B8}\u{A9AE}\u{A9A4}\u{A9C0}\u{200B}\u{A988}\u{A9A4}\u{A9C0}\u{200B}\
+             \u{A995}\u{A9B8}\u{A9A4}\u{A9C0}\u{200B}\u{A9B2}\u{A9BA}\u{A9B4}\u{A98F}\u{A9C0}",
+            "",
+        ),
+        "ta=0+1183|\
+         u.ns=0@-1,0+0|\
+         wa=2+967|\
+         na=3+989|\
+         pangkon=3+391|\
+         space=5+0|\
+         ukara=6+976|\
+         na=7+989|\
+         pangkon=7+391|\
+         space=9+0|\
+         ca=10+1043|\
+         u.ns=10+0|\
+         na=12+989|\
+         pangkon=12+391|\
+         space=14+0|\
+         taling=15+677|\
+         ha=15+1195|\
+         tarung=15+413|\
+         ka=18+1221|\
+         pangkon=18+391"
+    );
+}
+
+#[test]
+fn use_javanese_023() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B2}\u{A9A2}\u{A9B6}\u{A9A4}\u{A9B6}\u{A981}\u{A994}\u{A9BF}\u{A9A0}\u{A9C0}\
+             \u{A98F}\u{A9BF}\u{A9A1}\u{A9BA}\u{A9B4}\u{A9A4}\u{A9C0}\u{A9B2}\u{A997}\u{A9B6}\
+             \u{A9C8}",
+            "",
+        ),
+        "ha=0+1195|\
+         da=1+1063|\
+         i.ns=1@-11,10+0|\
+         na=3+989|\
+         i.ns_cecak.ns=3@-182,10+0|\
+         nga_cakra=6+1221|\
+         ka.pas_cakra=8+253|\
+         ta=8+1183|\
+         taling=12+677|\
+         tha=12+967|\
+         tarung=12+413|\
+         na=15+989|\
+         ha.pas=15+1090|\
+         ja=18+991|\
+         i.ns=18@-24,10+0|\
+         uniA9C8=20+470"
+    );
+}
+
+#[test]
+fn use_javanese_024() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A5}\u{A994}\u{A9BF}\u{A9BA}\u{A983}\u{A9B2}\u{A9B6}\u{A981}\u{A9A9}\u{A9B1}\
+             \u{A9C0}\u{A997}\u{A9B6}\u{A9A2}\u{A9C0}\u{A9B1}\u{A9AD}\u{A9B6}\u{A98F}\u{A9B6}\
+             \u{A9A4}\u{A9C0}",
+            "",
+        ),
+        "pa=0+963|\
+         taling=1+677|\
+         nga_cakra=1+1221|\
+         wignyan=1+353|\
+         ha=5+1195|\
+         i.ns_cecak.ns=5@-182,10+0|\
+         ma=8+970|\
+         sa=9+1088|\
+         ja.pas=9@200,0+0|\
+         i.ns=9@0,10+0|\
+         da=13+1063|\
+         sa.pas=13+830|\
+         la=16+1194|\
+         i.ns=16@-70,10+0|\
+         ka=18+1221|\
+         i.ns=18@-42,10+0|\
+         na=20+989|\
+         pangkon=20+391"
+    );
+}
+
+#[test]
+fn use_javanese_025() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A0}\u{A9BC}\u{A9A4}\u{A9C0}\u{A9A0}\u{A9BD}\u{A9A9}\u{A9C0}\u{A9A5}\u{A9BF}\
+             \u{A9A2}\u{A9B1}\u{A9B6}\u{A983}\u{200B}\u{A992}\u{A9BC}\u{A981}\u{A9B2}\u{A9AD}\
+             \u{A9B6}\u{A9A0}\u{A9C0}",
+            "",
+        ),
+        "ta=0+1183|\
+         ae.ns=0@-44,10+0|\
+         na=2+989|\
+         ta.pas.alt=2+0|\
+         keret.ns.alt=2+0|\
+         ma=6+970|\
+         pa.pas_cakra=6+1074|\
+         da=10+1063|\
+         sa=11+1088|\
+         i.ns=11@0,10+0|\
+         wignyan=11+353|\
+         space=14+0|\
+         ga=15+938|\
+         ae.ns_cecak.ns=15@9,10+0|\
+         ha=18+1195|\
+         la=19+1194|\
+         i.ns=19@-70,10+0|\
+         ta=21+1183|\
+         pangkon=21+391"
+    );
+}
+
+#[test]
+fn use_javanese_026() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B2}\u{A9B6}\u{A981}\u{A98F}\u{A981}\u{200B}\u{A9B2}\u{A981}\u{A992}\u{A9AB}\
+             \u{A9A5}\u{A9C0}\u{200B}\u{A9AB}\u{A9A2}\u{A9BA}\u{A9A4}\u{A9C0}\u{200B}\u{A9AF}\
+             \u{A9B8}\u{A9B0}\u{A9BA}\u{A997}",
+            "",
+        ),
+        "ha=0+1195|\
+         i.ns_cecak.ns=0@-182,10+0|\
+         ka=3+1221|\
+         cecak.ns=3@-301,10+0|\
+         space=5+0|\
+         ha=6+1195|\
+         cecak.ns=6@-330,10+0|\
+         ga=8+938|\
+         ra=9+915|\
+         pa=10+963|\
+         pangkon=10+391|\
+         space=12+0|\
+         ra=13+915|\
+         taling=14+677|\
+         da=14+1063|\
+         na=16+989|\
+         pangkon=16+391|\
+         space=18+0|\
+         sha=19+938|\
+         u.ns=19+0|\
+         taling=21+677|\
+         ssa=21+1012|\
+         ja=23+991"
+    );
+}
+
+#[test]
+fn use_javanese_027() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9AB}\u{A9A2}\u{A9BA}\u{A9A4}\u{A9C0}\u{A9B2}\u{A997}\u{A9B6}\u{A9A9}\u{A9B3}\
+             \u{A9B8}\u{A983}\u{A98F}\u{A9B3}\u{A9A9}\u{A9B3}\u{A9A2}\u{A9C0}\u{200C}\u{A994}\
+             \u{A9A2}\u{A9C0}\u{A9A4}\u{A9A4}\u{A9C0}",
+            "",
+        ),
+        "ra=0+915|\
+         taling=1+677|\
+         da=1+1063|\
+         na=3+989|\
+         ha.pas=3+1090|\
+         ja=6+991|\
+         i.ns=6@-24,10+0|\
+         ma=8+970|\
+         cecaktelu.ns=8@-126,10+0|\
+         u.ns=8@-1,0+0|\
+         wignyan=8+353|\
+         ka=12+1221|\
+         cecaktelu.ns=12@-252,10+0|\
+         ma=14+970|\
+         cecaktelu.ns=14@-126,10+0|\
+         da=16+1063|\
+         pangkon=16+391|\
+         space=18+0|\
+         nga=19+976|\
+         da=20+1063|\
+         na.pas=20@-1,0+0|\
+         na=23+989|\
+         pangkon=23+391"
+    );
+}
+
+#[test]
+fn use_javanese_028() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9AE}\u{A9B8}\u{A9AD}\u{A9A4}\u{A9C0}\u{A997}\u{A9B8}\u{A9A9}\u{A9A2}\u{A9B6}\
+             \u{A9AD}\u{A9AE}\u{A9AD}\u{A9C0}\u{A9A0}\u{A9B2}\u{A9B8}\u{A9A4}\u{A9C0}\u{A997}\
+             \u{A9B6}\u{A9A9}\u{A9C0}\u{A9A9}\u{A9AE}\u{A9AD}\u{A9C0}",
+            "",
+        ),
+        "wa=0+967|\
+         u.ns=0@-1,0+0|\
+         la=2+1194|\
+         na=3+989|\
+         ja.pas.alt=3+0|\
+         u.ns.pas=3+0|\
+         ma=7+970|\
+         da=8+1063|\
+         i.ns=8@-11,10+0|\
+         la=10+1194|\
+         wa=11+967|\
+         la=12+1194|\
+         ta.pas=12+0|\
+         ha=15+1317|\
+         u.ns=15@-123,0+0|\
+         na=17+989|\
+         ja.pas=17@200,0+0|\
+         i.ns=17@-71,10+0|\
+         ma=21+970|\
+         ma.pas=21@-1,0+0|\
+         wa=24+967|\
+         la=25+1194|\
+         pangkon=25+391"
+    );
+}
+
+#[test]
+fn use_javanese_029() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A991}\u{A9AD}\u{A9B6}\u{A9A6}\u{A9A1}\u{A9B8}\u{A9AD}\u{A9C0}\u{A9AD}\u{A983}\
+             \u{200B}\u{A9B2}\u{A9B6}\u{A981}\u{A98F}\u{A981}\u{200B}\u{A997}\u{A9B8}\u{A9A9}\
+             \u{A9BC}\u{A9A4}\u{A9BC}\u{A981}\u{200B}\u{A98F}\u{A9A5}\u{A9B6}\u{A981}",
+            "",
+        ),
+        "kha=0+1289|\
+         la=1+1194|\
+         i.ns=1@-70,10+0|\
+         pha=3+1027|\
+         tha=4+967|\
+         u.ns=4@-1,0+0|\
+         la=6+1194|\
+         la.pas=6@-278,0+0|\
+         wignyan=6+353|\
+         space=10+0|\
+         ha=11+1195|\
+         i.ns_cecak.ns=11@-182,10+0|\
+         ka=14+1221|\
+         cecak.ns=14@-301,10+0|\
+         space=16+0|\
+         ja=17+991|\
+         u.ns=17@-4,0+0|\
+         ma=19+970|\
+         ae.ns=19@-59,10+0|\
+         na=21+989|\
+         ae.ns_cecak.ns=21@-71,10+0|\
+         space=24+0|\
+         ka=25+1221|\
+         pa=26+963|\
+         i.ns_cecak.ns=26@-170,10+0"
+    );
+}
+
+#[test]
+fn use_javanese_030() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A0}\u{A9A4}\u{A9C0}\u{A99D}\u{A9B6}\u{A981}\u{A994}\u{A9A4}\u{A9C0}\u{A9A4}\
+             \u{A9B6}\u{A9A5}\u{A9B8}\u{A9A4}\u{A9C0}\u{A9B1}\u{A9AE}\u{A9B8}\u{A981}\u{200B}\
+             \u{A9A7}\u{A9AD}\u{A9C0}\u{A9A7}\u{A9AD}\u{A9C0}\u{A9AD}\u{A9A4}\u{A9C0}\u{A9C8}",
+            "",
+        ),
+        "ta=0+1183|\
+         na=1+989|\
+         dda.pas=1+0|\
+         i.ns_cecak.ns=1@-182,10+0|\
+         nga=6+976|\
+         na=7+989|\
+         na.pas=7+0|\
+         i.ns=7@-71,10+0|\
+         pa=11+963|\
+         u.ns=11+0|\
+         na=13+989|\
+         sa.pas=13+830|\
+         wa=16+967|\
+         u.ns=16@-1,0+0|\
+         cecak.ns=16@-320,10+0|\
+         space=19+0|\
+         ba=20+1207|\
+         la=21+1194|\
+         ba.pas=21+0|\
+         la=24+1194|\
+         la.pas=24@-278,0+0|\
+         na=27+989|\
+         pangkon=27+391|\
+         uniA9C8=29+470"
+    );
+}
+
+#[test]
+fn use_javanese_031() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A9}\u{A9B6}\u{A9A4}\u{A9BA}\u{A9B4}\u{A981}\u{A98F}\u{200B}\u{A9A5}\u{A9BA}\
+             \u{A994}\u{A9BC}\u{A9A0}\u{A9C0}\u{A9A0}\u{A9A4}\u{A9C0}\u{A997}\u{A9B8}\u{A9A9}\
+             \u{A9BC}\u{A9A4}\u{A9BC}\u{A981}\u{200B}\u{A9A2}\u{A98A}\u{A9A9}\u{A9C0}\u{A99F}\
+             \u{A9A1}\u{A9C8}",
+            "",
+        ),
+        "ma=0+970|\
+         i.ns=0@-62,10+0|\
+         taling=2+677|\
+         na=2+989|\
+         cecak.ns=2@-330,10+0|\
+         tarung=2+413|\
+         ka=6+1221|\
+         space=7+0|\
+         taling=8+677|\
+         pa=8+963|\
+         nga=10+976|\
+         ae.ns=10@-63,10+0|\
+         ta=12+1344|\
+         ta.pas=12@-162,0+0|\
+         na=15+989|\
+         ja.pas.alt=15+0|\
+         u.ns.pas=15+0|\
+         ma=19+970|\
+         ae.ns=19@-59,10+0|\
+         na=21+989|\
+         ae.ns_cecak.ns=21@-71,10+0|\
+         space=24+0|\
+         da=25+1063|\
+         ngalelet=26+1294|\
+         ma=27+970|\
+         nna.pas=27@-1,0+0|\
+         tha=30+967|\
+         uniA9C8=31+470"
+    );
+}
+
+#[test]
+fn use_javanese_032() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A98F}\u{A991}\u{A992}\u{A993}\u{A994}\u{A995}\u{A996}\u{A997}\u{A999}\u{A99A}\
+             \u{A99B}\u{A99C}\u{A99D}\u{A99E}\u{A99F}\u{A9A0}\u{A9A1}\u{A9A2}\u{A9A3}\u{A9A4}\
+             \u{A9A5}\u{A9A6}\u{A9A7}\u{A9A8}\u{A9A9}\u{A9AA}\u{A9AB}\u{A9AD}\u{A9AE}\u{A9AF}\
+             \u{A9B0}\u{A9B1}\u{A9B2}",
+            "",
+        ),
+        "ka=0+1221|\
+         kha=1+1289|\
+         ga=2+938|\
+         gha=3+1258|\
+         nga=4+976|\
+         ca=5+1043|\
+         cha=6+1479|\
+         ja=7+991|\
+         jha=8+1159|\
+         nya=9+1439|\
+         tta=10+976|\
+         ttha=11+976|\
+         dda=12+1071|\
+         ddha=13+841|\
+         nna=14+1198|\
+         ta=15+1183|\
+         tha=16+967|\
+         da=17+1063|\
+         dha=18+1027|\
+         na=19+989|\
+         pa=20+963|\
+         pha=21+1027|\
+         ba=22+1207|\
+         bha=23+879|\
+         ma=24+970|\
+         ya=25+1383|\
+         ra=26+915|\
+         la=27+1194|\
+         wa=28+967|\
+         sha=29+938|\
+         ssa=30+1012|\
+         sa=31+1088|\
+         ha=32+1195"
+    );
+}
+
+#[test]
+fn use_javanese_033() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A2}\u{A9BA}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9B6}\u{A981}\u{200B}\u{A9AB}\u{A9A2}\
+             \u{A9BA}\u{A9A4}\u{A9C0}\u{A994}\u{A9A4}\u{A9C0}\u{A9A0}\u{A9BA}\u{A9A4}\u{A9C0}\
+             \u{A9A1}\u{A9B8}\u{A9A9}\u{A9BC}\u{A981}\u{A992}\u{A9B8}\u{A981}\u{200B}\u{A9A6}\
+             \u{A9BF}\u{A9AE}\u{A9B6}\u{A9AB}\u{A9A2}\u{A9B6}\u{A982}\u{A997}\u{A9C9}",
+            "",
+        ),
+        "taling=0+677|\
+         da=0+1063|\
+         na=2+989|\
+         na.pas=2+0|\
+         i.ns_cecak.ns=2@-182,10+0|\
+         space=7+0|\
+         ra=8+915|\
+         taling=9+677|\
+         da=9+1063|\
+         na=11+989|\
+         nga.pas=11+0|\
+         taling=14+677|\
+         na=14+989|\
+         ta.pas=14+0|\
+         na=18+989|\
+         tha.pas.alt=18+0|\
+         u.ns.pas=18@225,0+0|\
+         ma=22+970|\
+         ae.ns_cecak.ns=22@-62,10+0|\
+         ga=25+1060|\
+         u.ns=25@-122,0+0|\
+         cecak.ns=25@-372,10+0|\
+         space=28+0|\
+         pha_cakra=29+1318|\
+         wa=31+967|\
+         i.ns=31@-61,10+0|\
+         ra=33+915|\
+         da=34+1063|\
+         i.ns_layar.ns=34@-122,10+0|\
+         ja=37+991|\
+         uniA9C9=38+687"
+    );
+}
+
+#[test]
+fn use_javanese_034() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B2}\u{A9B6}\u{A981}\u{A9A9}\u{A9A1}\u{A9AB}\u{A9A9}\u{A9C0}\u{A9A2}\u{A9B8}\
+             \u{A98F}\u{A9C0}\u{A9AB}\u{A9B8}\u{A9A9}\u{A9B8}\u{A9B2}\u{A9B8}\u{A9A4}\u{A9C0}\
+             \u{200B}\u{A9A0}\u{A9BC}\u{A98A}\u{A981}\u{A994}\u{A9B6}\u{A981}\u{200B}\u{A98F}\
+             \u{A9AB}\u{A9A1}\u{A9BA}\u{A9B4}\u{A9A4}\u{A9C0}\u{A997}\u{A9AE}\u{A9B6}\u{A9C8}",
+            "",
+        ),
+        "ha=0+1195|\
+         i.ns_cecak.ns=0@-182,10+0|\
+         ma=3+970|\
+         tha=4+967|\
+         ra=5+915|\
+         ma=6+970|\
+         da.pas_u.ns=6@-1,0+0|\
+         ka=10+1221|\
+         ra.pas=10@-1,0+0|\
+         u.ns.pas=10@-1,0+0|\
+         ma=14+970|\
+         u.ns=14@-1,0+0|\
+         ha=16+1195|\
+         u.ns=16@-1,0+0|\
+         na=18+989|\
+         pangkon=18+391|\
+         space=20+0|\
+         ta=21+1183|\
+         ae.ns=21@-44,10+0|\
+         ngalelet=23+977|\
+         cecak.ns=23@-324,10+0|\
+         nga=25+976|\
+         i.ns_cecak.ns=25@-177,10+0|\
+         space=28+0|\
+         ka=29+1221|\
+         ra=30+915|\
+         taling=31+677|\
+         tha=31+967|\
+         tarung=31+413|\
+         na=34+989|\
+         ja.pas=34@200,0+0|\
+         wa=37+967|\
+         i.ns=37@-61,10+0|\
+         uniA9C8=39+470"
+    );
+}
+
+#[test]
+fn use_javanese_035() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9AE}\u{A9BC}\u{A99D}\u{A9B6}\u{200B}\u{A992}\u{A9A9}\u{A9C0}\u{A9A5}\u{A9B6}\
+             \u{A981}\u{200B}\u{A98F}\u{A997}\u{A9BC}\u{A981}\u{200B}\u{A9AD}\u{A9A4}\u{A9C0}\
+             \u{A9B1}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9BA}\u{A9B1}\u{A9C0}\u{A9B1}\u{A9A4}\u{A9C0}\
+             \u{A9A4}\u{A9BA}\u{A9B1}\u{A9C0}\u{A9B1}\u{A9B6}\u{A9A5}\u{A9B8}\u{A9A4}\u{A9C0}\
+             \u{200B}",
+            "",
+        ),
+        "wa=0+967|\
+         ae.ns=0@-58,10+0|\
+         dda=2+1071|\
+         i.ns=2@9,10+0|\
+         space=4+0|\
+         ga=5+938|\
+         ma=6+970|\
+         pa.pas=6+830|\
+         i.ns_cecak.ns=6@-62,10+0|\
+         space=11+0|\
+         ka=12+1221|\
+         ja=13+991|\
+         ae.ns_cecak.ns=13@-24,10+0|\
+         space=16+0|\
+         la=17+1194|\
+         na=18+989|\
+         sa.pas=18+830|\
+         taling=21+677|\
+         na=21+989|\
+         na.pas=21+0|\
+         sa=25+1088|\
+         sa.pas=25+830|\
+         taling=28+677|\
+         na=28+989|\
+         na.pas=28+0|\
+         sa=32+1088|\
+         sa.pas=32+830|\
+         i.ns=32@49,10+0|\
+         pa=36+963|\
+         u.ns=36+0|\
+         na=38+989|\
+         pangkon=38+391|\
+         space=40+0"
+    );
+}
+
+#[test]
+fn use_javanese_036() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A9}\u{A9BA}\u{A9B4}\u{A981}\u{A98F}\u{200B}\u{A9B1}\u{A9AB}\u{A9AE}\u{A9BA}\
+             \u{A9A2}\u{A9B6}\u{A9A4}\u{A9B6}\u{A981}\u{A9AB}\u{A9A0}\u{A9C0}\u{200B}\u{A9A2}\
+             \u{A9BA}\u{A9AB}\u{A9A4}\u{A9BF}\u{A9B8}\u{A9B1}\u{A9C0}\u{A98F}\u{A9BC}\u{A9A4}\
+             \u{A9C0}\u{A9B2}\u{A9B8}\u{A997}\u{A9C0}\u{A9AE}\u{A9AD}\u{A9A4}\u{A9C0}\u{A9A4}\
+             \u{A9B6}\u{A981}\u{A9C8}",
+            "",
+        ),
+        "taling=0+677|\
+         ma=0+970|\
+         cecak.ns=0@-321,10+0|\
+         tarung=0+413|\
+         ka=4+1221|\
+         space=5+0|\
+         sa=6+1088|\
+         ra=7+915|\
+         taling=8+677|\
+         wa=8+967|\
+         da=10+1063|\
+         i.ns=10@-11,10+0|\
+         na=12+989|\
+         i.ns_cecak.ns=12@-182,10+0|\
+         ra=15+915|\
+         ta=16+1183|\
+         pangkon=16+391|\
+         space=18+0|\
+         taling=19+677|\
+         da=19+1063|\
+         ra=21+915|\
+         na_cakra_u.ns=22+1343|\
+         sa=25+1088|\
+         ka.pas=25+0|\
+         ae.ns=25@3,10+0|\
+         na=29+989|\
+         ha.pas=29+1090|\
+         u.ns=29+0|\
+         ja_wa.pas=33+987|\
+         la=36+1194|\
+         na=37+989|\
+         na.pas=37+0|\
+         i.ns_cecak.ns=37@-182,10+0|\
+         uniA9C8=42+470"
+    );
+}
+
+#[test]
+fn use_javanese_037() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A9}\u{A9B6}\u{A9A4}\u{A9BA}\u{A9B4}\u{A981}\u{A98F}\u{200B}\u{A9AE}\u{A98F}\
+             \u{A9B6}\u{A9AD}\u{A9C0}\u{A9AA}\u{A9AA}\u{A9B1}\u{A9A4}\u{A9C0}\u{A98F}\u{A9AD}\
+             \u{A9C0}\u{A9AD}\u{A9BA}\u{A9B4}\u{A9B2}\u{A9B8}\u{A9B1}\u{A9C0}\u{A9A0}\u{A9BC}\
+             \u{200B}\u{A992}\u{A9B8}\u{A9AD}\u{A9C0}\u{A9A7}\u{A9BA}\u{A9A4}\u{A98F}\u{A9B6}\
+             \u{A9B2}\u{A9A4}\u{A9C0}\u{A9C7}",
+            "",
+        ),
+        "ma=0+970|\
+         i.ns=0@-62,10+0|\
+         taling=2+677|\
+         na=2+989|\
+         cecak.ns=2@-330,10+0|\
+         tarung=2+413|\
+         ka=6+1221|\
+         space=7+0|\
+         wa=8+967|\
+         ka=9+1221|\
+         i.ns=9@-42,10+0|\
+         la=11+1194|\
+         ya.pas=11+0|\
+         ya=14+1383|\
+         sa=15+1088|\
+         na=16+989|\
+         ka.pas=16+0|\
+         taling=19+677|\
+         la=19+1194|\
+         la.pas=19@-278,0+0|\
+         tarung=19+413|\
+         ha=24+1195|\
+         u.ns=24@-1,0+0|\
+         sa=26+1088|\
+         ta.pas=26+0|\
+         ae.ns=26@3,10+0|\
+         space=30+0|\
+         ga=31+938|\
+         u.ns=31+0|\
+         taling=33+677|\
+         la=33+1194|\
+         ba.pas=33+0|\
+         na=37+989|\
+         ka=38+1221|\
+         i.ns=38@-42,10+0|\
+         ha=40+1195|\
+         na=41+989|\
+         pangkon=41+391|\
+         uniA9C7=43+269"
+    );
+}
+
+#[test]
+fn use_javanese_038() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A5}\u{A9B6}\u{A9A4}\u{A9BD}\u{A9A4}\u{A983}\u{A98F}\u{A9BC}\u{A9A4}\u{A9C0}\
+             \u{A9A9}\u{A981}\u{A992}\u{A9BA}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9B6}\u{A9A5}\u{A9B8}\
+             \u{A9A4}\u{A9C0}\u{200B}\u{A9B2}\u{A9B6}\u{A981}\u{200B}\u{A9A5}\u{A9A5}\u{A9A4}\
+             \u{A9C0}\u{A9B2}\u{A9B6}\u{A981}\u{A98F}\u{A981}\u{200B}\u{A9A5}\u{A98F}\u{A9BA}\
+             \u{A9B4}\u{A9AD}\u{A9B6}\u{A983}\u{A9C8}",
+            "",
+        ),
+        "pa=0+963|\
+         i.ns=0@-59,10+0|\
+         na=2+989|\
+         keret.ns=2+0|\
+         na=4+989|\
+         wignyan=4+353|\
+         ka=6+1221|\
+         ae.ns=6@-39,10+0|\
+         na=8+989|\
+         ma.pas=8+0|\
+         cecak.ns=8@-330,10+0|\
+         taling=12+677|\
+         ga=12+938|\
+         na=14+989|\
+         na.pas=14+0|\
+         i.ns=14@-71,10+0|\
+         pa=18+963|\
+         u.ns=18+0|\
+         na=20+989|\
+         pangkon=20+391|\
+         space=22+0|\
+         ha=23+1195|\
+         i.ns_cecak.ns=23@-182,10+0|\
+         space=26+0|\
+         pa=27+963|\
+         pa=28+963|\
+         na=29+989|\
+         ha.pas=29+1090|\
+         i.ns_cecak.ns=29@-71,10+0|\
+         ka=34+1221|\
+         cecak.ns=34@-301,10+0|\
+         space=36+0|\
+         pa=37+963|\
+         taling=38+677|\
+         ka=38+1221|\
+         tarung=38+413|\
+         la=41+1194|\
+         i.ns=41@-70,10+0|\
+         wignyan=41+353|\
+         uniA9C8=44+470"
+    );
+}
+
+#[test]
+fn use_javanese_039() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A0}\u{A9B8}\u{A9A9}\u{A9B8}\u{A997}\u{A9C0}\u{A9AE}\u{A9BA}\u{A981}\u{200B}\
+             \u{A98A}\u{A989}\u{A9B1}\u{A9C0}\u{A9A4}\u{A9BC}\u{A982}\u{A9AB}\u{A9B6}\u{A9A5}\
+             \u{A9B8}\u{A9A4}\u{A9C0}\u{200B}\u{A9B1}\u{A9B8}\u{A9B1}\u{A9A0}\u{A9BE}\u{200B}\
+             \u{A9A0}\u{A9BC}\u{A9A9}\u{A9BC}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9B8}\u{A9B2}\u{A9BA}\
+             \u{A9B4}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9B6}\u{A9C8}",
+            "",
+        ),
+        "ta=0+1183|\
+         u.ns=0@-1,0+0|\
+         ma=2+970|\
+         u.ns=2@-1,0+0|\
+         taling=4+677|\
+         ja_wa.pas=4+987|\
+         cecak.ns=4@-230,10+0|\
+         space=9+0|\
+         ngalelet=10+977|\
+         pacerek=11+963|\
+         sa=12+1088|\
+         na.pas=12+0|\
+         ae.ns_layar.ns=12@-59,10+0|\
+         ra=17+915|\
+         i.ns=17@-62,10+0|\
+         pa=19+963|\
+         u.ns=19+0|\
+         na=21+989|\
+         pangkon=21+391|\
+         space=23+0|\
+         sa=24+1088|\
+         u.ns=24+0|\
+         sa=26+1088|\
+         ta=27+1183|\
+         pengkal=27+376|\
+         space=29+0|\
+         ta=30+1183|\
+         ae.ns=30@-44,10+0|\
+         ma=32+970|\
+         ae.ns=32@-59,10+0|\
+         na=34+989|\
+         na.pas.alt=34+0|\
+         u.ns.pas=34@166,0+0|\
+         taling=38+677|\
+         ha=38+1195|\
+         tarung=38+413|\
+         na=41+989|\
+         na.pas=41+0|\
+         i.ns=41@-71,10+0|\
+         uniA9C8=45+470"
+    );
+}
+
+#[test]
+fn use_javanese_040() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B2}\u{A9B6}\u{A981}\u{A98F}\u{A981}\u{200B}\u{A9B2}\u{A994}\u{A9BD}\u{A981}\
+             \u{A992}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9B6}\u{200B}\u{A991}\u{A9AB}\u{A9A1}\u{A9BA}\
+             \u{A9B4}\u{A9A4}\u{A9C0}\u{A9A2}\u{A98A}\u{A9A9}\u{A9C0}\u{A9B2}\u{A9B6}\u{A981}\
+             \u{200B}\u{A994}\u{A9AA}\u{A9B8}\u{A993}\u{A9BE}\u{A98F}\u{A982}\u{A9A1}\u{200B}\
+             \u{A9B2}\u{A9A2}\u{A9B6}\u{A99F}\u{A9B6}\u{A981}\u{A994}\u{A9BF}\u{A9A0}\u{A9C0}\
+             \u{A9C8}",
+            "",
+        ),
+        "ha=0+1195|\
+         i.ns_cecak.ns=0@-182,10+0|\
+         ka=3+1221|\
+         cecak.ns=3@-301,10+0|\
+         space=5+0|\
+         ha=6+1195|\
+         nga=7+976|\
+         keret.ns=7+0|\
+         cecak.ns=7@-325,10+0|\
+         ga=10+938|\
+         na=11+989|\
+         na.pas=11+0|\
+         i.ns=11@-71,10+0|\
+         space=15+0|\
+         kha=16+1289|\
+         ra=17+915|\
+         taling=18+677|\
+         tha=18+967|\
+         tarung=18+413|\
+         na=21+989|\
+         da.pas=21+0|\
+         ngalelet=24+977|\
+         ma=25+970|\
+         ha.pas=25+1090|\
+         i.ns_cecak.ns=25@-71,10+0|\
+         space=30+0|\
+         nga=31+976|\
+         ya=32+1383|\
+         u.ns=32@-1,0+0|\
+         gha=34+1258|\
+         pengkal=34+376|\
+         ka=36+1221|\
+         layar.ns=36@-250,10+0|\
+         tha=38+967|\
+         space=39+0|\
+         ha=40+1195|\
+         da=41+1063|\
+         i.ns=41@-11,10+0|\
+         nna=43+1198|\
+         i.ns_cecak.ns=43@-137,10+0|\
+         nga_cakra=46+1221|\
+         ta=48+1183|\
+         pangkon=48+391|\
+         uniA9C8=50+470"
+    );
+}
+
+#[test]
+fn use_javanese_041() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A997}\u{A9B8}\u{A9A9}\u{A9BC}\u{A9A4}\u{A9BC}\u{A981}\u{200B}\u{A9A2}\u{A98A}\
+             \u{A9A9}\u{A9C0}\u{A99F}\u{A9A1}\u{200B}\u{A9B2}\u{A9A9}\u{A989}\u{A981}\u{A994}\
+             \u{A9B6}\u{200B}\u{A9A2}\u{A9B6}\u{A9A4}\u{A9C0}\u{A9A0}\u{A9BC}\u{A9A4}\u{A9C0}\
+             \u{A9B1}\u{A9BC}\u{A9A4}\u{A9BA}\u{A9A4}\u{A9C0}\u{A9A5}\u{A9BA}\u{A9B4}\u{A9A4}\
+             \u{A9C0}\u{200B}\u{A9A0}\u{A981}\u{A992}\u{A9AD}\u{A9C0}\u{A98F}\u{A9A5}\u{A9B6}\
+             \u{A981}\u{A9C7}",
+            "",
+        ),
+        "ja=0+991|\
+         u.ns=0@-4,0+0|\
+         ma=2+970|\
+         ae.ns=2@-59,10+0|\
+         na=4+989|\
+         ae.ns_cecak.ns=4@-71,10+0|\
+         space=7+0|\
+         da=8+1063|\
+         ngalelet=9+1294|\
+         ma=10+970|\
+         nna.pas=10@-1,0+0|\
+         tha=13+967|\
+         space=14+0|\
+         ha=15+1195|\
+         ma=16+970|\
+         pacerek=17+963|\
+         cecak.ns=17@-318,10+0|\
+         nga=19+976|\
+         i.ns=19@-66,10+0|\
+         space=21+0|\
+         da=22+1063|\
+         i.ns=22@-11,10+0|\
+         na=24+989|\
+         ta.pas=24+0|\
+         ae.ns=24@-68,10+0|\
+         na=28+989|\
+         sa.pas=28+830|\
+         ae.ns=28@52,10+0|\
+         taling=32+677|\
+         na=32+989|\
+         taling=34+677|\
+         na=34+989|\
+         pa.pas=34+830|\
+         tarung=34+413|\
+         na=39+989|\
+         pangkon=39+391|\
+         space=41+0|\
+         ta=42+1183|\
+         cecak.ns=42@-306,10+0|\
+         ga=44+938|\
+         la=45+1194|\
+         ka.pas=45+0|\
+         pa=48+963|\
+         i.ns_cecak.ns=48@-170,10+0|\
+         uniA9C7=51+269"
+    );
+}
+
+#[test]
+fn use_javanese_042() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9CB}\u{A9B1}\u{A9A7}\u{A9BC}\u{A9A4}\u{A9C0}\u{A9B2}\u{A9B8}\u{A9AE}\u{A9BA}\
+             \u{A9B4}\u{A981}\u{A98F}\u{A9AD}\u{A9B2}\u{A9B6}\u{A9AB}\u{A98F}\u{A9BA}\u{A98F}\
+             \u{A9A4}\u{A9C0}\u{A99B}\u{A9B6}\u{A9A9}\u{A982}\u{A9A2}\u{A9B6}\u{A98F}\u{A9AD}\
+             \u{A9A4}\u{A9C0}\u{A9A2}\u{A982}\u{A9A7}\u{A9BA}\u{A9A9}\u{A982}\u{A9A0}\u{A9A7}\
+             \u{A9A0}\u{A9C0}\u{A9AD}\u{A9A4}\u{A9C0}\u{A9B2}\u{A98F}\u{A9C0}\u{A9B2}\u{A98F}\
+             \u{A9C0}\u{A98F}\u{A981}\u{A9A5}\u{A99D}\u{A9C9}",
+            "",
+        ),
+        "uniA9CB=0+439|\
+         sa=1+1088|\
+         ba=2+1207|\
+         ae.ns=2@-13,10+0|\
+         na=4+989|\
+         ha.pas=4+1090|\
+         u.ns=4+0|\
+         taling=8+677|\
+         wa=8+967|\
+         cecak.ns=8@-320,10+0|\
+         tarung=8+413|\
+         ka=12+1221|\
+         la=13+1194|\
+         ha=14+1195|\
+         i.ns=14@-71,10+0|\
+         ra=16+915|\
+         taling=17+677|\
+         ka=17+1221|\
+         ka=19+1221|\
+         na=20+989|\
+         tta.pas=20+0|\
+         i.ns=20@-71,10+0|\
+         ma=24+970|\
+         layar.ns=24@-270,10+0|\
+         da=26+1063|\
+         i.ns=26@-11,10+0|\
+         ka=28+1221|\
+         la=29+1194|\
+         na=30+989|\
+         da.pas=30+0|\
+         layar.ns=30@-279,10+0|\
+         taling=34+677|\
+         ba=34+1207|\
+         ma=36+970|\
+         layar.ns=36@-270,10+0|\
+         ta=38+1183|\
+         ba=39+1207|\
+         ta=40+1183|\
+         la.pas=40@-273,0+0|\
+         na=43+989|\
+         ha.pas=43+1090|\
+         ka=46+1221|\
+         ha.pas=46+1090|\
+         ka=49+1221|\
+         ka.pas=49@-1,0+0|\
+         cecak.ns=49@-301,10+0|\
+         pa=53+963|\
+         dda=54+1071|\
+         uniA9C9=55+687"
+    );
+}
+
+#[test]
+fn use_javanese_043() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B1}\u{A981}\u{A98F}\u{A9B6}\u{A981}\u{200B}\u{A9A5}\u{A9AB}\u{200B}\u{A9A7}\
+             \u{A9BA}\u{A9B4}\u{A981}\u{A9B1}\u{200B}\u{A9A1}\u{A9BE}\u{A9BA}\u{A9B4}\u{A981}\
+             \u{A9B2}\u{A9C0}\u{A9AE}\u{200B}\u{A992}\u{A9BA}\u{A9B4}\u{A9AD}\u{A9BA}\u{A9B4}\
+             \u{A981}\u{A994}\u{A9A4}\u{A9C0}\u{A9B2}\u{A9B6}\u{A981}\u{200B}\u{A994}\u{A9AA}\
+             \u{A9B8}\u{A993}\u{A9BE}\u{A98F}\u{A982}\u{A9A1}\u{200B}\u{A9B2}\u{A9A2}\u{A9B6}\
+             \u{A9A4}\u{A9B6}\u{A981}\u{A994}\u{A9BF}\u{A9A0}\u{A9C0}",
+            "",
+        ),
+        "sa=0+1088|\
+         cecak.ns=0@-259,10+0|\
+         ka=2+1221|\
+         i.ns_cecak.ns=2@-153,10+0|\
+         space=5+0|\
+         pa=6+963|\
+         ra=7+915|\
+         space=8+0|\
+         taling=9+677|\
+         ba=9+1207|\
+         cecak.ns=9@-275,10+0|\
+         tarung=9+413|\
+         sa=13+1088|\
+         space=14+0|\
+         taling=15+677|\
+         tha=15+967|\
+         pengkal=15+376|\
+         cecak.ns=15+0|\
+         tarung=15+413|\
+         ha=20+1195|\
+         wa.pas=20@-1,0+0|\
+         space=23+0|\
+         taling=24+677|\
+         ga=24+938|\
+         tarung=24+413|\
+         taling=27+677|\
+         la=27+1194|\
+         cecak.ns=27@-329,10+0|\
+         tarung=27+413|\
+         nga=31+976|\
+         na=32+989|\
+         ha.pas=32+1090|\
+         i.ns_cecak.ns=32@-71,10+0|\
+         space=37+0|\
+         nga=38+976|\
+         ya=39+1383|\
+         u.ns=39@-1,0+0|\
+         gha=41+1258|\
+         pengkal=41+376|\
+         ka=43+1221|\
+         layar.ns=43@-250,10+0|\
+         tha=45+967|\
+         space=46+0|\
+         ha=47+1195|\
+         da=48+1063|\
+         i.ns=48@-11,10+0|\
+         na=50+989|\
+         i.ns_cecak.ns=50@-182,10+0|\
+         nga_cakra=53+1221|\
+         ta=55+1183|\
+         pangkon=55+391"
+    );
+}
+
+#[test]
+fn use_javanese_044() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A994}\u{A982}\u{A9B0}\u{200B}\u{A9A2}\u{A98A}\u{A9A9}\u{A9C0}\u{200B}\u{A9AF}\
+             \u{A9A9}\u{A9C0}\u{A9A6}\u{A9BA}\u{A9AA}\u{A9A4}\u{A9C0}\u{A9A2}\u{A98A}\u{A9A9}\
+             \u{A9C0}\u{200B}\u{A9B2}\u{A9B6}\u{A981}\u{A991}\u{A981}\u{200B}\u{A9AF}\u{A9B6}\
+             \u{A99F}\u{A9B8}\u{A9AE}\u{A9B8}\u{A9A4}\u{A9C0}\u{A98F}\u{A997}\u{A9BC}\u{A981}\
+             \u{200B}\u{A9AF}\u{A9B8}\u{A9AD}\u{A9C0}\u{A9A1}\u{A9A4}\u{A9C0}\u{200B}\u{A9B2}\
+             \u{A9A9}\u{A9BC}\u{A981}\u{A991}\u{A9B8}\u{A9A8}\u{A9B8}\u{A9AE}\u{A99F}\u{A9C8}",
+            "",
+        ),
+        "nga=0+976|\
+         layar.ns=0@-274,10+0|\
+         ssa=2+1012|\
+         space=3+0|\
+         da=4+1063|\
+         ngalelet=5+977|\
+         ma=6+970|\
+         pangkon=6+391|\
+         space=8+0|\
+         sha=9+938|\
+         taling=10+677|\
+         ma=10+970|\
+         pha.pas=10+1054|\
+         ya=14+1383|\
+         na=15+989|\
+         da.pas=15+0|\
+         ngalelet=18+977|\
+         ma=19+970|\
+         pangkon=19+391|\
+         space=21+0|\
+         ha=22+1195|\
+         i.ns_cecak.ns=22@-182,10+0|\
+         kha=25+1289|\
+         cecak.ns=25@-359,10+0|\
+         space=27+0|\
+         sha=28+938|\
+         i.ns=28@8,10+0|\
+         nna=30+1198|\
+         u.ns=30+0|\
+         wa=32+1126|\
+         u.ns=32@-160,0+0|\
+         na=34+989|\
+         ka.pas=34+0|\
+         ja=37+991|\
+         ae.ns_cecak.ns=37@-24,10+0|\
+         space=40+0|\
+         sha=41+938|\
+         u.ns=41+0|\
+         la=43+1194|\
+         tha.pas=43+0|\
+         na=46+989|\
+         pangkon=46+391|\
+         space=48+0|\
+         ha=49+1195|\
+         ma=50+970|\
+         ae.ns_cecak.ns=50@-62,10+0|\
+         kha=53+1289|\
+         u.ns=53@-300,0+0|\
+         bha=55+879|\
+         u.ns=55@-37,0+0|\
+         wa=57+967|\
+         nna=58+1198|\
+         uniA9C8=59+470"
+    );
+}
+
+#[test]
+fn use_javanese_045() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B2}\u{A9A2}\u{A9BC}\u{A992}\u{A9C0}\u{A992}\u{A9B6}\u{A981}\u{200B}\u{A9A9}\
+             \u{A9B1}\u{A9C0}\u{A997}\u{A9B6}\u{A9A2}\u{A9C0}\u{A9B1}\u{A9AD}\u{A9B6}\u{A98F}\
+             \u{A9B6}\u{A9A4}\u{A9C0}\u{200B}\u{A9AA}\u{A9B1}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9B6}\
+             \u{A9A5}\u{A9B8}\u{A9A4}\u{A9C0}\u{A9AB}\u{A9A2}\u{A9BA}\u{A9A4}\u{A9C0}\u{A994}\
+             \u{A9A4}\u{A9C0}\u{A9A0}\u{A9BA}\u{A9A4}\u{A9C0}\u{A9A1}\u{A9B8}\u{A9A9}\u{A9BC}\
+             \u{A981}\u{A992}\u{A9B8}\u{A981}\u{200B}\u{A9A6}\u{A9BF}\u{A9AE}\u{A9B6}\u{A9AB}\
+             \u{A9A2}\u{A9B6}\u{A982}\u{A997}\u{A9C8}",
+            "",
+        ),
+        "ha=0+1195|\
+         da=1+1063|\
+         ae.ns=1@-8,10+0|\
+         ga=3+938|\
+         ga.pas=3+0|\
+         i.ns_cecak.ns=3@-102,10+0|\
+         space=8+0|\
+         ma=9+970|\
+         sa=10+1088|\
+         ja.pas=10@200,0+0|\
+         i.ns=10@0,10+0|\
+         da=14+1063|\
+         sa.pas=14+830|\
+         la=17+1194|\
+         i.ns=17@-70,10+0|\
+         ka=19+1221|\
+         i.ns=19@-42,10+0|\
+         na=21+989|\
+         pangkon=21+391|\
+         space=23+0|\
+         ya=24+1383|\
+         sa=25+1088|\
+         na=26+989|\
+         na.pas=26+0|\
+         i.ns=26@-71,10+0|\
+         pa=30+1085|\
+         u.ns=30@-122,0+0|\
+         na=32+989|\
+         ra.pas=32+0|\
+         taling=35+677|\
+         da=35+1063|\
+         na=37+989|\
+         nga.pas=37+0|\
+         taling=40+677|\
+         na=40+989|\
+         ta.pas=40+0|\
+         na=44+989|\
+         tha.pas.alt=44+0|\
+         u.ns.pas=44@225,0+0|\
+         ma=48+970|\
+         ae.ns_cecak.ns=48@-62,10+0|\
+         ga=51+1060|\
+         u.ns=51@-122,0+0|\
+         cecak.ns=51@-372,10+0|\
+         space=54+0|\
+         pha_cakra=55+1318|\
+         wa=57+967|\
+         i.ns=57@-61,10+0|\
+         ra=59+915|\
+         da=60+1063|\
+         i.ns_layar.ns=60@-122,10+0|\
+         ja=63+991|\
+         uniA9C8=64+470"
+    );
+}
+
+#[test]
+fn use_javanese_046() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A992}\u{A9B8}\u{A9A7}\u{A9BC}\u{A982}\u{A9A4}\u{A9B8}\u{A982}\u{200B}\u{A99D}\
+             \u{A983}\u{A9B2}\u{A9BA}\u{A9AB}\u{A983}\u{200B}\u{A986}\u{A9B1}\u{A9C0}\u{A9A0}\
+             \u{A9B6}\u{A9A9}\u{A9BA}\u{A9AE}\u{A983}\u{200B}\u{A9AA}\u{A9BA}\u{A9B4}\u{A992}\
+             \u{A9BE}\u{A98F}\u{A982}\u{A9A0}\u{200B}\u{A9A0}\u{A9B8}\u{A9AE}\u{A9B6}\u{A9A4}\
+             \u{A9C0}\u{A9B2}\u{A9B6}\u{A981}\u{A98F}\u{A981}\u{200B}\u{A9A9}\u{A9B6}\u{A9A4}\
+             \u{A9B8}\u{A9AD}\u{A9C0}\u{A9AA}\u{200B}\u{A9A0}\u{A9B8}\u{A9AE}\u{A9A4}\u{A9C0}\
+             \u{A9AA}\u{A9BA}\u{A9B4}\u{A9B1}\u{A9BA}\u{200B}\u{A9A7}\u{A9C0}\u{A9AD}\u{A9A4}\
+             \u{A9C0}\u{A995}\u{A9BA}\u{A9B4}\u{A9C8}",
+            "",
+        ),
+        "ga=0+938|\
+         u.ns=0+0|\
+         ba=2+1207|\
+         ae.ns_layar.ns=2@-75,10+0|\
+         na=5+989|\
+         u.ns=5+0|\
+         layar.ns=5@-279,10+0|\
+         space=8+0|\
+         dda=9+1071|\
+         wignyan=9+353|\
+         taling=11+677|\
+         ha=11+1195|\
+         ra=13+915|\
+         wignyan=13+353|\
+         space=15+0|\
+         ikara=16+1207|\
+         sa=17+1088|\
+         ta.pas=17+0|\
+         i.ns=17@0,10+0|\
+         taling=21+677|\
+         ma=21+970|\
+         wa=23+967|\
+         wignyan=23+353|\
+         space=25+0|\
+         taling=26+677|\
+         ya=26+1383|\
+         tarung=26+413|\
+         ga=29+938|\
+         pengkal=29+376|\
+         ka=31+1221|\
+         layar.ns=31@-250,10+0|\
+         ta=33+1183|\
+         space=34+0|\
+         ta=35+1183|\
+         u.ns=35@-1,0+0|\
+         wa=37+967|\
+         i.ns=37@-61,10+0|\
+         na=39+989|\
+         ha.pas=39+1090|\
+         i.ns_cecak.ns=39@-71,10+0|\
+         ka=44+1221|\
+         cecak.ns=44@-301,10+0|\
+         space=46+0|\
+         ma=47+970|\
+         i.ns=47@-62,10+0|\
+         na=49+1148|\
+         u.ns=49@-159,0+0|\
+         la=51+1194|\
+         ya.pas=51+0|\
+         space=54+0|\
+         ta=55+1183|\
+         u.ns=55@-1,0+0|\
+         wa=57+967|\
+         taling=58+838|\
+         na=58+989|\
+         ya.pas=58+0|\
+         tarung=58+413|\
+         taling=63+677|\
+         sa=63+1088|\
+         space=65+0|\
+         ba=66+1207|\
+         la.pas=66@-270,0+0|\
+         taling=69+838|\
+         na=69+989|\
+         ca.pas=69+0|\
+         tarung=69+413|\
+         uniA9C8=74+470"
+    );
+}
+
+#[test]
+fn use_javanese_047() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B2}\u{A9B6}\u{A981}\u{A992}\u{A9B6}\u{A983}\u{200B}\u{A9A5}\u{A9B8}\u{A9A4}\
+             \u{A9B6}\u{A98F}\u{200B}\u{A9A7}\u{A9A7}\u{A9C0}\u{A9AE}\u{A9BA}\u{A9B4}\u{A9A4}\
+             \u{A9C0}\u{A9A0}\u{A9BC}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9B6}\u{A9A5}\u{A9B8}\u{A9A4}\
+             \u{A9C0}\u{A9B1}\u{A9AE}\u{A9B8}\u{A981}\u{200B}\u{A9A7}\u{A9AD}\u{A9C0}\u{A9A7}\
+             \u{A9AD}\u{A9C0}\u{A9AD}\u{A9A4}\u{A9C0}\u{A9A0}\u{A9A4}\u{A983}\u{200B}\u{A994}\
+             \u{A9BF}\u{A9B6}\u{A98F}\u{A9B6}\u{200B}\u{A9B2}\u{A9B6}\u{A981}\u{A98F}\u{A981}\
+             \u{200B}\u{A9B1}\u{A9A9}\u{A9B6}\u{200B}\u{A994}\u{A9C0}\u{A9AD}\u{A9B8}\u{A9AB}\
+             \u{A9B8}\u{A992}\u{A9C0}\u{A99D}\u{A9A0}\u{A9BC}\u{A981}\u{200B}\u{A98C}\u{A9AB}\
+             \u{A9BA}\u{A9B4}\u{A9A6}\u{A983}\u{A9C8}",
+            "",
+        ),
+        "ha=0+1195|\
+         i.ns_cecak.ns=0@-182,10+0|\
+         ga=3+938|\
+         i.ns=3@9,10+0|\
+         wignyan=3+353|\
+         space=6+0|\
+         pa=7+963|\
+         u.ns=7+0|\
+         na=9+989|\
+         i.ns=9@-71,10+0|\
+         ka=11+1221|\
+         space=12+0|\
+         ba=13+1207|\
+         taling=14+677|\
+         ba=14+1207|\
+         wa.pas=14+0|\
+         tarung=14+413|\
+         na=19+989|\
+         ta.pas=19+0|\
+         ae.ns=19@-68,10+0|\
+         na=23+989|\
+         na.pas=23+0|\
+         i.ns=23@-71,10+0|\
+         pa=27+963|\
+         u.ns=27+0|\
+         na=29+989|\
+         sa.pas=29+830|\
+         wa=32+967|\
+         u.ns=32@-1,0+0|\
+         cecak.ns=32@-320,10+0|\
+         space=35+0|\
+         ba=36+1207|\
+         la=37+1194|\
+         ba.pas=37+0|\
+         la=40+1194|\
+         la.pas=40@-278,0+0|\
+         na=43+989|\
+         ta.pas=43+0|\
+         na=46+989|\
+         wignyan=46+490|\
+         space=48+0|\
+         nga_cakra=49+1221|\
+         i.ns=49@-18,10+0|\
+         ka=52+1221|\
+         i.ns=52@-42,10+0|\
+         space=54+0|\
+         ha=55+1195|\
+         i.ns_cecak.ns=55@-182,10+0|\
+         ka=58+1221|\
+         cecak.ns=58@-301,10+0|\
+         space=60+0|\
+         sa=61+1088|\
+         ma=62+970|\
+         i.ns=62@-62,10+0|\
+         space=64+0|\
+         nga=65+976|\
+         la.pas.alt=65+0|\
+         u.ns.pas=65+0|\
+         ra=69+1049|\
+         u.ns=69@-134,0+0|\
+         ga=71+938|\
+         dda.pas=71+0|\
+         ta=74+1183|\
+         ae.ns_cecak.ns=74@-47,10+0|\
+         space=77+0|\
+         ekara=78+781|\
+         taling=79+677|\
+         ra=79+915|\
+         tarung=79+413|\
+         pha=82+1027|\
+         wignyan=82+353|\
+         uniA9C8=84+470"
+    );
+}
+
+#[test]
+fn use_javanese_048() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B1}\u{A9BA}\u{A9B4}\u{A98F}\u{A9BA}\u{A9B4}\u{A981}\u{A994}\u{A9A4}\u{A9C0}\
+             \u{A9B1}\u{A98F}\u{A9B6}\u{A981}\u{200B}\u{A9A5}\u{A9AB}\u{200B}\u{A9A9}\u{A9B8}\
+             \u{A9B1}\u{A9C0}\u{A9AD}\u{A9B6}\u{A9A9}\u{A9B6}\u{A9A4}\u{A9C0}\u{200B}\u{A9A2}\
+             \u{A9BA}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9BA}\u{200B}\u{A9B2}\u{A9B6}\u{A981}\u{A98F}\
+             \u{A981}\u{200B}\u{A994}\u{A9BF}\u{A99A}\u{A9C0}\u{A995}\u{A981}\u{200B}\u{A9B1}\
+             \u{A9B2}\u{200B}\u{A994}\u{A9AE}\u{A9A0}\u{A9C0}\u{A9B2}\u{A9AE}\u{A9A0}\u{A9C0}\
+             \u{A9A0}\u{A9B6}\u{200B}\u{A9A5}\u{A981}\u{A992}\u{A9AB}\u{A9A5}\u{A9C0}\u{A9A5}\
+             \u{A9B6}\u{A9A5}\u{A9B8}\u{A9A4}\u{A9C0}\u{A9A9}\u{A9B1}\u{A9C0}\u{A997}\u{A9B6}\
+             \u{A9A2}\u{A9C0}\u{200B}\u{A9AB}\u{A9A2}\u{A9BA}\u{A9A4}\u{A9C0}\u{A994}\u{A9A7}\
+             \u{A9BA}\u{A9B2}\u{A9B6}\u{200B}\u{A995}\u{A9BA}\u{A9B4}\u{A9A4}\u{A9C0}\u{A9A2}\
+             \u{A9BF}\u{A9A2}\u{A9B6}\u{A9A5}\u{A9BF}\u{A997}\u{A9C8}",
+            "",
+        ),
+        "taling=0+677|\
+         sa=0+1088|\
+         tarung=0+413|\
+         taling=3+677|\
+         ka=3+1221|\
+         cecak.ns=3@-301,10+0|\
+         tarung=3+413|\
+         nga=7+976|\
+         na=8+989|\
+         sa.pas=8+830|\
+         ka=11+1221|\
+         i.ns_cecak.ns=11@-153,10+0|\
+         space=14+0|\
+         pa=15+963|\
+         ra=16+915|\
+         space=17+0|\
+         ma=18+970|\
+         u.ns=18@-1,0+0|\
+         sa=20+1088|\
+         la.pas=20@-225,0+0|\
+         i.ns=20@0,10+0|\
+         ma=24+970|\
+         i.ns=24@-62,10+0|\
+         na=26+989|\
+         pangkon=26+391|\
+         space=28+0|\
+         taling=29+677|\
+         da=29+1063|\
+         taling=31+677|\
+         na=31+989|\
+         na.pas=31+0|\
+         space=35+0|\
+         ha=36+1195|\
+         i.ns_cecak.ns=36@-182,10+0|\
+         ka=39+1221|\
+         cecak.ns=39@-301,10+0|\
+         space=41+0|\
+         nga_cakra=42+1221|\
+         nya=44+1439|\
+         ca.pas=44@-1,0+0|\
+         cecak.ns=44@-361,10+0|\
+         space=48+0|\
+         sa=49+1088|\
+         ha=50+1195|\
+         space=51+0|\
+         nga=52+976|\
+         wa=53+967|\
+         ta=54+1183|\
+         ha.pas=54+1090|\
+         wa=57+967|\
+         ta=58+1183|\
+         ta.pas=58@-1,0+0|\
+         i.ns=58@-47,10+0|\
+         space=62+0|\
+         pa=63+963|\
+         cecak.ns=63@-318,10+0|\
+         ga=65+938|\
+         ra=66+915|\
+         pa=67+963|\
+         pa.pas=67+830|\
+         i.ns=67@49,10+0|\
+         pa=71+963|\
+         u.ns=71+0|\
+         na=73+989|\
+         ma.pas=73+0|\
+         sa=76+1088|\
+         ja.pas=76@200,0+0|\
+         i.ns=76@0,10+0|\
+         da=80+1063|\
+         pangkon=80+391|\
+         space=82+0|\
+         ra=83+915|\
+         taling=84+677|\
+         da=84+1063|\
+         na=86+989|\
+         nga.pas=86+0|\
+         taling=89+677|\
+         ba=89+1207|\
+         ha=91+1195|\
+         i.ns=91@-71,10+0|\
+         space=93+0|\
+         taling=94+677|\
+         ca=94+1043|\
+         tarung=94+413|\
+         da.pas_cakra=97+238|\
+         na=97+989|\
+         da=101+1063|\
+         i.ns=101@-11,10+0|\
+         pa_cakra=103+1221|\
+         ja=105+991|\
+         uniA9C8=106+470"
+    );
+}
+
+#[test]
+fn use_javanese_049() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9AD}\u{A997}\u{A9BC}\u{A981}\u{200B}\u{A98F}\u{A9AE}\u{A98F}\u{A9A5}\u{A9C0}\
+             \u{A9A5}\u{A98F}\u{A9BC}\u{A9A4}\u{A9C0}\u{A98F}\u{A981}\u{A992}\u{A9BA}\u{200B}\
+             \u{A9A5}\u{A982}\u{A9AD}\u{A9B8}\u{A9A4}\u{A9B6}\u{A981}\u{200B}\u{A986}\u{A9B1}\
+             \u{A9C0}\u{A9AD}\u{A9A9}\u{A9C0}\u{A9AD}\u{A9A4}\u{A9C0}\u{A9A9}\u{A9B8}\u{A9B1}\
+             \u{A9C0}\u{A9AD}\u{A9B6}\u{A9A9}\u{A9B6}\u{A9A4}\u{A9C0}\u{A9B2}\u{A9B6}\u{A981}\
+             \u{200B}\u{A9B1}\u{A9AD}\u{A9A9}\u{A9B6}\u{A9AD}\u{A9A9}\u{A9B6}\u{A9A4}\u{A9B6}\
+             \u{A9A5}\u{A9B8}\u{A9A4}\u{A9C0}\u{200B}\u{A9A5}\u{A9A9}\u{A9C0}\u{A9A7}\u{A9B6}\
+             \u{A98F}\u{A98F}\u{A9C0}\u{A98F}\u{A9B6}\u{A9A5}\u{A9B8}\u{A9A4}\u{A9C0}\u{A9B2}\
+             \u{A9B6}\u{A981}\u{200B}\u{A9A2}\u{A9B6}\u{A9A4}\u{A9C0}\u{A9A0}\u{A9BC}\u{A9A4}\
+             \u{A9C0}\u{A98F}\u{A9BC}\u{A9A9}\u{A9B6}\u{A9B1}\u{A9C0}\u{A98F}\u{A9AD}\u{A9B6}\
+             \u{A9AE}\u{A9BA}\u{A9B4}\u{A9A4}\u{A9C0}\u{A9A0}\u{A981}\u{A992}\u{A9AD}\u{A9C0}\
+             \u{A98F}\u{A9A5}\u{A9B6}\u{A981}\u{A9C7}",
+            "",
+        ),
+        "la=0+1194|\
+         ja=1+991|\
+         ae.ns_cecak.ns=1@-24,10+0|\
+         space=4+0|\
+         ka=5+1221|\
+         wa=6+967|\
+         ka=7+1221|\
+         pa=8+963|\
+         pa.pas=8+830|\
+         ka=11+1221|\
+         ae.ns=11@-39,10+0|\
+         na=13+989|\
+         ka.pas=13+0|\
+         cecak.ns=13@-330,10+0|\
+         taling=17+677|\
+         ga=17+938|\
+         space=19+0|\
+         pa=20+963|\
+         layar.ns=20@-267,10+0|\
+         la=22+1194|\
+         u.ns=22+0|\
+         na=24+989|\
+         i.ns_cecak.ns=24@-182,10+0|\
+         space=27+0|\
+         ikara=28+1207|\
+         sa=29+1088|\
+         la.pas=29@-225,0+0|\
+         ma=32+970|\
+         la.pas=32@-167,0+0|\
+         na=35+989|\
+         ma.pas.alt=35+0|\
+         u.ns.pas=35+0|\
+         sa=39+1088|\
+         la.pas=39@-225,0+0|\
+         i.ns=39@0,10+0|\
+         ma=43+970|\
+         i.ns=43@-62,10+0|\
+         na=45+989|\
+         ha.pas=45+1090|\
+         i.ns_cecak.ns=45@-71,10+0|\
+         space=50+0|\
+         sa=51+1088|\
+         la=52+1194|\
+         ma=53+970|\
+         i.ns=53@-62,10+0|\
+         la=55+1194|\
+         ma=56+970|\
+         i.ns=56@-62,10+0|\
+         na=58+989|\
+         i.ns=58@-71,10+0|\
+         pa=60+963|\
+         u.ns=60+0|\
+         na=62+989|\
+         pangkon=62+391|\
+         space=64+0|\
+         pa=65+963|\
+         ma=66+970|\
+         ba.pas=66@-1,0+0|\
+         i.ns=66@-62,10+0|\
+         ka=70+1221|\
+         ka=71+1221|\
+         ka.pas=71@-1,0+0|\
+         i.ns=71@-42,10+0|\
+         pa=75+963|\
+         u.ns=75+0|\
+         na=77+989|\
+         ha.pas=77+1090|\
+         i.ns_cecak.ns=77@-71,10+0|\
+         space=82+0|\
+         da=83+1063|\
+         i.ns=83@-11,10+0|\
+         na=85+1150|\
+         ta.pas=85@-161,0+0|\
+         ae.ns=85@-229,10+0|\
+         na=89+989|\
+         ka.pas=89+0|\
+         ae.ns=89@-68,10+0|\
+         ma=93+970|\
+         i.ns=93@-62,10+0|\
+         sa=95+1088|\
+         ka.pas=95+0|\
+         la=98+1194|\
+         i.ns=98@-70,10+0|\
+         taling=100+677|\
+         wa=100+967|\
+         tarung=100+413|\
+         na=103+989|\
+         ta.pas=103+0|\
+         cecak.ns=103@-330,10+0|\
+         ga=107+938|\
+         la=108+1194|\
+         ka.pas=108+0|\
+         pa=111+963|\
+         i.ns_cecak.ns=111@-170,10+0|\
+         uniA9C7=114+269"
+    );
+}
+
+#[test]
+fn use_javanese_050() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B2}\u{A9B6}\u{A981}\u{200B}\u{A994}\u{A9BF}\u{A9B6}\u{A98F}\u{A9B6}\u{200B}\
+             \u{A994}\u{A9BC}\u{A995}\u{A9BF}\u{A9A0}\u{A9C0}\u{A992}\u{A9A9}\u{A9C0}\u{A9A7}\
+             \u{A982}\u{A9AB}\u{A9B6}\u{A9A5}\u{A9B8}\u{A9A4}\u{A9C0}\u{A9B1}\u{A9AE}\u{A9B8}\
+             \u{A981}\u{200B}\u{A9B1}\u{A9AE}\u{A9B8}\u{A981}\u{200B}\u{A9AE}\u{A9B2}\u{A9B8}\
+             \u{200B}\u{A9A4}\u{A9AD}\u{A9B6}\u{A98F}\u{200B}\u{A9A4}\u{A9B8}\u{A997}\u{A9B8}\
+             \u{200B}\u{A9A0}\u{A9A4}\u{A9C0}\u{A99D}\u{A9B6}\u{A981}\u{A994}\u{A9A4}\u{A9C0}\
+             \u{A98F}\u{A9AD}\u{A9B6}\u{A9AA}\u{A9A4}\u{A9C0}\u{A9B1}\u{A9AE}\u{A9B8}\u{A981}\
+             \u{200B}\u{A9A7}\u{A9AD}\u{A9C0}\u{A9A7}\u{A9AD}\u{A9C0}\u{A9AD}\u{A9A4}\u{A9C0}\
+             \u{A9B1}\u{A98F}\u{A9B6}\u{A981}\u{200B}\u{A9B2}\u{A9BA}\u{A9B4}\u{A981}\u{A993}\
+             \u{A9AB}\u{A9B6}\u{A9AA}\u{A9BC}\u{200B}\u{A9AE}\u{A9BA}\u{A9B4}\u{A9A4}\u{A9C0}\
+             \u{A9A0}\u{A9BC}\u{A9A4}\u{A9C0}\u{A9B2}\u{A9B6}\u{A981}\u{200B}\u{A9B2}\u{A9AD}\
+             \u{A9B8}\u{A9A4}\u{A9C0}\u{A9B2}\u{A9AD}\u{A9B8}\u{A9A4}\u{A9C0}\u{A9C7}",
+            "",
+        ),
+        "ha=0+1195|\
+         i.ns_cecak.ns=0@-182,10+0|\
+         space=3+0|\
+         nga_cakra=4+1221|\
+         i.ns=4@-18,10+0|\
+         ka=7+1221|\
+         i.ns=7@-42,10+0|\
+         space=9+0|\
+         nga=10+976|\
+         ae.ns=10@-63,10+0|\
+         ca_cakra=12+1318|\
+         ta=14+1183|\
+         ga.pas=14@-1,0+0|\
+         ma=17+970|\
+         ba.pas=17@-1,0+0|\
+         layar.ns=17@-270,10+0|\
+         ra=21+915|\
+         i.ns=21@-62,10+0|\
+         pa=23+963|\
+         u.ns=23+0|\
+         na=25+989|\
+         sa.pas=25+830|\
+         wa=28+967|\
+         u.ns=28@-1,0+0|\
+         cecak.ns=28@-320,10+0|\
+         space=31+0|\
+         sa=32+1088|\
+         wa=33+967|\
+         u.ns=33@-1,0+0|\
+         cecak.ns=33@-320,10+0|\
+         space=36+0|\
+         wa=37+967|\
+         ha=38+1195|\
+         u.ns=38@-1,0+0|\
+         space=40+0|\
+         na=41+989|\
+         la=42+1194|\
+         i.ns=42@-70,10+0|\
+         ka=44+1221|\
+         space=45+0|\
+         na=46+989|\
+         u.ns=46+0|\
+         ja=48+991|\
+         u.ns=48@-4,0+0|\
+         space=50+0|\
+         ta=51+1183|\
+         na=52+989|\
+         dda.pas=52+0|\
+         i.ns_cecak.ns=52@-182,10+0|\
+         nga=57+976|\
+         na=58+989|\
+         ka.pas=58+0|\
+         la=61+1194|\
+         i.ns=61@-70,10+0|\
+         ya=63+1383|\
+         na=64+989|\
+         sa.pas=64+830|\
+         wa=67+967|\
+         u.ns=67@-1,0+0|\
+         cecak.ns=67@-320,10+0|\
+         space=70+0|\
+         ba=71+1207|\
+         la=72+1194|\
+         ba.pas=72+0|\
+         la=75+1194|\
+         la.pas=75@-278,0+0|\
+         na=78+989|\
+         sa.pas=78+830|\
+         ka=81+1221|\
+         i.ns_cecak.ns=81@-153,10+0|\
+         space=84+0|\
+         taling=85+677|\
+         ha=85+1195|\
+         cecak.ns=85@-330,10+0|\
+         tarung=85+413|\
+         gha=89+1258|\
+         ra=90+915|\
+         i.ns=90@-62,10+0|\
+         ya=92+1383|\
+         ae.ns=92@-71,10+0|\
+         space=94+0|\
+         taling=95+677|\
+         wa=95+967|\
+         tarung=95+413|\
+         na=98+989|\
+         ta.pas=98+0|\
+         ae.ns=98@-68,10+0|\
+         na=102+989|\
+         ha.pas=102+1090|\
+         i.ns_cecak.ns=102@-71,10+0|\
+         space=107+0|\
+         ha=108+1195|\
+         la=109+1194|\
+         u.ns=109+0|\
+         na=111+989|\
+         ha.pas=111+1090|\
+         la=114+1194|\
+         u.ns=114+0|\
+         na=116+989|\
+         pangkon=116+391|\
+         uniA9C7=118+269"
+    );
+}
+
+#[test]
+fn use_javanese_051() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9B1}\u{A9A2}\u{A9BA}\u{A9AB}\u{A9BA}\u{A981}\u{A994}\u{A9B6}\u{A9A5}\u{A9B8}\
+             \u{A9A4}\u{A9C0}\u{A9A9}\u{A9B1}\u{A9C0}\u{A997}\u{A9B6}\u{A9A2}\u{A9C0}\u{A9B1}\
+             \u{A9AD}\u{A9B6}\u{A98F}\u{A9B6}\u{A9A4}\u{A9C0}\u{A98F}\u{A992}\u{A9AB}\u{A9A5}\
+             \u{A9C0}\u{200B}\u{A9B1}\u{A9A9}\u{A9C0}\u{A9A5}\u{A9B8}\u{A9A4}\u{A9C0}\u{A9AE}\
+             \u{A9BA}\u{A9B4}\u{A9A4}\u{A9C0}\u{A9A0}\u{A9BC}\u{A9A4}\u{A9C0}\u{A9A9}\u{A9B2}\
+             \u{A9B8}\u{A997}\u{A9B8}\u{A9A2}\u{A9C0}\u{A9A5}\u{A9A4}\u{A9C0}\u{A99D}\u{A9BC}\
+             \u{A9A9}\u{A9BA}\u{A9A4}\u{A9C0}\u{A9A4}\u{A9B6}\u{A981}\u{200B}\u{A9A9}\u{A9B1}\
+             \u{A9C0}\u{A997}\u{A9B6}\u{A9A2}\u{A9C0}\u{200B}\u{A9AF}\u{A9B8}\u{A9AB}\u{A9A9}\
+             \u{A9C0}\u{A9A7}\u{A9B6}\u{200B}\u{A9B1}\u{A9B2}\u{200B}\u{A9A5}\u{A9AD}\u{A9A9}\
+             \u{A9C0}\u{A9A5}\u{A983}\u{A9B2}\u{A9A4}\u{A9C0}\u{200B}\u{A9B1}\u{A982}\u{A9A0}\
+             \u{200B}\u{A9A7}\u{A9BA}\u{A9B4}\u{A9A4}\u{A9C0}\u{A99D}\u{A9B1}\u{A9AE}\u{A9A0}\
+             \u{A9AE}\u{A9B6}\u{A9B1}\u{A9C0}\u{200B}\u{A98F}\u{A9A2}\u{A9BA}\u{A9B4}\u{A9B1}\
+             \u{A9C0}\u{A9A0}\u{A9C7}",
+            "",
+        ),
+        "sa=0+1088|\
+         taling=1+677|\
+         da=1+1063|\
+         taling=3+677|\
+         ra=3+915|\
+         cecak.ns=3@-321,10+0|\
+         nga=6+976|\
+         i.ns=6@-66,10+0|\
+         pa=8+963|\
+         u.ns=8+0|\
+         na=10+989|\
+         ma.pas=10+0|\
+         sa=13+1088|\
+         ja.pas=13@200,0+0|\
+         i.ns=13@0,10+0|\
+         da=17+1063|\
+         sa.pas=17+830|\
+         la=20+1194|\
+         i.ns=20@-70,10+0|\
+         ka=22+1221|\
+         i.ns=22@-42,10+0|\
+         na=24+989|\
+         ka.pas=24+0|\
+         ga=27+938|\
+         ra=28+915|\
+         pa=29+963|\
+         pangkon=29+391|\
+         space=31+0|\
+         sa=32+1088|\
+         ma=33+970|\
+         pa.pas=33+830|\
+         u.ns=33+0|\
+         taling=37+677|\
+         na=37+989|\
+         wa.pas=37+0|\
+         tarung=37+413|\
+         na=42+989|\
+         ta.pas=42+0|\
+         ae.ns=42@-68,10+0|\
+         na=46+989|\
+         ma.pas=46+0|\
+         ha=49+1195|\
+         u.ns=49@-1,0+0|\
+         ja=51+991|\
+         u.ns=51@-4,0+0|\
+         da=53+1063|\
+         pa.pas=53+830|\
+         na=56+989|\
+         dda.pas=56+0|\
+         ae.ns=56@-68,10+0|\
+         taling=60+677|\
+         ma=60+970|\
+         na=62+989|\
+         na.pas=62+0|\
+         i.ns_cecak.ns=62@-182,10+0|\
+         space=67+0|\
+         ma=68+970|\
+         sa=69+1088|\
+         ja.pas=69@200,0+0|\
+         i.ns=69@0,10+0|\
+         da=73+1063|\
+         pangkon=73+391|\
+         space=75+0|\
+         sha=76+938|\
+         u.ns=76+0|\
+         ra=78+915|\
+         ma=79+970|\
+         ba.pas=79@-1,0+0|\
+         i.ns=79@-62,10+0|\
+         space=83+0|\
+         sa=84+1088|\
+         ha=85+1195|\
+         space=86+0|\
+         pa=87+963|\
+         la=88+1194|\
+         ma=89+970|\
+         pa.pas=89+830|\
+         wignyan=89+353|\
+         ha=93+1195|\
+         na=94+989|\
+         pangkon=94+391|\
+         space=96+0|\
+         sa=97+1088|\
+         layar.ns=97@-208,10+0|\
+         ta=99+1183|\
+         space=100+0|\
+         taling=101+677|\
+         ba=101+1207|\
+         tarung=101+413|\
+         na=104+989|\
+         dda.pas=104+0|\
+         sa=107+1088|\
+         wa=108+967|\
+         ta=109+1183|\
+         wa=110+967|\
+         i.ns=110@-61,10+0|\
+         sa=112+1088|\
+         pangkon=112+391|\
+         space=114+0|\
+         ka=115+1221|\
+         taling=116+677|\
+         da=116+1063|\
+         tarung=116+413|\
+         sa=119+1088|\
+         ta.pas=119+0|\
+         uniA9C7=122+269"
+    );
+}
+
+#[test]
+fn use_javanese_052() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A9}\u{A9B8}\u{A9AD}\u{A9C0}\u{A9AA}\u{A98F}\u{A9C0}\u{A98F}\u{A98F}\u{A9BA}\
+             \u{200B}\u{A988}\u{A9A9}\u{A9C0}\u{A9A7}\u{A9B8}\u{A9AD}\u{A9C0}\u{A9A7}\u{A9B6}\
+             \u{A9A4}\u{A981}\u{A994}\u{A9B8}\u{A9A4}\u{A9C0}\u{A9A0}\u{A9A9}\u{A9C0}\u{A9A9}\
+             \u{A9A4}\u{A9C0}\u{A9B1}\u{A982}\u{A9AB}\u{A9B6}\u{200B}\u{A98F}\u{A98A}\u{A98F}\
+             \u{A9C0}\u{A9B1}\u{A9A4}\u{A9C0}\u{A9A4}\u{A98F}\u{A9C0}\u{A98F}\u{A98F}\u{A9BC}\
+             \u{A9A4}\u{A9C0}\u{A98F}\u{A9A4}\u{A9C0}\u{A99B}\u{A9B6}\u{200B}\u{A9A5}\u{A99A}\
+             \u{A9BC}\u{A981}\u{A98F}\u{A9B8}\u{A9AA}\u{A9B8}\u{A981}\u{A994}\u{A9B6}\u{A9A5}\
+             \u{A9B8}\u{A9A4}\u{A9C0}\u{A9AA}\u{A9AA}\u{A9B1}\u{A9C0}\u{A9B1}\u{A9A4}\u{A9C0}\
+             \u{A98F}\u{A9AD}\u{A9C0}\u{A9AD}\u{A9B2}\u{A9B8}\u{A9B1}\u{A9C0}\u{A9A0}\u{A9BC}\
+             \u{200B}\u{A992}\u{A9B8}\u{A9AD}\u{A9C0}\u{A9A7}\u{A9BC}\u{A9A4}\u{A9C0}\u{A98F}\
+             \u{A9B6}\u{A9B2}\u{A9A4}\u{A9C0}\u{A9B1}\u{A9B2}\u{200B}\u{A98F}\u{A982}\u{A989}\
+             \u{A9B1}\u{A9C0}\u{A9A9}\u{A9BA}\u{A98F}\u{A9C0}\u{A98F}\u{A98F}\u{A9BC}\u{A9A4}\
+             \u{A9C0}\u{A9A2}\u{A9B6}\u{A9A4}\u{A9B6}\u{A981}\u{200B}\u{A9B2}\u{A9B6}\u{A981}\
+             \u{A98F}\u{A981}\u{200B}\u{A9A9}\u{A9B6}\u{A9A4}\u{A9B8}\u{A9AD}\u{A9C0}\u{A9AA}\
+             \u{200B}\u{A9AF}\u{A9BF}\u{A9B6}\u{200B}\u{A9AF}\u{A9B8}\u{A9AD}\u{A9C0}\u{A9A0}\
+             \u{A9A4}\u{A9C0}\u{A9B2}\u{A9A9}\u{A981}\u{A98F}\u{A9B8}\u{A9A8}\u{A9B8}\u{A9AE}\
+             \u{A9A4}\u{A9C7}",
+            "",
+        ),
+        "ma=0+1129|\
+         u.ns=0@-160,0+0|\
+         la=2+1194|\
+         ya.pas=2+0|\
+         ka=5+1221|\
+         ka.pas=5@-1,0+0|\
+         taling=8+677|\
+         ka=8+1221|\
+         space=10+0|\
+         ukara=11+976|\
+         ma=12+970|\
+         ba.pas=12@-1,0+0|\
+         u.ns.pas=12@-1,0+0|\
+         la=16+1194|\
+         ba.pas=16+0|\
+         i.ns=16@-70,10+0|\
+         na=20+989|\
+         cecak.ns=20@-330,10+0|\
+         nga=22+1098|\
+         u.ns=22@-122,0+0|\
+         na=24+989|\
+         ta.pas=24+0|\
+         ma=27+970|\
+         ma.pas=27@-1,0+0|\
+         na=30+989|\
+         sa.pas=30+830|\
+         layar.ns=30@-159,10+0|\
+         ra=34+915|\
+         i.ns=34@-62,10+0|\
+         space=36+0|\
+         ka=37+1221|\
+         ngalelet=38+977|\
+         ka=39+1221|\
+         sa.pas=39+830|\
+         na=42+1150|\
+         na.pas=42@-161,0+0|\
+         ka=45+1221|\
+         ka.pas=45@-1,0+0|\
+         ka=48+1221|\
+         ae.ns=48@-39,10+0|\
+         na=50+1150|\
+         ka.pas=50@-161,0+0|\
+         na=53+989|\
+         tta.pas=53+0|\
+         i.ns=53@-71,10+0|\
+         space=57+0|\
+         pa=58+963|\
+         nya=59+1439|\
+         ae.ns_cecak.ns=59@-102,10+0|\
+         ka=62+1221|\
+         u.ns=62@-1,0+0|\
+         ya=64+1383|\
+         u.ns=64@-1,0+0|\
+         cecak.ns=64@-333,10+0|\
+         nga=67+976|\
+         i.ns=67@-66,10+0|\
+         pa=69+1246|\
+         u.ns=69@-283,0+0|\
+         na=71+989|\
+         ya.pas=71+0|\
+         ya=74+1383|\
+         sa=75+1088|\
+         sa.pas=75+830|\
+         na=78+989|\
+         ka.pas=78+0|\
+         la=81+1194|\
+         la.pas=81@-278,0+0|\
+         ha=84+1195|\
+         u.ns=84@-1,0+0|\
+         sa=86+1088|\
+         ta.pas=86+0|\
+         ae.ns=86@3,10+0|\
+         space=90+0|\
+         ga=91+938|\
+         u.ns=91+0|\
+         la=93+1194|\
+         ba.pas=93+0|\
+         ae.ns=93@-67,10+0|\
+         na=97+989|\
+         ka.pas=97+0|\
+         i.ns=97@-71,10+0|\
+         ha=101+1195|\
+         na=102+989|\
+         sa.pas=102+830|\
+         ha=105+1195|\
+         space=106+0|\
+         ka=107+1221|\
+         layar.ns=107@-250,10+0|\
+         pacerek=109+963|\
+         taling=110+677|\
+         sa=110+1088|\
+         ma.pas=110+0|\
+         ka=114+1221|\
+         ka.pas=114@-1,0+0|\
+         ka=117+1221|\
+         ae.ns=117@-39,10+0|\
+         na=119+989|\
+         da.pas=119+0|\
+         i.ns=119@-71,10+0|\
+         na=123+989|\
+         i.ns_cecak.ns=123@-182,10+0|\
+         space=126+0|\
+         ha=127+1195|\
+         i.ns_cecak.ns=127@-182,10+0|\
+         ka=130+1221|\
+         cecak.ns=130@-301,10+0|\
+         space=132+0|\
+         ma=133+970|\
+         i.ns=133@-62,10+0|\
+         na=135+1148|\
+         u.ns=135@-159,0+0|\
+         la=137+1194|\
+         ya.pas=137+0|\
+         space=140+0|\
+         sha_cakra=141+1221|\
+         i.ns=141@58,10+0|\
+         space=144+0|\
+         sha=145+938|\
+         u.ns=145+0|\
+         la=147+1194|\
+         ta.pas=147+0|\
+         na=150+989|\
+         ha.pas=150+1090|\
+         ma=153+970|\
+         cecak.ns=153@-321,10+0|\
+         ka=155+1221|\
+         u.ns=155@-1,0+0|\
+         bha=157+879|\
+         u.ns=157@-37,0+0|\
+         wa=159+967|\
+         na=160+989|\
+         uniA9C7=161+269"
+    );
+}
+
+#[test]
+fn use_javanese_053() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A0}\u{A9B8}\u{A9AE}\u{A9A4}\u{A9C0}\u{0044}\u{0072}\u{A9C7}\u{A9AF}\u{A9B6}\
+             \u{A9A9}\u{A9C0}\u{200B}\u{A98F}\u{A9B6}\u{A984}\u{A98C}",
+            "",
+        ),
+        "ta=0+1183|\
+         u.ns=0@-1,0+0|\
+         wa=2+967|\
+         na=3+989|\
+         pangkon=3+391|\
+         .notdef=5+600|\
+         .notdef=6+600|\
+         uniA9C7=7+269|\
+         sha=8+938|\
+         i.ns=8@8,10+0|\
+         ma=10+970|\
+         pangkon=10+391|\
+         space=12+0|\
+         ka=13+1221|\
+         i.ns=13@-42,10+0|\
+         akara=15+1338|\
+         ekara=16+781"
+    );
+}
+
+#[test]
+fn use_javanese_054() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/f70f345188472b93f565d1d7fae8c668dd6a3244.ttf",
+            "\u{A9A0}\u{A9B8}\u{A9AE}\u{A9A4}\u{A9C0}\u{0049}\u{0072}\u{A9C7}\u{A9AD}\u{A9B6}\
+             \u{A9A9}\u{A9C0}\u{200B}\u{A986}\u{A981}\u{A9B2}\u{A9C0}\u{A9AE}\u{A9B6}",
+            "",
+        ),
+        "ta=0+1183|\
+         u.ns=0@-1,0+0|\
+         wa=2+967|\
+         na=3+989|\
+         pangkon=3+391|\
+         .notdef=5+600|\
+         .notdef=6+600|\
+         uniA9C7=7+269|\
+         la=8+1194|\
+         i.ns=8@-70,10+0|\
+         ma=10+970|\
+         pangkon=10+391|\
+         space=12+0|\
+         ikara=13+1207|\
+         cecak.ns=13@-293,10+0|\
+         ha=15+1195|\
+         wa.pas=15@-1,0+0|\
+         i.ns=15@-71,10+0"
     );
 }
 
@@ -13968,4 +18200,3 @@ fn zero_width_marks_011() {
          A=2+1368"
     );
 }
-
