@@ -110,10 +110,9 @@ pub mod ot_position_t {
     pub const POS_POST_C: u8 = 11;
     pub const POS_AFTER_POST: u8 = 12;
 
-    pub const POS_FINAL_C: u8 = 13;
-    pub const POS_SMVD: u8 = 14;
+    pub const POS_SMVD: u8 = 13;
 
-    pub const POS_END: u8 = 15;
+    pub const POS_END: u8 = 14;
 }
 
 const INDIC_FEATURES: &[(hb_tag_t, hb_ot_map_feature_flags_t)] = &[
@@ -246,12 +245,6 @@ const JOINER_FLAGS: u32 =
     category_flag(ot_category_t::OT_ZWJ) | category_flag(ot_category_t::OT_ZWNJ);
 
 #[derive(Clone, Copy, PartialEq)]
-enum BasePosition {
-    LastSinhala,
-    Last,
-}
-
-#[derive(Clone, Copy, PartialEq)]
 enum RephPosition {
     AfterMain = ot_position_t::POS_AFTER_MAIN as isize,
     BeforeSub = ot_position_t::POS_BEFORE_SUB as isize,
@@ -283,7 +276,6 @@ struct IndicConfig {
     script: Option<Script>,
     has_old_spec: bool,
     virama: u32,
-    base_pos: BasePosition,
     reph_pos: RephPosition,
     reph_mode: RephMode,
     blwf_mode: BlwfMode,
@@ -294,7 +286,6 @@ impl IndicConfig {
         script: Option<Script>,
         has_old_spec: bool,
         virama: u32,
-        base_pos: BasePosition,
         reph_pos: RephPosition,
         reph_mode: RephMode,
         blwf_mode: BlwfMode,
@@ -303,7 +294,6 @@ impl IndicConfig {
             script,
             has_old_spec,
             virama,
-            base_pos,
             reph_pos,
             reph_mode,
             blwf_mode,
@@ -316,7 +306,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         None,
         false,
         0,
-        BasePosition::Last,
         RephPosition::BeforePost,
         RephMode::Implicit,
         BlwfMode::PreAndPost,
@@ -325,7 +314,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::DEVANAGARI),
         true,
         0x094D,
-        BasePosition::Last,
         RephPosition::BeforePost,
         RephMode::Implicit,
         BlwfMode::PreAndPost,
@@ -334,7 +322,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::BENGALI),
         true,
         0x09CD,
-        BasePosition::Last,
         RephPosition::AfterSub,
         RephMode::Implicit,
         BlwfMode::PreAndPost,
@@ -343,7 +330,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::GURMUKHI),
         true,
         0x0A4D,
-        BasePosition::Last,
         RephPosition::BeforeSub,
         RephMode::Implicit,
         BlwfMode::PreAndPost,
@@ -352,7 +338,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::GUJARATI),
         true,
         0x0ACD,
-        BasePosition::Last,
         RephPosition::BeforePost,
         RephMode::Implicit,
         BlwfMode::PreAndPost,
@@ -361,7 +346,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::ORIYA),
         true,
         0x0B4D,
-        BasePosition::Last,
         RephPosition::AfterMain,
         RephMode::Implicit,
         BlwfMode::PreAndPost,
@@ -370,7 +354,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::TAMIL),
         true,
         0x0BCD,
-        BasePosition::Last,
         RephPosition::AfterPost,
         RephMode::Implicit,
         BlwfMode::PreAndPost,
@@ -379,7 +362,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::TELUGU),
         true,
         0x0C4D,
-        BasePosition::Last,
         RephPosition::AfterPost,
         RephMode::Explicit,
         BlwfMode::PostOnly,
@@ -388,7 +370,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::KANNADA),
         true,
         0x0CCD,
-        BasePosition::Last,
         RephPosition::AfterPost,
         RephMode::Implicit,
         BlwfMode::PostOnly,
@@ -397,7 +378,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::MALAYALAM),
         true,
         0x0D4D,
-        BasePosition::Last,
         RephPosition::AfterMain,
         RephMode::LogRepha,
         BlwfMode::PreAndPost,
@@ -406,7 +386,6 @@ const INDIC_CONFIGS: &[IndicConfig] = &[
         Some(script::SINHALA),
         false,
         0x0DCA,
-        BasePosition::LastSinhala,
         RephPosition::AfterPost,
         RephMode::Explicit,
         BlwfMode::PreAndPost,
@@ -651,7 +630,7 @@ fn preprocess_text(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
     super::ot_shaper_vowel_constraints::preprocess_text_vowel_constraints(buffer);
 }
 
-fn decompose(ctx: &hb_ot_shape_normalize_context_t, ab: char) -> Option<(char, char)> {
+fn decompose(_: &hb_ot_shape_normalize_context_t, ab: char) -> Option<(char, char)> {
     // Don't decompose these.
     match ab {
         '\u{0931}' |               // DEVANAGARI LETTER RRA
@@ -660,45 +639,6 @@ fn decompose(ctx: &hb_ot_shape_normalize_context_t, ab: char) -> Option<(char, c
         '\u{09DD}' |               // BENGALI LETTER RHA
         '\u{0B94}' => return None, // TAMIL LETTER AU
         _ => {}
-    }
-
-    if ab == '\u{0DDA}' || ('\u{0DDC}'..='\u{0DDE}').contains(&ab) {
-        // Sinhala split matras...  Let the fun begin.
-        //
-        // These four characters have Unicode decompositions.  However, Uniscribe
-        // decomposes them "Khmer-style", that is, it uses the character itself to
-        // get the second half.  The first half of all four decompositions is always
-        // U+0DD9.
-        //
-        // Now, there are buggy fonts, namely, the widely used lklug.ttf, that are
-        // broken with Uniscribe.  But we need to support them.  As such, we only
-        // do the Uniscribe-style decomposition if the character is transformed into
-        // its "sec.half" form by the 'pstf' feature.  Otherwise, we fall back to
-        // Unicode decomposition.
-        //
-        // Note that we can't unconditionally use Unicode decomposition.  That would
-        // break some other fonts, that are designed to work with Uniscribe, and
-        // don't have positioning features for the Unicode-style decomposition.
-        //
-        // Argh...
-        //
-        // The Uniscribe behavior is now documented in the newly published Sinhala
-        // spec in 2012:
-        //
-        //   https://docs.microsoft.com/en-us/typography/script-development/sinhala#shaping
-
-        let mut ok = false;
-        if let Some(g) = ctx.face.get_nominal_glyph(u32::from(ab)) {
-            let indic_plan = ctx.plan.data::<IndicShapePlan>();
-            ok = indic_plan
-                .pstf
-                .would_substitute(&ctx.plan.ot_map, ctx.face, &[g]);
-        }
-
-        if ok {
-            // Ok, safe to use Uniscribe-style decomposition.
-            return Some(('\u{0DD9}', ab));
-        }
     }
 
     crate::hb::unicode::decompose(ab)
@@ -768,10 +708,6 @@ fn update_consonant_positions(
     face: &hb_font_t,
     buffer: &mut hb_buffer_t,
 ) {
-    if indic_plan.config.base_pos != BasePosition::Last {
-        return;
-    }
-
     let mut virama_glyph = None;
     if indic_plan.config.virama != 0 {
         virama_glyph = face.get_nominal_glyph(indic_plan.config.virama);
@@ -967,84 +903,53 @@ fn initial_reordering_consonant_syllable(
             has_reph = true;
         }
 
-        match indic_plan.config.base_pos {
-            BasePosition::Last => {
-                // -> starting from the end of the syllable, move backwards
-                let mut i = end;
-                let mut seen_below = false;
-                loop {
-                    i -= 1;
-                    // -> until a consonant is found
-                    if buffer.info[i].is_consonant_myanmar() {
-                        // -> that does not have a below-base or post-base form
-                        // (post-base forms have to follow below-base forms),
-                        if buffer.info[i].indic_position() != ot_position_t::POS_BELOW_C
-                            && (buffer.info[i].indic_position() != ot_position_t::POS_POST_C
-                                || seen_below)
-                        {
-                            base = i;
-                            break;
-                        }
-                        if buffer.info[i].indic_position() == ot_position_t::POS_BELOW_C {
-                            seen_below = true;
-                        }
-
-                        // -> or that is not a pre-base-reordering Ra,
-                        //
-                        // IMPLEMENTATION NOTES:
-                        //
-                        // Our pre-base-reordering Ra's are marked position::PostC, so will be skipped
-                        // by the logic above already.
-
-                        // -> or arrive at the first consonant. The consonant stopped at will
-                        // be the base.
+        {
+            // -> starting from the end of the syllable, move backwards
+            let mut i = end;
+            let mut seen_below = false;
+            loop {
+                i -= 1;
+                // -> until a consonant is found
+                if buffer.info[i].is_consonant_myanmar() {
+                    // -> that does not have a below-base or post-base form
+                    // (post-base forms have to follow below-base forms),
+                    if buffer.info[i].indic_position() != ot_position_t::POS_BELOW_C
+                        && (buffer.info[i].indic_position() != ot_position_t::POS_POST_C
+                            || seen_below)
+                    {
                         base = i;
-                    } else {
-                        // A ZWJ after a Halant stops the base search, and requests an explicit
-                        // half form.
-                        // A ZWJ before a Halant, requests a subjoined form instead, and hence
-                        // search continues.  This is particularly important for Bengali
-                        // sequence Ra,H,Ya that should form Ya-Phalaa by subjoining Ya.
-                        if start < i
-                            && buffer.info[i].indic_category() == ot_category_t::OT_ZWJ
-                            && buffer.info[i - 1].indic_category() == ot_category_t::OT_H
-                        {
-                            break;
-                        }
+                        break;
+                    }
+                    if buffer.info[i].indic_position() == ot_position_t::POS_BELOW_C {
+                        seen_below = true;
                     }
 
-                    if i <= limit {
+                    // -> or that is not a pre-base-reordering Ra,
+                    //
+                    // IMPLEMENTATION NOTES:
+                    //
+                    // Our pre-base-reordering Ra's are marked position::PostC, so will be skipped
+                    // by the logic above already.
+
+                    // -> or arrive at the first consonant. The consonant stopped at will
+                    // be the base.
+                    base = i;
+                } else {
+                    // A ZWJ after a Halant stops the base search, and requests an explicit
+                    // half form.
+                    // A ZWJ before a Halant, requests a subjoined form instead, and hence
+                    // search continues.  This is particularly important for Bengali
+                    // sequence Ra,H,Ya that should form Ya-Phalaa by subjoining Ya.
+                    if start < i
+                        && buffer.info[i].indic_category() == ot_category_t::OT_ZWJ
+                        && buffer.info[i - 1].indic_category() == ot_category_t::OT_H
+                    {
                         break;
                     }
                 }
-            }
-            BasePosition::LastSinhala => {
-                // Sinhala base positioning is slightly different from main Indic, in that:
-                // 1. Its ZWJ behavior is different,
-                // 2. We don't need to look into the font for consonant positions.
 
-                if !has_reph {
-                    base = limit;
-                }
-
-                // Find the last base consonant that is not blocked by ZWJ.  If there is
-                // a ZWJ right before a base consonant, that would request a subjoined form.
-                for i in limit..end {
-                    if buffer.info[i].is_consonant() {
-                        if limit < i && buffer.info[i - 1].indic_category() == ot_category_t::OT_ZWJ
-                        {
-                            break;
-                        } else {
-                            base = i;
-                        }
-                    }
-                }
-
-                // Mark all subsequent consonants as below.
-                for i in base + 1..end {
-                    if buffer.info[i].is_consonant() {
-                        buffer.info[i].set_indic_position(ot_position_t::POS_BELOW_C);
-                    }
+                if i <= limit {
+                    break;
                 }
             }
         }
@@ -1097,21 +1002,6 @@ fn initial_reordering_consonant_syllable(
 
     if base < end {
         buffer.info[base].set_indic_position(ot_position_t::POS_BASE_C);
-    }
-
-    // Mark final consonants.  A final consonant is one appearing after a matra.
-    // Happens in Sinhala.
-    for i in base + 1..end {
-        if buffer.info[i].indic_category() == ot_category_t::OT_M {
-            for j in i + 1..end {
-                if buffer.info[j].is_consonant() {
-                    buffer.info[j].set_indic_position(ot_position_t::POS_FINAL_C);
-                    break;
-                }
-            }
-
-            break;
-        }
     }
 
     // Handle beginning Ra
@@ -1196,11 +1086,7 @@ fn initial_reordering_consonant_syllable(
                 {
                     // Uniscribe doesn't move the Halant with Left Matra.
                     // TEST: U+092B,U+093F,U+094DE
-                    // We follow.  This is important for the Sinhala
-                    // U+0DDA split matra since it decomposes to U+0DD9,U+0DCA
-                    // where U+0DD9 is a left matra and U+0DCA is the virama.
-                    // We don't want to move the virama with the left matra.
-                    // TEST: U+0D9A,U+0DDA
+                    // We follow.
                     for j in (start + 1..=i).rev() {
                         if buffer.info[j - 1].indic_position() != ot_position_t::POS_PRE_M {
                             let pos = buffer.info[j - 1].indic_position();
