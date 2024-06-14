@@ -1,2 +1,2 @@
-mod GSUB;
 mod GPOS;
+mod GSUB;

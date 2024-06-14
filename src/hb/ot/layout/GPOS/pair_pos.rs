@@ -1,7 +1,7 @@
-use ttf_parser::gpos::{PairAdjustment, ValueRecord};
 use crate::hb::ot_layout_gpos_table::ValueRecordExt;
-use crate::hb::ot_layout_gsubgpos::{Apply, skipping_iterator_t};
 use crate::hb::ot_layout_gsubgpos::OT::hb_ot_apply_context_t;
+use crate::hb::ot_layout_gsubgpos::{skipping_iterator_t, Apply};
+use ttf_parser::gpos::{PairAdjustment, ValueRecord};
 
 impl Apply for PairAdjustment<'_> {
     fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {

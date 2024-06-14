@@ -1,7 +1,7 @@
-use ttf_parser::gpos::SingleAdjustment;
 use crate::hb::ot_layout_gpos_table::ValueRecordExt;
 use crate::hb::ot_layout_gsubgpos::Apply;
 use crate::hb::ot_layout_gsubgpos::OT::hb_ot_apply_context_t;
+use ttf_parser::gpos::SingleAdjustment;
 
 impl Apply for SingleAdjustment<'_> {
     fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {

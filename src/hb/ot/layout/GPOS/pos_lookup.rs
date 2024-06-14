@@ -1,8 +1,8 @@
-use ttf_parser::GlyphId;
 use crate::hb::ot_layout::LayoutLookup;
 use crate::hb::ot_layout_common::PositioningLookup;
 use crate::hb::ot_layout_gsubgpos::Apply;
 use crate::hb::ot_layout_gsubgpos::OT::hb_ot_apply_context_t;
+use ttf_parser::GlyphId;
 
 impl LayoutLookup for PositioningLookup<'_> {
     fn props(&self) -> u32 {

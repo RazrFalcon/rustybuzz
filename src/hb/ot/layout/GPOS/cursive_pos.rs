@@ -1,11 +1,11 @@
-use ttf_parser::gpos::CursiveAdjustment;
-use crate::{Direction, GlyphPosition};
 use crate::hb::buffer::HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
 use crate::hb::ot_layout_common::lookup_flags;
-use crate::hb::ot_layout_gpos_table::AnchorExt;
 use crate::hb::ot_layout_gpos_table::attach_type;
-use crate::hb::ot_layout_gsubgpos::{Apply, skipping_iterator_t};
+use crate::hb::ot_layout_gpos_table::AnchorExt;
 use crate::hb::ot_layout_gsubgpos::OT::hb_ot_apply_context_t;
+use crate::hb::ot_layout_gsubgpos::{skipping_iterator_t, Apply};
+use crate::{Direction, GlyphPosition};
+use ttf_parser::gpos::CursiveAdjustment;
 
 impl Apply for CursiveAdjustment<'_> {
     fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
