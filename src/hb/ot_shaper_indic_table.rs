@@ -42,9 +42,9 @@ use OT_ZWNJ  as _OT_ZWNJ;       /*   1 chars; ZWNJ */
 use POS_ABOVE_C as _POS_T;         /*  22 chars; ABOVE_C */
 use POS_AFTER_MAIN as _POS_A;         /*   3 chars; AFTER_MAIN */
 use POS_AFTER_POST as _POS_AP;        /*  50 chars; AFTER_POST */
-use POS_AFTER_SUB as _POS_AS;        /*  45 chars; AFTER_SUB */
+use POS_AFTER_SUB as _POS_AS;        /*  51 chars; AFTER_SUB */
 use POS_BASE_C as _POS_C;         /* 832 chars; BASE_C */
-use POS_BEFORE_SUB as _POS_BS;        /*  31 chars; BEFORE_SUB */
+use POS_BEFORE_SUB as _POS_BS;        /*  25 chars; BEFORE_SUB */
 use POS_BELOW_C as _POS_B;         /*  13 chars; BELOW_C */
 use POS_END  as _POS_X;         /*  71 chars; END */
 use POS_POST_C as _POS_R;         /*  13 chars; POST_C */
@@ -198,7 +198,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 0C28 */ (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C),
   /* 0C30 */ (_OT_R,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C),
   /* 0C38 */ (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_N,_POS_X),(_OT_S,_POS_SM),(_OT_M,_POS_BS),(_OT_M,_POS_BS),
-  /* 0C40 */(_OT_M,_POS_BS),(_OT_M,_POS_AS),(_OT_M,_POS_AS),(_OT_M,_POS_AS),(_OT_M,_POS_AS), (_OT_X,_POS_X),(_OT_M,_POS_BS),(_OT_M,_POS_BS),
+  /* 0C40 */(_OT_M,_POS_BS),(_OT_M,_POS_BS),(_OT_M,_POS_BS),(_OT_M,_POS_AS),(_OT_M,_POS_AS), (_OT_X,_POS_X),(_OT_M,_POS_BS),(_OT_M,_POS_BS),
   /* 0C48 */(_OT_M,_POS_BS), (_OT_X,_POS_X),(_OT_M,_POS_BS),(_OT_M,_POS_BS),(_OT_M,_POS_BS), (_OT_H,_POS_T), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 0C50 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_M,_POS_BS),(_OT_M,_POS_BS), (_OT_X,_POS_X),
   /* 0C58 */ (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X),
@@ -217,9 +217,9 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 0CA8 */ (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C),
   /* 0CB0 */ (_OT_R,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C),
   /* 0CB8 */ (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_N,_POS_X),(_OT_S,_POS_SM),(_OT_M,_POS_BS),(_OT_M,_POS_BS),
-  /* 0CC0 */(_OT_M,_POS_BS),(_OT_M,_POS_BS),(_OT_M,_POS_BS),(_OT_M,_POS_BS),(_OT_M,_POS_BS), (_OT_X,_POS_X),(_OT_M,_POS_BS),(_OT_M,_POS_BS),
-  /* 0CC8 */(_OT_M,_POS_BS), (_OT_X,_POS_X),(_OT_M,_POS_BS),(_OT_M,_POS_BS),(_OT_M,_POS_BS), (_OT_H,_POS_T), (_OT_X,_POS_X), (_OT_X,_POS_X),
-  /* 0CD0 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_M,_POS_BS),(_OT_M,_POS_BS), (_OT_X,_POS_X),
+  /* 0CC0 */(_OT_M,_POS_BS),(_OT_M,_POS_BS),(_OT_M,_POS_BS),(_OT_M,_POS_AS),(_OT_M,_POS_AS), (_OT_X,_POS_X),(_OT_M,_POS_BS),(_OT_M,_POS_AS),
+  /* 0CC8 */(_OT_M,_POS_AS), (_OT_X,_POS_X),(_OT_M,_POS_AS),(_OT_M,_POS_AS),(_OT_M,_POS_BS), (_OT_H,_POS_T), (_OT_X,_POS_X), (_OT_X,_POS_X),
+  /* 0CD0 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_M,_POS_AS),(_OT_M,_POS_AS), (_OT_X,_POS_X),
   /* 0CD8 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X),
   /* 0CE0 */ (_OT_V,_POS_C), (_OT_V,_POS_C),(_OT_M,_POS_BS),(_OT_M,_POS_BS), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_GB,_POS_C),(_OT_GB,_POS_C),
   /* 0CE8 */(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),

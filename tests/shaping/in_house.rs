@@ -3294,6 +3294,22 @@ fn indic_special_cases_003() {
 }
 
 #[test]
+fn indic_special_cases_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/e716f6bd00a108d186b7e9f47b4515565f784f36.ttf",
+            "\u{0C1A}\u{0C3F}\u{0C32}\u{0C4D}\u{0C15}\u{0C42}\u{0C30}\u{0C4D}",
+            "",
+        ),
+        "civoweltelu=0+766|\
+         latelu=2+709|\
+         uuvowelsigntelu=2+661|\
+         kasubscripttelu=2+483|\
+         rahalanttelu=6+593"
+    );
+}
+
+#[test]
 fn indic_syllable_001() {
     assert_eq!(
         shape(
