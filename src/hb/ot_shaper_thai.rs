@@ -321,7 +321,7 @@ fn preprocess_text(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_
     // to be what Uniscribe and other engines implement.  According to Eric Muller:
     //
     // When you have a SARA AM, decompose it in NIKHAHIT + SARA AA, *and* move the
-    // NIKHAHIT backwards over any tone mark (0E48-0E4B).
+    // NIKHAHIT backwards over any above-base marks (0E31, 0E34-0E37, 0E47-0E4E).
     //
     // <0E14, 0E4B, 0E33> -> <0E14, 0E4D, 0E4B, 0E32>
     //
