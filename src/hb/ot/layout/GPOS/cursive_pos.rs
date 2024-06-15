@@ -37,7 +37,7 @@ impl Apply for CursiveAdjustment<'_> {
 
         let direction = ctx.buffer.direction;
         let j = ctx.buffer.idx;
-        ctx.buffer.unsafe_to_break(Some(i), Some(j));
+        ctx.buffer.unsafe_to_break(Some(i), Some(j + 1));
 
         let pos = &mut ctx.buffer.pos;
         match direction {
