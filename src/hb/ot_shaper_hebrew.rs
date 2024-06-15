@@ -100,7 +100,7 @@ fn compose(ctx: &hb_ot_shape_normalize_context_t, a: char, b: char) -> Option<ch
                     }
                 }
                 0x05B7 => {
-                    // patah
+                    // PATAH
                     match a {
                         0x05D9 => Some('\u{FB1F}'), // YIDDISH YOD YOD
                         0x05D0 => Some('\u{FB2E}'), // ALEF
