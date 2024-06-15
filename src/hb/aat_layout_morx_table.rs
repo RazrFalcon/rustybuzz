@@ -11,20 +11,33 @@ use super::{hb_font_t, hb_glyph_info_t};
 pub fn compile_flags(face: &hb_font_t, builder: &hb_aat_map_builder_t) -> Option<hb_aat_map_t> {
     let mut map = hb_aat_map_t::default();
 
+    let has_feature = |kind: u16, setting: u16| {
+        builder
+            .features
+            .binary_search_by(|probe| {
+                if probe.kind != kind {
+                    probe.kind.cmp(&kind)
+                } else {
+                    probe.setting.cmp(&setting)
+                }
+            })
+            .is_ok()
+    };
+
     for chain in face.tables().morx.as_ref()?.chains {
         let mut flags = chain.default_flags;
         for feature in chain.features {
             // Check whether this type/setting pair was requested in the map,
             // and if so, apply its flags.
 
-            if builder.has_feature(feature.kind, feature.setting) {
+            if has_feature(feature.kind, feature.setting) {
                 flags &= feature.disable_flags;
                 flags |= feature.enable_flags;
             } else if feature.kind == HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE as u16
                 && feature.setting == u16::from(HB_AAT_LAYOUT_FEATURE_SELECTOR_SMALL_CAPS)
             {
                 // Deprecated. https://github.com/harfbuzz/harfbuzz/issues/1342
-                let ok = builder.has_feature(
+                let ok = has_feature(
                     HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE as u16,
                     u16::from(HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS),
                 );
