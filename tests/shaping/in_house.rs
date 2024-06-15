@@ -16708,6 +16708,21 @@ fn use_016() {
 }
 
 #[test]
+fn use_017() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/7c24183f26d60df414578a0a9f5e79ab9d32a22b.ttf",
+            "\u{11410}\u{11441}\u{11443}",
+            "",
+        ),
+        "E_dv.alt=0+275|\
+         Ga=0+576|\
+         AU_dv_part.alt=0+213|\
+         Candrabindu.sm=0@-52,179+0"
+    );
+}
+
+#[test]
 fn variations_rvrn_001() {
     assert_eq!(
         shape(

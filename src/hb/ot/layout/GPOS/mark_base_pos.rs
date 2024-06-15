@@ -37,6 +37,7 @@ impl Apply for MarkToBaseAdjustment<'_> {
                 || _hb_glyph_info_get_lig_comp(&info[idx]) == 0
                 || idx == 0
                 || _hb_glyph_info_is_mark(&info[idx - 1])
+                || !_hb_glyph_info_multiplied(&info[idx - 1])
                 || _hb_glyph_info_get_lig_id(&info[idx])
                     != _hb_glyph_info_get_lig_id(&info[idx - 1])
                 || _hb_glyph_info_get_lig_comp(&info[idx])
