@@ -111,7 +111,7 @@ impl Apply for CursiveAdjustment<'_> {
 
             if direction.is_horizontal() {
                 pos[parent].y_offset = 0;
-            }   else {
+            } else {
                 pos[parent].x_offset = 0;
             }
         }
