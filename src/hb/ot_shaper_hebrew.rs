@@ -1,6 +1,11 @@
 use super::ot_shape_normalize::*;
 use super::ot_shaper::*;
 use super::{hb_tag_t, unicode};
+use crate::hb::buffer::hb_buffer_t;
+use crate::hb::ot_layout::_hb_glyph_info_get_modified_combining_class;
+use crate::hb::ot_shape_plan::hb_ot_shape_plan_t;
+use crate::hb::unicode::modified_combining_class;
+use unicode_ccc::CanonicalCombiningClass;
 
 pub const HEBREW_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
@@ -13,10 +18,36 @@ pub const HEBREW_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     compose: Some(compose),
     setup_masks: None,
     gpos_tag: Some(hb_tag_t::from_bytes(b"hebr")),
-    reorder_marks: None,
+    reorder_marks: Some(reorder_marks_hebrew),
     zero_width_marks: HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
     fallback_position: true,
 };
+
+fn reorder_marks_hebrew(
+    _: &hb_ot_shape_plan_t,
+    buffer: &mut hb_buffer_t,
+    start: usize,
+    end: usize,
+) {
+    for i in start + 2..end {
+        let c0 = buffer.info[i - 2];
+        let c1 = buffer.info[i - 1];
+        let c2 = buffer.info[i - 0];
+
+        if (_hb_glyph_info_get_modified_combining_class(&c0) == modified_combining_class::CCC17
+                || _hb_glyph_info_get_modified_combining_class(&c0) == modified_combining_class::CCC18) /* patach or qamats */
+                &&
+            (_hb_glyph_info_get_modified_combining_class(&c1) == modified_combining_class::CCC10
+                || _hb_glyph_info_get_modified_combining_class(&c1) == modified_combining_class::CCC14) /* sheva or hiriq */ &&
+            (_hb_glyph_info_get_modified_combining_class(&c2) == modified_combining_class::CCC22
+                || _hb_glyph_info_get_modified_combining_class(&c2) == CanonicalCombiningClass::Below as u8)
+        /* meteg or below */
+        {
+            buffer.merge_clusters(i - 1, i + 1);
+            buffer.info.swap(i - 1, i);
+        }
+    }
+}
 
 const S_DAGESH_FORMS: &[char] = &[
     '\u{FB30}', // ALEF
