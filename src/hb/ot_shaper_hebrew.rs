@@ -45,6 +45,7 @@ fn reorder_marks_hebrew(
         {
             buffer.merge_clusters(i - 1, i + 1);
             buffer.info.swap(i - 1, i);
+            break;
         }
     }
 }
