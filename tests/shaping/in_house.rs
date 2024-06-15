@@ -1823,6 +1823,134 @@ fn cursive_positioning_005() {
 }
 
 #[test]
+fn cursive_positioning_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
+            "\u{002E}\u{1BC36}\u{1BC36}\u{1BC36}\u{1BC36}",
+            "",
+        ),
+        "period=0+100|\
+         u1BC36=1+313|\
+         u1BC36=2+313|\
+         u1BC36=3+313|\
+         u1BC36=4+313"
+    );
+}
+
+#[test]
+fn cursive_positioning_010() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
+            "\u{002E}\u{1BC36}\u{1BC36}\u{1BC36}\u{1BC36}",
+            "--features=ltr1",
+        ),
+        "period=0+100|\
+         u1BC36=1+218|\
+         u1BC36=2@-82,-144+136|\
+         u1BC36=3@-82,-288+136|\
+         u1BC36=4@-82,-432+231"
+    );
+}
+
+#[test]
+fn cursive_positioning_011() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
+            "\u{002E}\u{1BC36}\u{1BC36}\u{1BC36}\u{1BC36}",
+            "--features=rtl1",
+        ),
+        "period=0+100|\
+         u1BC36=1@0,432+218|\
+         u1BC36=2@-82,288+136|\
+         u1BC36=3@-82,144+136|\
+         u1BC36=4@-82,0+231"
+    );
+}
+
+#[test]
+fn cursive_positioning_012() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
+            "\u{002E}\u{1BC36}\u{1BC36}\u{1BC36}\u{1BC36}",
+            "--features=ltr1,rtl1",
+        ),
+        "period=0+100|\
+         u1BC36=1@0,432+218|\
+         u1BC36=2@-82,288+136|\
+         u1BC36=3@-82,144+136|\
+         u1BC36=4@-82,0+231"
+    );
+}
+
+#[test]
+fn cursive_positioning_013() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
+            "\u{002E}\u{1BC36}\u{1BC36}\u{1BC36}\u{1BC36}",
+            "--features=ltr2",
+        ),
+        "period=0+100|\
+         u1BC36=1+218|\
+         u1BC36=2@-82,-144+136|\
+         u1BC36=3@-82,-288+136|\
+         u1BC36=4@-82,-432+231"
+    );
+}
+
+#[test]
+fn cursive_positioning_014() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
+            "\u{002E}\u{1BC36}\u{1BC36}\u{1BC36}\u{1BC36}",
+            "--features=ltr1,ltr2",
+        ),
+        "period=0+100|\
+         u1BC36=1+218|\
+         u1BC36=2@-82,-144+136|\
+         u1BC36=3@-82,-288+136|\
+         u1BC36=4@-82,-432+231"
+    );
+}
+
+#[test]
+fn cursive_positioning_015() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
+            "\u{002E}\u{1BC36}\u{1BC36}\u{1BC36}\u{1BC36}",
+            "--features=rtl1,ltr2",
+        ),
+        "period=0+100|\
+         u1BC36=1+218|\
+         u1BC36=2@-82,-144+136|\
+         u1BC36=3@-82,-288+136|\
+         u1BC36=4@-82,-432+231"
+    );
+}
+
+#[test]
+fn cursive_positioning_016() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
+            "\u{002E}\u{1BC36}\u{1BC36}\u{1BC36}\u{1BC36}",
+            "--features=ltr1,rtl1,ltr2",
+        ),
+        "period=0+100|\
+         u1BC36=1+218|\
+         u1BC36=2@-82,-144+136|\
+         u1BC36=3@-82,-288+136|\
+         u1BC36=4@-82,-432+231"
+    );
+}
+
+#[test]
 fn default_ignorables_001() {
     assert_eq!(
         shape(
