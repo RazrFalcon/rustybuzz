@@ -232,9 +232,9 @@ impl<'a> hb_font_t<'a> {
         }
 
         if is_vertical {
-            face.glyph_top_side_bearing(glyph).unwrap_or(0) as i32
+            face.glyph_ver_side_bearing(glyph).unwrap_or(0) as i32
         } else {
-            face.glyph_left_side_bearing(glyph).unwrap_or(0) as i32
+            face.glyph_hor_side_bearing(glyph).unwrap_or(0) as i32
         }
     }
 
