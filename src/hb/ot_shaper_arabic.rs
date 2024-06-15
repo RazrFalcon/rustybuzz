@@ -240,11 +240,14 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // See 98460779bae19e4d64d29461ff154b3527bf8420
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"rclt"), F_MANUAL_ZWJ, 1);
-    planner
-        .ot_map
         .enable_feature(hb_tag_t::from_bytes(b"calt"), F_MANUAL_ZWJ, 1);
-    planner.ot_map.add_gsub_pause(None);
+    /* https://github.com/harfbuzz/harfbuzz/issues/1573 */
+    if !planner.ot_map.has_feature(hb_tag_t::from_bytes(b"rclt")) {
+        planner.ot_map.add_gsub_pause(None);
+        planner
+            .ot_map
+            .enable_feature(hb_tag_t::from_bytes(b"rclt"), F_MANUAL_ZWJ, 1);
+    }
 
     // The spec includes 'cswh'.  Earlier versions of Windows
     // used to enable this by default, but testing suggests
