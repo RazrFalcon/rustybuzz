@@ -208,17 +208,19 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_MANUAL_ZWJ, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_MANUAL_ZWJ, 1);
 
     planner.ot_map.add_gsub_pause(None);
 
     for feature in ARABIC_FEATURES {
         let has_fallback = planner.script == Some(script::ARABIC) && !feature_is_syriac(*feature);
         let flags = if has_fallback { F_HAS_FALLBACK } else { F_NONE };
-        planner.ot_map.add_feature(*feature, flags, 1);
+        planner
+            .ot_map
+            .add_feature(*feature, F_MANUAL_ZWJ | flags, 1);
         planner.ot_map.add_gsub_pause(None);
     }
 
@@ -249,6 +251,13 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
             .enable_feature(hb_tag_t::from_bytes(b"rclt"), F_MANUAL_ZWJ, 1);
     }
 
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"liga"), F_MANUAL_ZWJ, 1);
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"clig"), F_MANUAL_ZWJ, 1);
+
     // The spec includes 'cswh'.  Earlier versions of Windows
     // used to enable this by default, but testing suggests
     // that Windows 8 and later do not enable it by default,
@@ -258,10 +267,10 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // to fixup broken glyph sequences.  Oh well...
     // Test case: U+0643,U+0640,U+0631.
 
-    // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, F_NONE, 1);
+    // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, F_MANUAL_ZWJ, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"mset"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"mset"), F_MANUAL_ZWJ, 1);
 }
 
 pub struct arabic_shape_plan_t {
