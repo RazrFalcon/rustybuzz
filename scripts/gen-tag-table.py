@@ -7,7 +7,7 @@ versa.
 Based on harfbuzz/src/gen-tag-table.py
 
 Input files:
-- https://docs.microsoft.com/en-us/typography/opentype/spec/languagetags (the whole page as HTML)
+- https://learn.microsoft.com/en-us/typography/opentype/spec/languagetags (the whole page as HTML)
 - https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
 """
 
