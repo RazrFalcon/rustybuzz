@@ -340,12 +340,6 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* Grantha */
 
   /* 11300 */ (_OT_X,_POS_X),(_OT_SM,_POS_SM),(_OT_SM,_POS_SM),(_OT_SM,_POS_SM), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
-  /* 11308 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
-  /* 11310 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
-  /* 11318 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
-  /* 11320 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
-  /* 11328 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
-  /* 11330 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 11338 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_N,_POS_X), (_OT_N,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
 
 ];
@@ -364,6 +358,7 @@ const OFFSET_0XA9E0: usize = 1632;
 const OFFSET_0XAA60: usize = 1664;
 const OFFSET_0XFE00: usize = 1696;
 const OFFSET_0X11300: usize = 1712;
+const OFFSET_0X11338: usize = 1720;
 
 #[rustfmt::skip]
 pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
@@ -394,7 +389,8 @@ pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
             if (0xFE00..=0xFE0F).contains(&u) { return TABLE[u as usize - 0xFE00 + OFFSET_0XFE00]; }
         }
         0x11 => {
-            if (0x11300..=0x1133F).contains(&u) { return TABLE[u as usize - 0x11300 + OFFSET_0X11300]; }
+            if (0x11300..=0x11307).contains(&u) { return TABLE[u as usize - 0x11300 + OFFSET_0X11300]; }
+            if (0x11338..=0x1133F).contains(&u) { return TABLE[u as usize - 0x11338 + OFFSET_0X11338]; }
         }
         _ => {}
     }

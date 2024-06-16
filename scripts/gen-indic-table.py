@@ -553,7 +553,7 @@ for u in uu:
     end = (end - 1) // 8 * 8 + 7
 
     if start != last + 1:
-        if start - last <= 1 + 16 * 3:
+        if start - last <= 1 + 16 * 2:
             print_block(None, last + 1, start - 1, indic_data)
             last = start - 1
         else:
@@ -598,6 +598,6 @@ print()
 print('    (_OT_X, _POS_X)')
 print('}')
 
-# Maintain at least 30% occupancy in the table */
-if occupancy < 30:
+# Maintain at least 50% occupancy in the table */
+if occupancy < 50:
     raise Exception('Table too sparse, please investigate: ', occupancy)
