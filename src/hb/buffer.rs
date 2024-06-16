@@ -636,10 +636,11 @@ impl hb_buffer_t {
         // TODO: language must be set
     }
 
-    pub fn sync_so_far(&mut self) {
+    pub fn sync_so_far(&mut self) -> usize {
         let had_output = self.have_output;
         let out_i = self.out_len;
         let i = self.idx;
+        let old_idx = self.idx;
 
         if self.sync() {
             self.idx = out_i;
@@ -652,7 +653,8 @@ impl hb_buffer_t {
             self.out_len = self.idx;
         }
 
-        assert!(self.idx <= self.len)
+        assert!(self.idx <= self.len);
+        self.idx - old_idx
     }
 
     pub fn sync(&mut self) -> bool {
