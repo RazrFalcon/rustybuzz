@@ -1130,14 +1130,39 @@ fn initial_reordering_consonant_syllable(
 
         buffer.info[start..end].sort_by(|a, b| a.indic_position().cmp(&b.indic_position()));
 
-        // Find base again.
+        // Find base again; also flip left-matra sequence.
+        let mut first_left_mantra = end;
+        let mut last_left_mantra = end;
         base = end;
+
         for i in start..end {
             if buffer.info[i].indic_position() == ot_position_t::POS_BASE_C {
                 base = i;
                 break;
+            } else if buffer.info[i].indic_position() == ot_position_t::POS_PRE_M {
+                if first_left_mantra == end {
+                    first_left_mantra = i;
+                }
+
+                last_left_mantra = i;
             }
         }
+
+        // https://github.com/harfbuzz/harfbuzz/issues/3863
+        if first_left_mantra < last_left_mantra {
+            // No need to merge clusters, handled later.
+            buffer.reverse_range(first_left_mantra, last_left_mantra + 1);
+            // Reverse back nuktas, etc.
+            let mut i = first_left_mantra;
+
+            for j in i..=last_left_mantra {
+                if buffer.info[j].indic_category() == ot_category_t::OT_M {
+                    buffer.reverse_range(i, j + 1);
+                    i = j + 1;
+                }
+            }
+        }
+
         // Things are out-of-control for post base positions, they may shuffle
         // around like crazy.  In old-spec mode, we move halants around, so in
         // that case merge all clusters after base.  Otherwise, check the sort

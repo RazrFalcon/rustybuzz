@@ -3438,6 +3438,36 @@ fn indic_special_cases_004() {
 }
 
 #[test]
+fn indic_special_cases_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/9d8c53cb64b8747abdd2b70755cce2ee0eb42ef7.ttf",
+            "\u{0915}\u{093F}\u{094E}\u{093C}",
+            "",
+        ),
+        "uni094E=0+273|\
+         uni093C=0+0|\
+         ivowelsign03deva=0+259|\
+         uni0915=0+762"
+    );
+}
+
+#[test]
+fn indic_special_cases_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/9d8c53cb64b8747abdd2b70755cce2ee0eb42ef7.ttf",
+            "\u{0915}\u{093F}\u{093C}\u{094E}",
+            "",
+        ),
+        "uni094E=0+273|\
+         ivowelsign00deva=0+259|\
+         uni093C=0+0|\
+         uni0915=0+762"
+    );
+}
+
+#[test]
 fn indic_syllable_001() {
     assert_eq!(
         shape(
@@ -8579,6 +8609,20 @@ fn myanmar_misc_001() {
             "",
         ),
         "ya_e_above=0+1000"
+    );
+}
+
+#[test]
+fn myanmar_misc_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/a232bb734d4c6c898a44506547d19768f0eba6a6.ttf",
+            "\u{1000}\u{1031}\u{1084}",
+            "",
+        ),
+        "e_shn=0+592|\
+         _e=0+618|\
+         ka=0+1124"
     );
 }
 

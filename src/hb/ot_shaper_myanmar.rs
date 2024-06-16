@@ -259,6 +259,35 @@ fn initial_reordering_consonant_syllable(start: usize, end: usize, buffer: &mut 
     buffer.sort(start, end, |a, b| {
         a.myanmar_position().cmp(&b.myanmar_position()) == core::cmp::Ordering::Greater
     });
+
+    // Flip left-mantra sequence
+    let mut first_left_matra = end;
+    let mut last_left_matra = end;
+
+    for i in start..end {
+        if buffer.info[i].myanmar_position() == ot_position_t::POS_PRE_M {
+            if first_left_matra == end {
+                first_left_matra = i;
+            }
+
+            last_left_matra = i;
+        }
+    }
+
+    // https://github.com/harfbuzz/harfbuzz/issues/3863
+    if first_left_matra < last_left_matra {
+        // No need to merge clusters, done already?
+        buffer.reverse_range(first_left_matra, last_left_matra + 1);
+        // Reverse back VS, etc.
+        let mut i = first_left_matra;
+
+        for j in i..=last_left_matra {
+            if buffer.info[j].myanmar_category() == ot_category_t::OT_VPre {
+                buffer.reverse_range(i, j + 1);
+                i = j + 1;
+            }
+        }
+    }
 }
 
 fn setup_masks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
