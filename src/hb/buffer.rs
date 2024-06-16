@@ -4,7 +4,7 @@ use core::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use super::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
+use super::buffer::glyph_flag::{SAFE_TO_INSERT_KASHIDA, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use super::face::GlyphExtents;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_mask_t};
@@ -91,8 +91,10 @@ pub mod glyph_flag {
     /// the buffer flag will not be reliably produced.
     pub const UNSAFE_TO_CONCAT: u32 = 0x00000002;
 
+    pub const SAFE_TO_INSERT_KASHIDA: u32 = 0x00000004;
+
     /// All the currently defined flags.
-    pub const DEFINED: u32 = 0x00000003; // OR of all defined flags
+    pub const DEFINED: u32 = 0x00000007; // OR of all defined flags
 }
 
 /// Holds the positions of the glyph in both horizontal and vertical directions.
@@ -1043,6 +1045,10 @@ impl hb_buffer_t {
             Some(true),
             None,
         );
+    }
+
+    pub fn safe_to_insert_kashida(&mut self, start: Option<usize>, end: Option<usize>) {
+        self._set_glyph_flags(SAFE_TO_INSERT_KASHIDA, start, end, Some(true), None);
     }
 
     /// Adds glyph flags in mask to infos with clusters between start and end.

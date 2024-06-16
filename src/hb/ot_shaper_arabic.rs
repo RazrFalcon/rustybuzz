@@ -326,7 +326,7 @@ fn arabic_joining(buffer: &mut hb_buffer_t) {
         if entry.0 != arabic_action_t::NONE && prev.is_some() {
             if let Some(prev) = prev {
                 buffer.info[prev].set_arabic_shaping_action(entry.0);
-                buffer.unsafe_to_break(Some(prev), Some(i + 1));
+                buffer.safe_to_insert_kashida(Some(prev), Some(i + 1));
             }
         }
         // States that have a possible prev_action.
@@ -359,7 +359,7 @@ fn arabic_joining(buffer: &mut hb_buffer_t) {
         if entry.0 != arabic_action_t::NONE && prev.is_some() {
             if let Some(prev) = prev {
                 buffer.info[prev].set_arabic_shaping_action(entry.0);
-                buffer.unsafe_to_break(Some(prev), Some(buffer.len));
+                buffer.safe_to_insert_kashida(Some(prev), Some(buffer.len));
             }
         }
         // States that have a possible prev_action.

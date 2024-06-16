@@ -9,6 +9,7 @@ use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt}
 use super::*;
 use super::{hb_font_t, hb_tag_t};
 use crate::hb::aat_layout::hb_aat_layout_remove_deleted_glyphs;
+use crate::hb::buffer::glyph_flag::{SAFE_TO_INSERT_KASHIDA, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::BufferFlags;
 use crate::{Direction, Feature, Language, Script};
 
@@ -873,9 +874,17 @@ fn propagate_flags(buffer: &mut hb_buffer_t) {
                 mask |= info.mask & glyph_flag::DEFINED;
             }
 
+            if mask & UNSAFE_TO_BREAK != 0 {
+                mask &= !SAFE_TO_INSERT_KASHIDA;
+            }
+
+            if mask & SAFE_TO_INSERT_KASHIDA != 0 {
+                mask |= UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT;
+            }
+
             if mask != 0 {
                 for info in &mut buffer.info[start..end] {
-                    info.mask |= mask;
+                    info.mask = mask;
                 }
             }
         });
