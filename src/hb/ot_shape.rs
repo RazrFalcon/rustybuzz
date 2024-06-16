@@ -884,6 +884,8 @@ fn propagate_flags(buffer: &mut hb_buffer_t) {
         .flags
         .contains(BufferFlags::PRODUCE_SAFE_TO_INSERT_TATWEEL);
 
+    let clear_concat = !buffer.flags.contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT);
+
     foreach_cluster!(buffer, start, end, {
         let mut mask = 0;
         for info in &buffer.info[start..end] {
@@ -900,7 +902,9 @@ fn propagate_flags(buffer: &mut hb_buffer_t) {
             }
         }
 
-        if mask != 0 {
+        if clear_concat {
+            mask &= !UNSAFE_TO_CONCAT;
+
             for info in &mut buffer.info[start..end] {
                 info.mask = mask;
             }
