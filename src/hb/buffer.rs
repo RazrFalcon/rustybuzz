@@ -4,7 +4,7 @@ use core::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use super::buffer::glyph_flag::{SAFE_TO_INSERT_KASHIDA, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
+use super::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use super::face::GlyphExtents;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_mask_t};
@@ -95,7 +95,7 @@ pub mod glyph_flag {
     /// Mongolian, Syriac, etc.), this flag signifies
     /// that it is safe to insert a U+0640 TATWEEL
     /// character *before* this cluster for elongation.
-    pub const SAFE_TO_INSERT_KASHIDA: u32 = 0x00000004;
+    pub const SAFE_TO_INSERT_TATWEEL: u32 = 0x00000004;
 
     /// All the currently defined flags.
     pub const DEFINED: u32 = 0x00000007; // OR of all defined flags
@@ -1051,8 +1051,8 @@ impl hb_buffer_t {
         );
     }
 
-    pub fn safe_to_insert_kashida(&mut self, start: Option<usize>, end: Option<usize>) {
-        self._set_glyph_flags(SAFE_TO_INSERT_KASHIDA, start, end, Some(true), None);
+    pub fn safe_to_insert_tatweel(&mut self, start: Option<usize>, end: Option<usize>) {
+        self._set_glyph_flags(SAFE_TO_INSERT_TATWEEL, start, end, Some(true), None);
     }
 
     /// Adds glyph flags in mask to infos with clusters between start and end.
