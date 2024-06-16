@@ -23,7 +23,8 @@ unicode-script = "0.5.2"
 libm = { version = "0.2.2", optional = true }
 
 [dependencies.ttf-parser]
-path = "../ttf-parser"
+git = "https://github.com/RazrFalcon/ttf-parser"
+rev = "df952ff"
 default-features = false
 features = [
     "opentype-layout",
