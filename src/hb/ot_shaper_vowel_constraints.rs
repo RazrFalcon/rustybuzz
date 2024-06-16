@@ -327,6 +327,39 @@ pub fn preprocess_text_vowel_constraints(buffer: &mut hb_buffer_t) {
             }
         }
 
+        Some(script::KHOJKI) => {
+            buffer.idx = 0;
+            while buffer.idx + 1 < buffer.len {
+                #[allow(unused_mut)]
+                let mut matched = false;
+                match buffer.cur(0).glyph_id {
+                    0x11200 => match buffer.cur(1).glyph_id {
+                        0x1122C | 0x11231 | 0x11233 => {
+                            matched = true;
+                        }
+                        _ => {}
+                    },
+                    0x11206 => {
+                        matched = 0x1122C == buffer.cur(1).glyph_id;
+                    }
+                    0x1122C => match buffer.cur(1).glyph_id {
+                        0x11230 | 0x11231 => {
+                            matched = true;
+                        }
+                        _ => {}
+                    },
+                    0x11240 => {
+                        matched = 0x1122E == buffer.cur(1).glyph_id;
+                    }
+                    _ => {}
+                }
+                buffer.next_glyph();
+                if matched {
+                    output_with_dotted_circle(buffer);
+                }
+            }
+        }
+
         Some(script::KHUDAWADI) => {
             buffer.idx = 0;
             while buffer.idx + 1 < buffer.len {
