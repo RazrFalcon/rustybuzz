@@ -15288,6 +15288,20 @@ fn use_syllable_023() {
 }
 
 #[test]
+fn use_syllable_024() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/a56745bac8449d0ad94918b2bb5930716ba02fe3.ttf",
+            "\u{1142C}\u{11442}\u{200C}\u{1142E}",
+            "",
+        ),
+        "u1142C=0+547|\
+         u11442=0+0|\
+         u1142E=3+547"
+    );
+}
+
+#[test]
 fn use_vowel_letter_spoofing_001() {
     assert_eq!(
         shape(
