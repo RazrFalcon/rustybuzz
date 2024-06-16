@@ -9529,6 +9529,21 @@ fn sara_am_038() {
 }
 
 #[test]
+fn sara_am_039() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECE}\u{0EB3}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECD=0+0|\
+         uni0ECE=0+0|\
+         uni0EB2=0+500"
+    );
+}
+
+#[test]
 fn sara_am_040() {
     assert_eq!(
         shape(
@@ -9703,6 +9718,21 @@ fn sara_am_051() {
         ),
         "uni0E81=0+500|\
          uni0ECD=0+0|\
+         uni0ECD=0+0|\
+         uni0EB2=3+500"
+    );
+}
+
+#[test]
+fn sara_am_052() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63a539a90a371ccf028dc2dcced9b63b07163be7.ttf",
+            "\u{0E81}\u{0ECE}\u{0ECD}\u{0EB2}",
+            "",
+        ),
+        "uni0E81=0+500|\
+         uni0ECE=0+0|\
          uni0ECD=0+0|\
          uni0EB2=3+500"
     );
