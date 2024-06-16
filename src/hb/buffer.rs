@@ -91,6 +91,10 @@ pub mod glyph_flag {
     /// the buffer flag will not be reliably produced.
     pub const UNSAFE_TO_CONCAT: u32 = 0x00000002;
 
+    /// In scripts that use elongation (Arabic,
+    /// Mongolian, Syriac, etc.), this flag signifies
+    /// that it is safe to insert a U+0640 TATWEEL
+    /// character *before* this cluster for elongation.
     pub const SAFE_TO_INSERT_KASHIDA: u32 = 0x00000004;
 
     /// All the currently defined flags.
