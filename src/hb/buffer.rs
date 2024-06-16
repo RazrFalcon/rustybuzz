@@ -636,15 +636,34 @@ impl hb_buffer_t {
         // TODO: language must be set
     }
 
-    pub fn sync(&mut self) {
-        assert!(self.have_output);
+    pub fn sync_so_far(&mut self) {
+        let had_output = self.have_output;
+        let out_i = self.out_len;
+        let i = self.idx;
 
+        if self.sync() {
+            self.idx = out_i;
+        } else {
+            self.idx = i;
+        }
+
+        if had_output {
+            self.have_output = true;
+            self.out_len = self.idx;
+        }
+
+        assert!(self.idx <= self.len)
+    }
+
+    pub fn sync(&mut self) -> bool {
+        assert!(self.have_output);
         assert!(self.idx <= self.len);
+
         if !self.successful {
             self.have_output = false;
             self.out_len = 0;
             self.idx = 0;
-            return;
+            return false;
         }
 
         self.next_glyphs(self.len - self.idx);
@@ -662,6 +681,7 @@ impl hb_buffer_t {
         self.have_output = false;
         self.out_len = 0;
         self.idx = 0;
+        true
     }
 
     pub fn clear_output(&mut self) {
