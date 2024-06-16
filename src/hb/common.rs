@@ -453,6 +453,9 @@ pub mod script {
     pub const TANGSA: Script = Script::from_bytes(b"Tnsa");
     pub const TOTO: Script = Script::from_bytes(b"Toto");
     pub const VITHKUQI: Script = Script::from_bytes(b"Vith");
+    // Since 15.0
+    pub const KAWI: Script = Script::from_bytes(b"Kawi");
+    pub const NAG_MUNDARI: Script = Script::from_bytes(b"Nagm");
 
     pub const SCRIPT_MATH: Script = Script::from_bytes(b"Zmth");
 

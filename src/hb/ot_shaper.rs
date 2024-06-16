@@ -315,7 +315,13 @@ pub fn hb_ot_shape_complex_categorize(
         | script::OLD_UYGHUR
         | script::TANGSA
         | script::TOTO
-        | script::VITHKUQI => {
+        | script::VITHKUQI
+
+        // Unicode-15.0 additions
+        | script::KAWI
+        | script::NAG_MUNDARI
+
+        => {
             // If the designer designed the font for the 'DFLT' script,
             // (or we ended up arbitrarily pick 'latn'), use the default shaper.
             // Otherwise, use the specific shaper.
