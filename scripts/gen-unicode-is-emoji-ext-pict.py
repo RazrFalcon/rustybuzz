@@ -3,7 +3,7 @@
 import urllib.request
 import os
 
-URL = 'https://www.unicode.org/Public/emoji/12.1/emoji-data.txt'
+URL = 'https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt'
 FILE_NAME = 'emoji-data.txt'
 
 if not os.path.exists(FILE_NAME):

@@ -630,7 +630,8 @@ impl CharExt for char {
             0x1F8AE..=0x1F8FF => true,
             0x1F90C..=0x1F93A => true,
             0x1F93C..=0x1F945 => true,
-            0x1F947..=0x1FFFD => true,
+            0x1F947..=0x1FAFF => true,
+            0x1FC00..=0x1FFFD => true,
             _ => false,
         }
     }
