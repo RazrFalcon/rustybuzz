@@ -867,13 +867,30 @@ fn hide_default_ignorables(buffer: &mut hb_buffer_t, face: &hb_font_t) {
 fn propagate_flags(buffer: &mut hb_buffer_t) {
     // Propagate cluster-level glyph flags to be the same on all cluster glyphs.
     // Simplifies using them.
-    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS != 0 {
-        foreach_cluster!(buffer, start, end, {
-            let mut mask = 0;
-            for info in &buffer.info[start..end] {
-                mask |= info.mask & glyph_flag::DEFINED;
-            }
 
+    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS == 0 {
+        return;
+    }
+
+    /* If we are producing SAFE_TO_INSERT_TATWEEL, then do two things:
+     *
+     * - If the places that the Arabic shaper marked as SAFE_TO_INSERT_TATWEEL,
+     *   are UNSAFE_TO_BREAK, then clear the SAFE_TO_INSERT_TATWEEL,
+     * - Any place that is SAFE_TO_INSERT_TATWEEL, is also now UNSAFE_TO_BREAK.
+     *
+     * We couldn't make this interaction earlier. It has to be done here.
+     */
+    let flip_tatweel = buffer
+        .flags
+        .contains(BufferFlags::PRODUCE_SAFE_TO_INSERT_TATWEEL);
+
+    foreach_cluster!(buffer, start, end, {
+        let mut mask = 0;
+        for info in &buffer.info[start..end] {
+            mask |= info.mask & glyph_flag::DEFINED;
+        }
+
+        if flip_tatweel {
             if mask & UNSAFE_TO_BREAK != 0 {
                 mask &= !SAFE_TO_INSERT_TATWEEL;
             }
@@ -881,12 +898,12 @@ fn propagate_flags(buffer: &mut hb_buffer_t) {
             if mask & SAFE_TO_INSERT_TATWEEL != 0 {
                 mask |= UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT;
             }
+        }
 
-            if mask != 0 {
-                for info in &mut buffer.info[start..end] {
-                    info.mask = mask;
-                }
+        if mask != 0 {
+            for info in &mut buffer.info[start..end] {
+                info.mask = mask;
             }
-        });
-    }
+        }
+    });
 }

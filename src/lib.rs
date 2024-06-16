@@ -42,8 +42,10 @@ bitflags::bitflags! {
         const VERIFY                        = 0x00000020;
         /// Indicates that the `UNSAFE_TO_CONCAT` glyph-flag should be produced by the shaper. By default it will not be produced since it incurs a cost.
         const PRODUCE_UNSAFE_TO_CONCAT      = 0x00000040;
+        /// Indicates that the `SAFE_TO_INSERT_TATWEEL` glyph-flag should be produced by the shaper. By default it will not be produced.
+        const PRODUCE_SAFE_TO_INSERT_TATWEEL      = 0x00000040;
         /// All currently defined flags
-        const DEFINED = 0x0000007F;
+        const DEFINED = 0x000000FF;
     }
 }
 

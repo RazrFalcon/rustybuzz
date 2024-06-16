@@ -1052,6 +1052,14 @@ impl hb_buffer_t {
     }
 
     pub fn safe_to_insert_tatweel(&mut self, start: Option<usize>, end: Option<usize>) {
+        if !self
+            .flags
+            .contains(BufferFlags::PRODUCE_SAFE_TO_INSERT_TATWEEL)
+        {
+            self.unsafe_to_break(start, end);
+            return;
+        }
+
         self._set_glyph_flags(SAFE_TO_INSERT_TATWEEL, start, end, Some(true), None);
     }
 
