@@ -15,7 +15,7 @@ import os
 import urllib.request
 
 if not os.path.exists('Scripts.txt'):
-    urllib.request.urlretrieve('https://unicode.org/Public/14.0.0/ucd/Scripts.txt', 'Scripts.txt')
+    urllib.request.urlretrieve('https://unicode.org/Public/15.0.0/ucd/Scripts.txt', 'Scripts.txt')
 
 with io.open('Scripts.txt', encoding='utf-8') as f:
     scripts_header = [f.readline() for i in range(2)]
