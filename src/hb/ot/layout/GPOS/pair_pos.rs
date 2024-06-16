@@ -25,6 +25,9 @@ impl Apply for PairAdjustment<'_> {
 
             if has_record2 {
                 ctx.buffer.idx += 1;
+                // https://github.com/harfbuzz/harfbuzz/issues/3824
+                ctx.buffer
+                    .unsafe_to_break(Some(ctx.buffer.idx - 1), Some(ctx.buffer.idx + 1));
             }
 
             Some(())
