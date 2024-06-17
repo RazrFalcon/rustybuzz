@@ -255,6 +255,21 @@ impl<'a> hb_font_t<'a> {
                 glyph_extents.height = super::round(-f32::from(img.height) * scale) as i32;
                 return true;
             }
+        } else if let Some(colr) = self.ttfp_face.tables().colr {
+            if colr.is_simple() {
+                return false;
+            }
+
+            if let Some(clip_box) = colr.clip_box(glyph, self.variation_coordinates()) {
+                // Floor
+                glyph_extents.x_bearing = super::round(clip_box.x_min) as i32;
+                glyph_extents.y_bearing = super::round(clip_box.y_max) as i32;
+                glyph_extents.width = super::round(clip_box.x_max - clip_box.x_min) as i32;
+                glyph_extents.height = super::round(clip_box.y_min - clip_box.y_max) as i32;
+                return true;
+            }
+
+            return false;
         }
 
         let bbox = self.ttfp_face.glyph_bounding_box(glyph);
