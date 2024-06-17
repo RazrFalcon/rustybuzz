@@ -120,6 +120,9 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }
 
+    /* https://github.com/harfbuzz/harfbuzz/issues/3531 */
+    planner.ot_map.add_gsub_pause(None);
+
     for feature in KHMER_FEATURES.iter().skip(5) {
         planner.ot_map.add_feature(feature.0, feature.1, 1);
     }

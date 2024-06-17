@@ -44,6 +44,7 @@ mod ot_shaper_syllabic;
 mod ot_shaper_thai;
 mod ot_shaper_use;
 mod ot_shaper_use_machine;
+#[rustfmt::skip]
 mod ot_shaper_use_table;
 mod ot_shaper_vowel_constraints;
 pub mod shape;

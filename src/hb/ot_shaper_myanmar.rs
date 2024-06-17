@@ -88,6 +88,8 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
         planner.ot_map.add_gsub_pause(None);
     }
 
+    planner.ot_map.add_gsub_pause(None);
+
     for feature in MYANMAR_FEATURES.iter().skip(4) {
         planner
             .ot_map

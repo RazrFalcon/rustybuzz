@@ -29,21 +29,23 @@ bitflags::bitflags! {
     #[derive(Default, Debug, Clone, Copy)]
     pub struct BufferFlags: u32 {
         /// Indicates that special handling of the beginning of text paragraph can be applied to this buffer. Should usually be set, unless you are passing to the buffer only part of the text without the full context.
-        const BEGINNING_OF_TEXT             = 1 << 1;
+        const BEGINNING_OF_TEXT             = 0x00000001;
         /// Indicates that special handling of the end of text paragraph can be applied to this buffer, similar to [`BufferFlags::BEGINNING_OF_TEXT`].
-        const END_OF_TEXT                   = 1 << 2;
+        const END_OF_TEXT                   = 0x00000002;
         /// Indicates that characters with `Default_Ignorable` Unicode property should use the corresponding glyph from the font, instead of hiding them (done by replacing them with the space glyph and zeroing the advance width.) This flag takes precedence over [`BufferFlags::REMOVE_DEFAULT_IGNORABLES`].
-        const PRESERVE_DEFAULT_IGNORABLES   = 1 << 3;
+        const PRESERVE_DEFAULT_IGNORABLES   = 0x00000004;
         /// Indicates that characters with `Default_Ignorable` Unicode property should be removed from glyph string instead of hiding them (done by replacing them with the space glyph and zeroing the advance width.) [`BufferFlags::PRESERVE_DEFAULT_IGNORABLES`] takes precedence over this flag.
-        const REMOVE_DEFAULT_IGNORABLES     = 1 << 4;
+        const REMOVE_DEFAULT_IGNORABLES     = 0x00000008;
         /// Indicates that a dotted circle should not be inserted in the rendering of incorrect character sequences (such as `<0905 093E>`).
-        const DO_NOT_INSERT_DOTTED_CIRCLE   = 1 << 5;
+        const DO_NOT_INSERT_DOTTED_CIRCLE   = 0x00000010;
         /// Indicates that the shape() call and its variants should perform various verification processes on the results of the shaping operation on the buffer. If the verification fails, then either a buffer message is sent, if a message handler is installed on the buffer, or a message is written to standard error. In either case, the shaping result might be modified to show the failed output.
-        const VERIFY                        = 1 << 6;
+        const VERIFY                        = 0x00000020;
         /// Indicates that the `UNSAFE_TO_CONCAT` glyph-flag should be produced by the shaper. By default it will not be produced since it incurs a cost.
-        const PRODUCE_UNSAFE_TO_CONCAT      = 1 << 7;
+        const PRODUCE_UNSAFE_TO_CONCAT      = 0x00000040;
+        /// Indicates that the `SAFE_TO_INSERT_TATWEEL` glyph-flag should be produced by the shaper. By default it will not be produced.
+        const PRODUCE_SAFE_TO_INSERT_TATWEEL      = 0x00000040;
         /// All currently defined flags
-        const DEFINED = 0b00111111;
+        const DEFINED = 0x000000FF;
     }
 }
 

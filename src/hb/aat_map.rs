@@ -88,18 +88,6 @@ impl hb_aat_map_builder_t {
         Some(())
     }
 
-    pub fn has_feature(&self, kind: u16, setting: u16) -> bool {
-        self.features
-            .binary_search_by(|probe| {
-                if probe.kind != kind {
-                    probe.kind.cmp(&kind)
-                } else {
-                    probe.setting.cmp(&setting)
-                }
-            })
-            .is_ok()
-    }
-
     pub fn compile(&mut self, face: &hb_font_t) -> hb_aat_map_t {
         // Sort features and merge duplicates.
         self.features.sort_by(|a, b| {

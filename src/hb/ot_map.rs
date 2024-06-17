@@ -235,6 +235,22 @@ impl<'a> hb_ot_map_builder_t<'a> {
     }
 
     #[inline]
+    pub fn has_feature(&self, tag: hb_tag_t) -> bool {
+        for (table_index, table) in self.face.layout_tables() {
+            if let Some(script_index) = self.script_index[table_index] {
+                if table
+                    .find_language_feature(script_index, self.lang_index[table_index], tag)
+                    .is_some()
+                {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
+    #[inline]
     pub fn add_feature(&mut self, tag: hb_tag_t, flags: hb_ot_map_feature_flags_t, value: u32) {
         if !tag.is_null() {
             let seq = self.feature_infos.len();

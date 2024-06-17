@@ -136,14 +136,14 @@ hieroglyph_cluster = SB+ | SB* G SE* (J SE* (G SE*)?)*;
 other = any;
 
 main := |*
-	virama_terminated_cluster		=> { found_syllable!(SyllableType::ViramaTerminatedCluster); };
-	sakot_terminated_cluster		=> { found_syllable!(SyllableType::SakotTerminatedCluster); };
-	standard_cluster			=> { found_syllable!(SyllableType::StandardCluster); };
-	number_joiner_terminated_cluster	=> { found_syllable!(SyllableType::NumberJoinerTerminatedCluster); };
-	numeral_cluster				=> { found_syllable!(SyllableType::NumeralCluster); };
-	symbol_cluster				=> { found_syllable!(SyllableType::SymbolCluster); };
-	hieroglyph_cluster			=> { found_syllable! (SyllableType::HieroglyphCluster); };
-	broken_cluster				=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
+	virama_terminated_cluster ZWNJ?		=> { found_syllable!(SyllableType::ViramaTerminatedCluster); };
+	sakot_terminated_cluster ZWNJ?		=> { found_syllable!(SyllableType::SakotTerminatedCluster); };
+	standard_cluster ZWNJ?			=> { found_syllable!(SyllableType::StandardCluster); };
+	number_joiner_terminated_cluster ZWNJ?	=> { found_syllable!(SyllableType::NumberJoinerTerminatedCluster); };
+	numeral_cluster ZWNJ?				=> { found_syllable!(SyllableType::NumeralCluster); };
+	symbol_cluster ZWNJ?				=> { found_syllable!(SyllableType::SymbolCluster); };
+	hieroglyph_cluster ZWNJ?			=> { found_syllable! (SyllableType::HieroglyphCluster); };
+	broken_cluster ZWNJ?				=> { found_syllable!(SyllableType::BrokenCluster); buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE; };
 	other					=> { found_syllable!(SyllableType::NonCluster); };
 *|;
 

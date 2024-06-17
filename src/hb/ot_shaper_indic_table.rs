@@ -25,7 +25,7 @@ use OT_PT    as _OT_PT;         /*   8 chars; PT */
 use OT_Ra    as _OT_R;          /*  14 chars; Ra */
 use OT_Repha as _OT_Rf;         /*   1 chars; Repha */
 use OT_Robatic as _OT_Rt;         /*   3 chars; Robatic */
-use OT_SM    as _OT_SM;         /*  55 chars; SM */
+use OT_SM    as _OT_SM;         /*  56 chars; SM */
 use OT_Symbol as _OT_S;          /*  22 chars; Symbol */
 use OT_V     as _OT_V;          /* 172 chars; V */
 use OT_VAbv  as _OT_VA;         /*  18 chars; VAbv */
@@ -50,7 +50,7 @@ use POS_END  as _POS_X;         /*  71 chars; END */
 use POS_POST_C as _POS_R;         /*  13 chars; POST_C */
 use POS_PRE_C as _POS_L;         /*   5 chars; PRE_C */
 use POS_PRE_M as _POS_LM;        /*  14 chars; PRE_M */
-use POS_SMVD as _POS_SM;        /* 129 chars; SMVD */
+use POS_SMVD as _POS_SM;        /* 130 chars; SMVD */
 
 
 pub type SyllabicCategory = u8;
@@ -223,7 +223,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 0CD8 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X),
   /* 0CE0 */ (_OT_V,_POS_C), (_OT_V,_POS_C),(_OT_M,_POS_BS),(_OT_M,_POS_BS), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_GB,_POS_C),(_OT_GB,_POS_C),
   /* 0CE8 */(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),
-  /* 0CF0 */ (_OT_X,_POS_X),(_OT_CS,_POS_C),(_OT_CS,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
+  /* 0CF0 */ (_OT_X,_POS_X),(_OT_CS,_POS_C),(_OT_CS,_POS_C),(_OT_SM,_POS_SM), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 0CF8 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
 
   /* Malayalam */

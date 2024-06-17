@@ -208,17 +208,19 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"ccmp"), F_MANUAL_ZWJ, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"locl"), F_MANUAL_ZWJ, 1);
 
     planner.ot_map.add_gsub_pause(None);
 
     for feature in ARABIC_FEATURES {
         let has_fallback = planner.script == Some(script::ARABIC) && !feature_is_syriac(*feature);
         let flags = if has_fallback { F_HAS_FALLBACK } else { F_NONE };
-        planner.ot_map.add_feature(*feature, flags, 1);
+        planner
+            .ot_map
+            .add_feature(*feature, F_MANUAL_ZWJ | flags, 1);
         planner.ot_map.add_gsub_pause(None);
     }
 
@@ -240,11 +242,21 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // See 98460779bae19e4d64d29461ff154b3527bf8420
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"rclt"), F_MANUAL_ZWJ, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"calt"), F_MANUAL_ZWJ, 1);
+    /* https://github.com/harfbuzz/harfbuzz/issues/1573 */
+    if !planner.ot_map.has_feature(hb_tag_t::from_bytes(b"rclt")) {
+        planner.ot_map.add_gsub_pause(None);
+        planner
+            .ot_map
+            .enable_feature(hb_tag_t::from_bytes(b"rclt"), F_MANUAL_ZWJ, 1);
+    }
+
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"calt"), F_MANUAL_ZWJ, 1);
-    planner.ot_map.add_gsub_pause(None);
+        .enable_feature(hb_tag_t::from_bytes(b"liga"), F_MANUAL_ZWJ, 1);
+    planner
+        .ot_map
+        .enable_feature(hb_tag_t::from_bytes(b"clig"), F_MANUAL_ZWJ, 1);
 
     // The spec includes 'cswh'.  Earlier versions of Windows
     // used to enable this by default, but testing suggests
@@ -255,10 +267,10 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     // to fixup broken glyph sequences.  Oh well...
     // Test case: U+0643,U+0640,U+0631.
 
-    // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, F_NONE, 1);
+    // planner.ot_map.enable_feature(feature::CONTEXTUAL_SWASH, F_MANUAL_ZWJ, 1);
     planner
         .ot_map
-        .enable_feature(hb_tag_t::from_bytes(b"mset"), F_NONE, 1);
+        .enable_feature(hb_tag_t::from_bytes(b"mset"), F_MANUAL_ZWJ, 1);
 }
 
 pub struct arabic_shape_plan_t {
@@ -314,7 +326,7 @@ fn arabic_joining(buffer: &mut hb_buffer_t) {
         if entry.0 != arabic_action_t::NONE && prev.is_some() {
             if let Some(prev) = prev {
                 buffer.info[prev].set_arabic_shaping_action(entry.0);
-                buffer.unsafe_to_break(Some(prev), Some(i + 1));
+                buffer.safe_to_insert_tatweel(Some(prev), Some(i + 1));
             }
         }
         // States that have a possible prev_action.
@@ -347,7 +359,7 @@ fn arabic_joining(buffer: &mut hb_buffer_t) {
         if entry.0 != arabic_action_t::NONE && prev.is_some() {
             if let Some(prev) = prev {
                 buffer.info[prev].set_arabic_shaping_action(entry.0);
-                buffer.unsafe_to_break(Some(prev), Some(buffer.len));
+                buffer.safe_to_insert_tatweel(Some(prev), Some(buffer.len));
             }
         }
         // States that have a possible prev_action.

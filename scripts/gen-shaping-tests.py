@@ -37,11 +37,6 @@ IGNORE_TEST_CASES = [
     'morx_36_001',
     # ttf-parser uses different rounding, not a bug
     'fallback_positioning_001',
-
-    # Returns different result because our current harfbuzz version doesn't have updated unicode props yet.
-    # I manually verified that newest harfbuzz returns the same results as us.
-    'sara_am_039',
-    'sara_am_052'
 ]
 
 

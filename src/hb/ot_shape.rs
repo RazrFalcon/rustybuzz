@@ -9,6 +9,7 @@ use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt}
 use super::*;
 use super::{hb_font_t, hb_tag_t};
 use crate::hb::aat_layout::hb_aat_layout_remove_deleted_glyphs;
+use crate::hb::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::BufferFlags;
 use crate::{Direction, Feature, Language, Script};
 
@@ -629,18 +630,20 @@ fn set_unicode_props(buffer: &mut hb_buffer_t) {
                     i += 1;
                 }
             }
-        } else if matches!(info.glyph_id, 0xE0020..=0xE007F) {
+        } else if matches!(info.glyph_id, 0xFF9E..=0xFF9F | 0xE0020..=0xE007F) {
             // Or part of the Other_Grapheme_Extend that is not marks.
-            // As of Unicode 11 that is just:
+            // As of Unicode 15 that is just:
             //
             // 200C          ; Other_Grapheme_Extend # Cf       ZERO WIDTH NON-JOINER
             // FF9E..FF9F    ; Other_Grapheme_Extend # Lm   [2] HALFWIDTH KATAKANA VOICED SOUND MARK..HALFWIDTH KATAKANA
             // SEMI-VOICED SOUND MARK E0020..E007F  ; Other_Grapheme_Extend # Cf  [96] TAG SPACE..CANCEL TAG
             //
             // ZWNJ is special, we don't want to merge it as there's no need, and keeping
-            // it separate results in more granular clusters.  Ignore Katakana for now.
+            // it separate results in more granular clusters.
             // Tags are used for Emoji sub-region flag sequences:
             // https://github.com/harfbuzz/harfbuzz/issues/1556
+            // Katakana ones were requested:
+            // https://github.com/harfbuzz/harfbuzz/issues/3844
             _hb_glyph_info_set_continuation(info);
         }
 
@@ -866,18 +869,47 @@ fn hide_default_ignorables(buffer: &mut hb_buffer_t, face: &hb_font_t) {
 fn propagate_flags(buffer: &mut hb_buffer_t) {
     // Propagate cluster-level glyph flags to be the same on all cluster glyphs.
     // Simplifies using them.
-    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS != 0 {
-        foreach_cluster!(buffer, start, end, {
-            let mut mask = 0;
-            for info in &buffer.info[start..end] {
-                mask |= info.mask & glyph_flag::DEFINED;
+
+    if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS == 0 {
+        return;
+    }
+
+    /* If we are producing SAFE_TO_INSERT_TATWEEL, then do two things:
+     *
+     * - If the places that the Arabic shaper marked as SAFE_TO_INSERT_TATWEEL,
+     *   are UNSAFE_TO_BREAK, then clear the SAFE_TO_INSERT_TATWEEL,
+     * - Any place that is SAFE_TO_INSERT_TATWEEL, is also now UNSAFE_TO_BREAK.
+     *
+     * We couldn't make this interaction earlier. It has to be done here.
+     */
+    let flip_tatweel = buffer
+        .flags
+        .contains(BufferFlags::PRODUCE_SAFE_TO_INSERT_TATWEEL);
+
+    let clear_concat = !buffer.flags.contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT);
+
+    foreach_cluster!(buffer, start, end, {
+        let mut mask = 0;
+        for info in &buffer.info[start..end] {
+            mask |= info.mask & glyph_flag::DEFINED;
+        }
+
+        if flip_tatweel {
+            if mask & UNSAFE_TO_BREAK != 0 {
+                mask &= !SAFE_TO_INSERT_TATWEEL;
             }
 
-            if mask != 0 {
-                for info in &mut buffer.info[start..end] {
-                    info.mask |= mask;
-                }
+            if mask & SAFE_TO_INSERT_TATWEEL != 0 {
+                mask |= UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT;
             }
-        });
-    }
+        }
+
+        if clear_concat {
+            mask &= !UNSAFE_TO_CONCAT;
+
+            for info in &mut buffer.info[start..end] {
+                info.mask = mask;
+            }
+        }
+    });
 }

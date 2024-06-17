@@ -1,10 +1,10 @@
 use alloc::{string::String, vec::Vec};
-use core::convert::TryFrom;
 use core::cmp::min;
+use core::convert::TryFrom;
 
 use ttf_parser::GlyphId;
 
-use super::buffer::glyph_flag::{UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
+use super::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use super::face::GlyphExtents;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_mask_t};
@@ -91,8 +91,14 @@ pub mod glyph_flag {
     /// the buffer flag will not be reliably produced.
     pub const UNSAFE_TO_CONCAT: u32 = 0x00000002;
 
+    /// In scripts that use elongation (Arabic,
+    /// Mongolian, Syriac, etc.), this flag signifies
+    /// that it is safe to insert a U+0640 TATWEEL
+    /// character *before* this cluster for elongation.
+    pub const SAFE_TO_INSERT_TATWEEL: u32 = 0x00000004;
+
     /// All the currently defined flags.
-    pub const DEFINED: u32 = 0x00000003; // OR of all defined flags
+    pub const DEFINED: u32 = 0x00000007; // OR of all defined flags
 }
 
 /// Holds the positions of the glyph in both horizontal and vertical directions.
@@ -636,15 +642,15 @@ impl hb_buffer_t {
         // TODO: language must be set
     }
 
-    pub fn sync(&mut self) {
+    pub fn sync(&mut self) -> bool {
         assert!(self.have_output);
-
         assert!(self.idx <= self.len);
+
         if !self.successful {
             self.have_output = false;
             self.out_len = 0;
             self.idx = 0;
-            return;
+            return false;
         }
 
         self.next_glyphs(self.len - self.idx);
@@ -662,6 +668,7 @@ impl hb_buffer_t {
         self.have_output = false;
         self.out_len = 0;
         self.idx = 0;
+        true
     }
 
     pub fn clear_output(&mut self) {
@@ -1021,6 +1028,18 @@ impl hb_buffer_t {
             Some(true),
             None,
         );
+    }
+
+    pub fn safe_to_insert_tatweel(&mut self, start: Option<usize>, end: Option<usize>) {
+        if !self
+            .flags
+            .contains(BufferFlags::PRODUCE_SAFE_TO_INSERT_TATWEEL)
+        {
+            self.unsafe_to_break(start, end);
+            return;
+        }
+
+        self._set_glyph_flags(SAFE_TO_INSERT_TATWEEL, start, end, Some(true), None);
     }
 
     /// Adds glyph flags in mask to infos with clusters between start and end.

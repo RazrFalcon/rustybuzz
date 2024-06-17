@@ -630,7 +630,8 @@ impl CharExt for char {
             0x1F8AE..=0x1F8FF => true,
             0x1F90C..=0x1F93A => true,
             0x1F93C..=0x1F945 => true,
-            0x1F947..=0x1FFFD => true,
+            0x1F947..=0x1FAFF => true,
+            0x1FC00..=0x1FFFD => true,
             _ => false,
         }
     }
@@ -839,11 +840,11 @@ pub fn decompose_hangul(ab: char) -> Option<(char, char)> {
 mod tests {
     #[test]
     fn check_unicode_version() {
-        assert_eq!(unicode_bidi_mirroring::UNICODE_VERSION, (14, 0, 0));
-        assert_eq!(unicode_ccc::UNICODE_VERSION, (14, 0, 0));
+        assert_eq!(unicode_bidi_mirroring::UNICODE_VERSION, (15, 1, 0));
+        assert_eq!(unicode_ccc::UNICODE_VERSION, (15, 0, 0));
         assert_eq!(unicode_properties::UNICODE_VERSION, (15, 0, 0));
         assert_eq!(unicode_script::UNICODE_VERSION, (15, 1, 0));
-        assert_eq!(crate::hb::unicode_norm::UNICODE_VERSION, (14, 0, 0));
+        assert_eq!(crate::hb::unicode_norm::UNICODE_VERSION, (15, 0, 0));
     }
 }
 

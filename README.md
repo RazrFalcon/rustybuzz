@@ -50,6 +50,7 @@ and we do not do this for now.
 - `mort` table is not supported, since it's deprecated by Apple.
 - No Arabic fallback shaper, since it requires subsetting.
 - No `graphite` library support.
+- `avar2` as well as other parts of the boring-expansion-spec are not supported yet.
 - No automated Apple layout testing for legal reasons. We just cannot include Apple fonts.
   harfbuzz avoids this by running such tests only on CI, which is far from ideal.
 

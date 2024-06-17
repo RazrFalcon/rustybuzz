@@ -624,6 +624,7 @@ fn override_features(planner: &mut hb_ot_shape_planner_t) {
     planner
         .ot_map
         .disable_feature(hb_tag_t::from_bytes(b"liga"));
+    planner.ot_map.add_gsub_pause(None);
 }
 
 fn preprocess_text(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
