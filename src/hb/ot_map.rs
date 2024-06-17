@@ -54,6 +54,8 @@ pub struct StageMap {
     pub pause_func: Option<pause_func_t>,
 }
 
+// Pause functions return true if new glyph indices might have been added to the buffer.
+// This is used to update buffer digest.
 pub type pause_func_t = fn(&hb_ot_shape_plan_t, &hb_font_t, &mut hb_buffer_t) -> bool;
 
 impl hb_ot_map_t {
