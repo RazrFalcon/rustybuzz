@@ -271,7 +271,6 @@ pub fn find_syllables(buffer: &mut hb_buffer_t) {
     let mut p = p0;
     let mut ts = p0;
     let mut te = p0;
-    let mut act = p0;
     let pe = p.end();
     let eof = p.end();
     let mut syllable_serial = 1u8;
@@ -289,7 +288,6 @@ pub fn find_syllables(buffer: &mut hb_buffer_t) {
         cs = (use_syllable_machine_start) as i32;
         ts = p0;
         te = p0;
-        act = p0;
     }
 
     {
