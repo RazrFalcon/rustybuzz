@@ -13,9 +13,10 @@ use OT_CM    as _OT_CM;         /*   1 chars; CM */
 use OT_CS    as _OT_CS;         /*   2 chars; CS */
 use OT_DOTTEDCIRCLE as _OT_DC;         /*   1 chars; DOTTEDCIRCLE */
 use OT_H     as _OT_H;          /*  11 chars; H */
-use OT_M     as _OT_M;          /* 143 chars; M */
+use OT_M     as _OT_M;          /* 142 chars; M */
 use OT_MH    as _OT_MH;         /*   1 chars; MH */
 use OT_ML    as _OT_ML;         /*   1 chars; ML */
+use OT_MPst  as _OT_MP;         /*   1 chars; MPst */
 use OT_MR    as _OT_MR;         /*   1 chars; MR */
 use OT_MW    as _OT_MW;         /*   2 chars; MW */
 use OT_MY    as _OT_MY;         /*   3 chars; MY */
@@ -122,7 +123,7 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 0A28 */ (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C),
   /* 0A30 */ (_OT_R,_POS_C), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X),
   /* 0A38 */ (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_N,_POS_X), (_OT_X,_POS_X),(_OT_M,_POS_AP),(_OT_M,_POS_LM),
-  /* 0A40 */(_OT_M,_POS_AP),(_OT_M,_POS_AP),(_OT_M,_POS_AP), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_M,_POS_AP),
+  /* 0A40 */(_OT_MP,_POS_AP),(_OT_M,_POS_AP),(_OT_M,_POS_AP), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_M,_POS_AP),
   /* 0A48 */(_OT_M,_POS_AP), (_OT_X,_POS_X), (_OT_X,_POS_X),(_OT_M,_POS_AP),(_OT_M,_POS_AP), (_OT_H,_POS_B), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 0A50 */ (_OT_X,_POS_X), (_OT_M,_POS_B), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 0A58 */ (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_C,_POS_C), (_OT_X,_POS_X), (_OT_C,_POS_C), (_OT_X,_POS_X),

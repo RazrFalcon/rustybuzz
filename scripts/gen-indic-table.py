@@ -117,8 +117,6 @@ category_map = {
   'Vowel'			: 'V',
   'Vowel_Dependent'		: 'M',
   'Vowel_Independent'		: 'V',
-  'Dotted_Circle'		: 'DOTTEDCIRCLE', # Ours, not Unicode's
-  'Ra'				: 'Ra', # Ours, not Unicode's
 }
 
 position_map = {
@@ -188,6 +186,9 @@ category_overrides = {
   # The following act more like the Bindus.
   0x0953: 'SM',
   0x0954: 'SM',
+
+  # U+0A40 GURMUKHI VOWEL SIGN II may be preceded by U+0A02 GURMUKHI SIGN BINDI.
+  0x0A40: 'MPst',
 
   # The following act like consonants.
   0x0A72: 'C',
@@ -391,7 +392,7 @@ for k,new_cat in category_overrides.items():
   indic_data[k] = (new_cat, pos, unicode_data[2][k])
 
 # We only expect position for certain types
-positioned_categories = ('CM', 'SM', 'RS', 'H', 'M')
+positioned_categories = ('CM', 'SM', 'RS', 'H', 'M', 'MPst')
 for k, (cat, pos, block) in indic_data.items():
   if cat not in positioned_categories:
     pos = 'END'
@@ -401,11 +402,12 @@ for k, (cat, pos, block) in indic_data.items():
 
 # Keep in sync with CONSONANT_FLAGS in the shaper
 consonant_categories = ('C', 'CS', 'Ra','CM', 'V', 'PLACEHOLDER', 'DOTTEDCIRCLE')
+matra_categories = ('M', 'MPst')
 smvd_categories = ('SM', 'VD', 'A', 'Symbol')
 for k, (cat, pos, block) in indic_data.items():
   if cat in consonant_categories:
     pos = 'BASE_C'
-  elif cat == 'M':
+  elif cat in matra_categories:
     if block.startswith('Khmer') or block.startswith('Myanmar'):
       cat = position_to_category(pos)
     else:

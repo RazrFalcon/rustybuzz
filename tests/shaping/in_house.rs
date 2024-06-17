@@ -3468,6 +3468,34 @@ fn indic_special_cases_006() {
 }
 
 #[test]
+fn indic_special_cases_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/5f73fff1ffc07b5a99a90c0909609f2b09fef274.ttf",
+            "\u{0A15}\u{0A40}\u{0A02}",
+            "",
+        ),
+        "uni0A15=0+505|\
+         uni0A40=0+427|\
+         uni0A02=0+0"
+    );
+}
+
+#[test]
+fn indic_special_cases_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/5f73fff1ffc07b5a99a90c0909609f2b09fef274.ttf",
+            "\u{0A15}\u{0A02}\u{0A40}",
+            "",
+        ),
+        "uni0A15=0+505|\
+         uni0A02=0+0|\
+         uni0A40=0+427"
+    );
+}
+
+#[test]
 fn indic_syllable_001() {
     assert_eq!(
         shape(
