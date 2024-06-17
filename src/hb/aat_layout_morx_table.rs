@@ -46,6 +46,7 @@ pub fn compile_flags(face: &hb_font_t, builder: &hb_aat_map_builder_t) -> Option
                     flags |= feature.enable_flags;
                 }
             }
+            // TODO: Port the following commit: https://github.com/harfbuzz/harfbuzz/commit/2124ad890
         }
 
         map.chain_flags.push(flags);
