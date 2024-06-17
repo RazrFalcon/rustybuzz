@@ -16,8 +16,8 @@ exclude = ["benches/", "tests/"]
 bitflags = "2.4.1"
 bytemuck = { version = "1.5", features = ["extern_crate_alloc"] }
 smallvec = "1.6"
-unicode-bidi-mirroring = "0.2"
-unicode-ccc = "0.2"
+unicode-bidi-mirroring = "0.3.0"
+unicode-ccc = "0.3.0"
 unicode-properties = { version = "0.1.0", default-features = false, features = ["general-category"] }
 unicode-script = "0.5.2"
 libm = { version = "0.2.2", optional = true }
