@@ -97,7 +97,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     }
 }
 
-fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     super::ot_shaper_myanmar_machine::find_syllables_myanmar(buffer);
 
     let mut start = 0;
@@ -107,19 +107,25 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    false
 }
 
-fn reorder_myanmar(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn reorder_myanmar(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     use super::ot_shaper_myanmar_machine::SyllableType;
 
-    super::ot_shaper_syllabic::insert_dotted_circles(
+    let mut ret = false;
+
+    if super::ot_shaper_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
         ot_category_t::OT_DOTTEDCIRCLE,
         None,
         None,
-    );
+    ) {
+        ret = true;
+    }
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -128,6 +134,8 @@ fn reorder_myanmar(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buf
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    ret
 }
 
 fn reorder_syllable_myanmar(start: usize, end: usize, buffer: &mut hb_buffer_t) {

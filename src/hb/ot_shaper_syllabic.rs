@@ -9,21 +9,21 @@ pub fn insert_dotted_circles(
     dottedcircle_category: u8,
     repha_category: Option<u8>,
     dottedcircle_position: Option<u8>,
-) {
+) -> bool {
     if buffer
         .flags
         .contains(BufferFlags::DO_NOT_INSERT_DOTTED_CIRCLE)
     {
-        return;
+        return false;
     }
 
     if (buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE) == 0 {
-        return;
+        return false;
     }
 
     let dottedcircle_glyph = match face.get_nominal_glyph(0x25CC) {
         Some(g) => g.0 as u32,
-        None => return,
+        None => return false,
     };
 
     let mut dottedcircle = hb_glyph_info_t {
@@ -67,4 +67,6 @@ pub fn insert_dotted_circles(
     }
 
     buffer.sync();
+
+    true
 }

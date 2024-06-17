@@ -667,7 +667,7 @@ fn setup_masks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) 
     }
 }
 
-fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     super::ot_shaper_indic_machine::find_syllables_indic(buffer);
 
     let mut start = 0;
@@ -677,22 +677,32 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    false
 }
 
-fn initial_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn initial_reordering(
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
+) -> bool {
     use super::ot_shaper_indic_machine::SyllableType;
+
+    let mut ret = false;
 
     let indic_plan = plan.data::<IndicShapePlan>();
 
     update_consonant_positions(plan, indic_plan, face, buffer);
-    super::ot_shaper_syllabic::insert_dotted_circles(
+    if super::ot_shaper_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
         ot_category_t::OT_DOTTEDCIRCLE,
         Some(ot_category_t::OT_Repha),
         Some(ot_position_t::POS_END),
-    );
+    ) {
+        ret = true;
+    }
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -701,6 +711,8 @@ fn initial_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut 
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    ret
 }
 
 fn update_consonant_positions(
@@ -1340,14 +1352,16 @@ fn initial_reordering_standalone_cluster(
     initial_reordering_consonant_syllable(plan, indic_plan, face, start, end, buffer);
 }
 
-fn final_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn final_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     if buffer.is_empty() {
-        return;
+        return false;
     }
 
     foreach_syllable!(buffer, start, end, {
         final_reordering_impl(plan, face, start, end, buffer);
     });
+
+    false
 }
 
 fn final_reordering_impl(
