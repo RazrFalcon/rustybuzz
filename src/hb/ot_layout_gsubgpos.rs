@@ -191,7 +191,7 @@ pub struct skipping_iterator_t<'a, 'b> {
     syllable: u8,
     matching: Option<&'a match_func_t<'a>>,
     buf_len: usize,
-    buf_idx: usize,
+    pub(crate) buf_idx: usize,
     num_items: u16,
 }
 
