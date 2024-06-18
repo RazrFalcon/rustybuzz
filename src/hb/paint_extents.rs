@@ -1,15 +1,15 @@
 use ttf_parser::{GlyphId, Transform};
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
-use crate::hb::face::GlyphExtents;
+use crate::hb::face::hb_extents_t;
 
 struct hb_bounds_t {
     bounded: bool,
-    glyph_extents: GlyphExtents
+    glyph_extents: hb_extents_t
 }
 
 
 impl hb_bounds_t {
-    fn new(extents: &GlyphExtents) -> Self {
+    fn new(extents: &hb_extents_t) -> Self {
         hb_bounds_t {
             glyph_extents: *extents,
             bounded: false
@@ -19,7 +19,7 @@ impl hb_bounds_t {
 
 impl Default for hb_bounds_t {
     fn default() -> Self {
-        Self::new(&GlyphExtents::default())
+        Self::new(&hb_extents_t::default())
     }
 }
 
@@ -40,7 +40,7 @@ impl hb_paint_extents_context_t {
         self.transforms.pop();
     }
 
-    fn push_clip(&mut self, extents: &GlyphExtents) {
+    fn push_clip(&mut self, extents: &hb_extents_t) {
         let b = hb_bounds_t::new(extents);
         self.clips.push(b);
     }
@@ -57,7 +57,7 @@ impl hb_paint_extents_context_t {
         self.bounds.pop();
     }
 
-    fn add_extents(extents: &GlyphExtents) {
+    fn add_extents(extents: &hb_extents_t) {
         todo!()
     }
 }
