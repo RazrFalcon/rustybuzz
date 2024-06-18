@@ -191,7 +191,7 @@ pub struct skipping_iterator_t<'a, 'b> {
     syllable: u8,
     matching: Option<&'a match_func_t<'a>>,
     buf_len: usize,
-    buf_idx: usize,
+    pub(crate) buf_idx: usize,
     num_items: u16,
 }
 
@@ -240,7 +240,20 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
 
     pub fn next(&mut self, unsafe_to: Option<&mut usize>) -> bool {
         assert!(self.num_items > 0);
-        while self.buf_idx + usize::from(self.num_items) < self.buf_len {
+        // The alternate condition below is faster at string boundaries,
+        // but produces subpar "unsafe-to-concat" values.
+        let mut stop: i32 = self.buf_len as i32 - self.num_items as i32;
+
+        if self
+            .ctx
+            .buffer
+            .flags
+            .contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT)
+        {
+            stop = self.buf_len as i32 - 1;
+        }
+
+        while (self.buf_idx as i32) < stop {
             self.buf_idx += 1;
             let info = &self.ctx.buffer.info[self.buf_idx];
 
@@ -273,7 +286,19 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
 
     pub fn prev(&mut self, unsafe_from: Option<&mut usize>) -> bool {
         assert!(self.num_items > 0);
-        while self.buf_idx >= usize::from(self.num_items) {
+
+        let mut stop = self.num_items - 1;
+
+        if self
+            .ctx
+            .buffer
+            .flags
+            .contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT)
+        {
+            stop = 1 - 1;
+        }
+
+        while self.buf_idx > stop as usize {
             self.buf_idx -= 1;
             let info = &self.ctx.buffer.out_info()[self.buf_idx];
 
@@ -1134,6 +1159,7 @@ pub mod OT {
     }
 }
 
+use crate::BufferFlags;
 use OT::hb_ot_apply_context_t;
 
 pub fn ligate_input(

@@ -128,7 +128,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     }
 }
 
-fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     super::ot_shaper_khmer_machine::find_syllables_khmer(buffer);
 
     let mut start = 0;
@@ -138,19 +138,25 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    false
 }
 
-fn reorder_khmer(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn reorder_khmer(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     use super::ot_shaper_khmer_machine::SyllableType;
 
-    super::ot_shaper_syllabic::insert_dotted_circles(
+    let mut ret = false;
+
+    if super::ot_shaper_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
         ot_category_t::OT_DOTTEDCIRCLE,
         Some(ot_category_t::OT_Repha),
         None,
-    );
+    ) {
+        ret = true;
+    }
 
     let khmer_plan = plan.data::<KhmerShapePlan>();
 
@@ -161,6 +167,8 @@ fn reorder_khmer(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_bu
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    ret
 }
 
 fn reorder_syllable_khmer(

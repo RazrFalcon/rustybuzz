@@ -20,38 +20,45 @@ impl Apply for PairAdjustment<'_> {
         let second_glyph_index = iter.index();
         let second_glyph = ctx.buffer.info[second_glyph_index].as_glyph();
 
-        let finish = |ctx: &mut hb_ot_apply_context_t, has_record2| {
-            ctx.buffer.idx = second_glyph_index;
-
+        let finish = |ctx: &mut hb_ot_apply_context_t, iter_index: &mut usize, has_record2| {
             if has_record2 {
-                ctx.buffer.idx += 1;
+                *iter_index += 1;
+                // https://github.com/harfbuzz/harfbuzz/issues/3824
+                // https://github.com/harfbuzz/harfbuzz/issues/3888#issuecomment-1326781116
+                ctx.buffer
+                    .unsafe_to_break(Some(ctx.buffer.idx), Some(*iter_index + 1));
             }
+
+            ctx.buffer.idx = *iter_index;
 
             Some(())
         };
 
-        let boring = |ctx: &mut hb_ot_apply_context_t, has_record2| {
+        let boring = |ctx: &mut hb_ot_apply_context_t, iter_index: &mut usize, has_record2| {
             ctx.buffer
                 .unsafe_to_concat(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
-            finish(ctx, has_record2)
+            finish(ctx, iter_index, has_record2)
         };
 
-        let success = |ctx: &mut hb_ot_apply_context_t, flag1, flag2, has_record2| {
-            if flag1 || flag2 {
-                ctx.buffer
-                    .unsafe_to_break(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
-                finish(ctx, has_record2)
-            } else {
-                boring(ctx, has_record2)
-            }
-        };
+        let success =
+            |ctx: &mut hb_ot_apply_context_t, iter_index: &mut usize, flag1, flag2, has_record2| {
+                if flag1 || flag2 {
+                    ctx.buffer
+                        .unsafe_to_break(Some(ctx.buffer.idx), Some(second_glyph_index + 1));
+                    finish(ctx, iter_index, has_record2)
+                } else {
+                    boring(ctx, iter_index, has_record2)
+                }
+            };
 
-        let bail = |ctx: &mut hb_ot_apply_context_t, records: (ValueRecord, ValueRecord)| {
+        let bail = |ctx: &mut hb_ot_apply_context_t,
+                    iter_index: &mut usize,
+                    records: (ValueRecord, ValueRecord)| {
             let flag1 = records.0.apply(ctx, ctx.buffer.idx);
             let flag2 = records.1.apply(ctx, second_glyph_index);
 
             let has_record2 = !records.1.is_empty();
-            success(ctx, flag1, flag2, has_record2)
+            success(ctx, iter_index, flag1, flag2, has_record2)
         };
 
         let records = match self {
@@ -72,10 +79,10 @@ impl Apply for PairAdjustment<'_> {
                     }
                 };
 
-                return bail(ctx, records);
+                return bail(ctx, &mut iter.buf_idx, records);
             }
         };
 
-        bail(ctx, records)
+        bail(ctx, &mut iter.buf_idx, records)
     }
 }

@@ -714,9 +714,11 @@ pub fn _hb_clear_substitution_flags(
     _: &hb_ot_shape_plan_t,
     _: &hb_font_t,
     buffer: &mut hb_buffer_t,
-) {
+) -> bool {
     let len = buffer.len;
     for info in &mut buffer.info[..len] {
         _hb_glyph_info_clear_substituted(info);
     }
+
+    false
 }

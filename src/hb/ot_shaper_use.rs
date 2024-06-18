@@ -237,7 +237,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     }
 }
 
-fn setup_syllables(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn setup_syllables(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     super::ot_shaper_use_machine::find_syllables(buffer);
 
     foreach_syllable!(buffer, start, end, {
@@ -246,14 +246,16 @@ fn setup_syllables(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buf
 
     setup_rphf_mask(plan, buffer);
     setup_topographical_masks(plan, buffer);
+
+    false
 }
 
-fn setup_rphf_mask(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t) {
+fn setup_rphf_mask(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t) -> bool {
     let universal_plan = plan.data::<UniversalShapePlan>();
 
     let mask = universal_plan.rphf_mask;
     if mask == 0 {
-        return;
+        return false;
     }
 
     let mut start = 0;
@@ -272,6 +274,8 @@ fn setup_rphf_mask(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t) {
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    false
 }
 
 fn setup_topographical_masks(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t) {
@@ -344,12 +348,12 @@ fn setup_topographical_masks(plan: &hb_ot_shape_plan_t, buffer: &mut hb_buffer_t
     }
 }
 
-fn record_rphf(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn record_rphf(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     let universal_plan = plan.data::<UniversalShapePlan>();
 
     let mask = universal_plan.rphf_mask;
     if mask == 0 {
-        return;
+        return false;
     }
 
     let mut start = 0;
@@ -370,19 +374,25 @@ fn record_rphf(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    false
 }
 
-fn reorder_use(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn reorder_use(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     use super::ot_shaper_use_machine::SyllableType;
 
-    crate::hb::ot_shaper_syllabic::insert_dotted_circles(
+    let mut ret = false;
+
+    if crate::hb::ot_shaper_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
         category::B,
         Some(category::R),
         None,
-    );
+    ) {
+        ret = true;
+    }
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -391,6 +401,8 @@ fn reorder_use(_: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    ret
 }
 
 const fn category_flag(c: Category) -> u32 {
@@ -485,7 +497,7 @@ fn reorder_syllable_use(start: usize, end: usize, buffer: &mut hb_buffer_t) {
     }
 }
 
-fn record_pref(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn record_pref(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
     while start < buffer.len {
@@ -500,6 +512,8 @@ fn record_pref(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) 
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    false
 }
 
 fn has_arabic_joining(script: Script) -> bool {

@@ -37,6 +37,7 @@ VD   = 9;
 PLACEHOLDER = 10;
 DOTTEDCIRCLE = 11;
 RS    = 12;
+MPst  = 13;
 Repha = 14;
 Ra    = 15;
 CM    = 16;
@@ -50,7 +51,7 @@ reph = (Ra H | Repha);		# possible reph
 
 cn = c.ZWJ?.n?;
 symbol = Symbol.N?;
-matra_group = z*.M.N?.H?;
+matra_group = z*.(M | SM? MPst).N?.H?;
 syllable_tail = (z?.SM.SM?.ZWNJ?)? (A | VD)*;
 halant_group = (z?.H.(ZWJ.N?)?);
 final_halant_group = halant_group | H.ZWNJ;

@@ -55,6 +55,7 @@ pub mod ot_category_t {
     pub const OT_GB: u8 = OT_PLACEHOLDER;
     pub const OT_DOTTEDCIRCLE: u8 = 11;
     pub const OT_RS: u8 = 12; // Register Shifter, used in Khmer OT spec.
+    pub const OT_MPst: u8 = 13;
     pub const OT_Repha: u8 = 14; // Atomically-encoded logical or visual repha.
     pub const OT_Ra: u8 = 15;
     pub const OT_CM: u8 = 16; // Consonant-Medial.
@@ -667,7 +668,7 @@ fn setup_masks(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) 
     }
 }
 
-fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     super::ot_shaper_indic_machine::find_syllables_indic(buffer);
 
     let mut start = 0;
@@ -677,22 +678,32 @@ fn setup_syllables(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    false
 }
 
-fn initial_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn initial_reordering(
+    plan: &hb_ot_shape_plan_t,
+    face: &hb_font_t,
+    buffer: &mut hb_buffer_t,
+) -> bool {
     use super::ot_shaper_indic_machine::SyllableType;
+
+    let mut ret = false;
 
     let indic_plan = plan.data::<IndicShapePlan>();
 
     update_consonant_positions(plan, indic_plan, face, buffer);
-    super::ot_shaper_syllabic::insert_dotted_circles(
+    if super::ot_shaper_syllabic::insert_dotted_circles(
         face,
         buffer,
         SyllableType::BrokenCluster as u8,
         ot_category_t::OT_DOTTEDCIRCLE,
         Some(ot_category_t::OT_Repha),
         Some(ot_position_t::POS_END),
-    );
+    ) {
+        ret = true;
+    }
 
     let mut start = 0;
     let mut end = buffer.next_syllable(0);
@@ -701,6 +712,8 @@ fn initial_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut 
         start = end;
         end = buffer.next_syllable(start);
     }
+
+    ret
 }
 
 fn update_consonant_positions(
@@ -1097,6 +1110,14 @@ fn initial_reordering_consonant_syllable(
                     }
                 }
             } else if buffer.info[i].indic_position() != ot_position_t::POS_SMVD {
+                if buffer.info[i].indic_category() == ot_category_t::OT_MPst
+                    && i > start
+                    && buffer.info[i - 1].indic_category() == ot_category_t::OT_SM
+                {
+                    let val = buffer.info[i].indic_position();
+                    buffer.info[i - 1].set_indic_position(val);
+                }
+
                 last_pos = buffer.info[i].indic_position();
             }
         }
@@ -1115,7 +1136,10 @@ fn initial_reordering_consonant_syllable(
                 }
 
                 last = i;
-            } else if buffer.info[i].indic_category() == ot_category_t::OT_M {
+            } else if (rb_flag_unsafe(buffer.info[i].indic_category() as u32)
+                & (rb_flag(ot_category_t::OT_M as u32) | rb_flag(ot_category_t::OT_MPst as u32)))
+                != 0
+            {
                 last = i;
             }
         }
@@ -1130,14 +1154,43 @@ fn initial_reordering_consonant_syllable(
 
         buffer.info[start..end].sort_by(|a, b| a.indic_position().cmp(&b.indic_position()));
 
-        // Find base again.
+        // Find base again; also flip left-matra sequence.
+        let mut first_left_mantra = end;
+        let mut last_left_mantra = end;
         base = end;
+
         for i in start..end {
             if buffer.info[i].indic_position() == ot_position_t::POS_BASE_C {
                 base = i;
                 break;
+            } else if buffer.info[i].indic_position() == ot_position_t::POS_PRE_M {
+                if first_left_mantra == end {
+                    first_left_mantra = i;
+                }
+
+                last_left_mantra = i;
             }
         }
+
+        // https://github.com/harfbuzz/harfbuzz/issues/3863
+        if first_left_mantra < last_left_mantra {
+            // No need to merge clusters, handled later.
+            buffer.reverse_range(first_left_mantra, last_left_mantra + 1);
+            // Reverse back nuktas, etc.
+            let mut i = first_left_mantra;
+
+            for j in i..=last_left_mantra {
+                if (rb_flag_unsafe(buffer.info[j].indic_category() as u32)
+                    & (rb_flag(ot_category_t::OT_M as u32)
+                        | rb_flag(ot_category_t::OT_MPst as u32)))
+                    != 0
+                {
+                    buffer.reverse_range(i, j + 1);
+                    i = j + 1;
+                }
+            }
+        }
+
         // Things are out-of-control for post base positions, they may shuffle
         // around like crazy.  In old-spec mode, we move halants around, so in
         // that case merge all clusters after base.  Otherwise, check the sort
@@ -1315,14 +1368,16 @@ fn initial_reordering_standalone_cluster(
     initial_reordering_consonant_syllable(plan, indic_plan, face, start, end, buffer);
 }
 
-fn final_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn final_reordering(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     if buffer.is_empty() {
-        return;
+        return false;
     }
 
     foreach_syllable!(buffer, start, end, {
         final_reordering_impl(plan, face, start, end, buffer);
     });
+
+    false
 }
 
 fn final_reordering_impl(
@@ -1493,7 +1548,9 @@ fn final_reordering_impl(
             loop {
                 while new_pos > start
                     && !buffer.info[new_pos].is_one_of(
-                        rb_flag(ot_category_t::OT_M as u32) | rb_flag(ot_category_t::OT_H as u32),
+                        rb_flag(ot_category_t::OT_M as u32)
+                            | rb_flag(ot_category_t::OT_MPst as u32)
+                            | rb_flag(ot_category_t::OT_H as u32),
                     )
                 {
                     new_pos -= 1;
@@ -1699,7 +1756,11 @@ fn final_reordering_impl(
                 // TEST: U+0930,U+094D,U+0915,U+094B,U+094D
                 if buffer.info[new_reph_pos].is_halant() {
                     for info in &buffer.info[base + 1..new_reph_pos] {
-                        if info.indic_category() == ot_category_t::OT_M {
+                        if (rb_flag_unsafe(info.indic_category() as u32)
+                            & (rb_flag(ot_category_t::OT_M as u32)
+                                | rb_flag(ot_category_t::OT_MPst as u32)))
+                            != 0
+                        {
                             // Ok, got it.
                             new_reph_pos -= 1;
                         }
@@ -1757,6 +1818,7 @@ fn final_reordering_impl(
                         while new_pos > start
                             && !buffer.info[new_pos - 1].is_one_of(
                                 rb_flag(ot_category_t::OT_M as u32)
+                                    | rb_flag(ot_category_t::OT_MPst as u32)
                                     | rb_flag(ot_category_t::OT_H as u32),
                             )
                         {

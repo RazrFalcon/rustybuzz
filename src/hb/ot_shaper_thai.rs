@@ -73,13 +73,13 @@ enum Action {
 
 #[derive(Clone, Copy)]
 struct PuaMapping {
-    u: u32,
-    win_pua: u32,
-    mac_pua: u32,
+    u: u16,
+    win_pua: u16,
+    mac_pua: u16,
 }
 
 impl PuaMapping {
-    const fn new(u: u32, win_pua: u32, mac_pua: u32) -> Self {
+    const fn new(u: u16, win_pua: u16, mac_pua: u16) -> Self {
         PuaMapping {
             u,
             win_pua,
@@ -141,13 +141,13 @@ fn pua_shape(u: u32, action: Action, face: &hb_font_t) -> u32 {
     };
 
     for m in mappings {
-        if m.u == u {
-            if face.get_nominal_glyph(m.win_pua).is_some() {
-                return m.win_pua;
+        if m.u as u32 == u {
+            if face.get_nominal_glyph(m.win_pua as u32).is_some() {
+                return m.win_pua as u32;
             }
 
-            if face.get_nominal_glyph(m.mac_pua).is_some() {
-                return m.mac_pua;
+            if face.get_nominal_glyph(m.mac_pua as u32).is_some() {
+                return m.mac_pua as u32;
             }
 
             break;

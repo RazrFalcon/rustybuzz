@@ -405,17 +405,19 @@ pub fn setup_masks_inner(
     }
 }
 
-fn arabic_fallback_shape(_: &hb_ot_shape_plan_t, _: &hb_font_t, _: &mut hb_buffer_t) {}
+fn arabic_fallback_shape(_: &hb_ot_shape_plan_t, _: &hb_font_t, _: &mut hb_buffer_t) -> bool {
+    false
+}
 
 // Stretch feature: "stch".
 // See example here:
 // https://docs.microsoft.com/en-us/typography/script-development/syriac
 // We implement this in a generic way, such that the Arabic subtending
 // marks can use it as well.
-fn record_stch(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
+fn record_stch(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
     let arabic_plan = plan.data::<arabic_shape_plan_t>();
     if !arabic_plan.has_stch {
-        return;
+        return false;
     }
 
     // 'stch' feature was just applied.  Look for anything that multiplied,
@@ -442,6 +444,8 @@ fn record_stch(plan: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_
     if has_stch {
         buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH;
     }
+
+    false
 }
 
 fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
