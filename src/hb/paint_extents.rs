@@ -1,16 +1,16 @@
-
 use crate::hb::face::{hb_font_t, hb_glyph_extents_t};
-use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
-use ttf_parser::{GlyphId, Transform};
 use crate::hb::paint_extents::status_t::BOUNDED;
 use alloc::vec;
+use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
+use ttf_parser::{GlyphId, Transform};
 
 type hb_extents_t = ttf_parser::RectF;
 
+#[derive(PartialEq, Eq)]
 enum status_t {
     EMPTY,
     BOUNDED,
-    UNBOUNDED
+    UNBOUNDED,
 }
 
 struct hb_bounds_t {
@@ -22,7 +22,7 @@ impl hb_bounds_t {
     fn from_extents(extents: &hb_extents_t) -> Self {
         hb_bounds_t {
             extents: *extents,
-            status: BOUNDED
+            status: BOUNDED,
         }
     }
 
@@ -96,7 +96,33 @@ impl<'a> hb_paint_extents_context_t<'a> {
     }
 
     fn paint(&mut self) {
-        todo!()
+        if let (Some(clip), Some(mut group)) = (self.clips.last_mut(), self.groups.last_mut()) {
+            if clip.status == status_t::EMPTY {
+                return; // Shouldn't happen.
+            }
+
+            if group.status == status_t::UNBOUNDED {
+                return;
+            }
+
+            if group.status == status_t::EMPTY {
+                group = clip;
+                return;
+            }
+
+            // Group is bounded now.  Clip is not empty.
+
+            if clip.status == status_t::UNBOUNDED {
+                group.status = status_t::UNBOUNDED;
+                return;
+            }
+
+            // Both are bounded. Union.
+            group.extents.x_min = group.extents.x_min.min(clip.extents.x_min);
+            group.extents.y_min = group.extents.y_min.min(clip.extents.y_min);
+            group.extents.x_max = group.extents.x_max.max(clip.extents.x_max);
+            group.extents.y_max = group.extents.y_max.max(clip.extents.y_max);
+        }
     }
 }
 
