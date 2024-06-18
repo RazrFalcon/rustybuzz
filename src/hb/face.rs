@@ -206,7 +206,7 @@ impl<'a> hb_font_t<'a> {
         match self.ttfp_face.glyph_y_origin(glyph) {
             Some(y) => i32::from(y),
             None => {
-                let mut extents = hb_extents_t::default();
+                let mut extents = hb_glyph_extents_t::default();
                 if self.glyph_extents(glyph, &mut extents) {
                     if self.ttfp_face.tables().vmtx.is_some() {
                         extents.y_bearing + self.glyph_side_bearing(glyph, true)
@@ -239,7 +239,11 @@ impl<'a> hb_font_t<'a> {
         }
     }
 
-    pub(crate) fn glyph_extents(&self, glyph: GlyphId, glyph_extents: &mut hb_extents_t) -> bool {
+    pub(crate) fn glyph_extents(
+        &self,
+        glyph: GlyphId,
+        glyph_extents: &mut hb_glyph_extents_t,
+    ) -> bool {
         let pixels_per_em = match self.pixels_per_em {
             Some(ppem) => ppem.0,
             None => core::u16::MAX,
@@ -329,7 +333,7 @@ impl<'a> hb_font_t<'a> {
 }
 
 #[derive(Clone, Copy, Default)]
-pub struct hb_extents_t {
+pub struct hb_glyph_extents_t {
     pub x_bearing: i32,
     pub y_bearing: i32,
     pub width: i32,

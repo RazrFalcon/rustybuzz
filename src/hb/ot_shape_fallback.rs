@@ -1,7 +1,7 @@
 use ttf_parser::GlyphId;
 
 use super::buffer::{hb_buffer_t, GlyphPosition};
-use super::face::hb_extents_t;
+use super::face::hb_glyph_extents_t;
 use super::ot_layout::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::*;
@@ -134,12 +134,12 @@ fn position_mark(
     direction: Direction,
     glyph: GlyphId,
     pos: &mut GlyphPosition,
-    base_extents: &mut hb_extents_t,
+    base_extents: &mut hb_glyph_extents_t,
     combining_class: CanonicalCombiningClass,
 ) {
     use CanonicalCombiningClass as Class;
 
-    let mut mark_extents = hb_extents_t::default();
+    let mut mark_extents = hb_glyph_extents_t::default();
     if !face.glyph_extents(glyph, &mut mark_extents) {
         return;
     };
@@ -259,7 +259,7 @@ fn position_around_base(
     let base_pos = &buffer.pos[base];
     let base_glyph = base_info.as_glyph();
 
-    let mut base_extents = hb_extents_t::default();
+    let mut base_extents = hb_glyph_extents_t::default();
     if !face.glyph_extents(base_glyph, &mut base_extents) {
         zero_mark_advances(buffer, base + 1, end, adjust_offsets_when_zeroing);
         return;

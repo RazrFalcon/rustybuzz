@@ -5,7 +5,7 @@ use core::convert::TryFrom;
 use ttf_parser::GlyphId;
 
 use super::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
-use super::face::hb_extents_t;
+use super::face::hb_glyph_extents_t;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_mask_t};
 use crate::{script, BufferClusterLevel, BufferFlags, Direction, Language, Script, SerializeFlags};
@@ -1750,7 +1750,7 @@ impl GlyphBuffer {
             }
 
             if flags.contains(SerializeFlags::GLYPH_EXTENTS) {
-                let mut extents = hb_extents_t::default();
+                let mut extents = hb_glyph_extents_t::default();
                 face.glyph_extents(info.as_glyph(), &mut extents);
                 write!(
                     &mut s,

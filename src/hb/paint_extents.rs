@@ -1,38 +1,52 @@
-use ttf_parser::{GlyphId, Transform};
+use crate::hb::face::{hb_font_t, hb_glyph_extents_t};
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
-use crate::hb::face::hb_extents_t;
+use ttf_parser::{GlyphId, Transform};
+
+type hb_extents_t = ttf_parser::RectF;
 
 struct hb_bounds_t {
     bounded: bool,
-    glyph_extents: hb_extents_t
+    empty: bool,
+    extents: hb_extents_t,
 }
-
 
 impl hb_bounds_t {
     fn new(extents: &hb_extents_t) -> Self {
         hb_bounds_t {
-            glyph_extents: *extents,
-            bounded: false
+            extents: *extents,
+            bounded: false,
+            empty: true,
         }
     }
 }
 
 impl Default for hb_bounds_t {
     fn default() -> Self {
-        Self::new(&hb_extents_t::default())
+        Self::new(&hb_extents_t {
+            x_min: 0.0,
+            x_max: 0.0,
+            y_min: 0.0,
+            y_max: 0.0,
+        })
     }
 }
 
-struct hb_paint_extents_context_t {
+struct hb_paint_extents_context_t<'a> {
     clips: alloc::vec::Vec<hb_bounds_t>,
     bounds: alloc::vec::Vec<hb_bounds_t>,
     transforms: alloc::vec::Vec<Transform>,
+    face: &'a hb_font_t<'a>,
+    current_glyph: GlyphId,
 }
 
-impl hb_paint_extents_context_t {
+impl hb_paint_extents_context_t<'_> {
     fn push_transform(&mut self, trans: &Transform) {
-        let r = self.transforms.last().unwrap_or_default();
-        let new = Transform::combine(*r, *trans);
+        let r = self
+            .transforms
+            .last()
+            .copied()
+            .unwrap_or(Transform::default());
+        let new = Transform::combine(r, *trans);
         self.transforms.push(new);
     }
 
@@ -57,30 +71,40 @@ impl hb_paint_extents_context_t {
         self.bounds.pop();
     }
 
-    fn add_extents(extents: &hb_extents_t) {
+    fn paint(&mut self) {
         todo!()
     }
 }
 
-impl ttf_parser::colr::Painter for hb_paint_extents_context_t {
+impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
     fn outline_glyph(&mut self, glyph_id: GlyphId) {
-        todo!()
+        self.current_glyph = glyph_id;
     }
 
-    fn paint(&mut self, paint: Paint<'_>) {
-        todo!()
+    fn paint(&mut self, _: Paint<'_>) {
+        self.paint();
     }
 
     fn push_clip(&mut self) {
-        todo!()
+        let mut glyph_extents = hb_glyph_extents_t::default();
+        self.face
+            .glyph_extents(self.current_glyph, &mut glyph_extents);
+
+        let extents = hb_extents_t {
+            x_min: glyph_extents.x_bearing as f32,
+            y_min: glyph_extents.y_bearing as f32 + glyph_extents.height as f32,
+            x_max: glyph_extents.x_bearing as f32 + glyph_extents.width as f32,
+            y_max: glyph_extents.y_bearing as f32,
+        };
+        self.push_clip(&extents);
     }
 
     fn push_clip_box(&mut self, clipbox: ClipBox) {
-        todo!()
+        self.push_clip(&clipbox);
     }
 
     fn pop_clip(&mut self) {
-        todo!()
+        self.pop_clip();
     }
 
     fn push_layer(&mut self, _: CompositeMode) {
