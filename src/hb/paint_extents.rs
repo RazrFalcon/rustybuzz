@@ -1,28 +1,42 @@
+
 use crate::hb::face::{hb_font_t, hb_glyph_extents_t};
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
 use ttf_parser::{GlyphId, Transform};
+use crate::hb::paint_extents::status_t::BOUNDED;
+use alloc::vec;
 
 type hb_extents_t = ttf_parser::RectF;
 
+enum status_t {
+    EMPTY,
+    BOUNDED,
+    UNBOUNDED
+}
+
 struct hb_bounds_t {
-    bounded: bool,
-    empty: bool,
+    status: status_t,
     extents: hb_extents_t,
 }
 
 impl hb_bounds_t {
-    fn new(extents: &hb_extents_t) -> Self {
+    fn from_extents(extents: &hb_extents_t) -> Self {
         hb_bounds_t {
             extents: *extents,
-            bounded: false,
-            empty: true,
+            status: BOUNDED
+        }
+    }
+
+    fn from_status(status: status_t) -> Self {
+        hb_bounds_t {
+            status,
+            ..hb_bounds_t::default()
         }
     }
 }
 
 impl Default for hb_bounds_t {
     fn default() -> Self {
-        Self::new(&hb_extents_t {
+        Self::from_extents(&hb_extents_t {
             x_min: 0.0,
             x_max: 0.0,
             y_min: 0.0,
@@ -32,14 +46,24 @@ impl Default for hb_bounds_t {
 }
 
 struct hb_paint_extents_context_t<'a> {
-    clips: alloc::vec::Vec<hb_bounds_t>,
-    bounds: alloc::vec::Vec<hb_bounds_t>,
-    transforms: alloc::vec::Vec<Transform>,
+    clips: vec::Vec<hb_bounds_t>,
+    groups: vec::Vec<hb_bounds_t>,
+    transforms: vec::Vec<Transform>,
     face: &'a hb_font_t<'a>,
     current_glyph: GlyphId,
 }
 
-impl hb_paint_extents_context_t<'_> {
+impl<'a> hb_paint_extents_context_t<'a> {
+    fn new(face: &'a hb_font_t) -> Self {
+        Self {
+            clips: vec![hb_bounds_t::from_status(status_t::UNBOUNDED)],
+            groups: vec![hb_bounds_t::from_status(status_t::EMPTY)],
+            transforms: vec![Transform::default()],
+            face,
+            current_glyph: Default::default(),
+        }
+    }
+
     fn push_transform(&mut self, trans: &Transform) {
         let r = self
             .transforms
@@ -55,7 +79,7 @@ impl hb_paint_extents_context_t<'_> {
     }
 
     fn push_clip(&mut self, extents: &hb_extents_t) {
-        let b = hb_bounds_t::new(extents);
+        let b = hb_bounds_t::from_extents(extents);
         self.clips.push(b);
     }
 
@@ -64,11 +88,11 @@ impl hb_paint_extents_context_t<'_> {
     }
 
     fn push_group(&mut self) {
-        self.bounds.push(hb_bounds_t::default());
+        self.groups.push(hb_bounds_t::default());
     }
 
     fn pop_group(&mut self) {
-        self.bounds.pop();
+        self.groups.pop();
     }
 
     fn paint(&mut self) {
