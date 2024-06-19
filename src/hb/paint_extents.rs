@@ -23,6 +23,20 @@ impl hb_extents_t {
     pub fn is_empty(&self) -> bool {
         self.x_min > self.x_max
     }
+
+    pub fn union_(&mut self, o: &hb_extents_t) {
+        self.x_min = o.x_min.min(o.x_min);
+        self.y_min = o.y_min.min(o.y_min);
+        self.x_max = o.x_max.max(o.x_max);
+        self.y_max = o.y_max.max(o.y_max);
+    }
+
+    pub fn intersect(&mut self, o: &hb_extents_t) {
+        self.x_min = o.x_min.max(o.x_min);
+        self.y_min = o.y_min.max(o.y_min);
+        self.x_max = o.x_max.min(o.x_max);
+        self.y_max = o.y_max.min(o.y_max);
+    }
 }
 
 impl Into<hb_extents_t> for RectF {
@@ -67,6 +81,34 @@ impl hb_bounds_t {
         hb_bounds_t {
             status,
             ..hb_bounds_t::default()
+        }
+    }
+
+    fn union_(&mut self, o: &hb_bounds_t) {
+        if o.status == status_t::UNBOUNDED {
+            self.status = status_t::UNBOUNDED;
+        } else if o.status == status_t::BOUNDED {
+            if self.status == status_t::EMPTY {
+                *self = *o;
+            }   else if self.status == status_t::BOUNDED {
+                self.extents.union_(&o.extents);
+            }
+        }
+    }
+
+    fn intersect(&mut self, o: &hb_bounds_t) {
+        if o.status == status_t::EMPTY {
+            self.status = status_t::EMPTY;
+        }   else if o.status == status_t::BOUNDED {
+            if self.status == status_t::UNBOUNDED {
+                *self = *o;
+            }   else if self.status == status_t::BOUNDED {
+                self.extents.intersect(&o.extents);
+
+                if self.extents.x_min >= self.extents.x_max || self.extents.y_min >= self.extents.y_max {
+                    self.status = status_t::EMPTY;
+                }
+            }
         }
     }
 }
@@ -151,44 +193,8 @@ impl<'a> hb_paint_extents_context_t<'a> {
                         CompositeMode::Clear => backdrop_bounds.status = status_t::EMPTY,
                         CompositeMode::Source | CompositeMode::SourceOut => *backdrop_bounds = src_bounds,
                         CompositeMode::Destination | CompositeMode::DestinationOut => {}
-                        CompositeMode::SourceIn | CompositeMode::DestinationIn => {
-                            if src_bounds.status == status_t::EMPTY {
-                                backdrop_bounds.status = status_t::EMPTY;
-                            } else if src_bounds.status == status_t::BOUNDED {
-                                backdrop_bounds.extents.x_min =
-                                    backdrop_bounds.extents.x_min.max(src_bounds.extents.x_min);
-                                backdrop_bounds.extents.y_min =
-                                    backdrop_bounds.extents.y_min.max(src_bounds.extents.y_min);
-                                backdrop_bounds.extents.x_max =
-                                    backdrop_bounds.extents.x_max.min(src_bounds.extents.x_max);
-                                backdrop_bounds.extents.y_max =
-                                    backdrop_bounds.extents.y_max.min(src_bounds.extents.y_max);
-
-                                if backdrop_bounds.extents.x_min >= backdrop_bounds.extents.x_max
-                                    || backdrop_bounds.extents.y_min >= backdrop_bounds.extents.y_max
-                                {
-                                    backdrop_bounds.status = status_t::EMPTY;
-                                }
-                            }
-                        }
-                        _ => {
-                            if src_bounds.status == status_t::UNBOUNDED {
-                                backdrop_bounds.status = status_t::UNBOUNDED;
-                            } else if src_bounds.status == status_t::BOUNDED {
-                                if backdrop_bounds.status == status_t::EMPTY {
-                                    *backdrop_bounds = src_bounds;
-                                } else if backdrop_bounds.status == status_t::BOUNDED {
-                                    backdrop_bounds.extents.x_min =
-                                        backdrop_bounds.extents.x_min.min(src_bounds.extents.x_min);
-                                    backdrop_bounds.extents.y_min =
-                                        backdrop_bounds.extents.y_min.min(src_bounds.extents.y_min);
-                                    backdrop_bounds.extents.x_max =
-                                        backdrop_bounds.extents.x_max.max(src_bounds.extents.x_max);
-                                    backdrop_bounds.extents.y_max =
-                                        backdrop_bounds.extents.y_max.max(src_bounds.extents.y_max);
-                                }
-                            }
-                        }
+                        CompositeMode::SourceIn | CompositeMode::DestinationIn => backdrop_bounds.intersect(&src_bounds),
+                        _ => backdrop_bounds.union_(&src_bounds)
                     }
                 }
             }
@@ -196,31 +202,8 @@ impl<'a> hb_paint_extents_context_t<'a> {
     }
 
     fn paint(&mut self) {
-        if let (Some(clip), Some(group)) = (self.clips.last_mut(), self.groups.last_mut()) {
-            if clip.status == status_t::EMPTY {
-                return; // Shouldn't happen.
-            }
-
-            if group.status == status_t::UNBOUNDED {
-                return;
-            }
-
-            if group.status == status_t::EMPTY {
-                *group = *clip;
-                return;
-            }
-
-            // Group is bounded now.  Clip is not empty.
-            if clip.status == status_t::UNBOUNDED {
-                group.status = status_t::UNBOUNDED;
-                return;
-            }
-
-            // Both are bounded. Union.
-            group.extents.x_min = group.extents.x_min.min(clip.extents.x_min);
-            group.extents.y_min = group.extents.y_min.min(clip.extents.y_min);
-            group.extents.x_max = group.extents.x_max.max(clip.extents.x_max);
-            group.extents.y_max = group.extents.y_max.max(clip.extents.y_max);
+        if let (Some(clip), Some(group)) = (self.clips.last(), self.groups.last_mut()) {
+            group.union_(clip);
         }
     }
 }
