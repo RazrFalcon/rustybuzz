@@ -284,11 +284,11 @@ impl<'a> hb_font_t<'a> {
                 RgbaColor::new(0, 0, 0, 0),
             );
 
-            let last = extents_data.groups.last().unwrap().extents;
-            glyph_extents.x_bearing = last.x_min as i32;
-            glyph_extents.y_bearing = last.y_max as i32;
-            glyph_extents.width = (last.x_max - last.x_min) as i32;
-            glyph_extents.height = (last.y_max - last.y_min) as i32;
+            let e = extents_data.get_extents();
+            glyph_extents.x_bearing = e.x_min as i32;
+            glyph_extents.y_bearing = e.y_max as i32;
+            glyph_extents.width = (e.x_max - e.x_min) as i32;
+            glyph_extents.height = (e.y_min - e.y_max) as i32;
 
             return false;
         }

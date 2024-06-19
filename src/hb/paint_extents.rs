@@ -15,7 +15,7 @@ enum status_t {
 #[derive(Clone, Copy)]
 pub(crate) struct hb_bounds_t {
     status: status_t,
-    pub(crate) extents: hb_extents_t,
+    extents: hb_extents_t,
 }
 
 impl hb_bounds_t {
@@ -53,7 +53,7 @@ impl Default for hb_bounds_t {
 
 pub(crate) struct hb_paint_extents_context_t<'a> {
     clips: vec::Vec<hb_bounds_t>,
-    pub(crate) groups: vec::Vec<hb_bounds_t>,
+    groups: vec::Vec<hb_bounds_t>,
     transforms: vec::Vec<Transform>,
     face: &'a ttf_parser::Face<'a>,
     current_glyph: GlyphId,
@@ -68,6 +68,12 @@ impl<'a> hb_paint_extents_context_t<'a> {
             face,
             current_glyph: Default::default(),
         }
+    }
+
+    pub(crate) fn get_extents(&self) -> hb_extents_t {
+        // harfbuzz doesn't have the unwrap_or_default part, but in a valid font
+        // this should always be valid anyway.
+        self.groups.last().copied().unwrap_or_default().extents
     }
 
     fn push_transform(&mut self, trans: &Transform) {
