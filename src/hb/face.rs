@@ -1,6 +1,7 @@
+use crate::hb::paint_extents::hb_paint_extents_context_t;
 use ttf_parser::gdef::GlyphClass;
 use ttf_parser::opentype_layout::LayoutTable;
-use ttf_parser::GlyphId;
+use ttf_parser::{GlyphId, RgbaColor};
 
 use super::buffer::GlyphPropsFlags;
 use super::ot_layout::TableIndex;
@@ -273,6 +274,21 @@ impl<'a> hb_font_t<'a> {
                 glyph_extents.height = super::round(clip_box.y_min - clip_box.y_max) as i32;
                 return true;
             }
+
+            let mut extents_data = hb_paint_extents_context_t::new(&self.ttfp_face);
+            colr.paint(
+                glyph,
+                0,
+                &mut extents_data,
+                self.variation_coordinates(),
+                RgbaColor::new(0, 0, 0, 0),
+            );
+
+            let last = extents_data.groups.last().unwrap().extents;
+            glyph_extents.x_bearing = last.x_min as i32;
+            glyph_extents.y_bearing = last.y_max as i32;
+            glyph_extents.width = (last.x_max - last.x_min) as i32;
+            glyph_extents.height = (last.y_max - last.y_min) as i32;
 
             return false;
         }

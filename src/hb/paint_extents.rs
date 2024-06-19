@@ -1,8 +1,7 @@
-use crate::hb::face::hb_font_t;
+use crate::hb::paint_extents::status_t::{BOUNDED, EMPTY};
 use alloc::vec;
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
 use ttf_parser::{GlyphId, Transform};
-use crate::hb::paint_extents::status_t::{BOUNDED, EMPTY};
 
 type hb_extents_t = ttf_parser::RectF;
 
@@ -14,16 +13,16 @@ enum status_t {
 }
 
 #[derive(Clone, Copy)]
-struct hb_bounds_t {
+pub(crate) struct hb_bounds_t {
     status: status_t,
-    extents: hb_extents_t,
+    pub(crate) extents: hb_extents_t,
 }
 
 impl hb_bounds_t {
     fn from_extents(extents: &hb_extents_t) -> Self {
         let status = if extents.x_min <= extents.x_max {
             BOUNDED
-        }   else {
+        } else {
             EMPTY
         };
 
@@ -52,16 +51,16 @@ impl Default for hb_bounds_t {
     }
 }
 
-struct hb_paint_extents_context_t<'a> {
+pub(crate) struct hb_paint_extents_context_t<'a> {
     clips: vec::Vec<hb_bounds_t>,
-    groups: vec::Vec<hb_bounds_t>,
+    pub(crate) groups: vec::Vec<hb_bounds_t>,
     transforms: vec::Vec<Transform>,
-    face: &'a hb_font_t<'a>,
+    face: &'a ttf_parser::Face<'a>,
     current_glyph: GlyphId,
 }
 
 impl<'a> hb_paint_extents_context_t<'a> {
-    fn new(face: &'a hb_font_t) -> Self {
+    pub(crate) fn new(face: &'a ttf_parser::Face<'a>) -> Self {
         Self {
             clips: vec![hb_bounds_t::from_status(status_t::UNBOUNDED)],
             groups: vec![hb_bounds_t::from_status(status_t::EMPTY)],
