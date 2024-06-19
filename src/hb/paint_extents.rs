@@ -1,4 +1,4 @@
-use crate::hb::face::{hb_font_t, hb_glyph_extents_t};
+use crate::hb::face::hb_font_t;
 use alloc::vec;
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
 use ttf_parser::{GlyphId, Transform};
@@ -165,7 +165,6 @@ impl<'a> hb_paint_extents_context_t<'a> {
             }
 
             // Group is bounded now.  Clip is not empty.
-
             if clip.status == status_t::UNBOUNDED {
                 group.status = status_t::UNBOUNDED;
                 return;
@@ -190,17 +189,18 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
     }
 
     fn push_clip(&mut self) {
-        let mut glyph_extents = hb_glyph_extents_t::default();
-        self.face
-            .glyph_extents(self.current_glyph, &mut glyph_extents);
-
         let extents = hb_extents_t {
-            x_min: glyph_extents.x_bearing as f32,
-            y_min: glyph_extents.y_bearing as f32 + glyph_extents.height as f32,
-            x_max: glyph_extents.x_bearing as f32 + glyph_extents.width as f32,
-            y_max: glyph_extents.y_bearing as f32,
+            x_min: 0.0,
+            y_min: 0.0,
+            x_max: -1.0,
+            y_max: -1.0,
         };
-        self.push_clip(extents);
+
+        let mut extent_builder = ExtentBuilder(extents);
+        self.face
+            .outline_glyph(self.current_glyph, &mut extent_builder);
+
+        self.push_clip(extent_builder.0);
     }
 
     fn push_clip_box(&mut self, clipbox: ClipBox) {
@@ -277,4 +277,45 @@ impl TransformExt for Transform {
             extents.y_max = extents.y_max.min(quad_y[i]);
         }
     }
+}
+
+struct ExtentBuilder(hb_extents_t);
+
+impl ExtentBuilder {
+    fn add_point(&mut self, x: f32, y: f32) {
+        if self.0.x_max < self.0.x_min {
+            self.0.x_max = x;
+            self.0.x_min = x;
+            self.0.y_max = y;
+            self.0.y_min = y;
+        } else {
+            self.0.x_min = self.0.x_min.min(x);
+            self.0.y_min = self.0.y_min.min(y);
+            self.0.x_max = self.0.x_max.max(x);
+            self.0.y_max = self.0.y_max.max(y);
+        }
+    }
+}
+
+impl ttf_parser::OutlineBuilder for ExtentBuilder {
+    fn move_to(&mut self, x: f32, y: f32) {
+        self.add_point(x, y);
+    }
+
+    fn line_to(&mut self, x: f32, y: f32) {
+        self.add_point(x, y);
+    }
+
+    fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
+        self.add_point(x1, y1);
+        self.add_point(x, y);
+    }
+
+    fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
+        self.add_point(x1, y1);
+        self.add_point(x2, y2);
+        self.add_point(x, y);
+    }
+
+    fn close(&mut self) {}
 }
