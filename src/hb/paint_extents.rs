@@ -1,18 +1,18 @@
 use crate::hb::face::{hb_font_t, hb_glyph_extents_t};
-use crate::hb::paint_extents::status_t::BOUNDED;
 use alloc::vec;
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
 use ttf_parser::{GlyphId, Transform};
 
 type hb_extents_t = ttf_parser::RectF;
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 enum status_t {
     EMPTY,
     BOUNDED,
     UNBOUNDED,
 }
 
+#[derive(Clone, Copy)]
 struct hb_bounds_t {
     status: status_t,
     extents: hb_extents_t,
@@ -22,7 +22,7 @@ impl hb_bounds_t {
     fn from_extents(extents: &hb_extents_t) -> Self {
         hb_bounds_t {
             extents: *extents,
-            status: BOUNDED,
+            status: status_t::BOUNDED,
         }
     }
 
@@ -91,8 +91,58 @@ impl<'a> hb_paint_extents_context_t<'a> {
         self.clips.pop();
     }
 
-    fn push_group(&mut self) {
-        self.groups.push(hb_bounds_t::default());
+    fn push_group(&mut self, mode: CompositeMode) {
+        let src_bounds = hb_bounds_t::default();
+
+        // In harfbuzz, this is in `pop_group` instead, but since we have the composite mode
+        // in push group, we need to do it here.
+        if let Some(backdrop_bounds) = self.groups.last_mut() {
+            match mode {
+                CompositeMode::Clear => backdrop_bounds.status = status_t::EMPTY,
+                CompositeMode::Source | CompositeMode::SourceOut => *backdrop_bounds = src_bounds,
+                CompositeMode::Destination | CompositeMode::DestinationOut => {}
+                CompositeMode::SourceIn | CompositeMode::DestinationIn => {
+                    if src_bounds.status == status_t::EMPTY {
+                        backdrop_bounds.status = status_t::EMPTY;
+                    } else if src_bounds.status == status_t::BOUNDED {
+                        backdrop_bounds.extents.x_min =
+                            backdrop_bounds.extents.x_min.max(src_bounds.extents.x_min);
+                        backdrop_bounds.extents.y_min =
+                            backdrop_bounds.extents.y_min.max(src_bounds.extents.y_min);
+                        backdrop_bounds.extents.x_max =
+                            backdrop_bounds.extents.x_max.min(src_bounds.extents.x_max);
+                        backdrop_bounds.extents.y_max =
+                            backdrop_bounds.extents.y_max.min(src_bounds.extents.y_max);
+
+                        if backdrop_bounds.extents.x_min >= backdrop_bounds.extents.x_max
+                            || backdrop_bounds.extents.y_min >= backdrop_bounds.extents.y_max
+                        {
+                            backdrop_bounds.status = status_t::EMPTY;
+                        }
+                    }
+                }
+                _ => {
+                    if src_bounds.status == status_t::UNBOUNDED {
+                        backdrop_bounds.status = status_t::UNBOUNDED;
+                    } else if src_bounds.status == status_t::BOUNDED {
+                        if backdrop_bounds.status == status_t::EMPTY {
+                            *backdrop_bounds = src_bounds;
+                        } else if backdrop_bounds.status == status_t::BOUNDED {
+                            backdrop_bounds.extents.x_min =
+                                backdrop_bounds.extents.x_min.min(src_bounds.extents.x_min);
+                            backdrop_bounds.extents.y_min =
+                                backdrop_bounds.extents.y_min.min(src_bounds.extents.y_min);
+                            backdrop_bounds.extents.x_max =
+                                backdrop_bounds.extents.x_max.max(src_bounds.extents.x_max);
+                            backdrop_bounds.extents.y_max =
+                                backdrop_bounds.extents.y_max.max(src_bounds.extents.y_max);
+                        }
+                    }
+                }
+            }
+        }
+
+        self.groups.push(src_bounds);
     }
 
     fn pop_group(&mut self) {
@@ -100,7 +150,7 @@ impl<'a> hb_paint_extents_context_t<'a> {
     }
 
     fn paint(&mut self) {
-        if let (Some(clip), Some(mut group)) = (self.clips.last_mut(), self.groups.last_mut()) {
+        if let (Some(clip), Some(group)) = (self.clips.last_mut(), self.groups.last_mut()) {
             if clip.status == status_t::EMPTY {
                 return; // Shouldn't happen.
             }
@@ -110,7 +160,7 @@ impl<'a> hb_paint_extents_context_t<'a> {
             }
 
             if group.status == status_t::EMPTY {
-                group = clip;
+                *group = *clip;
                 return;
             }
 
@@ -161,8 +211,8 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
         self.pop_clip();
     }
 
-    fn push_layer(&mut self, _: CompositeMode) {
-        self.push_group();
+    fn push_layer(&mut self, mode: CompositeMode) {
+        self.push_group(mode);
     }
 
     fn pop_layer(&mut self) {
