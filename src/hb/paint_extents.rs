@@ -162,12 +162,12 @@ impl<'a> hb_paint_extents_context_t<'a> {
     }
 
     fn push_transform(&mut self, trans: &Transform) {
-        let r = self
+        let t = self
             .transforms
             .last()
             .copied()
             .unwrap_or(Transform::default());
-        let new = Transform::combine(r, *trans);
+        let new = Transform::combine(t, *trans);
         self.transforms.push(new);
     }
 
