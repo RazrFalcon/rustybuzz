@@ -1,9 +1,37 @@
 use crate::hb::paint_extents::status_t::{BOUNDED, EMPTY};
 use alloc::vec;
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
-use ttf_parser::{GlyphId, Transform};
+use ttf_parser::{GlyphId, RectF, Transform};
 
-type hb_extents_t = ttf_parser::RectF;
+#[derive(Copy, Clone)]
+pub(crate) struct hb_extents_t {
+    pub x_min: f32,
+    pub y_min: f32,
+    pub x_max: f32,
+    pub y_max: f32,
+}
+
+impl hb_extents_t {
+    pub fn new() -> Self {
+        Self {
+            x_min: 0.0,
+            y_min: 0.0,
+            x_max: -1.0,
+            y_max: -1.0,
+        }
+    }
+}
+
+impl Into<hb_extents_t> for RectF {
+    fn into(self) -> hb_extents_t {
+        hb_extents_t {
+            x_min: self.x_min,
+            y_min: self.y_min,
+            x_max: self.x_max,
+            y_max: self.y_max,
+        }
+    }
+}
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum status_t {
@@ -201,12 +229,7 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
     }
 
     fn push_clip(&mut self) {
-        let extents = hb_extents_t {
-            x_min: 0.0,
-            y_min: 0.0,
-            x_max: -1.0,
-            y_max: -1.0,
-        };
+        let extents = hb_extents_t::new();
 
         let mut extent_builder = ExtentBuilder(extents);
         self.face
@@ -218,7 +241,7 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
     }
 
     fn push_clip_box(&mut self, clipbox: ClipBox) {
-        self.push_clip(clipbox);
+        self.push_clip(clipbox.into());
     }
 
     fn pop_clip(&mut self) {
