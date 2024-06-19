@@ -200,7 +200,11 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
         self.face
             .outline_glyph(self.current_glyph, &mut extent_builder);
 
-        self.push_clip(extent_builder.0);
+        let extents = extent_builder.0;
+
+        if extents.x_min < extents.x_max {
+            self.push_clip(extents);
+        }
     }
 
     fn push_clip_box(&mut self, clipbox: ClipBox) {
