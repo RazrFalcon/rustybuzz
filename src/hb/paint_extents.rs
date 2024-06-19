@@ -21,7 +21,7 @@ impl hb_extents_t {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.x_min > self.x_max
+        self.x_min >= self.x_max || self.y_min >= self.y_max
     }
 
     pub fn union_(&mut self, o: &hb_extents_t) {
@@ -105,7 +105,7 @@ impl hb_bounds_t {
             }   else if self.status == status_t::BOUNDED {
                 self.extents.intersect(&o.extents);
 
-                if self.extents.x_min >= self.extents.x_max || self.extents.y_min >= self.extents.y_max {
+                if self.extents.is_empty() {
                     self.status = status_t::EMPTY;
                 }
             }
