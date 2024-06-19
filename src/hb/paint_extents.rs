@@ -78,8 +78,12 @@ impl<'a> hb_paint_extents_context_t<'a> {
         self.transforms.pop();
     }
 
-    fn push_clip(&mut self, extents: &hb_extents_t) {
-        let b = hb_bounds_t::from_extents(extents);
+    fn push_clip(&mut self, mut extents: hb_extents_t) {
+        if let Some(r) = self.transforms.last_mut() {
+            r.transform_extents(&mut extents);
+        }
+
+        let b = hb_bounds_t::from_extents(&extents);
         self.clips.push(b);
     }
 
@@ -146,11 +150,11 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
             x_max: glyph_extents.x_bearing as f32 + glyph_extents.width as f32,
             y_max: glyph_extents.y_bearing as f32,
         };
-        self.push_clip(&extents);
+        self.push_clip(extents);
     }
 
     fn push_clip_box(&mut self, clipbox: ClipBox) {
-        self.push_clip(&clipbox);
+        self.push_clip(clipbox);
     }
 
     fn pop_clip(&mut self) {
@@ -171,5 +175,56 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
 
     fn pop_transform(&mut self) {
         self.pop_transform();
+    }
+}
+
+trait TransformExt {
+    fn transform_distance(&self, dx: &mut f32, dy: &mut f32);
+    fn transform_point(&self, x: &mut f32, y: &mut f32);
+    fn transform_extents(&self, extents: &mut hb_extents_t);
+}
+
+impl TransformExt for Transform {
+    fn transform_distance(&self, dx: &mut f32, dy: &mut f32) {
+        let new_x = self.a * *dx + self.c * *dy;
+        let new_y = self.b * *dx + self.d * *dy;
+        *dx = new_x;
+        *dy = new_y;
+    }
+
+    fn transform_point(&self, x: &mut f32, y: &mut f32) {
+        self.transform_distance(x, y);
+        *x += self.e;
+        *y += self.f;
+    }
+
+    fn transform_extents(&self, extents: &mut hb_extents_t) {
+        let mut quad_x = [0.0f32; 4];
+        let mut quad_y = [0.0f32; 4];
+
+        quad_x[0] = extents.x_min;
+        quad_y[0] = extents.y_min;
+        quad_x[1] = extents.x_min;
+        quad_y[1] = extents.y_max;
+        quad_x[2] = extents.x_max;
+        quad_y[2] = extents.y_min;
+        quad_x[3] = extents.x_max;
+        quad_y[3] = extents.y_max;
+
+        for i in 0..4 {
+            self.transform_point(&mut quad_x[i], &mut quad_y[i])
+        }
+
+        extents.x_max = quad_x[0];
+        extents.x_min = extents.x_max;
+        extents.y_max = quad_y[0];
+        extents.y_min = extents.y_max;
+
+        for i in 1..4 {
+            extents.x_min = extents.x_min.min(quad_x[i]);
+            extents.y_min = extents.y_min.min(quad_y[i]);
+            extents.x_max = extents.x_max.min(quad_x[i]);
+            extents.y_max = extents.y_max.min(quad_y[i]);
+        }
     }
 }
