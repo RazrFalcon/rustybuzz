@@ -97,7 +97,7 @@ impl hb_bounds_t {
         } else if o.status == status_t::BOUNDED {
             if self.status == status_t::EMPTY {
                 *self = *o;
-            }   else if self.status == status_t::BOUNDED {
+            } else if self.status == status_t::BOUNDED {
                 self.extents.union_(&o.extents);
             }
         }
@@ -106,10 +106,10 @@ impl hb_bounds_t {
     fn intersect(&mut self, o: &hb_bounds_t) {
         if o.status == status_t::EMPTY {
             self.status = status_t::EMPTY;
-        }   else if o.status == status_t::BOUNDED {
+        } else if o.status == status_t::BOUNDED {
             if self.status == status_t::UNBOUNDED {
                 *self = *o;
-            }   else if self.status == status_t::BOUNDED {
+            } else if self.status == status_t::BOUNDED {
                 self.extents.intersect(&o.extents);
 
                 if self.extents.is_empty() {
@@ -198,10 +198,14 @@ impl<'a> hb_paint_extents_context_t<'a> {
                 if let Some(backdrop_bounds) = self.groups.last_mut() {
                     match mode {
                         CompositeMode::Clear => backdrop_bounds.status = status_t::EMPTY,
-                        CompositeMode::Source | CompositeMode::SourceOut => *backdrop_bounds = src_bounds,
+                        CompositeMode::Source | CompositeMode::SourceOut => {
+                            *backdrop_bounds = src_bounds
+                        }
                         CompositeMode::Destination | CompositeMode::DestinationOut => {}
-                        CompositeMode::SourceIn | CompositeMode::DestinationIn => backdrop_bounds.intersect(&src_bounds),
-                        _ => backdrop_bounds.union_(&src_bounds)
+                        CompositeMode::SourceIn | CompositeMode::DestinationIn => {
+                            backdrop_bounds.intersect(&src_bounds)
+                        }
+                        _ => backdrop_bounds.union_(&src_bounds),
                     }
                 }
             }
