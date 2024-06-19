@@ -20,6 +20,10 @@ impl hb_extents_t {
             y_max: -1.0,
         }
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.x_min > self.x_max
+    }
 }
 
 impl Into<hb_extents_t> for RectF {
@@ -48,7 +52,7 @@ pub(crate) struct hb_bounds_t {
 
 impl hb_bounds_t {
     fn from_extents(extents: &hb_extents_t) -> Self {
-        let status = if extents.x_min <= extents.x_max {
+        let status = if extents.is_empty() {
             BOUNDED
         } else {
             EMPTY
