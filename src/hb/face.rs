@@ -261,6 +261,9 @@ impl<'a> hb_font_t<'a> {
                 glyph_extents.height = super::round(-f32::from(img.height) * scale) as i32;
                 return true;
             }
+        // TODO: Add tests for this. We should use all glyphs from
+        // https://github.com/googlefonts/color-fonts/blob/main/fonts/test_glyphs-glyf_colr_1_no_cliplist.ttf
+        // and test their output against harfbuzz.
         } else if let Some(colr) = self.ttfp_face.tables().colr {
             if colr.is_simple() {
                 return false;
