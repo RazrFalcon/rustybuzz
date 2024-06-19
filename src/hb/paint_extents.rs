@@ -53,9 +53,9 @@ pub(crate) struct hb_bounds_t {
 impl hb_bounds_t {
     fn from_extents(extents: &hb_extents_t) -> Self {
         let status = if extents.is_empty() {
-            BOUNDED
-        } else {
             EMPTY
+        } else {
+            BOUNDED
         };
 
         hb_bounds_t {
@@ -314,8 +314,8 @@ impl TransformExt for Transform {
         for i in 1..4 {
             extents.x_min = extents.x_min.min(quad_x[i]);
             extents.y_min = extents.y_min.min(quad_y[i]);
-            extents.x_max = extents.x_max.min(quad_x[i]);
-            extents.y_max = extents.y_max.min(quad_y[i]);
+            extents.x_max = extents.x_max.max(quad_x[i]);
+            extents.y_max = extents.y_max.max(quad_y[i]);
         }
     }
 }
