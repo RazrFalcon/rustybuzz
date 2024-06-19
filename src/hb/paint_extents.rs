@@ -1,4 +1,3 @@
-use crate::hb::paint_extents::status_t::{BOUNDED, EMPTY};
 use alloc::vec;
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
 use ttf_parser::{GlyphId, RectF, Transform};
@@ -53,9 +52,9 @@ pub(crate) struct hb_bounds_t {
 impl hb_bounds_t {
     fn from_extents(extents: &hb_extents_t) -> Self {
         let status = if extents.is_empty() {
-            EMPTY
+            status_t::EMPTY
         } else {
-            BOUNDED
+            status_t::BOUNDED
         };
 
         hb_bounds_t {
@@ -87,6 +86,10 @@ pub(crate) struct hb_paint_extents_context_t<'a> {
     clips: vec::Vec<hb_bounds_t>,
     groups: vec::Vec<hb_bounds_t>,
     transforms: vec::Vec<Transform>,
+    // Doesn't exist in harfbuzz. The reason we need it is that in harfbuzz, composite modes
+    // are passed as part of `pop`, while ttf-parser passes it as part of `push`, so we need to
+    // store it in the meanwhile.
+    composite_modes: vec::Vec<CompositeMode>,
     face: &'a ttf_parser::Face<'a>,
     current_glyph: GlyphId,
 }
@@ -97,6 +100,7 @@ impl<'a> hb_paint_extents_context_t<'a> {
             clips: vec![hb_bounds_t::from_status(status_t::UNBOUNDED)],
             groups: vec![hb_bounds_t::from_status(status_t::EMPTY)],
             transforms: vec![Transform::default()],
+            composite_modes: vec![CompositeMode::SourceOver],
             face,
             current_glyph: Default::default(),
         }
@@ -135,62 +139,60 @@ impl<'a> hb_paint_extents_context_t<'a> {
         self.clips.pop();
     }
 
-    fn push_group(&mut self, mode: CompositeMode) {
-        let src_bounds = hb_bounds_t::default();
+    fn push_group(&mut self) {
+        self.groups.push(hb_bounds_t::default());
+    }
 
-        // In harfbuzz, this is in `pop_group` instead, but since we have the composite mode
-        // in push group, we need to do it here.
-        if let Some(backdrop_bounds) = self.groups.last_mut() {
-            match mode {
-                CompositeMode::Clear => backdrop_bounds.status = status_t::EMPTY,
-                CompositeMode::Source | CompositeMode::SourceOut => *backdrop_bounds = src_bounds,
-                CompositeMode::Destination | CompositeMode::DestinationOut => {}
-                CompositeMode::SourceIn | CompositeMode::DestinationIn => {
-                    if src_bounds.status == status_t::EMPTY {
-                        backdrop_bounds.status = status_t::EMPTY;
-                    } else if src_bounds.status == status_t::BOUNDED {
-                        backdrop_bounds.extents.x_min =
-                            backdrop_bounds.extents.x_min.max(src_bounds.extents.x_min);
-                        backdrop_bounds.extents.y_min =
-                            backdrop_bounds.extents.y_min.max(src_bounds.extents.y_min);
-                        backdrop_bounds.extents.x_max =
-                            backdrop_bounds.extents.x_max.min(src_bounds.extents.x_max);
-                        backdrop_bounds.extents.y_max =
-                            backdrop_bounds.extents.y_max.min(src_bounds.extents.y_max);
+    fn pop_group(&mut self) {
+        if let Some(mode) = self.composite_modes.pop() {
+            if let Some(src_bounds) = self.groups.pop() {
+                if let Some(backdrop_bounds) = self.groups.last_mut() {
+                    match mode {
+                        CompositeMode::Clear => backdrop_bounds.status = status_t::EMPTY,
+                        CompositeMode::Source | CompositeMode::SourceOut => *backdrop_bounds = src_bounds,
+                        CompositeMode::Destination | CompositeMode::DestinationOut => {}
+                        CompositeMode::SourceIn | CompositeMode::DestinationIn => {
+                            if src_bounds.status == status_t::EMPTY {
+                                backdrop_bounds.status = status_t::EMPTY;
+                            } else if src_bounds.status == status_t::BOUNDED {
+                                backdrop_bounds.extents.x_min =
+                                    backdrop_bounds.extents.x_min.max(src_bounds.extents.x_min);
+                                backdrop_bounds.extents.y_min =
+                                    backdrop_bounds.extents.y_min.max(src_bounds.extents.y_min);
+                                backdrop_bounds.extents.x_max =
+                                    backdrop_bounds.extents.x_max.min(src_bounds.extents.x_max);
+                                backdrop_bounds.extents.y_max =
+                                    backdrop_bounds.extents.y_max.min(src_bounds.extents.y_max);
 
-                        if backdrop_bounds.extents.x_min >= backdrop_bounds.extents.x_max
-                            || backdrop_bounds.extents.y_min >= backdrop_bounds.extents.y_max
-                        {
-                            backdrop_bounds.status = status_t::EMPTY;
+                                if backdrop_bounds.extents.x_min >= backdrop_bounds.extents.x_max
+                                    || backdrop_bounds.extents.y_min >= backdrop_bounds.extents.y_max
+                                {
+                                    backdrop_bounds.status = status_t::EMPTY;
+                                }
+                            }
                         }
-                    }
-                }
-                _ => {
-                    if src_bounds.status == status_t::UNBOUNDED {
-                        backdrop_bounds.status = status_t::UNBOUNDED;
-                    } else if src_bounds.status == status_t::BOUNDED {
-                        if backdrop_bounds.status == status_t::EMPTY {
-                            *backdrop_bounds = src_bounds;
-                        } else if backdrop_bounds.status == status_t::BOUNDED {
-                            backdrop_bounds.extents.x_min =
-                                backdrop_bounds.extents.x_min.min(src_bounds.extents.x_min);
-                            backdrop_bounds.extents.y_min =
-                                backdrop_bounds.extents.y_min.min(src_bounds.extents.y_min);
-                            backdrop_bounds.extents.x_max =
-                                backdrop_bounds.extents.x_max.max(src_bounds.extents.x_max);
-                            backdrop_bounds.extents.y_max =
-                                backdrop_bounds.extents.y_max.max(src_bounds.extents.y_max);
+                        _ => {
+                            if src_bounds.status == status_t::UNBOUNDED {
+                                backdrop_bounds.status = status_t::UNBOUNDED;
+                            } else if src_bounds.status == status_t::BOUNDED {
+                                if backdrop_bounds.status == status_t::EMPTY {
+                                    *backdrop_bounds = src_bounds;
+                                } else if backdrop_bounds.status == status_t::BOUNDED {
+                                    backdrop_bounds.extents.x_min =
+                                        backdrop_bounds.extents.x_min.min(src_bounds.extents.x_min);
+                                    backdrop_bounds.extents.y_min =
+                                        backdrop_bounds.extents.y_min.min(src_bounds.extents.y_min);
+                                    backdrop_bounds.extents.x_max =
+                                        backdrop_bounds.extents.x_max.max(src_bounds.extents.x_max);
+                                    backdrop_bounds.extents.y_max =
+                                        backdrop_bounds.extents.y_max.max(src_bounds.extents.y_max);
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-
-        self.groups.push(src_bounds);
-    }
-
-    fn pop_group(&mut self) {
-        self.groups.pop();
     }
 
     fn paint(&mut self) {
@@ -253,7 +255,8 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
     }
 
     fn push_layer(&mut self, mode: CompositeMode) {
-        self.push_group(mode);
+        self.composite_modes.push(mode);
+        self.push_group();
     }
 
     fn pop_layer(&mut self) {
