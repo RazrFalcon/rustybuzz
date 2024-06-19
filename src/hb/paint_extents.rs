@@ -2,6 +2,7 @@ use crate::hb::face::hb_font_t;
 use alloc::vec;
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
 use ttf_parser::{GlyphId, Transform};
+use crate::hb::paint_extents::status_t::{BOUNDED, EMPTY};
 
 type hb_extents_t = ttf_parser::RectF;
 
@@ -20,9 +21,15 @@ struct hb_bounds_t {
 
 impl hb_bounds_t {
     fn from_extents(extents: &hb_extents_t) -> Self {
+        let status = if extents.x_min <= extents.x_max {
+            BOUNDED
+        }   else {
+            EMPTY
+        };
+
         hb_bounds_t {
             extents: *extents,
-            status: status_t::BOUNDED,
+            status,
         }
     }
 
@@ -202,9 +209,7 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
 
         let extents = extent_builder.0;
 
-        if extents.x_min < extents.x_max {
-            self.push_clip(extents);
-        }
+        self.push_clip(extents);
     }
 
     fn push_clip_box(&mut self, clipbox: ClipBox) {
