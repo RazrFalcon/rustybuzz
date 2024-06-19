@@ -2,6 +2,13 @@ use alloc::vec;
 use ttf_parser::colr::{ClipBox, CompositeMode, Paint};
 use ttf_parser::{GlyphId, RectF, Transform};
 
+/*
+ * This file implements bounds-extraction as well as boundedness
+ * computation of COLRv1 fonts as described in:
+ *
+ * https://learn.microsoft.com/en-us/typography/opentype/spec/colr#glyph-metrics-and-boundedness
+ */
+
 #[derive(Copy, Clone)]
 pub(crate) struct hb_extents_t {
     pub x_min: f32,
