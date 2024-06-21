@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-
+import hashlib
 import os
+import pathlib
 import shutil
 import sys
 import subprocess
@@ -9,6 +10,7 @@ from pathlib import Path
 
 # There is no sane way to test them.
 IGNORE_TESTS = [
+    # Disable this if you are on a Mac and want to update the macos tests.
     'macos.tests',
     'coretext.tests',
     'directwrite.tests',
@@ -40,9 +42,13 @@ IGNORE_TEST_CASES = [
 ]
 
 
-def update_relative_path(tests_name, fontfile):
-    fontfile = fontfile.replace('../fonts/', '')
-    return f'tests/fonts/{tests_name}/{fontfile}'  # relative to the root dir
+def update_font_path(tests_name, fontfile):
+    if not fontfile.startswith('/'):
+        fontfile = fontfile.replace('../fonts/', '')
+        return f'tests/fonts/{tests_name}/{fontfile}'  # relative to the root dir
+    # macos tests contain absolute paths
+    else:
+        return fontfile
 
 
 # Converts `U+0041,U+0078` or `0041,0078` into `\u{0041}\u{0078}`
@@ -66,7 +72,15 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
 
     fontfile, options, unicodes, glyphs_expected = data.split(';')
 
-    fontfile_rs = update_relative_path(tests_name, fontfile)
+    # MacOS tests contain hashes, remove them.
+    if "@" in fontfile:
+        fontfile, _ = fontfile.split('@')
+
+
+    fontfile_rs = update_font_path(tests_name, fontfile)
+    # Some fonts contain escaped spaces, remove them.
+    fontfile = fontfile.replace('\\ ', ' ')
+    fontfile_rs = fontfile_rs.replace('\\ ', ' ')
 
     unicodes_rs = convert_unicodes(unicodes)
 
