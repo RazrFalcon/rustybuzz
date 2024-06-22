@@ -11,7 +11,7 @@ from pathlib import Path
 # There is no sane way to test them.
 IGNORE_TESTS = [
     # Disable this if you are on a Mac and want to update the macos tests.
-    'macos.tests',
+    # 'macos.tests',
     'coretext.tests',
     'directwrite.tests',
     'uniscribe.tests',
