@@ -1,5 +1,5 @@
 use super::hb_font_t;
-use super::ot_shape::{shape_internal, ShapeContext};
+use super::ot_shape::{hb_ot_shape_context_t, shape_internal};
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use crate::{script, Feature, GlyphBuffer, UnicodeBuffer};
 
@@ -54,7 +54,7 @@ pub fn shape_with_plan(
     if buffer.len > 0 {
         // Save the original direction, we use it later.
         let target_direction = buffer.direction;
-        shape_internal(&mut ShapeContext {
+        shape_internal(&mut hb_ot_shape_context_t {
             plan,
             face,
             buffer: &mut buffer,

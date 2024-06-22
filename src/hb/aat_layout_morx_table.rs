@@ -1,24 +1,26 @@
+use crate::hb::aat_layout_common::hb_aat_apply_context_t;
 use crate::hb::ot_layout::MAX_CONTEXT_LENGTH;
 use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
 use super::aat_layout::*;
-use super::aat_map::{hb_aat_map_builder_t, hb_aat_map_t};
+use super::aat_map::{hb_aat_map_builder_t, hb_aat_map_t, range_flags_t};
 use super::buffer::hb_buffer_t;
-use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::{hb_font_t, hb_glyph_info_t};
 
 // Chain::compile_flags in harfbuzz
-pub fn compile_flags(face: &hb_font_t, builder: &hb_aat_map_builder_t) -> Option<hb_aat_map_t> {
-    let mut map = hb_aat_map_t::default();
-
+pub fn compile_flags(
+    face: &hb_font_t,
+    builder: &hb_aat_map_builder_t,
+    map: &mut hb_aat_map_t,
+) -> Option<()> {
     let has_feature = |kind: u16, setting: u16| {
         builder
             .features
             .binary_search_by(|probe| {
-                if probe.kind != kind {
-                    probe.kind.cmp(&kind)
+                if probe.info.kind != kind {
+                    probe.info.kind.cmp(&kind)
                 } else {
-                    probe.setting.cmp(&setting)
+                    probe.info.setting.cmp(&setting)
                 }
             })
             .is_ok()
@@ -49,23 +51,43 @@ pub fn compile_flags(face: &hb_font_t, builder: &hb_aat_map_builder_t) -> Option
             // TODO: Port the following commit: https://github.com/harfbuzz/harfbuzz/commit/2124ad890
         }
 
-        map.chain_flags.push(flags);
+        map.chain_flags.push(range_flags_t {
+            flags,
+            cluster_first: builder.range_first as u32,
+            cluster_last: builder.range_last as u32,
+        });
     }
 
-    Some(map)
+    Some(())
 }
 
 // Chain::apply in harfbuzz
-pub fn apply(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) -> Option<()> {
-    for (chain_idx, chain) in face.tables().morx.as_ref()?.chains.into_iter().enumerate() {
-        let flags = plan.aat_map.chain_flags[chain_idx];
+pub fn apply<'a>(c: &mut hb_aat_apply_context_t<'a>, map: &'a mut hb_aat_map_t) -> Option<()> {
+    // Due to the borrow checker, we cannot just assign the mut slice with the corresponding index
+    // in the for loop, like it's done in harfbuzz. We have to borrow the slice ones and then just
+    // update the "start index".
+    c.set_range_flags(map.chain_flags.as_mut_slice());
+    for (chain_idx, chain) in c
+        .face
+        .tables()
+        .morx
+        .as_ref()?
+        .chains
+        .into_iter()
+        .enumerate()
+    {
+        c.range_flags_index = chain_idx;
         for subtable in chain.subtables {
-            if subtable.feature_flags & flags == 0 {
-                continue;
+            if let Some(range_flags) = c.range_flags().as_ref() {
+                if range_flags.len() == 1 && (subtable.feature_flags & range_flags[0].flags == 0) {
+                    continue;
+                }
             }
 
+            c.subtable_flags = subtable.feature_flags;
+
             if !subtable.coverage.is_all_directions()
-                && buffer.direction.is_vertical() != subtable.coverage.is_vertical()
+                && c.buffer.direction.is_vertical() != subtable.coverage.is_vertical()
             {
                 continue;
             }
@@ -100,17 +122,17 @@ pub fn apply(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer
             let reverse = if subtable.coverage.is_logical() {
                 subtable.coverage.is_backwards()
             } else {
-                subtable.coverage.is_backwards() != buffer.direction.is_backward()
+                subtable.coverage.is_backwards() != c.buffer.direction.is_backward()
             };
 
             if reverse {
-                buffer.reverse();
+                c.buffer.reverse();
             }
 
-            apply_subtable(&subtable.kind, buffer, face);
+            apply_subtable(&subtable.kind, c);
 
             if reverse {
-                buffer.reverse();
+                c.buffer.reverse();
             }
         }
     }
@@ -138,19 +160,49 @@ const START_OF_TEXT: u16 = 0;
 fn drive<T: FromData>(
     machine: &apple_layout::ExtendedStateTable<T>,
     c: &mut dyn driver_context_t<T>,
-    buffer: &mut hb_buffer_t,
+    ac: &mut hb_aat_apply_context_t,
 ) {
     if !c.in_place() {
-        buffer.clear_output();
+        ac.buffer.clear_output();
     }
 
     let mut state = START_OF_TEXT;
-    buffer.idx = 0;
+    let mut last_range = ac.range_flags().and_then(|rf| rf.first().map(|_| 0usize));
+    ac.buffer.idx = 0;
     loop {
-        let class = if buffer.idx < buffer.len {
-            machine
-                .class(buffer.info[buffer.idx].as_glyph())
-                .unwrap_or(1)
+        if let Some(range_flags) = ac.range_flags() {
+            if let Some(last_range) = last_range.as_mut() {
+                let mut range = *last_range;
+                if ac.buffer.idx < ac.buffer.len {
+                    let cluster = ac.buffer.cur(0).cluster;
+                    while cluster < range_flags[range].cluster_first {
+                        range -= 1;
+                    }
+
+                    while cluster > range_flags[range].cluster_last {
+                        range += 1;
+                    }
+
+                    if range != *last_range {
+                        state = START_OF_TEXT;
+                    }
+
+                    *last_range = range;
+                }
+
+                if range_flags[range].flags & ac.subtable_flags == 0 {
+                    if ac.buffer.idx == ac.buffer.len || !ac.buffer.successful {
+                        break;
+                    }
+
+                    ac.buffer.next_glyph();
+                    continue;
+                }
+            }
+        }
+
+        let class = if ac.buffer.idx < ac.buffer.len {
+            machine.class(ac.buffer.cur(0).as_glyph()).unwrap_or(1)
         } else {
             u16::from(apple_layout::class::END_OF_TEXT)
         };
@@ -198,7 +250,7 @@ fn drive<T: FromData>(
             };
 
             // 2c'
-            if c.is_actionable(&wouldbe_entry, &buffer) {
+            if c.is_actionable(&wouldbe_entry, &ac.buffer) {
                 return false;
             }
 
@@ -209,7 +261,7 @@ fn drive<T: FromData>(
 
         let is_safe_to_break = || {
             // 1
-            if c.is_actionable(&entry, &buffer) {
+            if c.is_actionable(&entry, &ac.buffer) {
                 return false;
             }
 
@@ -227,57 +279,57 @@ fn drive<T: FromData>(
                 Some(v) => v,
                 None => return false,
             };
-            return !c.is_actionable(&end_entry, &buffer);
+            return !c.is_actionable(&end_entry, &ac.buffer);
         };
 
-        if !is_safe_to_break() && buffer.backtrack_len() > 0 && buffer.idx < buffer.len {
-            buffer.unsafe_to_break_from_outbuffer(
-                Some(buffer.backtrack_len() - 1),
-                Some(buffer.idx + 1),
+        if !is_safe_to_break() && ac.buffer.backtrack_len() > 0 && ac.buffer.idx < ac.buffer.len {
+            ac.buffer.unsafe_to_break_from_outbuffer(
+                Some(ac.buffer.backtrack_len() - 1),
+                Some(ac.buffer.idx + 1),
             );
         }
 
-        c.transition(&entry, buffer);
+        c.transition(&entry, ac.buffer);
 
         state = next_state;
 
-        if buffer.idx >= buffer.len || !buffer.successful {
+        if ac.buffer.idx >= ac.buffer.len || !ac.buffer.successful {
             break;
         }
 
         if c.can_advance(&entry) {
-            buffer.next_glyph();
+            ac.buffer.next_glyph();
         } else {
-            if buffer.max_ops <= 0 {
-                buffer.next_glyph();
+            if ac.buffer.max_ops <= 0 {
+                ac.buffer.next_glyph();
             }
-            buffer.max_ops -= 1;
+            ac.buffer.max_ops -= 1;
         }
     }
 
     if !c.in_place() {
-        buffer.sync();
+        ac.buffer.sync();
     }
 }
 
-fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut hb_buffer_t, face: &hb_font_t) {
+fn apply_subtable(kind: &morx::SubtableKind, ac: &mut hb_aat_apply_context_t) {
     match kind {
         morx::SubtableKind::Rearrangement(ref table) => {
             let mut c = RearrangementCtx { start: 0, end: 0 };
 
-            drive::<()>(table, &mut c, buffer);
+            drive::<()>(table, &mut c, ac);
         }
         morx::SubtableKind::Contextual(ref table) => {
             let mut c = ContextualCtx {
                 mark_set: false,
                 face_if_has_glyph_classes:
-                    matches!(face.tables().gdef, Some(gdef) if gdef.has_glyph_classes())
-                        .then_some(face),
+                    matches!(ac.face.tables().gdef, Some(gdef) if gdef.has_glyph_classes())
+                        .then_some(ac.face),
                 mark: 0,
                 table,
             };
 
-            drive::<morx::ContextualEntryData>(&table.state, &mut c, buffer);
+            drive::<morx::ContextualEntryData>(&table.state, &mut c, ac);
         }
         morx::SubtableKind::Ligature(ref table) => {
             let mut c = LigatureCtx {
@@ -286,13 +338,13 @@ fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut hb_buffer_t, face: &hb
                 match_positions: [0; LIGATURE_MAX_MATCHES],
             };
 
-            drive::<u16>(&table.state, &mut c, buffer);
+            drive::<u16>(&table.state, &mut c, ac);
         }
         morx::SubtableKind::NonContextual(ref lookup) => {
             let face_if_has_glyph_classes =
-                matches!(face.tables().gdef, Some(gdef) if gdef.has_glyph_classes())
-                    .then_some(face);
-            for info in &mut buffer.info {
+                matches!(ac.face.tables().gdef, Some(gdef) if gdef.has_glyph_classes())
+                    .then_some(ac.face);
+            for info in &mut ac.buffer.info {
                 if let Some(replacement) = lookup.value(info.as_glyph()) {
                     info.glyph_id = u32::from(replacement);
                     if let Some(face) = face_if_has_glyph_classes {
@@ -307,7 +359,7 @@ fn apply_subtable(kind: &morx::SubtableKind, buffer: &mut hb_buffer_t, face: &hb
                 glyphs: table.glyphs,
             };
 
-            drive::<morx::InsertionEntryData>(&table.state, &mut c, buffer);
+            drive::<morx::InsertionEntryData>(&table.state, &mut c, ac);
         }
     }
 }

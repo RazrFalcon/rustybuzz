@@ -1,4 +1,3 @@
-use super::aat_map;
 use super::buffer::*;
 use super::ot_layout::*;
 use super::ot_layout_gpos_table::GPOS;
@@ -18,7 +17,6 @@ pub struct hb_ot_shape_planner_t<'a> {
     pub direction: Direction,
     pub script: Option<Script>,
     pub ot_map: hb_ot_map_builder_t<'a>,
-    pub aat_map: aat_map::hb_aat_map_builder_t,
     pub apply_morx: bool,
     pub script_zero_marks: bool,
     pub script_fallback_mark_positioning: bool,
@@ -33,7 +31,6 @@ impl<'a> hb_ot_shape_planner_t<'a> {
         language: Option<&Language>,
     ) -> Self {
         let ot_map = hb_ot_map_builder_t::new(face, script, language);
-        let aat_map = aat_map::hb_aat_map_builder_t::default();
 
         let mut shaper = match script {
             Some(script) => hb_ot_shape_complex_categorize(
@@ -61,7 +58,6 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             direction,
             script,
             ot_map,
-            aat_map,
             apply_morx,
             script_zero_marks,
             script_fallback_mark_positioning,
@@ -173,13 +169,6 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             self.ot_map.add_feature(feature.tag, flags, feature.value);
         }
 
-        if self.apply_morx {
-            for feature in user_features {
-                self.aat_map
-                    .add_feature(self.face, feature.tag, feature.value);
-            }
-        }
-
         if let Some(func) = self.shaper.override_features {
             func(self);
         }
@@ -187,12 +176,6 @@ impl<'a> hb_ot_shape_planner_t<'a> {
 
     pub fn compile(mut self, user_features: &[Feature]) -> hb_ot_shape_plan_t {
         let ot_map = self.ot_map.compile();
-
-        let aat_map = if self.apply_morx {
-            self.aat_map.compile(self.face)
-        } else {
-            aat_map::hb_aat_map_t::default()
-        };
 
         let frac_mask = ot_map.get_1_mask(hb_tag_t::from_bytes(b"frac"));
         let numr_mask = ot_map.get_1_mask(hb_tag_t::from_bytes(b"numr"));
@@ -279,7 +262,6 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             script: self.script,
             shaper: self.shaper,
             ot_map,
-            aat_map,
             data: None,
             frac_mask,
             numr_mask,
@@ -312,7 +294,7 @@ impl<'a> hb_ot_shape_planner_t<'a> {
     }
 }
 
-pub struct ShapeContext<'a> {
+pub struct hb_ot_shape_context_t<'a> {
     pub plan: &'a hb_ot_shape_plan_t,
     pub face: &'a hb_font_t<'a>,
     pub buffer: &'a mut hb_buffer_t,
@@ -321,7 +303,7 @@ pub struct ShapeContext<'a> {
 }
 
 // Pull it all together!
-pub fn shape_internal(ctx: &mut ShapeContext) {
+pub fn shape_internal(ctx: &mut hb_ot_shape_context_t) {
     ctx.buffer.enter();
 
     initialize_masks(ctx);
@@ -346,7 +328,7 @@ pub fn shape_internal(ctx: &mut ShapeContext) {
     ctx.buffer.leave();
 }
 
-fn substitute_pre(ctx: &mut ShapeContext) {
+fn substitute_pre(ctx: &mut hb_ot_shape_context_t) {
     hb_ot_substitute_default(ctx);
     hb_ot_substitute_plan(ctx);
 
@@ -355,7 +337,7 @@ fn substitute_pre(ctx: &mut ShapeContext) {
     }
 }
 
-fn substitute_post(ctx: &mut ShapeContext) {
+fn substitute_post(ctx: &mut hb_ot_shape_context_t) {
     if ctx.plan.apply_morx && !ctx.plan.apply_gpos {
         aat_layout::hb_aat_layout_remove_deleted_glyphs(ctx.buffer);
     }
@@ -367,7 +349,7 @@ fn substitute_post(ctx: &mut ShapeContext) {
     }
 }
 
-fn hb_ot_substitute_default(ctx: &mut ShapeContext) {
+fn hb_ot_substitute_default(ctx: &mut hb_ot_shape_context_t) {
     rotate_chars(ctx);
 
     ot_shape_normalize::_hb_ot_shape_normalize(ctx.plan, ctx.buffer, ctx.face);
@@ -384,25 +366,21 @@ fn hb_ot_substitute_default(ctx: &mut ShapeContext) {
     map_glyphs_fast(ctx.buffer);
 }
 
-fn hb_ot_substitute_plan(ctx: &mut ShapeContext) {
+fn hb_ot_substitute_plan(ctx: &mut hb_ot_shape_context_t) {
     hb_ot_layout_substitute_start(ctx.face, ctx.buffer);
 
     if ctx.plan.fallback_glyph_classes {
         hb_synthesize_glyph_classes(ctx.buffer);
     }
 
-    substitute_by_plan(ctx.plan, ctx.face, ctx.buffer);
-}
-
-fn substitute_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
-    if plan.apply_morx {
-        aat_layout::hb_aat_layout_substitute(plan, face, buffer);
+    if ctx.plan.apply_morx {
+        aat_layout::hb_aat_layout_substitute(ctx.plan, ctx.face, ctx.buffer);
     } else {
-        super::ot_layout_gsub_table::substitute(plan, face, buffer);
+        super::ot_layout_gsub_table::substitute(ctx.plan, ctx.face, ctx.buffer);
     }
 }
 
-fn position(ctx: &mut ShapeContext) {
+fn position(ctx: &mut hb_ot_shape_context_t) {
     ctx.buffer.clear_positions();
 
     position_default(ctx);
@@ -414,7 +392,7 @@ fn position(ctx: &mut ShapeContext) {
     }
 }
 
-fn position_default(ctx: &mut ShapeContext) {
+fn position_default(ctx: &mut hb_ot_shape_context_t) {
     let len = ctx.buffer.len;
 
     if ctx.buffer.direction.is_horizontal() {
@@ -441,7 +419,7 @@ fn position_default(ctx: &mut ShapeContext) {
     }
 }
 
-fn position_complex(ctx: &mut ShapeContext) {
+fn position_complex(ctx: &mut hb_ot_shape_context_t) {
     // If the font has no GPOS and direction is forward, then when
     // zeroing mark widths, we shift the mark with it, such that the
     // mark is positioned hanging over the previous glyph.  When
@@ -508,12 +486,12 @@ fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
     }
 }
 
-fn initialize_masks(ctx: &mut ShapeContext) {
+fn initialize_masks(ctx: &mut hb_ot_shape_context_t) {
     let global_mask = ctx.plan.ot_map.get_global_mask();
     ctx.buffer.reset_masks(global_mask);
 }
 
-fn setup_masks(ctx: &mut ShapeContext) {
+fn setup_masks(ctx: &mut hb_ot_shape_context_t) {
     setup_masks_fraction(ctx);
 
     if let Some(func) = ctx.plan.shaper.setup_masks {
@@ -529,7 +507,7 @@ fn setup_masks(ctx: &mut ShapeContext) {
     }
 }
 
-fn setup_masks_fraction(ctx: &mut ShapeContext) {
+fn setup_masks_fraction(ctx: &mut hb_ot_shape_context_t) {
     let buffer = &mut ctx.buffer;
     if buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII == 0 || !ctx.plan.has_frac {
         return;
@@ -742,7 +720,7 @@ fn ensure_native_direction(buffer: &mut hb_buffer_t) {
     }
 }
 
-fn rotate_chars(ctx: &mut ShapeContext) {
+fn rotate_chars(ctx: &mut hb_ot_shape_context_t) {
     let len = ctx.buffer.len;
 
     if ctx.target_direction.is_backward() {

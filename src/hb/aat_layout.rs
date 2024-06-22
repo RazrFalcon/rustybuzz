@@ -1,10 +1,11 @@
 #![allow(dead_code)]
 
 use super::buffer::{hb_buffer_t, hb_glyph_info_t};
-use super::hb_font_t;
 use super::hb_tag_t;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::{aat_layout_kerx_table, aat_layout_morx_table, aat_layout_trak_table};
+use super::{aat_map, hb_font_t};
+use crate::hb::aat_layout_common::hb_aat_apply_context_t;
 
 pub type hb_aat_layout_feature_type_t = u8;
 pub const HB_AAT_LAYOUT_FEATURE_TYPE_INVALID: u8 = 0xFF;
@@ -495,7 +496,19 @@ pub fn hb_aat_layout_substitute(
     face: &hb_font_t,
     buffer: &mut hb_buffer_t,
 ) {
-    aat_layout_morx_table::apply(plan, face, buffer);
+    let mut builder = aat_map::hb_aat_map_builder_t::default();
+
+    for feature in &plan.user_features {
+        builder.add_feature(face, feature);
+    }
+
+    let mut aat_map = aat_map::hb_aat_map_t::default();
+    if plan.apply_morx {
+        builder.compile(face, &mut aat_map);
+    }
+
+    let mut c = hb_aat_apply_context_t::new(plan, face, buffer);
+    aat_layout_morx_table::apply(&mut c, &mut aat_map);
 }
 
 pub fn hb_aat_layout_zero_width_deleted_glyphs(buffer: &mut hb_buffer_t) {
