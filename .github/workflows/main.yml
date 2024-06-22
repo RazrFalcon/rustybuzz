@@ -7,11 +7,11 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust:
-          - stable
+        os: [ubuntu-latest, macos-latest]
+        rust: [stable]
     steps:
     - name: Checkout
       uses: actions/checkout@v2
