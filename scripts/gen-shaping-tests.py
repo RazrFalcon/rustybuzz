@@ -39,6 +39,9 @@ IGNORE_TEST_CASES = [
     'morx_36_001',
     # ttf-parser uses different rounding, not a bug
     'fallback_positioning_001',
+
+    # Requires support for the ltag table.
+    'macos_017',
 ]
 
 

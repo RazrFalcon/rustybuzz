@@ -8246,19 +8246,6 @@ fn macos_016() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_017() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/BigCaslon.ttf",
-            "\u{0107}",
-            "--language=pl",
-        ),
-        "cacute.polish=0+432"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
 fn macos_020() {
     assert_eq!(
         shape(
