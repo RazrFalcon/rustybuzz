@@ -498,7 +498,7 @@ fn position_by_plan(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb
         aat_layout::hb_aat_layout_position(plan, face, buffer);
     }
     if plan.apply_kern {
-        super::kerning::kern(plan, face, buffer);
+        super::kerning::hb_ot_layout_kern(plan, face, buffer);
     } else if plan.apply_fallback_kern {
         ot_shape_fallback::_hb_ot_shape_fallback_kern(plan, face, buffer);
     }
