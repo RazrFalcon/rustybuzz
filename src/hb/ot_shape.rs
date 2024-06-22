@@ -350,13 +350,13 @@ fn substitute_pre(ctx: &mut ShapeContext) {
     hb_ot_substitute_default(ctx);
     hb_ot_substitute_plan(ctx);
 
-    if ctx.plan.apply_morx && !ctx.plan.apply_gpos {
+    if ctx.plan.apply_morx && ctx.plan.apply_gpos {
         hb_aat_layout_remove_deleted_glyphs(&mut ctx.buffer);
     }
 }
 
 fn substitute_post(ctx: &mut ShapeContext) {
-    if ctx.plan.apply_morx && ctx.plan.apply_gpos {
+    if ctx.plan.apply_morx && !ctx.plan.apply_gpos {
         aat_layout::hb_aat_layout_remove_deleted_glyphs(ctx.buffer);
     }
 
