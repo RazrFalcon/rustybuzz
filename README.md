@@ -32,10 +32,6 @@ rustybuzz passes 98% of harfbuzz tests (1764 to be more precise).
 So it's mostly identical, but there are still some tiny edge-cases which
 are not implemented yet or cannot be implemented at all.
 
-Also, Apple layout is largely untested, because we cannot include Apple fonts for legal reasons.
-harfbuzz uses macOS CI instances to test it, which is extremely painful
-and we do not do this for now.
-
 ## Major changes
 
 - Subsetting removed.
@@ -51,8 +47,6 @@ and we do not do this for now.
 - No Arabic fallback shaper, since it requires subsetting.
 - No `graphite` library support.
 - `avar2` as well as other parts of the boring-expansion-spec are not supported yet.
-- No automated Apple layout testing for legal reasons. We just cannot include Apple fonts.
-  harfbuzz avoids this by running such tests only on CI, which is far from ideal.
 
 ## Performance
 
