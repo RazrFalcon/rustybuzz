@@ -231,7 +231,7 @@ impl<'a> hb_ot_shape_planner_t<'a> {
 
         // Decide who does positioning. GPOS, kerx, kern, or fallback.
         let has_kerx = self.face.tables().kerx.is_some();
-        let has_gsub = self.face.tables().gsub.is_some();
+        let has_gsub = !apply_morx && self.face.tables().gsub.is_some();
         let has_gpos = !disable_gpos && self.face.tables().gpos.is_some();
 
         // Prefer GPOS over kerx if GSUB is present;
@@ -350,13 +350,13 @@ fn substitute_pre(ctx: &mut ShapeContext) {
     hb_ot_substitute_default(ctx);
     hb_ot_substitute_plan(ctx);
 
-    if ctx.plan.apply_morx && !ctx.plan.apply_gpos {
+    if ctx.plan.apply_morx && ctx.plan.apply_gpos {
         hb_aat_layout_remove_deleted_glyphs(&mut ctx.buffer);
     }
 }
 
 fn substitute_post(ctx: &mut ShapeContext) {
-    if ctx.plan.apply_morx && ctx.plan.apply_gpos {
+    if ctx.plan.apply_morx && !ctx.plan.apply_gpos {
         aat_layout::hb_aat_layout_remove_deleted_glyphs(ctx.buffer);
     }
 

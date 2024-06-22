@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-
+import hashlib
 import os
+import pathlib
 import shutil
 import sys
 import subprocess
@@ -9,6 +10,7 @@ from pathlib import Path
 
 # There is no sane way to test them.
 IGNORE_TESTS = [
+    # Disable this if you are on a Mac and want to update the macos tests.
     'macos.tests',
     'coretext.tests',
     'directwrite.tests',
@@ -37,12 +39,19 @@ IGNORE_TEST_CASES = [
     'morx_36_001',
     # ttf-parser uses different rounding, not a bug
     'fallback_positioning_001',
+
+    # Requires support for the ltag table.
+    'macos_017',
 ]
 
 
-def update_relative_path(tests_name, fontfile):
-    fontfile = fontfile.replace('../fonts/', '')
-    return f'tests/fonts/{tests_name}/{fontfile}'  # relative to the root dir
+def update_font_path(tests_name, fontfile):
+    if not fontfile.startswith('/'):
+        fontfile = fontfile.replace('../fonts/', '')
+        return f'tests/fonts/{tests_name}/{fontfile}'  # relative to the root dir
+    # macos tests contain absolute paths
+    else:
+        return fontfile
 
 
 # Converts `U+0041,U+0078` or `0041,0078` into `\u{0041}\u{0078}`
@@ -66,7 +75,15 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
 
     fontfile, options, unicodes, glyphs_expected = data.split(';')
 
-    fontfile_rs = update_relative_path(tests_name, fontfile)
+    # MacOS tests contain hashes, remove them.
+    if "@" in fontfile:
+        fontfile, _ = fontfile.split('@')
+
+
+    fontfile_rs = update_font_path(tests_name, fontfile)
+    # Some fonts contain escaped spaces, remove them.
+    fontfile = fontfile.replace('\\ ', ' ')
+    fontfile_rs = fontfile_rs.replace('\\ ', ' ')
 
     unicodes_rs = convert_unicodes(unicodes)
 
@@ -114,23 +131,29 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
     options = options.replace('"', '\\"')
     options = options.replace(' --single-par', '')
 
-    fonts.add(os.path.split(fontfile_rs)[1])
+    if not fontfile.startswith('/'):
+        fonts.add(os.path.split(fontfile_rs)[1])
 
     if test_name in IGNORE_TEST_CASES:
         return ''
 
-    return (f'#[test]\n'
-            f'fn {test_name}() {{\n'
-            f'    assert_eq!(\n'
-            f'        shape(\n'
-            f'            "{fontfile_rs}",\n'
-            f'            "{unicodes_rs}",\n'
-            f'            "{options}",\n'
-            f'        ),\n'
-            f'        "{glyphs_expected}"\n'
-            f'    );\n'
-            f'}}\n'
-            '\n')
+    final_string = (f'#[test]\n'
+                    f'fn {test_name}() {{\n'
+                    f'    assert_eq!(\n'
+                    f'        shape(\n'
+                    f'            "{fontfile_rs}",\n'
+                    f'            "{unicodes_rs}",\n'
+                    f'            "{options}",\n'
+                    f'        ),\n'
+                    f'        "{glyphs_expected}"\n'
+                    f'    );\n'
+                    f'}}\n'
+                    '\n')
+
+    if file_name == 'macos.tests':
+        final_string = '#[cfg(target_os = "macos")]\n' + final_string
+
+    return final_string
 
 
 def convert(hb_dir, hb_shape_exe, tests_dir, tests_name):
@@ -148,7 +171,8 @@ def convert(hb_dir, hb_shape_exe, tests_dir, tests_name):
         if file in IGNORE_TESTS:
             continue
 
-        with open(tests_dir / file, 'r') as f:
+        path = tests_dir / file if file != 'macos.tests' else pathlib.Path(__file__).parent / file
+        with open(path, 'r') as f:
             for idx, test in enumerate(f.read().splitlines()):
                 # skip comments and empty lines
                 if test.startswith('#') or len(test) == 0:
