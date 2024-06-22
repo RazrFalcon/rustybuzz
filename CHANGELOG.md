@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- `gvar` phantom points handling which fixes some variable fonts shaping.
 
 ## [0.14.1] - 2024-06-12
 ### Fixed

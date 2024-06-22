@@ -24,7 +24,7 @@ libm = { version = "0.2.2", optional = true }
 
 [dependencies.ttf-parser]
 git = "https://github.com/RazrFalcon/ttf-parser"
-rev = "41cf80c"
+rev = "12c5719"
 default-features = false
 features = [
     "opentype-layout",

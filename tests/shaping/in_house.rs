@@ -20515,6 +20515,18 @@ fn variations_002() {
 }
 
 #[test]
+fn variations_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/ab40c89624a6104e5d0a2308e448a989302f515b.ttf",
+            "\u{0020}",
+            "--variations=wdth=60",
+        ),
+        "space=0+266"
+    );
+}
+
+#[test]
 fn variations_004() {
     assert_eq!(
         shape(

@@ -170,6 +170,7 @@ impl<'a> hb_font_t<'a> {
             && face.has_non_default_variation_coordinates()
             && face.tables().hvar.is_none()
             && face.tables().vvar.is_none()
+            && face.glyph_phantom_points(glyph).is_none()
         {
             return match face.glyph_bounding_box(glyph) {
                 Some(bbox) => {
