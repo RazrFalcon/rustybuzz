@@ -199,14 +199,14 @@ pub struct skipping_iterator_t<'a, 'b> {
 enum may_match_t {
     MATCH_NO,
     MATCH_YES,
-    MATCH_MAYBE
+    MATCH_MAYBE,
 }
 
 #[derive(PartialEq, Eq, Copy, Clone)]
 enum may_skip_t {
     SKIP_NO,
     SKIP_YES,
-    SKIP_MAYBE
+    SKIP_MAYBE,
 }
 
 impl<'a, 'b> skipping_iterator_t<'a, 'b> {
@@ -283,7 +283,9 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             }
 
             let matched = self.may_match(info);
-            if matched == may_match_t::MATCH_YES || (matched == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO) {
+            if matched == may_match_t::MATCH_YES
+                || (matched == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO)
+            {
                 self.num_items -= 1;
                 return true;
             }
@@ -328,7 +330,9 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             }
 
             let matched = self.may_match(info);
-            if matched == may_match_t::MATCH_YES || (matched == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO) {
+            if matched == may_match_t::MATCH_YES
+                || (matched == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO)
+            {
                 self.num_items -= 1;
                 return true;
             }
@@ -354,7 +358,8 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     }
 
     fn may_match(&self, info: &hb_glyph_info_t) -> may_match_t {
-        if (info.mask & self.mask) == 0 || (self.syllable != 0 && self.syllable != info.syllable()) {
+        if (info.mask & self.mask) == 0 || (self.syllable != 0 && self.syllable != info.syllable())
+        {
             return may_match_t::MATCH_NO;
         }
 
@@ -363,7 +368,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
                 may_match_t::MATCH_YES
             } else {
                 may_match_t::MATCH_NO
-            }
+            };
         }
 
         may_match_t::MATCH_MAYBE
@@ -1186,9 +1191,9 @@ pub mod OT {
     }
 }
 
+use crate::hb::limits::HB_MAX_CONTEXT_LENGTH;
 use crate::BufferFlags;
 use OT::hb_ot_apply_context_t;
-use crate::hb::limits::HB_MAX_CONTEXT_LENGTH;
 
 pub fn ligate_input(
     ctx: &mut hb_ot_apply_context_t,
