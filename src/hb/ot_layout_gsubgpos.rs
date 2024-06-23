@@ -1,7 +1,5 @@
 //! Matching of glyph patterns.
 
-use core::cmp::max;
-
 use ttf_parser::opentype_layout::*;
 use ttf_parser::{GlyphId, LazyArray16};
 
@@ -196,6 +194,13 @@ pub struct skipping_iterator_t<'a, 'b> {
 }
 
 #[derive(PartialEq, Eq, Copy, Clone)]
+enum match_t {
+    MATCH,
+    NOT_MATCH,
+    SKIP,
+}
+
+#[derive(PartialEq, Eq, Copy, Clone)]
 enum may_match_t {
     MATCH_NO,
     MATCH_YES,
@@ -277,25 +282,19 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             self.buf_idx += 1;
             let info = &self.ctx.buffer.info[self.buf_idx];
 
-            let skip = self.may_skip(info);
-            if skip == may_skip_t::SKIP_YES {
-                continue;
-            }
-
-            let matched = self.may_match(info);
-            if matched == may_match_t::MATCH_YES
-                || (matched == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO)
-            {
-                self.num_items -= 1;
-                return true;
-            }
-
-            if skip == may_skip_t::SKIP_NO {
-                if let Some(unsafe_to) = unsafe_to {
-                    *unsafe_to = self.buf_idx + 1;
+            match self._match(info) {
+                match_t::MATCH => {
+                    self.num_items -= 1;
+                    return true;
                 }
+                match_t::NOT_MATCH => {
+                    if let Some(unsafe_to) = unsafe_to {
+                        *unsafe_to = self.buf_idx + 1;
+                    }
 
-                return false;
+                    return false;
+                }
+                match_t::SKIP => continue,
             }
         }
 
@@ -324,25 +323,21 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             self.buf_idx -= 1;
             let info = &self.ctx.buffer.out_info()[self.buf_idx];
 
-            let skip = self.may_skip(info);
-            if skip == may_skip_t::SKIP_YES {
-                continue;
-            }
-
-            let matched = self.may_match(info);
-            if matched == may_match_t::MATCH_YES
-                || (matched == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO)
-            {
-                self.num_items -= 1;
-                return true;
-            }
-
-            if skip == may_skip_t::SKIP_NO {
-                if let Some(unsafe_from) = unsafe_from {
-                    *unsafe_from = max(1, self.buf_idx) - 1;
+            match self._match(info) {
+                match_t::MATCH => {
+                    self.num_items -= 1;
+                    return true;
                 }
+                match_t::NOT_MATCH => {
+                    if let Some(unsafe_from) = unsafe_from {
+                        *unsafe_from = self.buf_idx.max(1) - 1;
+                    }
 
-                return false;
+                    return false;
+                }
+                match_t::SKIP => {
+                    continue;
+                }
             }
         }
 
@@ -355,6 +350,28 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
 
     pub fn reject(&mut self) {
         self.num_items += 1;
+    }
+
+    fn _match(&self, info: &hb_glyph_info_t) -> match_t {
+        let skip = self.may_skip(info);
+
+        if skip == may_skip_t::SKIP_YES {
+            return match_t::SKIP;
+        }
+
+        let _match = self.may_match(info);
+
+        if _match == may_match_t::MATCH_YES
+            || (_match == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO)
+        {
+            return match_t::MATCH;
+        }
+
+        if skip == may_skip_t::SKIP_NO {
+            return match_t::NOT_MATCH;
+        }
+
+        match_t::SKIP
     }
 
     fn may_match(&self, info: &hb_glyph_info_t) -> may_match_t {
