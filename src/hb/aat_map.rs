@@ -161,6 +161,10 @@ impl hb_aat_map_builder_t {
         // Compute active features per range, and compile each.
         let mut feature_events = vec![];
         for feature in &self.features {
+            if feature.start == feature.end {
+                continue;
+            }
+
             feature_events.push(feature_event_t {
                 index: feature.start as usize,
                 start: true,
@@ -178,7 +182,7 @@ impl hb_aat_map_builder_t {
 
         // Add a strategic final event.
         feature_events.push(feature_event_t {
-            index: 0,
+            index: u32::MAX as usize,
             start: false,
             feature: feature_info_t::default(),
         });
