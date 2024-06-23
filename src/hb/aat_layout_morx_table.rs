@@ -16,12 +16,12 @@ pub fn compile_flags(
 ) -> Option<()> {
     let has_feature = |kind: u16, setting: u16| {
         builder
-            .features
+            .current_features
             .binary_search_by(|probe| {
-                if probe.info.kind != kind {
-                    probe.info.kind.cmp(&kind)
+                if probe.kind != kind {
+                    probe.kind.cmp(&kind)
                 } else {
-                    probe.info.setting.cmp(&setting)
+                    probe.setting.cmp(&setting)
                 }
             })
             .is_ok()
