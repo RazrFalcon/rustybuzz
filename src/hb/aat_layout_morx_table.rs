@@ -344,7 +344,34 @@ fn apply_subtable(kind: &morx::SubtableKind, ac: &mut hb_aat_apply_context_t) {
             let face_if_has_glyph_classes =
                 matches!(ac.face.tables().gdef, Some(gdef) if gdef.has_glyph_classes())
                     .then_some(ac.face);
-            for info in &mut ac.buffer.info {
+
+            let mut last_range = ac.range_flags.get().and_then(|rf| rf.first().map(|_| 0usize));
+
+            for info in 0..ac.buffer.len {
+                if let Some(range_flags) = ac.range_flags.get() {
+                    if let Some(last_range) = last_range.as_mut() {
+                        let mut range = *last_range;
+                        if ac.buffer.idx < ac.buffer.len {
+                            // We need to access info
+                            let cluster = ac.buffer.cur(0).cluster;
+                            while cluster < range_flags[range].cluster_first {
+                                range -= 1;
+                            }
+
+                            while cluster > range_flags[range].cluster_last {
+                                range += 1;
+                            }
+
+                            *last_range = range;
+                        }
+
+                        if range_flags[range].flags & ac.subtable_flags == 0 {
+                            continue;
+                        }
+                    }
+                }
+
+                let info = &mut ac.buffer.info[info];
                 if let Some(replacement) = lookup.value(info.as_glyph()) {
                     info.glyph_id = u32::from(replacement);
                     if let Some(face) = face_if_has_glyph_classes {
