@@ -30,6 +30,9 @@ impl hb_extents_t {
     pub fn is_empty(&self) -> bool {
         self.x_min >= self.x_max || self.y_min >= self.y_max
     }
+    pub fn is_void(&self) -> bool {
+        self.x_min > self.x_max
+    }
 
     pub fn union_(&mut self, o: &hb_extents_t) {
         self.x_min = o.x_min.min(o.x_min);

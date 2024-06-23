@@ -288,10 +288,17 @@ impl<'a> hb_font_t<'a> {
             ).is_some();
 
             let e = extents_data.get_extents();
-            glyph_extents.x_bearing = e.x_min as i32;
-            glyph_extents.y_bearing = e.y_max as i32;
-            glyph_extents.width = (e.x_max - e.x_min) as i32;
-            glyph_extents.height = (e.y_min - e.y_max) as i32;
+            if e.is_void() {
+                glyph_extents.x_bearing = 0;
+                glyph_extents.y_bearing = 0;
+                glyph_extents.width = 0;
+                glyph_extents.height = 0;
+            }   else {
+                glyph_extents.x_bearing = e.x_min as i32;
+                glyph_extents.y_bearing = e.y_max as i32;
+                glyph_extents.width = (e.x_max - e.x_min) as i32;
+                glyph_extents.height = (e.y_min - e.y_max) as i32;
+            }
 
             return ret;
         }
