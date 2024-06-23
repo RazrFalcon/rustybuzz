@@ -10555,6 +10555,25 @@ fn macos_157() {
     );
 }
 
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_160() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/LucidaGrande.ttc",
+            "\u{0066}\u{0066}\u{0020}\u{0066}\u{0066}\u{0066}\u{0020}\u{0066}\u{0066}",
+            "--features=-liga[3:5]",
+        ),
+        "ff=0+1443|\
+         space=2+648|\
+         f=3+753|\
+         f=4+753|\
+         f=5+753|\
+         space=6+648|\
+         ff=7+1443"
+    );
+}
+
 #[test]
 fn mark_attachment_001() {
     assert_eq!(
