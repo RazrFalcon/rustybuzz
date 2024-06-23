@@ -253,6 +253,12 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             stop = self.buf_len as i32 - 1;
         }
 
+        // When looking back, limit how far we search; this function is mostly
+        // used for looking back for base glyphs when attaching marks. If we
+        // don't limit, we can get O(n^2) behavior where n is the number of
+        // consecutive marks.
+        stop = stop.max(self.buf_idx as i32 - HB_MAX_CONTEXT_LENGTH as i32);
+
         while (self.buf_idx as i32) < stop {
             self.buf_idx += 1;
             let info = &self.ctx.buffer.info[self.buf_idx];
@@ -1161,6 +1167,7 @@ pub mod OT {
 
 use crate::BufferFlags;
 use OT::hb_ot_apply_context_t;
+use crate::hb::limits::HB_MAX_CONTEXT_LENGTH;
 
 pub fn ligate_input(
     ctx: &mut hb_ot_apply_context_t,
