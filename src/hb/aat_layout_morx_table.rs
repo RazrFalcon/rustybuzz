@@ -183,10 +183,6 @@ fn drive<T: FromData>(
                         range += 1;
                     }
 
-                    if range != *last_range {
-                        state = START_OF_TEXT;
-                    }
-
                     *last_range = range;
                 }
 
@@ -194,6 +190,8 @@ fn drive<T: FromData>(
                     if ac.buffer.idx == ac.buffer.len || !ac.buffer.successful {
                         break;
                     }
+
+                    state = START_OF_TEXT;
 
                     ac.buffer.next_glyph();
                     continue;
