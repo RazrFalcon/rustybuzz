@@ -163,6 +163,8 @@ fn drive<T: FromData>(
         ac.buffer.clear_output();
     }
 
+    ac.buffer.unsafe_to_concat(None, None);
+
     let mut state = START_OF_TEXT;
     let mut last_range = ac
         .range_flags
