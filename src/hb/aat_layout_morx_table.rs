@@ -64,9 +64,9 @@ pub fn compile_flags(
 // Chain::apply in harfbuzz
 pub fn apply<'a>(c: &mut hb_aat_apply_context_t<'a>, map: &'a mut hb_aat_map_t) -> Option<()> {
     // Due to the borrow checker, we cannot just assign the mut slice with the corresponding index
-    // in the for loop, like it's done in harfbuzz. We have to borrow the slice ones and then just
+    // in the for loop, like it's done in harfbuzz. We have to borrow the slice once and then just
     // update the "start index".
-    c.set_range_flags(map.chain_flags.as_mut_slice());
+    c.range_flags.set_range_flags(map.chain_flags.as_mut_slice());
     for (chain_idx, chain) in c
         .face
         .tables()
@@ -76,9 +76,9 @@ pub fn apply<'a>(c: &mut hb_aat_apply_context_t<'a>, map: &'a mut hb_aat_map_t) 
         .into_iter()
         .enumerate()
     {
-        c.range_flags_index = chain_idx;
+        c.range_flags.set_range_flags_index(chain_idx);
         for subtable in chain.subtables {
-            if let Some(range_flags) = c.range_flags().as_ref() {
+            if let Some(range_flags) = c.range_flags.get().as_ref() {
                 if range_flags.len() == 1 && (subtable.feature_flags & range_flags[0].flags == 0) {
                     continue;
                 }
@@ -167,10 +167,10 @@ fn drive<T: FromData>(
     }
 
     let mut state = START_OF_TEXT;
-    let mut last_range = ac.range_flags().and_then(|rf| rf.first().map(|_| 0usize));
+    let mut last_range = ac.range_flags.get().and_then(|rf| rf.first().map(|_| 0usize));
     ac.buffer.idx = 0;
     loop {
-        if let Some(range_flags) = ac.range_flags() {
+        if let Some(range_flags) = ac.range_flags.get() {
             if let Some(last_range) = last_range.as_mut() {
                 let mut range = *last_range;
                 if ac.buffer.idx < ac.buffer.len {
