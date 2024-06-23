@@ -179,6 +179,7 @@ fn drive<T: FromData>(
         });
     ac.buffer.idx = 0;
     loop {
+        // This block copied from NoncontextualSubtable::apply. Keep in sync.
         if let Some(range_flags) = ac.range_flags.as_ref() {
             if let Some(last_range) = last_range.as_mut() {
                 let mut range = *last_range;
@@ -365,6 +366,7 @@ fn apply_subtable(kind: &morx::SubtableKind, ac: &mut hb_aat_apply_context_t) {
                 });
 
             for info in 0..ac.buffer.len {
+                // This block copied from StateTableDriver::drive. Keep in sync.
                 if let Some(range_flags) = ac.range_flags.as_ref() {
                     if let Some(last_range) = last_range.as_mut() {
                         let mut range = *last_range;
