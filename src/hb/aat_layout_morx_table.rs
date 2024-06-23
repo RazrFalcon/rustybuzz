@@ -68,6 +68,8 @@ pub fn compile_flags(
 
 // Chain::apply in harfbuzz
 pub fn apply<'a>(c: &mut hb_aat_apply_context_t<'a>, map: &'a mut hb_aat_map_t) -> Option<()> {
+    c.buffer.unsafe_to_concat(None, None);
+
     let chains = c.face.tables().morx.as_ref()?.chains;
     let chain_len = chains.clone().into_iter().count();
     map.chain_flags.resize(chain_len, vec![]);
@@ -162,8 +164,6 @@ fn drive<T: FromData>(
     if !c.in_place() {
         ac.buffer.clear_output();
     }
-
-    ac.buffer.unsafe_to_concat(None, None);
 
     let mut state = START_OF_TEXT;
     let mut last_range = ac

@@ -48,6 +48,8 @@ pub(crate) fn apply(
     face: &hb_font_t,
     buffer: &mut hb_buffer_t,
 ) -> Option<()> {
+    buffer.unsafe_to_concat(None, None);
+
     let mut seen_cross_stream = false;
     for subtable in face.tables().kerx?.subtables {
         if subtable.variable {
