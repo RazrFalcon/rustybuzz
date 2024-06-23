@@ -1,7 +1,8 @@
+use crate::hb::common::{HB_FEATURE_GLOBAL_END, HB_FEATURE_GLOBAL_START};
 use crate::Feature;
+use alloc::vec;
 use alloc::vec::Vec;
 use core::cmp::Ordering;
-use alloc::vec;
 
 use super::aat_layout::*;
 use super::{hb_font_t, hb_mask_t, hb_tag_t};
@@ -75,12 +76,22 @@ impl PartialOrd for feature_event_t {
     }
 }
 
-#[derive(Default)]
 pub struct hb_aat_map_builder_t {
     pub current_features: Vec<feature_info_t>,
     pub features: Vec<feature_range_t>,
     pub range_first: usize,
     pub range_last: usize,
+}
+
+impl Default for hb_aat_map_builder_t {
+    fn default() -> Self {
+        Self {
+            range_first: HB_FEATURE_GLOBAL_START as usize,
+            range_last: HB_FEATURE_GLOBAL_END as usize,
+            current_features: Vec::default(),
+            features: Vec::default(),
+        }
+    }
 }
 
 impl hb_aat_map_builder_t {

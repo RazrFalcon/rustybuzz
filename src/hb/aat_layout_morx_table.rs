@@ -166,17 +166,14 @@ fn drive<T: FromData>(
     }
 
     let mut state = START_OF_TEXT;
-    let mut last_range = ac
-        .range_flags
-        .as_ref()
-        .and_then(|rf| {
-            if rf.len() > 1 {
-                rf.first().map(|_| 0usize)
-            }   else {
-                // If there's only one range, we already checked the flag.
-                None
-            }
-        });
+    let mut last_range = ac.range_flags.as_ref().and_then(|rf| {
+        if rf.len() > 1 {
+            rf.first().map(|_| 0usize)
+        } else {
+            // If there's only one range, we already checked the flag.
+            None
+        }
+    });
     ac.buffer.idx = 0;
     loop {
         // This block copied from NoncontextualSubtable::apply. Keep in sync.
@@ -353,17 +350,14 @@ fn apply_subtable(kind: &morx::SubtableKind, ac: &mut hb_aat_apply_context_t) {
                 matches!(ac.face.tables().gdef, Some(gdef) if gdef.has_glyph_classes())
                     .then_some(ac.face);
 
-            let mut last_range = ac
-                .range_flags
-                .as_ref()
-                .and_then(|rf| {
-                    if rf.len() > 1 {
-                        rf.first().map(|_| 0usize)
-                    }   else {
-                        // If there's only one range, we already checked the flag.
-                        None
-                    }
-                });
+            let mut last_range = ac.range_flags.as_ref().and_then(|rf| {
+                if rf.len() > 1 {
+                    rf.first().map(|_| 0usize)
+                } else {
+                    // If there's only one range, we already checked the flag.
+                    None
+                }
+            });
 
             for info in 0..ac.buffer.len {
                 // This block copied from StateTableDriver::drive. Keep in sync.
