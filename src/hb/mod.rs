@@ -47,7 +47,6 @@ mod ot_shaper_use_machine;
 #[rustfmt::skip]
 mod ot_shaper_use_table;
 mod aat_layout_common;
-mod limits;
 mod ot_shaper_vowel_constraints;
 mod paint_extents;
 pub mod shape;
