@@ -283,7 +283,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             }
 
             let matched = self.may_match(info);
-            if matched == Some(true) || (matched.is_none() && skip == may_skip_t::SKIP_NO) {
+            if matched == may_match_t::MATCH_YES || (matched == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO) {
                 self.num_items -= 1;
                 return true;
             }
@@ -328,7 +328,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             }
 
             let matched = self.may_match(info);
-            if matched == Some(true) || (matched.is_none() && skip == may_skip_t::SKIP_NO) {
+            if matched == may_match_t::MATCH_YES || (matched == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO) {
                 self.num_items -= 1;
                 return true;
             }
@@ -353,13 +353,20 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
         self.num_items += 1;
     }
 
-    fn may_match(&self, info: &hb_glyph_info_t) -> Option<bool> {
-        if (info.mask & self.mask) != 0 && (self.syllable == 0 || self.syllable == info.syllable())
-        {
-            self.matching.map(|f| f(info.as_glyph(), self.num_items))
-        } else {
-            Some(false)
+    fn may_match(&self, info: &hb_glyph_info_t) -> may_match_t {
+        if (info.mask & self.mask) == 0 || (self.syllable != 0 && self.syllable != info.syllable()) {
+            return may_match_t::MATCH_NO;
         }
+
+        if let Some(match_func) = self.matching {
+            return if match_func(info.as_glyph(), self.num_items) {
+                may_match_t::MATCH_YES
+            } else {
+                may_match_t::MATCH_NO
+            }
+        }
+
+        may_match_t::MATCH_MAYBE
     }
 
     fn may_skip(&self, info: &hb_glyph_info_t) -> may_skip_t {
