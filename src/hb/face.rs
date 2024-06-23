@@ -279,13 +279,13 @@ impl<'a> hb_font_t<'a> {
             }
 
             let mut extents_data = hb_paint_extents_context_t::new(&self.ttfp_face);
-            colr.paint(
+            let ret = colr.paint(
                 glyph,
                 0,
                 &mut extents_data,
                 self.variation_coordinates(),
                 RgbaColor::new(0, 0, 0, 0),
-            );
+            ).is_some();
 
             let e = extents_data.get_extents();
             glyph_extents.x_bearing = e.x_min as i32;
@@ -293,7 +293,7 @@ impl<'a> hb_font_t<'a> {
             glyph_extents.width = (e.x_max - e.x_min) as i32;
             glyph_extents.height = (e.y_min - e.y_max) as i32;
 
-            return false;
+            return ret;
         }
 
         let bbox = self.ttfp_face.glyph_bounding_box(glyph);
