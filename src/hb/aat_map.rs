@@ -243,5 +243,11 @@ impl hb_aat_map_builder_t {
                 }
             }
         }
+
+        for chain_flags in m.chain_flags.iter_mut() {
+            if let Some(last) = chain_flags.last_mut() {
+                last.cluster_last = HB_FEATURE_GLOBAL_END;
+            }
+        }
     }
 }
