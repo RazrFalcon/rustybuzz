@@ -105,7 +105,7 @@ pub fn match_input(
                         j -= 1;
                     }
 
-                    ligbase = if found && iter.may_skip(&out[j]) == Some(true) {
+                    ligbase = if found && iter.may_skip(&out[j]) == may_skip_t::SKIP_YES {
                         Ligbase::MaySkip
                     } else {
                         Ligbase::MayNotSkip
@@ -195,6 +195,20 @@ pub struct skipping_iterator_t<'a, 'b> {
     num_items: u16,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
+enum may_match_t {
+    MATCH_NO,
+    MATCH_YES,
+    MATCH_MAYBE
+}
+
+#[derive(PartialEq, Eq, Copy, Clone)]
+enum may_skip_t {
+    SKIP_NO,
+    SKIP_YES,
+    SKIP_MAYBE
+}
+
 impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     pub fn new(
         ctx: &'a hb_ot_apply_context_t<'a, 'b>,
@@ -264,17 +278,17 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             let info = &self.ctx.buffer.info[self.buf_idx];
 
             let skip = self.may_skip(info);
-            if skip == Some(true) {
+            if skip == may_skip_t::SKIP_YES {
                 continue;
             }
 
             let matched = self.may_match(info);
-            if matched == Some(true) || (matched.is_none() && skip == Some(false)) {
+            if matched == Some(true) || (matched.is_none() && skip == may_skip_t::SKIP_NO) {
                 self.num_items -= 1;
                 return true;
             }
 
-            if skip == Some(false) {
+            if skip == may_skip_t::SKIP_NO {
                 if let Some(unsafe_to) = unsafe_to {
                     *unsafe_to = self.buf_idx + 1;
                 }
@@ -309,17 +323,17 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             let info = &self.ctx.buffer.out_info()[self.buf_idx];
 
             let skip = self.may_skip(info);
-            if skip == Some(true) {
+            if skip == may_skip_t::SKIP_YES {
                 continue;
             }
 
             let matched = self.may_match(info);
-            if matched == Some(true) || (matched.is_none() && skip == Some(false)) {
+            if matched == Some(true) || (matched.is_none() && skip == may_skip_t::SKIP_NO) {
                 self.num_items -= 1;
                 return true;
             }
 
-            if skip == Some(false) {
+            if skip == may_skip_t::SKIP_NO {
                 if let Some(unsafe_from) = unsafe_from {
                     *unsafe_from = max(1, self.buf_idx) - 1;
                 }
@@ -348,20 +362,20 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
         }
     }
 
-    fn may_skip(&self, info: &hb_glyph_info_t) -> Option<bool> {
+    fn may_skip(&self, info: &hb_glyph_info_t) -> may_skip_t {
         if !self.ctx.check_glyph_property(info, self.lookup_props) {
-            return Some(true);
+            return may_skip_t::SKIP_YES;
         }
 
-        if !_hb_glyph_info_is_default_ignorable(info)
-            || info.is_hidden()
-            || (!self.ignore_zwnj && _hb_glyph_info_is_zwnj(info))
-            || (!self.ignore_zwj && _hb_glyph_info_is_zwj(info))
+        if _hb_glyph_info_is_default_ignorable(info)
+            && !info.is_hidden()
+            && (self.ignore_zwnj || !_hb_glyph_info_is_zwnj(info))
+            && (self.ignore_zwj || !_hb_glyph_info_is_zwj(info))
         {
-            return Some(false);
+            return may_skip_t::SKIP_MAYBE;
         }
 
-        None
+        may_skip_t::SKIP_NO
     }
 }
 
