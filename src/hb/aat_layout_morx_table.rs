@@ -169,7 +169,14 @@ fn drive<T: FromData>(
     let mut last_range = ac
         .range_flags
         .as_ref()
-        .and_then(|rf| rf.first().map(|_| 0usize));
+        .and_then(|rf| {
+            if rf.len() > 1 {
+                rf.first().map(|_| 0usize)
+            }   else {
+                // If there's only one range, we already checked the flag.
+                None
+            }
+        });
     ac.buffer.idx = 0;
     loop {
         if let Some(range_flags) = ac.range_flags.as_ref() {
@@ -348,7 +355,14 @@ fn apply_subtable(kind: &morx::SubtableKind, ac: &mut hb_aat_apply_context_t) {
             let mut last_range = ac
                 .range_flags
                 .as_ref()
-                .and_then(|rf| rf.first().map(|_| 0usize));
+                .and_then(|rf| {
+                    if rf.len() > 1 {
+                        rf.first().map(|_| 0usize)
+                    }   else {
+                        // If there's only one range, we already checked the flag.
+                        None
+                    }
+                });
 
             for info in 0..ac.buffer.len {
                 if let Some(range_flags) = ac.range_flags.as_ref() {
