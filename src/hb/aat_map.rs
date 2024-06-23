@@ -1,7 +1,7 @@
 use crate::Feature;
 use alloc::vec::Vec;
-use std::cmp::Ordering;
-use std::vec;
+use core::cmp::Ordering;
+use alloc::vec;
 
 use super::aat_layout::*;
 use super::{hb_font_t, hb_mask_t, hb_tag_t};
