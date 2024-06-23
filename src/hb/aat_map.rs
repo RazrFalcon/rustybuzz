@@ -202,7 +202,7 @@ impl hb_aat_map_builder_t {
                 if self.current_features.len() != 0 {
                     self.current_features.sort();
                     let mut j = 0;
-                    for i in 0..self.current_features.len() {
+                    for i in 1..self.current_features.len() {
                         // Nonexclusive feature selectors come in even/odd pairs to turn a setting on/off
                         // respectively, so we mask out the low-order bit when checking for "duplicates"
                         // (selectors referring to the same feature setting) here.
