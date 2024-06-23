@@ -1,5 +1,6 @@
 use crate::hb::aat_layout_common::hb_aat_apply_context_t;
 use crate::hb::ot_layout::MAX_CONTEXT_LENGTH;
+use alloc::vec;
 use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
 use super::aat_layout::*;
@@ -26,7 +27,11 @@ pub fn compile_flags(
             .is_ok()
     };
 
-    for chain in face.tables().morx.as_ref()?.chains {
+    let chains = face.tables().morx.as_ref()?.chains;
+    let chain_len = chains.clone().into_iter().count();
+    map.chain_flags.resize(chain_len, vec![]);
+
+    for (chain, chain_flags) in chains.into_iter().zip(map.chain_flags.iter_mut()) {
         let mut flags = chain.default_flags;
         for feature in chain.features {
             // Check whether this type/setting pair was requested in the map,
@@ -51,7 +56,7 @@ pub fn compile_flags(
             // TODO: Port the following commit: https://github.com/harfbuzz/harfbuzz/commit/2124ad890
         }
 
-        map.chain_flags.push(range_flags_t {
+        chain_flags.push(range_flags_t {
             flags,
             cluster_first: builder.range_first as u32,
             cluster_last: builder.range_last as u32,
@@ -63,22 +68,14 @@ pub fn compile_flags(
 
 // Chain::apply in harfbuzz
 pub fn apply<'a>(c: &mut hb_aat_apply_context_t<'a>, map: &'a mut hb_aat_map_t) -> Option<()> {
-    // Due to the borrow checker, we cannot just assign the mut slice with the corresponding index
-    // in the for loop, like it's done in harfbuzz. We have to borrow the slice once and then just
-    // update the "start index".
-    c.range_flags.set_range_flags(map.chain_flags.as_mut_slice());
-    for (chain_idx, chain) in c
-        .face
-        .tables()
-        .morx
-        .as_ref()?
-        .chains
-        .into_iter()
-        .enumerate()
-    {
-        c.range_flags.set_range_flags_index(chain_idx);
+    let chains = c.face.tables().morx.as_ref()?.chains;
+    let chain_len = chains.clone().into_iter().count();
+    map.chain_flags.resize(chain_len, vec![]);
+
+    for (chain, chain_flags) in chains.into_iter().zip(map.chain_flags.iter_mut()) {
+        c.range_flags = Some(chain_flags.as_mut_slice());
         for subtable in chain.subtables {
-            if let Some(range_flags) = c.range_flags.get().as_ref() {
+            if let Some(range_flags) = c.range_flags.as_ref() {
                 if range_flags.len() == 1 && (subtable.feature_flags & range_flags[0].flags == 0) {
                     continue;
                 }
@@ -167,10 +164,13 @@ fn drive<T: FromData>(
     }
 
     let mut state = START_OF_TEXT;
-    let mut last_range = ac.range_flags.get().and_then(|rf| rf.first().map(|_| 0usize));
+    let mut last_range = ac
+        .range_flags
+        .as_ref()
+        .and_then(|rf| rf.first().map(|_| 0usize));
     ac.buffer.idx = 0;
     loop {
-        if let Some(range_flags) = ac.range_flags.get() {
+        if let Some(range_flags) = ac.range_flags.as_ref() {
             if let Some(last_range) = last_range.as_mut() {
                 let mut range = *last_range;
                 if ac.buffer.idx < ac.buffer.len {
@@ -343,10 +343,13 @@ fn apply_subtable(kind: &morx::SubtableKind, ac: &mut hb_aat_apply_context_t) {
                 matches!(ac.face.tables().gdef, Some(gdef) if gdef.has_glyph_classes())
                     .then_some(ac.face);
 
-            let mut last_range = ac.range_flags.get().and_then(|rf| rf.first().map(|_| 0usize));
+            let mut last_range = ac
+                .range_flags
+                .as_ref()
+                .and_then(|rf| rf.first().map(|_| 0usize));
 
             for info in 0..ac.buffer.len {
-                if let Some(range_flags) = ac.range_flags.get() {
+                if let Some(range_flags) = ac.range_flags.as_ref() {
                     if let Some(last_range) = last_range.as_mut() {
                         let mut range = *last_range;
                         if ac.buffer.idx < ac.buffer.len {

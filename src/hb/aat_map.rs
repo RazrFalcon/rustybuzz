@@ -8,7 +8,7 @@ use super::{hb_font_t, hb_mask_t, hb_tag_t};
 
 #[derive(Default)]
 pub struct hb_aat_map_t {
-    pub chain_flags: Vec<range_flags_t>,
+    pub chain_flags: Vec<Vec<range_flags_t>>,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Default)]
