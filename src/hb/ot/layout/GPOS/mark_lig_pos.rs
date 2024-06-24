@@ -26,8 +26,6 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         while j > ctx.last_base_until as usize {
             let mut _match = iter.match_(&buffer.info[j - 1]);
             if _match == match_t::MATCH {
-                // Due to borrow checker, we cannot assign directly to ctx.last_base in the
-                // for loop, unlike in harfbuzz.
                 ctx.last_base = j as i32 - 1;
                 break;
             }
