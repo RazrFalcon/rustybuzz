@@ -11,6 +11,13 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         let mark_glyph = ctx.buffer.cur(0).as_glyph();
         let mark_index = self.mark_coverage.get(mark_glyph)?;
 
+        // Due to borrowing rules, we have this piece of code before creating the
+        // iterator, unlike in harfbuzz.
+        if ctx.last_base_until > buffer.idx as u32 {
+            ctx.last_base_until = 0;
+            ctx.last_base = -1;
+        }
+
         // Now we search backwards for a non-mark glyph
         let mut iter = skipping_iterator_t::new(ctx, 0, 0, false);
         iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
