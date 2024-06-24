@@ -8,7 +8,11 @@ use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt}
 use super::*;
 use super::{hb_font_t, hb_tag_t};
 use crate::hb::aat_layout::hb_aat_layout_remove_deleted_glyphs;
+use crate::hb::algs::{rb_flag, rb_flag_unsafe};
 use crate::hb::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
+use crate::hb::unicode::hb_gc::{
+    RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
+};
 use crate::BufferFlags;
 use crate::{Direction, Feature, Language, Script};
 
@@ -592,10 +596,20 @@ fn set_unicode_props(buffer: &mut hb_buffer_t) {
         let info = &mut later[0];
         info.init_unicode_props(&mut buffer.scratch_flags);
 
+        let gen_cat = _hb_glyph_info_get_general_category(&info);
+
+        if (rb_flag_unsafe(gen_cat.to_rb())
+            & (rb_flag(RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER)
+                | rb_flag(RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER)))
+            != 0
+        {
+            i += 1;
+            continue;
+        }
+
         // Marks are already set as continuation by the above line.
         // Handle Emoji_Modifier and ZWJ-continuation.
-        if _hb_glyph_info_get_general_category(info)
-            == hb_unicode_general_category_t::ModifierSymbol
+        if gen_cat == hb_unicode_general_category_t::ModifierSymbol
             && matches!(info.glyph_id, 0x1F3FB..=0x1F3FF)
         {
             _hb_glyph_info_set_continuation(info);
