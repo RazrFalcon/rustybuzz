@@ -1071,9 +1071,7 @@ impl hb_buffer_t {
                 }
             } else {
                 let cluster = self._infos_find_min_cluster(&self.info, start, end, None);
-                if Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask) {
-                    self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
-                }
+                self._infos_set_glyph_flags(false, start, end, cluster, mask);
             }
         } else {
             assert!(start <= self.out_len);
@@ -1097,19 +1095,8 @@ impl hb_buffer_t {
                 );
 
                 let out_len = self.out_len;
-                let first = Self::_infos_set_glyph_flags(
-                    &mut self.out_info_mut(),
-                    start,
-                    out_len,
-                    cluster,
-                    mask,
-                );
-                let second =
-                    Self::_infos_set_glyph_flags(&mut self.info, self.idx, end, cluster, mask);
-
-                if first || second {
-                    self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
-                }
+                self._infos_set_glyph_flags(true, start, out_len, cluster, mask);
+                self._infos_set_glyph_flags(false, self.idx, end, cluster, mask);
             }
         }
     }
@@ -1339,27 +1326,32 @@ impl hb_buffer_t {
         cluster.min(self.info[start].cluster.min(self.info[end - 1].cluster))
     }
 
-    #[must_use]
     fn _infos_set_glyph_flags(
-        info: &mut [hb_glyph_info_t],
+        &mut self,
+        out_info: bool,
         start: usize,
         end: usize,
         cluster: u32,
         mask: hb_mask_t,
-    ) -> bool {
-        // NOTE: Because of problems with ownership, we don't pass the scratch flags to this
-        // function, unlike in harfbuzz. Because of this, each time you call this function you
-        // the caller needs to set the "BufferScratchFlags::HAS_GLYPH_FLAGS" scratch flag
-        // themselves if the function returns true.
-        let mut unsafe_to_break = false;
-        for glyph_info in &mut info[start..end] {
+    ) {
+        let infos = if out_info {
+            self.out_info_mut()
+        } else {
+            self.info.as_mut_slice()
+        };
+
+        let mut apply_scratch_flags = false;
+
+        for glyph_info in &mut infos[start..end] {
             if glyph_info.cluster != cluster {
+                apply_scratch_flags = true;
                 glyph_info.mask |= mask;
-                unsafe_to_break = true;
             }
         }
 
-        unsafe_to_break
+        if apply_scratch_flags {
+            self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
+        }
     }
 
     /// Checks that buffer contains no elements.
