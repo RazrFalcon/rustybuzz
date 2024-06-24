@@ -75,7 +75,6 @@ impl Apply for MarkToLigatureAdjustment<'_> {
             comp_count
         } - 1;
 
-        self.marks
-            .apply(ctx, lig_attach, mark_index, comp_index, j)
+        self.marks.apply(ctx, lig_attach, mark_index, comp_index, j)
     }
 }
