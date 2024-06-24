@@ -1334,18 +1334,60 @@ impl hb_buffer_t {
         cluster: u32,
         mask: hb_mask_t,
     ) {
+        let mut apply_scratch_flags = false;
+
+        if start == end {
+            return;
+        }
+
+        let cluster_level = self.cluster_level;
+
         let infos = if out_info {
             self.out_info_mut()
         } else {
             self.info.as_mut_slice()
         };
 
-        let mut apply_scratch_flags = false;
+        let cluster_first = infos[start].cluster;
+        let cluster_last = infos[end - 1].cluster;
 
-        for glyph_info in &mut infos[start..end] {
-            if glyph_info.cluster != cluster {
-                apply_scratch_flags = true;
-                glyph_info.mask |= mask;
+        if cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS
+            || (cluster != cluster_first && cluster != cluster_last)
+        {
+            for i in start..end {
+                if infos[i].cluster != cluster {
+                    apply_scratch_flags = true;
+                    infos[i].mask |= mask;
+                }
+            }
+
+            if apply_scratch_flags {
+                self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
+            }
+
+            return;
+        }
+
+        // Monotone clusters
+        if cluster == cluster_first {
+            let mut i = end;
+            while start < i && infos[i - 1].cluster != cluster_first {
+                if cluster != infos[i - 1].cluster {
+                    apply_scratch_flags = true;
+                    infos[i - 1].mask |= mask;
+                }
+
+                i -= 1;
+            }
+        } else {
+            let mut i = start;
+            while i < end && infos[i].cluster != cluster_last {
+                if cluster != infos[i].cluster {
+                    apply_scratch_flags = true;
+                    infos[i].mask |= mask;
+                }
+
+                i += 1;
             }
         }
 
