@@ -31,7 +31,8 @@ impl Apply for MarkToBaseAdjustment<'_> {
         while j > ctx.last_base_until as usize {
             let mut _match = iter.match_(&buffer.info[j - 1]);
             if _match == match_t::MATCH {
-                if !accept(buffer, j - 1) {
+                // https://github.com/harfbuzz/harfbuzz/issues/4124
+                if !accept(buffer, j - 1) && !self.base_coverage.contains(buffer.info[j - 1].as_glyph()) {
                     _match = match_t::SKIP;
                 }
             }
