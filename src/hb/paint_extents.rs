@@ -94,7 +94,7 @@ impl hb_bounds_t {
         }
     }
 
-    fn union_(&mut self, o: &hb_bounds_t) {
+    fn union(&mut self, o: &hb_bounds_t) {
         if o.status == status_t::UNBOUNDED {
             self.status = status_t::UNBOUNDED;
         } else if o.status == status_t::BOUNDED {
@@ -208,7 +208,7 @@ impl<'a> hb_paint_extents_context_t<'a> {
                         CompositeMode::SourceIn | CompositeMode::DestinationIn => {
                             backdrop_bounds.intersect(&src_bounds)
                         }
-                        _ => backdrop_bounds.union_(&src_bounds),
+                        _ => backdrop_bounds.union(&src_bounds),
                     }
                 }
             }
@@ -217,7 +217,7 @@ impl<'a> hb_paint_extents_context_t<'a> {
 
     fn paint(&mut self) {
         if let (Some(clip), Some(group)) = (self.clips.last(), self.groups.last_mut()) {
-            group.union_(clip);
+            group.union(clip);
         }
     }
 }

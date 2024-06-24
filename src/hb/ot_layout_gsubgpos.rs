@@ -276,7 +276,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             self.buf_idx += 1;
             let info = &self.ctx.buffer.info[self.buf_idx];
 
-            match self._match(info) {
+            match self.r#match(info) {
                 match_t::MATCH => {
                     self.num_items -= 1;
                     return true;
@@ -317,7 +317,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             self.buf_idx -= 1;
             let info = &self.ctx.buffer.out_info()[self.buf_idx];
 
-            match self._match(info) {
+            match self.r#match(info) {
                 match_t::MATCH => {
                     self.num_items -= 1;
                     return true;
@@ -346,7 +346,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
         self.num_items += 1;
     }
 
-    fn _match(&self, info: &hb_glyph_info_t) -> match_t {
+    fn r#match(&self, info: &hb_glyph_info_t) -> match_t {
         let skip = self.may_skip(info);
 
         if skip == may_skip_t::SKIP_YES {
