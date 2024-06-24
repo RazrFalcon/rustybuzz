@@ -413,9 +413,12 @@ const fn category_flag64(c: Category) -> u64 {
     rb_flag64(c as u32)
 }
 
-const BASE_FLAGS: u64 = category_flag64(category::FAbv)
+const POST_BASE_FLAGS: u64 = category_flag64(category::FAbv)
     | category_flag64(category::FBlw)
     | category_flag64(category::FPst)
+    | category_flag64(category::FMAbv)
+    | category_flag64(category::FMBlw)
+    | category_flag64(category::FMPst)
     | category_flag64(category::MAbv)
     | category_flag64(category::MBlw)
     | category_flag64(category::MPst)
@@ -450,7 +453,7 @@ fn reorder_syllable_use(start: usize, end: usize, buffer: &mut hb_buffer_t) {
         // Got a repha.  Reorder it towards the end, but before the first post-base glyph.
         for i in start + 1..end {
             let is_post_base_glyph =
-                (rb_flag64_unsafe(buffer.info[i].use_category() as u32) & BASE_FLAGS) != 0
+                (rb_flag64_unsafe(buffer.info[i].use_category() as u32) & POST_BASE_FLAGS) != 0
                     || buffer.info[i].is_halant_use();
 
             if is_post_base_glyph || i == end - 1 {

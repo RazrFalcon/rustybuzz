@@ -17699,6 +17699,20 @@ fn use_syllable_024() {
 }
 
 #[test]
+fn use_syllable_025() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/d0430ea499348c420946f6abc2efc84fdf8f00e3.ttf",
+            "\u{1142C}\u{11442}\u{1140E}\u{1145E}",
+            "",
+        ),
+        "u1140E=0+736|\
+         u1142C_u11442=0+0|\
+         u1145E=0+0"
+    );
+}
+
+#[test]
 fn use_vowel_letter_spoofing_001() {
     assert_eq!(
         shape(
