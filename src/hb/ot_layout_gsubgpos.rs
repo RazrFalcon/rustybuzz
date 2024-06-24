@@ -194,7 +194,7 @@ pub struct skipping_iterator_t<'a, 'b> {
 }
 
 #[derive(PartialEq, Eq, Copy, Clone)]
-enum match_t {
+pub enum match_t {
     MATCH,
     NOT_MATCH,
     SKIP,
@@ -231,7 +231,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             mask: if context_match {
                 u32::MAX
             } else {
-                ctx.lookup_mask
+                ctx.lookup_mask()
             },
             syllable: if ctx.buffer.idx == start_buf_index && ctx.per_syllable {
                 ctx.buffer.cur(0).syllable()
@@ -346,7 +346,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
         self.num_items += 1;
     }
 
-    fn r#match(&self, info: &hb_glyph_info_t) -> match_t {
+    pub fn r#match(&self, info: &hb_glyph_info_t) -> match_t {
         let skip = self.may_skip(info);
 
         if skip == may_skip_t::SKIP_YES {
@@ -1007,7 +1007,7 @@ pub mod OT {
         pub table_index: TableIndex,
         pub face: &'a hb_font_t<'b>,
         pub buffer: &'a mut hb_buffer_t,
-        pub lookup_mask: hb_mask_t,
+        lookup_mask: hb_mask_t,
         pub per_syllable: bool,
         pub lookup_index: LookupIndex,
         pub lookup_props: u32,
@@ -1016,6 +1016,8 @@ pub mod OT {
         pub auto_zwj: bool,
         pub random: bool,
         pub random_state: u32,
+        pub last_base: i32,
+        pub last_base_until: u32,
     }
 
     impl<'a, 'b> hb_ot_apply_context_t<'a, 'b> {
@@ -1037,6 +1039,8 @@ pub mod OT {
                 auto_zwj: true,
                 random: false,
                 random_state: 1,
+                last_base: -1,
+                last_base_until: 0,
             }
         }
 
@@ -1044,6 +1048,16 @@ pub mod OT {
             // http://www.cplusplus.com/reference/random/minstd_rand/
             self.random_state = self.random_state.wrapping_mul(48271) % 2147483647;
             self.random_state
+        }
+
+        pub fn set_lookup_mask(&mut self, mask: hb_mask_t) {
+            self.lookup_mask = mask;
+            self.last_base = -1;
+            self.last_base_until = 0;
+        }
+
+        pub fn lookup_mask(&self) -> hb_mask_t {
+            self.lookup_mask
         }
 
         pub fn recurse(&mut self, sub_lookup_index: LookupIndex) -> Option<()> {

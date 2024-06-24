@@ -241,7 +241,7 @@ pub fn apply_layout_table<T: LayoutTable>(
     for (stage_index, stage) in plan.ot_map.stages(T::INDEX).iter().enumerate() {
         for lookup in plan.ot_map.stage_lookups(T::INDEX, stage_index) {
             ctx.lookup_index = lookup.index;
-            ctx.lookup_mask = lookup.mask;
+            ctx.set_lookup_mask(lookup.mask);
             ctx.auto_zwj = lookup.auto_zwj;
             ctx.auto_zwnj = lookup.auto_zwnj;
 
@@ -262,7 +262,7 @@ pub fn apply_layout_table<T: LayoutTable>(
 }
 
 fn apply_string<T: LayoutTable>(ctx: &mut OT::hb_ot_apply_context_t, lookup: &T::Lookup) {
-    if ctx.buffer.is_empty() || ctx.lookup_mask == 0 {
+    if ctx.buffer.is_empty() || ctx.lookup_mask() == 0 {
         return;
     }
 
@@ -292,7 +292,7 @@ fn apply_forward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> bo
     let mut ret = false;
     while ctx.buffer.idx < ctx.buffer.len && ctx.buffer.successful {
         let cur = ctx.buffer.cur(0);
-        if (cur.mask & ctx.lookup_mask) != 0
+        if (cur.mask & ctx.lookup_mask()) != 0
             && ctx.check_glyph_property(cur, ctx.lookup_props)
             && lookup.apply(ctx).is_some()
         {
@@ -308,7 +308,7 @@ fn apply_backward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> b
     let mut ret = false;
     loop {
         let cur = ctx.buffer.cur(0);
-        ret |= (cur.mask & ctx.lookup_mask) != 0
+        ret |= (cur.mask & ctx.lookup_mask()) != 0
             && ctx.check_glyph_property(cur, ctx.lookup_props)
             && lookup.apply(ctx).is_some();
 

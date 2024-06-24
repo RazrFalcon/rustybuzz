@@ -14,8 +14,8 @@ impl Apply for AlternateSet<'_> {
         let glyph_mask = ctx.buffer.cur(0).mask;
 
         // Note: This breaks badly if two features enabled this lookup together.
-        let shift = ctx.lookup_mask.trailing_zeros();
-        let mut alt_index = (ctx.lookup_mask & glyph_mask) >> shift;
+        let shift = ctx.lookup_mask().trailing_zeros();
+        let mut alt_index = (ctx.lookup_mask() & glyph_mask) >> shift;
 
         // If alt_index is MAX_VALUE, randomize feature if it is the rand feature.
         if alt_index == hb_ot_map_t::MAX_VALUE && ctx.random {
