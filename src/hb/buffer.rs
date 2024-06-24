@@ -870,17 +870,21 @@ impl hb_buffer_t {
         }
 
         // Extend end
-        while end < self.len && self.info[end - 1].cluster == self.info[end].cluster {
-            end += 1;
+        if cluster != self.info[end - 1].cluster {
+            while end < self.len && self.info[end - 1].cluster == self.info[end].cluster {
+                end += 1;
+            }
         }
 
         // Extend start
-        while end < start && self.info[start - 1].cluster == self.info[start].cluster {
-            start -= 1;
+        if cluster != self.info[start].cluster {
+            while end < start && self.info[start - 1].cluster == self.info[start].cluster {
+                start -= 1;
+            }
         }
 
         // If we hit the start of buffer, continue in out-buffer.
-        if self.idx == start {
+        if self.idx == start && self.info[start].cluster != cluster {
             let mut i = self.out_len;
             while i != 0 && self.out_info()[i - 1].cluster == self.info[start].cluster {
                 Self::set_cluster(&mut self.out_info_mut()[i - 1], cluster, 0);
