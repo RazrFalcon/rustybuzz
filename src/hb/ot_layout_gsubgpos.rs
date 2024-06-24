@@ -181,6 +181,10 @@ pub fn match_lookahead(
 
 pub type match_func_t<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 
+// TODO: In harfbuzz, these properties are part of the `matcher_t` struct, but here
+// they are all straight in skipping iterator. There are also some other differences,
+// such as that we don't have a `per_syllable` flag as well as no init() and iter() functions
+// for the skippy iterator. Investigate and align more with harfbuzz, if possible.
 pub struct skipping_iterator_t<'a, 'b> {
     ctx: &'a hb_ot_apply_context_t<'a, 'b>,
     lookup_props: u32,
