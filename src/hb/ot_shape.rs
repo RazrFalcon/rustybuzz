@@ -629,6 +629,14 @@ fn set_unicode_props(buffer: &mut hb_buffer_t) {
     }
 }
 
+pub(crate) fn syllabic_clear_var(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) -> bool {
+    for info in &mut buffer.info {
+        info.set_syllable(0);
+    }
+
+    false
+}
+
 fn insert_dotted_circle(buffer: &mut hb_buffer_t, face: &hb_font_t) {
     if !buffer
         .flags
