@@ -5,7 +5,7 @@ use core::any::Any;
 use super::ot_map::*;
 use super::ot_shape::*;
 use super::ot_shaper::*;
-use super::{aat_map, hb_font_t, hb_mask_t, Direction, Feature, Language, Script};
+use super::{hb_font_t, hb_mask_t, Direction, Feature, Language, Script};
 
 /// A reusable plan for shaping a text buffer.
 pub struct hb_ot_shape_plan_t {
@@ -13,7 +13,6 @@ pub struct hb_ot_shape_plan_t {
     pub(crate) script: Option<Script>,
     pub(crate) shaper: &'static hb_ot_shaper_t,
     pub(crate) ot_map: hb_ot_map_t,
-    pub(crate) aat_map: aat_map::hb_aat_map_t,
     pub(crate) data: Option<Box<dyn Any + Send + Sync>>,
 
     pub(crate) frac_mask: hb_mask_t,

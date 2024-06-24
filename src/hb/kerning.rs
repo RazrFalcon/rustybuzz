@@ -8,7 +8,7 @@ use super::ot_layout_gsubgpos::{skipping_iterator_t, OT::hb_ot_apply_context_t};
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::{hb_font_t, hb_mask_t};
 
-pub fn kern(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
+pub fn hb_ot_layout_kern(plan: &hb_ot_shape_plan_t, face: &hb_font_t, buffer: &mut hb_buffer_t) {
     let subtables = match face.tables().kern {
         Some(table) => table.subtables,
         None => return,
@@ -69,7 +69,7 @@ fn machine_kern(
 ) {
     buffer.unsafe_to_concat(None, None);
     let mut ctx = hb_ot_apply_context_t::new(TableIndex::GPOS, face, buffer);
-    ctx.lookup_mask = kern_mask;
+    ctx.set_lookup_mask(kern_mask);
     ctx.lookup_props = u32::from(lookup_flags::IGNORE_MARKS);
 
     let horizontal = ctx.buffer.direction.is_horizontal();

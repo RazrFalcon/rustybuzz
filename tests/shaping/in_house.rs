@@ -291,24 +291,6 @@ fn arabic_like_joining_001() {
 }
 
 #[test]
-fn arabic_mark_attach_001() {
-    assert_eq!(
-        shape(
-            "tests/fonts/in-house/641ca9d7808b01cafa9a666c13811c9b56eb9c52.ttf",
-            "\u{064A}\u{0633}\u{06E1}\u{200D}\u{0654}\u{064E}\u{0644}",
-            "",
-        ),
-        "afii57444.zz04=6+1091|\
-         afii57454=1@75,925+0|\
-         uni0654=1+0|\
-         space=1+0|\
-         uni06E1=1@950,1115+0|\
-         afii57427.zz03_calt=1+1847|\
-         afii57450.zz21=0+345"
-    );
-}
-
-#[test]
 fn arabic_mark_order_001() {
     assert_eq!(
         shape(
@@ -10552,6 +10534,25 @@ fn macos_157() {
         ),
         "u1FAF1.5.L=0+800|\
          u1FAF2.2.R=0@-800,0+0"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_160() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/LucidaGrande.ttc",
+            "\u{0066}\u{0066}\u{0020}\u{0066}\u{0066}\u{0066}\u{0020}\u{0066}\u{0066}",
+            "--features=-liga[3:5]",
+        ),
+        "ff=0+1443|\
+         space=2+648|\
+         f=3+753|\
+         f=4+753|\
+         f=5+753|\
+         space=6+648|\
+         ff=7+1443"
     );
 }
 

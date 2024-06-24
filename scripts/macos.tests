@@ -155,3 +155,6 @@
 
 # 12.3
 /System/Library/Fonts/Apple Color Emoji.ttc@8fa6ac4564651899da0b37d310d980db4de967d6;--font-funcs ot;1FAF1,1F3FF,200D,1FAF2,1F3FC;[u1FAF1.5.L=0+800|u1FAF2.2.R=0@-800,0+0]
+
+# https://github.com/harfbuzz/harfbuzz/issues/4020
+/System/Library/Fonts/LucidaGrande.ttc;--features=-liga[3:5];U+0066,U+0066,U+0020,U+0066,U+0066,U+0066,U+0020,U+0066,U+0066;[ff=0+1443|space=2+648|f=3+753|f=4+753|f=5+753|space=6+648|ff=7+1443]

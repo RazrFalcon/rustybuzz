@@ -5,7 +5,7 @@ use core::convert::TryFrom;
 use ttf_parser::GlyphId;
 
 use super::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
-use super::face::GlyphExtents;
+use super::face::hb_glyph_extents_t;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_mask_t};
 use crate::{script, BufferClusterLevel, BufferFlags, Direction, Language, Script, SerializeFlags};
@@ -870,17 +870,21 @@ impl hb_buffer_t {
         }
 
         // Extend end
-        while end < self.len && self.info[end - 1].cluster == self.info[end].cluster {
-            end += 1;
+        if cluster != self.info[end - 1].cluster {
+            while end < self.len && self.info[end - 1].cluster == self.info[end].cluster {
+                end += 1;
+            }
         }
 
         // Extend start
-        while end < start && self.info[start - 1].cluster == self.info[start].cluster {
-            start -= 1;
+        if cluster != self.info[start].cluster {
+            while end < start && self.info[start - 1].cluster == self.info[start].cluster {
+                start -= 1;
+            }
         }
 
         // If we hit the start of buffer, continue in out-buffer.
-        if self.idx == start {
+        if self.idx == start && self.info[start].cluster != cluster {
             let mut i = self.out_len;
             while i != 0 && self.out_info()[i - 1].cluster == self.info[start].cluster {
                 Self::set_cluster(&mut self.out_info_mut()[i - 1], cluster, 0);
@@ -1070,10 +1074,8 @@ impl hb_buffer_t {
                     self.info[i].mask |= mask;
                 }
             } else {
-                let cluster = Self::_infos_find_min_cluster(&self.info, start, end, None);
-                if Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask) {
-                    self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
-                }
+                let cluster = self._infos_find_min_cluster(&self.info, start, end, None);
+                self._infos_set_glyph_flags(false, start, end, cluster, mask);
             }
         } else {
             assert!(start <= self.out_len);
@@ -1088,8 +1090,8 @@ impl hb_buffer_t {
                     self.info[i].mask |= mask;
                 }
             } else {
-                let mut cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, None);
-                cluster = Self::_infos_find_min_cluster(
+                let mut cluster = self._infos_find_min_cluster(&self.info, self.idx, end, None);
+                cluster = self._infos_find_min_cluster(
                     &self.out_info(),
                     start,
                     self.out_len,
@@ -1097,19 +1099,8 @@ impl hb_buffer_t {
                 );
 
                 let out_len = self.out_len;
-                let first = Self::_infos_set_glyph_flags(
-                    &mut self.out_info_mut(),
-                    start,
-                    out_len,
-                    cluster,
-                    mask,
-                );
-                let second =
-                    Self::_infos_set_glyph_flags(&mut self.info, self.idx, end, cluster, mask);
-
-                if first || second {
-                    self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
-                }
+                self._infos_set_glyph_flags(true, start, out_len, cluster, mask);
+                self._infos_set_glyph_flags(false, self.idx, end, cluster, mask);
             }
         }
     }
@@ -1318,6 +1309,7 @@ impl hb_buffer_t {
     }
 
     fn _infos_find_min_cluster(
+        &self,
         info: &[hb_glyph_info_t],
         start: usize,
         end: usize,
@@ -1325,34 +1317,87 @@ impl hb_buffer_t {
     ) -> u32 {
         let mut cluster = cluster.unwrap_or(core::u32::MAX);
 
-        for glyph_info in &info[start..end] {
-            cluster = core::cmp::min(cluster, glyph_info.cluster);
+        if start == end {
+            return cluster;
         }
 
-        cluster
+        if self.cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS {
+            for glyph_info in &info[start..end] {
+                cluster = core::cmp::min(cluster, glyph_info.cluster);
+            }
+        }
+
+        cluster.min(self.info[start].cluster.min(self.info[end - 1].cluster))
     }
 
-    #[must_use]
     fn _infos_set_glyph_flags(
-        info: &mut [hb_glyph_info_t],
+        &mut self,
+        out_info: bool,
         start: usize,
         end: usize,
         cluster: u32,
         mask: hb_mask_t,
-    ) -> bool {
-        // NOTE: Because of problems with ownership, we don't pass the scratch flags to this
-        // function, unlike in harfbuzz. Because of this, each time you call this function you
-        // the caller needs to set the "BufferScratchFlags::HAS_GLYPH_FLAGS" scratch flag
-        // themselves if the function returns true.
-        let mut unsafe_to_break = false;
-        for glyph_info in &mut info[start..end] {
-            if glyph_info.cluster != cluster {
-                glyph_info.mask |= mask;
-                unsafe_to_break = true;
+    ) {
+        let mut apply_scratch_flags = false;
+
+        if start == end {
+            return;
+        }
+
+        let cluster_level = self.cluster_level;
+
+        let infos = if out_info {
+            self.out_info_mut()
+        } else {
+            self.info.as_mut_slice()
+        };
+
+        let cluster_first = infos[start].cluster;
+        let cluster_last = infos[end - 1].cluster;
+
+        if cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS
+            || (cluster != cluster_first && cluster != cluster_last)
+        {
+            for i in start..end {
+                if infos[i].cluster != cluster {
+                    apply_scratch_flags = true;
+                    infos[i].mask |= mask;
+                }
+            }
+
+            if apply_scratch_flags {
+                self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
+            }
+
+            return;
+        }
+
+        // Monotone clusters
+        if cluster == cluster_first {
+            let mut i = end;
+            while start < i && infos[i - 1].cluster != cluster_first {
+                if cluster != infos[i - 1].cluster {
+                    apply_scratch_flags = true;
+                    infos[i - 1].mask |= mask;
+                }
+
+                i -= 1;
+            }
+        } else {
+            let mut i = start;
+            while i < end && infos[i].cluster != cluster_last {
+                if cluster != infos[i].cluster {
+                    apply_scratch_flags = true;
+                    infos[i].mask |= mask;
+                }
+
+                i += 1;
             }
         }
 
-        unsafe_to_break
+        if apply_scratch_flags {
+            self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
+        }
     }
 
     /// Checks that buffer contains no elements.
@@ -1750,7 +1795,7 @@ impl GlyphBuffer {
             }
 
             if flags.contains(SerializeFlags::GLYPH_EXTENTS) {
-                let mut extents = GlyphExtents::default();
+                let mut extents = hb_glyph_extents_t::default();
                 face.glyph_extents(info.as_glyph(), &mut extents);
                 write!(
                     &mut s,

@@ -1,6 +1,7 @@
+use crate::hb::paint_extents::hb_paint_extents_context_t;
 use ttf_parser::gdef::GlyphClass;
 use ttf_parser::opentype_layout::LayoutTable;
-use ttf_parser::GlyphId;
+use ttf_parser::{GlyphId, RgbaColor};
 
 use super::buffer::GlyphPropsFlags;
 use super::ot_layout::TableIndex;
@@ -206,7 +207,7 @@ impl<'a> hb_font_t<'a> {
         match self.ttfp_face.glyph_y_origin(glyph) {
             Some(y) => i32::from(y),
             None => {
-                let mut extents = GlyphExtents::default();
+                let mut extents = hb_glyph_extents_t::default();
                 if self.glyph_extents(glyph, &mut extents) {
                     if self.ttfp_face.tables().vmtx.is_some() {
                         extents.y_bearing + self.glyph_side_bearing(glyph, true)
@@ -239,7 +240,11 @@ impl<'a> hb_font_t<'a> {
         }
     }
 
-    pub(crate) fn glyph_extents(&self, glyph: GlyphId, glyph_extents: &mut GlyphExtents) -> bool {
+    pub(crate) fn glyph_extents(
+        &self,
+        glyph: GlyphId,
+        glyph_extents: &mut hb_glyph_extents_t,
+    ) -> bool {
         let pixels_per_em = match self.pixels_per_em {
             Some(ppem) => ppem.0,
             None => core::u16::MAX,
@@ -256,6 +261,9 @@ impl<'a> hb_font_t<'a> {
                 glyph_extents.height = super::round(-f32::from(img.height) * scale) as i32;
                 return true;
             }
+        // TODO: Add tests for this. We should use all glyphs from
+        // https://github.com/googlefonts/color-fonts/blob/main/fonts/test_glyphs-glyf_colr_1_no_cliplist.ttf
+        // and test their output against harfbuzz.
         } else if let Some(colr) = self.ttfp_face.tables().colr {
             if colr.is_simple() {
                 return false;
@@ -270,7 +278,31 @@ impl<'a> hb_font_t<'a> {
                 return true;
             }
 
-            return false;
+            let mut extents_data = hb_paint_extents_context_t::new(&self.ttfp_face);
+            let ret = colr
+                .paint(
+                    glyph,
+                    0,
+                    &mut extents_data,
+                    self.variation_coordinates(),
+                    RgbaColor::new(0, 0, 0, 0),
+                )
+                .is_some();
+
+            let e = extents_data.get_extents();
+            if e.is_void() {
+                glyph_extents.x_bearing = 0;
+                glyph_extents.y_bearing = 0;
+                glyph_extents.width = 0;
+                glyph_extents.height = 0;
+            } else {
+                glyph_extents.x_bearing = e.x_min as i32;
+                glyph_extents.y_bearing = e.y_max as i32;
+                glyph_extents.width = (e.x_max - e.x_min) as i32;
+                glyph_extents.height = (e.y_min - e.y_max) as i32;
+            }
+
+            return ret;
         }
 
         let bbox = self.ttfp_face.glyph_bounding_box(glyph);
@@ -329,7 +361,7 @@ impl<'a> hb_font_t<'a> {
 }
 
 #[derive(Clone, Copy, Default)]
-pub struct GlyphExtents {
+pub struct hb_glyph_extents_t {
     pub x_bearing: i32,
     pub y_bearing: i32,
     pub width: i32,

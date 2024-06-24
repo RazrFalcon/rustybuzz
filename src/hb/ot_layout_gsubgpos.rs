@@ -1,7 +1,5 @@
 //! Matching of glyph patterns.
 
-use core::cmp::max;
-
 use ttf_parser::opentype_layout::*;
 use ttf_parser::{GlyphId, LazyArray16};
 
@@ -105,7 +103,7 @@ pub fn match_input(
                         j -= 1;
                     }
 
-                    ligbase = if found && iter.may_skip(&out[j]) == Some(true) {
+                    ligbase = if found && iter.may_skip(&out[j]) == may_skip_t::SKIP_YES {
                         Ligbase::MaySkip
                     } else {
                         Ligbase::MayNotSkip
@@ -195,6 +193,27 @@ pub struct skipping_iterator_t<'a, 'b> {
     num_items: u16,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
+pub enum match_t {
+    MATCH,
+    NOT_MATCH,
+    SKIP,
+}
+
+#[derive(PartialEq, Eq, Copy, Clone)]
+enum may_match_t {
+    MATCH_NO,
+    MATCH_YES,
+    MATCH_MAYBE,
+}
+
+#[derive(PartialEq, Eq, Copy, Clone)]
+enum may_skip_t {
+    SKIP_NO,
+    SKIP_YES,
+    SKIP_MAYBE,
+}
+
 impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     pub fn new(
         ctx: &'a hb_ot_apply_context_t<'a, 'b>,
@@ -212,7 +231,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             mask: if context_match {
                 u32::MAX
             } else {
-                ctx.lookup_mask
+                ctx.lookup_mask()
             },
             syllable: if ctx.buffer.idx == start_buf_index && ctx.per_syllable {
                 ctx.buffer.cur(0).syllable()
@@ -257,23 +276,19 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             self.buf_idx += 1;
             let info = &self.ctx.buffer.info[self.buf_idx];
 
-            let skip = self.may_skip(info);
-            if skip == Some(true) {
-                continue;
-            }
-
-            let matched = self.may_match(info);
-            if matched == Some(true) || (matched.is_none() && skip == Some(false)) {
-                self.num_items -= 1;
-                return true;
-            }
-
-            if skip == Some(false) {
-                if let Some(unsafe_to) = unsafe_to {
-                    *unsafe_to = self.buf_idx + 1;
+            match self.match_(info) {
+                match_t::MATCH => {
+                    self.num_items -= 1;
+                    return true;
                 }
+                match_t::NOT_MATCH => {
+                    if let Some(unsafe_to) = unsafe_to {
+                        *unsafe_to = self.buf_idx + 1;
+                    }
 
-                return false;
+                    return false;
+                }
+                match_t::SKIP => continue,
             }
         }
 
@@ -302,23 +317,21 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             self.buf_idx -= 1;
             let info = &self.ctx.buffer.out_info()[self.buf_idx];
 
-            let skip = self.may_skip(info);
-            if skip == Some(true) {
-                continue;
-            }
-
-            let matched = self.may_match(info);
-            if matched == Some(true) || (matched.is_none() && skip == Some(false)) {
-                self.num_items -= 1;
-                return true;
-            }
-
-            if skip == Some(false) {
-                if let Some(unsafe_from) = unsafe_from {
-                    *unsafe_from = max(1, self.buf_idx) - 1;
+            match self.match_(info) {
+                match_t::MATCH => {
+                    self.num_items -= 1;
+                    return true;
                 }
+                match_t::NOT_MATCH => {
+                    if let Some(unsafe_from) = unsafe_from {
+                        *unsafe_from = self.buf_idx.max(1) - 1;
+                    }
 
-                return false;
+                    return false;
+                }
+                match_t::SKIP => {
+                    continue;
+                }
             }
         }
 
@@ -329,33 +342,59 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
         false
     }
 
-    pub fn reject(&mut self) {
-        self.num_items += 1;
-    }
+    pub fn match_(&self, info: &hb_glyph_info_t) -> match_t {
+        let skip = self.may_skip(info);
 
-    fn may_match(&self, info: &hb_glyph_info_t) -> Option<bool> {
-        if (info.mask & self.mask) != 0 && (self.syllable == 0 || self.syllable == info.syllable())
-        {
-            self.matching.map(|f| f(info.as_glyph(), self.num_items))
-        } else {
-            Some(false)
+        if skip == may_skip_t::SKIP_YES {
+            return match_t::SKIP;
         }
+
+        let _match = self.may_match(info);
+
+        if _match == may_match_t::MATCH_YES
+            || (_match == may_match_t::MATCH_MAYBE && skip == may_skip_t::SKIP_NO)
+        {
+            return match_t::MATCH;
+        }
+
+        if skip == may_skip_t::SKIP_NO {
+            return match_t::NOT_MATCH;
+        }
+
+        match_t::SKIP
     }
 
-    fn may_skip(&self, info: &hb_glyph_info_t) -> Option<bool> {
+    fn may_match(&self, info: &hb_glyph_info_t) -> may_match_t {
+        if (info.mask & self.mask) == 0 || (self.syllable != 0 && self.syllable != info.syllable())
+        {
+            return may_match_t::MATCH_NO;
+        }
+
+        if let Some(match_func) = self.matching {
+            return if match_func(info.as_glyph(), self.num_items) {
+                may_match_t::MATCH_YES
+            } else {
+                may_match_t::MATCH_NO
+            };
+        }
+
+        may_match_t::MATCH_MAYBE
+    }
+
+    fn may_skip(&self, info: &hb_glyph_info_t) -> may_skip_t {
         if !self.ctx.check_glyph_property(info, self.lookup_props) {
-            return Some(true);
+            return may_skip_t::SKIP_YES;
         }
 
-        if !_hb_glyph_info_is_default_ignorable(info)
-            || info.is_hidden()
-            || (!self.ignore_zwnj && _hb_glyph_info_is_zwnj(info))
-            || (!self.ignore_zwj && _hb_glyph_info_is_zwj(info))
+        if _hb_glyph_info_is_default_ignorable(info)
+            && !info.is_hidden()
+            && (self.ignore_zwnj || !_hb_glyph_info_is_zwnj(info))
+            && (self.ignore_zwj || !_hb_glyph_info_is_zwj(info))
         {
-            return Some(false);
+            return may_skip_t::SKIP_MAYBE;
         }
 
-        None
+        may_skip_t::SKIP_NO
     }
 }
 
@@ -964,7 +1003,7 @@ pub mod OT {
         pub table_index: TableIndex,
         pub face: &'a hb_font_t<'b>,
         pub buffer: &'a mut hb_buffer_t,
-        pub lookup_mask: hb_mask_t,
+        lookup_mask: hb_mask_t,
         pub per_syllable: bool,
         pub lookup_index: LookupIndex,
         pub lookup_props: u32,
@@ -973,6 +1012,8 @@ pub mod OT {
         pub auto_zwj: bool,
         pub random: bool,
         pub random_state: u32,
+        pub last_base: i32,
+        pub last_base_until: u32,
     }
 
     impl<'a, 'b> hb_ot_apply_context_t<'a, 'b> {
@@ -994,6 +1035,8 @@ pub mod OT {
                 auto_zwj: true,
                 random: false,
                 random_state: 1,
+                last_base: -1,
+                last_base_until: 0,
             }
         }
 
@@ -1001,6 +1044,16 @@ pub mod OT {
             // http://www.cplusplus.com/reference/random/minstd_rand/
             self.random_state = self.random_state.wrapping_mul(48271) % 2147483647;
             self.random_state
+        }
+
+        pub fn set_lookup_mask(&mut self, mask: hb_mask_t) {
+            self.lookup_mask = mask;
+            self.last_base = -1;
+            self.last_base_until = 0;
+        }
+
+        pub fn lookup_mask(&self) -> hb_mask_t {
+            self.lookup_mask
         }
 
         pub fn recurse(&mut self, sub_lookup_index: LookupIndex) -> Option<()> {
