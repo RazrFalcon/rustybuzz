@@ -267,8 +267,8 @@ trait TransformExt {
 
 impl TransformExt for Transform {
     fn transform_distance(&self, dx: &mut f32, dy: &mut f32) {
-        let new_x = self.a * *dx + self.c * *dy;
-        let new_y = self.b * *dx + self.d * *dy;
+        let new_x = self.a * (*dx) + self.c * (*dy);
+        let new_y = self.b * (*dx) + self.d * (*dy);
         *dx = new_x;
         *dy = new_y;
     }
