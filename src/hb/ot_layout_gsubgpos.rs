@@ -342,10 +342,6 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
         false
     }
 
-    pub fn reject(&mut self) {
-        self.num_items += 1;
-    }
-
     pub fn match_(&self, info: &hb_glyph_info_t) -> match_t {
         let skip = self.may_skip(info);
 
