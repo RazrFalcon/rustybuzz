@@ -1,5 +1,6 @@
 use alloc::vec::Vec;
 use core::ops::Range;
+use std::cmp::Ordering;
 use ttf_parser::FromData;
 
 use ttf_parser::opentype_layout::{
@@ -20,7 +21,7 @@ pub struct hb_ot_map_t {
     stages: [Vec<StageMap>; 2],
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct feature_map_t {
     tag: hb_tag_t,
     // GSUB/GPOS
@@ -34,6 +35,18 @@ pub struct feature_map_t {
     auto_zwj: bool,
     random: bool,
     per_syllable: bool,
+}
+
+impl Ord for feature_map_t {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.tag.cmp(&other.tag)
+    }
+}
+
+impl PartialOrd for feature_map_t {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.tag.partial_cmp(&other.tag)
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -168,6 +181,7 @@ pub struct hb_ot_map_builder_t<'a> {
     current_stage: [usize; 2],
     feature_infos: Vec<feature_info_t>,
     stages: [Vec<stage_info_t>; 2],
+    pub(crate) is_simple: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -228,6 +242,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
             current_stage: [0, 0],
             feature_infos: Vec::new(),
             stages: [Vec::new(), Vec::new()],
+            is_simple: false,
         }
     }
 
@@ -415,6 +430,10 @@ impl<'a> hb_ot_map_builder_t<'a> {
             });
         }
 
+        if self.is_simple {
+            map_features.sort();
+        }
+
         (map_features, required_stage, global_mask)
     }
 
@@ -424,7 +443,9 @@ impl<'a> hb_ot_map_builder_t<'a> {
             return;
         }
 
-        feature_infos.sort();
+        if !self.is_simple {
+            feature_infos.sort();
+        }
 
         let mut j = 0;
         for i in 1..feature_infos.len() {

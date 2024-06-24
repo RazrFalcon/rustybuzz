@@ -88,6 +88,8 @@ impl<'a> hb_ot_shape_planner_t<'a> {
 
         let empty = F_NONE;
 
+        self.ot_map.is_simple = true;
+
         self.ot_map
             .enable_feature(hb_tag_t::from_bytes(b"rvrn"), empty, 1);
         self.ot_map.add_gsub_pause(None);
@@ -135,6 +137,7 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             .enable_feature(hb_tag_t::from_bytes(b"HARF"), empty, 1); // Considered discretionary.
 
         if let Some(func) = self.shaper.collect_features {
+            self.ot_map.is_simple = false;
             func(self);
         }
 
@@ -162,6 +165,10 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             // https://github.com/harfbuzz/harfbuzz/issues/63
             self.ot_map
                 .enable_feature(hb_tag_t::from_bytes(b"vert"), F_GLOBAL_SEARCH, 1);
+        }
+
+        if user_features.len() != 0 {
+            self.ot_map.is_simple = false;
         }
 
         for feature in user_features {
