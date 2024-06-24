@@ -144,7 +144,8 @@ impl Direction {
             // https://github.com/harfbuzz/harfbuzz/issues/1000
             script::OLD_HUNGARIAN |
             script::OLD_ITALIC |
-            script::RUNIC => {
+            script::RUNIC |
+            script::TIFINAGH => {
                 None
             }
 
