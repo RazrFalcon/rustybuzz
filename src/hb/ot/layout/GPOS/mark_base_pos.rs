@@ -32,7 +32,9 @@ impl Apply for MarkToBaseAdjustment<'_> {
             let mut _match = iter.match_(&buffer.info[j - 1]);
             if _match == match_t::MATCH {
                 // https://github.com/harfbuzz/harfbuzz/issues/4124
-                if !accept(buffer, j - 1) && !self.base_coverage.contains(buffer.info[j - 1].as_glyph()) {
+                if !accept(buffer, j - 1)
+                    && !self.base_coverage.contains(buffer.info[j - 1].as_glyph())
+                {
                     _match = match_t::SKIP;
                 }
             }
