@@ -65,10 +65,8 @@ pub fn match_input(
     let first = ctx.buffer.cur(0);
     let first_lig_id = _hb_glyph_info_get_lig_id(first);
     let first_lig_comp = _hb_glyph_info_get_lig_comp(first);
-    let mut total_component_count = _hb_glyph_info_get_lig_num_comps(first);
+    let mut total_component_count = 0;
     let mut ligbase = Ligbase::NotChecked;
-
-    match_positions[0] = ctx.buffer.idx;
 
     for position in &mut match_positions[1..count] {
         let mut unsafe_to = 0;
@@ -129,8 +127,11 @@ pub fn match_input(
     *end_position = iter.index() + 1;
 
     if let Some(p_total_component_count) = p_total_component_count {
+        total_component_count += _hb_glyph_info_get_lig_num_comps(first);
         *p_total_component_count = total_component_count;
     }
+
+    match_positions[0] = ctx.buffer.idx;
 
     true
 }
