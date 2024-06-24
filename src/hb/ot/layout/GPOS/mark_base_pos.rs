@@ -29,7 +29,7 @@ impl Apply for MarkToBaseAdjustment<'_> {
 
         let mut j = buffer.idx;
         while j > ctx.last_base_until as usize {
-            let mut _match = iter.r#match(&buffer.info[j - 1]);
+            let mut _match = iter.match_(&buffer.info[j - 1]);
             if _match == match_t::MATCH {
                 if !accept(buffer, j - 1) {
                     _match = match_t::SKIP;
