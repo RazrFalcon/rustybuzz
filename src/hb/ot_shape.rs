@@ -11,7 +11,8 @@ use crate::hb::aat_layout::hb_aat_layout_remove_deleted_glyphs;
 use crate::hb::algs::{rb_flag, rb_flag_unsafe};
 use crate::hb::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::hb::unicode::hb_gc::{
-    RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
+    RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER,
+    RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
 };
 use crate::BufferFlags;
 use crate::{Direction, Feature, Language, Script};
@@ -600,7 +601,9 @@ fn set_unicode_props(buffer: &mut hb_buffer_t) {
 
         if (rb_flag_unsafe(gen_cat.to_rb())
             & (rb_flag(RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER)
-                | rb_flag(RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER)))
+                | rb_flag(RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER)
+                | rb_flag(RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER)
+                | rb_flag(RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER)))
             != 0
         {
             i += 1;
