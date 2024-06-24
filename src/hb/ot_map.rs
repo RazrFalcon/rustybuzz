@@ -515,7 +515,7 @@ impl<'a> hb_ot_map_builder_t<'a> {
                 let lookups = &mut map_lookups[table_index];
                 let len = lookups.len();
 
-                if last_lookup < len {
+                if last_lookup + 1 < len {
                     lookups[last_lookup..].sort();
 
                     let mut j = last_lookup;
