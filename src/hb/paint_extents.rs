@@ -18,15 +18,6 @@ pub(crate) struct hb_extents_t {
 }
 
 impl hb_extents_t {
-    pub fn new() -> Self {
-        Self {
-            x_min: 0.0,
-            y_min: 0.0,
-            x_max: -1.0,
-            y_max: -1.0,
-        }
-    }
-
     pub fn is_empty(&self) -> bool {
         self.x_min >= self.x_max || self.y_min >= self.y_max
     }
@@ -232,15 +223,14 @@ impl ttf_parser::colr::Painter<'_> for hb_paint_extents_context_t<'_> {
     }
 
     fn push_clip(&mut self) {
-        let extents = hb_extents_t::new();
-
-        let mut extent_builder = ExtentBuilder(extents);
-        self.face
-            .outline_glyph(self.current_glyph, &mut extent_builder);
-
-        let extents = extent_builder.0;
-
-        self.push_clip(extents);
+        if let Some(glyph_bbox) = self.face.glyph_bounding_box(self.current_glyph) {
+            self.push_clip(hb_extents_t {
+                x_min: glyph_bbox.x_min as f32,
+                y_min: glyph_bbox.y_min as f32,
+                x_max: glyph_bbox.x_max as f32,
+                y_max: glyph_bbox.y_max as f32,
+            });
+        }
     }
 
     fn push_clip_box(&mut self, clipbox: ClipBox) {
@@ -318,45 +308,4 @@ impl TransformExt for Transform {
             extents.y_max = extents.y_max.max(quad_y[i]);
         }
     }
-}
-
-struct ExtentBuilder(hb_extents_t);
-
-impl ExtentBuilder {
-    fn add_point(&mut self, x: f32, y: f32) {
-        if self.0.x_max < self.0.x_min {
-            self.0.x_max = x;
-            self.0.x_min = x;
-            self.0.y_max = y;
-            self.0.y_min = y;
-        } else {
-            self.0.x_min = self.0.x_min.min(x);
-            self.0.y_min = self.0.y_min.min(y);
-            self.0.x_max = self.0.x_max.max(x);
-            self.0.y_max = self.0.y_max.max(y);
-        }
-    }
-}
-
-impl ttf_parser::OutlineBuilder for ExtentBuilder {
-    fn move_to(&mut self, x: f32, y: f32) {
-        self.add_point(x, y);
-    }
-
-    fn line_to(&mut self, x: f32, y: f32) {
-        self.add_point(x, y);
-    }
-
-    fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
-        self.add_point(x1, y1);
-        self.add_point(x, y);
-    }
-
-    fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
-        self.add_point(x1, y1);
-        self.add_point(x2, y2);
-        self.add_point(x, y);
-    }
-
-    fn close(&mut self) {}
 }
