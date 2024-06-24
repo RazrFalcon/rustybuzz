@@ -1441,10 +1441,17 @@ fn final_reordering_impl(
                                 base += 1;
                             }
 
-                            buffer.info[base].set_indic_position(ot_position_t::POS_BASE_C);
+                            if base < end {
+                                buffer.info[base].set_indic_position(ot_position_t::POS_BASE_C);
+                            }
+
                             try_pref = false;
                         }
 
+                        break;
+                    }
+
+                    if base == end {
                         break;
                     }
                 }
