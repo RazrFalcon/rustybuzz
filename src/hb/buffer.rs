@@ -1070,7 +1070,7 @@ impl hb_buffer_t {
                     self.info[i].mask |= mask;
                 }
             } else {
-                let cluster = Self::_infos_find_min_cluster(&self.info, start, end, None);
+                let cluster = self._infos_find_min_cluster(&self.info, start, end, None);
                 if Self::_infos_set_glyph_flags(&mut self.info, start, end, cluster, mask) {
                     self.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
                 }
@@ -1088,8 +1088,8 @@ impl hb_buffer_t {
                     self.info[i].mask |= mask;
                 }
             } else {
-                let mut cluster = Self::_infos_find_min_cluster(&self.info, self.idx, end, None);
-                cluster = Self::_infos_find_min_cluster(
+                let mut cluster = self._infos_find_min_cluster(&self.info, self.idx, end, None);
+                cluster = self._infos_find_min_cluster(
                     &self.out_info(),
                     start,
                     self.out_len,
@@ -1318,6 +1318,7 @@ impl hb_buffer_t {
     }
 
     fn _infos_find_min_cluster(
+        &self,
         info: &[hb_glyph_info_t],
         start: usize,
         end: usize,
@@ -1325,11 +1326,17 @@ impl hb_buffer_t {
     ) -> u32 {
         let mut cluster = cluster.unwrap_or(core::u32::MAX);
 
-        for glyph_info in &info[start..end] {
-            cluster = core::cmp::min(cluster, glyph_info.cluster);
+        if start == end {
+            return cluster;
         }
 
-        cluster
+        if self.cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS {
+            for glyph_info in &info[start..end] {
+                cluster = core::cmp::min(cluster, glyph_info.cluster);
+            }
+        }
+
+        cluster.min(self.info[start].cluster.min(self.info[end - 1].cluster))
     }
 
     #[must_use]
