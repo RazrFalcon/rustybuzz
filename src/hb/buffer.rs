@@ -827,12 +827,12 @@ impl hb_buffer_t {
         cluster_start: u32,
         cluster_end: u32,
     ) {
-        let not_mask = !mask;
-        value &= mask;
-
         if mask == 0 {
             return;
         }
+
+        let not_mask = !mask;
+        value &= mask;
 
         if cluster_start == 0 && cluster_end == core::u32::MAX {
             for info in &mut self.info[..self.len] {
