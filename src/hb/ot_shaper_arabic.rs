@@ -557,9 +557,11 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
                     buffer.pos[k - 1].x_advance = 0;
 
                     for n in 0..repeat {
-                        x_offset -= width;
-                        if n > 0 {
-                            x_offset += extra_repeat_overlap;
+                        if rtl {
+                            x_offset -= width;
+                            if n > 0 {
+                                x_offset += extra_repeat_overlap;
+                            }
                         }
 
                         buffer.pos[k - 1].x_offset = x_offset;
@@ -568,6 +570,14 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
                         j -= 1;
                         buffer.info[j] = buffer.info[k - 1];
                         buffer.pos[j] = buffer.pos[k - 1];
+
+                        if !rtl {
+                            x_offset += width;
+
+                            if n > 0 {
+                                x_offset -= extra_repeat_overlap;
+                            }
+                        }
                     }
                 }
             }
@@ -581,6 +591,10 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
             debug_assert_eq!(j, 0);
             buffer.set_len(new_len);
         }
+    }
+
+    if !rtl {
+        buffer.reverse();
     }
 }
 
