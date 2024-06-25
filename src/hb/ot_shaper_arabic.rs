@@ -550,6 +550,8 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
                         repeat += n_copies;
                     }
 
+                    buffer.pos[k - 1].x_advance = 0;
+
                     for n in 0..repeat {
                         x_offset -= width;
                         if n > 0 {
