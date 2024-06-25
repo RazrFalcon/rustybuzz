@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 use core::ops::Range;
-use std::cmp::Ordering;
+use core::cmp::Ordering;
 use ttf_parser::FromData;
 
 use ttf_parser::opentype_layout::{
