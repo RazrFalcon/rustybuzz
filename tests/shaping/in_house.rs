@@ -1547,6 +1547,66 @@ fn automatic_fractions_003() {
 }
 
 #[test]
+fn automatic_fractions_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/15dfc433a135a658b9f4b1a861b5cdd9658ccbb9.ttf",
+            "\u{0031}\u{0032}\u{0033}\u{2044}",
+            "",
+        ),
+        "one=0+1090|\
+         two=1+1090|\
+         three=2+1090|\
+         fraction=3+252"
+    );
+}
+
+#[test]
+fn automatic_fractions_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/15dfc433a135a658b9f4b1a861b5cdd9658ccbb9.ttf",
+            "\u{0661}\u{0662}\u{0663}\u{2044}",
+            "--direction=l",
+        ),
+        "uni0661=0+1200|\
+         uni0662=1+1200|\
+         uni0663=2+1200|\
+         fraction=3+252"
+    );
+}
+
+#[test]
+fn automatic_fractions_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/15dfc433a135a658b9f4b1a861b5cdd9658ccbb9.ttf",
+            "\u{2044}\u{0034}\u{0035}\u{0036}",
+            "",
+        ),
+        "fraction=0+252|\
+         four=1+1090|\
+         five=2+1090|\
+         six=3+1090"
+    );
+}
+
+#[test]
+fn automatic_fractions_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/15dfc433a135a658b9f4b1a861b5cdd9658ccbb9.ttf",
+            "\u{2044}\u{0664}\u{0665}\u{0666}",
+            "--direction=l",
+        ),
+        "fraction=0+252|\
+         uni0664=1+1200|\
+         uni0665=2+1200|\
+         uni0666=3+1200"
+    );
+}
+
+#[test]
 fn cluster_001() {
     assert_eq!(
         shape(
