@@ -15,14 +15,14 @@ impl WouldApply for ReverseChainSingleSubstitution<'_> {
 // ReverseChainSingleSubstFormat1::apply
 impl Apply for ReverseChainSingleSubstitution<'_> {
     fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        // No chaining to this type.
-        if ctx.nesting_level_left != MAX_NESTING_LEVEL {
-            return None;
-        }
-
         let glyph = ctx.buffer.cur(0).as_glyph();
         let index = self.coverage.get(glyph)?;
         if index >= self.substitutes.len() {
+            return None;
+        }
+
+        // No chaining to this type.
+        if ctx.nesting_level_left != MAX_NESTING_LEVEL {
             return None;
         }
 
