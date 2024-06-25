@@ -81,7 +81,7 @@ fn machine_kern(
             continue;
         }
 
-        let mut iter = skipping_iterator_t::new(&ctx, i, 1, false);
+        let mut iter = skipping_iterator_t::new(&ctx, i, false);
 
         let mut unsafe_to = 0;
         if !iter.next(Some(&mut unsafe_to)) {

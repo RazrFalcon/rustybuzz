@@ -24,8 +24,7 @@ impl Apply for Ligature<'_> {
             ctx.replace_glyph(self.glyph);
             Some(())
         } else {
-            let f = |glyph, num_items| {
-                let index = self.components.len() - num_items;
+            let f = |glyph, index| {
                 let value = self.components.get(index).unwrap();
                 match_glyph(glyph, value.0)
             };

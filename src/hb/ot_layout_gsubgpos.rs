@@ -59,7 +59,8 @@ pub fn match_input(
         return false;
     }
 
-    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, input_len, false);
+    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, false);
+    iter.set_glyph_data(0);
     iter.enable_matching(match_func);
 
     let first = ctx.buffer.cur(0);
@@ -142,7 +143,8 @@ pub fn match_backtrack(
     match_func: &match_func_t,
     match_start: &mut usize,
 ) -> bool {
-    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.backtrack_len(), backtrack_len, true);
+    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.backtrack_len(), true);
+    iter.set_glyph_data(0);
     iter.enable_matching(match_func);
 
     for _ in 0..backtrack_len {
@@ -164,7 +166,8 @@ pub fn match_lookahead(
     start_index: usize,
     end_index: &mut usize,
 ) -> bool {
-    let mut iter = skipping_iterator_t::new(ctx, start_index - 1, lookahead_len, true);
+    let mut iter = skipping_iterator_t::new(ctx, start_index - 1, true);
+    iter.set_glyph_data(0);
     iter.enable_matching(match_func);
 
     for _ in 0..lookahead_len {
@@ -196,8 +199,8 @@ pub struct skipping_iterator_t<'a, 'b> {
     syllable: u8,
     matching: Option<&'a match_func_t<'a>>,
     buf_len: usize,
+    glyph_data: u16,
     pub(crate) buf_idx: usize,
-    num_items: u16,
 }
 
 #[derive(PartialEq, Eq, Copy, Clone)]
@@ -225,7 +228,6 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     pub fn new(
         ctx: &'a hb_ot_apply_context_t<'a, 'b>,
         start_buf_index: usize,
-        num_items: u16,
         context_match: bool,
     ) -> Self {
         skipping_iterator_t {
@@ -245,11 +247,19 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             } else {
                 0
             },
+            glyph_data: 0,
             matching: None,
             buf_len: ctx.buffer.len,
             buf_idx: start_buf_index,
-            num_items,
         }
+    }
+
+    pub fn set_glyph_data(&mut self, glyph_data: u16) {
+        self.glyph_data = glyph_data
+    }
+
+    fn advance_glyph_data(&mut self) {
+        self.glyph_data += 1;
     }
 
     pub fn set_lookup_props(&mut self, lookup_props: u32) {
@@ -265,7 +275,6 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     }
 
     pub fn next(&mut self, unsafe_to: Option<&mut usize>) -> bool {
-        assert!(self.num_items > 0);
         let stop = self.buf_len as i32 - 1;
 
         while (self.buf_idx as i32) < stop {
@@ -274,7 +283,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
 
             match self.match_(info) {
                 match_t::MATCH => {
-                    self.num_items -= 1;
+                    self.advance_glyph_data();
                     return true;
                 }
                 match_t::NOT_MATCH => {
@@ -296,18 +305,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     }
 
     pub fn prev(&mut self, unsafe_from: Option<&mut usize>) -> bool {
-        assert!(self.num_items > 0);
-
-        let mut stop = self.num_items - 1;
-
-        if self
-            .ctx
-            .buffer
-            .flags
-            .contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT)
-        {
-            stop = 1 - 1;
-        }
+        let stop = 0;
 
         while self.buf_idx > stop as usize {
             self.buf_idx -= 1;
@@ -315,7 +313,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
 
             match self.match_(info) {
                 match_t::MATCH => {
-                    self.num_items -= 1;
+                    self.advance_glyph_data();
                     return true;
                 }
                 match_t::NOT_MATCH => {
@@ -367,7 +365,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
         }
 
         if let Some(match_func) = self.matching {
-            return if match_func(info.as_glyph(), self.num_items) {
+            return if match_func(info.as_glyph(), self.glyph_data) {
                 may_match_t::MATCH_YES
             } else {
                 may_match_t::MATCH_NO
@@ -445,8 +443,7 @@ impl Apply for ContextLookup<'_> {
                 coverage.get(glyph)?;
                 let coverages_len = coverages.len();
 
-                let match_func = |glyph, num_items| {
-                    let index = coverages_len - num_items;
+                let match_func = |glyph, index| {
                     let coverage = coverages.get(index).unwrap();
                     coverage.get(glyph).is_some()
                 };
@@ -598,20 +595,17 @@ impl Apply for ChainedContextLookup<'_> {
             } => {
                 coverage.get(glyph)?;
 
-                let back = |glyph, num_items| {
-                    let index = backtrack_coverages.len() - num_items;
+                let back = |glyph, index| {
                     let coverage = backtrack_coverages.get(index).unwrap();
                     coverage.contains(glyph)
                 };
 
-                let ahead = |glyph, num_items| {
-                    let index = lookahead_coverages.len() - num_items;
+                let ahead = |glyph, index| {
                     let coverage = lookahead_coverages.get(index).unwrap();
                     coverage.contains(glyph)
                 };
 
-                let input = |glyph, num_items| {
-                    let index = input_coverages.len() - num_items;
+                let input = |glyph, index| {
                     let coverage = input_coverages.get(index).unwrap();
                     coverage.contains(glyph)
                 };
@@ -738,8 +732,7 @@ fn apply_context(
     match_func: &match_func_t,
     lookups: LazyArray16<SequenceLookupRecord>,
 ) -> Option<()> {
-    let match_func = |glyph, num_items| {
-        let index = input.len() - num_items;
+    let match_func = |glyph, index| {
         let value = input.get(index).unwrap();
         match_func(glyph, value)
     };
@@ -780,20 +773,17 @@ fn apply_chain_context(
 ) -> Option<()> {
     // NOTE: Whenever something in this method changes, we also need to
     // change it in the `apply` implementation for ChainedContextLookup.
-    let f1 = |glyph, num_items| {
-        let index = backtrack.len() - num_items;
+    let f1 = |glyph, index| {
         let value = backtrack.get(index).unwrap();
         match_funcs[0](glyph, value)
     };
 
-    let f2 = |glyph, num_items| {
-        let index = lookahead.len() - num_items;
+    let f2 = |glyph, index| {
         let value = lookahead.get(index).unwrap();
         match_funcs[2](glyph, value)
     };
 
-    let f3 = |glyph, num_items| {
-        let index = input.len() - num_items;
+    let f3 = |glyph, index| {
         let value = input.get(index).unwrap();
         match_funcs[1](glyph, value)
     };

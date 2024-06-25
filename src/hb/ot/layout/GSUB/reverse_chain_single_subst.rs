@@ -28,14 +28,12 @@ impl Apply for ReverseChainSingleSubstitution<'_> {
 
         let subst = self.substitutes.get(index)?;
 
-        let f1 = |glyph, num_items| {
-            let index = self.backtrack_coverages.len() - num_items;
+        let f1 = |glyph, index| {
             let value = self.backtrack_coverages.get(index).unwrap();
             value.contains(glyph)
         };
 
-        let f2 = |glyph, num_items| {
-            let index = self.lookahead_coverages.len() - num_items;
+        let f2 = |glyph, index| {
             let value = self.lookahead_coverages.get(index).unwrap();
             value.contains(glyph)
         };

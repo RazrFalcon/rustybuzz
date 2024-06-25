@@ -14,7 +14,7 @@ impl Apply for CursiveAdjustment<'_> {
         let index_this = self.coverage.get(this)?;
         let entry_this = self.sets.entry(index_this)?;
 
-        let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, 1, false);
+        let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, false);
 
         let mut unsafe_from = 0;
         if !iter.prev(Some(&mut unsafe_from)) {
