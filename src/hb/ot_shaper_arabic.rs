@@ -523,7 +523,7 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
             // Number of additional times to repeat each repeating tile.
             let mut n_copies: i32 = 0;
 
-            let w_remaining = w_total - w_fixed;
+            let mut w_remaining = w_total - w_fixed;
             if w_remaining > w_repeating && w_repeating > 0 {
                 n_copies = w_remaining / (w_repeating) - 1;
             }
@@ -536,6 +536,7 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
                 let excess = (n_copies + 1) * w_repeating - w_remaining;
                 if excess > 0 {
                     extra_repeat_overlap = excess / (n_copies * n_repeating);
+                    w_remaining = 0;
                 }
             }
 
@@ -543,7 +544,7 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
                 extra_glyphs_needed += (n_copies * n_repeating) as usize;
             } else {
                 buffer.unsafe_to_break(Some(context), Some(end));
-                let mut x_offset = 0;
+                let mut x_offset = w_remaining / 2;
                 for k in (start + 1..=end).rev() {
                     let width = face.glyph_h_advance(buffer.info[k - 1].as_glyph()) as i32;
 

@@ -1519,6 +1519,25 @@ fn arabic_stch_002() {
 }
 
 #[test]
+fn arabic_stch_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/507637795ce4f2975593da54d12b46f76c7cc4cc.ttf",
+            "\u{0661}\u{0662}\u{0663}\u{0891}\u{0664}\u{066B}",
+            "--direction=l",
+        ),
+        "one-ar=0+449|\
+         two-ar=1+449|\
+         three-ar=2+449|\
+         piastre-ar.head=3@-192,0+0|\
+         piastre-ar.repeat=3@452,0+0|\
+         piastre-ar.tail=3@586,0+0|\
+         four-ar=4+449|\
+         decimalseparator-ar=5+222"
+    );
+}
+
+#[test]
 fn automatic_fractions_001() {
     assert_eq!(
         shape(
