@@ -1804,6 +1804,21 @@ fn context_matching_005() {
 }
 
 #[test]
+fn context_matching_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/bef923f4ccb474f961c43b63a9c74b7d9b7a023f.ttf",
+            "\u{0061}\u{002E}\u{002E}\u{002E}",
+            "",
+        ),
+        "a=0+600|\
+         SPC=1+600|\
+         SPC=2+600|\
+         period_period_period.liga=3+600"
+    );
+}
+
+#[test]
 fn cursive_positioning_001() {
     assert_eq!(
         shape(
