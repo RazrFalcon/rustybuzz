@@ -1,3 +1,4 @@
+use crate::Direction;
 use alloc::boxed::Box;
 
 use super::algs::*;
@@ -453,8 +454,11 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
         return;
     }
 
-    // The Arabic shaper currently always processes in RTL mode, so we should
-    // stretch / position the stretched pieces to the left / preceding glyphs.
+    let rtl = buffer.direction == Direction::RightToLeft;
+
+    if !rtl {
+        buffer.reverse();
+    }
 
     // We do a two pass implementation:
     // First pass calculates the exact number of extra glyphs we need,
