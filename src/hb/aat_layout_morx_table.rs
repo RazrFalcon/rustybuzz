@@ -854,7 +854,9 @@ impl driver_context_t<u16> for LigatureCtx<'_> {
                             self.match_positions[self.match_length % LIGATURE_MAX_MATCHES],
                         );
                         let cur_unicode = buffer.cur(0).unicode_props();
-                        buffer.cur_mut(0).set_unicode_props(cur_unicode | UnicodeProps::IGNORABLE.bits());
+                        buffer
+                            .cur_mut(0)
+                            .set_unicode_props(cur_unicode | UnicodeProps::IGNORABLE.bits());
                         buffer.replace_glyph(0xFFFF);
                     }
 
