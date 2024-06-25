@@ -560,6 +560,7 @@ fn setup_masks_fraction(ctx: &mut hb_ot_shape_context_t) {
             }
 
             if start == i || end == i + 1 {
+                i += 1;
                 continue;
             }
 
