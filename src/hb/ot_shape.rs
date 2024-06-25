@@ -10,11 +10,7 @@ use super::{hb_font_t, hb_tag_t};
 use crate::hb::aat_layout::hb_aat_layout_remove_deleted_glyphs;
 use crate::hb::algs::{rb_flag, rb_flag_unsafe};
 use crate::hb::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
-use crate::hb::unicode::hb_gc::{
-    RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER,
-    RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR, RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER,
-    RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
-};
+use crate::hb::unicode::hb_gc::{RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER, RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR, RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER};
 use crate::BufferFlags;
 use crate::{Direction, Feature, Language, Script};
 
@@ -557,10 +553,6 @@ fn setup_masks_fraction(ctx: &mut hb_ot_shape_context_t) {
                     == hb_unicode_general_category_t::DecimalNumber
             {
                 end += 1;
-            }
-
-            if start == i || end == i + 1 {
-                continue;
             }
 
             buffer.unsafe_to_break(Some(start), Some(end));
