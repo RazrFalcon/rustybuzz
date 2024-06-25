@@ -1493,6 +1493,32 @@ fn arabic_stch_001() {
 }
 
 #[test]
+fn arabic_stch_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/507637795ce4f2975593da54d12b46f76c7cc4cc.ttf",
+            "\u{0891}\u{0661}\u{0662}\u{0663}\u{0664}\u{066B}",
+            "--direction=l",
+        ),
+        "piastre-ar.head=0+0|\
+         piastre-ar.repeat=0@644,0+0|\
+         piastre-ar.repeat=0@778,0+0|\
+         piastre-ar.repeat=0@897,0+0|\
+         piastre-ar.repeat=0@1016,0+0|\
+         piastre-ar.repeat=0@1135,0+0|\
+         piastre-ar.repeat=0@1254,0+0|\
+         piastre-ar.repeat=0@1373,0+0|\
+         piastre-ar.repeat=0@1492,0+0|\
+         piastre-ar.tail=0@1611,0+0|\
+         one-ar=1+449|\
+         two-ar=2+449|\
+         three-ar=3+449|\
+         four-ar=4+449|\
+         decimalseparator-ar=5+222"
+    );
+}
+
+#[test]
 fn automatic_fractions_001() {
     assert_eq!(
         shape(
