@@ -99,6 +99,8 @@ pub mod category {
     pub const SB: u8 = 51; // HIEROGLYPH_SEGMENT_BEGIN
     pub const SE: u8 = 52; // HIEROGLYPH_SEGMENT_END
     pub const HVM: u8 = 53; // HIEROGLYPH_SEGMENT_END
+    pub const HM: u8 = 54; // HIEROGLYPH_MOD
+    pub const HR: u8 = 55; // HIEROGLYPH_MIRROR
 }
 
 // These features are applied all at once, before reordering,
