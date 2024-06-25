@@ -1198,7 +1198,6 @@ pub mod OT {
     }
 }
 
-use crate::BufferFlags;
 use OT::hb_ot_apply_context_t;
 
 pub fn ligate_input(
