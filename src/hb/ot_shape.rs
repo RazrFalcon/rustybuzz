@@ -560,6 +560,14 @@ fn setup_masks_fraction(ctx: &mut hb_ot_shape_context_t) {
             }
 
             if start == i || end == i + 1 {
+                if start == i {
+                    buffer.unsafe_to_concat(Some(start), Some(start + 1));
+                }
+
+                if end == i + 1 {
+                    buffer.unsafe_to_concat(Some(end - 1), Some(end));
+                }
+
                 i += 1;
                 continue;
             }
