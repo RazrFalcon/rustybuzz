@@ -75,24 +75,25 @@ Which gives us around 13 KLOC, which is still a lot.
 Since the port is finished, there is not much to do other than syncing it with
 a new harfbuzz releases. However, there is still lots of potential areas of improvement:
 
-- *Better benchmarking*: Currently, our benchmarking harness is very barebones and only contains
+- **Better benchmarking**: Currently, our benchmarking harness is very barebones and only contains
 3 different tests to compare performance against `harfbuzz`. Ideally, this benchmark suite should be extended
 further with both, more benching functions and also a wider variety of fonts/cases, so that we can have
 more insight into how much worse performance is in certain cases, compared to harfbuzz.
-- *Wider test coverage*: Currently, we only test the result of the positioned glyphs in the shaping output.
+- **Wider test coverage**: Currently, we only test the result of the positioned glyphs in the shaping output.
 We should add tests so that we can test other parts of the API as well, such as glyph extents and glyph flags.
-- *Custom tests*: Currently, we only rely on the `harfbuzz` test suite to assess the correctness of
+- **Custom tests**: Currently, we only rely on the `harfbuzz` test suite to assess the correctness of
 `rustybuzz`. While this is already very good, we should extend our current testing mechanism with infrastructure
 so that bugs specific to `rustybuzz` can be tested as well.
-- *Fuzzing against harfbuzz*: While `rustybuzz` passes the whole `harfbuzz` test suite, this does not mean that
+- **Fuzzing against harfbuzz**: While `rustybuzz` passes the whole `harfbuzz` test suite, this does not mean that
 output will always be 100% identical to `harfbuzz`. Given the complexity of the code base, there are bound to be
 other bugs that just have not been discovered yet. One potential way of addressing this issue could be to create a
 fuzzer that takes random fonts, and shapes them with a random set of Unicode codepoints as well as 
 input settings. In case of a discovered discrepancy, this test case could then be investigated and once the
 bug has been identified, added to our custom test suite. On the one hand we could use the Google Fonts font
-collection for this, but we could also just use MacOS/Windows system fonts and only test them in CI, similarly
+collection for this so that the fonts can be added to the repository, 
+but we could also just use MacOS/Windows system fonts and only test them in CI, similarly
 to how it's currently done for AAT in `harfbuzz`.
-- *Performance*: `harfbuzz` contains tons of optimization structures
+- **Performance**: `harfbuzz` contains tons of optimization structures
 (accelerators and caches) which have not been included in `rustybuzz`. As a result of this,
 performance is much worse in many cases, as mentioned above (although in the grand scheme of things
 `rustybuzz` is still very performant), but the upside of excluding all those optimizations is that
@@ -100,7 +101,7 @@ the code base is much simpler and straightforward. This makes it a lot easier to
 (which already is a very difficult task). Now that we are back in sync with `harfbuzz`, we can consider
 attempting to port some of the major optimization improvements from `harfbuzz`, but we should do so carefully
 to not make it even harder to keep the code bases in sync.
-- *Code alignment*: `rustybuzz` tries its best to make the code base look like a 1:1 C++ to Rust translation,
+- **Code alignment**: `rustybuzz` tries its best to make the code base look like a 1:1 C++ to Rust translation,
 which is the case for most parts of the code, but there also are many variations (most notable in AAT) that arise
 from the fact that a lot of the C++ concepts are not straightforward to port. Nevertheless, there probably still
 are parts of the code that probably could be made more similar, given that someone puts time into looking into that.
