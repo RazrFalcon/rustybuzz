@@ -625,7 +625,7 @@ fn override_features(planner: &mut hb_ot_shape_planner_t) {
     planner
         .ot_map
         .disable_feature(hb_tag_t::from_bytes(b"liga"));
-    planner.ot_map.add_gsub_pause(None);
+    planner.ot_map.add_gsub_pause(Some(syllabic_clear_var)); // Don't need syllables anymore.
 }
 
 fn preprocess_text(_: &hb_ot_shape_plan_t, _: &hb_font_t, buffer: &mut hb_buffer_t) {
@@ -1441,10 +1441,17 @@ fn final_reordering_impl(
                                 base += 1;
                             }
 
-                            buffer.info[base].set_indic_position(ot_position_t::POS_BASE_C);
+                            if base < end {
+                                buffer.info[base].set_indic_position(ot_position_t::POS_BASE_C);
+                            }
+
                             try_pref = false;
                         }
 
+                        break;
+                    }
+
+                    if base == end {
                         break;
                     }
                 }

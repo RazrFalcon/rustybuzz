@@ -23,21 +23,13 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
 
         let mut j = buffer.idx;
-        let mut new_last_base = None;
         while j > ctx.last_base_until as usize {
             let mut _match = iter.match_(&buffer.info[j - 1]);
             if _match == match_t::MATCH {
-                // Due to borrow checker, we cannot assign directly to ctx.last_base in the
-                // for loop, unlike in harfbuzz.
-                new_last_base = Some(j as i32 - 1);
+                ctx.last_base = j as i32 - 1;
                 break;
             }
             j -= 1;
-        }
-        let iter_idx = iter.index();
-
-        if let Some(last_base) = new_last_base {
-            ctx.last_base = last_base;
         }
 
         ctx.last_base_until = buffer.idx as u32;
@@ -48,14 +40,14 @@ impl Apply for MarkToLigatureAdjustment<'_> {
             return None;
         }
 
-        j = ctx.last_base as usize;
+        let idx = ctx.last_base as usize;
 
         // Checking that matched glyph is actually a ligature by GDEF is too strong; disabled
 
-        let lig_glyph = buffer.info[j].as_glyph();
+        let lig_glyph = buffer.info[idx].as_glyph();
         let Some(lig_index) = self.ligature_coverage.get(lig_glyph) else {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
+                .unsafe_to_concat_from_outbuffer(Some(idx), Some(buffer.idx + 1));
             return None;
         };
         let lig_attach = self.ligature_array.get(lig_index)?;
@@ -64,7 +56,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         let comp_count = lig_attach.rows;
         if comp_count == 0 {
             ctx.buffer
-                .unsafe_to_concat_from_outbuffer(Some(iter_idx), Some(buffer.idx + 1));
+                .unsafe_to_concat_from_outbuffer(Some(idx), Some(buffer.idx + 1));
             return None;
         }
 
@@ -72,7 +64,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
         // is identical to the ligature ID of the found ligature.  If yes, we
         // can directly use the component index.  If not, we attach the mark
         // glyph to the last component of the ligature.
-        let lig_id = _hb_glyph_info_get_lig_id(&buffer.info[j]);
+        let lig_id = _hb_glyph_info_get_lig_id(&buffer.info[idx]);
         let mark_id = _hb_glyph_info_get_lig_id(&buffer.cur(0));
         let mark_comp = u16::from(_hb_glyph_info_get_lig_comp(buffer.cur(0)));
         let matches = lig_id != 0 && lig_id == mark_id && mark_comp > 0;
@@ -82,6 +74,7 @@ impl Apply for MarkToLigatureAdjustment<'_> {
             comp_count
         } - 1;
 
-        self.marks.apply(ctx, lig_attach, mark_index, comp_index, j)
+        self.marks
+            .apply(ctx, lig_attach, mark_index, comp_index, idx)
     }
 }

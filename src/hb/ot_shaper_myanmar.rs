@@ -88,7 +88,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
         planner.ot_map.add_gsub_pause(None);
     }
 
-    planner.ot_map.add_gsub_pause(None);
+    planner.ot_map.add_gsub_pause(Some(syllabic_clear_var)); // Don't need syllables anymore.
 
     for feature in MYANMAR_FEATURES.iter().skip(4) {
         planner

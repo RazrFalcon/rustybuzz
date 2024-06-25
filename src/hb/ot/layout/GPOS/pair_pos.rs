@@ -54,10 +54,12 @@ impl Apply for PairAdjustment<'_> {
         let bail = |ctx: &mut hb_ot_apply_context_t,
                     iter_index: &mut usize,
                     records: (ValueRecord, ValueRecord)| {
-            let flag1 = records.0.apply(ctx, ctx.buffer.idx);
-            let flag2 = records.1.apply(ctx, second_glyph_index);
-
+            let has_record1 = !records.0.is_empty();
             let has_record2 = !records.1.is_empty();
+
+            let flag1 = has_record1 && records.0.apply(ctx, ctx.buffer.idx);
+            let flag2 = has_record2 && records.1.apply(ctx, second_glyph_index);
+
             success(ctx, iter_index, flag1, flag2, has_record2)
         };
 

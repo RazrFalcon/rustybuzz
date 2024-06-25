@@ -65,10 +65,8 @@ pub fn match_input(
     let first = ctx.buffer.cur(0);
     let first_lig_id = _hb_glyph_info_get_lig_id(first);
     let first_lig_comp = _hb_glyph_info_get_lig_comp(first);
-    let mut total_component_count = _hb_glyph_info_get_lig_num_comps(first);
+    let mut total_component_count = 0;
     let mut ligbase = Ligbase::NotChecked;
-
-    match_positions[0] = ctx.buffer.idx;
 
     for position in &mut match_positions[1..count] {
         let mut unsafe_to = 0;
@@ -129,8 +127,11 @@ pub fn match_input(
     *end_position = iter.index() + 1;
 
     if let Some(p_total_component_count) = p_total_component_count {
+        total_component_count += _hb_glyph_info_get_lig_num_comps(first);
         *p_total_component_count = total_component_count;
     }
+
+    match_positions[0] = ctx.buffer.idx;
 
     true
 }
@@ -180,6 +181,10 @@ pub fn match_lookahead(
 
 pub type match_func_t<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 
+// TODO: In harfbuzz, these properties are part of the `matcher_t` struct, but here
+// they are all straight in skipping iterator. There are also some other differences,
+// such as that we don't have a `per_syllable` flag as well as no init() and iter() functions
+// for the skippy iterator. Investigate and align more with harfbuzz, if possible.
 pub struct skipping_iterator_t<'a, 'b> {
     ctx: &'a hb_ot_apply_context_t<'a, 'b>,
     lookup_props: u32,

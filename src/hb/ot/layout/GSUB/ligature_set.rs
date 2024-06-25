@@ -16,5 +16,9 @@ impl Apply for LigatureSet<'_> {
             }
         }
         None
+
+        // TODO: port https://github.com/harfbuzz/harfbuzz/commit/7881eadff and
+        // the following commits. Since it's behind a feature flag, we ignore it
+        // for now and just use the simpler version.
     }
 }

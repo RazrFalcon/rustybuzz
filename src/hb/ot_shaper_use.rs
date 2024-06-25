@@ -223,7 +223,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     }
 
     planner.ot_map.add_gsub_pause(Some(reorder_use));
-    planner.ot_map.add_gsub_pause(None);
+    planner.ot_map.add_gsub_pause(Some(syllabic_clear_var)); // Don't need syllables anymore.
 
     // Topographical features
     for feature in TOPOGRAPHICAL_FEATURES {
