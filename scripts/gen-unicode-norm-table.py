@@ -3,7 +3,7 @@
 import urllib.request
 import os
 
-URL = 'https://www.unicode.org/Public/15.0.0/ucd/UnicodeData.txt'
+URL = 'https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt'
 FILE_NAME = 'UnicodeData.txt'
 
 
