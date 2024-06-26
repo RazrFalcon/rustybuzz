@@ -15,27 +15,25 @@ impl WouldApply for ReverseChainSingleSubstitution<'_> {
 // ReverseChainSingleSubstFormat1::apply
 impl Apply for ReverseChainSingleSubstitution<'_> {
     fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        // No chaining to this type.
-        if ctx.nesting_level_left != MAX_NESTING_LEVEL {
-            return None;
-        }
-
         let glyph = ctx.buffer.cur(0).as_glyph();
         let index = self.coverage.get(glyph)?;
         if index >= self.substitutes.len() {
             return None;
         }
 
+        // No chaining to this type.
+        if ctx.nesting_level_left != MAX_NESTING_LEVEL {
+            return None;
+        }
+
         let subst = self.substitutes.get(index)?;
 
-        let f1 = |glyph, num_items| {
-            let index = self.backtrack_coverages.len() - num_items;
+        let f1 = |glyph, index| {
             let value = self.backtrack_coverages.get(index).unwrap();
             value.contains(glyph)
         };
 
-        let f2 = |glyph, num_items| {
-            let index = self.lookahead_coverages.len() - num_items;
+        let f2 = |glyph, index| {
             let value = self.lookahead_coverages.get(index).unwrap();
             value.contains(glyph)
         };

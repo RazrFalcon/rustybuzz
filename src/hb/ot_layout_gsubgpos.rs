@@ -22,7 +22,7 @@ pub fn match_input(
     input_len: u16,
     match_func: &match_func_t,
     end_position: &mut usize,
-    match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
+    match_positions: &mut smallvec::SmallVec<[usize; 4]>,
     p_total_component_count: Option<&mut u8>,
 ) -> bool {
     // This is perhaps the trickiest part of OpenType...  Remarks:
@@ -59,7 +59,12 @@ pub fn match_input(
         return false;
     }
 
-    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, input_len, false);
+    if count > match_positions.len() {
+        match_positions.resize(count, 0);
+    }
+
+    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, false);
+    iter.set_glyph_data(0);
     iter.enable_matching(match_func);
 
     let first = ctx.buffer.cur(0);
@@ -142,7 +147,8 @@ pub fn match_backtrack(
     match_func: &match_func_t,
     match_start: &mut usize,
 ) -> bool {
-    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.backtrack_len(), backtrack_len, true);
+    let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.backtrack_len(), true);
+    iter.set_glyph_data(0);
     iter.enable_matching(match_func);
 
     for _ in 0..backtrack_len {
@@ -164,7 +170,8 @@ pub fn match_lookahead(
     start_index: usize,
     end_index: &mut usize,
 ) -> bool {
-    let mut iter = skipping_iterator_t::new(ctx, start_index - 1, lookahead_len, true);
+    let mut iter = skipping_iterator_t::new(ctx, start_index - 1, true);
+    iter.set_glyph_data(0);
     iter.enable_matching(match_func);
 
     for _ in 0..lookahead_len {
@@ -181,10 +188,12 @@ pub fn match_lookahead(
 
 pub type match_func_t<'a> = dyn Fn(GlyphId, u16) -> bool + 'a;
 
-// TODO: In harfbuzz, these properties are part of the `matcher_t` struct, but here
-// they are all straight in skipping iterator. There are also some other differences,
-// such as that we don't have a `per_syllable` flag as well as no init() and iter() functions
-// for the skippy iterator. Investigate and align more with harfbuzz, if possible.
+// In harfbuzz, skipping iterator works quite differently than it works here. In harfbuzz,
+// hb_ot_apply_context contains a skipping iterator that itself contains another reference to
+// the apply_context, meaning that we have a circular reference. Due to ownership rules in Rust,
+// we cannot copy this approach. Because of this, we basically create a new skipping iterator
+// when needed, and we do not have the `reset` and `init` methods that exist in harfbuzz. This makes
+// backporting related changes very hard, but it seems unavoidable, unfortunately.
 pub struct skipping_iterator_t<'a, 'b> {
     ctx: &'a hb_ot_apply_context_t<'a, 'b>,
     lookup_props: u32,
@@ -194,8 +203,8 @@ pub struct skipping_iterator_t<'a, 'b> {
     syllable: u8,
     matching: Option<&'a match_func_t<'a>>,
     buf_len: usize,
+    glyph_data: u16,
     pub(crate) buf_idx: usize,
-    num_items: u16,
 }
 
 #[derive(PartialEq, Eq, Copy, Clone)]
@@ -223,7 +232,6 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     pub fn new(
         ctx: &'a hb_ot_apply_context_t<'a, 'b>,
         start_buf_index: usize,
-        num_items: u16,
         context_match: bool,
     ) -> Self {
         skipping_iterator_t {
@@ -243,11 +251,19 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             } else {
                 0
             },
+            glyph_data: 0,
             matching: None,
             buf_len: ctx.buffer.len,
             buf_idx: start_buf_index,
-            num_items,
         }
+    }
+
+    pub fn set_glyph_data(&mut self, glyph_data: u16) {
+        self.glyph_data = glyph_data
+    }
+
+    fn advance_glyph_data(&mut self) {
+        self.glyph_data += 1;
     }
 
     pub fn set_lookup_props(&mut self, lookup_props: u32) {
@@ -263,19 +279,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     }
 
     pub fn next(&mut self, unsafe_to: Option<&mut usize>) -> bool {
-        assert!(self.num_items > 0);
-        // The alternate condition below is faster at string boundaries,
-        // but produces subpar "unsafe-to-concat" values.
-        let mut stop: i32 = self.buf_len as i32 - self.num_items as i32;
-
-        if self
-            .ctx
-            .buffer
-            .flags
-            .contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT)
-        {
-            stop = self.buf_len as i32 - 1;
-        }
+        let stop = self.buf_len as i32 - 1;
 
         while (self.buf_idx as i32) < stop {
             self.buf_idx += 1;
@@ -283,7 +287,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
 
             match self.match_(info) {
                 match_t::MATCH => {
-                    self.num_items -= 1;
+                    self.advance_glyph_data();
                     return true;
                 }
                 match_t::NOT_MATCH => {
@@ -305,18 +309,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
     }
 
     pub fn prev(&mut self, unsafe_from: Option<&mut usize>) -> bool {
-        assert!(self.num_items > 0);
-
-        let mut stop = self.num_items - 1;
-
-        if self
-            .ctx
-            .buffer
-            .flags
-            .contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT)
-        {
-            stop = 1 - 1;
-        }
+        let stop = 0;
 
         while self.buf_idx > stop as usize {
             self.buf_idx -= 1;
@@ -324,7 +317,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
 
             match self.match_(info) {
                 match_t::MATCH => {
-                    self.num_items -= 1;
+                    self.advance_glyph_data();
                     return true;
                 }
                 match_t::NOT_MATCH => {
@@ -376,7 +369,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
         }
 
         if let Some(match_func) = self.matching {
-            return if match_func(info.as_glyph(), self.num_items) {
+            return if match_func(info.as_glyph(), self.glyph_data) {
                 may_match_t::MATCH_YES
             } else {
                 may_match_t::MATCH_NO
@@ -454,14 +447,13 @@ impl Apply for ContextLookup<'_> {
                 coverage.get(glyph)?;
                 let coverages_len = coverages.len();
 
-                let match_func = |glyph, num_items| {
-                    let index = coverages_len - num_items;
+                let match_func = |glyph, index| {
                     let coverage = coverages.get(index).unwrap();
                     coverage.get(glyph).is_some()
                 };
 
                 let mut match_end = 0;
-                let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+                let mut match_positions = smallvec::SmallVec::from_elem(0, 4);
 
                 if match_input(
                     ctx,
@@ -531,6 +523,8 @@ impl SequenceRuleExt for SequenceRule<'_> {
 
     fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &match_func_t) -> Option<()> {
         apply_context(ctx, self.input, match_func, self.lookups)
+
+        // TODO: Port optimized version from https://github.com/harfbuzz/harfbuzz/commit/645fabd10
     }
 }
 
@@ -607,27 +601,24 @@ impl Apply for ChainedContextLookup<'_> {
             } => {
                 coverage.get(glyph)?;
 
-                let back = |glyph, num_items| {
-                    let index = backtrack_coverages.len() - num_items;
+                let back = |glyph, index| {
                     let coverage = backtrack_coverages.get(index).unwrap();
                     coverage.contains(glyph)
                 };
 
-                let ahead = |glyph, num_items| {
-                    let index = lookahead_coverages.len() - num_items;
+                let ahead = |glyph, index| {
                     let coverage = lookahead_coverages.get(index).unwrap();
                     coverage.contains(glyph)
                 };
 
-                let input = |glyph, num_items| {
-                    let index = input_coverages.len() - num_items;
+                let input = |glyph, index| {
                     let coverage = input_coverages.get(index).unwrap();
                     coverage.contains(glyph)
                 };
 
                 let mut end_index = ctx.buffer.idx;
                 let mut match_end = 0;
-                let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+                let mut match_positions = smallvec::SmallVec::from_elem(0, 4);
 
                 let input_matches = match_input(
                     ctx,
@@ -705,6 +696,8 @@ impl ChainRuleSetExt for ChainedSequenceRuleSet<'_> {
         } else {
             None
         }
+
+        // TODO: Port optimized version from https://github.com/harfbuzz/harfbuzz/commit/77080f86f
     }
 }
 
@@ -747,14 +740,13 @@ fn apply_context(
     match_func: &match_func_t,
     lookups: LazyArray16<SequenceLookupRecord>,
 ) -> Option<()> {
-    let match_func = |glyph, num_items| {
-        let index = input.len() - num_items;
+    let match_func = |glyph, index| {
         let value = input.get(index).unwrap();
         match_func(glyph, value)
     };
 
     let mut match_end = 0;
-    let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+    let mut match_positions = smallvec::SmallVec::from_elem(0, 4);
 
     if match_input(
         ctx,
@@ -789,27 +781,24 @@ fn apply_chain_context(
 ) -> Option<()> {
     // NOTE: Whenever something in this method changes, we also need to
     // change it in the `apply` implementation for ChainedContextLookup.
-    let f1 = |glyph, num_items| {
-        let index = backtrack.len() - num_items;
+    let f1 = |glyph, index| {
         let value = backtrack.get(index).unwrap();
         match_funcs[0](glyph, value)
     };
 
-    let f2 = |glyph, num_items| {
-        let index = lookahead.len() - num_items;
+    let f2 = |glyph, index| {
         let value = lookahead.get(index).unwrap();
         match_funcs[2](glyph, value)
     };
 
-    let f3 = |glyph, num_items| {
-        let index = input.len() - num_items;
+    let f3 = |glyph, index| {
         let value = input.get(index).unwrap();
         match_funcs[1](glyph, value)
     };
 
     let mut end_index = ctx.buffer.idx;
     let mut match_end = 0;
-    let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+    let mut match_positions = smallvec::SmallVec::from_elem(0, 4);
 
     let input_matches = match_input(
         ctx,
@@ -854,11 +843,15 @@ fn apply_chain_context(
 fn apply_lookup(
     ctx: &mut hb_ot_apply_context_t,
     input_len: usize,
-    match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
+    match_positions: &mut smallvec::SmallVec<[usize; 4]>,
     match_end: usize,
     lookups: LazyArray16<SequenceLookupRecord>,
 ) {
     let mut count = input_len + 1;
+
+    if count > match_positions.len() {
+        match_positions.resize(count, 0);
+    }
 
     // All positions are distance from beginning of *output* buffer.
     // Adjust.
@@ -952,6 +945,11 @@ fn apply_lookup(
         if delta > 0 {
             if delta as usize + count > MAX_CONTEXT_LENGTH {
                 break;
+            }
+
+            if delta as usize + count > match_positions.len() {
+                let inner_max = (core::cmp::max(4, match_positions.len()) as f32 * 1.5) as usize;
+                match_positions.resize(core::cmp::max(delta as usize + count, inner_max), 0);
             }
         } else {
             // NOTE: delta is non-positive.
@@ -1217,7 +1215,6 @@ pub mod OT {
     }
 }
 
-use crate::BufferFlags;
 use OT::hb_ot_apply_context_t;
 
 pub fn ligate_input(
@@ -1225,7 +1222,7 @@ pub fn ligate_input(
     // Including the first glyph
     count: usize,
     // Including the first glyph
-    match_positions: &[usize; MAX_CONTEXT_LENGTH],
+    match_positions: &smallvec::SmallVec<[usize; 4]>,
     match_end: usize,
     total_component_count: u8,
     lig_glyph: GlyphId,

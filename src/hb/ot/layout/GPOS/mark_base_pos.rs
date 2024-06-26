@@ -24,7 +24,7 @@ impl Apply for MarkToBaseAdjustment<'_> {
 
         // Now we search backwards for a non-mark glyph
         // We don't use skippy_iter.prev() to avoid O(n^2) behavior.
-        let mut iter = skipping_iterator_t::new(ctx, 0, 0, false);
+        let mut iter = skipping_iterator_t::new(ctx, 0, false);
         iter.set_lookup_props(u32::from(lookup_flags::IGNORE_MARKS));
 
         let mut j = buffer.idx;

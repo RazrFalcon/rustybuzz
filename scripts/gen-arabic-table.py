@@ -13,7 +13,7 @@ DEPENDENCIES = [
 
 for dep in DEPENDENCIES:
     if not os.path.exists(dep):
-        urllib.request.urlretrieve("https://unicode.org/Public/15.0.0/ucd/" + dep, dep)
+        urllib.request.urlretrieve("https://unicode.org/Public/UCD/latest/ucd/" + dep, dep)
 
 files = [open(x, encoding="utf-8") for x in DEPENDENCIES]
 

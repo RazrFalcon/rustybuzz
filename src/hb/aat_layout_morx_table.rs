@@ -5,7 +5,7 @@ use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
 use super::aat_layout::*;
 use super::aat_map::{hb_aat_map_builder_t, hb_aat_map_t, range_flags_t};
-use super::buffer::hb_buffer_t;
+use super::buffer::{hb_buffer_t, UnicodeProps};
 use super::{hb_font_t, hb_glyph_info_t};
 
 // Chain::compile_flags in harfbuzz
@@ -853,6 +853,10 @@ impl driver_context_t<u16> for LigatureCtx<'_> {
                         buffer.move_to(
                             self.match_positions[self.match_length % LIGATURE_MAX_MATCHES],
                         );
+                        let cur_unicode = buffer.cur(0).unicode_props();
+                        buffer
+                            .cur_mut(0)
+                            .set_unicode_props(cur_unicode | UnicodeProps::IGNORABLE.bits());
                         buffer.replace_glyph(0xFFFF);
                     }
 

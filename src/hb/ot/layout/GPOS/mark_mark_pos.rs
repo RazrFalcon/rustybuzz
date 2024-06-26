@@ -14,7 +14,7 @@ impl Apply for MarkToMarkAdjustment<'_> {
         let mark1_index = self.mark1_coverage.get(mark1_glyph)?;
 
         // Now we search backwards for a suitable mark glyph until a non-mark glyph
-        let mut iter = skipping_iterator_t::new(ctx, buffer.idx, 1, false);
+        let mut iter = skipping_iterator_t::new(ctx, buffer.idx, false);
         iter.set_lookup_props(ctx.lookup_props & !u32::from(lookup_flags::IGNORE_FLAGS));
 
         let mut unsafe_from = 0;

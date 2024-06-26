@@ -1493,6 +1493,51 @@ fn arabic_stch_001() {
 }
 
 #[test]
+fn arabic_stch_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/507637795ce4f2975593da54d12b46f76c7cc4cc.ttf",
+            "\u{0891}\u{0661}\u{0662}\u{0663}\u{0664}\u{066B}",
+            "--direction=l",
+        ),
+        "piastre-ar.head=0+0|\
+         piastre-ar.repeat=0@644,0+0|\
+         piastre-ar.repeat=0@778,0+0|\
+         piastre-ar.repeat=0@897,0+0|\
+         piastre-ar.repeat=0@1016,0+0|\
+         piastre-ar.repeat=0@1135,0+0|\
+         piastre-ar.repeat=0@1254,0+0|\
+         piastre-ar.repeat=0@1373,0+0|\
+         piastre-ar.repeat=0@1492,0+0|\
+         piastre-ar.tail=0@1611,0+0|\
+         one-ar=1+449|\
+         two-ar=2+449|\
+         three-ar=3+449|\
+         four-ar=4+449|\
+         decimalseparator-ar=5+222"
+    );
+}
+
+#[test]
+fn arabic_stch_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/507637795ce4f2975593da54d12b46f76c7cc4cc.ttf",
+            "\u{0661}\u{0662}\u{0663}\u{0891}\u{0664}\u{066B}",
+            "--direction=l",
+        ),
+        "one-ar=0+449|\
+         two-ar=1+449|\
+         three-ar=2+449|\
+         piastre-ar.head=3@-192,0+0|\
+         piastre-ar.repeat=3@452,0+0|\
+         piastre-ar.tail=3@586,0+0|\
+         four-ar=4+449|\
+         decimalseparator-ar=5+222"
+    );
+}
+
+#[test]
 fn automatic_fractions_001() {
     assert_eq!(
         shape(
@@ -1543,6 +1588,66 @@ fn automatic_fractions_003() {
          uni0664.small=4+600|\
          uni0665.small=5+600|\
          uni0666.small=6+600"
+    );
+}
+
+#[test]
+fn automatic_fractions_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/15dfc433a135a658b9f4b1a861b5cdd9658ccbb9.ttf",
+            "\u{0031}\u{0032}\u{0033}\u{2044}",
+            "",
+        ),
+        "one=0+1090|\
+         two=1+1090|\
+         three=2+1090|\
+         fraction=3+252"
+    );
+}
+
+#[test]
+fn automatic_fractions_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/15dfc433a135a658b9f4b1a861b5cdd9658ccbb9.ttf",
+            "\u{0661}\u{0662}\u{0663}\u{2044}",
+            "--direction=l",
+        ),
+        "uni0661=0+1200|\
+         uni0662=1+1200|\
+         uni0663=2+1200|\
+         fraction=3+252"
+    );
+}
+
+#[test]
+fn automatic_fractions_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/15dfc433a135a658b9f4b1a861b5cdd9658ccbb9.ttf",
+            "\u{2044}\u{0034}\u{0035}\u{0036}",
+            "",
+        ),
+        "fraction=0+252|\
+         four=1+1090|\
+         five=2+1090|\
+         six=3+1090"
+    );
+}
+
+#[test]
+fn automatic_fractions_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/15dfc433a135a658b9f4b1a861b5cdd9658ccbb9.ttf",
+            "\u{2044}\u{0664}\u{0665}\u{0666}",
+            "--direction=l",
+        ),
+        "fraction=0+252|\
+         uni0664=1+1200|\
+         uni0665=2+1200|\
+         uni0666=3+1200"
     );
 }
 
@@ -1740,6 +1845,21 @@ fn context_matching_005() {
          gid4=0+1366|\
          gid4=0+1366|\
          gid5=1+1366"
+    );
+}
+
+#[test]
+fn context_matching_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/bef923f4ccb474f961c43b63a9c74b7d9b7a023f.ttf",
+            "\u{0061}\u{002E}\u{002E}\u{002E}",
+            "",
+        ),
+        "a=0+600|\
+         SPC=1+600|\
+         SPC=2+600|\
+         period_period_period.liga=3+600"
     );
 }
 
@@ -17695,6 +17815,20 @@ fn use_syllable_024() {
         "u1142C=0+547|\
          u11442=0+0|\
          u1142E=3+547"
+    );
+}
+
+#[test]
+fn use_syllable_025() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/d0430ea499348c420946f6abc2efc84fdf8f00e3.ttf",
+            "\u{1142C}\u{11442}\u{1140E}\u{1145E}",
+            "",
+        ),
+        "u1140E=0+736|\
+         u1142C_u11442=0+0|\
+         u1145E=0+0"
     );
 }
 

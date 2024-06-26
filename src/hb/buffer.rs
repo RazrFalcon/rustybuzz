@@ -827,12 +827,12 @@ impl hb_buffer_t {
         cluster_start: u32,
         cluster_end: u32,
     ) {
-        let not_mask = !mask;
-        value &= mask;
-
         if mask == 0 {
             return;
         }
+
+        let not_mask = !mask;
+        value &= mask;
 
         if cluster_start == 0 && cluster_end == core::u32::MAX {
             for info in &mut self.info[..self.len] {
@@ -1110,7 +1110,7 @@ impl hb_buffer_t {
             return;
         }
 
-        self._set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(true), None);
+        self._set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(false), None);
     }
 
     pub fn unsafe_to_break_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {

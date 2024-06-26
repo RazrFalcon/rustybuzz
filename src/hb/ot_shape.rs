@@ -8,7 +8,13 @@ use super::unicode::{hb_unicode_general_category_t, CharExt, GeneralCategoryExt}
 use super::*;
 use super::{hb_font_t, hb_tag_t};
 use crate::hb::aat_layout::hb_aat_layout_remove_deleted_glyphs;
+use crate::hb::algs::{rb_flag, rb_flag_unsafe};
 use crate::hb::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
+use crate::hb::unicode::hb_gc::{
+    RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER,
+    RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR, RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER,
+    RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
+};
 use crate::BufferFlags;
 use crate::{Direction, Feature, Language, Script};
 
@@ -88,6 +94,8 @@ impl<'a> hb_ot_shape_planner_t<'a> {
 
         let empty = F_NONE;
 
+        self.ot_map.is_simple = true;
+
         self.ot_map
             .enable_feature(hb_tag_t::from_bytes(b"rvrn"), empty, 1);
         self.ot_map.add_gsub_pause(None);
@@ -135,6 +143,7 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             .enable_feature(hb_tag_t::from_bytes(b"HARF"), empty, 1); // Considered discretionary.
 
         if let Some(func) = self.shaper.collect_features {
+            self.ot_map.is_simple = false;
             func(self);
         }
 
@@ -162,6 +171,10 @@ impl<'a> hb_ot_shape_planner_t<'a> {
             // https://github.com/harfbuzz/harfbuzz/issues/63
             self.ot_map
                 .enable_feature(hb_tag_t::from_bytes(b"vert"), F_GLOBAL_SEARCH, 1);
+        }
+
+        if user_features.len() != 0 {
+            self.ot_map.is_simple = false;
         }
 
         for feature in user_features {
@@ -546,6 +559,19 @@ fn setup_masks_fraction(ctx: &mut hb_ot_shape_context_t) {
                 end += 1;
             }
 
+            if start == i || end == i + 1 {
+                if start == i {
+                    buffer.unsafe_to_concat(Some(start), Some(start + 1));
+                }
+
+                if end == i + 1 {
+                    buffer.unsafe_to_concat(Some(end - 1), Some(end));
+                }
+
+                i += 1;
+                continue;
+            }
+
             buffer.unsafe_to_break(Some(start), Some(end));
 
             for info in &mut buffer.info[start..i] {
@@ -585,10 +611,23 @@ fn set_unicode_props(buffer: &mut hb_buffer_t) {
         let info = &mut later[0];
         info.init_unicode_props(&mut buffer.scratch_flags);
 
+        let gen_cat = _hb_glyph_info_get_general_category(&info);
+
+        if (rb_flag_unsafe(gen_cat.to_rb())
+            & (rb_flag(RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER)
+                | rb_flag(RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER)
+                | rb_flag(RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER)
+                | rb_flag(RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER)
+                | rb_flag(RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR)))
+            != 0
+        {
+            i += 1;
+            continue;
+        }
+
         // Marks are already set as continuation by the above line.
         // Handle Emoji_Modifier and ZWJ-continuation.
-        if _hb_glyph_info_get_general_category(info)
-            == hb_unicode_general_category_t::ModifierSymbol
+        if gen_cat == hb_unicode_general_category_t::ModifierSymbol
             && matches!(info.glyph_id, 0x1F3FB..=0x1F3FF)
         {
             _hb_glyph_info_set_continuation(info);

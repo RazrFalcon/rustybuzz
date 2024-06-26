@@ -1,3 +1,4 @@
+use crate::Direction;
 use alloc::boxed::Box;
 
 use super::algs::*;
@@ -453,8 +454,11 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
         return;
     }
 
-    // The Arabic shaper currently always processes in RTL mode, so we should
-    // stretch / position the stretched pieces to the left / preceding glyphs.
+    let rtl = buffer.direction == Direction::RightToLeft;
+
+    if !rtl {
+        buffer.reverse();
+    }
 
     // We do a two pass implementation:
     // First pass calculates the exact number of extra glyphs we need,
@@ -519,7 +523,7 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
             // Number of additional times to repeat each repeating tile.
             let mut n_copies: i32 = 0;
 
-            let w_remaining = w_total - w_fixed;
+            let mut w_remaining = w_total - w_fixed;
             if w_remaining > w_repeating && w_repeating > 0 {
                 n_copies = w_remaining / (w_repeating) - 1;
             }
@@ -532,6 +536,7 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
                 let excess = (n_copies + 1) * w_repeating - w_remaining;
                 if excess > 0 {
                     extra_repeat_overlap = excess / (n_copies * n_repeating);
+                    w_remaining = 0;
                 }
             }
 
@@ -539,7 +544,7 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
                 extra_glyphs_needed += (n_copies * n_repeating) as usize;
             } else {
                 buffer.unsafe_to_break(Some(context), Some(end));
-                let mut x_offset = 0;
+                let mut x_offset = w_remaining / 2;
                 for k in (start + 1..=end).rev() {
                     let width = face.glyph_h_advance(buffer.info[k - 1].as_glyph()) as i32;
 
@@ -550,10 +555,14 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
                         repeat += n_copies;
                     }
 
+                    buffer.pos[k - 1].x_advance = 0;
+
                     for n in 0..repeat {
-                        x_offset -= width;
-                        if n > 0 {
-                            x_offset += extra_repeat_overlap;
+                        if rtl {
+                            x_offset -= width;
+                            if n > 0 {
+                                x_offset += extra_repeat_overlap;
+                            }
                         }
 
                         buffer.pos[k - 1].x_offset = x_offset;
@@ -562,6 +571,14 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
                         j -= 1;
                         buffer.info[j] = buffer.info[k - 1];
                         buffer.pos[j] = buffer.pos[k - 1];
+
+                        if !rtl {
+                            x_offset += width;
+
+                            if n > 0 {
+                                x_offset -= extra_repeat_overlap;
+                            }
+                        }
                     }
                 }
             }
@@ -575,6 +592,10 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
             debug_assert_eq!(j, 0);
             buffer.set_len(new_len);
         }
+    }
+
+    if !rtl {
+        buffer.reverse();
     }
 }
 
