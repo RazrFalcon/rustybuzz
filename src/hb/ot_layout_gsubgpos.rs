@@ -519,6 +519,8 @@ impl SequenceRuleExt for SequenceRule<'_> {
 
     fn apply(&self, ctx: &mut hb_ot_apply_context_t, match_func: &match_func_t) -> Option<()> {
         apply_context(ctx, self.input, match_func, self.lookups)
+
+        // TODO: Port optimized version from https://github.com/harfbuzz/harfbuzz/commit/645fabd10
     }
 }
 
@@ -690,6 +692,8 @@ impl ChainRuleSetExt for ChainedSequenceRuleSet<'_> {
         } else {
             None
         }
+
+        // TODO: Port optimized version from https://github.com/harfbuzz/harfbuzz/commit/77080f86f
     }
 }
 
