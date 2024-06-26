@@ -1,4 +1,3 @@
-use crate::hb::ot_layout::MAX_CONTEXT_LENGTH;
 use crate::hb::ot_layout_gsubgpos::OT::hb_ot_apply_context_t;
 use crate::hb::ot_layout_gsubgpos::{
     ligate_input, match_glyph, match_input, Apply, WouldApply, WouldApplyContext,
@@ -30,7 +29,7 @@ impl Apply for Ligature<'_> {
             };
 
             let mut match_end = 0;
-            let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+            let mut match_positions = smallvec::SmallVec::from_elem(0, 4);
             let mut total_component_count = 0;
 
             if !match_input(

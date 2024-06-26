@@ -22,7 +22,7 @@ pub fn match_input(
     input_len: u16,
     match_func: &match_func_t,
     end_position: &mut usize,
-    match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
+    match_positions: &mut smallvec::SmallVec<[usize; 4]>,
     p_total_component_count: Option<&mut u8>,
 ) -> bool {
     // This is perhaps the trickiest part of OpenType...  Remarks:
@@ -57,6 +57,10 @@ pub fn match_input(
     let count = usize::from(input_len) + 1;
     if count > MAX_CONTEXT_LENGTH {
         return false;
+    }
+
+    if count > match_positions.len() {
+        match_positions.resize(count, 0);
     }
 
     let mut iter = skipping_iterator_t::new(ctx, ctx.buffer.idx, false);
@@ -449,7 +453,7 @@ impl Apply for ContextLookup<'_> {
                 };
 
                 let mut match_end = 0;
-                let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+                let mut match_positions = smallvec::SmallVec::from_elem(0, 4);
 
                 if match_input(
                     ctx,
@@ -614,7 +618,7 @@ impl Apply for ChainedContextLookup<'_> {
 
                 let mut end_index = ctx.buffer.idx;
                 let mut match_end = 0;
-                let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+                let mut match_positions = smallvec::SmallVec::from_elem(0, 4);
 
                 let input_matches = match_input(
                     ctx,
@@ -742,7 +746,7 @@ fn apply_context(
     };
 
     let mut match_end = 0;
-    let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+    let mut match_positions = smallvec::SmallVec::from_elem(0, 4);
 
     if match_input(
         ctx,
@@ -794,7 +798,7 @@ fn apply_chain_context(
 
     let mut end_index = ctx.buffer.idx;
     let mut match_end = 0;
-    let mut match_positions = [0; MAX_CONTEXT_LENGTH];
+    let mut match_positions = smallvec::SmallVec::from_elem(0, 4);
 
     let input_matches = match_input(
         ctx,
@@ -839,11 +843,15 @@ fn apply_chain_context(
 fn apply_lookup(
     ctx: &mut hb_ot_apply_context_t,
     input_len: usize,
-    match_positions: &mut [usize; MAX_CONTEXT_LENGTH],
+    match_positions: &mut smallvec::SmallVec<[usize; 4]>,
     match_end: usize,
     lookups: LazyArray16<SequenceLookupRecord>,
 ) {
     let mut count = input_len + 1;
+
+    if count > match_positions.len() {
+        match_positions.resize(count, 0);
+    }
 
     // All positions are distance from beginning of *output* buffer.
     // Adjust.
@@ -937,6 +945,11 @@ fn apply_lookup(
         if delta > 0 {
             if delta as usize + count > MAX_CONTEXT_LENGTH {
                 break;
+            }
+
+            if delta as usize + count > match_positions.len() {
+                let inner_max = (core::cmp::max(4, match_positions.len()) as f32 * 1.5) as usize;
+                match_positions.resize(core::cmp::max(delta as usize + count, inner_max), 0);
             }
         } else {
             // NOTE: delta is non-positive.
@@ -1209,7 +1222,7 @@ pub fn ligate_input(
     // Including the first glyph
     count: usize,
     // Including the first glyph
-    match_positions: &[usize; MAX_CONTEXT_LENGTH],
+    match_positions: &smallvec::SmallVec<[usize; 4]>,
     match_end: usize,
     total_component_count: u8,
     lig_glyph: GlyphId,
