@@ -132,3 +132,6 @@ But except that, there are no `unsafe` in this library and in most of its depend
 `rustybuzz` is licensed under the **MIT**.
 
 `harfbuzz` is [licensed](https://github.com/harfbuzz/harfbuzz/blob/master/COPYING) under the **Old MIT**
+
+## xkcd
+[![xkcd-derived image](xkcd.png)](https://xkcd.com/2347/)
