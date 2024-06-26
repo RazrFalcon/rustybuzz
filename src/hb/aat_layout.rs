@@ -507,7 +507,7 @@ pub fn hb_aat_layout_substitute(
         builder.compile(face, &mut aat_map);
     }
 
-    let mut c = hb_aat_apply_context_t::new(plan, face, buffer);
+    let mut c = hb_aat_apply_context_t::new(face, buffer);
     aat_layout_morx_table::apply(&mut c, &mut aat_map);
 }
 
