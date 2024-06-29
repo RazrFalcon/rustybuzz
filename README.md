@@ -54,21 +54,21 @@ Subsetting was removed. Unicode code was mostly moved to external crates.
 We don't need custom containers because Rust's std is good enough.
 And we do not use any non Rust libraries, so no glue code either.
 
-In the end, we still have around 20 KLOC. While harfbuzz is around 80 KLOC.
+In the end, we still have around 23 KLOC. While harfbuzz is around 80 KLOC.
 
 ## Lines of code
 
-As mentioned above, rustybuzz has around 20 KLOC. But this is not strictly true,
+As mentioned above, rustybuzz has around 23 KLOC. But this is not strictly true,
 because there are a lot of auto-generated data tables.
 
 You can find the "real" code size using:
 
 ```sh
-tokei --exclude unicode_norm.rs --exclude complex/vowel_constraints.rs \
+tokei --exclude hb/unicode_norm.rs --exclude hb/ot_shaper_vowel_constraints.rs \
       --exclude '*_machine.rs' --exclude '*_table.rs' src
 ```
 
-Which gives us around 13 KLOC, which is still a lot.
+Which gives us around 17 KLOC, which is still a lot.
 
 ## Future work
 
@@ -87,10 +87,10 @@ so that bugs specific to `rustybuzz` can be tested as well.
 - **Fuzzing against harfbuzz**: While `rustybuzz` passes the whole `harfbuzz` test suite, this does not mean that
 output will always be 100% identical to `harfbuzz`. Given the complexity of the code base, there are bound to be
 other bugs that just have not been discovered yet. One potential way of addressing this issue could be to create a
-fuzzer that takes random fonts, and shapes them with a random set of Unicode codepoints as well as 
+fuzzer that takes random fonts, and shapes them with a random set of Unicode codepoints as well as
 input settings. In case of a discovered discrepancy, this test case could then be investigated and once the
 bug has been identified, added to our custom test suite. On the one hand we could use the Google Fonts font
-collection for this so that the fonts can be added to the repository, 
+collection for this so that the fonts can be added to the repository,
 but we could also just use MacOS/Windows system fonts and only test them in CI, similarly
 to how it's currently done for AAT in `harfbuzz`.
 - **Performance**: `harfbuzz` contains tons of optimization structures
