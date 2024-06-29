@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `rustybuzz` is finally in-sync with `harfbuzz`.
   Thanks to [@LaurenzV](https://github.com/LaurenzV).
 
+### Changed
+- When building without the `std` feature one must enable `no-std-float` feature instead.
+
 ### Fixed
 - `gvar` phantom points handling which fixes some variable fonts shaping.
 

@@ -29,13 +29,13 @@ features = [
     "opentype-layout",
     "apple-layout",
     "variable-fonts",
-    "glyph-names",
-    "no-std-float"
+    "glyph-names"
 ]
 
 [features]
 default = ["std"]
-std = []
+std = ["ttf-parser/std"]
+no-std-float = ["libm", "ttf-parser/no-std-float"]
 
 [dev-dependencies]
 pico-args = { version = "0.5", features = ["eq-separator"] }

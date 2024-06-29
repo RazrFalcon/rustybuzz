@@ -70,7 +70,7 @@ fn round(x: f32) -> f32 {
     {
         x.round()
     }
-    #[cfg(not(feature = "std"))]
+    #[cfg(feature = "no-std-float")]
     {
         libm::roundf(x)
     }

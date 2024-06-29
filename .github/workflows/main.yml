@@ -16,11 +16,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Build with only libm
-      run: cargo build --no-default-features --features libm
+    - name: Build without std
+      run: cargo build --no-default-features --features no-std-float
 
-    - name: Build with all features
-      run: cargo build --all-features
+    - name: Build with std
+      run: cargo build
 
     - name: Run tests
       run: cargo test --verbose
