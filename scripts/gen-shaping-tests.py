@@ -41,19 +41,10 @@ IGNORE_TEST_CASES = [
     # Requires support for the ltag table.
     'macos_017',
 
-    # No MacRoman encoding support in ttf-parser
-    'cmap_3_001',
-    'cmap_3_002',
-    'cmap_3_003',
-    'cmap_3_004',
-    'cmap_3_006',
-    'cmap_3_008',
-    'cmap_3_010',
-    'cmap_3_011',
-    'cmap_3_012',
-    'cmap_3_013',
-    'cmap_3_014',
-    'cmap_3_017',
+    # Broken in HarfBuzz. https://github.com/harfbuzz/harfbuzz/issues/4774
+    'cmap_3_016',
+    'cmap_3_018',
+    'cmap_3_020',
 ]
 
 
