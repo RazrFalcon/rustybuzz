@@ -37,6 +37,9 @@ pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE: u32 = 0;
 pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY: u32 = 1;
 pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE: u32 = 2;
 
+pub type DecomposeFn = fn(&hb_ot_shape_normalize_context_t, char) -> Option<(char, char)>;
+pub type ComposeFn = fn(&hb_ot_shape_normalize_context_t, char, char) -> Option<char>;
+
 pub const DEFAULT_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
     override_features: None,
@@ -79,10 +82,10 @@ pub struct hb_ot_shaper_t {
     pub normalization_preference: hb_ot_shape_normalization_mode_t,
 
     /// Called during `shape()`'s normalization.
-    pub decompose: Option<fn(&hb_ot_shape_normalize_context_t, char) -> Option<(char, char)>>,
+    pub decompose: Option<DecomposeFn>,
 
     /// Called during `shape()`'s normalization.
-    pub compose: Option<fn(&hb_ot_shape_normalize_context_t, char, char) -> Option<char>>,
+    pub compose: Option<ComposeFn>,
 
     /// Called during `shape()`.
     /// Shapers should use map to get feature masks and set on buffer.
