@@ -690,8 +690,6 @@ ot.add_language('ber', 'BBR')
 ot.remove_language_ot('PGR')
 ot.add_language('el-polyton', 'PGR')
 
-bcp_47.macrolanguages['et'] = {'ekk'}
-
 bcp_47.names['flm'] = 'Falam Chin'
 bcp_47.scopes['flm'] = '(retired code)'
 bcp_47.macrolanguages['flm'] = {'cfm'}
@@ -702,17 +700,12 @@ ot.add_language('und-fonipa', 'IPPH')
 
 ot.add_language('und-fonnapa', 'APPH')
 
-ot.remove_language_ot('IRT')
 ot.add_language('ga-Latg', 'IRT')
 
 ot.add_language('hy-arevmda', 'HYE')
 
 ot.remove_language_ot('KGE')
 ot.add_language('und-Geok', 'KGE')
-
-bcp_47.macrolanguages['id'] = {'in'}
-
-bcp_47.macrolanguages['ijo'] = {'ijc'}
 
 ot.add_language('kht', 'KHN')
 ot.names['KHN'] = ot.names['KHT'] + '(Microsoft fonts)'
@@ -804,8 +797,6 @@ ot.add_language('lzh', 'ZHT')
 ot.add_language('lzh-Hans', 'ZHS')
 ot.add_language('yue', 'ZHH')
 ot.add_language('yue-Hans', 'ZHS')
-
-bcp_47.macrolanguages['zom'] = {'yos'}
 
 
 def rank_delta(bcp_47, ot):

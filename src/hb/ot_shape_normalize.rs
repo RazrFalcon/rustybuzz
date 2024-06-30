@@ -3,15 +3,31 @@ use super::common::hb_codepoint_t;
 use super::hb_font_t;
 use super::ot_layout::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
-use super::ot_shaper::MAX_COMBINING_MARKS;
+use super::ot_shaper::{ComposeFn, DecomposeFn, MAX_COMBINING_MARKS};
 use super::unicode::{hb_unicode_funcs_t, CharExt};
 
 pub struct hb_ot_shape_normalize_context_t<'a> {
     pub plan: &'a hb_ot_shape_plan_t,
     pub buffer: &'a mut hb_buffer_t,
     pub face: &'a hb_font_t<'a>,
-    pub decompose: fn(&hb_ot_shape_normalize_context_t, char) -> Option<(char, char)>,
-    pub compose: fn(&hb_ot_shape_normalize_context_t, char, char) -> Option<char>,
+    pub decompose: DecomposeFn,
+    pub compose: ComposeFn,
+}
+
+impl hb_ot_shape_normalize_context_t<'_> {
+    pub(crate) fn override_decompose_and_compose(
+        &mut self,
+        decompose: Option<DecomposeFn>,
+        compose: Option<ComposeFn>,
+    ) {
+        if let Some(decompose) = decompose {
+            self.decompose = decompose;
+        }
+
+        if let Some(compose) = compose {
+            self.compose = compose;
+        }
+    }
 }
 
 pub type hb_ot_shape_normalization_mode_t = i32;
@@ -279,9 +295,11 @@ pub fn _hb_ot_shape_normalize(
         plan,
         buffer,
         face,
-        decompose: plan.shaper.decompose.unwrap_or(decompose_unicode),
-        compose: plan.shaper.compose.unwrap_or(compose_unicode),
+        decompose: decompose_unicode,
+        compose: compose_unicode,
     };
+    ctx.override_decompose_and_compose(plan.shaper.decompose, plan.shaper.compose);
+
     let mut buffer = &mut ctx.buffer;
 
     let always_short_circuit = mode == HB_OT_SHAPE_NORMALIZATION_MODE_NONE;

@@ -37,6 +37,9 @@ pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE: u32 = 0;
 pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY: u32 = 1;
 pub const HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE: u32 = 2;
 
+pub type DecomposeFn = fn(&hb_ot_shape_normalize_context_t, char) -> Option<(char, char)>;
+pub type ComposeFn = fn(&hb_ot_shape_normalize_context_t, char, char) -> Option<char>;
+
 pub const DEFAULT_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
     collect_features: None,
     override_features: None,
@@ -79,10 +82,10 @@ pub struct hb_ot_shaper_t {
     pub normalization_preference: hb_ot_shape_normalization_mode_t,
 
     /// Called during `shape()`'s normalization.
-    pub decompose: Option<fn(&hb_ot_shape_normalize_context_t, char) -> Option<(char, char)>>,
+    pub decompose: Option<DecomposeFn>,
 
     /// Called during `shape()`'s normalization.
-    pub compose: Option<fn(&hb_ot_shape_normalize_context_t, char, char) -> Option<char>>,
+    pub compose: Option<ComposeFn>,
 
     /// Called during `shape()`.
     /// Shapers should use map to get feature masks and set on buffer.
@@ -125,7 +128,7 @@ pub const DUMBER_SHAPER: hb_ot_shaper_t = hb_ot_shaper_t {
 pub fn hb_ot_shape_complex_categorize(
     script: Script,
     direction: Direction,
-    chosen_gsub_script: Option<hb_tag_t>,
+    gsub_script: Option<hb_tag_t>,
 ) -> &'static hb_ot_shaper_t {
     match script {
         // Unicode-1.1 additions
@@ -139,7 +142,7 @@ pub fn hb_ot_shape_complex_categorize(
             // vertical text, just use the generic shaper instead.
             //
             // TODO: Does this still apply? Arabic fallback shaping was removed.
-            if (chosen_gsub_script != Some(hb_tag_t::default_script()) || script == script::ARABIC)
+            if (gsub_script != Some(hb_tag_t::default_script()) || script == script::ARABIC)
                 && direction.is_horizontal()
             {
                 &crate::hb::ot_shaper_arabic::ARABIC_SHAPER
@@ -173,10 +176,10 @@ pub fn hb_ot_shape_complex_categorize(
             // Otherwise, use the specific shaper.
             //
             // If it's indy3 tag, send to USE.
-            if chosen_gsub_script == Some(hb_tag_t::default_script()) ||
-               chosen_gsub_script == Some(hb_tag_t::from_bytes(b"latn")) {
+            if gsub_script == Some(hb_tag_t::default_script()) ||
+               gsub_script == Some(hb_tag_t::from_bytes(b"latn")) {
                 &DEFAULT_SHAPER
-            } else if chosen_gsub_script.map_or(false, |tag| tag.to_bytes()[3] == b'3') {
+            } else if gsub_script.map_or(false, |tag| tag.to_bytes()[3] == b'3') {
                 &crate::hb::ot_shaper_use::UNIVERSAL_SHAPER
             } else {
                 &crate::hb::ot_shaper_indic::INDIC_SHAPER
@@ -193,9 +196,9 @@ pub fn hb_ot_shape_complex_categorize(
             // If designer designed for 'mymr' tag, also send to default
             // shaper.  That's tag used from before Myanmar shaping spec
             // was developed.  The shaping spec uses 'mym2' tag.
-            if chosen_gsub_script == Some(hb_tag_t::default_script()) ||
-               chosen_gsub_script == Some(hb_tag_t::from_bytes(b"latn")) ||
-               chosen_gsub_script == Some(hb_tag_t::from_bytes(b"mymr"))
+            if gsub_script == Some(hb_tag_t::default_script()) ||
+               gsub_script == Some(hb_tag_t::from_bytes(b"latn")) ||
+               gsub_script == Some(hb_tag_t::from_bytes(b"mymr"))
             {
                 &DEFAULT_SHAPER
             } else {
@@ -327,8 +330,8 @@ pub fn hb_ot_shape_complex_categorize(
             // Otherwise, use the specific shaper.
             // Note that for some simple scripts, there may not be *any*
             // GSUB/GPOS needed, so there may be no scripts found!
-            if chosen_gsub_script == Some(hb_tag_t::default_script()) ||
-               chosen_gsub_script == Some(hb_tag_t::from_bytes(b"latn")) {
+            if gsub_script == Some(hb_tag_t::default_script()) ||
+               gsub_script == Some(hb_tag_t::from_bytes(b"latn")) {
                 &DEFAULT_SHAPER
             } else {
                 &crate::hb::ot_shaper_use::UNIVERSAL_SHAPER
