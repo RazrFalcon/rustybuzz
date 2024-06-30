@@ -700,7 +700,6 @@ ot.add_language('und-fonipa', 'IPPH')
 
 ot.add_language('und-fonnapa', 'APPH')
 
-ot.remove_language_ot('IRT')
 ot.add_language('ga-Latg', 'IRT')
 
 ot.add_language('hy-arevmda', 'HYE')
