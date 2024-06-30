@@ -4,5 +4,11 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-harfbuzz_rs = "1.1.2"
+harfbuzz_rs = {git = "https://github.com/LaurenzV/harfbuzz_rs", rev = "e00dd7f"}
 rustybuzz = { path = "../" }
+
+[features]
+default = ["hb", "rb", "english"]
+hb = []
+rb = []
+english = []
