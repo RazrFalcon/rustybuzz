@@ -8,7 +8,7 @@ harfbuzz_rs = {git = "https://github.com/LaurenzV/harfbuzz_rs", rev = "e00dd7f"}
 rustybuzz = { path = "../" }
 
 [features]
-default = ["hb", "rb", "english", "arabic", "khmer", "hebrew", "myanmar", "hindi"]
+default = ["hb", "rb", "english", "arabic", "khmer", "hebrew", "myanmar", "hindi", "thai"]
 hb = []
 rb = []
 english = []
@@ -17,3 +17,4 @@ khmer = []
 hebrew = []
 myanmar = []
 hindi = []
+thai = []
