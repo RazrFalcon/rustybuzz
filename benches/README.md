@@ -3,6 +3,7 @@
 ## Run
 
 ```
+export HARFBUZZ_SYS_NO_PKG_CONFIG
 cargo +nightly bench
 ```
 
