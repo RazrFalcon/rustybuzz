@@ -137,6 +137,13 @@ mod english {
 
     simple_bench!(variations, "fonts/NotoSans-VariableFont.ttf", "texts/english/paragraph_long.txt", &[WIDTH_VAR.into()]);
     simple_bench!(variations_default, "fonts/NotoSans-VariableFont.ttf", "texts/english/paragraph_long.txt", &[WIDTH_VAR_DEFAULT.into()]);
+
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_word_1, "/System/Library/Fonts/Supplemental/Zapfino.ttf", "texts/english/word_1.txt");
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_sentence_1, "/System/Library/Fonts/Supplemental/Zapfino.ttf", "texts/english/sentence_1.txt");
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_paragraph_long, "/System/Library/Fonts/Supplemental/Zapfino.ttf", "texts/english/paragraph_long.txt");
 }
 
 #[cfg(feature = "arabic")]
@@ -165,6 +172,13 @@ mod khmer {
     simple_bench!(paragraph_medium, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/paragraph_medium.txt");
     simple_bench!(paragraph_long_1, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/paragraph_long_1.txt");
     simple_bench!(paragraph_long_2, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/paragraph_long_2.txt");
+
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_word_1, "/System/Library/Fonts/Supplemental/Khmer MN.ttc", "texts/khmer/word_1.txt");
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_sentence_1, "/System/Library/Fonts/Supplemental/Khmer MN.ttc", "texts/khmer/sentence_1.txt");
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_paragraph_long_1, "/System/Library/Fonts/Supplemental/Khmer MN.ttc", "texts/khmer/paragraph_long_1.txt");
 }
 
 #[cfg(feature = "hebrew")]
@@ -191,6 +205,13 @@ mod myanmar {
     simple_bench!(paragraph_short, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/paragraph_short.txt");
     simple_bench!(paragraph_medium, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/paragraph_medium.txt");
     simple_bench!(paragraph_long, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/paragraph_long.txt");
+
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_word_1, "/System/Library/Fonts/Supplemental/Myanmar MN.ttc", "texts/myanmar/word_1.txt");
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_sentence_1, "/System/Library/Fonts/Supplemental/Myanmar MN.ttc", "texts/myanmar/sentence_1.txt");
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_paragraph_long, "/System/Library/Fonts/Supplemental/Myanmar MN.ttc", "texts/myanmar/paragraph_long.txt");
 }
 
 #[cfg(feature = "hindi")]
@@ -204,6 +225,13 @@ mod hindi {
     simple_bench!(paragraph_short, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/paragraph_short.txt");
     simple_bench!(paragraph_medium, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/paragraph_medium.txt");
     simple_bench!(paragraph_long, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/paragraph_long.txt");
+
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_word, "/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc", "texts/hindi/word_1.txt");
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_sentence, "/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc", "texts/hindi/sentence_1.txt");
+    #[cfg(all(feature = "macos", target_os = "macos"))]
+    simple_bench!(aat_paragraph_long, "/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc", "texts/hindi/paragraph_long.txt");
 }
 
 #[cfg(feature = "thai")]
