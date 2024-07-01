@@ -241,7 +241,6 @@ mod thai {
     simple_bench!(word_1, "fonts/NotoSansThai-Regular.ttf", "texts/thai/word_1.txt");
     simple_bench!(word_2, "fonts/NotoSansThai-Regular.ttf", "texts/thai/word_2.txt");
     simple_bench!(sentence_1, "fonts/NotoSansThai-Regular.ttf", "texts/thai/sentence_1.txt");
-    simple_bench!(sentence_2, "fonts/NotoSansThai-Regular.ttf", "texts/thai/sentence_2.txt");
     simple_bench!(paragraph_short, "fonts/NotoSansThai-Regular.ttf", "texts/thai/paragraph_short.txt");
     simple_bench!(paragraph_medium, "fonts/NotoSansThai-Regular.ttf", "texts/thai/paragraph_medium.txt");
     simple_bench!(paragraph_long, "fonts/NotoSansThai-Regular.ttf", "texts/thai/paragraph_long.txt");
