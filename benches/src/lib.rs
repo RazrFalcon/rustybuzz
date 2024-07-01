@@ -1,5 +1,6 @@
 #![feature(test)]
 #![allow(dead_code)]
+#![allow(unused_imports)]
 
 extern crate test;
 
@@ -7,15 +8,12 @@ use rustybuzz::ttf_parser::Tag;
 
 struct CustomVariation {
     tag: rustybuzz::ttf_parser::Tag,
-    value: f32
+    value: f32,
 }
 
 impl Into<rustybuzz::Variation> for CustomVariation {
     fn into(self) -> rustybuzz::Variation {
-        rustybuzz::Variation {
-            tag: self.tag,
-            value: self.value
-        }
+        rustybuzz::Variation { tag: self.tag, value: self.value }
     }
 }
 
@@ -153,4 +151,18 @@ mod arabic {
     simple_bench!(paragraph_short, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/paragraph_short.txt");
     simple_bench!(paragraph_medium, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/paragraph_medium.txt");
     simple_bench!(paragraph_long, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/paragraph_long.txt");
+}
+
+#[cfg(feature = "khmer")]
+mod khmer {
+    use super::*;
+
+    simple_bench!(word_1, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/word_1.txt");
+    simple_bench!(word_2, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/word_2.txt");
+    simple_bench!(word_3, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/word_3.txt");
+    simple_bench!(sentence_1, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/sentence_1.txt");
+    simple_bench!(sentence_2, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/sentence_2.txt");
+    simple_bench!(paragraph_medium, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/paragraph_medium.txt");
+    simple_bench!(paragraph_long_1, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/paragraph_long_1.txt");
+    simple_bench!(paragraph_long_2, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/paragraph_long_2.txt");
 }
