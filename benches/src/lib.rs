@@ -1,4 +1,5 @@
 #![feature(test)]
+#![allow(dead_code)]
 
 extern crate test;
 
@@ -138,4 +139,18 @@ mod english {
 
     simple_bench!(variations, "fonts/NotoSans-VariableFont.ttf", "texts/english/paragraph_long.txt", &[WIDTH_VAR.into()]);
     simple_bench!(variations_default, "fonts/NotoSans-VariableFont.ttf", "texts/english/paragraph_long.txt", &[WIDTH_VAR_DEFAULT.into()]);
+}
+
+#[cfg(feature = "arabic")]
+mod arabic {
+    use super::*;
+
+    simple_bench!(word_1, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/word_1.txt");
+    simple_bench!(word_2, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/word_2.txt");
+    simple_bench!(word_3, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/word_3.txt");
+    simple_bench!(sentence_1, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/sentence_1.txt");
+    simple_bench!(sentence_2, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/sentence_2.txt");
+    simple_bench!(paragraph_short, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/paragraph_short.txt");
+    simple_bench!(paragraph_medium, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/paragraph_medium.txt");
+    simple_bench!(paragraph_long, "fonts/NotoSansArabic-Regular.ttf", "texts/arabic/paragraph_long.txt");
 }
