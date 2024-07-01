@@ -166,3 +166,16 @@ mod khmer {
     simple_bench!(paragraph_long_1, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/paragraph_long_1.txt");
     simple_bench!(paragraph_long_2, "fonts/NotoSansKhmer-Regular.ttf", "texts/khmer/paragraph_long_2.txt");
 }
+
+#[cfg(feature = "hebrew")]
+mod hebrew {
+    use super::*;
+
+    simple_bench!(word_1, "fonts/NotoSansHebrew-Regular.ttf", "texts/hebrew/word_1.txt");
+    simple_bench!(word_2, "fonts/NotoSansHebrew-Regular.ttf", "texts/hebrew/word_2.txt");
+    simple_bench!(sentence_1, "fonts/NotoSansHebrew-Regular.ttf", "texts/hebrew/sentence_1.txt");
+    simple_bench!(sentence_2, "fonts/NotoSansHebrew-Regular.ttf", "texts/hebrew/sentence_2.txt");
+    simple_bench!(paragraph_medium, "fonts/NotoSansHebrew-Regular.ttf", "texts/hebrew/paragraph_medium.txt");
+    simple_bench!(paragraph_long_1, "fonts/NotoSansHebrew-Regular.ttf", "texts/hebrew/paragraph_long_1.txt");
+    simple_bench!(paragraph_long_2, "fonts/NotoSansHebrew-Regular.ttf", "texts/hebrew/paragraph_long_2.txt");
+}
