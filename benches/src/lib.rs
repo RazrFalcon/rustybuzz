@@ -192,3 +192,16 @@ mod myanmar {
     simple_bench!(paragraph_medium, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/paragraph_medium.txt");
     simple_bench!(paragraph_long, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/paragraph_long.txt");
 }
+
+#[cfg(feature = "hindi")]
+mod hindi {
+    use super::*;
+
+    simple_bench!(word_1, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/word_1.txt");
+    simple_bench!(word_2, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/word_2.txt");
+    simple_bench!(sentence_1, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/sentence_1.txt");
+    simple_bench!(sentence_2, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/sentence_2.txt");
+    simple_bench!(paragraph_short, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/paragraph_short.txt");
+    simple_bench!(paragraph_medium, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/paragraph_medium.txt");
+    simple_bench!(paragraph_long, "fonts/NotoSansDevanagari-Regular.ttf", "texts/hindi/paragraph_long.txt");
+}
