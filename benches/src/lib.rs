@@ -121,6 +121,9 @@ mod english {
     simple_bench!(paragraph_medium, "fonts/NotoSans-Regular.ttf", "texts/english/paragraph_medium.txt");
     simple_bench!(paragraph_long, "fonts/NotoSans-Regular.ttf", "texts/english/paragraph_long.txt");
 
+    simple_bench!(sentence_mono, "fonts/RobotoMono-Regular.ttf", "texts/english/sentence_1.txt");
+    simple_bench!(paragraph_long_mono, "fonts/RobotoMono-Regular.ttf", "texts/english/paragraph_long.txt");
+
     use crate::CustomVariation;
 
     const WIDTH_VAR: CustomVariation = CustomVariation {
