@@ -179,3 +179,16 @@ mod hebrew {
     simple_bench!(paragraph_long_1, "fonts/NotoSansHebrew-Regular.ttf", "texts/hebrew/paragraph_long_1.txt");
     simple_bench!(paragraph_long_2, "fonts/NotoSansHebrew-Regular.ttf", "texts/hebrew/paragraph_long_2.txt");
 }
+
+#[cfg(feature = "myanmar")]
+mod myanmar {
+    use super::*;
+
+    simple_bench!(word_1, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/word_1.txt");
+    simple_bench!(word_2, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/word_2.txt");
+    simple_bench!(sentence_1, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/sentence_1.txt");
+    simple_bench!(sentence_2, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/sentence_2.txt");
+    simple_bench!(paragraph_short, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/paragraph_short.txt");
+    simple_bench!(paragraph_medium, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/paragraph_medium.txt");
+    simple_bench!(paragraph_long, "fonts/NotoSansMyanmar-Regular.ttf", "texts/myanmar/paragraph_long.txt");
+}
