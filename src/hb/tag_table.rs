@@ -1660,7 +1660,7 @@ pub const OPEN_TYPE_LANGUAGES: &[LangTag] = &[
 ];
 
 fn subtag_matches(language: &str, subtag: &str) -> bool {
-    for(i, _) in language.match_indices(subtag) {
+    for (i, _) in language.match_indices(subtag) {
         if let Some(c) = language.as_bytes().get(i + subtag.len()) {
             if !c.is_ascii_alphanumeric() {
                 return true;
@@ -1688,51 +1688,48 @@ fn strncmp(s1: &str, s2: &str, n: usize) -> bool {
 }
 
 /// Converts a multi-subtag BCP 47 language tag to language tags.
-pub fn tags_from_complex_language(
-    language: &str,
-    tags: &mut smallvec::SmallVec<[Tag; 3]>,
-) -> bool {
-    if subtag_matches(language, "-fonnapa")  {
+pub fn tags_from_complex_language(language: &str, tags: &mut smallvec::SmallVec<[Tag; 3]>) -> bool {
+    if subtag_matches(language, "-fonnapa") {
         // Undetermined; North American Phonetic Alphabet
         tags.push(Tag::from_bytes(b"APPH")); // Phonetic transcription—Americanist conventions
         return true;
     }
-    if subtag_matches(language, "-polyton")  {
+    if subtag_matches(language, "-polyton") {
         // Modern Greek (1453-); Polytonic Greek
         tags.push(Tag::from_bytes(b"PGR ")); // Polytonic Greek
         return true;
     }
-    if subtag_matches(language, "-arevmda")  {
+    if subtag_matches(language, "-arevmda") {
         // Armenian; Western Armenian (retired code)
         tags.push(Tag::from_bytes(b"HYE ")); // Armenian
         return true;
     }
-    if subtag_matches(language, "-provenc")  {
+    if subtag_matches(language, "-provenc") {
         // Occitan (post 1500); Provençal
         tags.push(Tag::from_bytes(b"PRO ")); // Provençal / Old Provençal
         return true;
     }
-    if subtag_matches(language, "-fonipa")  {
+    if subtag_matches(language, "-fonipa") {
         // Undetermined; International Phonetic Alphabet
         tags.push(Tag::from_bytes(b"IPPH")); // Phonetic transcription—IPA conventions
         return true;
     }
-    if subtag_matches(language, "-geok")  {
+    if subtag_matches(language, "-geok") {
         // Undetermined; Khutsuri (Asomtavruli and Nuskhuri)
         tags.push(Tag::from_bytes(b"KGE ")); // Khutsuri Georgian
         return true;
     }
-    if subtag_matches(language, "-syre")  {
+    if subtag_matches(language, "-syre") {
         // Undetermined; Syriac (Estrangelo variant)
         tags.push(Tag::from_bytes(b"SYRE")); // Syriac, Estrangela script-variant (equivalent to ISO 15924 'Syre')
         return true;
     }
-    if subtag_matches(language, "-syrj")  {
+    if subtag_matches(language, "-syrj") {
         // Undetermined; Syriac (Western variant)
         tags.push(Tag::from_bytes(b"SYRJ")); // Syriac, Western script-variant (equivalent to ISO 15924 'Syrj')
         return true;
     }
-    if subtag_matches(language, "-syrn")  {
+    if subtag_matches(language, "-syrn") {
         // Undetermined; Syriac (Eastern variant)
         tags.push(Tag::from_bytes(b"SYRN")); // Syriac, Eastern script-variant (equivalent to ISO 15924 'Syrn')
         return true;
@@ -1746,12 +1743,12 @@ pub fn tags_from_complex_language(
             }
         }
         b'c' => {
-            if lang_matches(&language[1..], "do-hant-hk"){
+            if lang_matches(&language[1..], "do-hant-hk") {
                 // Min Dong Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "do-hant-mo"){
+            if lang_matches(&language[1..], "do-hant-mo") {
                 // Min Dong Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -1760,12 +1757,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "jy-hant-hk"){
+            if lang_matches(&language[1..], "jy-hant-hk") {
                 // Jinyu Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "jy-hant-mo"){
+            if lang_matches(&language[1..], "jy-hant-mo") {
                 // Jinyu Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -1774,12 +1771,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "mn-hant-hk"){
+            if lang_matches(&language[1..], "mn-hant-hk") {
                 // Mandarin Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "mn-hant-mo"){
+            if lang_matches(&language[1..], "mn-hant-mo") {
                 // Mandarin Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -1788,12 +1785,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "np-hant-hk"){
+            if lang_matches(&language[1..], "np-hant-hk") {
                 // Northern Ping Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "np-hant-mo"){
+            if lang_matches(&language[1..], "np-hant-mo") {
                 // Northern Ping Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -1802,12 +1799,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "px-hant-hk"){
+            if lang_matches(&language[1..], "px-hant-hk") {
                 // Pu-Xian Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "px-hant-mo"){
+            if lang_matches(&language[1..], "px-hant-mo") {
                 // Pu-Xian Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -1816,12 +1813,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "sp-hant-hk"){
+            if lang_matches(&language[1..], "sp-hant-hk") {
                 // Southern Ping Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "sp-hant-mo"){
+            if lang_matches(&language[1..], "sp-hant-mo") {
                 // Southern Ping Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -1830,12 +1827,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "zh-hant-hk"){
+            if lang_matches(&language[1..], "zh-hant-hk") {
                 // Huizhou Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "zh-hant-mo"){
+            if lang_matches(&language[1..], "zh-hant-mo") {
                 // Huizhou Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -1844,12 +1841,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "zo-hant-hk"){
+            if lang_matches(&language[1..], "zo-hant-hk") {
                 // Min Zhong Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "zo-hant-mo"){
+            if lang_matches(&language[1..], "zo-hant-mo") {
                 // Min Zhong Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -1858,82 +1855,82 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "do-hans"){
+            if lang_matches(&language[1..], "do-hans") {
                 // Min Dong Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "do-hant"){
+            if lang_matches(&language[1..], "do-hant") {
                 // Min Dong Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
-            if lang_matches(&language[1..], "jy-hans"){
+            if lang_matches(&language[1..], "jy-hans") {
                 // Jinyu Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "jy-hant"){
+            if lang_matches(&language[1..], "jy-hant") {
                 // Jinyu Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
-            if lang_matches(&language[1..], "mn-hans"){
+            if lang_matches(&language[1..], "mn-hans") {
                 // Mandarin Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "mn-hant"){
+            if lang_matches(&language[1..], "mn-hant") {
                 // Mandarin Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
-            if lang_matches(&language[1..], "np-hans"){
+            if lang_matches(&language[1..], "np-hans") {
                 // Northern Ping Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "np-hant"){
+            if lang_matches(&language[1..], "np-hant") {
                 // Northern Ping Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
-            if lang_matches(&language[1..], "px-hans"){
+            if lang_matches(&language[1..], "px-hans") {
                 // Pu-Xian Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "px-hant"){
+            if lang_matches(&language[1..], "px-hant") {
                 // Pu-Xian Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
-            if lang_matches(&language[1..], "sp-hans"){
+            if lang_matches(&language[1..], "sp-hans") {
                 // Southern Ping Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "sp-hant"){
+            if lang_matches(&language[1..], "sp-hant") {
                 // Southern Ping Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
-            if lang_matches(&language[1..], "zh-hans"){
+            if lang_matches(&language[1..], "zh-hans") {
                 // Huizhou Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "zh-hant"){
+            if lang_matches(&language[1..], "zh-hant") {
                 // Huizhou Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
-            if lang_matches(&language[1..], "zo-hans"){
+            if lang_matches(&language[1..], "zo-hans") {
                 // Min Zhong Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "zo-hant"){
+            if lang_matches(&language[1..], "zo-hant") {
                 // Min Zhong Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
@@ -2092,12 +2089,12 @@ pub fn tags_from_complex_language(
             }
         }
         b'g' => {
-            if lang_matches(&language[1..], "an-hant-hk"){
+            if lang_matches(&language[1..], "an-hant-hk") {
                 // Gan Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "an-hant-mo"){
+            if lang_matches(&language[1..], "an-hant-mo") {
                 // Gan Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -2106,17 +2103,17 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "an-hans"){
+            if lang_matches(&language[1..], "an-hans") {
                 // Gan Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "an-hant"){
+            if lang_matches(&language[1..], "an-hant") {
                 // Gan Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
-            if lang_matches(&language[1..], "a-latg"){
+            if lang_matches(&language[1..], "a-latg") {
                 // Irish; Latin (Gaelic variant)
                 tags.push(Tag::from_bytes(b"IRT ")); // Irish Traditional
                 return true;
@@ -2142,12 +2139,12 @@ pub fn tags_from_complex_language(
             }
         }
         b'h' => {
-            if lang_matches(&language[1..], "ak-hant-hk"){
+            if lang_matches(&language[1..], "ak-hant-hk") {
                 // Hakka Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "ak-hant-mo"){
+            if lang_matches(&language[1..], "ak-hant-mo") {
                 // Hakka Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -2156,12 +2153,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "sn-hant-hk"){
+            if lang_matches(&language[1..], "sn-hant-hk") {
                 // Xiang Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "sn-hant-mo"){
+            if lang_matches(&language[1..], "sn-hant-mo") {
                 // Xiang Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -2170,22 +2167,22 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "ak-hans"){
+            if lang_matches(&language[1..], "ak-hans") {
                 // Hakka Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "ak-hant"){
+            if lang_matches(&language[1..], "ak-hant") {
                 // Hakka Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
             }
-            if lang_matches(&language[1..], "sn-hans"){
+            if lang_matches(&language[1..], "sn-hans") {
                 // Xiang Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "sn-hant"){
+            if lang_matches(&language[1..], "sn-hant") {
                 // Xiang Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
@@ -2251,19 +2248,19 @@ pub fn tags_from_complex_language(
             }
         }
         b'l' => {
-            if lang_matches(&language[1..], "zh-hans"){
+            if lang_matches(&language[1..], "zh-hans") {
                 // Literary Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
         }
         b'm' => {
-            if lang_matches(&language[1..], "np-hant-hk"){
+            if lang_matches(&language[1..], "np-hant-hk") {
                 // Min Bei Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "np-hant-mo"){
+            if lang_matches(&language[1..], "np-hant-mo") {
                 // Min Bei Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -2272,12 +2269,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "np-hans"){
+            if lang_matches(&language[1..], "np-hans") {
                 // Min Bei Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "np-hant"){
+            if lang_matches(&language[1..], "np-hant") {
                 // Min Bei Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
@@ -2308,12 +2305,12 @@ pub fn tags_from_complex_language(
             }
         }
         b'n' => {
-            if lang_matches(&language[1..], "an-hant-hk"){
+            if lang_matches(&language[1..], "an-hant-hk") {
                 // Min Nan Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "an-hant-mo"){
+            if lang_matches(&language[1..], "an-hant-mo") {
                 // Min Nan Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -2322,12 +2319,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "an-hans"){
+            if lang_matches(&language[1..], "an-hans") {
                 // Min Nan Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "an-hant"){
+            if lang_matches(&language[1..], "an-hant") {
                 // Min Nan Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
@@ -2374,12 +2371,12 @@ pub fn tags_from_complex_language(
             }
         }
         b'w' => {
-            if lang_matches(&language[1..], "uu-hant-hk"){
+            if lang_matches(&language[1..], "uu-hant-hk") {
                 // Wu Chinese; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "uu-hant-mo"){
+            if lang_matches(&language[1..], "uu-hant-mo") {
                 // Wu Chinese; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -2388,12 +2385,12 @@ pub fn tags_from_complex_language(
                 tags.extend_from_slice(possible_tags);
                 return true;
             }
-            if lang_matches(&language[1..], "uu-hans"){
+            if lang_matches(&language[1..], "uu-hans") {
                 // Wu Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "uu-hant"){
+            if lang_matches(&language[1..], "uu-hant") {
                 // Wu Chinese; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
@@ -2419,19 +2416,19 @@ pub fn tags_from_complex_language(
             }
         }
         b'y' => {
-            if lang_matches(&language[1..], "ue-hans"){
+            if lang_matches(&language[1..], "ue-hans") {
                 // Yue Chinese; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
         }
         b'z' => {
-            if lang_matches(&language[1..], "h-hant-hk"){
+            if lang_matches(&language[1..], "h-hant-hk") {
                 // Chinese [macrolanguage]; Han (Traditional variant); Hong Kong
                 tags.push(Tag::from_bytes(b"ZHH ")); // Chinese, Traditional, Hong Kong SAR
                 return true;
             }
-            if lang_matches(&language[1..], "h-hant-mo"){
+            if lang_matches(&language[1..], "h-hant-mo") {
                 // Chinese [macrolanguage]; Han (Traditional variant); Macao
                 let possible_tags = &[
                     Tag::from_bytes(b"ZHTM"), // Chinese, Traditional, Macao SAR
@@ -2445,12 +2442,12 @@ pub fn tags_from_complex_language(
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "h-hans"){
+            if lang_matches(&language[1..], "h-hans") {
                 // Chinese [macrolanguage]; Han (Simplified variant)
                 tags.push(Tag::from_bytes(b"ZHS ")); // Chinese, Simplified
                 return true;
             }
-            if lang_matches(&language[1..], "h-hant"){
+            if lang_matches(&language[1..], "h-hant") {
                 // Chinese [macrolanguage]; Han (Traditional variant)
                 tags.push(Tag::from_bytes(b"ZHT ")); // Chinese, Traditional
                 return true;
