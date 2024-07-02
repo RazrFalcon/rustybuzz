@@ -1000,6 +1000,7 @@ pub struct WouldApplyContext<'a> {
 }
 
 pub mod OT {
+    use crate::hb::set_digest::{hb_set_digest_ext, hb_set_digest_t};
     use super::*;
 
     pub struct hb_ot_apply_context_t<'a, 'b> {
@@ -1017,6 +1018,7 @@ pub mod OT {
         pub random_state: u32,
         pub last_base: i32,
         pub last_base_until: u32,
+        pub digest: hb_set_digest_t
     }
 
     impl<'a, 'b> hb_ot_apply_context_t<'a, 'b> {
@@ -1025,6 +1027,7 @@ pub mod OT {
             face: &'a hb_font_t<'b>,
             buffer: &'a mut hb_buffer_t,
         ) -> Self {
+            let buffer_digest = buffer.digest();
             Self {
                 table_index,
                 face,
@@ -1040,6 +1043,7 @@ pub mod OT {
                 random_state: 1,
                 last_base: -1,
                 last_base_until: 0,
+                digest: buffer_digest
             }
         }
 
@@ -1146,6 +1150,8 @@ pub mod OT {
             ligature: bool,
             component: bool,
         ) {
+            self.digest.add(glyph_id);
+
             let cur = self.buffer.cur_mut(0);
             let mut props = cur.glyph_props();
 

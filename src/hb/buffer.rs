@@ -9,6 +9,7 @@ use super::face::hb_glyph_extents_t;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_mask_t};
 use crate::{script, BufferClusterLevel, BufferFlags, Direction, Language, Script, SerializeFlags};
+use crate::hb::set_digest::{hb_set_digest_ext, hb_set_digest_t};
 
 const CONTEXT_LENGTH: usize = 5;
 
@@ -477,6 +478,12 @@ impl hb_buffer_t {
     pub fn prev_mut(&mut self) -> &mut hb_glyph_info_t {
         let idx = self.out_len.saturating_sub(1);
         &mut self.out_info_mut()[idx]
+    }
+
+    pub fn digest(&self) -> hb_set_digest_t {
+        let mut digest = hb_set_digest_t::new();
+        digest.add_array(self.info.iter().map(|i| GlyphId(i.glyph_id as u16)));
+        digest
     }
 
     fn clear(&mut self) {
