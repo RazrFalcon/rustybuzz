@@ -49,13 +49,13 @@ mod ot_shaper_use_table;
 mod aat_layout_common;
 mod ot_shaper_vowel_constraints;
 mod paint_extents;
+mod set_digest;
 pub mod shape;
 mod tag;
 mod tag_table;
 mod text_parser;
 mod unicode;
 mod unicode_norm;
-mod set_digest;
 
 use ttf_parser::Tag as hb_tag_t;
 
