@@ -1,3 +1,4 @@
+use ttf_parser::colr::GradientExtend::Pad;
 use ttf_parser::GlyphId;
 
 // To make things easier, we don't have the generic parameter mask_t,
@@ -5,59 +6,24 @@ use ttf_parser::GlyphId;
 // harfbuzz.
 pub type mask_t = u32;
 
-struct hb_set_digest_bits_pattern_t<const shift: u8> {
+trait hb_set_digest_trait {
+    type A;
+    // Instead of `init()`
+    fn new() -> Self;
+    fn full() -> Self;
+    fn union(&mut self, o: &Self::A);
+    fn add(&mut self, g: GlyphId);
+    fn add_array(&mut self, array: &[GlyphId]);
+    fn add_range(&mut self, a: GlyphId, b: GlyphId) -> bool;
+    fn may_have(&self, o: &Self::A) -> bool;
+    fn may_have_glyph(&self, g: GlyphId) -> bool;
+}
+
+pub struct hb_set_digest_bits_pattern_t<const shift: u8> {
     mask: mask_t,
 }
 
 impl<const shift: u8> hb_set_digest_bits_pattern_t<shift> {
-    pub fn new() -> Self {
-        Self { mask: 0 }
-    }
-
-    pub fn full() -> Self {
-        Self { mask: mask_t::MAX }
-    }
-
-    pub fn union(&mut self, o: &hb_set_digest_bits_pattern_t<shift>) {
-        self.mask |= o.mask;
-    }
-
-    pub fn add(&mut self, g: GlyphId) {
-        self.mask |= hb_set_digest_bits_pattern_t::<shift>::mask_for(g);
-    }
-
-    pub fn add_array(&mut self, array: &[GlyphId]) {
-        for el in array {
-            self.add(*el);
-        }
-    }
-
-    pub fn may_have(&self, o: &hb_set_digest_bits_pattern_t<shift>) -> bool {
-        self.mask & o.mask != 0
-    }
-
-    pub fn may_have_glyph(&self, g: GlyphId) -> bool {
-        self.mask & hb_set_digest_bits_pattern_t::<shift>::mask_for(g) != 0
-    }
-
-    pub fn add_range(&mut self, a: GlyphId, b: GlyphId) -> bool {
-        if self.mask == mask_t::MAX {
-            return false;
-        }
-
-        if (b.0 as u32 >> shift) - (a.0 as u32 >> shift)
-            >= hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1
-        {
-            self.mask = mask_t::MAX;
-            false
-        } else {
-            let ma = hb_set_digest_bits_pattern_t::<shift>::mask_for(a);
-            let mb = hb_set_digest_bits_pattern_t::<shift>::mask_for(b);
-            self.mask |= mb + (mb - ma) - u32::from(mb < ma);
-            true
-        }
-    }
-
     const fn mask_bytes() -> u32 {
         core::mem::size_of::<mask_t>() as u32
     }
@@ -96,3 +62,122 @@ impl<const shift: u8> hb_set_digest_bits_pattern_t<shift> {
         num
     }
 }
+
+impl<const shift: u8> hb_set_digest_trait for hb_set_digest_bits_pattern_t<shift> {
+    type A = hb_set_digest_bits_pattern_t<shift>;
+
+    fn new() -> Self {
+        Self { mask: 0 }
+    }
+
+    fn full() -> Self {
+        Self { mask: mask_t::MAX }
+    }
+
+    fn union(&mut self, o: &hb_set_digest_bits_pattern_t<shift>) {
+        self.mask |= o.mask;
+    }
+
+    fn add(&mut self, g: GlyphId) {
+        self.mask |= hb_set_digest_bits_pattern_t::<shift>::mask_for(g);
+    }
+
+    fn add_array(&mut self, array: &[GlyphId]) {
+        for el in array {
+            self.add(*el);
+        }
+    }
+
+    fn add_range(&mut self, a: GlyphId, b: GlyphId) -> bool {
+        if self.mask == mask_t::MAX {
+            return false;
+        }
+
+        if (b.0 as u32 >> shift) - (a.0 as u32 >> shift)
+            >= hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1
+        {
+            self.mask = mask_t::MAX;
+            false
+        } else {
+            let ma = hb_set_digest_bits_pattern_t::<shift>::mask_for(a);
+            let mb = hb_set_digest_bits_pattern_t::<shift>::mask_for(b);
+            self.mask |= mb + (mb - ma) - u32::from(mb < ma);
+            true
+        }
+    }
+
+    fn may_have(&self, o: &hb_set_digest_bits_pattern_t<shift>) -> bool {
+        self.mask & o.mask != 0
+    }
+
+    fn may_have_glyph(&self, g: GlyphId) -> bool {
+        self.mask & hb_set_digest_bits_pattern_t::<shift>::mask_for(g) != 0
+    }
+}
+
+pub struct hb_set_digest_combiner_t<head_t, tail_t>
+where
+    head_t: hb_set_digest_trait,
+    tail_t: hb_set_digest_trait,
+{
+    head: head_t,
+    tail: tail_t,
+}
+
+impl<head_t, tail_t> hb_set_digest_trait for hb_set_digest_combiner_t<head_t, tail_t>
+where
+    head_t: hb_set_digest_trait<A = head_t>,
+    tail_t: hb_set_digest_trait<A = tail_t>,
+{
+    type A = hb_set_digest_combiner_t<head_t, tail_t>;
+
+    fn new() -> Self {
+        Self {
+            head: head_t::new(),
+            tail: tail_t::new(),
+        }
+    }
+
+    fn full() -> Self {
+        Self {
+            head: head_t::full(),
+            tail: tail_t::full(),
+        }
+    }
+
+    fn union(&mut self, o: &Self::A) {
+        self.head.union(&o.head);
+        self.tail.union(&o.tail);
+    }
+
+    fn add(&mut self, g: GlyphId) {
+        self.head.add(g);
+        self.tail.add(g);
+    }
+
+    fn add_array(&mut self, array: &[GlyphId]) {
+        self.head.add_array(array);
+        self.tail.add_array(array);
+    }
+
+    fn add_range(&mut self, a: GlyphId, b: GlyphId) -> bool {
+        self.head.add_range(a, b) && self.tail.add_range(a, b)
+    }
+
+    fn may_have(&self, o: &Self::A) -> bool {
+        self.head.may_have(&o.head) && self.tail.may_have(&o.tail)
+    }
+
+    fn may_have_glyph(&self, g: GlyphId) -> bool {
+        self.head.may_have_glyph(g) && self.tail.may_have_glyph(g)
+    }
+}
+
+#[rustfmt::skip]
+pub type hb_set_digest_t = hb_set_digest_combiner_t<
+    hb_set_digest_bits_pattern_t<4>,
+    hb_set_digest_combiner_t<
+        hb_set_digest_bits_pattern_t<0>,
+        hb_set_digest_bits_pattern_t<9>
+    >,
+>;
