@@ -4,9 +4,9 @@ use ttf_parser::GlyphId;
 // To make things easier, we don't have the generic parameter mask_t,
 // and assume we always use u32, since this is what is also used in
 // harfbuzz.
-pub type mask_t = u32;
+type mask_t = u32;
 
-trait hb_set_digest_trait {
+trait hb_set_digest_ext {
     type A;
     // Instead of `init()`
     fn new() -> Self;
@@ -63,7 +63,7 @@ impl<const shift: u8> hb_set_digest_bits_pattern_t<shift> {
     }
 }
 
-impl<const shift: u8> hb_set_digest_trait for hb_set_digest_bits_pattern_t<shift> {
+impl<const shift: u8> hb_set_digest_ext for hb_set_digest_bits_pattern_t<shift> {
     type A = hb_set_digest_bits_pattern_t<shift>;
 
     fn new() -> Self {
@@ -117,17 +117,17 @@ impl<const shift: u8> hb_set_digest_trait for hb_set_digest_bits_pattern_t<shift
 
 pub struct hb_set_digest_combiner_t<head_t, tail_t>
 where
-    head_t: hb_set_digest_trait,
-    tail_t: hb_set_digest_trait,
+    head_t: hb_set_digest_ext,
+    tail_t: hb_set_digest_ext,
 {
     head: head_t,
     tail: tail_t,
 }
 
-impl<head_t, tail_t> hb_set_digest_trait for hb_set_digest_combiner_t<head_t, tail_t>
+impl<head_t, tail_t> hb_set_digest_ext for hb_set_digest_combiner_t<head_t, tail_t>
 where
-    head_t: hb_set_digest_trait<A = head_t>,
-    tail_t: hb_set_digest_trait<A = tail_t>,
+    head_t: hb_set_digest_ext<A = head_t>,
+    tail_t: hb_set_digest_ext<A = tail_t>,
 {
     type A = hb_set_digest_combiner_t<head_t, tail_t>;
 
