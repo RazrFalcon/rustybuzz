@@ -6,20 +6,16 @@ use ttf_parser::GlyphId;
 pub type mask_t = u32;
 
 struct hb_set_digest_bits_pattern_t<const shift: u8> {
-    mask: mask_t
+    mask: mask_t,
 }
 
 impl<const shift: u8> hb_set_digest_bits_pattern_t<shift> {
     pub fn new() -> Self {
-        Self {
-            mask: 0
-        }
+        Self { mask: 0 }
     }
 
     pub fn full() -> Self {
-        Self {
-            mask: mask_t::MAX
-        }
+        Self { mask: mask_t::MAX }
     }
 
     pub fn union(&mut self, o: &hb_set_digest_bits_pattern_t<shift>) {
@@ -30,15 +26,31 @@ impl<const shift: u8> hb_set_digest_bits_pattern_t<shift> {
         self.mask |= hb_set_digest_bits_pattern_t::<shift>::mask_for(g);
     }
 
+    pub fn add_array(&mut self, array: &[GlyphId]) {
+        for el in array {
+            self.add(*el);
+        }
+    }
+
+    pub fn may_have(&self, o: &hb_set_digest_bits_pattern_t<shift>) -> bool {
+        self.mask & o.mask != 0
+    }
+
+    pub fn may_have_glyph(&self, g: GlyphId) -> bool {
+        self.mask & hb_set_digest_bits_pattern_t::<shift>::mask_for(g) != 0
+    }
+
     pub fn add_range(&mut self, a: GlyphId, b: GlyphId) -> bool {
         if self.mask == mask_t::MAX {
             return false;
         }
 
-        if (b.0 as u32 >> shift) - (a.0 as u32 >> shift) >= hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1 {
+        if (b.0 as u32 >> shift) - (a.0 as u32 >> shift)
+            >= hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1
+        {
             self.mask = mask_t::MAX;
             false
-        }   else {
+        } else {
             let ma = hb_set_digest_bits_pattern_t::<shift>::mask_for(a);
             let mb = hb_set_digest_bits_pattern_t::<shift>::mask_for(b);
             self.mask |= mb + (mb - ma) - u32::from(mb < ma);
