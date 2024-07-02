@@ -3,8 +3,7 @@
 use core::ops::{Index, IndexMut};
 
 use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex};
-use ttf_parser::GlyphId;
-
+use crate::hb::set_digest::hb_set_digest_t;
 use super::buffer::*;
 use super::common::TagExt;
 use super::ot_layout_gsubgpos::{Apply, OT};
@@ -102,8 +101,8 @@ pub trait LayoutLookup: Apply {
     /// Whether the lookup has to be applied backwards.
     fn is_reverse(&self) -> bool;
 
-    /// Whether any subtable of the lookup could apply at a specific glyph.
-    fn may_have(&self, glyph: GlyphId) -> bool;
+    /// The digest of the lookup.
+    fn digest(&self) -> &hb_set_digest_t;
 }
 
 pub trait LayoutTableExt {
@@ -244,6 +243,7 @@ pub fn apply_layout_table<T: LayoutTable>(
                 let Some(lookup) = table.get_lookup(lookup_map.index) else {
                     continue;
                 };
+
 
                 ctx.lookup_index = lookup_map.index;
                 ctx.set_lookup_mask(lookup_map.mask);
