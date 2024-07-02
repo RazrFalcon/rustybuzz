@@ -1,10 +1,9 @@
-use ttf_parser::colr::GradientExtend::Pad;
 use ttf_parser::GlyphId;
 
 // To make things easier, we don't have the generic parameter mask_t,
 // and assume we always use u32, since this is what is also used in
 // harfbuzz.
-type mask_t = u32;
+type mask_t = u64;
 
 pub trait hb_set_digest_ext: Clone {
     type A;
@@ -25,16 +24,16 @@ pub struct hb_set_digest_bits_pattern_t<const shift: u8> {
 }
 
 impl<const shift: u8> hb_set_digest_bits_pattern_t<shift> {
-    const fn mask_bytes() -> u32 {
-        core::mem::size_of::<mask_t>() as u32
+    const fn mask_bytes() -> mask_t {
+        core::mem::size_of::<mask_t>() as mask_t
     }
 
-    const fn mask_bits() -> u32 {
-        (core::mem::size_of::<mask_t>() * 8) as u32
+    const fn mask_bits() -> mask_t {
+        (core::mem::size_of::<mask_t>() * 8) as mask_t
     }
 
     fn mask_for(g: GlyphId) -> mask_t {
-        1 << ((g.0 as u32 >> shift) & (hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1))
+        1 << ((g.0 as mask_t >> shift) & (hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1))
     }
 
     const fn num_bits() -> usize {
@@ -68,6 +67,8 @@ impl<const shift: u8> hb_set_digest_ext for hb_set_digest_bits_pattern_t<shift> 
     type A = hb_set_digest_bits_pattern_t<shift>;
 
     fn new() -> Self {
+        assert!((shift as usize) < core::mem::size_of::<GlyphId>() * 8);
+        assert!((shift as usize + Self::num_bits()) < core::mem::size_of::<GlyphId>() * 8);
         Self { mask: 0 }
     }
 
@@ -94,7 +95,7 @@ impl<const shift: u8> hb_set_digest_ext for hb_set_digest_bits_pattern_t<shift> 
             return false;
         }
 
-        if (b.0 as u32 >> shift) - (a.0 as u32 >> shift)
+        if (b.0 as mask_t >> shift) - (a.0 as mask_t >> shift)
             >= hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1
         {
             self.mask = mask_t::MAX;
@@ -102,7 +103,7 @@ impl<const shift: u8> hb_set_digest_ext for hb_set_digest_bits_pattern_t<shift> 
         } else {
             let ma = hb_set_digest_bits_pattern_t::<shift>::mask_for(a);
             let mb = hb_set_digest_bits_pattern_t::<shift>::mask_for(b);
-            self.mask |= mb + (mb - ma) - u32::from(mb < ma);
+            self.mask |= mb + mb.wrapping_sub(ma) - mask_t::from(mb < ma);
             true
         }
     }
