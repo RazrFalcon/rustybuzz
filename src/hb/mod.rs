@@ -55,6 +55,7 @@ mod tag_table;
 mod text_parser;
 mod unicode;
 mod unicode_norm;
+mod set_digest;
 
 use ttf_parser::Tag as hb_tag_t;
 
