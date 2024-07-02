@@ -1,4 +1,4 @@
-#[allow(unused_imports)]
+#[cfg(not(feature = "std"))]
 use core_maths::CoreFloat;
 
 use super::buffer::*;

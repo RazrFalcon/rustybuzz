@@ -1,6 +1,6 @@
 [package]
 name = "rustybuzz"
-version = "0.16.0"
+version = "0.17.0"
 authors = ["Yevhenii Reizner <razrfalcon@gmail.com>"]
 edition = "2021"
 description = "A complete harfbuzz shaping algorithm port to Rust."
@@ -15,7 +15,7 @@ exclude = ["benches/", "tests/"]
 [dependencies]
 bitflags = "2.4.1"
 bytemuck = { version = "1.5", features = ["extern_crate_alloc"] }
-core_maths = { version = "0.1.0" }
+core_maths = "0.1.0" # only for no_std builds
 smallvec = "1.6"
 unicode-bidi-mirroring = "0.3.0"
 unicode-ccc = "0.3.0"
@@ -23,13 +23,14 @@ unicode-properties = { version = "0.1.0", default-features = false, features = [
 unicode-script = "0.5.2"
 
 [dependencies.ttf-parser]
-version = "0.23.0"
+version = "0.24.0"
 default-features = false
 features = [
     "opentype-layout",
     "apple-layout",
     "variable-fonts",
-    "glyph-names"
+    "glyph-names",
+    "no-std-float",
 ]
 
 [features]
