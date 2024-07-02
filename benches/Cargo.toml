@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-harfbuzz_rs = {git = "https://github.com/harfbuzz/harfbuzz_rs/", rev = "43f0fb5"}
+harfbuzz_rs = { git = "https://github.com/harfbuzz/harfbuzz_rs/", rev = "43f0fb5" }
 rustybuzz = { path = "../" }
 
 [features]
