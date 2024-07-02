@@ -103,7 +103,7 @@ pub trait LayoutLookup: Apply {
     fn is_reverse(&self) -> bool;
 
     /// Whether any subtable of the lookup could apply at a specific glyph.
-    fn covers(&self, glyph: GlyphId) -> bool;
+    fn may_have(&self, glyph: GlyphId) -> bool;
 }
 
 pub trait LayoutTableExt {

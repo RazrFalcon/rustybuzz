@@ -1,4 +1,3 @@
-use std::println;
 use ttf_parser::GlyphId;
 
 // To make things easier, we don't have the generic parameter mask_t,
