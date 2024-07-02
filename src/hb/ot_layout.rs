@@ -239,19 +239,21 @@ pub fn apply_layout_table<T: LayoutTable>(
     let mut ctx = OT::hb_ot_apply_context_t::new(T::INDEX, face, buffer);
 
     for (stage_index, stage) in plan.ot_map.stages(T::INDEX).iter().enumerate() {
-        for lookup in plan.ot_map.stage_lookups(T::INDEX, stage_index) {
-            ctx.lookup_index = lookup.index;
-            ctx.set_lookup_mask(lookup.mask);
-            ctx.auto_zwj = lookup.auto_zwj;
-            ctx.auto_zwnj = lookup.auto_zwnj;
+        if let Some(table) = table {
+            for lookup_map in plan.ot_map.stage_lookups(T::INDEX, stage_index) {
+                let Some(lookup) = table.get_lookup(lookup_map.index) else {
+                    continue;
+                };
 
-            ctx.random = lookup.random;
-            ctx.per_syllable = lookup.per_syllable;
+                ctx.lookup_index = lookup_map.index;
+                ctx.set_lookup_mask(lookup_map.mask);
+                ctx.auto_zwj = lookup_map.auto_zwj;
+                ctx.auto_zwnj = lookup_map.auto_zwnj;
 
-            if let Some(table) = &table {
-                if let Some(lookup) = table.get_lookup(lookup.index) {
-                    apply_string::<T>(&mut ctx, lookup);
-                }
+                ctx.random = lookup_map.random;
+                ctx.per_syllable = lookup_map.per_syllable;
+
+                apply_string::<T>(&mut ctx, lookup);
             }
         }
 
