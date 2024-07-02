@@ -67,8 +67,8 @@ impl<const shift: u8> hb_set_digest_ext for hb_set_digest_bits_pattern_t<shift> 
     type A = hb_set_digest_bits_pattern_t<shift>;
 
     fn new() -> Self {
-        assert!((shift as usize) < core::mem::size_of::<GlyphId>() * 8);
-        assert!((shift as usize + Self::num_bits()) < core::mem::size_of::<GlyphId>() * 8);
+        debug_assert!((shift as usize) < core::mem::size_of::<GlyphId>() * 8);
+        debug_assert!((shift as usize + Self::num_bits()) < core::mem::size_of::<GlyphId>() * 8);
         Self { mask: 0 }
     }
 
