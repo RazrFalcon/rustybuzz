@@ -30,6 +30,22 @@ impl<const shift: u8> hb_set_digest_bits_pattern_t<shift> {
         self.mask |= hb_set_digest_bits_pattern_t::<shift>::mask_for(g);
     }
 
+    pub fn add_range(&mut self, a: GlyphId, b: GlyphId) -> bool {
+        if self.mask == mask_t::MAX {
+            return false;
+        }
+
+        if (b.0 as u32 >> shift) - (a.0 as u32 >> shift) >= hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1 {
+            self.mask = mask_t::MAX;
+            false
+        }   else {
+            let ma = hb_set_digest_bits_pattern_t::<shift>::mask_for(a);
+            let mb = hb_set_digest_bits_pattern_t::<shift>::mask_for(b);
+            self.mask |= mb + (mb - ma) - u32::from(mb < ma);
+            true
+        }
+    }
+
     const fn mask_bytes() -> u32 {
         core::mem::size_of::<mask_t>() as u32
     }
@@ -39,7 +55,7 @@ impl<const shift: u8> hb_set_digest_bits_pattern_t<shift> {
     }
 
     fn mask_for(g: GlyphId) -> mask_t {
-        (1 << ((g.0 as u32 >> shift) & (hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1)))
+        1 << ((g.0 as u32 >> shift) & (hb_set_digest_bits_pattern_t::<shift>::mask_bits() - 1))
     }
 
     const fn num_bits() -> usize {
