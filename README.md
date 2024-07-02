@@ -38,7 +38,6 @@ are not implemented yet or cannot be implemented at all.
 ## Performance
 
 At the moment, performance isn't that great. We're 1.5-2x slower than harfbuzz.
-Also, rustybuzz doesn't support shaping plan caching at the moment.
 
 See [benches/README.md](./benches/README.md) for details.
 
@@ -75,10 +74,6 @@ Which gives us around 17 KLOC, which is still a lot.
 Since the port is finished, there is not much to do other than syncing it with
 a new harfbuzz releases. However, there is still lots of potential areas of improvement:
 
-- **Better benchmarking**: Currently, our benchmarking harness is very barebones and only contains
-3 different tests to compare performance against `harfbuzz`. Ideally, this benchmark suite should be extended
-further with both, more benching functions and also a wider variety of fonts/cases, so that we can have
-more insight into how much worse performance is in certain cases, compared to harfbuzz.
 - **Wider test coverage**: Currently, we only test the result of the positioned glyphs in the shaping output.
 We should add tests so that we can test other parts of the API as well, such as glyph extents and glyph flags.
 - **Custom tests**: Currently, we only rely on the `harfbuzz` test suite to assess the correctness of

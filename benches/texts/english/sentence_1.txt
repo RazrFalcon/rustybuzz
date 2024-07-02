@@ -1,0 +1,1 @@
+This is a longer sentence that contains some more words and is a bit more lengthy to check how long it takes to shape a single sentence with both shapers.
