@@ -1,6 +1,5 @@
 use ttf_parser::gsub::*;
 use ttf_parser::opentype_layout::LookupIndex;
-use ttf_parser::GlyphId;
 
 use super::buffer::hb_buffer_t;
 use super::hb_font_t;
@@ -22,44 +21,6 @@ impl<'a> LayoutTable for SubstitutionTable<'a> {
 
     fn get_lookup(&self, index: LookupIndex) -> Option<&Self::Lookup> {
         self.lookups.get(usize::from(index))
-    }
-}
-
-impl LayoutLookup for SubstLookup<'_> {
-    fn props(&self) -> u32 {
-        self.props
-    }
-
-    fn is_reverse(&self) -> bool {
-        self.reverse
-    }
-
-    fn covers(&self, glyph: GlyphId) -> bool {
-        self.coverage.contains(glyph)
-    }
-}
-
-impl WouldApply for SubstLookup<'_> {
-    fn would_apply(&self, ctx: &WouldApplyContext) -> bool {
-        self.covers(ctx.glyphs[0])
-            && self
-                .subtables
-                .iter()
-                .any(|subtable| subtable.would_apply(ctx))
-    }
-}
-
-impl Apply for SubstLookup<'_> {
-    fn apply(&self, ctx: &mut hb_ot_apply_context_t) -> Option<()> {
-        if self.covers(ctx.buffer.cur(0).as_glyph()) {
-            for subtable in &self.subtables {
-                if subtable.apply(ctx).is_some() {
-                    return Some(());
-                }
-            }
-        }
-
-        None
     }
 }
 

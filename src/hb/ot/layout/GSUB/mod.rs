@@ -7,3 +7,4 @@ mod multi_subst;
 mod reverse_chain_single_subst;
 mod sequence;
 mod single_subst;
+mod subst_lookup;
