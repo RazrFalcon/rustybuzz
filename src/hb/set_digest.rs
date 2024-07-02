@@ -1,7 +1,7 @@
 use ttf_parser::GlyphId;
 
 // To make things easier, we don't have the generic parameter mask_t,
-// and assume we always use u32, since this is what is also used in
+// and assume we always use u64, since this is what is also used in
 // harfbuzz.
 type mask_t = u64;
 
