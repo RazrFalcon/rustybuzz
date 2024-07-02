@@ -1,3 +1,6 @@
+#[allow(unused_imports)]
+use core_maths::CoreFloat;
+
 use crate::hb::paint_extents::hb_paint_extents_context_t;
 use ttf_parser::gdef::GlyphClass;
 use ttf_parser::opentype_layout::LayoutTable;
@@ -259,11 +262,11 @@ impl<'a> hb_font_t<'a> {
             // HarfBuzz also supports only PNG.
             if img.format == ttf_parser::RasterImageFormat::PNG {
                 let scale = self.units_per_em as f32 / img.pixels_per_em as f32;
-                glyph_extents.x_bearing = super::round(f32::from(img.x) * scale) as i32;
+                glyph_extents.x_bearing = (f32::from(img.x) * scale).round() as i32;
                 glyph_extents.y_bearing =
-                    super::round((f32::from(img.y) + f32::from(img.height)) * scale) as i32;
-                glyph_extents.width = super::round(f32::from(img.width) * scale) as i32;
-                glyph_extents.height = super::round(-f32::from(img.height) * scale) as i32;
+                    ((f32::from(img.y) + f32::from(img.height)) * scale).round() as i32;
+                glyph_extents.width = (f32::from(img.width) * scale).round() as i32;
+                glyph_extents.height = (-f32::from(img.height) * scale).round() as i32;
                 return true;
             }
         // TODO: Add tests for this. We should use all glyphs from
@@ -276,10 +279,10 @@ impl<'a> hb_font_t<'a> {
 
             if let Some(clip_box) = colr.clip_box(glyph, self.variation_coordinates()) {
                 // Floor
-                glyph_extents.x_bearing = super::round(clip_box.x_min) as i32;
-                glyph_extents.y_bearing = super::round(clip_box.y_max) as i32;
-                glyph_extents.width = super::round(clip_box.x_max - clip_box.x_min) as i32;
-                glyph_extents.height = super::round(clip_box.y_min - clip_box.y_max) as i32;
+                glyph_extents.x_bearing = (clip_box.x_min).round() as i32;
+                glyph_extents.y_bearing = (clip_box.y_max).round() as i32;
+                glyph_extents.width = (clip_box.x_max - clip_box.x_min).round() as i32;
+                glyph_extents.height = (clip_box.y_min - clip_box.y_max).round() as i32;
                 return true;
             }
 

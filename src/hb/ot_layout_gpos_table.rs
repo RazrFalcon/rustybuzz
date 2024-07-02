@@ -1,3 +1,6 @@
+#[allow(unused_imports)]
+use core_maths::CoreFloat;
+
 use super::buffer::*;
 use super::hb_font_t;
 use super::ot_layout::*;
@@ -193,7 +196,7 @@ impl DeviceExt for Device<'_> {
                     variation.inner_index,
                     face.variation_coordinates(),
                 )
-                .and_then(|float| i32::try_num_from(super::round(float))),
+                .and_then(|float| i32::try_num_from(float.round())),
         }
     }
 
@@ -208,7 +211,7 @@ impl DeviceExt for Device<'_> {
                     variation.inner_index,
                     face.variation_coordinates(),
                 )
-                .and_then(|float| i32::try_num_from(super::round(float))),
+                .and_then(|float| i32::try_num_from(float.round())),
         }
     }
 }

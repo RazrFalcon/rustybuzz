@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Use `core_maths` instead of `libm`. Should simplify the build process.
+
+### Removed
+- `no-std-float` build flag. Should be handled automatically now.
+
 ## [0.15.0] - 2024-06-29
 - Sync with HarfBuzz 8.5.0 🎉<br>
   `rustybuzz` is finally in-sync with `harfbuzz`.

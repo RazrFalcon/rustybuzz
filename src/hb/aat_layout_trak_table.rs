@@ -1,3 +1,6 @@
+#[allow(unused_imports)]
+use core_maths::CoreFloat;
+
 use super::buffer::hb_buffer_t;
 use super::hb_font_t;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
@@ -87,7 +90,7 @@ impl TrackTableDataExt for ttf_parser::trak::TrackData<'_> {
         }
 
         self.interpolate_at(idx as u16, ptem, &track)
-            .map(|n| crate::hb::round(n) as i32)
+            .map(|n| n.round() as i32)
     }
 
     fn interpolate_at(

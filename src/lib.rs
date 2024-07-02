@@ -5,9 +5,6 @@ A complete [harfbuzz](https://github.com/harfbuzz/harfbuzz) shaping algorithm po
 #![no_std]
 #![warn(missing_docs)]
 
-#[cfg(not(any(feature = "std", feature = "no-std-float")))]
-compile_error!("You have to activate either the `std` or the `no-std-float` feature.");
-
 #[cfg(feature = "std")]
 extern crate std;
 

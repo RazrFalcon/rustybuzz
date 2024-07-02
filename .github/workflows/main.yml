@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build without std
-      run: cargo build --no-default-features --features no-std-float
+      run: cargo build --no-default-features
 
     - name: Build with std
       run: cargo build

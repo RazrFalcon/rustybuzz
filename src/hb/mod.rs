@@ -64,14 +64,3 @@ use self::face::hb_font_t;
 type hb_mask_t = u32;
 
 use self::common::{script, Direction, Feature, Language, Script};
-
-fn round(x: f32) -> f32 {
-    #[cfg(feature = "std")]
-    {
-        x.round()
-    }
-    #[cfg(feature = "no-std-float")]
-    {
-        libm::roundf(x)
-    }
-}
