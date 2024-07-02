@@ -6,19 +6,20 @@ use ttf_parser::GlyphId;
 // harfbuzz.
 type mask_t = u32;
 
-trait hb_set_digest_ext {
+pub trait hb_set_digest_ext: Clone {
     type A;
     // Instead of `init()`
     fn new() -> Self;
     fn full() -> Self;
     fn union(&mut self, o: &Self::A);
     fn add(&mut self, g: GlyphId);
-    fn add_array(&mut self, array: &[GlyphId]);
+    fn add_array(&mut self, array: impl IntoIterator<Item = GlyphId> + Clone);
     fn add_range(&mut self, a: GlyphId, b: GlyphId) -> bool;
     fn may_have(&self, o: &Self::A) -> bool;
     fn may_have_glyph(&self, g: GlyphId) -> bool;
 }
 
+#[derive(Clone)]
 pub struct hb_set_digest_bits_pattern_t<const shift: u8> {
     mask: mask_t,
 }
@@ -82,9 +83,9 @@ impl<const shift: u8> hb_set_digest_ext for hb_set_digest_bits_pattern_t<shift> 
         self.mask |= hb_set_digest_bits_pattern_t::<shift>::mask_for(g);
     }
 
-    fn add_array(&mut self, array: &[GlyphId]) {
+    fn add_array(&mut self, array: impl IntoIterator<Item = GlyphId> + Clone) {
         for el in array {
-            self.add(*el);
+            self.add(el);
         }
     }
 
@@ -115,6 +116,7 @@ impl<const shift: u8> hb_set_digest_ext for hb_set_digest_bits_pattern_t<shift> 
     }
 }
 
+#[derive(Clone)]
 pub struct hb_set_digest_combiner_t<head_t, tail_t>
 where
     head_t: hb_set_digest_ext,
@@ -155,8 +157,9 @@ where
         self.tail.add(g);
     }
 
-    fn add_array(&mut self, array: &[GlyphId]) {
-        self.head.add_array(array);
+    fn add_array(&mut self, array: impl IntoIterator<Item = GlyphId> + Clone) {
+        // TODO: Is this expensive if someone passes e.g. a vector?
+        self.head.add_array(array.clone());
         self.tail.add_array(array);
     }
 
