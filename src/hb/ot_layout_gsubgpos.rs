@@ -1000,8 +1000,8 @@ pub struct WouldApplyContext<'a> {
 }
 
 pub mod OT {
-    use crate::hb::set_digest::{hb_set_digest_ext, hb_set_digest_t};
     use super::*;
+    use crate::hb::set_digest::{hb_set_digest_ext, hb_set_digest_t};
 
     pub struct hb_ot_apply_context_t<'a, 'b> {
         pub table_index: TableIndex,
@@ -1018,7 +1018,7 @@ pub mod OT {
         pub random_state: u32,
         pub last_base: i32,
         pub last_base_until: u32,
-        pub digest: hb_set_digest_t
+        pub digest: hb_set_digest_t,
     }
 
     impl<'a, 'b> hb_ot_apply_context_t<'a, 'b> {
@@ -1043,7 +1043,7 @@ pub mod OT {
                 random_state: 1,
                 last_base: -1,
                 last_base_until: 0,
-                digest: buffer_digest
+                digest: buffer_digest,
             }
         }
 

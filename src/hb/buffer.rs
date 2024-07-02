@@ -8,8 +8,8 @@ use super::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_
 use super::face::hb_glyph_extents_t;
 use super::unicode::{CharExt, GeneralCategoryExt};
 use super::{hb_font_t, hb_mask_t};
-use crate::{script, BufferClusterLevel, BufferFlags, Direction, Language, Script, SerializeFlags};
 use crate::hb::set_digest::{hb_set_digest_ext, hb_set_digest_t};
+use crate::{script, BufferClusterLevel, BufferFlags, Direction, Language, Script, SerializeFlags};
 
 const CONTEXT_LENGTH: usize = 5;
 
