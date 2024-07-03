@@ -337,7 +337,7 @@ fn cmap4_004() {
 }
 
 #[test]
-fn cmap4_006() {
+fn cmap4_005() {
     assert_eq!(
         shape(
             "tests/fonts/aots/cmap4_font4.otf",
@@ -712,7 +712,7 @@ fn gpos2_2_005() {
 }
 
 #[test]
-fn gpos3_002() {
+fn gpos3_001() {
     assert_eq!(
         shape(
             "tests/fonts/aots/gpos3_font1.otf",
@@ -728,7 +728,7 @@ fn gpos3_002() {
 }
 
 #[test]
-fn gpos3_007() {
+fn gpos3_002() {
     assert_eq!(
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
@@ -743,7 +743,7 @@ fn gpos3_007() {
 }
 
 #[test]
-fn gpos3_008() {
+fn gpos3_003() {
     assert_eq!(
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
@@ -758,7 +758,7 @@ fn gpos3_008() {
 }
 
 #[test]
-fn gpos3_009() {
+fn gpos3_004() {
     assert_eq!(
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
@@ -773,7 +773,7 @@ fn gpos3_009() {
 }
 
 #[test]
-fn gpos3_010() {
+fn gpos3_005() {
     assert_eq!(
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
@@ -786,7 +786,7 @@ fn gpos3_010() {
 }
 
 #[test]
-fn gpos3_011() {
+fn gpos3_006() {
     assert_eq!(
         shape(
             "tests/fonts/aots/gpos3_font3.otf",
@@ -908,7 +908,7 @@ fn gpos5_002() {
 }
 
 #[test]
-fn gpos6_002() {
+fn gpos6_001() {
     assert_eq!(
         shape(
             "tests/fonts/aots/gpos6_font1.otf",
@@ -923,7 +923,7 @@ fn gpos6_002() {
 }
 
 #[test]
-fn gpos6_003() {
+fn gpos6_002() {
     assert_eq!(
         shape(
             "tests/fonts/aots/gpos6_font1.otf",

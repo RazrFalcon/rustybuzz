@@ -39,7 +39,7 @@ IGNORE_TEST_CASES = [
     # ttf-parser uses different rounding, not a bug
     "fallback_positioning_001",
     # Requires support for the ltag table.
-    "macos_017",
+    "macos_002",
     # Broken in HarfBuzz. https://github.com/harfbuzz/harfbuzz/issues/4774
     "cmap_3_016",
     "cmap_3_018",
@@ -176,12 +176,14 @@ def convert_test_file(
 # Returns an iterator over single test cases in a test file
 def read_test_cases(path):
     with open(path, "r") as f:
-        for idx, test in enumerate(f.read().splitlines()):
+        idx = 0
+        for test in f.read().splitlines():
             # skip comments and empty lines
             if test.startswith("#") or len(test) == 0:
                 continue
 
             yield idx, test
+            idx += 1
 
 
 # Convert all test files in a folder into Rust tests and write them into a file.

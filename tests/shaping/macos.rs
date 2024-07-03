@@ -4,7 +4,7 @@ use crate::shape;
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_016() {
+fn macos_001() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/BigCaslon.ttf",
@@ -17,7 +17,7 @@ fn macos_016() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_020() {
+fn macos_003() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Apple Color Emoji.ttc",
@@ -31,7 +31,7 @@ fn macos_020() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_023() {
+fn macos_004() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Bangla MN.ttc",
@@ -45,7 +45,7 @@ fn macos_023() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_026() {
+fn macos_005() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/LucidaGrande.ttc",
@@ -60,7 +60,7 @@ fn macos_026() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_029() {
+fn macos_006() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/LucidaGrande.ttc",
@@ -76,7 +76,7 @@ fn macos_029() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_032() {
+fn macos_007() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/LucidaGrande.ttc",
@@ -89,7 +89,7 @@ fn macos_032() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_033() {
+fn macos_008() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Khmer MN.ttc",
@@ -109,7 +109,7 @@ fn macos_033() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_034() {
+fn macos_009() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Tamil MN.ttc",
@@ -127,6 +127,509 @@ fn macos_034() {
          tgc_pa=9+1370|\
          tgc_tt=10+1596|\
          tgc_ttu=12+1833"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_010() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/LucidaGrande.ttc",
+            "\u{05E1}\u{05B0}",
+            "--font-funcs ot",
+        ),
+        "shevahebrew=0@51,0+0|\
+         samekhhebrew=0+1361"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_011() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0054}\u{0068}\u{0020}\u{0074}\u{0068}\u{0020}\u{006C}\u{006C}\u{0020}\u{0074}\
+             \u{0065}\u{0020}\u{0074}\u{006F}\u{0020}\u{0074}\u{0072}\u{0020}\u{0066}\u{0072}\
+             \u{0020}\u{0066}\u{0075}\u{0020}\u{0066}\u{006A}",
+            "--font-funcs ot",
+        ),
+        "T_h=0+2308|\
+         space=2+569|\
+         t_h=3+1687|\
+         space=5+569|\
+         l_l=6+1108|\
+         space=8+569|\
+         t_e=9+1408|\
+         space=11+569|\
+         t_o=12+1531|\
+         space=14+569|\
+         t_r=15+1385|\
+         space=17+569|\
+         f_r=18+1432|\
+         space=20+569|\
+         f_u=21+1733|\
+         space=23+569|\
+         f_j=24+1098"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_012() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0054}\u{0065}\u{0020}\u{0041}\u{0056}\u{0020}\u{0054}\u{0072}\u{0020}\u{0056}\
+             \u{0061}\u{0020}\u{0072}\u{0054}\u{0020}\u{0065}\u{0054}\u{0020}\u{0054}\u{0064}",
+            "--font-funcs ot",
+        ),
+        "T=0+1497|\
+         e=1@-62,0+699|\
+         space=2+569|\
+         A=3+1431|\
+         V=4@-37,0+1377|\
+         space=5+569|\
+         T=6+1510|\
+         r=7@-50,0+803|\
+         space=8+569|\
+         V=9+1376|\
+         a=10@-37,0+1014|\
+         space=11+569|\
+         r=12+853|\
+         T=13+1560|\
+         space=14+569|\
+         e=15+761|\
+         T=16+1560|\
+         space=17+569|\
+         T=18+1515|\
+         d=19@-45,0+1006"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_013() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/GeezaPro.ttc",
+            "\u{0627}\u{0644}\u{0623}\u{064E}\u{0628}\u{0652}\u{062C}\u{064E}\u{062F}\u{0650}\
+             \u{064A}\u{064E}\u{0651}\u{0629}\u{0640}\u{0627}\u{0644}\u{0639}\u{064E}\u{0631}\
+             \u{064E}\u{0628}\u{0650}\u{064A}\u{064E}\u{0651}\u{0629}",
+            "--font-funcs ot",
+        ),
+        "u0629.final.tehMarbuta=26+713|\
+         u064e_u0651.shaddaFatha=23@0,-200+0|\
+         u064a.medial.yeh=23+656|\
+         u0650.kasra=21@80,290+80|\
+         u0628.initial.beh=21@-80,0+576|\
+         u064e.fatha=19@200,-570+200|\
+         u0631.final.reh=19@-200,0+702|\
+         u064e.fatha=17@200,-200+200|\
+         u0639.medial.ain=17@-200,0+738|\
+         u0644.initial.lam=16+515|\
+         u0627.final.alef=15+647|\
+         u0640.tatweel=14+449|\
+         u0629.final.tehMarbuta=13+713|\
+         u064e_u0651.shaddaFatha=10@0,-200+0|\
+         u064a.initial.yeh=10+656|\
+         u0650.kasra=8@80,570+80|\
+         u062f.final.dal=8@-80,0+822|\
+         u064e.fatha=6@290,-160+290|\
+         u062c.medial.jeem=6@-290,0+1069|\
+         u0652.sukun=4@0,-200+0|\
+         u0628.initial.beh=4+656|\
+         u064e.fatha=1@-372,120+-372|\
+         u0644_u0623.isolated.lamHamzaOnAlef=1@120,0+1282|\
+         u0627.alef=0+647"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_014() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/GeezaPro.ttc",
+            "\u{0628}\u{064A}\u{064E}\u{0651}\u{0629}",
+            "--font-funcs ot",
+        ),
+        "u0629.final.tehMarbuta=4+713|\
+         u064e_u0651.shaddaFatha=1@0,-200+0|\
+         u064a.medial.yeh=1+656|\
+         u0628.initial.beh=0+656"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_015() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/GeezaPro.ttc",
+            "\u{0631}\u{0628}",
+            "--font-funcs ot",
+        ),
+        "u0628.beh=1+1415|\
+         u0631.reh=0@-202,0+700"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_016() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/GeezaPro.ttc",
+            "\u{0628}\u{064F}",
+            "--font-funcs ot",
+        ),
+        "u064f.damma=0@250,-250+250|\
+         u0628.beh=0@-250,0+1165"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_017() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/GeezaPro.ttc",
+            "\u{0644}\u{064E}\u{0645}\u{064E}\u{0651}\u{0627}",
+            "--font-funcs ot",
+        ),
+        "u0627.final.alef=5+647|\
+         u064e.fatha=0@-80,160+-80|\
+         u064e_u0651.shaddaFatha=0@490,250+490|\
+         u0644_u0645.initial.lamMeem=0@-410,0+415"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_018() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Apple Color Emoji.ttc",
+            "\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}\u{200D}\u{1F466}",
+            "--remove-default-ignorables --font-funcs ot",
+        ),
+        "u1F9D1_u1F9D1_u1F9D2_u1F9D2=0+800"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_019() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Zapfino.ttf",
+            "\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\
+             \u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\
+             \u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\
+             \u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\
+             \u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\
+             \u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\
+             \u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\
+             \u{0069}\u{006E}\u{006F}",
+            "--font-funcs ot",
+        ),
+        "Z=0+416|\
+         a=1@-21,0+264|\
+         p_f=2+433|\
+         i=4+181|\
+         n=5+261|\
+         Z=6+416|\
+         a=7@-21,0+264|\
+         p_f=8+433|\
+         i=10+181|\
+         n=11+261|\
+         Z=12+416|\
+         a=13@-21,0+264|\
+         p_f=14+433|\
+         i=16+181|\
+         n=17+261|\
+         Z=18+416|\
+         a=19@-21,0+264|\
+         p_f=20+433|\
+         i=22+181|\
+         n=23+261|\
+         Z=24+416|\
+         a=25@-21,0+264|\
+         p_f=26+433|\
+         i=28+181|\
+         n=29+261|\
+         Z=30+416|\
+         a=31@-21,0+264|\
+         p_f=32+433|\
+         i=34+181|\
+         n=35+261|\
+         Z=36+416|\
+         a=37@-21,0+264|\
+         p_f=38+433|\
+         i=40+181|\
+         n=41+261|\
+         Z=42+416|\
+         a=43@-21,0+264|\
+         p_f=44+433|\
+         i=46+181|\
+         n=47+261|\
+         Z=48+416|\
+         a=49@-21,0+264|\
+         p_f=50+433|\
+         i=52+181|\
+         n=53+261|\
+         Z=54+416|\
+         a=55@-21,0+264|\
+         p_f=56+433|\
+         i=58+181|\
+         n=59+261|\
+         Z=60+416|\
+         a=61@-21,0+264|\
+         p_f=62+433|\
+         i=64+181|\
+         n=65+261|\
+         Z_a_p_f_i_n_o=66+2333"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_020() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Kokonor.ttf",
+            "\u{0F62}\u{0F92}\u{0FB1}\u{0F74}",
+            "--font-funcs ot",
+        ),
+        "r_g_y_u=0+1579"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_021() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Kokonor.ttf",
+            "\u{0F62}\u{0F92}\u{0FB1}\u{0F74}",
+            "--font-funcs ot --features liga=0",
+        ),
+        "r_g_y_u=0+1579"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_022() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
+            "--font-funcs ot",
+        ),
+        "f_i=0+1097|\
+         r=2+853|\
+         s=3+728|\
+         t=4+725"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_023() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
+            "--font-funcs ot --features dlig=1",
+        ),
+        "f_i=0+1097|\
+         r=2+853|\
+         s_t=3+1438"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_024() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
+            "--font-funcs ot --features liga=0",
+        ),
+        "f=0+639|\
+         i=1+606|\
+         r=2+853|\
+         s=3+728|\
+         t=4+725"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_025() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
+            "--font-funcs ot --features dlig=1,sups=0,tnum=0",
+        ),
+        "f_i=0+1097|\
+         r=2+853|\
+         s_t=3+1438"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_026() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
+            "--font-funcs ot --features liga=0,sups=0,tnum=0",
+        ),
+        "f=0+639|\
+         i=1+606|\
+         r=2+853|\
+         s=3+728|\
+         t=4+725"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_027() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
+            "--font-funcs ot --features smcp=1",
+        ),
+        "F.small=0+903|\
+         I.small=1+634|\
+         R.small=2+1113|\
+         S.small=3+911|\
+         T.small=4+1075"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_028() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
+            "--font-funcs ot --features liga=0,dlig=1",
+        ),
+        "f=0+639|\
+         i=1+606|\
+         r=2+853|\
+         s_t=3+1438"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_029() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Helvetica.ttc",
+            "\u{006D}\u{0300}",
+            "--font-funcs ot",
+        ),
+        "m=0+1706|\
+         gravecmb=0@-284,10+0"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_030() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/LucidaGrande.ttc",
+            "\u{006D}\u{0300}",
+            "--font-funcs ot",
+        ),
+        "mgrave=0+1912"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_031() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Times.ttc",
+            "\u{0066}\u{0069}",
+            "--font-funcs ot",
+        ),
+        "fi=0+1139"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_032() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Khmer MN.ttc",
+            "\u{17A2}\u{1780}\u{17D2}\u{179F}\u{179A}\u{1781}\u{17D2}\u{1798}\u{17C2}\u{179A}",
+            "--font-funcs ot",
+        ),
+        "km_qa=0+1230|\
+         km_ka=1+1230|\
+         km_sa.sub=1+620|\
+         km_ro=4+712|\
+         km_vs_ae=5+726|\
+         km_kha=5+1230|\
+         km_mo.sub=5+0|\
+         km_ro=9+712"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_033() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Tamil MN.ttc",
+            "\u{0BA4}\u{0BCA}\u{0B95}\u{0BC1}\u{0B95}\u{0BCD}\u{0B95}\u{0BAA}\u{0BCD}\u{0BAA}\
+             \u{0B9F}\u{0BCD}\u{0B9F}\u{0BC1}",
+            "--font-funcs ot",
+        ),
+        "tgm_e=0+1702|\
+         tgc_ta=0+1598|\
+         tgm_aa=0+1149|\
+         tgc_ku=2+1962|\
+         tgc_k=4+1592|\
+         tgc_ka=6+1592|\
+         tgc_p=7+1370|\
+         tgc_pa=9+1370|\
+         tgc_tt=10+1596|\
+         tgc_ttu=12+1833"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_034() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Times.ttc",
+            "\u{0041}\u{0066}\u{0300}\u{0066}\u{0069}\u{005A}",
+            "--font-funcs ot",
+        ),
+        "A=0+1479|\
+         f=1+682|\
+         gravecmb=1@-551,588+0|\
+         fi=3+1139|\
+         Z=5+1251"
     );
 }
 
@@ -396,7 +899,52 @@ fn macos_044() {
 
 #[cfg(target_os = "macos")]
 #[test]
+fn macos_045() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Thonburi.ttc",
+            "\u{0E17}\u{0E35}\u{0E48}\u{0E4A}",
+            "--font-funcs ot",
+        ),
+        "thothahanthai_saraiithai_maiekthai=0+1616|\
+         maitrithai.key=0+1300"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
 fn macos_046() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Times.ttc",
+            "\u{0066}\u{0069}\u{006e}\u{0065}",
+            "--font-funcs ot",
+        ),
+        "fi=0+1139|\
+         n=2+1024|\
+         e=3+909"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_047() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Times.ttc",
+            "\u{0066}\u{0069}\u{006e}\u{0065}",
+            "--font-funcs ot --features liga=0",
+        ),
+        "f=0+682|\
+         i=1+569|\
+         n=2+1024|\
+         e=3+909"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_048() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Kokonor.ttf",
@@ -409,7 +957,7 @@ fn macos_046() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_047() {
+fn macos_049() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Kokonor.ttf",
@@ -422,7 +970,7 @@ fn macos_047() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_048() {
+fn macos_050() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -438,7 +986,7 @@ fn macos_048() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_049() {
+fn macos_051() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -453,44 +1001,12 @@ fn macos_049() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_050() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot --features liga=0",
-        ),
-        "f=0+639|\
-         i=1+606|\
-         r=2+853|\
-         s=3+728|\
-         t=4+725"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_051() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot --features dlig=1,sups=0,tnum=0",
-        ),
-        "f_i=0+1097|\
-         r=2+853|\
-         s_t=3+1438"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
 fn macos_052() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
             "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot --features liga=0,sups=0,tnum=0",
+            "--font-funcs ot --features liga=0",
         ),
         "f=0+639|\
          i=1+606|\
@@ -507,6 +1023,38 @@ fn macos_053() {
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
             "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
+            "--font-funcs ot --features dlig=1,sups=0,tnum=0",
+        ),
+        "f_i=0+1097|\
+         r=2+853|\
+         s_t=3+1438"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_054() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
+            "--font-funcs ot --features liga=0,sups=0,tnum=0",
+        ),
+        "f=0+639|\
+         i=1+606|\
+         r=2+853|\
+         s=3+728|\
+         t=4+725"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_055() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
             "--font-funcs ot --features smcp=1",
         ),
         "F.small=0+903|\
@@ -519,7 +1067,7 @@ fn macos_053() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_054() {
+fn macos_056() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -1083,7 +1631,7 @@ fn macos_084() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_087() {
+fn macos_085() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Helvetica.ttc",
@@ -1097,7 +1645,7 @@ fn macos_087() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_088() {
+fn macos_086() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/LucidaGrande.ttc",
@@ -1110,7 +1658,7 @@ fn macos_088() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_089() {
+fn macos_087() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Times.ttc",
@@ -1123,7 +1671,7 @@ fn macos_089() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_090() {
+fn macos_088() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Khmer MN.ttc",
@@ -1143,7 +1691,7 @@ fn macos_090() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_091() {
+fn macos_089() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Tamil MN.ttc",
@@ -1166,7 +1714,7 @@ fn macos_091() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_092() {
+fn macos_090() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Times.ttc",
@@ -1183,7 +1731,7 @@ fn macos_092() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_093() {
+fn macos_091() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/LucidaGrande.ttc",
@@ -1197,7 +1745,7 @@ fn macos_093() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_094() {
+fn macos_092() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -1228,7 +1776,7 @@ fn macos_094() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_095() {
+fn macos_093() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -1256,6 +1804,60 @@ fn macos_095() {
          space=17+569|\
          T=18+1515|\
          d=19@-45,0+1006"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_094() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/GeezaPro.ttc",
+            "\u{0627}\u{0644}\u{0623}\u{064E}\u{0628}\u{0652}\u{062C}\u{064E}\u{062F}\u{0650}\
+             \u{064A}\u{064E}\u{0651}\u{0629}\u{0640}\u{0627}\u{0644}\u{0639}\u{064E}\u{0631}\
+             \u{064E}\u{0628}\u{0650}\u{064A}\u{064E}\u{0651}\u{0629}",
+            "--font-funcs ot",
+        ),
+        "u0629.final.tehMarbuta=26+713|\
+         u064e_u0651.shaddaFatha=23@0,-200+0|\
+         u064a.medial.yeh=23+656|\
+         u0650.kasra=21@80,290+80|\
+         u0628.initial.beh=21@-80,0+576|\
+         u064e.fatha=19@200,-570+200|\
+         u0631.final.reh=19@-200,0+702|\
+         u064e.fatha=17@200,-200+200|\
+         u0639.medial.ain=17@-200,0+738|\
+         u0644.initial.lam=16+515|\
+         u0627.final.alef=15+647|\
+         u0640.tatweel=14+449|\
+         u0629.final.tehMarbuta=13+713|\
+         u064e_u0651.shaddaFatha=10@0,-200+0|\
+         u064a.initial.yeh=10+656|\
+         u0650.kasra=8@80,570+80|\
+         u062f.final.dal=8@-80,0+822|\
+         u064e.fatha=6@290,-160+290|\
+         u062c.medial.jeem=6@-290,0+1069|\
+         u0652.sukun=4@0,-200+0|\
+         u0628.initial.beh=4+656|\
+         u064e.fatha=1@-372,120+-372|\
+         u0644_u0623.isolated.lamHamzaOnAlef=1@120,0+1282|\
+         u0627.alef=0+647"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_095() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/GeezaPro.ttc",
+            "\u{0628}\u{064A}\u{064E}\u{0651}\u{0629}",
+            "--font-funcs ot",
+        ),
+        "u0629.final.tehMarbuta=4+713|\
+         u064e_u0651.shaddaFatha=1@0,-200+0|\
+         u064a.medial.yeh=1+656|\
+         u0628.initial.beh=0+656"
     );
 }
 
@@ -1265,35 +1867,11 @@ fn macos_096() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0627}\u{0644}\u{0623}\u{064E}\u{0628}\u{0652}\u{062C}\u{064E}\u{062F}\u{0650}\
-             \u{064A}\u{064E}\u{0651}\u{0629}\u{0640}\u{0627}\u{0644}\u{0639}\u{064E}\u{0631}\
-             \u{064E}\u{0628}\u{0650}\u{064A}\u{064E}\u{0651}\u{0629}",
+            "\u{0631}\u{0628}",
             "--font-funcs ot",
         ),
-        "u0629.final.tehMarbuta=26+713|\
-         u064e_u0651.shaddaFatha=23@0,-200+0|\
-         u064a.medial.yeh=23+656|\
-         u0650.kasra=21@80,290+80|\
-         u0628.initial.beh=21@-80,0+576|\
-         u064e.fatha=19@200,-570+200|\
-         u0631.final.reh=19@-200,0+702|\
-         u064e.fatha=17@200,-200+200|\
-         u0639.medial.ain=17@-200,0+738|\
-         u0644.initial.lam=16+515|\
-         u0627.final.alef=15+647|\
-         u0640.tatweel=14+449|\
-         u0629.final.tehMarbuta=13+713|\
-         u064e_u0651.shaddaFatha=10@0,-200+0|\
-         u064a.initial.yeh=10+656|\
-         u0650.kasra=8@80,570+80|\
-         u062f.final.dal=8@-80,0+822|\
-         u064e.fatha=6@290,-160+290|\
-         u062c.medial.jeem=6@-290,0+1069|\
-         u0652.sukun=4@0,-200+0|\
-         u0628.initial.beh=4+656|\
-         u064e.fatha=1@-372,120+-372|\
-         u0644_u0623.isolated.lamHamzaOnAlef=1@120,0+1282|\
-         u0627.alef=0+647"
+        "u0628.beh=1+1415|\
+         u0631.reh=0@-202,0+700"
     );
 }
 
@@ -1303,13 +1881,11 @@ fn macos_097() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0628}\u{064A}\u{064E}\u{0651}\u{0629}",
+            "\u{0628}\u{064F}",
             "--font-funcs ot",
         ),
-        "u0629.final.tehMarbuta=4+713|\
-         u064e_u0651.shaddaFatha=1@0,-200+0|\
-         u064a.medial.yeh=1+656|\
-         u0628.initial.beh=0+656"
+        "u064f.damma=0@250,-250+250|\
+         u0628.beh=0@-250,0+1165"
     );
 }
 
@@ -1319,595 +1895,19 @@ fn macos_098() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0631}\u{0628}",
+            "\u{0644}\u{064E}\u{0645}\u{064E}\u{0651}\u{0627}",
             "--font-funcs ot",
         ),
-        "u0628.beh=1+1415|\
-         u0631.reh=0@-202,0+700"
+        "u0627.final.alef=5+647|\
+         u064e.fatha=0@-80,160+-80|\
+         u064e_u0651.shaddaFatha=0@490,250+490|\
+         u0644_u0645.initial.lamMeem=0@-410,0+415"
     );
 }
 
 #[cfg(target_os = "macos")]
 #[test]
 fn macos_099() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0628}\u{064F}",
-            "--font-funcs ot",
-        ),
-        "u064f.damma=0@250,-250+250|\
-         u0628.beh=0@-250,0+1165"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_100() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0644}\u{064E}\u{0645}\u{064E}\u{0651}\u{0627}",
-            "--font-funcs ot",
-        ),
-        "u0627.final.alef=5+647|\
-         u064e.fatha=0@-80,160+-80|\
-         u064e_u0651.shaddaFatha=0@490,250+490|\
-         u0644_u0645.initial.lamMeem=0@-410,0+415"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_101() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Apple Color Emoji.ttc",
-            "\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}\u{200D}\u{1F466}",
-            "--remove-default-ignorables --font-funcs ot",
-        ),
-        "u1F9D1_u1F9D1_u1F9D2_u1F9D2=0+800"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_102() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Zapfino.ttf",
-            "\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\
-             \u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\
-             \u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\
-             \u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\
-             \u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\
-             \u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\
-             \u{005A}\u{0061}\u{0070}\u{0066}\u{0069}\u{006E}\u{005A}\u{0061}\u{0070}\u{0066}\
-             \u{0069}\u{006E}\u{006F}",
-            "--font-funcs ot",
-        ),
-        "Z=0+416|\
-         a=1@-21,0+264|\
-         p_f=2+433|\
-         i=4+181|\
-         n=5+261|\
-         Z=6+416|\
-         a=7@-21,0+264|\
-         p_f=8+433|\
-         i=10+181|\
-         n=11+261|\
-         Z=12+416|\
-         a=13@-21,0+264|\
-         p_f=14+433|\
-         i=16+181|\
-         n=17+261|\
-         Z=18+416|\
-         a=19@-21,0+264|\
-         p_f=20+433|\
-         i=22+181|\
-         n=23+261|\
-         Z=24+416|\
-         a=25@-21,0+264|\
-         p_f=26+433|\
-         i=28+181|\
-         n=29+261|\
-         Z=30+416|\
-         a=31@-21,0+264|\
-         p_f=32+433|\
-         i=34+181|\
-         n=35+261|\
-         Z=36+416|\
-         a=37@-21,0+264|\
-         p_f=38+433|\
-         i=40+181|\
-         n=41+261|\
-         Z=42+416|\
-         a=43@-21,0+264|\
-         p_f=44+433|\
-         i=46+181|\
-         n=47+261|\
-         Z=48+416|\
-         a=49@-21,0+264|\
-         p_f=50+433|\
-         i=52+181|\
-         n=53+261|\
-         Z=54+416|\
-         a=55@-21,0+264|\
-         p_f=56+433|\
-         i=58+181|\
-         n=59+261|\
-         Z=60+416|\
-         a=61@-21,0+264|\
-         p_f=62+433|\
-         i=64+181|\
-         n=65+261|\
-         Z_a_p_f_i_n_o=66+2333"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_103() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Thonburi.ttc",
-            "\u{0E17}\u{0E35}\u{0E48}\u{0E4A}",
-            "--font-funcs ot",
-        ),
-        "thothahanthai_saraiithai_maiekthai=0+1616|\
-         maitrithai.key=0+1300"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_104() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Times.ttc",
-            "\u{0066}\u{0069}\u{006e}\u{0065}",
-            "--font-funcs ot",
-        ),
-        "fi=0+1139|\
-         n=2+1024|\
-         e=3+909"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_105() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Times.ttc",
-            "\u{0066}\u{0069}\u{006e}\u{0065}",
-            "--font-funcs ot --features liga=0",
-        ),
-        "f=0+682|\
-         i=1+569|\
-         n=2+1024|\
-         e=3+909"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_106() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Kokonor.ttf",
-            "\u{0F62}\u{0F92}\u{0FB1}\u{0F74}",
-            "--font-funcs ot",
-        ),
-        "r_g_y_u=0+1579"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_107() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Kokonor.ttf",
-            "\u{0F62}\u{0F92}\u{0FB1}\u{0F74}",
-            "--font-funcs ot --features liga=0",
-        ),
-        "r_g_y_u=0+1579"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_108() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot",
-        ),
-        "f_i=0+1097|\
-         r=2+853|\
-         s=3+728|\
-         t=4+725"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_109() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot --features dlig=1",
-        ),
-        "f_i=0+1097|\
-         r=2+853|\
-         s_t=3+1438"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_110() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot --features liga=0",
-        ),
-        "f=0+639|\
-         i=1+606|\
-         r=2+853|\
-         s=3+728|\
-         t=4+725"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_111() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot --features dlig=1,sups=0,tnum=0",
-        ),
-        "f_i=0+1097|\
-         r=2+853|\
-         s_t=3+1438"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_112() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot --features liga=0,sups=0,tnum=0",
-        ),
-        "f=0+639|\
-         i=1+606|\
-         r=2+853|\
-         s=3+728|\
-         t=4+725"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_113() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot --features smcp=1",
-        ),
-        "F.small=0+903|\
-         I.small=1+634|\
-         R.small=2+1113|\
-         S.small=3+911|\
-         T.small=4+1075"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_114() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0066}\u{0069}\u{0072}\u{0073}\u{0074}",
-            "--font-funcs ot --features liga=0,dlig=1",
-        ),
-        "f=0+639|\
-         i=1+606|\
-         r=2+853|\
-         s_t=3+1438"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_117() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Helvetica.ttc",
-            "\u{006D}\u{0300}",
-            "--font-funcs ot",
-        ),
-        "m=0+1706|\
-         gravecmb=0@-284,10+0"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_118() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/LucidaGrande.ttc",
-            "\u{006D}\u{0300}",
-            "--font-funcs ot",
-        ),
-        "mgrave=0+1912"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_119() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Times.ttc",
-            "\u{0066}\u{0069}",
-            "--font-funcs ot",
-        ),
-        "fi=0+1139"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_120() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Khmer MN.ttc",
-            "\u{17A2}\u{1780}\u{17D2}\u{179F}\u{179A}\u{1781}\u{17D2}\u{1798}\u{17C2}\u{179A}",
-            "--font-funcs ot",
-        ),
-        "km_qa=0+1230|\
-         km_ka=1+1230|\
-         km_sa.sub=1+620|\
-         km_ro=4+712|\
-         km_vs_ae=5+726|\
-         km_kha=5+1230|\
-         km_mo.sub=5+0|\
-         km_ro=9+712"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_121() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Tamil MN.ttc",
-            "\u{0BA4}\u{0BCA}\u{0B95}\u{0BC1}\u{0B95}\u{0BCD}\u{0B95}\u{0BAA}\u{0BCD}\u{0BAA}\
-             \u{0B9F}\u{0BCD}\u{0B9F}\u{0BC1}",
-            "--font-funcs ot",
-        ),
-        "tgm_e=0+1702|\
-         tgc_ta=0+1598|\
-         tgm_aa=0+1149|\
-         tgc_ku=2+1962|\
-         tgc_k=4+1592|\
-         tgc_ka=6+1592|\
-         tgc_p=7+1370|\
-         tgc_pa=9+1370|\
-         tgc_tt=10+1596|\
-         tgc_ttu=12+1833"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_122() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Times.ttc",
-            "\u{0041}\u{0066}\u{0300}\u{0066}\u{0069}\u{005A}",
-            "--font-funcs ot",
-        ),
-        "A=0+1479|\
-         f=1+682|\
-         gravecmb=1@-551,588+0|\
-         fi=3+1139|\
-         Z=5+1251"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_123() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/LucidaGrande.ttc",
-            "\u{05E1}\u{05B0}",
-            "--font-funcs ot",
-        ),
-        "shevahebrew=0@51,0+0|\
-         samekhhebrew=0+1361"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_124() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0054}\u{0068}\u{0020}\u{0074}\u{0068}\u{0020}\u{006C}\u{006C}\u{0020}\u{0074}\
-             \u{0065}\u{0020}\u{0074}\u{006F}\u{0020}\u{0074}\u{0072}\u{0020}\u{0066}\u{0072}\
-             \u{0020}\u{0066}\u{0075}\u{0020}\u{0066}\u{006A}",
-            "--font-funcs ot",
-        ),
-        "T_h=0+2308|\
-         space=2+569|\
-         t_h=3+1687|\
-         space=5+569|\
-         l_l=6+1108|\
-         space=8+569|\
-         t_e=9+1408|\
-         space=11+569|\
-         t_o=12+1531|\
-         space=14+569|\
-         t_r=15+1385|\
-         space=17+569|\
-         f_r=18+1432|\
-         space=20+569|\
-         f_u=21+1733|\
-         space=23+569|\
-         f_j=24+1098"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_125() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
-            "\u{0054}\u{0065}\u{0020}\u{0041}\u{0056}\u{0020}\u{0054}\u{0072}\u{0020}\u{0056}\
-             \u{0061}\u{0020}\u{0072}\u{0054}\u{0020}\u{0065}\u{0054}\u{0020}\u{0054}\u{0064}",
-            "--font-funcs ot",
-        ),
-        "T=0+1497|\
-         e=1@-62,0+699|\
-         space=2+569|\
-         A=3+1431|\
-         V=4@-37,0+1377|\
-         space=5+569|\
-         T=6+1510|\
-         r=7@-50,0+803|\
-         space=8+569|\
-         V=9+1376|\
-         a=10@-37,0+1014|\
-         space=11+569|\
-         r=12+853|\
-         T=13+1560|\
-         space=14+569|\
-         e=15+761|\
-         T=16+1560|\
-         space=17+569|\
-         T=18+1515|\
-         d=19@-45,0+1006"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_126() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0627}\u{0644}\u{0623}\u{064E}\u{0628}\u{0652}\u{062C}\u{064E}\u{062F}\u{0650}\
-             \u{064A}\u{064E}\u{0651}\u{0629}\u{0640}\u{0627}\u{0644}\u{0639}\u{064E}\u{0631}\
-             \u{064E}\u{0628}\u{0650}\u{064A}\u{064E}\u{0651}\u{0629}",
-            "--font-funcs ot",
-        ),
-        "u0629.final.tehMarbuta=26+713|\
-         u064e_u0651.shaddaFatha=23@0,-200+0|\
-         u064a.medial.yeh=23+656|\
-         u0650.kasra=21@80,290+80|\
-         u0628.initial.beh=21@-80,0+576|\
-         u064e.fatha=19@200,-570+200|\
-         u0631.final.reh=19@-200,0+702|\
-         u064e.fatha=17@200,-200+200|\
-         u0639.medial.ain=17@-200,0+738|\
-         u0644.initial.lam=16+515|\
-         u0627.final.alef=15+647|\
-         u0640.tatweel=14+449|\
-         u0629.final.tehMarbuta=13+713|\
-         u064e_u0651.shaddaFatha=10@0,-200+0|\
-         u064a.initial.yeh=10+656|\
-         u0650.kasra=8@80,570+80|\
-         u062f.final.dal=8@-80,0+822|\
-         u064e.fatha=6@290,-160+290|\
-         u062c.medial.jeem=6@-290,0+1069|\
-         u0652.sukun=4@0,-200+0|\
-         u0628.initial.beh=4+656|\
-         u064e.fatha=1@-372,120+-372|\
-         u0644_u0623.isolated.lamHamzaOnAlef=1@120,0+1282|\
-         u0627.alef=0+647"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_127() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0628}\u{064A}\u{064E}\u{0651}\u{0629}",
-            "--font-funcs ot",
-        ),
-        "u0629.final.tehMarbuta=4+713|\
-         u064e_u0651.shaddaFatha=1@0,-200+0|\
-         u064a.medial.yeh=1+656|\
-         u0628.initial.beh=0+656"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_128() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0631}\u{0628}",
-            "--font-funcs ot",
-        ),
-        "u0628.beh=1+1415|\
-         u0631.reh=0@-202,0+700"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_129() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0628}\u{064F}",
-            "--font-funcs ot",
-        ),
-        "u064f.damma=0@250,-250+250|\
-         u0628.beh=0@-250,0+1165"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_130() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0644}\u{064E}\u{0645}\u{064E}\u{0651}\u{0627}",
-            "--font-funcs ot",
-        ),
-        "u0627.final.alef=5+647|\
-         u064e.fatha=0@-80,160+-80|\
-         u064e_u0651.shaddaFatha=0@490,250+490|\
-         u0644_u0645.initial.lamMeem=0@-410,0+415"
-    );
-}
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_131() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/GeezaPro.ttc",
@@ -1920,7 +1920,7 @@ fn macos_131() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_132() {
+fn macos_100() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/GeezaPro.ttc",
@@ -1934,7 +1934,7 @@ fn macos_132() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_134() {
+fn macos_101() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/SFNS.ttf",
@@ -1967,7 +1967,7 @@ fn macos_134() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_135() {
+fn macos_102() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/SFNS.ttf",
@@ -2000,7 +2000,7 @@ fn macos_135() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_136() {
+fn macos_103() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Apple Color Emoji.ttc",
@@ -2013,7 +2013,7 @@ fn macos_136() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_137() {
+fn macos_104() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Zapfino.ttf",
@@ -2088,7 +2088,7 @@ fn macos_137() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_138() {
+fn macos_105() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Thonburi.ttc",
@@ -2102,7 +2102,7 @@ fn macos_138() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_139() {
+fn macos_106() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Times.ttc",
@@ -2117,7 +2117,7 @@ fn macos_139() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_140() {
+fn macos_107() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Times.ttc",
@@ -2133,7 +2133,7 @@ fn macos_140() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_141() {
+fn macos_108() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Kokonor.ttf",
@@ -2146,7 +2146,7 @@ fn macos_141() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_142() {
+fn macos_109() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Kokonor.ttf",
@@ -2159,7 +2159,7 @@ fn macos_142() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_143() {
+fn macos_110() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -2175,7 +2175,7 @@ fn macos_143() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_144() {
+fn macos_111() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -2190,7 +2190,7 @@ fn macos_144() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_145() {
+fn macos_112() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -2207,7 +2207,7 @@ fn macos_145() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_146() {
+fn macos_113() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -2222,7 +2222,7 @@ fn macos_146() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_147() {
+fn macos_114() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -2239,7 +2239,7 @@ fn macos_147() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_148() {
+fn macos_115() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -2256,7 +2256,7 @@ fn macos_148() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_149() {
+fn macos_116() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
@@ -2272,7 +2272,7 @@ fn macos_149() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_150() {
+fn macos_117() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Skia.ttf",
@@ -2286,7 +2286,7 @@ fn macos_150() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_151() {
+fn macos_118() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc",
@@ -2300,7 +2300,7 @@ fn macos_151() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_154() {
+fn macos_119() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Apple Color Emoji.ttc",
@@ -2314,7 +2314,7 @@ fn macos_154() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_157() {
+fn macos_120() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Apple Color Emoji.ttc",
@@ -2328,7 +2328,7 @@ fn macos_157() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_160() {
+fn macos_121() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/LucidaGrande.ttc",

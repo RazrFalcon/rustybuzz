@@ -1898,7 +1898,7 @@ fn cursive_positioning_002() {
 }
 
 #[test]
-fn cursive_positioning_004() {
+fn cursive_positioning_003() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/07f054357ff8638bac3711b422a1e31180bba863.ttf",
@@ -1911,7 +1911,7 @@ fn cursive_positioning_004() {
 }
 
 #[test]
-fn cursive_positioning_005() {
+fn cursive_positioning_004() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/9fc3e6960b3520e5304033ef5fd540285f72f14d.ttf",
@@ -1925,7 +1925,7 @@ fn cursive_positioning_005() {
 }
 
 #[test]
-fn cursive_positioning_009() {
+fn cursive_positioning_005() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
@@ -1941,7 +1941,7 @@ fn cursive_positioning_009() {
 }
 
 #[test]
-fn cursive_positioning_010() {
+fn cursive_positioning_006() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
@@ -1957,7 +1957,7 @@ fn cursive_positioning_010() {
 }
 
 #[test]
-fn cursive_positioning_011() {
+fn cursive_positioning_007() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
@@ -1973,7 +1973,7 @@ fn cursive_positioning_011() {
 }
 
 #[test]
-fn cursive_positioning_012() {
+fn cursive_positioning_008() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
@@ -1989,7 +1989,7 @@ fn cursive_positioning_012() {
 }
 
 #[test]
-fn cursive_positioning_013() {
+fn cursive_positioning_009() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
@@ -2005,7 +2005,7 @@ fn cursive_positioning_013() {
 }
 
 #[test]
-fn cursive_positioning_014() {
+fn cursive_positioning_010() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
@@ -2021,7 +2021,7 @@ fn cursive_positioning_014() {
 }
 
 #[test]
-fn cursive_positioning_015() {
+fn cursive_positioning_011() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
@@ -2037,7 +2037,7 @@ fn cursive_positioning_015() {
 }
 
 #[test]
-fn cursive_positioning_016() {
+fn cursive_positioning_012() {
     assert_eq!(
         shape(
             "tests/fonts/in-house/be10ea33f28a139f3305db2302af6220f2f9a583.ttf",
