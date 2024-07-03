@@ -2,15 +2,14 @@
 
 use core::ops::{Index, IndexMut};
 
-use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex};
-use ttf_parser::GlyphId;
-
 use super::buffer::*;
 use super::common::TagExt;
 use super::ot_layout_gsubgpos::{Apply, OT};
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::unicode::{hb_unicode_funcs_t, hb_unicode_general_category_t, GeneralCategoryExt};
 use super::{hb_font_t, hb_glyph_info_t, hb_tag_t};
+use crate::hb::set_digest::{hb_set_digest_ext, hb_set_digest_t};
+use ttf_parser::opentype_layout::{FeatureIndex, LanguageIndex, LookupIndex, ScriptIndex};
 
 pub const MAX_NESTING_LEVEL: usize = 64;
 pub const MAX_CONTEXT_LENGTH: usize = 64;
@@ -102,8 +101,8 @@ pub trait LayoutLookup: Apply {
     /// Whether the lookup has to be applied backwards.
     fn is_reverse(&self) -> bool;
 
-    /// Whether any subtable of the lookup could apply at a specific glyph.
-    fn covers(&self, glyph: GlyphId) -> bool;
+    /// The digest of the lookup.
+    fn digest(&self) -> &hb_set_digest_t;
 }
 
 pub trait LayoutTableExt {
@@ -239,24 +238,30 @@ pub fn apply_layout_table<T: LayoutTable>(
     let mut ctx = OT::hb_ot_apply_context_t::new(T::INDEX, face, buffer);
 
     for (stage_index, stage) in plan.ot_map.stages(T::INDEX).iter().enumerate() {
-        for lookup in plan.ot_map.stage_lookups(T::INDEX, stage_index) {
-            ctx.lookup_index = lookup.index;
-            ctx.set_lookup_mask(lookup.mask);
-            ctx.auto_zwj = lookup.auto_zwj;
-            ctx.auto_zwnj = lookup.auto_zwnj;
+        if let Some(table) = table {
+            for lookup_map in plan.ot_map.stage_lookups(T::INDEX, stage_index) {
+                let Some(lookup) = table.get_lookup(lookup_map.index) else {
+                    continue;
+                };
 
-            ctx.random = lookup.random;
-            ctx.per_syllable = lookup.per_syllable;
+                if lookup.digest().may_have(&ctx.digest) {
+                    ctx.lookup_index = lookup_map.index;
+                    ctx.set_lookup_mask(lookup_map.mask);
+                    ctx.auto_zwj = lookup_map.auto_zwj;
+                    ctx.auto_zwnj = lookup_map.auto_zwnj;
 
-            if let Some(table) = &table {
-                if let Some(lookup) = table.get_lookup(lookup.index) {
+                    ctx.random = lookup_map.random;
+                    ctx.per_syllable = lookup_map.per_syllable;
+
                     apply_string::<T>(&mut ctx, lookup);
                 }
             }
         }
 
         if let Some(func) = stage.pause_func {
-            func(plan, face, ctx.buffer);
+            if func(plan, face, ctx.buffer) {
+                ctx.digest = ctx.buffer.digest();
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-#[allow(unused_imports)]
+#[cfg(not(feature = "std"))]
 use core_maths::CoreFloat;
 
 use crate::hb::paint_extents::hb_paint_extents_context_t;

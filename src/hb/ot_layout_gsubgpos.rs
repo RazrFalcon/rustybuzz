@@ -1001,6 +1001,7 @@ pub struct WouldApplyContext<'a> {
 
 pub mod OT {
     use super::*;
+    use crate::hb::set_digest::{hb_set_digest_ext, hb_set_digest_t};
 
     pub struct hb_ot_apply_context_t<'a, 'b> {
         pub table_index: TableIndex,
@@ -1017,6 +1018,7 @@ pub mod OT {
         pub random_state: u32,
         pub last_base: i32,
         pub last_base_until: u32,
+        pub digest: hb_set_digest_t,
     }
 
     impl<'a, 'b> hb_ot_apply_context_t<'a, 'b> {
@@ -1025,6 +1027,7 @@ pub mod OT {
             face: &'a hb_font_t<'b>,
             buffer: &'a mut hb_buffer_t,
         ) -> Self {
+            let buffer_digest = buffer.digest();
             Self {
                 table_index,
                 face,
@@ -1040,6 +1043,7 @@ pub mod OT {
                 random_state: 1,
                 last_base: -1,
                 last_base_until: 0,
+                digest: buffer_digest,
             }
         }
 
@@ -1120,6 +1124,9 @@ pub mod OT {
                 // match_props has the set index.
                 if lookup_flags & lookup_flags::USE_MARK_FILTERING_SET != 0 {
                     let set_index = (match_props >> 16) as u16;
+                    // TODO: harfbuzz uses a digest here to speed things up if HB_NO_GDEF_CACHE
+                    // is enabled. But a bit harder to implement for us since it's taken care of by
+                    // ttf-parser
                     if let Some(table) = self.face.tables().gdef {
                         return table.is_mark_glyph(info.as_glyph(), Some(set_index));
                     } else {
@@ -1146,6 +1153,8 @@ pub mod OT {
             ligature: bool,
             component: bool,
         ) {
+            self.digest.add(glyph_id);
+
             let cur = self.buffer.cur_mut(0);
             let mut props = cur.glyph_props();
 
