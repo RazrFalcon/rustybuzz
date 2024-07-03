@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use alloc::{borrow::ToOwned, ffi::CString, format};
+use alloc::{borrow::ToOwned, ffi::CString, format, string::String};
 use ttf_parser::{GlyphId, Tag};
 use wasmtime::{self, AsContextMut, Caller, Engine, Linker, Memory, Module};
 
@@ -227,7 +227,7 @@ pub(crate) fn shape_with_wasm(
 
         let my_blob = Blob {
             length,
-            data: todo!("what do I put here? Is the data already allocated in wasm Memory?"),
+            data: table.as_ptr() as usize, // is this correct?
         };
         let my_blob = unsafe { std::mem::transmute(my_blob) };
 
@@ -247,6 +247,30 @@ pub(crate) fn shape_with_wasm(
         |mut caller: Caller<'_, Context>, buffer: u32, cbuffer: u32| -> u32 {
             let memory = caller.data().memory.unwrap();
 
+            // here we shoould *copy in* the data.
+
+            let infos = CGlyphInfo {
+                codepoint: todo!(),
+                mask: todo!(),
+                cluster: todo!(),
+                var1: 0,
+                var2: 0,
+            };
+
+            let positions = CGlyphPosition {
+                x_advance: todo!(),
+                y_advance: todo!(),
+                x_offset: todo!(),
+                y_offset: todo!(),
+                var: 0,
+            };
+
+            let buffer_contents = CBufferContents {
+                length: todo!(),
+                info: todo!(),     // *mut CGlyphInfo
+                position: todo!(), //  *mut CGlyphPosition
+            };
+
             todo!()
         };
     linker.func_wrap(module_name, "buffer_copy_contents", buffer_copy_contents);
@@ -255,6 +279,30 @@ pub(crate) fn shape_with_wasm(
     //    Copy the buffer_contents structure back into the host shaping engine's buffer. This should typically be called at the end of shaping.
     let buffer_set_contents = |mut caller: Caller<'_, Context>, buffer: u32, cbuffer: u32| -> u32 {
         let memory = caller.data().memory.unwrap();
+
+        // here we should *copy out* the data.
+
+        let infos = CGlyphInfo {
+            codepoint: todo!(),
+            mask: todo!(),
+            cluster: todo!(),
+            var1: 0,
+            var2: 0,
+        };
+
+        let positions = CGlyphPosition {
+            x_advance: todo!(),
+            y_advance: todo!(),
+            x_offset: todo!(),
+            y_offset: todo!(),
+            var: 0,
+        };
+
+        let buffer_contents = CBufferContents {
+            length: todo!(),
+            info: todo!(),     // *mut CGlyphInfo
+            position: todo!(), //  *mut CGlyphPosition
+        };
 
         todo!()
     };
@@ -265,10 +313,14 @@ pub(crate) fn shape_with_wasm(
     // fn debugprint(s: *const u8);
     // Produces a debugging message in the host shaper's log output; the variants debugprint1 ... debugprint4 suffix the message with a comma-separated list of the integer arguments.
     // rust varargs when
-    let debugprint = |mut caller: Caller<'_, Context>, s: u32| -> u32 {
-        let memory = caller.data().memory.unwrap();
+    let debugprint = |mut caller: Caller<'_, Context>, s: u32| {
+        // maybe there is a way to bypass the allocation?
+        let mut buffer = alloc::vec![];
 
-        todo!()
+        let memory = caller.data().memory.unwrap();
+        memory.read(caller, s as usize, &mut buffer);
+
+        std::eprintln!("{}", String::from_utf8_lossy(&buffer)); // maybe?
     };
     linker
         .func_wrap(module_name, "debugprint", debugprint)
@@ -332,7 +384,7 @@ pub struct Blob {
     /// Length of the blob in bytes
     pub length: u32,
     /// A raw pointer to the contents
-    pub data: *mut u8,
+    pub data: usize, // *mut u8
 }
 
 /// Glyph information in a buffer item provided by ~~Harfbuzz~~ rustybuzz
