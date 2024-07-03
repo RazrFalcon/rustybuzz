@@ -261,13 +261,22 @@ def main():
             hb_dir, hb_shape_exe, tests_dir, "macos", ["macos.tests"], False
         )
 
-    # Finally, we convert all of the custom tests (except MacOS tests). The test files themselves
+    # Next we convert all of the custom tests (except MacOS tests). The test files themselves
     # are in the same format as the harfbuzz ones (i.e. they contain the arguments in the same form as
     # harfbuzz tests, but are instead stored in the rustybuzz folder. In addition to that, font paths
     # are relative to fonts stored inside of rustybuzz and not harfbuzz)
     convert_test_folder(
         rb_root, hb_shape_exe, rb_root / "tests" / "custom", "custom", True
     )
+
+    # Finally, custom MacOS tests!
+    if platform == "darwin":
+        # macos.tests are not directly copied from harfbuzz, but instead from
+        # `macos.tests` in this folder. See the README for more information.
+        tests_dir = rb_root / "tests" / "custom"
+        convert_test_files(
+            rb_root, hb_shape_exe, tests_dir, "custom_macos", ["macos.tests"], False
+        )
 
 
 if __name__ == "__main__":
