@@ -80,7 +80,7 @@ def convert_unicodes(unicodes):
     return text
 
 
-def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
+def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
     fontfile, options, unicodes, glyphs_expected = data.split(';')
 
     # MacOS tests contain hashes, remove them.
@@ -163,8 +163,8 @@ def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
 
     return final_string
 
-
-def convert(hb_dir, hb_shape_exe, tests_dir, tests_name):
+# Convert all test files in a folder into Rust tests and write them into a file.
+def convert_test_folder(hb_dir, hb_shape_exe, tests_dir, tests_name):
     files = sorted(os.listdir(tests_dir))
     files = [f for f in files if f.endswith('.tests')]
 
@@ -186,8 +186,8 @@ def convert(hb_dir, hb_shape_exe, tests_dir, tests_name):
                 if test.startswith('#') or len(test) == 0:
                     continue
 
-                rust_code += convert_test(hb_dir, hb_shape_exe, tests_name,
-                                          file, idx + 1, test, fonts)
+                rust_code += convert_test_file(hb_dir, hb_shape_exe, tests_name,
+                                               file, idx + 1, test, fonts)
 
     tests_name_snake_case = tests_name.replace('-', '_')
     with open(f'../tests/shaping/{tests_name_snake_case}.rs', 'w') as f:
@@ -211,7 +211,7 @@ def main():
     for test_dir_name in test_dir_names:
         tests_dir = hb_dir / f'test/shape/data/{test_dir_name}/tests'
 
-        dir_used_fonts = convert(hb_dir, hb_shape_exe, tests_dir, test_dir_name)
+        dir_used_fonts = convert_test_folder(hb_dir, hb_shape_exe, tests_dir, test_dir_name)
         for filename in dir_used_fonts:
             shutil.copy(
                 hb_dir / f'test/shape/data/{test_dir_name}/fonts/{filename}',
