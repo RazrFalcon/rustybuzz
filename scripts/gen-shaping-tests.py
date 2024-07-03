@@ -250,15 +250,15 @@ def main():
                 f"../tests/fonts/{test_dir_name}",
             )
 
-    # Next we convert harfbuzz MacOS tests, but only if the person running this
+    # Next we convert harfbuzz MacOS tests as well as custom MacOS tests, but only if the person running this
     # script is also running MacOS, otherwise they won't have the system fonts and
     # thus can't run the tests.
     if platform == "darwin":
         # macos.tests are not directly copied from harfbuzz, but instead from
         # `macos.tests` in this folder. See the README for more information.
-        tests_dir = pathlib.Path(__file__).parent
+        tests_dir = rb_root / "tests" / "custom"
         convert_test_files(
-            hb_dir, hb_shape_exe, tests_dir, "macos", ["macos.tests"], False
+            rb_root, hb_shape_exe, tests_dir, "macos", ["macos.tests"], False
         )
 
     # Next we convert all of the custom tests (except MacOS tests). The test files themselves
@@ -268,15 +268,6 @@ def main():
     convert_test_folder(
         rb_root, hb_shape_exe, rb_root / "tests" / "custom", "custom", True
     )
-
-    # Finally, custom MacOS tests!
-    if platform == "darwin":
-        # macos.tests are not directly copied from harfbuzz, but instead from
-        # `macos.tests` in this folder. See the README for more information.
-        tests_dir = rb_root / "tests" / "custom"
-        convert_test_files(
-            rb_root, hb_shape_exe, tests_dir, "custom_macos", ["macos.tests"], False
-        )
 
 
 if __name__ == "__main__":
