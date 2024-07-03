@@ -6,11 +6,12 @@ import shutil
 import sys
 import subprocess
 from pathlib import Path
+from sys import platform
 
 # harfbuzz test files that will be ignored.
 IGNORE_TESTS = [
-    # Disable this if you are on a Mac and want to update the macos tests.
-    # 'macos.tests',
+    # We disable those here because we handle MacOS tests separately.
+    "macos.tests",
     "coretext.tests",
     "directwrite.tests",
     "uniscribe.tests",
@@ -131,8 +132,8 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
     ).stdout.decode()
 
     glyphs_expected = glyphs_expected.strip()[
-                      1:-1
-                      ]  # remove leading and trailing whitespaces and `[..]`
+        1:-1
+    ]  # remove leading and trailing whitespaces and `[..]`
     glyphs_expected = glyphs_expected.replace("|", "|\\\n         ")
 
     options = options.replace('"', '\\"')
@@ -179,7 +180,7 @@ def read_test_cases(path):
 # Convert all test files in a folder into Rust tests and write them into a file.
 def convert_test_folder(hb_dir, hb_shape_exe, tests_dir, tests_name):
     files = sorted(os.listdir(tests_dir))
-    files = [f for f in files if f.endswith(".tests")]
+    files = [f for f in files if f.endswith(".tests") and f not in IGNORE_TESTS]
 
     return convert_test_files(hb_dir, hb_shape_exe, tests_dir, tests_name, files)
 
@@ -195,14 +196,7 @@ def convert_test_files(hb_dir, hb_shape_exe, tests_dir, tests_name, files):
     )
 
     for file in files:
-        if file in IGNORE_TESTS:
-            continue
-
-        path = (
-            tests_dir / file
-            if file != "macos.tests"
-            else pathlib.Path(__file__).parent / file
-        )
+        path = tests_dir / file
 
         for idx, test in read_test_cases(path):
             rust_code += convert_test_file(
@@ -231,6 +225,7 @@ def main():
     def to_absolute(name):
         return hb_dir / f"test/shape/data/{name}/tests"
 
+    # First we convert all harfbuzz tests that are not disabled
     test_dir_names = ["aots", "in-house", "text-rendering-tests"]
     for test_dir_name in test_dir_names:
         tests_dir = to_absolute(test_dir_name)
@@ -243,6 +238,17 @@ def main():
                 hb_dir / f"test/shape/data/{test_dir_name}/fonts/{filename}",
                 f"../tests/fonts/{test_dir_name}",
             )
+
+    # Next we convert harfbuzz MacOS tests, but only if the person running this
+    # script is also running MacOS, otherwise they won't have the system fonts and
+    # thus can't run the tests.
+    if platform == "darwin":
+        # macos.tests are not directly copied from harfbuzz, but instead from
+        # `macos.tests` in this folder. See the README for more information.
+        tests_dir = pathlib.Path(__file__).parent
+        convert_test_files(
+            hb_dir, hb_shape_exe, tests_dir, "macos", ["macos.tests"]
+        )
 
 
 if __name__ == "__main__":
