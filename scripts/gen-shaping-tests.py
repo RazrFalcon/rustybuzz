@@ -225,13 +225,6 @@ def main():
         font_files += os.listdir(hb_dir /
                                  f'test/shape/data/{test_dir_name}/fonts')
 
-    # Check for unused fonts. Just for debugging.
-    # unused_fonts = sorted(list(set(font_files).difference(used_fonts)))
-    # if len(unused_fonts) != 0:
-    #     print('Unused fonts:')
-    #     for font in unused_fonts:
-    #         print(font)
-
 
 if __name__ == "__main__":
     main()
