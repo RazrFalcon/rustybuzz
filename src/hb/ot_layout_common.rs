@@ -1,10 +1,8 @@
+use crate::hb::set_digest::{hb_set_digest_ext, hb_set_digest_t};
 use alloc::vec::Vec;
-
 use ttf_parser::gpos::PositioningSubtable;
 use ttf_parser::gsub::SubstitutionSubtable;
 use ttf_parser::opentype_layout::{Coverage, Lookup};
-
-use super::glyph_set::{GlyphSet, GlyphSetBuilder};
 
 #[allow(dead_code)]
 pub mod lookup_flags {
@@ -36,21 +34,19 @@ impl<'a> PositioningTable<'a> {
 }
 
 pub trait CoverageExt {
-    fn collect(&self, set: &mut GlyphSetBuilder);
+    fn collect(&self, set_digest: &mut hb_set_digest_t);
 }
 
 impl CoverageExt for Coverage<'_> {
-    /// Collect this coverage table into a glyph set.
-    fn collect(&self, set: &mut GlyphSetBuilder) {
+    /// Collect this coverage table into a set digest.
+    fn collect(&self, set_digest: &mut hb_set_digest_t) {
         match *self {
             Self::Format1 { glyphs } => {
-                for glyph in glyphs {
-                    set.insert(glyph);
-                }
+                set_digest.add_array(glyphs);
             }
             Self::Format2 { records } => {
                 for record in records {
-                    set.insert_range(record.start..=record.end);
+                    set_digest.add_range(record.start, record.end);
                 }
             }
         }
@@ -60,7 +56,7 @@ impl CoverageExt for Coverage<'_> {
 #[derive(Clone)]
 pub struct PositioningLookup<'a> {
     pub subtables: Vec<PositioningSubtable<'a>>,
-    pub coverage: GlyphSet,
+    pub set_digest: hb_set_digest_t,
     pub props: u32,
 }
 
@@ -71,14 +67,14 @@ impl<'a> PositioningLookup<'a> {
             .into_iter::<PositioningSubtable>()
             .collect();
 
-        let mut coverage = GlyphSet::builder();
+        let mut set_digest = hb_set_digest_t::new();
         for subtable in &subtables {
-            subtable.coverage().collect(&mut coverage);
+            subtable.coverage().collect(&mut set_digest);
         }
 
         Self {
             subtables,
-            coverage: coverage.finish(),
+            set_digest,
             props: lookup_props(lookup),
         }
     }
@@ -101,7 +97,7 @@ impl<'a> SubstitutionTable<'a> {
 #[derive(Clone)]
 pub struct SubstLookup<'a> {
     pub subtables: Vec<SubstitutionSubtable<'a>>,
-    pub coverage: GlyphSet,
+    pub set_digest: hb_set_digest_t,
     pub reverse: bool,
     pub props: u32,
 }
@@ -113,17 +109,17 @@ impl<'a> SubstLookup<'a> {
             .into_iter::<SubstitutionSubtable>()
             .collect();
 
-        let mut coverage = GlyphSet::builder();
+        let mut set_digest = hb_set_digest_t::new();
         let mut reverse = !subtables.is_empty();
 
         for subtable in &subtables {
-            subtable.coverage().collect(&mut coverage);
+            subtable.coverage().collect(&mut set_digest);
             reverse &= subtable.is_reverse();
         }
 
         Self {
             subtables,
-            coverage: coverage.finish(),
+            set_digest,
             reverse,
             props: lookup_props(lookup),
         }

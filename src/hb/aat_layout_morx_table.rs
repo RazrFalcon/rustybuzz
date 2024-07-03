@@ -1,12 +1,13 @@
+use super::aat_layout::*;
+use super::aat_map::{hb_aat_map_builder_t, hb_aat_map_t, range_flags_t};
+use super::buffer::{hb_buffer_t, UnicodeProps};
+use super::{hb_font_t, hb_glyph_info_t};
 use crate::hb::aat_layout_common::hb_aat_apply_context_t;
 use crate::hb::ot_layout::MAX_CONTEXT_LENGTH;
 use alloc::vec;
 use ttf_parser::{apple_layout, morx, FromData, GlyphId, LazyArray32};
 
-use super::aat_layout::*;
-use super::aat_map::{hb_aat_map_builder_t, hb_aat_map_t, range_flags_t};
-use super::buffer::{hb_buffer_t, UnicodeProps};
-use super::{hb_font_t, hb_glyph_info_t};
+// TODO: Use set_digest, similarly to how it's used in harfbuzz.
 
 // Chain::compile_flags in harfbuzz
 pub fn compile_flags(

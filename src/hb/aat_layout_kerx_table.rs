@@ -10,6 +10,8 @@ use super::ot_layout_gpos_table::attach_type;
 use super::ot_layout_gsubgpos::{skipping_iterator_t, OT::hb_ot_apply_context_t};
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 
+// TODO: Use set_digest, similarly to how it's used in harfbuzz.
+
 trait ExtendedStateTableExt<T: FromData + Copy> {
     fn class(&self, glyph_id: GlyphId) -> Option<u16>;
     fn entry(&self, state: u16, class: u16) -> Option<apple_layout::GenericStateEntry<T>>;
