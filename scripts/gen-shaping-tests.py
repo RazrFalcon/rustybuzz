@@ -137,8 +137,9 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
     ]  # remove leading and trailing whitespaces and `[..]`
     glyphs_expected = glyphs_expected.replace("|", "|\\\n         ")
 
-    options = options.replace('"', '\\"')
-    options = options.replace(" --single-par", "")
+    options_rs = options
+    options_rs = options_rs.replace('"', '\\"')
+    options_rs = options_rs.replace(" --single-par", "")
 
     if not fontfile.startswith("/"):
         fonts.add(os.path.split(fontfile_rs)[1])
@@ -150,7 +151,7 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
         f"        shape(\n"
         f'            "{fontfile_rs}",\n'
         f'            "{unicodes_rs}",\n'
-        f'            "{options}",\n'
+        f'            "{options_rs}",\n'
         f"        ),\n"
         f'        "{glyphs_expected}"\n'
         f"    );\n"
