@@ -7,7 +7,6 @@ import sys
 import subprocess
 from pathlib import Path
 
-
 # harfbuzz test files that will be ignored.
 IGNORE_TESTS = [
     # Disable this if you are on a Mac and want to update the macos tests.
@@ -132,8 +131,8 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
     ).stdout.decode()
 
     glyphs_expected = glyphs_expected.strip()[
-        1:-1
-    ]  # remove leading and trailing whitespaces and `[..]`
+                      1:-1
+                      ]  # remove leading and trailing whitespaces and `[..]`
     glyphs_expected = glyphs_expected.replace("|", "|\\\n         ")
 
     options = options.replace('"', '\\"')
@@ -182,6 +181,10 @@ def convert_test_folder(hb_dir, hb_shape_exe, tests_dir, tests_name):
     files = sorted(os.listdir(tests_dir))
     files = [f for f in files if f.endswith(".tests")]
 
+    return convert_test_files(hb_dir, hb_shape_exe, tests_dir, tests_name, files)
+
+
+def convert_test_files(hb_dir, hb_shape_exe, tests_dir, tests_name, files):
     fonts = set()
 
     rust_code = (
@@ -225,9 +228,12 @@ def main():
     hb_shape_exe = hb_dir.joinpath("builddir/util/hb-shape")
     check_hb_build(hb_shape_exe)
 
+    def to_absolute(name):
+        return hb_dir / f"test/shape/data/{name}/tests"
+
     test_dir_names = ["aots", "in-house", "text-rendering-tests"]
     for test_dir_name in test_dir_names:
-        tests_dir = hb_dir / f"test/shape/data/{test_dir_name}/tests"
+        tests_dir = to_absolute(test_dir_name)
 
         dir_used_fonts = convert_test_folder(
             hb_dir, hb_shape_exe, tests_dir, test_dir_name
