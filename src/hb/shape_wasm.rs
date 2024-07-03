@@ -75,7 +75,7 @@ pub(crate) fn shape_with_wasm(
     // Returns the scale of the current font.
     linker.func_wrap(
         name,
-        "font_get_sclae",
+        "font_get_scale",
         |mut caller: Caller<'_, &hb_font_t>, font: u32, x_scale: *mut i32, y_scale: *mut i32| {
             // This signature gives a compiler error.
             todo!()
@@ -95,7 +95,7 @@ pub(crate) fn shape_with_wasm(
 
 
 
-    
+
     // Some(shape_with_plan(face, &plan, buffer))
 
     todo!()
