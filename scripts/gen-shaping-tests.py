@@ -209,8 +209,6 @@ def main():
     hb_shape_exe = hb_dir.joinpath('builddir/util/hb-shape')
     check_hb_build(hb_shape_exe)
 
-    used_fonts = []
-    font_files = []
     test_dir_names = ['aots', 'in-house', 'text-rendering-tests']
     for test_dir_name in test_dir_names:
         tests_dir = hb_dir / f'test/shape/data/{test_dir_name}/tests'
@@ -220,10 +218,6 @@ def main():
             shutil.copy(
                 hb_dir / f'test/shape/data/{test_dir_name}/fonts/{filename}',
                 f'../tests/fonts/{test_dir_name}')
-        used_fonts += dir_used_fonts
-
-        font_files += os.listdir(hb_dir /
-                                 f'test/shape/data/{test_dir_name}/fonts')
 
 
 if __name__ == "__main__":
