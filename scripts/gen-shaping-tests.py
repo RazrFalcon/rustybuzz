@@ -16,6 +16,7 @@ IGNORE_TESTS = [
     'directwrite.tests',
     'uniscribe.tests',
     'arabic-fallback-shaping.tests',
+    'emoji-clusters.tests',
 ]
 
 # harfbuzz test cases that will be ignored.
@@ -80,9 +81,6 @@ def convert_unicodes(unicodes):
 
 
 def convert_test(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
-    if file_name == 'emoji-clusters.tests':
-        return ''  # There are a lot of these; let's skip them
-
     fontfile, options, unicodes, glyphs_expected = data.split(';')
 
     # MacOS tests contain hashes, remove them.
