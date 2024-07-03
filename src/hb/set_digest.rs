@@ -10,7 +10,6 @@ pub trait hb_set_digest_ext: Clone {
     // Instead of `init()`
     fn new() -> Self;
     fn full() -> Self;
-    fn union(&mut self, o: &Self::A);
     fn add(&mut self, g: GlyphId);
     fn add_array(&mut self, array: impl IntoIterator<Item = GlyphId> + Clone);
     fn add_range(&mut self, a: GlyphId, b: GlyphId) -> bool;
@@ -74,10 +73,6 @@ impl<const shift: u8> hb_set_digest_ext for hb_set_digest_bits_pattern_t<shift> 
 
     fn full() -> Self {
         Self { mask: mask_t::MAX }
-    }
-
-    fn union(&mut self, o: &hb_set_digest_bits_pattern_t<shift>) {
-        self.mask |= o.mask;
     }
 
     fn add(&mut self, g: GlyphId) {
@@ -146,11 +141,6 @@ where
             head: head_t::full(),
             tail: tail_t::full(),
         }
-    }
-
-    fn union(&mut self, o: &Self::A) {
-        self.head.union(&o.head);
-        self.tail.union(&o.tail);
     }
 
     fn add(&mut self, g: GlyphId) {
