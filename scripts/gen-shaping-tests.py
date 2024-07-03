@@ -103,6 +103,9 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
     test_name = file_name.replace(".tests", "").replace("-", "_") + f"_{idx:03d}"
     test_name = test_name.lower()
 
+    if test_name in IGNORE_TEST_CASES:
+        return ""
+
     options = prune_test_options(options)
 
     # We have to actually run hb-shape instead of using predefined results,
@@ -139,9 +142,6 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
 
     if not fontfile.startswith("/"):
         fonts.add(os.path.split(fontfile_rs)[1])
-
-    if test_name in IGNORE_TEST_CASES:
-        return ""
 
     final_string = (
         f"#[test]\n"
