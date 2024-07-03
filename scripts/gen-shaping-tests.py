@@ -12,54 +12,53 @@ from pathlib import Path
 IGNORE_TESTS = [
     # Disable this if you are on a Mac and want to update the macos tests.
     # 'macos.tests',
-    'coretext.tests',
-    'directwrite.tests',
-    'uniscribe.tests',
-    'arabic-fallback-shaping.tests',
-    'emoji-clusters.tests',
+    "coretext.tests",
+    "directwrite.tests",
+    "uniscribe.tests",
+    "arabic-fallback-shaping.tests",
+    "emoji-clusters.tests",
 ]
 
 # harfbuzz test cases that will be ignored.
 IGNORE_TEST_CASES = [
     # aots tests
-
     # in-house tests
     # --shaper=fallback is not supported.
-    'simple_002',
+    "simple_002",
     # `dfont` is not supported.
-    'collections_001',
-    'collections_002',
-    'collections_003',
+    "collections_001",
+    "collections_002",
+    "collections_003",
     # Face index out of bounds. ttf-parser doesn't permit this.
-    'collections_006',
+    "collections_006",
     # no `hhea` table.
-    'indic_decompose_001',
+    "indic_decompose_001",
     # Resource exhaustion tests with large outputs
-    'morx_34_001',
-    'morx_36_001',
+    "morx_34_001",
+    "morx_36_001",
     # ttf-parser uses different rounding, not a bug
-    'fallback_positioning_001',
-
+    "fallback_positioning_001",
     # Requires support for the ltag table.
-    'macos_017',
-
+    "macos_017",
     # Broken in HarfBuzz. https://github.com/harfbuzz/harfbuzz/issues/4774
-    'cmap_3_016',
-    'cmap_3_018',
-    'cmap_3_020',
+    "cmap_3_016",
+    "cmap_3_018",
+    "cmap_3_020",
 ]
+
 
 def check_hb_build(hb_shape_exe):
     if not hb_shape_exe.exists():
-        print('Build harfbuzz first using:')
-        print('    meson builddir')
-        print('    ninja -Cbuilddir')
+        print("Build harfbuzz first using:")
+        print("    meson builddir")
+        print("    ninja -Cbuilddir")
         exit(1)
 
+
 def update_font_path(tests_name, fontfile):
-    if not fontfile.startswith('/'):
-        fontfile = fontfile.replace('../fonts/', '')
-        return f'tests/fonts/{tests_name}/{fontfile}'  # relative to the root dir
+    if not fontfile.startswith("/"):
+        fontfile = fontfile.replace("../fonts/", "")
+        return f"tests/fonts/{tests_name}/{fontfile}"  # relative to the root dir
     # macos tests contain absolute paths
     else:
         return fontfile
@@ -67,45 +66,41 @@ def update_font_path(tests_name, fontfile):
 
 # Converts `U+0041,U+0078` or `0041,0078` into `\u{0041}\u{0078}`
 def convert_unicodes(unicodes):
-    text = ''
-    for (i, u) in enumerate(unicodes.split(',')):
+    text = ""
+    for i, u in enumerate(unicodes.split(",")):
         if i > 0 and i % 10 == 0:
-            text += '\\\n             '
+            text += "\\\n             "
 
         if u.startswith("U+"):
             u = u[2:]
 
-        text += f'\\u{{{u}}}'
+        text += f"\\u{{{u}}}"
 
     return text
 
 
 def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
-    fontfile, options, unicodes, glyphs_expected = data.split(';')
+    fontfile, options, unicodes, glyphs_expected = data.split(";")
 
     # MacOS tests contain hashes, remove them.
     if "@" in fontfile:
-        fontfile, _ = fontfile.split('@')
-
+        fontfile, _ = fontfile.split("@")
 
     fontfile_rs = update_font_path(tests_name, fontfile)
     # Some fonts contain escaped spaces, remove them.
-    fontfile = fontfile.replace('\\ ', ' ')
-    fontfile_rs = fontfile_rs.replace('\\ ', ' ')
+    fontfile = fontfile.replace("\\ ", " ")
+    fontfile_rs = fontfile_rs.replace("\\ ", " ")
 
     unicodes_rs = convert_unicodes(unicodes)
 
-    test_name = file_name.replace(
-        '.tests', '').replace('-', '_') + f'_{idx:03d}'
+    test_name = file_name.replace(".tests", "").replace("-", "_") + f"_{idx:03d}"
     test_name = test_name.lower()
 
-    options = options.replace('--shaper=ot', '')
-    options = options.replace(
-        ' --font-funcs=ft', '').replace('--font-funcs=ft', '')
-    options = options.replace(
-        ' --font-funcs=ot', '').replace('--font-funcs=ot', '')
+    options = options.replace("--shaper=ot", "")
+    options = options.replace(" --font-funcs=ft", "").replace("--font-funcs=ft", "")
+    options = options.replace(" --font-funcs=ot", "").replace("--font-funcs=ot", "")
     # we don't support font scaling
-    options = options.replace('--font-size=1000', '')
+    options = options.replace("--font-size=1000", "")
     options = options.strip()
 
     # We have to actually run hb-shape instead of using predefined results,
@@ -113,115 +108,135 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
     # engine, which we are using.
     # Right now, it only affects 'text-rendering-tests'.
     if len(options) != 0:
-        options_list = options.split(' ')
+        options_list = options.split(" ")
     else:
         options_list = []
 
     options_list.insert(0, str(hb_shape_exe))
 
     # Force OT functions, since this is the only one we support in rustybuzz.
-    options_list.append('--font-funcs=ot')
+    options_list.append("--font-funcs=ot")
 
-    abs_font_path = hb_dir.joinpath('test/shape/data')\
-        .joinpath(tests_name)\
-        .joinpath('tests') \
+    abs_font_path = (
+        hb_dir.joinpath("test/shape/data")
+        .joinpath(tests_name)
+        .joinpath("tests")
         .joinpath(fontfile)
+    )
 
     options_list.append(str(abs_font_path))
-    options_list.append(f'--unicodes={unicodes}')  # no need to escape it
+    options_list.append(f"--unicodes={unicodes}")  # no need to escape it
 
-    glyphs_expected = subprocess.run(options_list, check=True, stdout=subprocess.PIPE)\
-        .stdout.decode()
+    glyphs_expected = subprocess.run(
+        options_list, check=True, stdout=subprocess.PIPE
+    ).stdout.decode()
 
-    glyphs_expected = glyphs_expected.strip()[1:-1]  # remove leading and trailing whitespaces and `[..]`
-    glyphs_expected = glyphs_expected.replace('|', '|\\\n         ')
+    glyphs_expected = glyphs_expected.strip()[
+        1:-1
+    ]  # remove leading and trailing whitespaces and `[..]`
+    glyphs_expected = glyphs_expected.replace("|", "|\\\n         ")
 
     options = options.replace('"', '\\"')
-    options = options.replace(' --single-par', '')
+    options = options.replace(" --single-par", "")
 
-    if not fontfile.startswith('/'):
+    if not fontfile.startswith("/"):
         fonts.add(os.path.split(fontfile_rs)[1])
 
     if test_name in IGNORE_TEST_CASES:
-        return ''
+        return ""
 
-    final_string = (f'#[test]\n'
-                    f'fn {test_name}() {{\n'
-                    f'    assert_eq!(\n'
-                    f'        shape(\n'
-                    f'            "{fontfile_rs}",\n'
-                    f'            "{unicodes_rs}",\n'
-                    f'            "{options}",\n'
-                    f'        ),\n'
-                    f'        "{glyphs_expected}"\n'
-                    f'    );\n'
-                    f'}}\n'
-                    '\n')
+    final_string = (
+        f"#[test]\n"
+        f"fn {test_name}() {{\n"
+        f"    assert_eq!(\n"
+        f"        shape(\n"
+        f'            "{fontfile_rs}",\n'
+        f'            "{unicodes_rs}",\n'
+        f'            "{options}",\n'
+        f"        ),\n"
+        f'        "{glyphs_expected}"\n'
+        f"    );\n"
+        f"}}\n"
+        "\n"
+    )
 
-    if file_name == 'macos.tests':
+    if file_name == "macos.tests":
         final_string = '#[cfg(target_os = "macos")]\n' + final_string
 
     return final_string
 
+
 # Returns an iterator over single test cases in a test file
 def read_test_cases(path):
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         for idx, test in enumerate(f.read().splitlines()):
             # skip comments and empty lines
-            if test.startswith('#') or len(test) == 0:
+            if test.startswith("#") or len(test) == 0:
                 continue
 
             yield idx, test
 
+
 # Convert all test files in a folder into Rust tests and write them into a file.
 def convert_test_folder(hb_dir, hb_shape_exe, tests_dir, tests_name):
     files = sorted(os.listdir(tests_dir))
-    files = [f for f in files if f.endswith('.tests')]
+    files = [f for f in files if f.endswith(".tests")]
 
     fonts = set()
 
-    rust_code = ('// WARNING: this file was generated by ../scripts/gen-shaping-tests.py\n'
-                 '\n'
-                 'use crate::shape;\n'
-                 '\n')
+    rust_code = (
+        "// WARNING: this file was generated by ../scripts/gen-shaping-tests.py\n"
+        "\n"
+        "use crate::shape;\n"
+        "\n"
+    )
 
     for file in files:
         if file in IGNORE_TESTS:
             continue
 
-        path = tests_dir / file if file != 'macos.tests' else pathlib.Path(__file__).parent / file
+        path = (
+            tests_dir / file
+            if file != "macos.tests"
+            else pathlib.Path(__file__).parent / file
+        )
 
         for idx, test in read_test_cases(path):
-            rust_code += convert_test_file(hb_dir, hb_shape_exe, tests_name,
-                                           file, idx + 1, test, fonts)
+            rust_code += convert_test_file(
+                hb_dir, hb_shape_exe, tests_name, file, idx + 1, test, fonts
+            )
 
-    tests_name_snake_case = tests_name.replace('-', '_')
-    with open(f'../tests/shaping/{tests_name_snake_case}.rs', 'w') as f:
+    tests_name_snake_case = tests_name.replace("-", "_")
+    with open(f"../tests/shaping/{tests_name_snake_case}.rs", "w") as f:
         f.write(rust_code)
 
     return fonts
 
+
 def main():
     if len(sys.argv) != 2:
-        print('Usage: gen-shaping-tests.py /path/to/harfbuzz-src')
+        print("Usage: gen-shaping-tests.py /path/to/harfbuzz-src")
         exit(1)
 
     hb_dir = Path(sys.argv[1])
     assert hb_dir.exists()
 
     # Check that harfbuzz was built.
-    hb_shape_exe = hb_dir.joinpath('builddir/util/hb-shape')
+    hb_shape_exe = hb_dir.joinpath("builddir/util/hb-shape")
     check_hb_build(hb_shape_exe)
 
-    test_dir_names = ['aots', 'in-house', 'text-rendering-tests']
+    test_dir_names = ["aots", "in-house", "text-rendering-tests"]
     for test_dir_name in test_dir_names:
-        tests_dir = hb_dir / f'test/shape/data/{test_dir_name}/tests'
+        tests_dir = hb_dir / f"test/shape/data/{test_dir_name}/tests"
 
-        dir_used_fonts = convert_test_folder(hb_dir, hb_shape_exe, tests_dir, test_dir_name)
+        dir_used_fonts = convert_test_folder(
+            hb_dir, hb_shape_exe, tests_dir, test_dir_name
+        )
         for filename in dir_used_fonts:
             shutil.copy(
-                hb_dir / f'test/shape/data/{test_dir_name}/fonts/{filename}',
-                f'../tests/fonts/{test_dir_name}')
+                hb_dir / f"test/shape/data/{test_dir_name}/fonts/{filename}",
+                f"../tests/fonts/{test_dir_name}",
+            )
 
 
 if __name__ == "__main__":
