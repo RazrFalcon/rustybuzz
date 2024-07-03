@@ -78,6 +78,7 @@ def convert_unicodes(unicodes):
 
     return text
 
+
 def prune_test_options(options):
     options = options.replace("--shaper=ot", "")
     options = options.replace(" --font-funcs=ft", "").replace("--font-funcs=ft", "")
@@ -87,7 +88,10 @@ def prune_test_options(options):
     options = options.strip()
     return options
 
-def convert_test_file(root_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
+
+def convert_test_file(
+    root_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts, custom
+):
     fontfile, options, unicodes, glyphs_expected = data.split(";")
 
     # MacOS tests contain hashes, remove them.
@@ -96,7 +100,7 @@ def convert_test_file(root_dir, hb_shape_exe, tests_name, file_name, idx, data, 
 
     # Some fonts contain escaped spaces, remove them.
     fontfile = fontfile.replace("\\ ", " ")
-    fontfile_rs = update_font_path(tests_name, fontfile)
+    fontfile_rs = fontfile if custom else update_font_path(tests_name, fontfile)
 
     unicodes_rs = convert_unicodes(unicodes)
 
@@ -119,10 +123,14 @@ def convert_test_file(root_dir, hb_shape_exe, tests_name, file_name, idx, data, 
     options_list.insert(0, str(hb_shape_exe))
 
     abs_font_path = (
-        root_dir.joinpath("test/shape/data")
-        .joinpath(tests_name)
-        .joinpath("tests")
-        .joinpath(fontfile)
+        root_dir.joinpath(fontfile_rs)
+        if custom
+        else (
+            root_dir.joinpath("test/shape/data")
+            .joinpath(tests_name)
+            .joinpath("tests")
+            .joinpath(fontfile)
+        )
     )
 
     options_list.append(str(abs_font_path))
@@ -177,14 +185,16 @@ def read_test_cases(path):
 
 
 # Convert all test files in a folder into Rust tests and write them into a file.
-def convert_test_folder(root_dir, hb_shape_exe, tests_dir, tests_name):
+def convert_test_folder(root_dir, hb_shape_exe, tests_dir, tests_name, custom):
     files = sorted(os.listdir(tests_dir))
     files = [f for f in files if f.endswith(".tests") and f not in IGNORE_TESTS]
 
-    return convert_test_files(root_dir, hb_shape_exe, tests_dir, tests_name, files)
+    return convert_test_files(
+        root_dir, hb_shape_exe, tests_dir, tests_name, files, custom
+    )
 
 
-def convert_test_files(root_dir, hb_shape_exe, tests_dir, tests_name, files):
+def convert_test_files(root_dir, hb_shape_exe, tests_dir, tests_name, files, custom):
     fonts = set()
 
     rust_code = (
@@ -199,7 +209,7 @@ def convert_test_files(root_dir, hb_shape_exe, tests_dir, tests_name, files):
 
         for idx, test in read_test_cases(path):
             rust_code += convert_test_file(
-                root_dir, hb_shape_exe, tests_name, file, idx + 1, test, fonts
+                root_dir, hb_shape_exe, tests_name, file, idx + 1, test, fonts, custom
             )
 
     tests_name_snake_case = tests_name.replace("-", "_")
@@ -217,7 +227,7 @@ def main():
     hb_dir = Path(sys.argv[1])
     assert hb_dir.exists()
 
-    rb_tests_dir = pathlib.Path(__file__).parent / "tests"
+    rb_root = pathlib.Path(__file__).parent.parent
 
     # Check that harfbuzz was built.
     hb_shape_exe = hb_dir.joinpath("builddir/util/hb-shape")
@@ -232,7 +242,7 @@ def main():
         tests_dir = to_hb_absolute(test_dir_name)
 
         dir_used_fonts = convert_test_folder(
-            hb_dir, hb_shape_exe, tests_dir, test_dir_name
+            hb_dir, hb_shape_exe, tests_dir, test_dir_name, False
         )
         for filename in dir_used_fonts:
             shutil.copy(
@@ -248,15 +258,16 @@ def main():
         # `macos.tests` in this folder. See the README for more information.
         tests_dir = pathlib.Path(__file__).parent
         convert_test_files(
-            hb_dir, hb_shape_exe, tests_dir, "macos", ["macos.tests"]
+            hb_dir, hb_shape_exe, tests_dir, "macos", ["macos.tests"], False
         )
 
     # Finally, we convert all of the custom tests (except MacOS tests). The test files themselves
     # are in the same format as the harfbuzz ones (i.e. they contain the arguments in the same form as
     # harfbuzz tests, but are instead stored in the rustybuzz folder. In addition to that, font paths
     # are relative to fonts stored inside of rustybuzz and not harfbuzz)
-    # convert_test_folder(rb_tests_dir, hb_shape_exe, rb_tests_dir / "custom", "custom")
-
+    convert_test_folder(
+        rb_root, hb_shape_exe, rb_root / "tests" / "custom", "custom", True
+    )
 
 
 if __name__ == "__main__":
