@@ -217,17 +217,19 @@ def main():
     hb_dir = Path(sys.argv[1])
     assert hb_dir.exists()
 
+    rb_tests_dir = pathlib.Path(__file__).parent / "tests"
+
     # Check that harfbuzz was built.
     hb_shape_exe = hb_dir.joinpath("builddir/util/hb-shape")
     check_hb_build(hb_shape_exe)
 
-    def to_absolute(name):
+    def to_hb_absolute(name):
         return hb_dir / f"test/shape/data/{name}/tests"
 
     # First we convert all harfbuzz tests that are not disabled
     test_dir_names = ["aots", "in-house", "text-rendering-tests"]
     for test_dir_name in test_dir_names:
-        tests_dir = to_absolute(test_dir_name)
+        tests_dir = to_hb_absolute(test_dir_name)
 
         dir_used_fonts = convert_test_folder(
             hb_dir, hb_shape_exe, tests_dir, test_dir_name
@@ -248,6 +250,13 @@ def main():
         convert_test_files(
             hb_dir, hb_shape_exe, tests_dir, "macos", ["macos.tests"]
         )
+
+    # Finally, we convert all of the custom tests (except MacOS tests). The test files themselves
+    # are in the same format as the harfbuzz ones (i.e. they contain the arguments in the same form as
+    # harfbuzz tests, but are instead stored in the rustybuzz folder. In addition to that, font paths
+    # are relative to fonts stored inside of rustybuzz and not harfbuzz)
+    # convert_test_folder(rb_tests_dir, hb_shape_exe, rb_tests_dir / "custom", "custom")
+
 
 
 if __name__ == "__main__":
