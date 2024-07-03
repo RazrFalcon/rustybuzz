@@ -76,9 +76,6 @@ a new harfbuzz releases. However, there is still lots of potential areas of impr
 
 - **Wider test coverage**: Currently, we only test the result of the positioned glyphs in the shaping output.
 We should add tests so that we can test other parts of the API as well, such as glyph extents and glyph flags.
-- **Custom tests**: Currently, we only rely on the `harfbuzz` test suite to assess the correctness of
-`rustybuzz`. While this is already very good, we should extend our current testing mechanism with infrastructure
-so that bugs specific to `rustybuzz` can be tested as well.
 - **Fuzzing against harfbuzz**: While `rustybuzz` passes the whole `harfbuzz` test suite, this does not mean that
 output will always be 100% identical to `harfbuzz`. Given the complexity of the code base, there are bound to be
 other bugs that just have not been discovered yet. One potential way of addressing this issue could be to create a
