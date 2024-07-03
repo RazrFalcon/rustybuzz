@@ -115,9 +115,6 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
 
     options_list.insert(0, str(hb_shape_exe))
 
-    # Force OT functions, since this is the only one we support in rustybuzz.
-    options_list.append("--font-funcs=ot")
-
     abs_font_path = (
         hb_dir.joinpath("test/shape/data")
         .joinpath(tests_name)
