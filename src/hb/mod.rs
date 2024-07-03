@@ -50,6 +50,8 @@ mod aat_layout_common;
 mod ot_shaper_vowel_constraints;
 mod paint_extents;
 pub mod shape;
+// featurething
+mod shape_wasm;
 mod tag;
 mod tag_table;
 mod text_parser;

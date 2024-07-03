@@ -21,6 +21,7 @@ unicode-bidi-mirroring = "0.3.0"
 unicode-ccc = "0.3.0"
 unicode-properties = { version = "0.1.0", default-features = false, features = ["general-category"] }
 unicode-script = "0.5.2"
+wasmtime = "22.0.0"
 
 [dependencies.ttf-parser]
 version = "0.23.0"
