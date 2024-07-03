@@ -87,7 +87,7 @@ def prune_test_options(options):
     options = options.strip()
     return options
 
-def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
+def convert_test_file(root_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
     fontfile, options, unicodes, glyphs_expected = data.split(";")
 
     # MacOS tests contain hashes, remove them.
@@ -119,7 +119,7 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
     options_list.insert(0, str(hb_shape_exe))
 
     abs_font_path = (
-        hb_dir.joinpath("test/shape/data")
+        root_dir.joinpath("test/shape/data")
         .joinpath(tests_name)
         .joinpath("tests")
         .joinpath(fontfile)
@@ -177,14 +177,14 @@ def read_test_cases(path):
 
 
 # Convert all test files in a folder into Rust tests and write them into a file.
-def convert_test_folder(hb_dir, hb_shape_exe, tests_dir, tests_name):
+def convert_test_folder(root_dir, hb_shape_exe, tests_dir, tests_name):
     files = sorted(os.listdir(tests_dir))
     files = [f for f in files if f.endswith(".tests") and f not in IGNORE_TESTS]
 
-    return convert_test_files(hb_dir, hb_shape_exe, tests_dir, tests_name, files)
+    return convert_test_files(root_dir, hb_shape_exe, tests_dir, tests_name, files)
 
 
-def convert_test_files(hb_dir, hb_shape_exe, tests_dir, tests_name, files):
+def convert_test_files(root_dir, hb_shape_exe, tests_dir, tests_name, files):
     fonts = set()
 
     rust_code = (
@@ -199,7 +199,7 @@ def convert_test_files(hb_dir, hb_shape_exe, tests_dir, tests_name, files):
 
         for idx, test in read_test_cases(path):
             rust_code += convert_test_file(
-                hb_dir, hb_shape_exe, tests_name, file, idx + 1, test, fonts
+                root_dir, hb_shape_exe, tests_name, file, idx + 1, test, fonts
             )
 
     tests_name_snake_case = tests_name.replace("-", "_")
