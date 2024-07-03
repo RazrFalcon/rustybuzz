@@ -163,6 +163,16 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
 
     return final_string
 
+# Returns an iterator over single test cases in a test file
+def read_test_cases(path):
+    with open(path, 'r') as f:
+        for idx, test in enumerate(f.read().splitlines()):
+            # skip comments and empty lines
+            if test.startswith('#') or len(test) == 0:
+                continue
+
+            yield idx, test
+
 # Convert all test files in a folder into Rust tests and write them into a file.
 def convert_test_folder(hb_dir, hb_shape_exe, tests_dir, tests_name):
     files = sorted(os.listdir(tests_dir))
@@ -180,14 +190,10 @@ def convert_test_folder(hb_dir, hb_shape_exe, tests_dir, tests_name):
             continue
 
         path = tests_dir / file if file != 'macos.tests' else pathlib.Path(__file__).parent / file
-        with open(path, 'r') as f:
-            for idx, test in enumerate(f.read().splitlines()):
-                # skip comments and empty lines
-                if test.startswith('#') or len(test) == 0:
-                    continue
 
-                rust_code += convert_test_file(hb_dir, hb_shape_exe, tests_name,
-                                               file, idx + 1, test, fonts)
+        for idx, test in read_test_cases(path):
+            rust_code += convert_test_file(hb_dir, hb_shape_exe, tests_name,
+                                           file, idx + 1, test, fonts)
 
     tests_name_snake_case = tests_name.replace('-', '_')
     with open(f'../tests/shaping/{tests_name_snake_case}.rs', 'w') as f:
