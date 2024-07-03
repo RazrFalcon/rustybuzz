@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 
 
-# There is no sane way to test them.
+# harfbuzz test files that will be ignored.
 IGNORE_TESTS = [
     # Disable this if you are on a Mac and want to update the macos tests.
     # 'macos.tests',
@@ -18,6 +18,7 @@ IGNORE_TESTS = [
     'arabic-fallback-shaping.tests',
 ]
 
+# harfbuzz test cases that will be ignored.
 IGNORE_TEST_CASES = [
     # aots tests
 
@@ -47,6 +48,12 @@ IGNORE_TEST_CASES = [
     'cmap_3_020',
 ]
 
+def check_hb_build(hb_shape_exe):
+    if not hb_shape_exe.exists():
+        print('Build harfbuzz first using:')
+        print('    meson builddir')
+        print('    ninja -Cbuilddir')
+        exit(1)
 
 def update_font_path(tests_name, fontfile):
     if not fontfile.startswith('/'):
@@ -190,41 +197,41 @@ def convert(hb_dir, hb_shape_exe, tests_dir, tests_name):
 
     return fonts
 
+def main():
+    if len(sys.argv) != 2:
+        print('Usage: gen-shaping-tests.py /path/to/harfbuzz-src')
+        exit(1)
 
-if len(sys.argv) != 2:
-    print('Usage: gen-shaping-tests.py /path/to/harfbuzz-src')
-    exit(1)
+    hb_dir = Path(sys.argv[1])
+    assert hb_dir.exists()
 
-hb_dir = Path(sys.argv[1])
-assert hb_dir.exists()
+    # Check that harfbuzz was built.
+    hb_shape_exe = hb_dir.joinpath('builddir/util/hb-shape')
+    check_hb_build(hb_shape_exe)
 
-# Check that harfbuzz was built.
-hb_shape_exe = hb_dir.joinpath('builddir/util/hb-shape')
-if not hb_shape_exe.exists():
-    print('Build harfbuzz first using:')
-    print('    meson builddir')
-    print('    ninja -Cbuilddir')
-    exit(1)
+    used_fonts = []
+    font_files = []
+    test_dir_names = ['aots', 'in-house', 'text-rendering-tests']
+    for test_dir_name in test_dir_names:
+        tests_dir = hb_dir / f'test/shape/data/{test_dir_name}/tests'
 
-used_fonts = []
-font_files = []
-test_dir_names = ['aots', 'in-house', 'text-rendering-tests']
-for test_dir_name in test_dir_names:
-    tests_dir = hb_dir / f'test/shape/data/{test_dir_name}/tests'
+        dir_used_fonts = convert(hb_dir, hb_shape_exe, tests_dir, test_dir_name)
+        for filename in dir_used_fonts:
+            shutil.copy(
+                hb_dir / f'test/shape/data/{test_dir_name}/fonts/{filename}',
+                f'../tests/fonts/{test_dir_name}')
+        used_fonts += dir_used_fonts
 
-    dir_used_fonts = convert(hb_dir, hb_shape_exe, tests_dir, test_dir_name)
-    for filename in dir_used_fonts:
-        shutil.copy(
-            hb_dir / f'test/shape/data/{test_dir_name}/fonts/{filename}',
-            f'../tests/fonts/{test_dir_name}')
-    used_fonts += dir_used_fonts
+        font_files += os.listdir(hb_dir /
+                                 f'test/shape/data/{test_dir_name}/fonts')
 
-    font_files += os.listdir(hb_dir /
-                             f'test/shape/data/{test_dir_name}/fonts')
+    # Check for unused fonts. Just for debugging.
+    # unused_fonts = sorted(list(set(font_files).difference(used_fonts)))
+    # if len(unused_fonts) != 0:
+    #     print('Unused fonts:')
+    #     for font in unused_fonts:
+    #         print(font)
 
-# Check for unused fonts. Just for debugging.
-# unused_fonts = sorted(list(set(font_files).difference(used_fonts)))
-# if len(unused_fonts) != 0:
-#     print('Unused fonts:')
-#     for font in unused_fonts:
-#         print(font)
+
+if __name__ == "__main__":
+    main()
