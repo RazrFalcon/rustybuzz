@@ -120,7 +120,7 @@ pub struct GlyphPosition {
     /// How much the glyph moves on the Y-axis before drawing it, this should
     /// not affect how much the line advances.
     pub y_offset: i32,
-    var: u32,
+    pub(crate) var: u32,
 }
 
 unsafe impl bytemuck::Zeroable for GlyphPosition {}
