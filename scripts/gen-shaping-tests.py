@@ -78,6 +78,14 @@ def convert_unicodes(unicodes):
 
     return text
 
+def prune_test_options(options):
+    options = options.replace("--shaper=ot", "")
+    options = options.replace(" --font-funcs=ft", "").replace("--font-funcs=ft", "")
+    options = options.replace(" --font-funcs=ot", "").replace("--font-funcs=ot", "")
+    # we don't support font scaling
+    options = options.replace("--font-size=1000", "")
+    options = options.strip()
+    return options
 
 def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fonts):
     fontfile, options, unicodes, glyphs_expected = data.split(";")
@@ -86,27 +94,20 @@ def convert_test_file(hb_dir, hb_shape_exe, tests_name, file_name, idx, data, fo
     if "@" in fontfile:
         fontfile, _ = fontfile.split("@")
 
-    fontfile_rs = update_font_path(tests_name, fontfile)
     # Some fonts contain escaped spaces, remove them.
     fontfile = fontfile.replace("\\ ", " ")
-    fontfile_rs = fontfile_rs.replace("\\ ", " ")
+    fontfile_rs = update_font_path(tests_name, fontfile)
 
     unicodes_rs = convert_unicodes(unicodes)
 
     test_name = file_name.replace(".tests", "").replace("-", "_") + f"_{idx:03d}"
     test_name = test_name.lower()
 
-    options = options.replace("--shaper=ot", "")
-    options = options.replace(" --font-funcs=ft", "").replace("--font-funcs=ft", "")
-    options = options.replace(" --font-funcs=ot", "").replace("--font-funcs=ot", "")
-    # we don't support font scaling
-    options = options.replace("--font-size=1000", "")
-    options = options.strip()
+    options = prune_test_options(options)
 
     # We have to actually run hb-shape instead of using predefined results,
     # because hb sometimes stores results for freetype and not for embedded OpenType
     # engine, which we are using.
-    # Right now, it only affects 'text-rendering-tests'.
     if len(options) != 0:
         options_list = options.split(" ")
     else:
