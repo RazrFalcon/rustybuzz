@@ -369,6 +369,7 @@ impl<'a> hb_font_t<'a> {
 }
 
 #[derive(Clone, Copy, Default)]
+#[repr(C)]
 pub struct hb_glyph_extents_t {
     pub x_bearing: i32,
     pub y_bearing: i32,
