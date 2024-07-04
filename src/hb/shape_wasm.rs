@@ -43,364 +43,38 @@ pub(crate) fn shape_with_wasm(
 
     let mut store = Store::new(&Engine::default(), data);
     let module = Module::new(&store.engine(), wasm_blob).ok()?; // returns None if couldn't parse blob.
-    let module_name = "env"; // name defined in the inspected compiled modules.
 
     let mut linker = Linker::new(&store.engine());
 
-    // ====
-    // below are the functions that are imported by harfbuzz-wasm crate.
-    // I copied the signatures here and I am trying to satisfy the compiler as much as I can
-    // pointer land is beyond me.
-
-    // fn face_get_upem(face: u32) -> u32;
-    // Returns the units-per-em of the font face.
-    let face_get_upem = |caller: Caller<'_, ShapingData>, _face: u32| -> u32 {
-        caller.data().font.units_per_em as u32
-    };
+    // Wouldn't look as ridiculous if we returned anyhow::Result from this function instead or sth.
     linker
-        .func_wrap(module_name, "face_get_upem", face_get_upem)
-        .ok()?;
-
-    // fn font_get_face(font: u32) -> u32;
-    // Creates a new face token from the given font token.
-    let font_get_face = |caller: Caller<'_, ShapingData>, _: u32| {
-        // From HarfBuzz docs:
-        // (In the following functions, a font is a specific instantiation of a face at a
-        // particular scale factor and variation position.)
-        //
-        // I am unsure how to represent that in rustybuzz.
-        // er .. do what here?
-        0
-    };
-    linker
-        .func_wrap(module_name, "font_get_face", font_get_face)
-        .ok()?;
-
-    // fn font_get_glyph(font: u32, unicode: u32, uvs: u32) -> u32;
-    // Returns the nominal glyph ID for the given codepoint, using the cmap table of the font to map Unicode codepoint (and variation selector) to glyph ID.
-    let font_get_glyph =
-        |mut caller: Caller<'_, ShapingData>, _: u32, codepoint: u32, uvs: u32| -> u32 {
-            let Some(codepoint) = char::from_u32(codepoint) else {
-                return 0;
-            };
-            let Some(uvs) = char::from_u32(uvs) else {
-                return 0;
-            };
-            caller
-                .data()
-                .font
-                .glyph_variation_index(codepoint, uvs)
-                .unwrap_or_default()
-                .0 as u32
-        };
-    linker
-        .func_wrap(module_name, "font_get_glyph", font_get_glyph)
-        .ok()?;
-
-    // fn font_get_scale(font: u32, x_scale: *mut i32, y_scale: *mut i32);
-    // Returns the scale of the current font.
-    // Just return the upem as rustybuzz has no scale.
-    let font_get_scale =
-        |mut caller: Caller<'_, ShapingData>, _: u32, x_scale: u32, y_scale: u32| {
-            let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-            let upem = caller.data().font.units_per_em();
-
-            memory.write(
-                &mut caller.as_context_mut(),
-                x_scale as usize,
-                &upem.to_le_bytes(),
-            );
-            memory.write(
-                &mut caller.as_context_mut(),
-                y_scale as usize,
-                &upem.to_le_bytes(),
-            );
-        };
-    linker
-        .func_wrap(module_name, "font_get_scale", font_get_scale)
-        .ok()?;
-
-    // fn font_get_glyph_extents(font: u32, glyph: u32, extents: *mut CGlyphExtents) -> bool;
-    // Returns the glyph's extents for the given glyph ID at current scale and variation settings.
-    let font_get_glyph_extents =
-        |mut caller: Caller<'_, ShapingData>, _: u32, glyph: u32, extents: u32| -> u32 {
-            let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-
-            let mut glyph_extents = hb_glyph_extents_t::default();
-            let ret = caller
-                .data()
-                .font
-                .glyph_extents(GlyphId(glyph as u16), &mut glyph_extents);
-            if ret {
-                // WASM is little endian. MacOS is little endian, I think.
-                // Maybe should use bytemuck as a dependency instead.
-                let glyph_extents = unsafe { std::mem::transmute(glyph_extents) };
-                memory.write(caller.as_context_mut(), extents as usize, glyph_extents);
-            }
-
-            ret as u32
-        };
-    linker
-        .func_wrap(
-            module_name,
-            "font_get_glyph_extents",
-            font_get_glyph_extents,
-        )
-        .ok()?;
-
-    // fn font_glyph_to_string(font: u32, glyph: u32, str: *const u8, len: u32);
-    // Copies the name of the given glyph, or, if no name is available, a string of the form gXXXX into the given string.
-    let font_glyph_to_string =
-        |mut caller: Caller<'_, ShapingData>, _: u32, glyph: u32, str: u32, len: u32| {
-            // len is apparently the assigned heap memory. It seems I should not allocate more than that.
-            // Should not assume I am not writing over anything.
-            let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-
-            let name = caller
-                .data()
-                .font
-                .glyph_name(GlyphId(glyph as u16))
-                .map(ToOwned::to_owned)
-                .unwrap_or(format!("g{glyph:4}"));
-
-            let name = CString::new(name).unwrap();
-            let name = &name.as_bytes()[..len as usize]; // are names ever non ascii?
-
-            memory.write(caller.as_context_mut(), str as usize, name);
-        };
-    linker
-        .func_wrap(module_name, "font_glyph_to_string", font_glyph_to_string)
-        .ok()?;
-
-    // fn font_get_glyph_h_advance(font: u32, glyph: u32) -> i32;
-    // Returns the default horizontal advance for the given glyph ID the current scale and variations settings.
-    let font_get_glyph_h_advance = |caller: Caller<'_, ShapingData>, _: u32, glyph: u32| -> i32 {
-        caller.data().font.glyph_h_advance(GlyphId(glyph as u16))
-    };
-    linker
-        .func_wrap(
-            module_name,
-            "font_get_glyph_h_advance",
-            font_get_glyph_h_advance,
-        )
-        .ok()?;
-
-    // fn font_get_glyph_v_advance(font: u32, glyph: u32) -> i32;
-    // Returns the default vertical advance for the given glyph ID the current scale and variations settings.
-    let font_get_glyph_v_advance = |caller: Caller<'_, ShapingData>, _: u32, glyph: u32| -> i32 {
-        caller.data().font.glyph_v_advance(GlyphId(glyph as u16))
-    };
-    linker
-        .func_wrap(
-            module_name,
-            "font_get_glyph_v_advance",
-            font_get_glyph_v_advance,
-        )
-        .ok()?;
-
-    // fn font_copy_glyph_outline(font: u32, glyph: u32, outline: *mut CGlyphOutline) -> bool;
-    // Copies the outline of the given glyph ID, at current scale and variation settings, into the outline structure provided.
-    let font_copy_glyph_outline =
-        |mut caller: Caller<'_, ShapingData>, _: u32, glyph: u32, outline: u32| -> u32 {
-            let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-
-            let builder = CGlyphOutline {
-                n_points: todo!(),
-                points: todo!(),
-                n_contours: todo!(),
-                contours: todo!(),
-            };
-            // also no clue what to do here
-            // let my_ol = caller.data().outline_glyph(GlyphId(glyph as u16), builder); // ??
-
-            let Ok(()) = memory.write(caller, outline as usize, todo!("builder result goes here"))
-            else {
-                return 0;
-            };
-
-            1
-        };
-    linker
-        .func_wrap(
-            module_name,
-            "font_copy_glyph_outline",
-            font_copy_glyph_outline,
-        )
-        .ok()?;
-
-    // fn face_copy_table(font: u32, tag: u32, blob: *mut Blob) -> bool;
-    // Copies the binary data in the OpenType table referenced by tag into the supplied blob structure.
-    let face_copy_table =
-        |mut caller: Caller<'_, ShapingData>, _: u32, tag: u32, blob: u32| -> u32 {
-            // So here to copy stuff INTO the module, I need to copy it into its heap
-            // I should not assume that there is an area that's not written to,
-            // so the most straightforward way to get "clean" memory is to grow it by one page,
-            // and allocate there.
-            let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-
-            let tag = tag.to_be_bytes(); // be or le?
-            let Some(table) = caller.data().font.raw_face().table(Tag::from_bytes(&tag)) else {
-                return 0;
-            };
-
-            let eom = memory.data_size(&caller);
-            let Ok(_) = memory.grow(&mut caller.as_context_mut(), 1) else {
-                return 0;
-            };
-
-            let my_blob = Blob {
-                length: table.len() as u32,
-                data: eom as u32,
-            };
-            let my_blob: [u8; std::mem::size_of::<Blob>()] =
-                unsafe { std::mem::transmute(my_blob) };
-
-            let Ok(()) = memory.write(caller.as_context_mut(), blob as usize, &my_blob) else {
-                return 0;
-            };
-
-            let Ok(()) = memory.write(caller.as_context_mut(), eom, table) else {
-                return 0;
-            };
-
-            1
-        };
-    linker
-        .func_wrap(module_name, "face_copy_table", face_copy_table)
-        .ok()?;
-
-    // fn buffer_copy_contents(buffer: u32, cbuffer: *mut CBufferContents) -> bool;
-    // Retrieves the contents of the host shaping engine's buffer into the buffer_contents structure. This should typically be called at the beginning of shaping.
-    let buffer_copy_contents =
-        |mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32| -> u32 {
-            // see face_copy_table for why we're growing memory.
-            let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-            let eom = memory.data(&caller).len();
-            let Ok(_) = memory.grow(&mut caller.as_context_mut(), 1) else {
-                return 0;
-            };
-
-            // I need these two to be the same lifetime it seems
-            let (mem_data, store_data) = memory.data_and_store_mut(&mut caller);
-
-            let rb_buffer = &store_data.buffer;
-            let length = rb_buffer.len;
-
-            let info_loc = eom;
-            let pos_loc = info_loc + length * std::mem::size_of::<hb_glyph_info_t>();
-
-            // This _should_ work ..
-            for i in 0..length {
-                let info_loc = info_loc + i * std::mem::size_of::<hb_glyph_info_t>();
-                mem_data[info_loc..info_loc + std::mem::size_of::<hb_glyph_info_t>()]
-                    .copy_from_slice(bytemuck::bytes_of(&rb_buffer.info[i]));
-
-                let pos_loc = pos_loc + i * std::mem::size_of::<GlyphPosition>();
-                mem_data[pos_loc..pos_loc + std::mem::size_of::<hb_glyph_info_t>()]
-                    .copy_from_slice(bytemuck::bytes_of(&rb_buffer.pos[i]));
-            }
-
-            let buffer_contents = CBufferContents {
-                length: length as u32,
-                info: info_loc as u32,
-                position: pos_loc as u32,
-            };
-            let buffer_contents: [u8; std::mem::size_of::<CBufferContents>()] =
-                unsafe { std::mem::transmute(buffer_contents) };
-
-            let Ok(()) = memory.write(
-                &mut caller.as_context_mut(),
-                cbuffer as usize,
-                &buffer_contents,
-            ) else {
-                return 0;
-            };
-
-            1
-        };
-    linker.func_wrap(module_name, "buffer_copy_contents", buffer_copy_contents);
-
-    // fn buffer_set_contents(buffer: u32, cbuffer: &CBufferContents) -> bool;
-    // Copy the buffer_contents structure back into the host shaping engine's buffer. This should typically be called at the end of shaping.
-    let buffer_set_contents =
-        |mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32| -> u32 {
-            let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-
-            let mut buffer = [0; 12];
-
-            memory.read(caller.as_context_mut(), cbuffer as usize, &mut buffer);
-            let buffer: CBufferContents = unsafe { std::mem::transmute(buffer) };
-
-            caller.data_mut().buffer.clear_output();
-            caller.data_mut().buffer.clear_positions();
-
-            for i in 0..buffer.length {
-                let mut info_buffer = [0; 20];
-                let Ok(()) = memory.read(
-                    caller.as_context_mut(),
-                    buffer.info as usize + i as usize * std::mem::size_of::<hb_glyph_info_t>(),
-                    &mut info_buffer,
-                ) else {
-                    // eprintln!("bad info being read");
-                    return 0;
-                };
-                let info = unsafe { std::mem::transmute(info_buffer) };
-                caller.data_mut().buffer.info.push(info);
-
-                let mut pos_buffer = [0; 20];
-                let Ok(()) = memory.read(
-                    caller.as_context_mut(),
-                    buffer.position as usize + i as usize * std::mem::size_of::<GlyphPosition>(),
-                    &mut pos_buffer,
-                ) else {
-                    // eprintln!("bad position being read");
-                    return 0;
-                };
-                let pos = unsafe { std::mem::transmute(pos_buffer) };
-                caller.data_mut().buffer.pos.push(pos);
-            }
-
-            1
-        };
-    linker
-        .func_wrap(module_name, "buffer_set_contents", buffer_set_contents)
-        .ok()?;
-
-    // fn debugprint(s: *const u8);
-    // Produces a debugging message in the host shaper's log output; the variants debugprint1 ... debugprint4 suffix the message with a comma-separated list of the integer arguments.
-    // rust varargs when
-    let debugprint = |mut caller: Caller<'_, ShapingData>, s: u32| {
-        let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-
-        // seems reasonable?
-        let bytes = &memory.data(&caller)[s as usize..];
-        let msg = CStr::from_bytes_until_nul(bytes)
-            .unwrap_or_default()
-            .to_string_lossy();
-
-        std::eprintln!("{msg}"); // maybe?
-    };
-    linker
-        .func_wrap(module_name, "debugprint", debugprint)
-        .ok()?;
-
-    // fn shape_with(font: u32, buffer: u32, features: u32, num_features: u32, shaper: *const u8) -> i32;
-    // Run another shaping engine's shaping process on the given font and buffer. The only shaping engine guaranteed to be available is ot, the OpenType shaper, but others may also be available. This allows the WASM author to process a buffer "normally", before further manipulating it.
-    // I think we should just use the default rustybuzz shaper for now.
-    let shape_with = |mut caller: Caller<'_, ShapingData>,
-                      font: u32,
-                      buffer: u32,
-                      features: u32,
-                      num_features: u32,
-                      _shaper: u32|
-     -> i32 {
-        let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-
-        // let ret = shape_with_plan(face, &plan, unicode_buffer); // <-- uncommenting this gives a compiler error
-        todo!()
-    };
-    linker
-        .func_wrap(module_name, "shape_with", shape_with)
+        .func_wrap("env", "face_get_upem", face_get_upem)
+        .ok()?
+        .func_wrap("env", "font_get_face", font_get_face)
+        .ok()?
+        .func_wrap("env", "font_get_glyph", font_get_glyph)
+        .ok()?
+        .func_wrap("env", "font_get_scale", font_get_scale)
+        .ok()?
+        .func_wrap("env", "font_get_glyph_extents", font_get_glyph_extents)
+        .ok()?
+        .func_wrap("env", "font_glyph_to_string", font_glyph_to_string)
+        .ok()?
+        .func_wrap("env", "font_get_glyph_h_advance", font_get_glyph_h_advance)
+        .ok()?
+        .func_wrap("env", "font_get_glyph_v_advance", font_get_glyph_v_advance)
+        .ok()?
+        .func_wrap("env", "font_copy_glyph_outline", font_copy_glyph_outline)
+        .ok()?
+        .func_wrap("env", "face_copy_table", face_copy_table)
+        .ok()?
+        .func_wrap("env", "buffer_copy_contents", buffer_copy_contents)
+        .ok()?
+        .func_wrap("env", "buffer_set_contents", buffer_set_contents)
+        .ok()?
+        .func_wrap("env", "debugprint", debugprint)
+        .ok()?
+        .func_wrap("env", "shape_with", shape_with)
         .ok()?;
 
     // Here we are (supposedly) done creating functions.
@@ -429,6 +103,317 @@ pub(crate) fn shape_with_wasm(
     let ret = store.into_data().buffer;
 
     Some(GlyphBuffer(ret))
+}
+
+// ===========
+// functions imported  into WASM
+// ===========
+
+// fn face_get_upem(face: u32) -> u32;
+// Returns the units-per-em of the font face.
+fn face_get_upem(caller: Caller<'_, ShapingData>, _face: u32) -> u32 {
+    caller.data().font.units_per_em as u32
+}
+
+// fn font_get_face(font: u32) -> u32;
+// Creates a new face token from the given font token.
+fn font_get_face(caller: Caller<'_, ShapingData>, _font: u32) -> u32 {
+    // From HarfBuzz docs:
+    // (In the following functions, a font is a specific instantiation of a face at a
+    // particular scale factor and variation position.)
+    //
+    // I am unsure how to represent that in rustybuzz.
+    // er .. do what here?
+    0
+}
+
+// fn font_get_glyph(font: u32, unicode: u32, uvs: u32) -> u32;
+// Returns the nominal glyph ID for the given codepoint, using the cmap table of the font to map Unicode codepoint (and variation selector) to glyph ID.
+fn font_get_glyph(
+    mut caller: Caller<'_, ShapingData>,
+    _font: u32,
+    codepoint: u32,
+    uvs: u32,
+) -> u32 {
+    let Some(codepoint) = char::from_u32(codepoint) else {
+        return 0;
+    };
+    let Some(uvs) = char::from_u32(uvs) else {
+        return 0;
+    };
+    caller
+        .data()
+        .font
+        .glyph_variation_index(codepoint, uvs)
+        .unwrap_or_default()
+        .0 as u32
+}
+
+// fn font_get_scale(font: u32, x_scale: *mut i32, y_scale: *mut i32);
+// Returns the scale of the current font.
+// Just return the upem as rustybuzz has no scale.
+fn font_get_scale(mut caller: Caller<'_, ShapingData>, _font: u32, x_scale: u32, y_scale: u32) {
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+    let upem = caller.data().font.units_per_em();
+
+    memory.write(
+        &mut caller.as_context_mut(),
+        x_scale as usize,
+        &upem.to_le_bytes(),
+    );
+    memory.write(
+        &mut caller.as_context_mut(),
+        y_scale as usize,
+        &upem.to_le_bytes(),
+    );
+}
+
+// fn font_get_glyph_extents(font: u32, glyph: u32, extents: *mut CGlyphExtents) -> bool;
+// Returns the glyph's extents for the given glyph ID at current scale and variation settings.
+fn font_get_glyph_extents(
+    mut caller: Caller<'_, ShapingData>,
+    _font: u32,
+    glyph: u32,
+    extents: u32,
+) -> u32 {
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+
+    let mut glyph_extents = hb_glyph_extents_t::default();
+    let ret = caller
+        .data()
+        .font
+        .glyph_extents(GlyphId(glyph as u16), &mut glyph_extents);
+    if ret {
+        // WASM is little endian. MacOS is little endian, I think.
+        // Maybe should use bytemuck as a dependency instead.
+        let glyph_extents = unsafe { std::mem::transmute(glyph_extents) };
+        memory.write(caller.as_context_mut(), extents as usize, glyph_extents);
+    }
+
+    ret as u32
+}
+
+// fn font_glyph_to_string(font: u32, glyph: u32, str: *const u8, len: u32);
+// Copies the name of the given glyph, or, if no name is available, a string of the form gXXXX into the given string.
+fn font_glyph_to_string(
+    mut caller: Caller<'_, ShapingData>,
+    _font: u32,
+    glyph: u32,
+    str: u32,
+    len: u32,
+) {
+    // len is apparently the assigned heap memory. It seems I should not allocate more than that.
+    // Should not assume I am not writing over anything.
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+
+    let name = caller
+        .data()
+        .font
+        .glyph_name(GlyphId(glyph as u16))
+        .map(ToOwned::to_owned)
+        .unwrap_or(format!("g{glyph:4}"));
+
+    let name = CString::new(name).unwrap();
+    let name = &name.as_bytes()[..len as usize]; // are names ever non ascii?
+
+    memory.write(caller.as_context_mut(), str as usize, name);
+}
+
+// fn font_get_glyph_h_advance(font: u32, glyph: u32) -> i32;
+// Returns the default horizontal advance for the given glyph ID the current scale and variations settings.
+fn font_get_glyph_h_advance(caller: Caller<'_, ShapingData>, _font: u32, glyph: u32) -> i32 {
+    caller.data().font.glyph_h_advance(GlyphId(glyph as u16))
+}
+
+// fn font_get_glyph_v_advance(font: u32, glyph: u32) -> i32;
+// Returns the default vertical advance for the given glyph ID the current scale and variations settings.
+fn font_get_glyph_v_advance(caller: Caller<'_, ShapingData>, _font: u32, glyph: u32) -> i32 {
+    caller.data().font.glyph_v_advance(GlyphId(glyph as u16))
+}
+
+// fn font_copy_glyph_outline(font: u32, glyph: u32, outline: *mut CGlyphOutline) -> bool;
+// Copies the outline of the given glyph ID, at current scale and variation settings, into the outline structure provided.
+fn font_copy_glyph_outline(
+    mut caller: Caller<'_, ShapingData>,
+    _font: u32,
+    glyph: u32,
+    outline: u32,
+) -> u32 {
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+
+    let builder = CGlyphOutline {
+        n_points: todo!(),
+        points: todo!(),
+        n_contours: todo!(),
+        contours: todo!(),
+    };
+    // also no clue what to do here
+    // let my_ol = caller.data().outline_glyph(GlyphId(glyph as u16), builder); // ??
+
+    let Ok(()) = memory.write(caller, outline as usize, todo!("builder result goes here")) else {
+        return 0;
+    };
+
+    1
+}
+
+// fn face_copy_table(font: u32, tag: u32, blob: *mut Blob) -> bool;
+// Copies the binary data in the OpenType table referenced by tag into the supplied blob structure.
+fn face_copy_table(mut caller: Caller<'_, ShapingData>, _font: u32, tag: u32, blob: u32) -> u32 {
+    // So here to copy stuff INTO the module, I need to copy it into its heap
+    // I should not assume that there is an area that's not written to,
+    // so the most straightforward way to get "clean" memory is to grow it by one page,
+    // and allocate there.
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+
+    let tag = tag.to_be_bytes(); // be or le?
+    let Some(table) = caller.data().font.raw_face().table(Tag::from_bytes(&tag)) else {
+        return 0;
+    };
+
+    let eom = memory.data_size(&caller);
+    let Ok(_) = memory.grow(&mut caller.as_context_mut(), 1) else {
+        return 0;
+    };
+
+    let my_blob = Blob {
+        length: table.len() as u32,
+        data: eom as u32,
+    };
+    let my_blob: [u8; std::mem::size_of::<Blob>()] = unsafe { std::mem::transmute(my_blob) };
+
+    let Ok(()) = memory.write(caller.as_context_mut(), blob as usize, &my_blob) else {
+        return 0;
+    };
+
+    let Ok(()) = memory.write(caller.as_context_mut(), eom, table) else {
+        return 0;
+    };
+
+    1
+}
+
+// fn buffer_copy_contents(buffer: u32, cbuffer: *mut CBufferContents) -> bool;
+// Retrieves the contents of the host shaping engine's buffer into the buffer_contents structure. This should typically be called at the beginning of shaping.
+fn buffer_copy_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32) -> u32 {
+    // see face_copy_table for why we're growing memory.
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+    let eom = memory.data(&caller).len();
+    let Ok(_) = memory.grow(&mut caller.as_context_mut(), 1) else {
+        return 0;
+    };
+
+    // I need these two to be the same lifetime it seems
+    let (mem_data, store_data) = memory.data_and_store_mut(&mut caller);
+
+    let rb_buffer = &store_data.buffer;
+    let length = rb_buffer.len;
+
+    let info_loc = eom;
+    let pos_loc = info_loc + length * std::mem::size_of::<hb_glyph_info_t>();
+
+    // This _should_ work ..
+    for i in 0..length {
+        let info_loc = info_loc + i * std::mem::size_of::<hb_glyph_info_t>();
+        mem_data[info_loc..info_loc + std::mem::size_of::<hb_glyph_info_t>()]
+            .copy_from_slice(bytemuck::bytes_of(&rb_buffer.info[i]));
+
+        let pos_loc = pos_loc + i * std::mem::size_of::<GlyphPosition>();
+        mem_data[pos_loc..pos_loc + std::mem::size_of::<hb_glyph_info_t>()]
+            .copy_from_slice(bytemuck::bytes_of(&rb_buffer.pos[i]));
+    }
+
+    let buffer_contents = CBufferContents {
+        length: length as u32,
+        info: info_loc as u32,
+        position: pos_loc as u32,
+    };
+    let buffer_contents: [u8; std::mem::size_of::<CBufferContents>()] =
+        unsafe { std::mem::transmute(buffer_contents) };
+
+    let Ok(()) = memory.write(
+        &mut caller.as_context_mut(),
+        cbuffer as usize,
+        &buffer_contents,
+    ) else {
+        return 0;
+    };
+
+    1
+}
+
+// fn buffer_set_contents(buffer: u32, cbuffer: &CBufferContents) -> bool;
+// Copy the buffer_contents structure back into the host shaping engine's buffer. This should typically be called at the end of shaping.
+fn buffer_set_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32) -> u32 {
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+
+    let mut buffer = [0; 12];
+
+    memory.read(caller.as_context_mut(), cbuffer as usize, &mut buffer);
+    let buffer: CBufferContents = unsafe { std::mem::transmute(buffer) };
+
+    caller.data_mut().buffer.clear_output();
+    caller.data_mut().buffer.clear_positions();
+
+    for i in 0..buffer.length {
+        let mut info_buffer = [0; std::mem::size_of::<hb_glyph_info_t>()];
+        let Ok(()) = memory.read(
+            caller.as_context_mut(),
+            buffer.info as usize + i as usize * std::mem::size_of::<hb_glyph_info_t>(),
+            &mut info_buffer,
+        ) else {
+            // eprintln!("bad info being read");
+            return 0;
+        };
+        let info = unsafe { std::mem::transmute(info_buffer) };
+        caller.data_mut().buffer.info.push(info);
+
+        let mut pos_buffer = [0; std::mem::size_of::<GlyphPosition>()];
+        let Ok(()) = memory.read(
+            caller.as_context_mut(),
+            buffer.position as usize + i as usize * std::mem::size_of::<GlyphPosition>(),
+            &mut pos_buffer,
+        ) else {
+            // eprintln!("bad position being read");
+            return 0;
+        };
+        let pos = unsafe { std::mem::transmute(pos_buffer) };
+        caller.data_mut().buffer.pos.push(pos);
+    }
+
+    1
+}
+
+// fn debugprint(s: *const u8);
+// Produces a debugging message in the host shaper's log output; the variants debugprint1 ... debugprint4 suffix the message with a comma-separated list of the integer arguments.
+// rust varargs when
+fn debugprint(mut caller: Caller<'_, ShapingData>, s: u32) {
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+
+    // seems reasonable?
+    let bytes = &memory.data(&caller)[s as usize..];
+    let msg = CStr::from_bytes_until_nul(bytes)
+        .unwrap_or_default()
+        .to_string_lossy();
+
+    std::eprintln!("{msg}"); // maybe?
+}
+
+// fn shape_with(font: u32, buffer: u32, features: u32, num_features: u32, shaper: *const u8) -> i32;
+// Run another shaping engine's shaping process on the given font and buffer. The only shaping engine guaranteed to be available is ot, the OpenType shaper, but others may also be available. This allows the WASM author to process a buffer "normally", before further manipulating it.
+// I think we should just use the default rustybuzz shaper for now.
+fn shape_with(
+    mut caller: Caller<'_, ShapingData>,
+    font: u32,
+    buffer: u32,
+    features: u32,
+    num_features: u32,
+    _shaper: u32,
+) -> i32 {
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+
+    // let ret = shape_with_plan(face, &plan, unicode_buffer); // <-- uncommenting this gives a compiler error
+    todo!()
 }
 
 // ===========
