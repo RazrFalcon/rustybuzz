@@ -292,11 +292,11 @@ pub(crate) fn shape_with_wasm(
             // This _should_ work ..
             for i in 0..length {
                 let info_loc = info_loc + i * std::mem::size_of::<hb_glyph_info_t>();
-                mem_data[info_loc..std::mem::size_of::<hb_glyph_info_t>()]
+                mem_data[info_loc..info_loc + std::mem::size_of::<hb_glyph_info_t>()]
                     .copy_from_slice(bytemuck::bytes_of(&rb_buffer.info[i]));
 
                 let pos_loc = pos_loc + i * std::mem::size_of::<GlyphPosition>();
-                mem_data[pos_loc..std::mem::size_of::<hb_glyph_info_t>()]
+                mem_data[pos_loc..pos_loc + std::mem::size_of::<hb_glyph_info_t>()]
                     .copy_from_slice(bytemuck::bytes_of(&rb_buffer.pos[i]));
             }
 
@@ -400,14 +400,29 @@ pub(crate) fn shape_with_wasm(
     // Here we are (supposedly) done creating functions.
     // draft section
 
+    // The WASM code inside a font is expected to export a function called shape which takes five int32 arguments
+    // and returns an int32 status value. (Zero for failure, any other value for success.) Three of the five
+    // arguments are tokens which can be passed to the API functions exported to your WASM code by the host
+    // shaping engine:
+    //
+    // A shape plan token, which can largely be ignored.
+    // A font token.
+    // A buffer token.
+    // A feature array.
+    // The number of features.
+
     let instance = linker.instantiate(&mut store, &module).ok()?;
     let shape = instance
         .get_typed_func::<(u32, u32, u32, u32, u32), i32>(&mut store, "shape")
         .ok()?;
 
-    let ret = shape.call(&mut store, (0, 0, 0, 0, 0));
+    if let Ok(0) | Err(_) = shape.call(&mut store, (0, 0, 0, 0, 0)) {
+        return None;
+    };
 
-    todo!()
+    let ret = store.into_data().buffer;
+
+    Some(GlyphBuffer(ret))
 }
 
 // ===========
@@ -456,4 +471,33 @@ struct CBufferContents {
     length: u32,
     info: u32,
     position: u32,
+}
+
+#[cfg(test)]
+mod tests {
+    use std::print;
+
+    use super::*;
+
+    #[test]
+    fn name() -> Result<(), ()> {
+        let calculator_font =
+            include_bytes!("../../tests/fonts/text-rendering-tests/Calculator-Regular.ttf");
+        let face = hb_font_t::from_slice(calculator_font, 0).unwrap();
+
+        let mut buffer = UnicodeBuffer::new();
+        buffer.push_str("22/7=");
+
+        let plan = hb_ot_shape_plan_t::new(&face, crate::Direction::LeftToRight, None, None, &[]);
+
+        let res = shape_with_wasm(&face, &plan, buffer).unwrap();
+
+        print!("{:?}", res.glyph_infos());
+        // This is returning the glyphs for     22/7=
+        // should return                        3.142857
+
+        // Hey at least it is not None ....
+
+        Ok(())
+    }
 }
