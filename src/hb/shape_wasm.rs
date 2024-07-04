@@ -43,7 +43,7 @@ pub(crate) fn shape_with_wasm(
 
     let mut store = Store::new(&Engine::default(), data);
     let module = Module::new(&store.engine(), wasm_blob).ok()?; // returns None if couldn't parse blob.
-    let module_name = module.name().unwrap_or_default();
+    let module_name = "env"; // name defined in the inspected compiled modules.
 
     let mut linker = Linker::new(&store.engine());
 
@@ -151,8 +151,9 @@ pub(crate) fn shape_with_wasm(
     // fn font_glyph_to_string(font: u32, glyph: u32, str: *const u8, len: u32);
     // Copies the name of the given glyph, or, if no name is available, a string of the form gXXXX into the given string.
     let font_glyph_to_string =
-        |mut caller: Caller<'_, ShapingData>, _: u32, glyph: u32, str: u32, _len: u32| {
-            // what am I supposed to do with `len` here? Should I trim the name to `len` length somehow?
+        |mut caller: Caller<'_, ShapingData>, _: u32, glyph: u32, str: u32, len: u32| {
+            // len is apparently the assigned heap memory. It seems I should not allocate more than that.
+            // Should not assume I am not writing over anything.
             let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
 
             let name = caller
@@ -163,8 +164,9 @@ pub(crate) fn shape_with_wasm(
                 .unwrap_or(format!("g{glyph:4}"));
 
             let name = CString::new(name).unwrap();
+            let name = &name.as_bytes()[..len as usize]; // are names ever non ascii?
 
-            memory.write(caller.as_context_mut(), str as usize, name.as_bytes());
+            memory.write(caller.as_context_mut(), str as usize, name);
         };
     linker
         .func_wrap(module_name, "font_glyph_to_string", font_glyph_to_string)
@@ -230,6 +232,10 @@ pub(crate) fn shape_with_wasm(
     // Copies the binary data in the OpenType table referenced by tag into the supplied blob structure.
     let face_copy_table =
         |mut caller: Caller<'_, ShapingData>, _: u32, tag: u32, blob: u32| -> u32 {
+            // So here to copy stuff INTO the module, I need to copy it into its heap
+            // I should not assume that there is an area that's not written to,
+            // so the most straightforward way to get "clean" memory is to grow it by one page,
+            // and allocate there.
             let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
 
             let tag = tag.to_be_bytes(); // be or le?
@@ -237,11 +243,14 @@ pub(crate) fn shape_with_wasm(
                 return 0;
             };
 
-            let arbitrary = blob + std::mem::size_of::<Blob>() as u32;
+            let eom = memory.data_size(&caller);
+            let Ok(_) = memory.grow(&mut caller.as_context_mut(), 1) else {
+                return 0;
+            };
 
             let my_blob = Blob {
                 length: table.len() as u32,
-                data: arbitrary, // is this correct?
+                data: eom as u32,
             };
             let my_blob: [u8; std::mem::size_of::<Blob>()] =
                 unsafe { std::mem::transmute(my_blob) };
@@ -250,7 +259,7 @@ pub(crate) fn shape_with_wasm(
                 return 0;
             };
 
-            let Ok(()) = memory.write(caller.as_context_mut(), arbitrary as usize, table) else {
+            let Ok(()) = memory.write(caller.as_context_mut(), eom, table) else {
                 return 0;
             };
 
@@ -264,49 +273,37 @@ pub(crate) fn shape_with_wasm(
     // Retrieves the contents of the host shaping engine's buffer into the buffer_contents structure. This should typically be called at the beginning of shaping.
     let buffer_copy_contents =
         |mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32| -> u32 {
+            // see face_copy_table for why we're growing memory.
             let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+            let eom = memory.data(&caller).len();
+            let Ok(_) = memory.grow(&mut caller.as_context_mut(), 1) else {
+                return 0;
+            };
 
-            let rb_buffer = &caller.as_context().data().buffer;
-            let length = rb_buffer.len as u32;
+            // I need these two to be the same lifetime it seems
+            let (mem_data, store_data) = memory.data_and_store_mut(&mut caller);
 
-            let arbitrary_info = cbuffer + std::mem::size_of::<CBufferContents>() as u32;
-            let arbitrary_pos =
-                arbitrary_info + length * std::mem::size_of::<hb_glyph_info_t>() as u32;
+            let rb_buffer = &store_data.buffer;
+            let length = rb_buffer.len;
 
-            // // I can't figure out this section for now.
-            //
-            // for (i, (info, pos)) in rb_buffer
-            //     .info
-            //     .iter()
-            //     .copied()
-            //     .zip(rb_buffer.pos.iter().copied())
-            //     .enumerate()
-            // {
-            //     let info: [u8; std::mem::size_of::<hb_glyph_info_t>()] =
-            //         unsafe { std::mem::transmute(info) };
-            //     let Ok(()) = memory.write(
-            //         &mut caller.as_context_mut(),
-            //         arbitrary_info as usize + i * std::mem::size_of::<hb_glyph_info_t>(),
-            //         &info,
-            //     ) else {
-            //         return 0;
-            //     };
+            let info_loc = eom;
+            let pos_loc = info_loc + length * std::mem::size_of::<hb_glyph_info_t>();
 
-            //     let pos: [u8; std::mem::size_of::<GlyphPosition>()] =
-            //         unsafe { std::mem::transmute(pos) };
-            //     let Ok(()) = memory.write(
-            //         &mut caller.as_context_mut(),
-            //         arbitrary_pos as usize + i * std::mem::size_of::<GlyphPosition>(),
-            //         &pos,
-            //     ) else {
-            //         return 0;
-            //     };
-            // }
+            // This _should_ work ..
+            for i in 0..length {
+                let info_loc = info_loc + i * std::mem::size_of::<hb_glyph_info_t>();
+                mem_data[info_loc..std::mem::size_of::<hb_glyph_info_t>()]
+                    .copy_from_slice(bytemuck::bytes_of(&rb_buffer.info[i]));
+
+                let pos_loc = pos_loc + i * std::mem::size_of::<GlyphPosition>();
+                mem_data[pos_loc..std::mem::size_of::<hb_glyph_info_t>()]
+                    .copy_from_slice(bytemuck::bytes_of(&rb_buffer.pos[i]));
+            }
 
             let buffer_contents = CBufferContents {
-                length,
-                info: arbitrary_info,
-                position: arbitrary_pos,
+                length: length as u32,
+                info: info_loc as u32,
+                position: pos_loc as u32,
             };
             let buffer_contents: [u8; std::mem::size_of::<CBufferContents>()] =
                 unsafe { std::mem::transmute(buffer_contents) };
@@ -405,7 +402,7 @@ pub(crate) fn shape_with_wasm(
 
     let instance = linker.instantiate(&mut store, &module).ok()?;
     let shape = instance
-        .get_typed_func::<(u32, u32, u32, u32, u32), i32>(&mut store, "shape") // not sure if this is correct yet
+        .get_typed_func::<(u32, u32, u32, u32, u32), i32>(&mut store, "shape")
         .ok()?;
 
     let ret = shape.call(&mut store, (0, 0, 0, 0, 0));
