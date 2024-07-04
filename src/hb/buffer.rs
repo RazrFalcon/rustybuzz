@@ -1121,10 +1121,6 @@ impl hb_buffer_t {
     }
 
     pub fn unsafe_to_break_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
-        if !self.flags.contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT) {
-            return;
-        }
-
         self._set_glyph_flags(
             UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
             start,
@@ -1135,6 +1131,10 @@ impl hb_buffer_t {
     }
 
     pub fn unsafe_to_concat_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
+        if !self.flags.contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT) {
+            return;
+        }
+
         self._set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(false), Some(true));
     }
 
