@@ -40,7 +40,8 @@ IGNORE_TEST_CASES = [
     "fallback_positioning_001",
     # Requires support for the ltag table.
     "macos_002",
-    # Custom MacOS test. The shaped output is correct, but a buffer flag is there, even though there shouldn't be.
+    # Custom MacOS test. A shortened version of `macos_013`, but with `--show-flags`.
+    # The shaped output is correct, but a buffer flag is there, even though there shouldn't be.
     # Wasn't able to figure out the problem, but the problem occurs during kerning. In harfbuzz, it uses the `drive`
     # method, while in rustybuzz it uses `state_machine_kerning` which seems to apply some different rules for the flags.
     "macos_122",
@@ -50,7 +51,7 @@ IGNORE_TEST_CASES = [
     "cmap_3_020",
 
     # This custom test fails because harfbuzz uses a set digest in AAT to abort early
-    # which we don't do yet.
+    # which we don't do yet. Is basically the same as morx_20_005, but with `--show-flags`
     "glyph_flags_002",
 ]
 
@@ -93,8 +94,6 @@ def prune_test_options(options):
     options = options.replace(" --font-funcs=ot", "").replace("--font-funcs=ot", "")
     # we don't support font scaling
     options = options.replace("--font-size=1000", "")
-#     options = options.replace(" --show-flags", "")
-#     options += " --show-flags"
     options = options.strip()
     return options
 
