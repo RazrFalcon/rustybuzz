@@ -336,20 +336,26 @@ pub(crate) fn shape_with_wasm(
 
             for i in 0..buffer.length {
                 let mut info_buffer = [0; 20];
-                memory.read(
+                let Ok(()) = memory.read(
                     caller.as_context_mut(),
-                    (buffer.info + i) as usize,
+                    buffer.info as usize + i as usize * std::mem::size_of::<hb_glyph_info_t>(),
                     &mut info_buffer,
-                );
+                ) else {
+                    // eprintln!("bad info being read");
+                    return 0;
+                };
                 let info = unsafe { std::mem::transmute(info_buffer) };
                 caller.data_mut().buffer.info.push(info);
 
                 let mut pos_buffer = [0; 20];
-                memory.read(
+                let Ok(()) = memory.read(
                     caller.as_context_mut(),
-                    (buffer.position + i) as usize,
+                    buffer.position as usize + i as usize * std::mem::size_of::<GlyphPosition>(),
                     &mut pos_buffer,
-                );
+                ) else {
+                    // eprintln!("bad position being read");
+                    return 0;
+                };
                 let pos = unsafe { std::mem::transmute(pos_buffer) };
                 caller.data_mut().buffer.pos.push(pos);
             }
@@ -481,6 +487,16 @@ mod tests {
 
     #[test]
     fn name() -> Result<(), ()> {
+        // here are the functions needed for this font:
+        //
+        // (import "env" "buffer_copy_contents" (func (;0;) (type 0)))
+        // (import "env" "buffer_set_contents" (func (;1;) (type 0)))
+        // (import "env" "font_get_glyph" (func (;2;) (type 3)))
+        // (import "env" "font_get_glyph_h_advance" (func (;3;) (type 0)))
+        // (import "env" "debugprint" (func (;4;) (type 2)))
+        // (export "memory" (memory 0))
+        // (export "shape" (func 50))
+
         let calculator_font =
             include_bytes!("../../tests/fonts/text-rendering-tests/Calculator-Regular.ttf");
         let face = hb_font_t::from_slice(calculator_font, 0).unwrap();
