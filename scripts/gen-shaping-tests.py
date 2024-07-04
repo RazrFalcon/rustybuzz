@@ -89,6 +89,8 @@ def prune_test_options(options):
     options = options.replace(" --font-funcs=ot", "").replace("--font-funcs=ot", "")
     # we don't support font scaling
     options = options.replace("--font-size=1000", "")
+#     options = options.replace(" --show-flags", "")
+#     options += " --show-flags"
     options = options.strip()
     return options
 
