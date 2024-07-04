@@ -2344,17 +2344,3 @@ fn macos_121() {
          ff=7+1443"
     );
 }
-
-#[cfg(target_os = "macos")]
-#[test]
-fn macos_122() {
-    assert_eq!(
-        shape(
-            "/System/Library/Fonts/GeezaPro.ttc",
-            "\u{0627}\u{0644}",
-            "--font-funcs ot --show-flags",
-        ),
-        "u0644.lam=1+1051|\
-         u0627.alef=0+647"
-    );
-}

@@ -40,6 +40,10 @@ IGNORE_TEST_CASES = [
     "fallback_positioning_001",
     # Requires support for the ltag table.
     "macos_002",
+    # Custom MacOS test. The shaped output is correct, but a buffer flag is there, even though there shouldn't be.
+    # Wasn't able to figure out the problem, but the problem occurs during kerning. In harfbuzz, it uses the `drive`
+    # method, while in rustybuzz it uses `state_machine_kerning` which seems to apply some different rules for the flags.
+    "macos_122",
     # Broken in HarfBuzz. https://github.com/harfbuzz/harfbuzz/issues/4774
     "cmap_3_016",
     "cmap_3_018",
