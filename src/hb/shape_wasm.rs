@@ -108,7 +108,7 @@ pub(crate) fn shape_with_wasm(
             memory.write(
                 &mut caller.as_context_mut(),
                 x_scale as usize,
-                &upem.to_le_bytes(), // le or be?
+                &upem.to_le_bytes(),
             );
             memory.write(
                 &mut caller.as_context_mut(),
@@ -175,11 +175,13 @@ pub(crate) fn shape_with_wasm(
     let font_get_glyph_h_advance = |caller: Caller<'_, ShapingData>, _: u32, glyph: u32| -> i32 {
         caller.data().font.glyph_h_advance(GlyphId(glyph as u16))
     };
-    linker.func_wrap(
-        module_name,
-        "font_get_glyph_h_advance",
-        font_get_glyph_h_advance,
-    );
+    linker
+        .func_wrap(
+            module_name,
+            "font_get_glyph_h_advance",
+            font_get_glyph_h_advance,
+        )
+        .ok()?;
 
     // fn font_get_glyph_v_advance(font: u32, glyph: u32) -> i32;
     // Returns the default vertical advance for the given glyph ID the current scale and variations settings.
@@ -230,20 +232,25 @@ pub(crate) fn shape_with_wasm(
         |mut caller: Caller<'_, ShapingData>, _: u32, tag: u32, blob: u32| -> u32 {
             let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
 
-            let tag = tag.to_be_bytes(); // biggest byte first right ?
+            let tag = tag.to_be_bytes(); // be or le?
             let Some(table) = caller.data().font.raw_face().table(Tag::from_bytes(&tag)) else {
                 return 0;
             };
 
-            let length = table.len() as u32;
+            let arbitrary = blob + std::mem::size_of::<Blob>() as u32;
 
             let my_blob = Blob {
-                length,
-                data: table.as_ptr() as usize, // is this correct?
+                length: table.len() as u32,
+                data: arbitrary, // is this correct?
             };
-            let my_blob = unsafe { std::mem::transmute(my_blob) };
+            let my_blob: [u8; std::mem::size_of::<Blob>()] =
+                unsafe { std::mem::transmute(my_blob) };
 
-            let Ok(()) = memory.write(caller.as_context_mut(), blob as usize, my_blob) else {
+            let Ok(()) = memory.write(caller.as_context_mut(), blob as usize, &my_blob) else {
+                return 0;
+            };
+
+            let Ok(()) = memory.write(caller.as_context_mut(), arbitrary as usize, table) else {
                 return 0;
             };
 
@@ -258,25 +265,59 @@ pub(crate) fn shape_with_wasm(
     let buffer_copy_contents =
         |mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32| -> u32 {
             let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-            let base_ptr = memory.data_ptr(caller.as_context()) as u32;
 
-            let mut my_buffer = &mut caller.data_mut().buffer;
+            let rb_buffer = &caller.as_context().data().buffer;
+            let length = rb_buffer.len as u32;
 
-            // Is this correct? Is stuff within Caller.data() also within Memory?
-            let info = my_buffer.out_info_mut().as_mut_ptr() as u32 - base_ptr;
-            let position = my_buffer.pos.as_mut_ptr() as u32 - base_ptr;
+            let arbitrary_info = cbuffer + std::mem::size_of::<CBufferContents>() as u32;
+            let arbitrary_pos =
+                arbitrary_info + length * std::mem::size_of::<hb_glyph_info_t>() as u32;
+
+            // // I can't figure out this section for now.
+            //
+            // for (i, (info, pos)) in rb_buffer
+            //     .info
+            //     .iter()
+            //     .copied()
+            //     .zip(rb_buffer.pos.iter().copied())
+            //     .enumerate()
+            // {
+            //     let info: [u8; std::mem::size_of::<hb_glyph_info_t>()] =
+            //         unsafe { std::mem::transmute(info) };
+            //     let Ok(()) = memory.write(
+            //         &mut caller.as_context_mut(),
+            //         arbitrary_info as usize + i * std::mem::size_of::<hb_glyph_info_t>(),
+            //         &info,
+            //     ) else {
+            //         return 0;
+            //     };
+
+            //     let pos: [u8; std::mem::size_of::<GlyphPosition>()] =
+            //         unsafe { std::mem::transmute(pos) };
+            //     let Ok(()) = memory.write(
+            //         &mut caller.as_context_mut(),
+            //         arbitrary_pos as usize + i * std::mem::size_of::<GlyphPosition>(),
+            //         &pos,
+            //     ) else {
+            //         return 0;
+            //     };
+            // }
 
             let buffer_contents = CBufferContents {
-                length: my_buffer.len as u32,
-                info,
-                position,
+                length,
+                info: arbitrary_info,
+                position: arbitrary_pos,
             };
-            let buffer_contents: [u8; 12 /* ? */] = unsafe {
-                // No idea if this is correct.
-                std::mem::transmute(buffer_contents)
-            };
+            let buffer_contents: [u8; std::mem::size_of::<CBufferContents>()] =
+                unsafe { std::mem::transmute(buffer_contents) };
 
-            memory.write(caller, cbuffer as usize, &buffer_contents);
+            let Ok(()) = memory.write(
+                &mut caller.as_context_mut(),
+                cbuffer as usize,
+                &buffer_contents,
+            ) else {
+                return 0;
+            };
 
             1
         };
@@ -408,7 +449,7 @@ pub struct Blob {
     /// Length of the blob in bytes
     pub length: u32,
     /// A raw pointer to the contents
-    pub data: usize, // *mut u8
+    pub data: u32, // *mut u8
 }
 
 // using rustybuzz types instead of custom types
