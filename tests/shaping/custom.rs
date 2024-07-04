@@ -18,3 +18,19 @@ fn glyph_flags_001() {
          .notdef=5+1500"
     );
 }
+
+#[test]
+fn glyph_flags_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestMORXThirtyfive.ttf",
+            "\u{0058}\u{0041}",
+            "--show-flags --ned --remove-default-ignorables",
+        ),
+        "X|\
+         A@586,0#1|\
+         B@1225,0#1|\
+         C@1851,0#1|\
+         E@2447,0#1"
+    );
+}
