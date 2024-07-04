@@ -10,7 +10,7 @@
 # - As for the other tests, the expected values for the shaping process will be ignored and sometimes "wrong".
 # A manual check revealed that there are only about 9 cases where the shaping output doesn't exactly match the reference
 # in the file, most likely due to differences in the versions of that font. We ignore that.
-
+# In addition to the above, we also use this file to declare custom MacOS tests that were created specifically to test issues in rustybuzz.
 
 # https://github.com/harfbuzz/harfbuzz/issues/1373
 /System/Library/Fonts/Supplemental/BigCaslon.ttf;;U+0107;[cacute=0+432]
@@ -158,3 +158,7 @@
 
 # https://github.com/harfbuzz/harfbuzz/issues/4020
 /System/Library/Fonts/LucidaGrande.ttc;--features=-liga[3:5];U+0066,U+0066,U+0020,U+0066,U+0066,U+0066,U+0020,U+0066,U+0066;[ff=0+1443|space=2+648|f=3+753|f=4+753|f=5+753|space=6+648|ff=7+1443]
+
+# From here on, we have a mix of harfbuzz macOS tests that were synced later on as well as custom rustybuzz tests.
+# The reason we don't separate them is that if we don't append new tests to the end, the numbers of all subsequent
+# tests get shifted, which we want to avoid.
