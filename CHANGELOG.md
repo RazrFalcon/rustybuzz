@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Allow `hb_buffer_t::serial` to overflow/wrap-around instead of panicking.
+
 ## [0.17.0] - 2024-07-02
 ### Changed
 - Bump `ttf-parser`.

@@ -529,7 +529,8 @@ impl hb_buffer_t {
 
     #[inline]
     fn next_serial(&mut self) -> u8 {
-        self.serial += 1;
+        // A `serial` overflow/wrap-around here is perfectly fine.
+        self.serial = self.serial.wrapping_add(1);
 
         if self.serial == 0 {
             self.serial += 1;
