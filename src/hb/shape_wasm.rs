@@ -184,10 +184,11 @@ fn font_get_glyph_extents(
         .font
         .glyph_extents(GlyphId(glyph as u16), &mut glyph_extents);
     if ret {
-        // WASM is little endian. MacOS is little endian, I think.
-        // Maybe should use bytemuck as a dependency instead.
-        let glyph_extents = unsafe { std::mem::transmute(glyph_extents) };
-        memory.write(caller.as_context_mut(), extents as usize, glyph_extents);
+        memory.write(
+            caller.as_context_mut(),
+            extents as usize,
+            bytemuck::bytes_of(&glyph_extents),
+        );
     }
 
     ret as u32
@@ -280,9 +281,12 @@ fn face_copy_table(mut caller: Caller<'_, ShapingData>, _font: u32, tag: u32, bl
         length: table.len() as u32,
         data: eom as u32,
     };
-    let my_blob: [u8; std::mem::size_of::<Blob>()] = unsafe { std::mem::transmute(my_blob) };
 
-    let Ok(()) = memory.write(caller.as_context_mut(), blob as usize, &my_blob) else {
+    let Ok(()) = memory.write(
+        caller.as_context_mut(),
+        blob as usize,
+        bytemuck::bytes_of(&my_blob),
+    ) else {
         return 0;
     };
 
@@ -309,32 +313,22 @@ fn buffer_copy_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuff
     let rb_buffer = &store_data.buffer;
     let length = rb_buffer.len;
 
-    let info_loc = eom;
-    let pos_loc = info_loc + length * std::mem::size_of::<hb_glyph_info_t>();
+    let pos_loc = eom + length * core::mem::size_of::<hb_glyph_info_t>();
+    let end_loc = pos_loc + length * core::mem::size_of::<GlyphPosition>();
 
     // This _should_ work ..
-    for i in 0..length {
-        let info_loc = info_loc + i * std::mem::size_of::<hb_glyph_info_t>();
-        mem_data[info_loc..info_loc + std::mem::size_of::<hb_glyph_info_t>()]
-            .copy_from_slice(bytemuck::bytes_of(&rb_buffer.info[i]));
-
-        let pos_loc = pos_loc + i * std::mem::size_of::<GlyphPosition>();
-        mem_data[pos_loc..pos_loc + std::mem::size_of::<hb_glyph_info_t>()]
-            .copy_from_slice(bytemuck::bytes_of(&rb_buffer.pos[i]));
-    }
+    mem_data[eom..pos_loc].copy_from_slice(bytemuck::cast_slice(&rb_buffer.info));
+    mem_data[pos_loc..end_loc].copy_from_slice(bytemuck::cast_slice(&rb_buffer.pos));
 
     let buffer_contents = CBufferContents {
         length: length as u32,
-        info: info_loc as u32,
+        info: eom as u32,
         position: pos_loc as u32,
     };
-    let buffer_contents: [u8; std::mem::size_of::<CBufferContents>()] =
-        unsafe { std::mem::transmute(buffer_contents) };
-
     let Ok(()) = memory.write(
         &mut caller.as_context_mut(),
         cbuffer as usize,
-        &buffer_contents,
+        bytemuck::bytes_of(&buffer_contents),
     ) else {
         return 0;
     };
@@ -347,42 +341,103 @@ fn buffer_copy_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuff
 fn buffer_set_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32) -> u32 {
     let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
 
-    let mut buffer = [0; 12];
-
+    let mut buffer = [0; core::mem::size_of::<CBufferContents>()];
     memory.read(caller.as_context_mut(), cbuffer as usize, &mut buffer);
-    let buffer: CBufferContents = unsafe { std::mem::transmute(buffer) };
+    let Ok(buffer) = bytemuck::try_from_bytes::<CBufferContents>(&buffer) else {
+        return 0;
+    };
+
+    // This functions's code from here on down is bad and I can't figure out why
+    // One attempt is shown commented out below.
 
     caller.data_mut().buffer.clear_output();
     caller.data_mut().buffer.clear_positions();
 
     for i in 0..buffer.length {
-        let mut info_buffer = [0; std::mem::size_of::<hb_glyph_info_t>()];
+        let mut info_buffer = [0; core::mem::size_of::<hb_glyph_info_t>()];
         let Ok(()) = memory.read(
             caller.as_context_mut(),
-            buffer.info as usize + i as usize * std::mem::size_of::<hb_glyph_info_t>(),
+            buffer.info as usize + i as usize * core::mem::size_of::<hb_glyph_info_t>(),
             &mut info_buffer,
         ) else {
             // eprintln!("bad info being read");
             return 0;
         };
-        let info = unsafe { std::mem::transmute(info_buffer) };
+        let info = unsafe { core::mem::transmute(info_buffer) };
         caller.data_mut().buffer.info.push(info);
 
-        let mut pos_buffer = [0; std::mem::size_of::<GlyphPosition>()];
+        let mut pos_buffer = [0; core::mem::size_of::<GlyphPosition>()];
         let Ok(()) = memory.read(
             caller.as_context_mut(),
-            buffer.position as usize + i as usize * std::mem::size_of::<GlyphPosition>(),
+            buffer.position as usize + i as usize * core::mem::size_of::<GlyphPosition>(),
             &mut pos_buffer,
         ) else {
             // eprintln!("bad position being read");
             return 0;
         };
-        let pos = unsafe { std::mem::transmute(pos_buffer) };
+        let pos = unsafe { core::mem::transmute(pos_buffer) };
         caller.data_mut().buffer.pos.push(pos);
     }
 
     1
 }
+
+// fn NOT_WORKING_buffer_set_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32) -> u32 {
+//     let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+
+//     let mut buffer = [0; core::mem::size_of::<CBufferContents>()];
+//     memory.read(caller.as_context_mut(), cbuffer as usize, &mut buffer);
+//     let Ok(buffer_contents) = bytemuck::try_from_bytes::<CBufferContents>(&buffer) else {
+//         return 0;
+//     };
+
+//     // These clears seem broken somehow
+
+//     caller.data_mut().buffer.info.clear();
+//     caller.data_mut().buffer.pos.clear();
+
+//     // This code here was me trying to bytemuck these, but I hit a wall with the
+//     // source data is not correctly aligned for target data bytemuck error
+//     // The Unaligned workaround stopped the bytemuck errors but .. er .. fucked
+//     // things up elsewhere.
+
+//     #[derive(Copy, Clone)]
+//     #[repr(C, packed)]
+//     struct Unaligned<T>(T);
+//     unsafe impl<T: bytemuck::Pod> bytemuck::Pod for Unaligned<T> {}
+//     unsafe impl<T: bytemuck::Zeroable> bytemuck::Zeroable for Unaligned<T> {}
+
+//     let mut info_buffer = Vec::new();
+//     let Ok(()) = memory.read(
+//         caller.as_context_mut(),
+//         buffer_contents.info as usize,
+//         &mut info_buffer,
+//     ) else {
+//         return 0;
+//     };
+//     let info_slice: &[Unaligned<hb_glyph_info_t>] = bytemuck::try_cast_slice(&info_buffer).unwrap();
+//     caller
+//         .data_mut()
+//         .buffer
+//         .info
+//         .extend(info_slice.iter().map(|v| v.0));
+//     let mut pos_buffer = Vec::new();
+//     let Ok(()) = memory.read(
+//         caller.as_context_mut(),
+//         buffer_contents.info as usize,
+//         &mut pos_buffer,
+//     ) else {
+//         return 0;
+//     };
+//     let pos_slice: &[Unaligned<GlyphPosition>] = bytemuck::try_cast_slice(&pos_buffer).unwrap();
+//     caller
+//         .data_mut()
+//         .buffer
+//         .pos
+//         .extend(pos_slice.iter().map(|v| v.0));
+
+//     1
+// }
 
 // fn debugprint(s: *const u8);
 // Produces a debugging message in the host shaper's log output; the variants debugprint1 ... debugprint4 suffix the message with a comma-separated list of the integer arguments.
@@ -446,7 +501,7 @@ struct CGlyphOutline {
 }
 
 /// Some data provided by ~~Harfbuzz~~. rustybuzz
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct Blob {
     /// Length of the blob in bytes
@@ -455,14 +510,22 @@ pub struct Blob {
     pub data: u32, // *mut u8
 }
 
+// Are these correct?
+unsafe impl bytemuck::Zeroable for Blob {}
+unsafe impl bytemuck::Pod for Blob {}
+
 // using rustybuzz types instead of custom types
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 struct CBufferContents {
     length: u32,
     info: u32,
     position: u32,
 }
+
+// Are these correct?
+unsafe impl bytemuck::Zeroable for CBufferContents {}
+unsafe impl bytemuck::Pod for CBufferContents {}
 
 #[cfg(test)]
 mod tests {

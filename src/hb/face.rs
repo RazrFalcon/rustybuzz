@@ -377,6 +377,9 @@ pub struct hb_glyph_extents_t {
     pub height: i32,
 }
 
+unsafe impl bytemuck::Zeroable for hb_glyph_extents_t {}
+unsafe impl bytemuck::Pod for hb_glyph_extents_t {}
+
 fn find_best_cmap_subtable(face: &ttf_parser::Face) -> Option<u16> {
     use ttf_parser::PlatformId;
 
