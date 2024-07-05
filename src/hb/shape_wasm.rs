@@ -138,15 +138,20 @@ fn font_get_glyph(
     let Some(codepoint) = char::from_u32(codepoint) else {
         return 0;
     };
-    let Some(uvs) = char::from_u32(uvs) else {
-        return 0;
-    };
-    caller
-        .data()
-        .font
-        .glyph_variation_index(codepoint, uvs)
-        .unwrap_or_default()
-        .0 as u32
+
+    if uvs == 0 {
+        caller.data().font.glyph_index(codepoint).unwrap().0 as u32
+    } else {
+        let Some(uvs) = char::from_u32(uvs) else {
+            return 0;
+        };
+        caller
+            .data()
+            .font
+            .glyph_variation_index(codepoint, uvs)
+            .unwrap_or_default()
+            .0 as u32
+    }
 }
 
 // fn font_get_scale(font: u32, x_scale: *mut i32, y_scale: *mut i32);
@@ -347,97 +352,30 @@ fn buffer_set_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffe
         return 0;
     };
 
-    // This functions's code from here on down is bad and I can't figure out why
-    // One attempt is shown commented out below.
+    let (mem_data, store_data) = memory.data_and_store_mut(&mut caller);
 
-    caller.data_mut().buffer.clear_output();
-    caller.data_mut().buffer.clear_positions();
+    let array_length = buffer.length as usize * core::mem::size_of::<hb_glyph_info_t>();
 
-    for i in 0..buffer.length {
-        let mut info_buffer = [0; core::mem::size_of::<hb_glyph_info_t>()];
-        let Ok(()) = memory.read(
-            caller.as_context_mut(),
-            buffer.info as usize + i as usize * core::mem::size_of::<hb_glyph_info_t>(),
-            &mut info_buffer,
-        ) else {
-            // eprintln!("bad info being read");
-            return 0;
-        };
-        let info = unsafe { core::mem::transmute(info_buffer) };
-        caller.data_mut().buffer.info.push(info);
+    store_data.buffer.len = buffer.length as usize;
 
-        let mut pos_buffer = [0; core::mem::size_of::<GlyphPosition>()];
-        let Ok(()) = memory.read(
-            caller.as_context_mut(),
-            buffer.position as usize + i as usize * core::mem::size_of::<GlyphPosition>(),
-            &mut pos_buffer,
-        ) else {
-            // eprintln!("bad position being read");
-            return 0;
-        };
-        let pos = unsafe { core::mem::transmute(pos_buffer) };
-        caller.data_mut().buffer.pos.push(pos);
-    }
+    store_data.buffer.info.clear();
+    store_data
+        .buffer
+        .info
+        .extend_from_slice(bytemuck::cast_slice(
+            &mem_data[buffer.info as usize..buffer.info as usize + array_length],
+        ));
+
+    store_data.buffer.pos.clear();
+    store_data
+        .buffer
+        .pos
+        .extend_from_slice(bytemuck::cast_slice(
+            &mem_data[buffer.position as usize..buffer.position as usize + array_length],
+        ));
 
     1
 }
-
-// fn NOT_WORKING_buffer_set_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32) -> u32 {
-//     let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-
-//     let mut buffer = [0; core::mem::size_of::<CBufferContents>()];
-//     memory.read(caller.as_context_mut(), cbuffer as usize, &mut buffer);
-//     let Ok(buffer_contents) = bytemuck::try_from_bytes::<CBufferContents>(&buffer) else {
-//         return 0;
-//     };
-
-//     // These clears seem broken somehow
-
-//     caller.data_mut().buffer.info.clear();
-//     caller.data_mut().buffer.pos.clear();
-
-//     // This code here was me trying to bytemuck these, but I hit a wall with the
-//     // source data is not correctly aligned for target data bytemuck error
-//     // The Unaligned workaround stopped the bytemuck errors but .. er .. fucked
-//     // things up elsewhere.
-
-//     #[derive(Copy, Clone)]
-//     #[repr(C, packed)]
-//     struct Unaligned<T>(T);
-//     unsafe impl<T: bytemuck::Pod> bytemuck::Pod for Unaligned<T> {}
-//     unsafe impl<T: bytemuck::Zeroable> bytemuck::Zeroable for Unaligned<T> {}
-
-//     let mut info_buffer = Vec::new();
-//     let Ok(()) = memory.read(
-//         caller.as_context_mut(),
-//         buffer_contents.info as usize,
-//         &mut info_buffer,
-//     ) else {
-//         return 0;
-//     };
-//     let info_slice: &[Unaligned<hb_glyph_info_t>] = bytemuck::try_cast_slice(&info_buffer).unwrap();
-//     caller
-//         .data_mut()
-//         .buffer
-//         .info
-//         .extend(info_slice.iter().map(|v| v.0));
-//     let mut pos_buffer = Vec::new();
-//     let Ok(()) = memory.read(
-//         caller.as_context_mut(),
-//         buffer_contents.info as usize,
-//         &mut pos_buffer,
-//     ) else {
-//         return 0;
-//     };
-//     let pos_slice: &[Unaligned<GlyphPosition>] = bytemuck::try_cast_slice(&pos_buffer).unwrap();
-//     caller
-//         .data_mut()
-//         .buffer
-//         .pos
-//         .extend(pos_slice.iter().map(|v| v.0));
-
-//     1
-// }
 
 // fn debugprint(s: *const u8);
 // Produces a debugging message in the host shaper's log output; the variants debugprint1 ... debugprint4 suffix the message with a comma-separated list of the integer arguments.
@@ -556,11 +494,11 @@ mod tests {
 
         let res = shape_with_wasm(&face, &plan, buffer).unwrap();
 
-        print!("{:?}", res.glyph_infos());
-        // This is returning the glyphs for     22/7=
-        // should return                        3.142857
-
-        // Hey at least it is not None ....
+        // print!("{:?}", res.glyph_infos());
+        for info in res.glyph_infos() {
+            let c = face.glyph_name(info.as_glyph()).unwrap();
+            std::println!("{c}");
+        }
 
         Ok(())
     }
