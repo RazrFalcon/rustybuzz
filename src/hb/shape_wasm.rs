@@ -245,16 +245,44 @@ fn font_copy_glyph_outline(
 ) -> u32 {
     let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
 
-    let builder = CGlyphOutline {
-        n_points: todo!(),
-        points: todo!(),
-        n_contours: todo!(),
-        contours: todo!(),
+    let mut builder = GlyphOutline::default();
+    let Some(_) = caller
+        .data()
+        .font
+        .outline_glyph(GlyphId(glyph as u16), &mut builder)
+    else {
+        return 0;
     };
-    // also no clue what to do here
-    // let my_ol = caller.data().outline_glyph(GlyphId(glyph as u16), builder); // ??
 
-    let Ok(()) = memory.write(caller, outline as usize, todo!("builder result goes here")) else {
+    let points_size = builder.points.len() * core::mem::size_of::<CGlyphOutlinePoint>();
+    let contours_size = builder.contours.len() * core::mem::size_of::<u32>();
+    let needed_size = points_size + contours_size;
+    // 1 page is 65536 or 0x10000 bytes.
+    let page_growth_needed = needed_size / 0x10000 + 1;
+
+    let eom = memory.data(&caller).len();
+    let Ok(_) = memory.grow(&mut caller.as_context_mut(), page_growth_needed as u64) else {
+        return 0;
+    };
+
+    let (mem_data, store_data) = memory.data_and_store_mut(&mut caller);
+
+    mem_data[eom..eom + points_size].copy_from_slice(bytemuck::cast_slice(&builder.points));
+    mem_data[eom + points_size..eom + needed_size]
+        .copy_from_slice(bytemuck::cast_slice(&builder.contours));
+
+    let builder = CGlyphOutline {
+        n_points: builder.points.len() as u32,
+        points: eom as u32,
+        n_contours: builder.contours.len() as u32,
+        contours: (eom + points_size) as u32,
+    };
+
+    let Ok(()) = memory.write(
+        caller.as_context_mut(),
+        outline as usize,
+        bytemuck::bytes_of(&builder),
+    ) else {
         return 0;
     };
 
@@ -275,8 +303,11 @@ fn face_copy_table(mut caller: Caller<'_, ShapingData>, _font: u32, tag: u32, bl
         return 0;
     };
 
+    // 1 page is 65536 or 0x10000 bytes.
+    let page_growth_needed = table.len() / 0x10000 + 1;
+
     let eom = memory.data_size(&caller);
-    let Ok(_) = memory.grow(&mut caller.as_context_mut(), 1) else {
+    let Ok(_) = memory.grow(&mut caller.as_context_mut(), page_growth_needed as u64) else {
         return 0;
     };
 
@@ -317,7 +348,7 @@ fn buffer_copy_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuff
         return 0;
     };
 
-    // I need these two to be the same lifetime it seems
+    // I need these twtl to be the same lifetime it seems
     let (mem_data, store_data) = memory.data_and_store_mut(&mut caller);
 
     let rb_buffer = &store_data.buffer;
@@ -430,7 +461,7 @@ fn shape_with(
 // ===========
 
 #[repr(C)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 enum PointType {
     MoveTo,
     LineTo,
@@ -439,20 +470,74 @@ enum PointType {
 }
 
 #[repr(C)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 struct CGlyphOutlinePoint {
     x: f32,
     y: f32,
     pointtype: PointType,
 }
 
+unsafe impl bytemuck::Zeroable for CGlyphOutlinePoint {}
+unsafe impl bytemuck::Pod for CGlyphOutlinePoint {}
+
+#[derive(Default)]
+struct GlyphOutline {
+    points: alloc::vec::Vec<CGlyphOutlinePoint>,
+    contours: alloc::vec::Vec<u32>,
+}
+
+impl ttf_parser::OutlineBuilder for GlyphOutline {
+    fn move_to(&mut self, x: f32, y: f32) {
+        self.points.push(CGlyphOutlinePoint {
+            x,
+            y,
+            pointtype: PointType::MoveTo,
+        })
+    }
+
+    fn line_to(&mut self, x: f32, y: f32) {
+        self.points.push(CGlyphOutlinePoint {
+            x,
+            y,
+            pointtype: PointType::LineTo,
+        })
+    }
+
+    fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
+        // is this correct ?
+        self.points.push(CGlyphOutlinePoint {
+            x: x1, // my assumption here is that `x1` is rhe first point.
+            y: y1, // I _think_ that's what harfbuzz-wasm wants.
+            pointtype: PointType::QuadraticTo,
+        })
+    }
+
+    fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
+        // is this correct ?
+        self.points.push(CGlyphOutlinePoint {
+            x: x1, // same assumption here.
+            y: y1,
+            pointtype: PointType::CubicTo,
+        })
+    }
+
+    fn close(&mut self) {
+        // maybe?
+        self.contours.push(self.points.len() as u32)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 struct CGlyphOutline {
-    n_points: usize,
-    points: *mut CGlyphOutlinePoint,
-    n_contours: usize,
-    contours: *mut usize,
+    n_points: u32,
+    points: u32, // pointer
+    n_contours: u32,
+    contours: u32, // pointer
 }
+
+unsafe impl bytemuck::Zeroable for CGlyphOutline {}
+unsafe impl bytemuck::Pod for CGlyphOutline {}
 
 /// Some data provided by ~~Harfbuzz~~. rustybuzz
 #[derive(Debug, Clone, Copy)]
@@ -464,7 +549,6 @@ pub struct Blob {
     pub data: u32, // *mut u8
 }
 
-// Are these correct?
 unsafe impl bytemuck::Zeroable for Blob {}
 unsafe impl bytemuck::Pod for Blob {}
 
@@ -477,7 +561,6 @@ struct CBufferContents {
     position: u32,
 }
 
-// Are these correct?
 unsafe impl bytemuck::Zeroable for CBufferContents {}
 unsafe impl bytemuck::Pod for CBufferContents {}
 
