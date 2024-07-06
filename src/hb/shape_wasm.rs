@@ -16,6 +16,7 @@ use crate::shape_with_plan;
 
 struct ShapingData<'a> {
     font: &'a hb_font_t<'a>,
+    plan: &'a hb_ot_shape_plan_t,
     buffer: hb_buffer_t,
 }
 
@@ -38,13 +39,14 @@ pub(crate) fn shape_with_wasm(
 
     let data = ShapingData {
         font: face,
+        plan: plan,
         buffer: unicode_buffer.0,
     };
 
     let mut store = Store::new(&Engine::default(), data);
-    let module = Module::new(&store.engine(), wasm_blob).ok()?; // returns None if couldn't parse blob.
+    let module = Module::new(store.engine(), wasm_blob).ok()?; // returns None if couldn't parse blob.
 
-    let mut linker = Linker::new(&store.engine());
+    let mut linker = Linker::new(store.engine());
 
     // Wouldn't look as ridiculous if we returned anyhow::Result from this function instead or sth.
     linker
@@ -92,6 +94,9 @@ pub(crate) fn shape_with_wasm(
     // The number of features.
 
     let instance = linker.instantiate(&mut store, &module).ok()?;
+
+    // return early if no "memory" or "shape" exports.
+    instance.get_memory(&mut store, "memory")?;
     let shape = instance
         .get_typed_func::<(u32, u32, u32, u32, u32), i32>(&mut store, "shape")
         .ok()?;
@@ -139,19 +144,12 @@ fn font_get_glyph(
         return 0;
     };
 
-    if uvs == 0 {
-        caller.data().font.glyph_index(codepoint).unwrap().0 as u32
-    } else {
-        let Some(uvs) = char::from_u32(uvs) else {
-            return 0;
-        };
-        caller
-            .data()
-            .font
-            .glyph_variation_index(codepoint, uvs)
-            .unwrap_or_default()
-            .0 as u32
+    match (uvs, char::from_u32(uvs)) {
+        (0, _) | (_, None) => caller.data().font.glyph_index(codepoint),
+        (_, Some(uvs)) => caller.data().font.glyph_variation_index(codepoint, uvs),
     }
+    .unwrap_or_default()
+    .0 as u32
 }
 
 // fn font_get_scale(font: u32, x_scale: *mut i32, y_scale: *mut i32);
@@ -212,15 +210,15 @@ fn font_glyph_to_string(
     // Should not assume I am not writing over anything.
     let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
 
-    let name = caller
+    let mut name = caller
         .data()
         .font
         .glyph_name(GlyphId(glyph as u16))
         .map(ToOwned::to_owned)
         .unwrap_or(format!("g{glyph:4}"));
-
+    name.truncate(len as usize - 1);
     let name = CString::new(name).unwrap();
-    let name = &name.as_bytes()[..len as usize]; // are names ever non ascii?
+    let name = name.as_bytes();
 
     memory.write(caller.as_context_mut(), str as usize, name);
 }
@@ -307,8 +305,15 @@ fn face_copy_table(mut caller: Caller<'_, ShapingData>, _font: u32, tag: u32, bl
 fn buffer_copy_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffer: u32) -> u32 {
     // see face_copy_table for why we're growing memory.
     let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+
+    let length = caller.data().buffer.len;
+
+    // 1 page is 65536 or 0x10000 bytes.
+    let char_size = core::mem::size_of::<GlyphPosition>() + core::mem::size_of::<hb_glyph_info_t>();
+    let page_growth_needed = length * char_size / 0x10000 + 1;
+
     let eom = memory.data(&caller).len();
-    let Ok(_) = memory.grow(&mut caller.as_context_mut(), 1) else {
+    let Ok(_) = memory.grow(&mut caller.as_context_mut(), page_growth_needed as u64) else {
         return 0;
     };
 
@@ -316,7 +321,6 @@ fn buffer_copy_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuff
     let (mem_data, store_data) = memory.data_and_store_mut(&mut caller);
 
     let rb_buffer = &store_data.buffer;
-    let length = rb_buffer.len;
 
     let pos_loc = eom + length * core::mem::size_of::<hb_glyph_info_t>();
     let end_loc = pos_loc + length * core::mem::size_of::<GlyphPosition>();
@@ -397,16 +401,28 @@ fn debugprint(mut caller: Caller<'_, ShapingData>, s: u32) {
 // I think we should just use the default rustybuzz shaper for now.
 fn shape_with(
     mut caller: Caller<'_, ShapingData>,
-    font: u32,
-    buffer: u32,
-    features: u32,
-    num_features: u32,
+    // We don't use font token and buffer token
+    _font: u32,
+    _buffer: u32,
+    // harfbuzz-wasm doesn't use the features pointer
+    _features: u32,
+    _num_features: u32,
+    // we dont have custom shapers (yet?).
     _shaper: u32,
 ) -> i32 {
-    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+    // potentially we could read the shaper pointed to by `shaper`
+    // if it is anything other than "ot" or "rustybuzz" return an error.
+    // if the font wants Graphite for example.
 
-    // let ret = shape_with_plan(face, &plan, unicode_buffer); // <-- uncommenting this gives a compiler error
-    todo!()
+    let face = caller.data().font;
+    let plan = caller.data().plan;
+    let buffer = std::mem::take(&mut caller.data_mut().buffer);
+
+    let GlyphBuffer(mut ret) = shape_with_plan(face, plan, UnicodeBuffer(buffer));
+
+    caller.data_mut().buffer = core::mem::take(&mut ret);
+
+    1
 }
 
 // ===========

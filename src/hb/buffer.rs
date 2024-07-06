@@ -337,6 +337,7 @@ pub const HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS: u32 = 1;
 pub const HB_BUFFER_CLUSTER_LEVEL_CHARACTERS: u32 = 2;
 pub const HB_BUFFER_CLUSTER_LEVEL_DEFAULT: u32 = HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES;
 
+#[derive(Default)]
 pub struct hb_buffer_t {
     // Information about how the text in the buffer should be treated.
     pub flags: BufferFlags,
