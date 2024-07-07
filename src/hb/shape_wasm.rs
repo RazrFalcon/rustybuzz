@@ -12,19 +12,15 @@ use super::{
     ot_shape::{hb_ot_shape_context_t, shape_internal},
     ot_shape_plan::hb_ot_shape_plan_t,
 };
-use crate::shape_with_plan;
 
 struct ShapingData<'a> {
     font: &'a hb_font_t<'a>,
-    plan: &'a hb_ot_shape_plan_t,
     buffer: hb_buffer_t,
 }
 
 pub(crate) fn shape_with_wasm(
     // the font
     face: &hb_font_t,
-    // the plan is useful maybe?
-    plan: &hb_ot_shape_plan_t,
     // the text
     mut unicode_buffer: UnicodeBuffer,
 ) -> Option<GlyphBuffer> {
@@ -39,7 +35,6 @@ pub(crate) fn shape_with_wasm(
 
     let data = ShapingData {
         font: face,
-        plan: plan,
         buffer: unicode_buffer.0,
     };
 
@@ -448,10 +443,9 @@ fn shape_with(
     // if the font wants Graphite for example.
 
     let face = caller.data().font;
-    let plan = caller.data().plan;
     let buffer = std::mem::take(&mut caller.data_mut().buffer);
 
-    let GlyphBuffer(mut ret) = shape_with_plan(face, plan, UnicodeBuffer(buffer));
+    let GlyphBuffer(mut ret) = crate::shape(face, &[], UnicodeBuffer(buffer));
 
     caller.data_mut().buffer = core::mem::take(&mut ret);
 
@@ -614,9 +608,7 @@ mod tests {
         let mut buffer = UnicodeBuffer::new();
         buffer.push_str("22/7=");
 
-        let plan = get_plan_from_buffer(&face, &mut buffer);
-
-        let res = shape_with_wasm(&face, &plan, buffer)
+        let res = shape_with_wasm(&face, buffer)
             .unwrap()
             .glyph_infos()
             .iter()
@@ -649,58 +641,65 @@ mod tests {
         let face = hb_font_t::from_slice(ruqaa_font, 0).unwrap();
 
         let mut buffer = UnicodeBuffer::new();
-        buffer.push_str("أفشوا السلام بينكم");
 
-        let plan = get_plan_from_buffer(&face, &mut buffer);
+        // module breaks when i remove the period at the end ..
+        buffer.push_str("أفشوا السلام بينكم.");
+        // doesn't break FontGoggles.
 
-        let res = shape_with_wasm(&face, &plan, buffer).expect("No shape_with_wasm_result"); // currently failing
+        let res = shape_with_wasm(&face, buffer).expect("No shape_with_wasm_result");
         let res = res
             .glyph_positions()
             .iter()
             .zip(res.glyph_infos().iter())
             .map(|(p, i)| {
-                (
-                    (p.x_advance, p.x_offset, p.y_offset),
-                    (i.cluster, i.glyph_id),
+                format!(
+                    "gid{}@{} adv{}  dX{} dY{}",
+                    i.glyph_id, i.cluster, p.x_advance, p.x_offset, p.y_offset
                 )
-            })
-            .inspect(|((xa, xo, yo), (ic, id))| {
-                std::println!("{}", face.glyph_name(GlyphId(*id as u16)).unwrap_or("None"));
-                std::println!("Glyph {id}. Cluster {ic}. ({xa}, {xo}, {yo})")
-            })
-            .collect::<alloc::vec::Vec<_>>();
+            });
 
-        std::println!("{}", res.len());
-
-        // Gotten using Wasm FontGoggles.
+        // Copied from Wasm FontGoggles.
         let expected = alloc::vec![
-            ((303, 0, -213), (17, 301)),
-            ((321, 0, 20), (16, 243)),
-            ((0, 215, 394), (15, 491)),
-            ((198, 0, 20), (15, 14)),
-            ((0, 167, -81), (14, 494)),
-            ((229, 0, 42), (14, 20)),
-            ((0, 163, 77), (13, 492)),
-            ((313, 0, 213), (13, 30)),
-            ((146, 0, 0), (12, 455)),
-            ((287, 0, 0), (11, 300)),
-            ((-27, 0, -35), (10, 5)),
-            ((732, 0, -35), (9, 275)),
-            ((387, 0, -35), (8, 89)),
-            ((358, 0, 35), (7, 286)),
-            ((248, 0, 0), (6, 3)),
-            ((146, 0, 0), (5, 455)),
-            ((145, 0, 0), (4, 3)),
-            ((280, -146, -164), (3, 388)),
-            ((0, 338, 526), (2, 496)),
-            ((387, 0, 95), (2, 89)),
-            ((0, 259, 807), (1, 491)),
-            ((414, 0, 165), (1, 215)),
-            ((0, 121, 791), (0, 501)),
-            ((248, 0, 0), (0, 3)),
+            "period	272	0	0	18	462", // writing the text without period breaks the module ..
+            "meem-ar.fina	303	0	-213	17	301",
+            "kaf-ar.medi.meem	321	0	20	16	243",
+            "dotabove-ar	0	215	394	15	491",
+            "behDotless-ar.medi	198	0	20	15	14",
+            "twodotshorizontalbelow-ar	0	167	-81	14	494",
+            "behDotless-ar.medi.high	229	0	42	14	20",
+            "dotbelow-ar	0	163	77	13	492",
+            "behDotless-ar.init.ascend	313	0	213	13	30",
+            "space	146	0	0	12	455",
+            "meem-ar	287	0	0	11	300",
+            "alef-ar.fina.lam	-27	0	-35	10	5",
+            "lam-ar.medi.alef	732	0	-35	9	275",
+            "seen-ar.medi	387	0	-35	8	89",
+            "lam-ar.init	358	0	35	7	286",
+            "alef-ar	248	0	0	6	3",
+            "space	146	0	0	5	455",
+            "alef-ar	145	0	0	4	3",
+            "waw-ar.fina	280	-146	-164	3	388",
+            "threedotsupabove-ar	0	338	526	2	496",
+            "seen-ar.medi	387	0	95	2	89",
+            "dotabove-ar	0	259	807	1	491",
+            "fehDotless-ar.init	414	0	165	1	215",
+            "hamzaabove-ar	0	121	791	0	501",
+            "alef-ar	248	0	0	0	3",
         ];
+        let expected = expected.iter().map(|s| {
+            let mut s = s.split_ascii_whitespace();
+            let _name = s.next();
+            let adv = s.next().unwrap();
+            let d_x = s.next().unwrap();
+            let d_y = s.next().unwrap();
+            let cluster = s.next().unwrap();
+            let gid = s.next().unwrap();
+            format!("gid{}@{} adv{}  dX{} dY{}", gid, cluster, adv, d_x, d_y)
+        });
 
-        // assert_eq!(expected, res); // fails
+        for (expected, res) in expected.zip(res) {
+            assert_eq!(expected, res); // fails
+        }
         Ok(())
     }
 }
