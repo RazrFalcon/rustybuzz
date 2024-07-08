@@ -20,7 +20,16 @@ pub fn shape(face: &hb_font_t, features: &[Feature], mut buffer: UnicodeBuffer) 
         buffer.0.language.as_ref(),
         features,
     );
-    shape_with_plan(face, &plan, buffer)
+    #[cfg(not(feature = "wasm_shaper"))]
+    {
+        shape_with_plan(face, &plan, buffer)
+    }
+    #[cfg(feature = "wasm_shaper")]
+    {
+        // is there a way around the clone here?
+        super::shape_wasm::shape_with_wasm(face, &plan, buffer.clone())
+            .unwrap_or_else(|| shape_with_plan(face, &plan, buffer))
+    }
 }
 
 /// Shapes the buffer content using the provided font and plan.
