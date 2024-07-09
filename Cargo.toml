@@ -21,7 +21,7 @@ unicode-bidi-mirroring = "0.3.0"
 unicode-ccc = "0.3.0"
 unicode-properties = { version = "0.1.0", default-features = false, features = ["general-category"] }
 unicode-script = "0.5.2"
-wasmtime = { version = "22.0.0", optional = true }
+wasmi = { version = "0.34.0", optional = true }
 
 [dependencies.ttf-parser]
 version = "0.24.0"
@@ -39,8 +39,7 @@ default = ["std"]
 std = ["ttf-parser/std"]
 
 # experimental features live here.
-experimental = ["wasm_shaper"]
-wasm_shaper = ["std", "dep:wasmtime"]
+wasm-shaper = ["std", "dep:wasmi"]
 
 [dev-dependencies]
 pico-args = { version = "0.5", features = ["eq-separator"] }

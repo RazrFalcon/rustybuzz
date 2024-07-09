@@ -337,7 +337,7 @@ pub const HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS: u32 = 1;
 pub const HB_BUFFER_CLUSTER_LEVEL_CHARACTERS: u32 = 2;
 pub const HB_BUFFER_CLUSTER_LEVEL_DEFAULT: u32 = HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES;
 
-#[derive(Default, Clone)]
+#[cfg_attr(feature = "wasm-shaper", derive(Default, Clone))]
 pub struct hb_buffer_t {
     // Information about how the text in the buffer should be treated.
     pub flags: BufferFlags,
@@ -1557,7 +1557,7 @@ pub const HB_BUFFER_SCRATCH_FLAG_SHAPER0: u32 = 0x01000000;
 // pub const HB_BUFFER_SCRATCH_FLAG_SHAPER3: u32 = 0x08000000;
 
 /// A buffer that contains an input string ready for shaping.
-#[derive(Clone)]
+#[cfg_attr(feature = "wasm-shaper", derive(Clone))]
 pub struct UnicodeBuffer(pub(crate) hb_buffer_t);
 
 impl UnicodeBuffer {
