@@ -1,7 +1,6 @@
 use alloc::{string::String, vec::Vec};
 use core::cmp::min;
 use core::convert::TryFrom;
-
 use ttf_parser::GlyphId;
 
 use super::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
@@ -1122,10 +1121,6 @@ impl hb_buffer_t {
     }
 
     pub fn unsafe_to_break_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
-        if !self.flags.contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT) {
-            return;
-        }
-
         self._set_glyph_flags(
             UNSAFE_TO_BREAK | UNSAFE_TO_CONCAT,
             start,
@@ -1136,6 +1131,10 @@ impl hb_buffer_t {
     }
 
     pub fn unsafe_to_concat_from_outbuffer(&mut self, start: Option<usize>, end: Option<usize>) {
+        if !self.flags.contains(BufferFlags::PRODUCE_UNSAFE_TO_CONCAT) {
+            return;
+        }
+
         self._set_glyph_flags(UNSAFE_TO_CONCAT, start, end, Some(false), Some(true));
     }
 
@@ -1335,7 +1334,7 @@ impl hb_buffer_t {
             }
         }
 
-        cluster.min(self.info[start].cluster.min(self.info[end - 1].cluster))
+        cluster.min(info[start].cluster.min(info[end - 1].cluster))
     }
 
     fn _infos_set_glyph_flags(

@@ -162,3 +162,4 @@
 # From here on, we have a mix of harfbuzz macOS tests that were synced later on as well as custom rustybuzz tests.
 # The reason we don't separate them is that if we don't append new tests to the end, the numbers of all subsequent
 # tests get shifted, which we want to avoid.
+/System/Library/Fonts/GeezaPro.ttc;--font-funcs ot --show-flags;U+0627,U+0644;

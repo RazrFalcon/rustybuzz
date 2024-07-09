@@ -1,0 +1,3 @@
+tests/fonts/aots/gpos_chaining1_boundary_f1.otf;--show-flags --features="test";U+0000,U+0014,U+0015,U+0016,U+0017,U+0000;
+tests/fonts/text-rendering-tests/TestMORXTwenty.ttf;--remove-default-ignorables --show-flags;U+0045,U+0045;
+tests/fonts/text-rendering-tests/TestMORXThirtyfive.ttf;--show-flags --ned --remove-default-ignorables;U+0058,U+0041;
