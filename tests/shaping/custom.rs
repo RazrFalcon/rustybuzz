@@ -17,6 +17,19 @@ fn fuzzer_001() {
 }
 
 #[test]
+fn fuzzer_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/AdobeBlank-Regular.ttf",
+            "\u{0F42}\u{0FB7}",
+            "--no-glyph-names",
+        ),
+        "1859=0+0|\
+         1976=0+0"
+    );
+}
+
+#[test]
 fn glyph_flags_001() {
     assert_eq!(
         shape(
