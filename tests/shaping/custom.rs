@@ -3,6 +3,20 @@
 use crate::shape;
 
 #[test]
+fn fuzzer_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/PT_Sans-Caption-Web-Regular.ttf",
+            "\u{1EA4}\u{006E}",
+            "",
+        ),
+        "Acircumflex=0+645|\
+         uniF401=0+0|\
+         n=1+641"
+    );
+}
+
+#[test]
 fn glyph_flags_001() {
     assert_eq!(
         shape(
