@@ -48,8 +48,11 @@ fn ruqaa_final_period() {
     let mut buffer = rustybuzz::UnicodeBuffer::new();
     buffer.push_str("أفشوا السلام بينكم.");
 
-    // This test currently breaks as there are differences in clusters and h_advance 
+    // This test currently breaks as there are differences in clusters and h_advance
     // between the output of this function and the output of FontGoggles Wasm.
+
+    // maybe we should just test for y_offset only as this is what the font is designed to change?
+    // succeeds if we ignore cluster and x_advance.
 
     let res = rustybuzz::shape(&face, &[], buffer);
     let res = res

@@ -4,33 +4,30 @@ use ttf_parser::{GlyphId, Tag};
 use wasmi::{self, AsContextMut, Caller, Engine, Linker, Module, Store};
 
 use super::{
-    buffer::{hb_buffer_t, GlyphBuffer, GlyphPosition, UnicodeBuffer},
+    buffer::{hb_buffer_t, GlyphPosition},
     face::hb_glyph_extents_t,
     hb_font_t, hb_glyph_info_t,
+    ot_shape::{hb_ot_shape_context_t, shape_internal},
     ot_shape_plan::hb_ot_shape_plan_t,
 };
 
 struct ShapingData<'a> {
     font: &'a hb_font_t<'a>,
     plan: &'a hb_ot_shape_plan_t,
-    buffer: hb_buffer_t,
+    buffer: &'a mut hb_buffer_t,
 }
 
 pub(crate) fn shape_with_wasm(
-    face: &hb_font_t,
+    font: &hb_font_t,
     plan: &hb_ot_shape_plan_t,
-    buffer: UnicodeBuffer,
-) -> Option<GlyphBuffer> {
+    buffer: &mut hb_buffer_t,
+) -> Option<()> {
     // If font has no Wasm blob just return None to carry on as usual.
-    let wasm_blob = face
+    let wasm_blob = font
         .raw_face()
         .table(ttf_parser::Tag::from_bytes(b"Wasm"))?;
 
-    let data = ShapingData {
-        font: face,
-        plan: plan,
-        buffer: buffer.0,
-    };
+    let data = ShapingData { font, plan, buffer };
 
     let mut store = Store::new(&Engine::default(), data);
     let module = Module::new(store.engine(), wasm_blob).ok()?;
@@ -86,17 +83,18 @@ pub(crate) fn shape_with_wasm(
         .ok()?;
 
     match shape.call(&mut store, (0, 0, 0, 0, 0)) {
-        Ok(0) => return None,
-        Err(_e) => {
-            // std::eprintln!("{_e:?}"); // uncomment this for debugging.
+        Ok(0) => {
+            log::info!("Wasm Shaper return with failure.");
+            return None;
+        }
+        Err(e) => {
+            log::error!("Wasm Module Error: {e}");
             return None;
         }
         _ => (),
     }
 
-    let ret = store.into_data().buffer;
-
-    Some(GlyphBuffer(ret))
+    Some(())
 }
 
 // Definition in comments in the definition in harfbuzz_wasm crate.
@@ -226,11 +224,11 @@ enum PointType {
 struct OutlinePoint {
     x: f32,
     y: f32,
-    pointtype: PointType,
+    kind: PointType,
 }
 impl OutlinePoint {
-    fn new(x: f32, y: f32, pointtype: PointType) -> Self {
-        OutlinePoint { x, y, pointtype }
+    fn new(x: f32, y: f32, kind: PointType) -> Self {
+        OutlinePoint { x, y, kind }
     }
 }
 
@@ -245,13 +243,11 @@ struct GlyphOutline {
 
 impl ttf_parser::OutlineBuilder for GlyphOutline {
     fn move_to(&mut self, x: f32, y: f32) {
-        self.points
-            .push(OutlinePoint::new(x, y, PointType::MoveTo))
+        self.points.push(OutlinePoint::new(x, y, PointType::MoveTo))
     }
 
     fn line_to(&mut self, x: f32, y: f32) {
-        self.points
-            .push(OutlinePoint::new(x, y, PointType::LineTo))
+        self.points.push(OutlinePoint::new(x, y, PointType::LineTo))
     }
 
     fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
@@ -301,11 +297,12 @@ fn font_copy_glyph_outline(
     let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
 
     let mut builder = GlyphOutline::default();
-    let Some(_) = caller
+    if caller
         .data()
         .font
         .outline_glyph(GlyphId(glyph as u16), &mut builder)
-    else {
+        .is_none()
+    {
         return 0;
     };
 
@@ -316,7 +313,10 @@ fn font_copy_glyph_outline(
     let page_growth_needed = needed_size / 0x10000 + 1;
 
     let eom = memory.data(&caller).len();
-    let Ok(_) = memory.grow(&mut caller.as_context_mut(), page_growth_needed as u32) else {
+    if memory
+        .grow(&mut caller.as_context_mut(), page_growth_needed as u32)
+        .is_err()
+    {
         return 0;
     };
 
@@ -333,11 +333,14 @@ fn font_copy_glyph_outline(
         contours: (eom + points_size) as u32,
     };
 
-    let Ok(()) = memory.write(
-        caller.as_context_mut(),
-        outline as usize,
-        bytemuck::bytes_of(&builder),
-    ) else {
+    if memory
+        .write(
+            caller.as_context_mut(),
+            outline as usize,
+            bytemuck::bytes_of(&builder),
+        )
+        .is_err()
+    {
         return 0;
     };
 
@@ -375,24 +378,30 @@ fn face_copy_table(mut caller: Caller<'_, ShapingData>, _font: u32, tag: u32, bl
     let page_growth_needed = table.len() / 0x10000 + 1;
 
     let eom = memory.data_size(&caller);
-    let Ok(_) = memory.grow(&mut caller.as_context_mut(), page_growth_needed as u32) else {
+    if memory
+        .grow(&mut caller.as_context_mut(), page_growth_needed as u32)
+        .is_err()
+    {
         return 0;
     };
 
-    let my_blob = Blob {
+    let ret = Blob {
         length: table.len() as u32,
         data: eom as u32,
     };
 
-    let Ok(()) = memory.write(
-        caller.as_context_mut(),
-        blob as usize,
-        bytemuck::bytes_of(&my_blob),
-    ) else {
+    if memory
+        .write(
+            caller.as_context_mut(),
+            blob as usize,
+            bytemuck::bytes_of(&ret),
+        )
+        .is_err()
+    {
         return 0;
     };
 
-    let Ok(()) = memory.write(caller.as_context_mut(), eom, table) else {
+    if memory.write(caller.as_context_mut(), eom, table).is_err() {
         return 0;
     };
 
@@ -412,7 +421,10 @@ fn buffer_copy_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuff
     let page_growth_needed = length * char_size / 0x10000 + 1;
 
     let eom = memory.data(&caller).len();
-    let Ok(_) = memory.grow(&mut caller.as_context_mut(), page_growth_needed as u32) else {
+    if memory
+        .grow(&mut caller.as_context_mut(), page_growth_needed as u32)
+        .is_err()
+    {
         return 0;
     };
 
@@ -431,11 +443,14 @@ fn buffer_copy_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuff
         info: eom as u32,
         position: pos_loc as u32,
     };
-    let Ok(()) = memory.write(
-        &mut caller.as_context_mut(),
-        cbuffer as usize,
-        bytemuck::bytes_of(&buffer_contents),
-    ) else {
+    if memory
+        .write(
+            &mut caller.as_context_mut(),
+            cbuffer as usize,
+            bytemuck::bytes_of(&buffer_contents),
+        )
+        .is_err()
+    {
         return 0;
     };
 
@@ -459,7 +474,10 @@ fn buffer_set_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffe
     let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
 
     let mut buffer = [0; core::mem::size_of::<CBufferContents>()];
-    let Ok(()) = memory.read(caller.as_context_mut(), cbuffer as usize, &mut buffer) else {
+    if memory
+        .read(caller.as_context_mut(), cbuffer as usize, &mut buffer)
+        .is_err()
+    {
         return 0;
     };
     let Ok(buffer) = bytemuck::try_from_bytes::<CBufferContents>(&buffer) else {
@@ -491,18 +509,10 @@ fn buffer_set_contents(mut caller: Caller<'_, ShapingData>, _buffer: u32, cbuffe
     1
 }
 
-#[allow(unused)]
 // fn debugprint(s: *const u8);
 // Produces a debugging message in the host shaper's log output;
-fn debugprint(mut caller: Caller<'_, ShapingData>, s: u32) {
-    // rustybuzz does not have a log output.
-    // internal_debug(caller, s) // <--- uncomment this if you need to print the module messages.
-}
-
-#[allow(unused)]
-fn internal_debug(mut caller: Caller<'_, ShapingData>, s: u32) {
+fn debugprint(caller: Caller<'_, ShapingData>, s: u32) {
     let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
-
     if memory.data(&caller).get(s as usize).is_none() {
         return;
     }
@@ -511,7 +521,7 @@ fn internal_debug(mut caller: Caller<'_, ShapingData>, s: u32) {
         .unwrap_or_default()
         .to_string_lossy();
 
-    std::eprintln!("{msg}");
+    log::debug!("Wasm Module: {msg}");
 }
 
 // fn shape_with(font: u32, buffer: u32, features: u32, num_features: u32, shaper: *const u8) -> i32;
@@ -525,24 +535,32 @@ fn shape_with(
     _features: u32,
     _num_features: u32,
     // we dont have custom shapers (yet?).
-    _shaper: u32,
+    shaper: u32,
 ) -> i32 {
-    // potentially we could read the shaper pointed to by `shaper`
-    // if it is anything other than "ot" or "rustybuzz" return an error.
-    // if the font wants Graphite for example.
+    let memory = caller.get_export("memory").unwrap().into_memory().unwrap();
+    if memory.data(&caller).get(shaper as usize).is_none() {
+        return 0;
+    }
+    let bytes = &memory.data(&caller)[shaper as usize..];
+    let shaper = CStr::from_bytes_until_nul(bytes)
+        .unwrap_or_default()
+        .to_string_lossy();
 
-    // currently we just call the default shaper.
+    if !(shaper.eq_ignore_ascii_case("ot") || shaper.eq_ignore_ascii_case("rustybuzz")) {
+        log::warn!("Only ot shaper is available in rustybuzz.");
+        return 0;
+    }
 
     let face = caller.data().font;
     let plan = caller.data().plan;
+    let target_direction = caller.data().buffer.direction;
 
-    let buffer = std::mem::take(&mut caller.data_mut().buffer);
-    let mut buffer = UnicodeBuffer(buffer);
-    buffer.0.guess_segment_properties();
-
-    let GlyphBuffer(ret) = crate::shape_with_plan(face, &plan, buffer);
-
-    caller.data_mut().buffer = ret;
+    shape_internal(&mut hb_ot_shape_context_t {
+        plan,
+        face,
+        buffer: caller.data_mut().buffer,
+        target_direction,
+    });
 
     1
 }
