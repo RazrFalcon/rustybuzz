@@ -44,6 +44,19 @@ fn fuzzer_003() {
 }
 
 #[test]
+fn fuzzer_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/AdobeBlank-Regular.ttf",
+            "\u{104A}\u{102F}",
+            "",
+        ),
+        "cid00075=0+0|\
+         cid00048=0+0"
+    );
+}
+
+#[test]
 fn glyph_flags_001() {
     assert_eq!(
         shape(
