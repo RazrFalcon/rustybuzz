@@ -57,6 +57,20 @@ fn fuzzer_004() {
 }
 
 #[test]
+fn fuzzer_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/NotoSansMyanmarUI-Regular.subset1.otf",
+            "\u{1004}\u{103A}\u{1039}\u{1002}\u{101C}",
+            "",
+        ),
+        "gid1=0+668|\
+         gid5=0@-4,0+0|\
+         gid3=4+1126"
+    );
+}
+
+#[test]
 fn glyph_flags_001() {
     assert_eq!(
         shape(
