@@ -30,6 +30,20 @@ fn fuzzer_002() {
 }
 
 #[test]
+fn fuzzer_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/Rasa.subset1.otf",
+            "\u{0A93}\u{0ABC}",
+            "",
+        ),
+        "gid5=0+982|\
+         gid22=0@-1,0+0|\
+         gid21=0+0"
+    );
+}
+
+#[test]
 fn glyph_flags_001() {
     assert_eq!(
         shape(
