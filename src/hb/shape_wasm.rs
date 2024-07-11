@@ -1,7 +1,7 @@
 use alloc::{borrow::ToOwned, ffi::CString, format};
 use core::ffi::CStr;
 use ttf_parser::{GlyphId, Tag};
-use wasmi::{self, AsContextMut, Caller, Engine, Linker, Module, Store};
+use wasmi::{self, AsContextMut, Caller, Config, Engine, Linker, Module, Store};
 
 use super::{
     buffer::{hb_buffer_t, GlyphPosition},
@@ -27,12 +27,13 @@ pub(crate) fn shape_with_wasm(
         .raw_face()
         .table(ttf_parser::Tag::from_bytes(b"Wasm"))?;
 
-    let data = ShapingData { font, plan, buffer };
+    let mut config = Config::default();
+    config.compilation_mode(wasmi::CompilationMode::Lazy);
+    let engine = Engine::new(&config);
 
-    let mut store = Store::new(&Engine::default(), data);
-    let module = Module::new(store.engine(), wasm_blob).ok()?;
+    let module = Module::new(&engine, wasm_blob).ok()?;
 
-    let mut linker = Linker::new(store.engine());
+    let mut linker = Linker::new(&engine);
 
     // Not every function defined by HarfBuzz is defined here.
     // Only the ones used by the harfbuzz_wasm crate
@@ -69,6 +70,9 @@ pub(crate) fn shape_with_wasm(
         .ok()?
         .func_wrap("env", "shape_with", shape_with)
         .ok()?;
+
+    let data = ShapingData { font, plan, buffer };
+    let mut store = Store::new(&engine, data);
 
     let instance = linker
         .instantiate(&mut store, &module)
@@ -190,7 +194,7 @@ fn font_glyph_to_string(
         .font
         .glyph_name(GlyphId(glyph as u16))
         .map(ToOwned::to_owned)
-        .unwrap_or(format!("g{glyph:4}"));
+        .unwrap_or(format!("g{:0>4}", glyph));
     name.truncate(len as usize - 1);
     let name = CString::new(name).unwrap();
     let name = name.as_bytes_with_nul();
