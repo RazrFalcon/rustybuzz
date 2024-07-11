@@ -24,7 +24,7 @@ unicode-script = "0.5.2"
 
 [dependencies.ttf-parser]
 git = "https://github.com/LaurenzV/ttf-parser"
-rev = "a486aa72"
+rev = "949d1797"
 default-features = false
 features = [
     "opentype-layout",

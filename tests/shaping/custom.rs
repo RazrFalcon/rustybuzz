@@ -85,6 +85,20 @@ fn fuzzer_006() {
 }
 
 #[test]
+fn fuzzer_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/LaBelleAurore.ttf",
+            "\u{006B}\u{0065}\u{031D}",
+            "",
+        ),
+        "k=0+479|\
+         e=1+343|\
+         .notdef=1@-172,-59+0"
+    );
+}
+
+#[test]
 fn glyph_flags_001() {
     assert_eq!(
         shape(

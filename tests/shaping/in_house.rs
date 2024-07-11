@@ -2270,6 +2270,21 @@ fn emoji_005() {
 }
 
 #[test]
+fn fallback_positioning_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/8228d035fcd65d62ec9728fb34f42c63be93a5d3.ttf",
+            "\u{0078}\u{0301}\u{0058}\u{0301}",
+            "",
+        ),
+        "x=0+1030|\
+         acutecomb=0@-19,-27+0|\
+         X=2+1295|\
+         acutecomb=2@-151,320+0"
+    );
+}
+
+#[test]
 fn fallback_positioning_002() {
     assert_eq!(
         shape(

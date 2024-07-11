@@ -36,8 +36,6 @@ IGNORE_TEST_CASES = [
     # Resource exhaustion tests with large outputs
     "morx_34_001",
     "morx_36_001",
-    # ttf-parser uses different rounding, not a bug
-    "fallback_positioning_001",
     # Requires support for the ltag table.
     "macos_002",
     # Custom MacOS test. A shortened version of `macos_013`, but with `--show-flags`.
