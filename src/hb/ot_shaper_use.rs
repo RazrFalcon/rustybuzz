@@ -235,7 +235,7 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
 
     // Standard typographic presentation
     for feature in OTHER_FEATURES {
-        planner.ot_map.enable_feature(*feature, F_NONE, 1);
+        planner.ot_map.enable_feature(*feature, F_MANUAL_ZWJ, 1);
     }
 }
 

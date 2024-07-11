@@ -71,6 +71,20 @@ fn fuzzer_005() {
 }
 
 #[test]
+fn fuzzer_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/NotoSansSinhala.subset1.otf",
+            "\u{0DC1}\u{200D}\u{0DCA}\u{200D}\u{0DBB}\u{0DD3}",
+            "",
+        ),
+        "gid2=0+917|\
+         gid7=0+0|\
+         gid4=0+0"
+    );
+}
+
+#[test]
 fn glyph_flags_001() {
     assert_eq!(
         shape(
