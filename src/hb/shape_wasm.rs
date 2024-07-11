@@ -193,7 +193,7 @@ fn font_glyph_to_string(
         .unwrap_or(format!("g{glyph:4}"));
     name.truncate(len as usize - 1);
     let name = CString::new(name).unwrap();
-    let name = name.as_bytes();
+    let name = name.as_bytes_with_nul();
 
     _ = memory.write(caller.as_context_mut(), str as usize, name);
 }
