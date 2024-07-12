@@ -114,6 +114,20 @@ fn fuzzer_008() {
 }
 
 #[test]
+fn fuzzer_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/Linefont.ttf",
+            "\u{021F}\u{0061}",
+            "--no-glyph-names",
+        ),
+        "17=0+100|\
+         1=0+0|\
+         4=1+100"
+    );
+}
+
+#[test]
 fn glyph_flags_001() {
     assert_eq!(
         shape(

@@ -6,3 +6,4 @@ tests/fonts/rb_custom/NotoSansMyanmarUI-Regular.subset1.otf;;U+1004,U+103A,U+103
 tests/fonts/rb_custom/NotoSansSinhala.subset1.otf;;U+0DC1,U+200D,U+0DCA,U+200D,U+0DBB,U+0DD3;
 tests/fonts/rb_custom/LaBelleAurore.ttf;;U+006B,U+0065,U+031D;
 tests/fonts/rb_custom/Linefont.ttf;--no-glyph-names;U+0054,U+021F;
+tests/fonts/rb_custom/Linefont.ttf;--no-glyph-names;U+021F,U+0061;
