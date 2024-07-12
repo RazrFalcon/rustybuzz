@@ -369,12 +369,16 @@ impl<'a> hb_font_t<'a> {
 }
 
 #[derive(Clone, Copy, Default)]
+#[repr(C)]
 pub struct hb_glyph_extents_t {
     pub x_bearing: i32,
     pub y_bearing: i32,
     pub width: i32,
     pub height: i32,
 }
+
+unsafe impl bytemuck::Zeroable for hb_glyph_extents_t {}
+unsafe impl bytemuck::Pod for hb_glyph_extents_t {}
 
 fn find_best_cmap_subtable(face: &ttf_parser::Face) -> Option<u16> {
     use ttf_parser::PlatformId;

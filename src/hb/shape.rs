@@ -54,12 +54,27 @@ pub fn shape_with_plan(
     if buffer.len > 0 {
         // Save the original direction, we use it later.
         let target_direction = buffer.direction;
-        shape_internal(&mut hb_ot_shape_context_t {
-            plan,
-            face,
-            buffer: &mut buffer,
-            target_direction,
-        });
+
+        #[cfg(feature = "wasm-shaper")]
+        {
+            super::shape_wasm::shape_with_wasm(face, plan, &mut buffer).unwrap_or_else(|| {
+                shape_internal(&mut hb_ot_shape_context_t {
+                    plan,
+                    face,
+                    buffer: &mut buffer,
+                    target_direction,
+                });
+            });
+        }
+        #[cfg(not(feature = "wasm-shaper"))]
+        {
+            shape_internal(&mut hb_ot_shape_context_t {
+                plan,
+                face,
+                buffer: &mut buffer,
+                target_direction,
+            });
+        }
     }
 
     GlyphBuffer(buffer)
