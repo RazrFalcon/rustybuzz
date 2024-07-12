@@ -805,6 +805,10 @@ fn map_glyphs_fast(buffer: &mut hb_buffer_t) {
     for info in &mut buffer.info[..len] {
         info.glyph_id = info.glyph_index();
     }
+
+    for info in &mut buffer.out_info_mut()[..len] {
+        info.glyph_id = info.glyph_index();
+    }
 }
 
 fn hb_synthesize_glyph_classes(buffer: &mut hb_buffer_t) {
