@@ -23,8 +23,8 @@ unicode-properties = { version = "0.1.0", default-features = false, features = [
 unicode-script = "0.5.2"
 
 [dependencies.ttf-parser]
-git = "https://github.com/LaurenzV/ttf-parser"
-rev = "949d1797"
+git = "https://github.com/RazrFalcon/ttf-parser"
+rev = "85c1ff2"
 default-features = false
 features = [
     "opentype-layout",
