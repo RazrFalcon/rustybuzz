@@ -1,0 +1,9 @@
+tests/fonts/rb_custom/PT_Sans-Caption-Web-Regular.ttf;;U+1EA4,U+006E;
+tests/fonts/rb_custom/AdobeBlank-Regular.ttf;--no-glyph-names;U+0F42,U+0FB7;
+tests/fonts/rb_custom/Rasa.subset1.otf;;U+0A93,U+0ABC;
+tests/fonts/rb_custom/AdobeBlank-Regular.ttf;;U+104A,U+102F;
+tests/fonts/rb_custom/NotoSansMyanmarUI-Regular.subset1.otf;;U+1004,U+103A,U+1039,U+1002,U+101C;
+tests/fonts/rb_custom/NotoSansSinhala.subset1.otf;;U+0DC1,U+200D,U+0DCA,U+200D,U+0DBB,U+0DD3;
+tests/fonts/rb_custom/LaBelleAurore.ttf;;U+006B,U+0065,U+031D;
+tests/fonts/rb_custom/Linefont.ttf;--no-glyph-names;U+0054,U+021F;
+tests/fonts/rb_custom/Linefont.ttf;--no-glyph-names;U+021F,U+0061;

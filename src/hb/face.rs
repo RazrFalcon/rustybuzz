@@ -313,7 +313,11 @@ impl<'a> hb_font_t<'a> {
             return ret;
         }
 
-        let bbox = self.ttfp_face.glyph_bounding_box(glyph);
+        let mut bbox = None;
+
+        if let Some(glyf) = self.ttfp_face.tables().glyf {
+            bbox = glyf.bbox(glyph);
+        }
 
         // See https://github.com/RazrFalcon/rustybuzz/pull/98#issuecomment-1948430785
         if self.ttfp_face.tables().glyf.is_some() && bbox.is_none() {

@@ -3,6 +3,131 @@
 use crate::shape;
 
 #[test]
+fn fuzzer_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/PT_Sans-Caption-Web-Regular.ttf",
+            "\u{1EA4}\u{006E}",
+            "",
+        ),
+        "Acircumflex=0+645|\
+         uniF401=0+0|\
+         n=1+641"
+    );
+}
+
+#[test]
+fn fuzzer_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/AdobeBlank-Regular.ttf",
+            "\u{0F42}\u{0FB7}",
+            "--no-glyph-names",
+        ),
+        "1859=0+0|\
+         1976=0+0"
+    );
+}
+
+#[test]
+fn fuzzer_003() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/Rasa.subset1.otf",
+            "\u{0A93}\u{0ABC}",
+            "",
+        ),
+        "gid5=0+982|\
+         gid22=0@-1,0+0|\
+         gid21=0+0"
+    );
+}
+
+#[test]
+fn fuzzer_004() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/AdobeBlank-Regular.ttf",
+            "\u{104A}\u{102F}",
+            "",
+        ),
+        "cid00075=0+0|\
+         cid00048=0+0"
+    );
+}
+
+#[test]
+fn fuzzer_005() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/NotoSansMyanmarUI-Regular.subset1.otf",
+            "\u{1004}\u{103A}\u{1039}\u{1002}\u{101C}",
+            "",
+        ),
+        "gid1=0+668|\
+         gid5=0@-4,0+0|\
+         gid3=4+1126"
+    );
+}
+
+#[test]
+fn fuzzer_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/NotoSansSinhala.subset1.otf",
+            "\u{0DC1}\u{200D}\u{0DCA}\u{200D}\u{0DBB}\u{0DD3}",
+            "",
+        ),
+        "gid2=0+917|\
+         gid7=0+0|\
+         gid4=0+0"
+    );
+}
+
+#[test]
+fn fuzzer_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/LaBelleAurore.ttf",
+            "\u{006B}\u{0065}\u{031D}",
+            "",
+        ),
+        "k=0+479|\
+         e=1+343|\
+         .notdef=1@-172,-59+0"
+    );
+}
+
+#[test]
+fn fuzzer_008() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/Linefont.ttf",
+            "\u{0054}\u{021F}",
+            "--no-glyph-names",
+        ),
+        "93=0+100|\
+         233=1@0,900+100|\
+         2=1@0,140+0|\
+         1=1+0"
+    );
+}
+
+#[test]
+fn fuzzer_009() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/Linefont.ttf",
+            "\u{021F}\u{0061}",
+            "--no-glyph-names",
+        ),
+        "17=0+100|\
+         1=0+0|\
+         4=1+100"
+    );
+}
+
+#[test]
 fn glyph_flags_001() {
     assert_eq!(
         shape(

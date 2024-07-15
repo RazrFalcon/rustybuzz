@@ -84,16 +84,16 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     planner.ot_map.add_gsub_pause(Some(reorder_myanmar));
 
     for feature in MYANMAR_FEATURES.iter().take(4) {
-        planner.ot_map.enable_feature(*feature, F_MANUAL_ZWJ, 1);
+        planner
+            .ot_map
+            .enable_feature(*feature, F_MANUAL_ZWJ | F_PER_SYLLABLE, 1);
         planner.ot_map.add_gsub_pause(None);
     }
 
     planner.ot_map.add_gsub_pause(Some(syllabic_clear_var)); // Don't need syllables anymore.
 
     for feature in MYANMAR_FEATURES.iter().skip(4) {
-        planner
-            .ot_map
-            .enable_feature(*feature, F_MANUAL_ZWJ | F_PER_SYLLABLE, 1);
+        planner.ot_map.enable_feature(*feature, F_MANUAL_ZWJ, 1);
     }
 }
 

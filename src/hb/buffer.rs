@@ -668,6 +668,7 @@ impl hb_buffer_t {
             let pos: Vec<hb_glyph_info_t> = bytemuck::cast_vec(core::mem::take(&mut self.pos));
             self.pos = info;
             self.info = pos;
+            self.have_separate_output = false;
         }
 
         self.len = self.out_len;
