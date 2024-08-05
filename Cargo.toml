@@ -25,8 +25,7 @@ wasmi = { version = "0.34.0", optional = true }
 log = "0.4.22"
 
 [dependencies.ttf-parser]
-git = "https://github.com/RazrFalcon/ttf-parser"
-rev = "85c1ff2"
+version = "0.24.1"
 default-features = false
 features = [
     "opentype-layout",

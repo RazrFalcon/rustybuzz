@@ -163,3 +163,6 @@
 # The reason we don't separate them is that if we don't append new tests to the end, the numbers of all subsequent
 # tests get shifted, which we want to avoid.
 /System/Library/Fonts/GeezaPro.ttc;--font-funcs ot --show-flags;U+0627,U+0644;
+# https://github.com/RazrFalcon/rustybuzz/issues/131
+/System/Library/Fonts/Supplemental/Malayalam MN.ttc@57811603b05b20bed579272775949d4cf8e1457a;;U+0041,U+0042,U+0043;[a=0+1075|b=1+1253|c=2+1171]
+

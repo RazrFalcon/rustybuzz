@@ -2344,3 +2344,19 @@ fn macos_121() {
          ff=7+1443"
     );
 }
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_122() {
+    assert_eq!(
+        shape(
+            "/System/Library/Fonts/Supplemental/Malayalam MN.ttc",
+            "\u{0041}\u{0042}\u{0043}",
+            "",
+        ),
+        "A=0+1327|\
+         B=1+1354|\
+         C=2+1589"
+    );
+}
+
