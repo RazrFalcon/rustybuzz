@@ -582,8 +582,9 @@ impl hb_buffer_t {
         }
 
         let mut start = 0;
+        let mut i = 1;
 
-        for i in 1..self.len {
+        while i < self.len {
             if !group(&self.info[i - 1], &self.info[i]) {
                 if merge_clusters {
                     self.merge_clusters(start, i);
@@ -593,14 +594,16 @@ impl hb_buffer_t {
                 start = i;
             }
 
-            if merge_clusters {
-                self.merge_clusters(start, i);
-            }
-
-            self.reverse_range(start, i);
-
-            self.reverse();
+            i += 1;
         }
+
+        if merge_clusters {
+            self.merge_clusters(start, i);
+        }
+
+        self.reverse_range(start, i);
+
+        self.reverse();
     }
 
     pub fn group_end<F>(&self, mut start: usize, group: F) -> usize
