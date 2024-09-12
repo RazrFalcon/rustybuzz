@@ -3,6 +3,20 @@
 use crate::shape;
 
 #[test]
+fn bugs_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/NotoSansCJK.subset1.otf",
+            "\u{4F60}\u{597D}\u{FF0C}",
+            "--direction rtl",
+        ),
+        "gid6=2+1000|\
+         gid3=1+1000|\
+         gid1=0+1000"
+    );
+}
+
+#[test]
 fn fuzzer_001() {
     assert_eq!(
         shape(

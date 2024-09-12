@@ -2347,7 +2347,7 @@ fn macos_121() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn macos_122() {
+fn macos_123() {
     assert_eq!(
         shape(
             "/System/Library/Fonts/Supplemental/Malayalam MN.ttc",
@@ -2359,4 +2359,3 @@ fn macos_122() {
          C=2+1589"
     );
 }
-

@@ -842,7 +842,7 @@ mod tests {
     fn check_unicode_version() {
         assert_eq!(unicode_bidi_mirroring::UNICODE_VERSION, (15, 1, 0));
         assert_eq!(unicode_ccc::UNICODE_VERSION, (15, 0, 0));
-        assert_eq!(unicode_properties::UNICODE_VERSION, (15, 0, 0));
+        assert_eq!(unicode_properties::UNICODE_VERSION, (15, 1, 0));
         assert_eq!(unicode_script::UNICODE_VERSION, (15, 1, 0));
         assert_eq!(crate::hb::unicode_norm::UNICODE_VERSION, (15, 0, 0));
     }
