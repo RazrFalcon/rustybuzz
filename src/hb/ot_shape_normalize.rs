@@ -225,8 +225,14 @@ fn handle_variation_selector_cluster(
                 // Just pass on the two characters separately, let GSUB do its magic.
                 set_glyph(buffer.cur_mut(0), face);
                 buffer.next_glyph();
-                set_glyph(buffer.cur_mut(0), face);
-                buffer.next_glyph();
+
+                if let Some(not_found_variation_selector) = buffer.not_found_variation_selector {
+                    _hb_glyph_info_clear_default_ignorable(buffer.cur_mut(0));
+                    next_char(buffer, not_found_variation_selector);
+                } else {
+                    set_glyph(buffer.cur_mut(0), face);
+                    buffer.next_glyph();
+                }
             }
 
             // Skip any further variation selectors.

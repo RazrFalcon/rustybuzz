@@ -17115,6 +17115,33 @@ fn use_017() {
 }
 
 #[test]
+fn variation_selectors_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/bbc24004e776f348a0f72287d24b0124867ee750.ttf",
+            "\u{0066}\u{FE00}\u{0069}",
+            "",
+        ),
+        "gid5=0+1134|\
+         gid1=0+0"
+    );
+}
+
+#[test]
+fn variation_selectors_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/bbc24004e776f348a0f72287d24b0124867ee750.ttf",
+            "\u{0066}\u{FE00}\u{0069}",
+            "--not-found-variation-selector-glyph=64000",
+        ),
+        "gid2=0+711|\
+         gid64000=0+0|\
+         gid3=2+497"
+    );
+}
+
+#[test]
 fn variations_rvrn_001() {
     assert_eq!(
         shape(

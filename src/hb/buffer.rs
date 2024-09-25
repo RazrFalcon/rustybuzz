@@ -512,6 +512,7 @@ impl hb_buffer_t {
         self.serial = 0;
         self.scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
         self.cluster_level = HB_BUFFER_CLUSTER_LEVEL_DEFAULT;
+        self.not_found_variation_selector = None;
     }
 
     #[inline]
@@ -1638,6 +1639,12 @@ impl UnicodeBuffer {
     #[inline]
     pub fn set_language(&mut self, lang: Language) {
         self.0.language = Some(lang);
+    }
+
+    /// Set the glyph value to replace not-found variation-selector characters with.
+    #[inline]
+    pub fn set_not_found_variation_selector_glyph(&mut self, glyph: u32) {
+        self.0.not_found_variation_selector = Some(glyph)
     }
 
     /// Get the buffer language.

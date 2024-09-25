@@ -88,6 +88,8 @@ def prune_test_options(options):
     options = options.replace(" --font-funcs=ot", "").replace("--font-funcs=ot", "")
     # we don't support font scaling
     options = options.replace("--font-size=1000", "")
+    # We don't support glyphs > u16
+    options = options.replace("--not-found-variation-selector-glyph=1000000", "--not-found-variation-selector-glyph=64000")
     options = options.strip()
     return options
 
