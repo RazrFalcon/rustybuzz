@@ -149,49 +149,49 @@ pub fn joining_type(u: char) -> hb_arabic_joining_type_t {
     match u >> 12 {
         0x0 => {
             if (0x0600..=0x08E2).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x0600 + JOINING_OFFSET_0X0600]
+                return JOINING_TABLE[u as usize - 0x0600 + JOINING_OFFSET_0X0600];
             }
         }
         0x1 => {
             if (0x1806..=0x18AA).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x1806 + JOINING_OFFSET_0X1806]
+                return JOINING_TABLE[u as usize - 0x1806 + JOINING_OFFSET_0X1806];
             }
         }
         0x2 => {
             if (0x200C..=0x2069).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x200C + JOINING_OFFSET_0X200C]
+                return JOINING_TABLE[u as usize - 0x200C + JOINING_OFFSET_0X200C];
             }
         }
         0xA => {
             if (0xA840..=0xA873).contains(&u) {
-                return JOINING_TABLE[u as usize - 0xA840 + JOINING_OFFSET_0XA840]
+                return JOINING_TABLE[u as usize - 0xA840 + JOINING_OFFSET_0XA840];
             }
         }
         0x10 => {
             if (0x10AC0..=0x10AEF).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x10AC0 + JOINING_OFFSET_0X10AC0]
+                return JOINING_TABLE[u as usize - 0x10AC0 + JOINING_OFFSET_0X10AC0];
             }
             if (0x10B80..=0x10BAF).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x10B80 + JOINING_OFFSET_0X10B80]
+                return JOINING_TABLE[u as usize - 0x10B80 + JOINING_OFFSET_0X10B80];
             }
             if (0x10D00..=0x10D23).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x10D00 + JOINING_OFFSET_0X10D00]
+                return JOINING_TABLE[u as usize - 0x10D00 + JOINING_OFFSET_0X10D00];
             }
             if (0x10EC2..=0x10EC4).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x10EC2 + JOINING_OFFSET_0X10EC2]
+                return JOINING_TABLE[u as usize - 0x10EC2 + JOINING_OFFSET_0X10EC2];
             }
             if (0x10F30..=0x10FCB).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x10F30 + JOINING_OFFSET_0X10F30]
+                return JOINING_TABLE[u as usize - 0x10F30 + JOINING_OFFSET_0X10F30];
             }
         }
         0x11 => {
             if (0x110BD..=0x110CD).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x110BD + JOINING_OFFSET_0X110BD]
+                return JOINING_TABLE[u as usize - 0x110BD + JOINING_OFFSET_0X110BD];
             }
         }
         0x1E => {
             if (0x1E900..=0x1E94B).contains(&u) {
-                return JOINING_TABLE[u as usize - 0x1E900 + JOINING_OFFSET_0X1E900]
+                return JOINING_TABLE[u as usize - 0x1E900 + JOINING_OFFSET_0X1E900];
             }
         }
         _ => {}
@@ -199,4 +199,3 @@ pub fn joining_type(u: char) -> hb_arabic_joining_type_t {
 
     X
 }
-
