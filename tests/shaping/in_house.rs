@@ -3175,6 +3175,23 @@ fn indic_joiners_006() {
 }
 
 #[test]
+fn indic_joiners_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63e224dcb3d559d590f80c83b832cfca789e5dcc.ttf",
+            "\u{0ABE}\u{0AA8}\u{0ACD}\u{200D}\u{0AA4}\u{0ABF}",
+            "",
+        ),
+        "uni25CC=0+596|\
+         uni0ABE=0+251|\
+         uni0ABF.05=1+251|\
+         uni0AA80ACD=1+293|\
+         space=1+0|\
+         uni0AA4=1+543"
+    );
+}
+
+#[test]
 fn indic_malayalam_dot_reph_001() {
     assert_eq!(
         shape(
