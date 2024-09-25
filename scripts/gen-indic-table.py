@@ -37,6 +37,7 @@ ALLOWED_BLOCKS = [
     'Devanagari Extended',
     'Myanmar Extended-B',
     'Myanmar Extended-A',
+    'Myanmar Extended-C',
 ]
 
 files = [io.open(x, encoding='utf-8') for x in DEPENDENCIES]
