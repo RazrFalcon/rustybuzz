@@ -384,7 +384,7 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             return may_skip_t::SKIP_YES;
         }
 
-        if _hb_glyph_info_is_default_ignorable(info)
+        if _hb_glyph_info_is_default_ignorable_and_not_hidden(info)
             && !info.is_hidden()
             && (self.ignore_zwnj || !_hb_glyph_info_is_zwnj(info))
             && (self.ignore_zwj || !_hb_glyph_info_is_zwj(info))
