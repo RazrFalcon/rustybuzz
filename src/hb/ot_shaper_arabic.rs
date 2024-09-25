@@ -247,9 +247,6 @@ fn collect_features(planner: &mut hb_ot_shape_planner_t) {
     /* https://github.com/harfbuzz/harfbuzz/issues/1573 */
     if !planner.ot_map.has_feature(hb_tag_t::from_bytes(b"rclt")) {
         planner.ot_map.add_gsub_pause(None);
-        planner
-            .ot_map
-            .enable_feature(hb_tag_t::from_bytes(b"rclt"), F_MANUAL_ZWJ, 1);
     }
 
     planner
