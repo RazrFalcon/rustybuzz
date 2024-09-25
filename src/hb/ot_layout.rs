@@ -412,6 +412,11 @@ pub fn _hb_glyph_info_set_general_category(
 ) {
     /* Clears top-byte. */
     let gen_cat = gen_cat.to_rb();
+    _hb_glyph_info_set_general_category_from_u32(info, gen_cat);
+}
+
+#[inline]
+pub fn _hb_glyph_info_set_general_category_from_u32(info: &mut hb_glyph_info_t, gen_cat: u32) {
     let n =
         (gen_cat as u16) | (info.unicode_props() & (0xFF & !UnicodeProps::GENERAL_CATEGORY.bits()));
     info.set_unicode_props(n);

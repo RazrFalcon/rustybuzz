@@ -11,9 +11,9 @@ use crate::hb::aat_layout::hb_aat_layout_remove_deleted_glyphs;
 use crate::hb::algs::{rb_flag, rb_flag_unsafe};
 use crate::hb::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::hb::unicode::hb_gc::{
-    RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER,
-    RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR, RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER,
-    RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
+    HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR, RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER,
+    RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER, RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR,
+    RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
 };
 use crate::BufferFlags;
 use crate::{Direction, Feature, Language, Script};
@@ -355,6 +355,7 @@ fn substitute_post(ctx: &mut hb_ot_shape_context_t) {
         aat_layout::hb_aat_layout_remove_deleted_glyphs(ctx.buffer);
     }
 
+    deal_with_variation_selectors(ctx.buffer);
     hide_default_ignorables(ctx.buffer, ctx.face);
 
     if let Some(func) = ctx.plan.shaper.postprocess_glyphs {
@@ -852,6 +853,30 @@ fn zero_width_default_ignorables(buffer: &mut hb_buffer_t) {
                 pos.x_offset = 0;
                 pos.y_offset = 0;
             }
+        }
+    }
+}
+
+fn deal_with_variation_selectors(buffer: &mut hb_buffer_t) {
+    if !(buffer.scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK != 0) {
+        return;
+    }
+
+    // Note: In harfbuzz, this is part of the condition above (with OR), so it needs to stay
+    // in sync.
+    let Some(nf) = buffer.not_found_variation_selector else {
+        return;
+    };
+
+    let count = buffer.len;
+    let info = &mut buffer.info;
+
+    for i in 0..count {
+        if _hb_glyph_info_get_general_category(&info[i]).to_rb()
+            == HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR
+        {
+            _hb_glyph_info_clear_default_ignorable(&mut info[i]);
+            info[i].glyph_id = nf;
         }
     }
 }

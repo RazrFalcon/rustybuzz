@@ -17135,9 +17135,8 @@ fn variation_selectors_002() {
             "\u{0066}\u{FE00}\u{0069}",
             "--not-found-variation-selector-glyph=64000",
         ),
-        "gid2=0+711|\
-         gid64000=0+0|\
-         gid3=2+497"
+        "gid5=0+1134|\
+         gid64000=0+0"
     );
 }
 

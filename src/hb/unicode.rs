@@ -1,8 +1,121 @@
 use core::convert::TryFrom;
 
 pub use unicode_ccc::CanonicalCombiningClass;
+use unicode_properties::GeneralCategory;
 // TODO: prefer unic-ucd-normal::CanonicalCombiningClass
-pub use unicode_properties::GeneralCategory as hb_unicode_general_category_t;
+
+// The reason this is duplicated from unicode_properties::GeneralCategory is
+// that harfbuzz has a custom non-standard `VariationSelector` property which
+// we need to add on our side, too.
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Debug)]
+/// The most general classification of a character.
+pub enum hb_unicode_general_category_t {
+    /// `Lu`, an uppercase letter
+    UppercaseLetter,
+    /// `Ll`, a lowercase letter
+    LowercaseLetter,
+    /// `Lt`, a digraphic character, with first part uppercase
+    TitlecaseLetter,
+    /// `Lm`, a modifier letter
+    ModifierLetter,
+    /// `Lo`, other letters, including syllables and ideographs
+    OtherLetter,
+    /// `Mn`, a nonspacing combining mark (zero advance width)
+    NonspacingMark,
+    /// `Mc`, a spacing combining mark (positive advance width)
+    SpacingMark,
+    /// `Me`, an enclosing combining mark
+    EnclosingMark,
+    /// `Nd`, a decimal digit
+    DecimalNumber,
+    /// `Nl`, a letterlike numeric character
+    LetterNumber,
+    /// `No`, a numeric character of other type
+    OtherNumber,
+    /// `Pc`, a connecting punctuation mark, like a tie
+    ConnectorPunctuation,
+    /// `Pd`, a dash or hyphen punctuation mark
+    DashPunctuation,
+    /// `Ps`, an opening punctuation mark (of a pair)
+    OpenPunctuation,
+    /// `Pe`, a closing punctuation mark (of a pair)
+    ClosePunctuation,
+    /// `Pi`, an initial quotation mark
+    InitialPunctuation,
+    /// `Pf`, a final quotation mark
+    FinalPunctuation,
+    /// `Po`, a punctuation mark of other type
+    OtherPunctuation,
+    /// `Sm`, a symbol of mathematical use
+    MathSymbol,
+    /// `Sc`, a currency sign
+    CurrencySymbol,
+    /// `Sk`, a non-letterlike modifier symbol
+    ModifierSymbol,
+    /// `So`, a symbol of other type
+    OtherSymbol,
+    /// `Zs`, a space character (of various non-zero widths)
+    SpaceSeparator,
+    /// `Zl`, U+2028 LINE SEPARATOR only
+    LineSeparator,
+    /// `Zp`, U+2029 PARAGRAPH SEPARATOR only
+    ParagraphSeparator,
+    /// `Cc`, a C0 or C1 control code
+    Control,
+    /// `Cf`, a format control character
+    Format,
+    /// `Cs`, a surrogate code point
+    Surrogate,
+    /// `Co`, a private-use character
+    PrivateUse,
+    /// `Cn`, a reserved unassigned code point or a noncharacter
+    Unassigned,
+    /// harfbuzz-private category.
+    VariationSelector,
+}
+
+impl From<unicode_properties::GeneralCategory> for hb_unicode_general_category_t {
+    fn from(value: GeneralCategory) -> Self {
+        match value {
+            GeneralCategory::UppercaseLetter => hb_unicode_general_category_t::UppercaseLetter,
+            GeneralCategory::LowercaseLetter => hb_unicode_general_category_t::LowercaseLetter,
+            GeneralCategory::TitlecaseLetter => hb_unicode_general_category_t::TitlecaseLetter,
+            GeneralCategory::ModifierLetter => hb_unicode_general_category_t::ModifierLetter,
+            GeneralCategory::OtherLetter => hb_unicode_general_category_t::OtherLetter,
+            GeneralCategory::NonspacingMark => hb_unicode_general_category_t::NonspacingMark,
+            GeneralCategory::SpacingMark => hb_unicode_general_category_t::SpacingMark,
+            GeneralCategory::EnclosingMark => hb_unicode_general_category_t::EnclosingMark,
+            GeneralCategory::DecimalNumber => hb_unicode_general_category_t::DecimalNumber,
+            GeneralCategory::LetterNumber => hb_unicode_general_category_t::LetterNumber,
+            GeneralCategory::OtherNumber => hb_unicode_general_category_t::OtherNumber,
+            GeneralCategory::ConnectorPunctuation => {
+                hb_unicode_general_category_t::ConnectorPunctuation
+            }
+            GeneralCategory::DashPunctuation => hb_unicode_general_category_t::DashPunctuation,
+            GeneralCategory::OpenPunctuation => hb_unicode_general_category_t::OpenPunctuation,
+            GeneralCategory::ClosePunctuation => hb_unicode_general_category_t::ClosePunctuation,
+            GeneralCategory::InitialPunctuation => {
+                hb_unicode_general_category_t::InitialPunctuation
+            }
+            GeneralCategory::FinalPunctuation => hb_unicode_general_category_t::FinalPunctuation,
+            GeneralCategory::OtherPunctuation => hb_unicode_general_category_t::OtherPunctuation,
+            GeneralCategory::MathSymbol => hb_unicode_general_category_t::MathSymbol,
+            GeneralCategory::CurrencySymbol => hb_unicode_general_category_t::CurrencySymbol,
+            GeneralCategory::ModifierSymbol => hb_unicode_general_category_t::ModifierSymbol,
+            GeneralCategory::OtherSymbol => hb_unicode_general_category_t::OtherSymbol,
+            GeneralCategory::SpaceSeparator => hb_unicode_general_category_t::SpaceSeparator,
+            GeneralCategory::LineSeparator => hb_unicode_general_category_t::LineSeparator,
+            GeneralCategory::ParagraphSeparator => {
+                hb_unicode_general_category_t::ParagraphSeparator
+            }
+            GeneralCategory::Control => hb_unicode_general_category_t::Control,
+            GeneralCategory::Format => hb_unicode_general_category_t::Format,
+            GeneralCategory::Surrogate => hb_unicode_general_category_t::Surrogate,
+            GeneralCategory::PrivateUse => hb_unicode_general_category_t::PrivateUse,
+            GeneralCategory::Unassigned => hb_unicode_general_category_t::Unassigned,
+        }
+    }
+}
 
 use crate::Script;
 
@@ -258,6 +371,7 @@ impl GeneralCategoryExt for hb_unicode_general_category_t {
             hb_unicode_general_category_t::TitlecaseLetter => hb_gc::RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER,
             hb_unicode_general_category_t::Unassigned => hb_gc::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED,
             hb_unicode_general_category_t::UppercaseLetter => hb_gc::RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
+            hb_unicode_general_category_t::VariationSelector => hb_gc::HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR
         }
     }
 
@@ -293,7 +407,8 @@ impl GeneralCategoryExt for hb_unicode_general_category_t {
             hb_gc::RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER => hb_unicode_general_category_t::TitlecaseLetter,
             hb_gc::RB_UNICODE_GENERAL_CATEGORY_UNASSIGNED => hb_unicode_general_category_t::Unassigned,
             hb_gc::RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER => hb_unicode_general_category_t::UppercaseLetter,
-            _ => unreachable!(),
+            hb_gc::HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR => hb_unicode_general_category_t::VariationSelector,
+            _ => unreachable!()
         }
     }
 
@@ -497,7 +612,7 @@ impl CharExt for char {
     }
 
     fn general_category(self) -> hb_unicode_general_category_t {
-        unicode_properties::general_category::UnicodeGeneralCategory::general_category(self)
+        unicode_properties::general_category::UnicodeGeneralCategory::general_category(self).into()
     }
 
     fn space_fallback(self) -> hb_unicode_funcs_t::space_t {
@@ -880,4 +995,6 @@ pub mod hb_gc {
     pub const RB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR: u32 = 27;
     pub const RB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR: u32 = 28;
     pub const RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR: u32 = 29;
+    // Hack. See: https://github.com/harfbuzz/harfbuzz/pull/4529#discussion_r1769638033
+    pub const HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR: u32 = 30;
 }
