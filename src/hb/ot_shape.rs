@@ -870,13 +870,21 @@ fn deal_with_variation_selectors(buffer: &mut hb_buffer_t) {
 
     let count = buffer.len;
     let info = &mut buffer.info;
+    let pos = &mut buffer.pos;
 
     for i in 0..count {
         if _hb_glyph_info_get_general_category(&info[i]).to_rb()
             == HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR
         {
-            _hb_glyph_info_clear_default_ignorable(&mut info[i]);
             info[i].glyph_id = nf;
+            pos[i].x_advance = 0;
+            pos[i].y_advance = 0;
+            pos[i].x_offset = 0;
+            pos[i].y_offset = 0;
+            _hb_glyph_info_set_general_category(
+                &mut info[i],
+                hb_unicode_general_category_t::NonspacingMark,
+            )
         }
     }
 }

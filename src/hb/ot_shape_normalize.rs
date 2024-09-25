@@ -234,6 +234,10 @@ fn handle_variation_selector_cluster(
                     HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR,
                 );
 
+                if buffer.not_found_variation_selector.is_some() {
+                    _hb_glyph_info_clear_default_ignorable(buffer.cur_mut(0))
+                }
+
                 set_glyph(buffer.cur_mut(0), face);
                 buffer.next_glyph();
             }
