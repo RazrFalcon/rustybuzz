@@ -341,6 +341,7 @@ pub struct hb_buffer_t {
     pub flags: BufferFlags,
     pub cluster_level: hb_buffer_cluster_level_t,
     pub invisible: Option<GlyphId>,
+    pub not_found_variation_selector: Option<u32>,
 
     // Buffer contents.
     pub direction: Direction,
@@ -398,6 +399,7 @@ impl hb_buffer_t {
             cluster_level: HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
             invisible: None,
             scratch_flags: HB_BUFFER_SCRATCH_FLAG_DEFAULT,
+            not_found_variation_selector: None,
             max_len: Self::MAX_LEN_DEFAULT,
             max_ops: Self::MAX_OPS_DEFAULT,
             direction: Direction::Invalid,
