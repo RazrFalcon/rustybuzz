@@ -460,6 +460,14 @@ pub mod script {
     // Since 15.0
     pub const KAWI: Script = Script::from_bytes(b"Kawi");
     pub const NAG_MUNDARI: Script = Script::from_bytes(b"Nagm");
+    // Since 16.0
+    pub const GARAY: Script = Script::from_bytes(b"Gara");
+    pub const GURUNG_KHEMA: Script = Script::from_bytes(b"Gukh");
+    pub const KIRAT_RAI: Script = Script::from_bytes(b"Krai");
+    pub const OL_ONAL: Script = Script::from_bytes(b"Onao");
+    pub const SUNUWAR: Script = Script::from_bytes(b"Sunu");
+    pub const TODHRI: Script = Script::from_bytes(b"Todr");
+    pub const TULU_TIGALARI: Script = Script::from_bytes(b"Tutg");
 
     pub const SCRIPT_MATH: Script = Script::from_bytes(b"Zmth");
 
