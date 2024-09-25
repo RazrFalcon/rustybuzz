@@ -384,7 +384,7 @@ fn arabic_mark_order_006() {
             "\u{0649}\u{0650}\u{034F}\u{0655}",
             "",
         ),
-        "uni0655=0+0|\
+        "uni0655=0@727,-209+0|\
          space=0+0|\
          uni0650=0@166,0+0|\
          uni0649=0+1566"
@@ -2075,7 +2075,7 @@ fn default_ignorables_002() {
             "\u{0020}\u{06CC}\u{064E}\u{034F}\u{0651}",
             "",
         ),
-        "uni0651=1+0|\
+        "uni0651=1@252,-150+0|\
          space=1+0|\
          uni064E=1@236,-432+0|\
          uni06CC=1+1266|\
@@ -2119,6 +2119,22 @@ fn default_ignorables_005() {
         "terminal=0+0|\
          terminal=0+0|\
          uni0647.init=0+702"
+    );
+}
+
+#[test]
+fn default_ignorables_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/cee442574141a0304e780b27dd872519f7d229db.ttf",
+            "\u{0635}\u{0650}\u{034F}\u{0651}\u{0627}",
+            "",
+        ),
+        "uni0627.fina=4+231|\
+         uni0651=0@285,-66+0|\
+         space=0+0|\
+         uni0650=0@318,-114+0|\
+         uni0635.init=0+838"
     );
 }
 
@@ -2763,11 +2779,11 @@ fn hebrew_diacritics_023() {
         "tav=11+1026|\
          patah=9@594,0+0|\
          het=9+1065|\
-         gereshaccent=2+0|\
-         patah=2+0|\
+         gereshaccent=2@728,0+0|\
+         patah=2@203,0+0|\
          space=2+0|\
-         atnah=2@437,0+0|\
-         qamats=2@794,0+0|\
+         atnah=2@585,0+0|\
+         qamats=2@942,0+0|\
          tavdagesh=2+1026|\
          hiriq=0@573,0+0|\
          mem=0+1094"
@@ -2816,9 +2832,9 @@ fn hebrew_diacritics_025() {
          he=6+1071|\
          sheva=4@239,0+0|\
          yod=4+454|\
-         patah=0+0|\
+         patah=0@162,0+0|\
          space=0+0|\
-         meteg=0@349,0+0|\
+         meteg=0@468,0+0|\
          vav=0+484"
     );
 }

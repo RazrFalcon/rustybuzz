@@ -506,9 +506,8 @@ pub(crate) fn _hb_glyph_info_clear_default_ignorable(info: &mut hb_glyph_info_t)
 }
 
 #[inline]
-pub(crate) fn _hb_glyph_info_is_default_ignorable_and_not_hidden(info: &hb_glyph_info_t) -> bool {
-    let n = info.unicode_props() & (UnicodeProps::IGNORABLE.bits() | UnicodeProps::HIDDEN.bits());
-    n == UnicodeProps::IGNORABLE.bits() && !_hb_glyph_info_substituted(info)
+pub(crate) fn _hb_glyph_info_is_hidden(info: &hb_glyph_info_t) -> bool {
+    (info.unicode_props() & UnicodeProps::HIDDEN.bits()) != 0
 }
 
 //   static inline void
