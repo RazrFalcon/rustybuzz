@@ -269,11 +269,6 @@ impl hb_glyph_info_t {
     }
 
     #[inline]
-    pub(crate) fn is_hidden(&self) -> bool {
-        self.unicode_props() & UnicodeProps::HIDDEN.bits() != 0
-    }
-
-    #[inline]
     pub(crate) fn unhide(&mut self) {
         let mut n = self.unicode_props();
         n &= !UnicodeProps::HIDDEN.bits();
