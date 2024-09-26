@@ -11,9 +11,9 @@ use crate::hb::aat_layout::hb_aat_layout_remove_deleted_glyphs;
 use crate::hb::algs::{rb_flag, rb_flag_unsafe};
 use crate::hb::buffer::glyph_flag::{SAFE_TO_INSERT_TATWEEL, UNSAFE_TO_BREAK, UNSAFE_TO_CONCAT};
 use crate::hb::unicode::hb_gc::{
-    HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR, RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER,
-    RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER, RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR,
-    RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
+    RB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER, RB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER,
+    RB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR, RB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER,
+    RB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER,
 };
 use crate::BufferFlags;
 use crate::{Direction, Feature, Language, Script};
@@ -873,18 +873,13 @@ fn deal_with_variation_selectors(buffer: &mut hb_buffer_t) {
     let pos = &mut buffer.pos;
 
     for i in 0..count {
-        if _hb_glyph_info_get_general_category(&info[i]).to_rb()
-            == HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR
-        {
+        if _hb_glyph_info_is_variation_selector(&info[i]) {
             info[i].glyph_id = nf;
             pos[i].x_advance = 0;
             pos[i].y_advance = 0;
             pos[i].x_offset = 0;
             pos[i].y_offset = 0;
-            _hb_glyph_info_set_general_category(
-                &mut info[i],
-                hb_unicode_general_category_t::NonspacingMark,
-            )
+            _hb_glyph_info_set_variation_selector(&mut info[i], false);
         }
     }
 }

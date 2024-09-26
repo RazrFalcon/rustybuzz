@@ -248,7 +248,7 @@ impl hb_glyph_info_t {
                     // https://github.com/harfbuzz/harfbuzz/issues/463
                     0xE0020..=0xE007F => props |= UnicodeProps::HIDDEN.bits(),
 
-                    // COMBINING GRAPHEME JOINER should not be skipped; at least some times.
+                    // COMBINING GRAPHEME JOINER should not be skipped during GSUB either.
                     // https://github.com/harfbuzz/harfbuzz/issues/554
                     0x034F => {
                         props |= UnicodeProps::HIDDEN.bits();
@@ -1513,13 +1513,14 @@ bitflags::bitflags! {
     pub struct UnicodeProps: u16 {
         const GENERAL_CATEGORY  = 0x001F;
         const IGNORABLE         = 0x0020;
-        // MONGOLIAN FREE VARIATION SELECTOR 1..4, or TAG characters
+        // MONGOLIAN FREE VARIATION SELECTOR 1..4, or TAG characters, or CGJ sometimes
         const HIDDEN            = 0x0040;
         const CONTINUATION      = 0x0080;
 
         // If GEN_CAT=FORMAT, top byte masks:
         const CF_ZWJ            = 0x0100;
         const CF_ZWNJ           = 0x0200;
+        const CF_VS           = 0x0400;
     }
 }
 

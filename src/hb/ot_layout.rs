@@ -330,7 +330,7 @@ fn apply_backward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> b
 
 /* Design:
  * unicode_props() is a two-byte number.  The low byte includes:
- * - Extended General_Category: 5 bits.
+ * - Modified General_Category: 5 bits.
  * - A bit each for:
  *   * Is it Default_Ignorable(); we have a modified Default_Ignorable().
  *   * Whether it's one of the four Mongolian Free Variation Selectors,
@@ -343,6 +343,11 @@ fn apply_backward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> b
  * - For Cf: whether it's ZWJ, ZWNJ, or something else.
  * - For Ws: index of which space character this is, if space fallback
  *   is needed, ie. we don't set this by default, only if asked to.
+ *
+ * Above I said "modified" General_Category. This is because we need to
+ * remember Variation Selectors, and we don't have bits left. So we
+ * change their Gen_Cat from Mn to Cf, and use a bit of the high byte to
+ * remember them.
  */
 
 //  enum hb_unicode_props_flags_t {
@@ -412,11 +417,6 @@ pub fn _hb_glyph_info_set_general_category(
 ) {
     /* Clears top-byte. */
     let gen_cat = gen_cat.to_rb();
-    _hb_glyph_info_set_general_category_from_u32(info, gen_cat);
-}
-
-#[inline]
-pub fn _hb_glyph_info_set_general_category_from_u32(info: &mut hb_glyph_info_t, gen_cat: u32) {
     let n =
         (gen_cat as u16) | (info.unicode_props() & (0xFF & !UnicodeProps::GENERAL_CATEGORY.bits()));
     info.set_unicode_props(n);
@@ -489,6 +489,24 @@ pub(crate) fn _hb_glyph_info_get_unicode_space_fallback_type(
         (info.unicode_props() >> 8) as u8
     } else {
         hb_unicode_funcs_t::NOT_SPACE
+    }
+}
+
+#[inline]
+pub(crate) fn _hb_glyph_info_is_variation_selector(info: &hb_glyph_info_t) -> bool {
+    let a = _hb_glyph_info_get_general_category(info) == hb_unicode_general_category_t::Format;
+    let b = (info.unicode_props() & UnicodeProps::CF_VS.bits()) != 0;
+    a && b
+}
+
+#[inline]
+pub(crate) fn _hb_glyph_info_set_variation_selector(info: &mut hb_glyph_info_t, customize: bool) {
+    if customize {
+        _hb_glyph_info_set_general_category(info, hb_unicode_general_category_t::Format);
+        info.set_unicode_props(info.unicode_props() | UnicodeProps::CF_VS.bits())
+    } else {
+        // Reset to their original condition
+        _hb_glyph_info_set_general_category(info, hb_unicode_general_category_t::NonspacingMark);
     }
 }
 

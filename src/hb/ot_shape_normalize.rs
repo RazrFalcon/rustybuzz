@@ -5,7 +5,6 @@ use super::ot_layout::*;
 use super::ot_shape_plan::hb_ot_shape_plan_t;
 use super::ot_shaper::{ComposeFn, DecomposeFn, MAX_COMBINING_MARKS};
 use super::unicode::{hb_unicode_funcs_t, CharExt};
-use crate::hb::unicode::hb_gc::HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR;
 
 pub struct hb_ot_shape_normalize_context_t<'a> {
     pub plan: &'a hb_ot_shape_plan_t,
@@ -229,10 +228,7 @@ fn handle_variation_selector_cluster(
 
                 buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK;
 
-                _hb_glyph_info_set_general_category_from_u32(
-                    buffer.cur_mut(0),
-                    HB_UNICODE_GENERAL_CATEGORY_VARIATION_SELECTOR,
-                );
+                _hb_glyph_info_set_variation_selector(buffer.cur_mut(0), true);
 
                 if buffer.not_found_variation_selector.is_some() {
                     _hb_glyph_info_clear_default_ignorable(buffer.cur_mut(0))
