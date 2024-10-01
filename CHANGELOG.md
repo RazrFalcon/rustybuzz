@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.19.0] - 2024-10-01
+- Sync with HarfBuzz 10.0.1.
+  Thanks to [@LaurenzV](https://github.com/LaurenzV).
+
+### Fixed
+- RTL text handling.
+  Thanks to [@LaurenzV](https://github.com/LaurenzV).
+
 ## [0.18.0] - 2024-08-10
 ### Added
 - WASM shapers support.
@@ -231,7 +239,8 @@ At this point, this is just a simple Rust bindings to a stripped down harfbuzz.
   Embedded harfbuzz relies only on internal TrueType implementation.
 - Most of the non-shaping harfbuzz API.
 
-[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.15.0...v0.16.0
