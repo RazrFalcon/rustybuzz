@@ -199,6 +199,7 @@ pub struct skipping_iterator_t<'a, 'b> {
     lookup_props: u32,
     ignore_zwnj: bool,
     ignore_zwj: bool,
+    ignore_hidden: bool,
     mask: hb_mask_t,
     syllable: u8,
     matching: Option<&'a match_func_t<'a>>,
@@ -241,6 +242,8 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
             ignore_zwnj: ctx.table_index == TableIndex::GPOS || (context_match && ctx.auto_zwnj),
             // Ignore ZWJ if we are matching context, or asked to.
             ignore_zwj: context_match || ctx.auto_zwj,
+            // Ignore hidden glyphs (like CGJ) during GPOS.
+            ignore_hidden: ctx.table_index == TableIndex::GPOS,
             mask: if context_match {
                 u32::MAX
             } else {
@@ -385,9 +388,9 @@ impl<'a, 'b> skipping_iterator_t<'a, 'b> {
         }
 
         if _hb_glyph_info_is_default_ignorable(info)
-            && !info.is_hidden()
             && (self.ignore_zwnj || !_hb_glyph_info_is_zwnj(info))
             && (self.ignore_zwj || !_hb_glyph_info_is_zwj(info))
+            && (self.ignore_hidden || !_hb_glyph_info_is_hidden(info))
         {
             return may_skip_t::SKIP_MAYBE;
         }

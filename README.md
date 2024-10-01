@@ -6,7 +6,7 @@
 `rustybuzz` is a complete [harfbuzz](https://github.com/harfbuzz/harfbuzz)'s
 shaping algorithm port to Rust.
 
-Matches `harfbuzz` v9.0.0
+Matches `harfbuzz` v10.0.1, commit [c7ef6a2e](https://github.com/harfbuzz/harfbuzz/commit/c7ef6a2ed58ae8ec108ee0962bef46f42c73a60c) (one commit after v10.0.1)
 
 ## Why?
 

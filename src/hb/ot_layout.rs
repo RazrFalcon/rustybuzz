@@ -330,12 +330,12 @@ fn apply_backward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> b
 
 /* Design:
  * unicode_props() is a two-byte number.  The low byte includes:
- * - General_Category: 5 bits.
+ * - Modified General_Category: 5 bits.
  * - A bit each for:
  *   * Is it Default_Ignorable(); we have a modified Default_Ignorable().
  *   * Whether it's one of the four Mongolian Free Variation Selectors,
  *     CGJ, or other characters that are hidden but should not be ignored
- *     like most other Default_Ignorable()s do during matching.
+ *     like most other Default_Ignorable()s do during GSUB matching.
  *   * Whether it's a grapheme continuation.
  *
  * The high-byte has different meanings, switched by the Gen-Cat:
@@ -343,6 +343,11 @@ fn apply_backward(ctx: &mut OT::hb_ot_apply_context_t, lookup: &impl Apply) -> b
  * - For Cf: whether it's ZWJ, ZWNJ, or something else.
  * - For Ws: index of which space character this is, if space fallback
  *   is needed, ie. we don't set this by default, only if asked to.
+ *
+ * Above I said "modified" General_Category. This is because we need to
+ * remember Variation Selectors, and we don't have bits left. So we
+ * change their Gen_Cat from Mn to Cf, and use a bit of the high byte to
+ * remember them.
  */
 
 //  enum hb_unicode_props_flags_t {
@@ -488,18 +493,40 @@ pub(crate) fn _hb_glyph_info_get_unicode_space_fallback_type(
 }
 
 #[inline]
+pub(crate) fn _hb_glyph_info_is_variation_selector(info: &hb_glyph_info_t) -> bool {
+    let a = _hb_glyph_info_get_general_category(info) == hb_unicode_general_category_t::Format;
+    let b = (info.unicode_props() & UnicodeProps::CF_VS.bits()) != 0;
+    a && b
+}
+
+#[inline]
+pub(crate) fn _hb_glyph_info_set_variation_selector(info: &mut hb_glyph_info_t, customize: bool) {
+    if customize {
+        _hb_glyph_info_set_general_category(info, hb_unicode_general_category_t::Format);
+        info.set_unicode_props(info.unicode_props() | UnicodeProps::CF_VS.bits())
+    } else {
+        // Reset to their original condition
+        _hb_glyph_info_set_general_category(info, hb_unicode_general_category_t::NonspacingMark);
+    }
+}
+
+#[inline]
 pub(crate) fn _hb_glyph_info_is_default_ignorable(info: &hb_glyph_info_t) -> bool {
     let n = info.unicode_props() & UnicodeProps::IGNORABLE.bits();
     n != 0 && !_hb_glyph_info_substituted(info)
 }
 
-//   static inline bool
-//   _hb_glyph_info_is_default_ignorable_and_not_hidden (const hb_glyph_info_t *info)
-//   {
-//     return ((info->unicode_props() & (UPROPS_MASK_IGNORABLE|UPROPS_MASK_HIDDEN))
-//         == UPROPS_MASK_IGNORABLE) &&
-//        !_hb_glyph_info_substituted (info);
-//   }
+#[inline]
+pub(crate) fn _hb_glyph_info_clear_default_ignorable(info: &mut hb_glyph_info_t) {
+    let mut n = info.unicode_props();
+    n &= !UnicodeProps::IGNORABLE.bits();
+    info.set_unicode_props(n);
+}
+
+#[inline]
+pub(crate) fn _hb_glyph_info_is_hidden(info: &hb_glyph_info_t) -> bool {
+    (info.unicode_props() & UnicodeProps::HIDDEN.bits()) != 0
+}
 
 //   static inline void
 //   _hb_glyph_info_unhide (hb_glyph_info_t *info)

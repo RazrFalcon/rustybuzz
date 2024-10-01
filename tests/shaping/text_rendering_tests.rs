@@ -706,7 +706,7 @@ fn cmap_3_001() {
             "\u{201C}",
             "--ned --remove-default-ignorables",
         ),
-        "gid196"
+        "gid200"
     );
 }
 
@@ -742,7 +742,7 @@ fn cmap_3_004() {
             "\u{00C7}",
             "--ned --remove-default-ignorables",
         ),
-        "gid124"
+        "gid126"
     );
 }
 
@@ -790,7 +790,7 @@ fn cmap_3_008() {
             "\u{00D6}",
             "--ned --remove-default-ignorables",
         ),
-        "gid135"
+        "gid140"
     );
 }
 
@@ -814,7 +814,7 @@ fn cmap_3_010() {
             "\u{00DC}",
             "--ned --remove-default-ignorables",
         ),
-        "gid140"
+        "gid145"
     );
 }
 
@@ -826,7 +826,7 @@ fn cmap_3_011() {
             "\u{201D}",
             "--ned --remove-default-ignorables",
         ),
-        "gid200"
+        "gid201"
     );
 }
 
@@ -862,7 +862,7 @@ fn cmap_3_014() {
             "\u{00E7}",
             "--ned --remove-default-ignorables",
         ),
-        "gid152"
+        "gid154"
     );
 }
 
@@ -872,6 +872,18 @@ fn cmap_3_015() {
         shape(
             "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
             "\u{011F}",
+            "--ned --remove-default-ignorables",
+        ),
+        "gid0"
+    );
+}
+
+#[test]
+fn cmap_3_016() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
+            "\u{0131}",
             "--ned --remove-default-ignorables",
         ),
         "gid0"
@@ -891,6 +903,18 @@ fn cmap_3_017() {
 }
 
 #[test]
+fn cmap_3_018() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
+            "\u{00F6}",
+            "--ned --remove-default-ignorables",
+        ),
+        "gid168"
+    );
+}
+
+#[test]
 fn cmap_3_019() {
     assert_eq!(
         shape(
@@ -899,6 +923,18 @@ fn cmap_3_019() {
             "--ned --remove-default-ignorables",
         ),
         "gid0"
+    );
+}
+
+#[test]
+fn cmap_3_020() {
+    assert_eq!(
+        shape(
+            "tests/fonts/text-rendering-tests/TestCMAPMacTurkish.ttf",
+            "\u{00FC}",
+            "--ned --remove-default-ignorables",
+        ),
+        "gid174"
     );
 }
 

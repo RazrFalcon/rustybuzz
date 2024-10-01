@@ -248,7 +248,7 @@ impl hb_glyph_info_t {
                     // https://github.com/harfbuzz/harfbuzz/issues/463
                     0xE0020..=0xE007F => props |= UnicodeProps::HIDDEN.bits(),
 
-                    // COMBINING GRAPHEME JOINER should not be skipped; at least some times.
+                    // COMBINING GRAPHEME JOINER should not be skipped during GSUB either.
                     // https://github.com/harfbuzz/harfbuzz/issues/554
                     0x034F => {
                         props |= UnicodeProps::HIDDEN.bits();
@@ -266,11 +266,6 @@ impl hb_glyph_info_t {
         }
 
         self.set_unicode_props(props);
-    }
-
-    #[inline]
-    pub(crate) fn is_hidden(&self) -> bool {
-        self.unicode_props() & UnicodeProps::HIDDEN.bits() != 0
     }
 
     #[inline]
@@ -341,6 +336,7 @@ pub struct hb_buffer_t {
     pub flags: BufferFlags,
     pub cluster_level: hb_buffer_cluster_level_t,
     pub invisible: Option<GlyphId>,
+    pub not_found_variation_selector: Option<u32>,
 
     // Buffer contents.
     pub direction: Direction,
@@ -398,6 +394,7 @@ impl hb_buffer_t {
             cluster_level: HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
             invisible: None,
             scratch_flags: HB_BUFFER_SCRATCH_FLAG_DEFAULT,
+            not_found_variation_selector: None,
             max_len: Self::MAX_LEN_DEFAULT,
             max_ops: Self::MAX_OPS_DEFAULT,
             direction: Direction::Invalid,
@@ -510,6 +507,7 @@ impl hb_buffer_t {
         self.serial = 0;
         self.scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
         self.cluster_level = HB_BUFFER_CLUSTER_LEVEL_DEFAULT;
+        self.not_found_variation_selector = None;
     }
 
     #[inline]
@@ -1515,13 +1513,14 @@ bitflags::bitflags! {
     pub struct UnicodeProps: u16 {
         const GENERAL_CATEGORY  = 0x001F;
         const IGNORABLE         = 0x0020;
-        // MONGOLIAN FREE VARIATION SELECTOR 1..4, or TAG characters
+        // MONGOLIAN FREE VARIATION SELECTOR 1..4, or TAG characters, or CGJ sometimes
         const HIDDEN            = 0x0040;
         const CONTINUATION      = 0x0080;
 
         // If GEN_CAT=FORMAT, top byte masks:
         const CF_ZWJ            = 0x0100;
         const CF_ZWNJ           = 0x0200;
+        const CF_VS           = 0x0400;
     }
 }
 
@@ -1552,6 +1551,7 @@ pub const HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT: u32 = 0x00000008;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_CGJ: u32 = 0x00000010;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS: u32 = 0x00000020;
 pub const HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE: u32 = 0x00000040;
+pub const HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK: u32 = 0x00000080;
 
 /* Reserved for shapers' internal use. */
 pub const HB_BUFFER_SCRATCH_FLAG_SHAPER0: u32 = 0x01000000;
@@ -1636,6 +1636,12 @@ impl UnicodeBuffer {
     #[inline]
     pub fn set_language(&mut self, lang: Language) {
         self.0.language = Some(lang);
+    }
+
+    /// Set the glyph value to replace not-found variation-selector characters with.
+    #[inline]
+    pub fn set_not_found_variation_selector_glyph(&mut self, glyph: u32) {
+        self.0.not_found_variation_selector = Some(glyph)
     }
 
     /// Get the buffer language.

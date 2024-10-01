@@ -20,6 +20,7 @@ struct Args {
     #[allow(dead_code)]
     remove_default_ignorables: bool,
     unsafe_to_concat: bool,
+    not_found_variation_selector_glyph: Option<u32>,
     cluster_level: rustybuzz::BufferClusterLevel,
     features: Vec<String>,
     pre_context: Option<String>,
@@ -48,6 +49,8 @@ fn parse_args(args: Vec<std::ffi::OsString>) -> Result<Args, pico_args::Error> {
         script: parser.opt_value_from_str("--script")?,
         remove_default_ignorables: parser.contains("--remove-default-ignorables"),
         unsafe_to_concat: parser.contains("--unsafe-to-concat"),
+        not_found_variation_selector_glyph: parser
+            .opt_value_from_str("--not-found-variation-selector-glyph")?,
         cluster_level: parser
             .opt_value_from_fn("--cluster-level", parse_cluster)?
             .unwrap_or_default(),
@@ -131,6 +134,10 @@ pub fn shape(font_path: &str, text: &str, options: &str) -> String {
 
     if let Some(d) = args.direction {
         buffer.set_direction(d);
+    }
+
+    if let Some(g) = args.not_found_variation_selector_glyph {
+        buffer.set_not_found_variation_selector_glyph(g);
     }
 
     if let Some(lang) = args.language {

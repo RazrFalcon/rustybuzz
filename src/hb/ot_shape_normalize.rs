@@ -225,6 +225,15 @@ fn handle_variation_selector_cluster(
                 // Just pass on the two characters separately, let GSUB do its magic.
                 set_glyph(buffer.cur_mut(0), face);
                 buffer.next_glyph();
+
+                buffer.scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK;
+
+                _hb_glyph_info_set_variation_selector(buffer.cur_mut(0), true);
+
+                if buffer.not_found_variation_selector.is_some() {
+                    _hb_glyph_info_clear_default_ignorable(buffer.cur_mut(0))
+                }
+
                 set_glyph(buffer.cur_mut(0), face);
                 buffer.next_glyph();
             }

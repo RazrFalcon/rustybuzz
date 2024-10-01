@@ -21,7 +21,7 @@ use OT_MR    as _OT_MR;         /*   1 chars; MR */
 use OT_MW    as _OT_MW;         /*   2 chars; MW */
 use OT_MY    as _OT_MY;         /*   3 chars; MY */
 use OT_N     as _OT_N;          /*  17 chars; N */
-use OT_PLACEHOLDER as _OT_GB;         /* 165 chars; PLACEHOLDER */
+use OT_PLACEHOLDER as _OT_GB;         /* 185 chars; PLACEHOLDER */
 use OT_PT    as _OT_PT;         /*   8 chars; PT */
 use OT_Ra    as _OT_R;          /*  14 chars; Ra */
 use OT_Repha as _OT_Rf;         /*   1 chars; Repha */
@@ -44,7 +44,7 @@ use POS_ABOVE_C as _POS_T;         /*  22 chars; ABOVE_C */
 use POS_AFTER_MAIN as _POS_A;         /*   3 chars; AFTER_MAIN */
 use POS_AFTER_POST as _POS_AP;        /*  50 chars; AFTER_POST */
 use POS_AFTER_SUB as _POS_AS;        /*  51 chars; AFTER_SUB */
-use POS_BASE_C as _POS_C;         /* 833 chars; BASE_C */
+use POS_BASE_C as _POS_C;         /* 853 chars; BASE_C */
 use POS_BEFORE_SUB as _POS_BS;        /*  25 chars; BEFORE_SUB */
 use POS_BELOW_C as _POS_B;         /*  13 chars; BELOW_C */
 use POS_END  as _POS_X;         /*  71 chars; END */
@@ -343,6 +343,12 @@ const TABLE: &[(SyllabicCategory, MatraCategory)] = &[
   /* 11300 */ (_OT_X,_POS_X),(_OT_SM,_POS_SM),(_OT_SM,_POS_SM),(_OT_SM,_POS_SM), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
   /* 11338 */ (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_N,_POS_X), (_OT_N,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
 
+  /* Myanmar Extended-C */
+
+  /* 116D0 */(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),
+  /* 116D8 */(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),
+  /* 116E0 */(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C),(_OT_GB,_POS_C), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X), (_OT_X,_POS_X),
+
 ];
 
 const OFFSET_0X0028: usize = 0;
@@ -360,6 +366,7 @@ const OFFSET_0XAA60: usize = 1664;
 const OFFSET_0XFE00: usize = 1696;
 const OFFSET_0X11300: usize = 1712;
 const OFFSET_0X11338: usize = 1720;
+const OFFSET_0X116D0: usize = 1728;
 
 #[rustfmt::skip]
 pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
@@ -392,6 +399,7 @@ pub fn get_categories(u: u32) -> (SyllabicCategory, MatraCategory) {
         0x11 => {
             if (0x11300..=0x11307).contains(&u) { return TABLE[u as usize - 0x11300 + OFFSET_0X11300]; }
             if (0x11338..=0x1133F).contains(&u) { return TABLE[u as usize - 0x11338 + OFFSET_0X11338]; }
+            if (0x116D0..=0x116E7).contains(&u) { return TABLE[u as usize - 0x116D0 + OFFSET_0X116D0]; }
         }
         _ => {}
     }

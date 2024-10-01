@@ -324,6 +324,15 @@ pub fn hb_ot_shape_complex_categorize(
         | script::KAWI
         | script::NAG_MUNDARI
 
+        // Unicode-16.0 additions
+        | script::GARAY
+        | script::GURUNG_KHEMA
+        | script::KIRAT_RAI
+        | script::OL_ONAL
+        | script::SUNUWAR
+        | script::TODHRI
+        | script::TULU_TIGALARI
+
         => {
             // If the designer designed the font for the 'DFLT' script,
             // (or we ended up arbitrarily pick 'latn'), use the default shaper.

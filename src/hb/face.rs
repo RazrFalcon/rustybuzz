@@ -444,5 +444,5 @@ fn unicode_to_macroman(c: u32) -> u32 {
     let Some(index) = UNICODE_TO_MACROMAN.iter().position(|m| *m == u) else {
         return 0;
     };
-    (0x7F + index) as u32
+    (0x80 + index) as u32
 }

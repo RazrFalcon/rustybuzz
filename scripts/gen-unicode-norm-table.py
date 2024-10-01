@@ -6,7 +6,7 @@ import os
 URL = 'https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt'
 FILE_NAME = 'UnicodeData.txt'
 
-EXCLUSIONS_URL = 'https://www.unicode.org/Public/draft/UCD/ucd/CompositionExclusions.txt'
+EXCLUSIONS_URL = 'https://www.unicode.org/Public/UCD/latest/ucd/CompositionExclusions.txt'
 EXCLUSIONS_FILE_NAME = 'CompositionExclusions.txt'
 
 
@@ -39,7 +39,7 @@ print('//!')
 print('//! The current implementation is not the fastest one. Just good enough.')
 print()
 print('#[allow(dead_code)]')
-print('pub const UNICODE_VERSION: (u8, u8, u8) = (15, 0, 0);')
+print('pub const UNICODE_VERSION: (u8, u8, u8) = (16, 0, 0);')
 print()
 print('// Rust support `Option<char>` layout optimization, so it will take only 4 bytes.')
 print('pub const DECOMPOSITION_TABLE: &[(char, char, Option<char>)] = &[')

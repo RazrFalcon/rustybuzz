@@ -43,10 +43,6 @@ IGNORE_TEST_CASES = [
     # Wasn't able to figure out the problem, but the problem occurs during kerning. In harfbuzz, it uses the `drive`
     # method, while in rustybuzz it uses `state_machine_kerning` which seems to apply some different rules for the flags.
     "macos_122",
-    # Broken in HarfBuzz. https://github.com/harfbuzz/harfbuzz/issues/4774
-    "cmap_3_016",
-    "cmap_3_018",
-    "cmap_3_020",
 
     # This custom test fails because harfbuzz uses a set digest in AAT to abort early
     # which we don't do yet. Is basically the same as morx_20_005, but with `--show-flags`
@@ -92,6 +88,8 @@ def prune_test_options(options):
     options = options.replace(" --font-funcs=ot", "").replace("--font-funcs=ot", "")
     # we don't support font scaling
     options = options.replace("--font-size=1000", "")
+    # We don't support glyphs > u16
+    options = options.replace("--not-found-variation-selector-glyph=1000000", "--not-found-variation-selector-glyph=64000")
     options = options.strip()
     return options
 

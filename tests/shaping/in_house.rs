@@ -384,7 +384,7 @@ fn arabic_mark_order_006() {
             "\u{0649}\u{0650}\u{034F}\u{0655}",
             "",
         ),
-        "uni0655=0+0|\
+        "uni0655=0@727,-209+0|\
          space=0+0|\
          uni0650=0@166,0+0|\
          uni0649=0+1566"
@@ -2075,7 +2075,7 @@ fn default_ignorables_002() {
             "\u{0020}\u{06CC}\u{064E}\u{034F}\u{0651}",
             "",
         ),
-        "uni0651=1+0|\
+        "uni0651=1@252,-150+0|\
          space=1+0|\
          uni064E=1@236,-432+0|\
          uni06CC=1+1266|\
@@ -2119,6 +2119,22 @@ fn default_ignorables_005() {
         "terminal=0+0|\
          terminal=0+0|\
          uni0647.init=0+702"
+    );
+}
+
+#[test]
+fn default_ignorables_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/cee442574141a0304e780b27dd872519f7d229db.ttf",
+            "\u{0635}\u{0650}\u{034F}\u{0651}\u{0627}",
+            "",
+        ),
+        "uni0627.fina=4+231|\
+         uni0651=0@285,-66+0|\
+         space=0+0|\
+         uni0650=0@318,-114+0|\
+         uni0635.init=0+838"
     );
 }
 
@@ -2763,11 +2779,11 @@ fn hebrew_diacritics_023() {
         "tav=11+1026|\
          patah=9@594,0+0|\
          het=9+1065|\
-         gereshaccent=2+0|\
-         patah=2+0|\
+         gereshaccent=2@728,0+0|\
+         patah=2@203,0+0|\
          space=2+0|\
-         atnah=2@437,0+0|\
-         qamats=2@794,0+0|\
+         atnah=2@585,0+0|\
+         qamats=2@942,0+0|\
          tavdagesh=2+1026|\
          hiriq=0@573,0+0|\
          mem=0+1094"
@@ -2816,9 +2832,9 @@ fn hebrew_diacritics_025() {
          he=6+1071|\
          sheva=4@239,0+0|\
          yod=4+454|\
-         patah=0+0|\
+         patah=0@162,0+0|\
          space=0+0|\
-         meteg=0@349,0+0|\
+         meteg=0@468,0+0|\
          vav=0+484"
     );
 }
@@ -3171,6 +3187,23 @@ fn indic_joiners_006() {
          uni094D=0@4,0+0|\
          space=0+0|\
          uni092F=0+924"
+    );
+}
+
+#[test]
+fn indic_joiners_007() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/63e224dcb3d559d590f80c83b832cfca789e5dcc.ttf",
+            "\u{0ABE}\u{0AA8}\u{0ACD}\u{200D}\u{0AA4}\u{0ABF}",
+            "",
+        ),
+        "uni25CC=0+596|\
+         uni0ABE=0+251|\
+         uni0ABF.05=1+251|\
+         uni0AA80ACD=1+293|\
+         space=1+0|\
+         uni0AA4=1+543"
     );
 }
 
@@ -17094,6 +17127,33 @@ fn use_017() {
          Ga=0+576|\
          AU_dv_part.alt=0+213|\
          Candrabindu.sm=0@-52,179+0"
+    );
+}
+
+#[test]
+fn variation_selectors_001() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/bbc24004e776f348a0f72287d24b0124867ee750.ttf",
+            "\u{0066}\u{FE00}\u{0069}",
+            "",
+        ),
+        "gid5=0+1134|\
+         gid1=0+0"
+    );
+}
+
+#[test]
+fn variation_selectors_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/bbc24004e776f348a0f72287d24b0124867ee750.ttf",
+            "\u{0066}\u{FE00}\u{0069}",
+            "--not-found-variation-selector-glyph=64000",
+        ),
+        "gid2=0+711|\
+         gid64000=0+0|\
+         gid3=2+497"
     );
 }
 
