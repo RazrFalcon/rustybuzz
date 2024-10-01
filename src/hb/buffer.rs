@@ -537,7 +537,9 @@ impl hb_buffer_t {
     }
 
     fn add(&mut self, codepoint: u32, cluster: u32) {
-        self.ensure(self.len + 1);
+        if !self.ensure(self.len + 1) {
+            return;
+        }
 
         let i = self.len;
         self.info[i] = hb_glyph_info_t {
@@ -1193,6 +1195,7 @@ impl hb_buffer_t {
         true
     }
 
+    #[must_use]
     pub fn ensure(&mut self, size: usize) -> bool {
         if size < self.len {
             return true;
@@ -1208,11 +1211,7 @@ impl hb_buffer_t {
         true
     }
 
-    pub fn set_len(&mut self, len: usize) {
-        self.ensure(len);
-        self.len = len;
-    }
-
+    #[must_use]
     fn make_room_for(&mut self, num_in: usize, num_out: usize) -> bool {
         if !self.ensure(self.out_len + num_out) {
             return false;
@@ -1232,7 +1231,9 @@ impl hb_buffer_t {
 
     fn shift_forward(&mut self, count: usize) {
         assert!(self.have_output);
-        self.ensure(self.len + count);
+        if !self.ensure(self.len + count) {
+            return;
+        }
 
         for i in (0..(self.len - self.idx)).rev() {
             self.info[self.idx + count + i] = self.info[self.idx + i];
@@ -1415,7 +1416,9 @@ impl hb_buffer_t {
     }
 
     fn push_str(&mut self, text: &str) {
-        self.ensure(self.len + text.chars().count());
+        if !self.ensure(self.len + text.chars().count()) {
+            return;
+        }
 
         for (i, c) in text.char_indices() {
             self.add(c as u32, i as u32);

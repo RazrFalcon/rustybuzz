@@ -584,10 +584,12 @@ fn apply_stch(face: &hb_font_t, buffer: &mut hb_buffer_t) {
         }
 
         if step == MEASURE {
-            buffer.ensure(buffer.len + extra_glyphs_needed);
+            if !buffer.ensure(buffer.len + extra_glyphs_needed) {
+                break;
+            }
         } else {
             debug_assert_eq!(j, 0);
-            buffer.set_len(new_len);
+            buffer.len = new_len;
         }
     }
 
