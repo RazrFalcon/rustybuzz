@@ -43,3 +43,6 @@ wasm-shaper = ["std", "dep:wasmi"]
 [dev-dependencies]
 pico-args = { version = "0.5", features = ["eq-separator"] }
 libc = "0.2"
+base64 = "0.13"
+xmlwriter = "0.1"
+unicode-bidi = "0.3"
