@@ -18419,6 +18419,18 @@ fn variations_005() {
 }
 
 #[test]
+fn variations_006() {
+    assert_eq!(
+        shape(
+            "tests/fonts/in-house/0bed094c61114e8b3d30810e4ac51dc0a46e64ca.ttf",
+            "\u{0065}",
+            "--variations=wght=500,wdth=80",
+        ),
+        "gid0=0+1218"
+    );
+}
+
+#[test]
 fn vertical_001() {
     assert_eq!(
         shape(
