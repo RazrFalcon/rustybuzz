@@ -25,7 +25,7 @@ wasmi = { version = "0.37.0", optional = true }
 log = "0.4.22"
 
 [dependencies.ttf-parser]
-version = "0.24.1"
+version = "0.25.0"
 default-features = false
 features = [
     "opentype-layout",

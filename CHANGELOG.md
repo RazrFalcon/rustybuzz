@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Bump `ttf-parser`.
+
+### Fixed
+- Variations handling for fonts with `avar` table that has multiple axes.
+  Thanks to [@maxmelander](https://github.com/maxmelander).
 
 ## [0.19.0] - 2024-10-01
 - Sync with HarfBuzz 10.0.1.
