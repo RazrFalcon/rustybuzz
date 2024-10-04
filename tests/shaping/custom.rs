@@ -17,6 +17,18 @@ fn bugs_001() {
 }
 
 #[test]
+fn bugs_002() {
+    assert_eq!(
+        shape(
+            "tests/fonts/rb_custom/OpenSans.subset1.ttf",
+            "\u{0065}",
+            "--variations=wght=500,wdth=80",
+        ),
+        "gid0=0+1218"
+    );
+}
+
+#[test]
 fn fuzzer_001() {
     assert_eq!(
         shape(
