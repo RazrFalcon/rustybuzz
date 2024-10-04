@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.20.0] - 2024-10-04
 ### Changed
 - Bump `ttf-parser`.
 
@@ -245,7 +247,8 @@ At this point, this is just a simple Rust bindings to a stripped down harfbuzz.
   Embedded harfbuzz relies only on internal TrueType implementation.
 - Most of the non-shaping harfbuzz API.
 
-[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/RazrFalcon/rustybuzz/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/RazrFalcon/rustybuzz/compare/v0.16.0...v0.17.0
