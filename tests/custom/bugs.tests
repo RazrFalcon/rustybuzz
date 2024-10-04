@@ -1,1 +1,2 @@
 tests/fonts/rb_custom/NotoSansCJK.subset1.otf;--direction rtl;U+4F60,U+597D,U+FF0C;
+tests/fonts/rb_custom/OpenSans.subset1.ttf;--variations=wght=500,wdth=80;U+0065;
