@@ -1,3 +1,6 @@
+**NOTE:** This project is not developed further, unmaintained, and archived.
+We recommend that all users witch to [HarfRust](https://github.com/harfbuzz/harfrust) instead.
+
 # rustybuzz
 ![Build Status](https://github.com/harfbuzz/rustybuzz/workflows/Rust/badge.svg)
 [![Crates.io](https://img.shields.io/crates/v/rustybuzz.svg)](https://crates.io/crates/rustybuzz)
